@@ -1,0 +1,96 @@
+body
+{
+font-size: 8pt;
+}
+h1
+{
+font-size: 12pt
+}
+h2
+{
+font-size: 10pt
+}
+p
+{
+font-size: 9pt
+}
+td
+{
+font-size: 8pt
+}
+table.torrents td.rowfollow
+{
+font-size: 8pt
+}
+table.torrentname td.embedded
+{
+font-size: 8pt
+}
+td.comment
+{
+font-size: 8pt
+}
+td.title
+{
+font-size: 14pt
+}
+td.navigation
+{
+font-size: 10pt
+}
+.sublink
+{
+font-size: 7pt
+}
+a.biglink
+{
+font-size: 9pt
+}
+.important
+{
+font-size: 8pt
+}
+input
+{
+font-family: tahoma, arial, helvetica, sans-serif;
+font-size: 8pt;
+}
+select
+{
+font-family: tahoma, arial, helvetica, sans-serif;
+font-size: 8pt;
+}
+select.med
+{
+font-size: 8pt;
+}
+textarea
+{
+overflow: auto;
+font-family: tahoma, arial, helvetica, sans-serif;
+font-size: 8pt;
+}
+.small
+{
+font-size: 7pt
+}
+.medium
+{
+font-size: 8pt
+}
+.big
+{
+font-size: 10.5pt
+}
+ul.menu
+{
+font-size: 13px;
+}
+.logo
+{
+font-size: 25pt
+}
+.slogan
+{
+font-size: 8pt
+}

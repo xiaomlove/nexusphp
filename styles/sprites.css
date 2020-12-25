@@ -1,0 +1,476 @@
+img.female
+{
+width:32px;
+height:32px;
+background:url(png.png) 0 0;
+}
+img.male
+{
+width:32px;
+height:32px;
+background:url(png.png) -32px 0;
+}
+img.bookmark
+{
+width:16px;
+height:16px;
+background:url(png.png) -64px 0;
+}
+img.delbookmark
+{
+width:16px;
+height:16px;
+background:url(png.png) -64px -16px;
+}
+img.download
+{
+width:16px;
+height:16px;
+background:url(png.png) -80px 0;
+}
+img.ie
+{
+width:80px;
+height:15px;
+background:url(icons.gif) -110px -20px;
+}
+img.firefox
+{
+width:80px;
+height:15px;
+background:url(icons.gif) -110px -35px;
+}
+img.azureus
+{
+width:80px;
+height:15px;
+background:url(icons.gif) -110px -50px;
+}
+img.utorrent
+{
+width:80px;
+height:15px;
+background:url(icons.gif) -110px -65px;
+}
+img.unlockednew
+{
+width:35px;
+height:36px;
+background:url(icons.gif) -100px -100px;
+}
+img.unlocked
+{
+width:35px;
+height:36px;
+background:url(icons.gif) -100px -136px;
+}
+img.lockednew
+{
+width:35px;
+height:36px;
+background:url(icons.gif) -135px -100px;
+}
+img.locked
+{
+width:35px;
+height:36px;
+background:url(icons.gif) -135px -136px;
+}
+img.unreadpm
+{
+width:35px;
+height:36px;
+background:url(icons.gif) -170px -100px;
+}
+img.readpm
+{
+width:35px;
+height:36px;
+background:url(icons.gif) -170px -136px;
+}
+img.pro_free
+{
+width:36px;
+height:11px;
+background:url(icons.gif) 0 0;
+}
+img.pro_2up
+{
+width:36px;
+height:11px;
+background:url(icons.gif) -36px 0;
+}
+img.pro_free2up
+{
+width:36px;
+height:11px;
+background:url(icons.gif) -72px 0;
+}
+img.pro_50pctdown
+{
+width:36px;
+height:11px;
+background:url(icons.gif) -108px 0;
+}
+img.pro_50pctdown2up
+{
+width:36px;
+height:11px;
+background:url(icons.gif) -144px 0;
+}
+img.pro_30pctdown
+{
+width:36px;
+height:11px;
+background:url(icons.gif) -180px 0;
+}
+img.cheaterbox
+{
+width:14px;
+height:14px;
+background:url(icons.gif) 0 -11px;
+}
+img.reportbox
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -14px -11px;
+}
+img.staffbox
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -28px -11px;
+}
+img.inbox
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -42px -11px;
+}
+img.inboxnew
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -56px -11px;
+}
+img.sentbox
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -70px -11px;
+}
+img.arrowup
+{
+width:7px;
+height:8px;
+background:url(icons.gif) 0 -160px;
+}
+img.arrowdown
+{
+width:7px;
+height:8px;
+background:url(icons.gif) -7px -160px;
+}
+img.buddylist
+{
+width:11px;
+height:12px;
+background:url(icons.gif) 0 -148px;
+}
+img.rss
+{
+width:11px;
+height:12px;
+background:url(icons.gif) -11px -148px;
+}
+img.comments
+{
+width:16px;
+height:16px;
+background:url(icons.gif) 0 -25px;
+}
+img.files
+{
+width:13px;
+height:16px;
+background:url(icons.gif) -16px -25px;
+}
+img.time
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -29px -25px;
+}
+img.size
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -45px -25px;
+}
+img.seeders
+{
+width:15px;
+height:16px;
+background:url(icons.gif) -61px -25px;
+}
+img.leechers
+{
+width:15px;
+height:16px;
+background:url(icons.gif) -76px -25px;
+}
+img.snatched
+{
+width:14px;
+height:16px;
+background:url(icons.gif) -91px -25px;
+}
+img.disabledbig
+{
+width:16px;
+height:16px;
+background:url(icons.gif) 0 -41px;
+}
+img.leechwarnedbig
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -16px -41px;
+}
+img.starbig
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -32px -41px;
+}
+img.warnedbig
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -48px -41px;
+}
+img.disabled
+{
+width:11px;
+height:11px;
+background:url(icons.gif) 0 -57px;
+}
+img.leechwarned
+{
+width:11px;
+height:11px;
+background:url(icons.gif) -11px -57px;
+}
+img.star
+{
+width:11px;
+height:11px;
+background:url(icons.gif) -22px -57px;
+}
+img.warned
+{
+width:11px;
+height:11px;
+background:url(icons.gif) -33px -57px;
+}
+img.dt_download
+{
+width:14px;
+height:14px;
+background:url(icons.gif) 0 -68px;
+}
+img.dt_edit, img.dt_delete
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -14px -68px;
+}
+img.dt_report
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -28px -68px;
+}
+img.dt_reseed
+{
+width:14px;
+height:14px;
+background:url(icons.gif) -42px -68px;
+}
+img.faq_new
+{
+width:40px;
+height:11px;
+background:url(icons.gif) 0 -82px;
+}
+img.faq_updated
+{
+width:40px;
+height:11px;
+background:url(icons.gif) -11px -82px;
+}
+img.staff_edit
+{
+width:16px;
+height:16px;
+background:url(icons.gif) 0 -93px;
+}
+img.staff_delete
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -16px -93px;
+}
+img.button_online
+{
+width:15px;
+height:15px;
+background:url(icons.gif) 0 -109px;
+}
+img.button_offline
+{
+width:15px;
+height:15px;
+background:url(icons.gif) -15px -109px;
+}
+img.button_pm
+{
+width:21px;
+height:13px;
+background:url(icons.gif) -34px -202px;
+}
+img.speed_up
+{
+width:10px;
+height:15px;
+background:url(icons.gif) 0 -124px;
+}
+img.speed_down
+{
+width:10px;
+height:15px;
+background:url(icons.gif) -10px -124px;
+}
+img.plus
+{
+width:9px;
+height:9px;
+background:url(icons.gif) 0 -139px;
+}
+img.minus
+{
+width:9px;
+height:9px;
+background:url(icons.gif) -9px -139px;
+}
+img.sticky
+{
+width:14px;
+height:14px;
+background:url(icons.gif) 0 -202px;
+}
+img.forum_mod
+{
+width:20px;
+height:20px;
+background:url(icons.gif) -14px -202px;
+}
+img.imdb
+{
+width:16px;
+height:16px;
+background:url(icons.gif) -55px -202px;
+}
+img.top
+{
+width:15px;
+height:13px;
+background:url(icons.gif) -71px -202px;
+}
+img.multipage
+{
+width:8px;
+height:10px;
+background:url(icons.gif) -86px -202px;
+}
+img.listicon
+{
+width:4px;
+height:4px;
+background:url(icons.gif) -94px -202px;
+}
+img.no_gender
+{
+width:16px;
+height:23px;
+background:url(icons.gif) -98px -202px;
+}
+img.bar_left
+{
+width:2px;
+height:9px;
+background:url(icons.gif) 0 -183px;
+}
+img.bar_right
+{
+width:2px;
+height:9px;
+background:url(icons.gif) -2px -183px;
+}
+td.loadbarbg
+{
+height:15px;
+background:url(bar.gif) repeat-x 0 0;
+}
+img.loadbargreen
+{
+height:15px;
+background:url(bar.gif) repeat-x 0 -15px;
+}
+img.loadbarred
+{
+height:15px;
+background:url(bar.gif) repeat-x 0 -30px;
+}
+img.loadbaryellow
+{
+height:15px;
+background:url(bar.gif) repeat-x 0 -45px;
+}
+img.progbarrest
+{
+height:9px;
+background:url(bar.gif) repeat-x 0 -60px;
+}
+img.progbargreen
+{
+height:9px;
+background:url(bar.gif) repeat-x 0 -69px;
+}
+img.progbarred
+{
+height:9px;
+background:url(bar.gif) repeat-x 0 -78px;
+}
+img.progbaryellow
+{
+height:9px;
+background:url(bar.gif) repeat-x 0 -87px;
+}
+img.bar_end
+{
+width:1px;
+height:10px;
+background:url(bar.gif) 0 -96px;
+}
+img.unsltbar
+{
+height:10px;
+background:url(bar.gif) repeat-x 0 -106px;
+}
+img.sltbar
+{
+height:10px;
+background:url(bar.gif) repeat-x 0 -116px;
+}

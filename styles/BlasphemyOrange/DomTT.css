@@ -1,0 +1,80 @@
+div.niceTitle
+{
+	background-color: #ffc580;
+	color: #000000;
+	font-size: 13px;
+	left: 0;
+	top: 0;
+	padding: 4px;
+	position: absolute;
+	text-align: left;
+	z-index: 20;
+	-moz-border-radius: 0 10px 10px 10px;
+	-webkit-border-top-right-radius: 10px;
+	-webkit-border-bottom-right-radius: 10px;
+	-webkit-border-bottom-left-radius: 10px;
+	-webkit-border-top-left-radius: 0px;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+	border-bottom-left-radius: 10px;
+	border-top-left-radius: 0px;
+	filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
+	-moz-opacity: .87;
+	-khtml-opacity: .87;
+	opacity: .87;
+}
+div.smilies table
+{
+	width: 60px;
+	height: 60px;
+	background-color: transparent;
+	text-align: center;
+	vertical-align: middle;
+}
+div.smilies td
+{
+	background-color: #ffc580;
+	color: #000000;
+	border: none;
+	font-size: 13px;
+	z-index: 20;
+	filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
+	-moz-opacity: .87;
+	-khtml-opacity: .87;
+	opacity: .87;
+}
+div.niceTitle .contents
+{
+	margin: 0;
+	padding: 0 3px;
+	filter: progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+	-moz-opacity: 1;
+	-khtml-opacity: 1;
+	opacity: 1;
+}
+div.attach .contents
+{
+	width: 130px;
+	background:#FFFFFF none repeat scroll 0 0;
+	border:1px solid #E6E7E1;
+	font-size:12px;
+	padding:5px;
+}
+div.attach .contents strong
+{
+	color: #0099CC;
+	font-weight: bold;
+}
+div.attach .contents
+{
+	width: 130px;
+	background:#FFFFFF none repeat scroll 0 0;
+	border:1px solid #E6E7E1;
+	font-size:12px;
+	padding:5px;
+}
+div.attach .contents strong
+{
+	color: #0099CC;
+	font-weight: bold;
+}

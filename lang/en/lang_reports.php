@@ -1,0 +1,41 @@
+<?php
+
+$lang_reports = array
+(
+	'std_oho' => "Oho!",
+	'std_no_report' => "No report.",
+	'head_reports' => "Reports",
+	'text_reports' => "Reports",
+	'col_added' => "Added",
+	'col_reporter' => "Reporter",
+	'col_reporting' => "Reporting",
+	'col_type' => "Type",
+	'col_reason' => "Reason",
+	'col_dealt_with' => "Dealt With",
+	'col_action' => "Act.",
+	'text_yes' => "Yes",
+	'text_no' => "No",
+	'text_torrent' => "Torrent",
+	'text_torrent_does_not_exist' => "Torrent doesn't exist or is deleted.",
+	'text_user' => "User",
+	'text_user_does_not_exist' => "User doesn't exist or is deleted.",
+	'text_offer' => "Offer",
+	'text_offer_does_not_exist' => "Offer doesn't exist or is deleted.",
+	'text_forum_post' => "Forum Post",
+	'text_post_does_not_exist' => "Forum post doesn't exist or is deleted.",
+	'text_post_id' => "Post ID ",
+	'text_of_topic' => " of Topic ",
+	'text_by' => " by ",
+	'text_comment' => "Comment",
+	'text_comment_does_not_exist' => "Comment doesn't exist or is deleted.",
+	'text_of_torrent' => " of torrent ",
+	'text_of_offer' => " of offer ",
+	'text_comment_id' => "Comment ID ",
+	'text_subtitle' => "Subtitle",
+	'text_subtitle_does_not_exist' => "Subtitle doesn't exist or is deleted.",
+	'text_for_torrent_id' => " for torrent ID ",
+	'submit_set_dealt' => "Set Dealt",
+	'submit_delete' => "Delete",
+);
+
+?>

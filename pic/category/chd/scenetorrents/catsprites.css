@@ -1,0 +1,54 @@
+img.c_movies
+{
+width:45px;
+height:46px;
+background-position: 0 0;
+}
+img.c_doc
+{
+width:45px;
+height:46px;
+background-position: -45px 0;
+}
+img.c_anime
+{
+width:45px;
+height:46px;
+background-position: 0 -46px;
+}
+img.c_tvseries
+{
+width:45px;
+height:46px;
+background-position: -45px -46px;
+}
+img.c_tvshows
+{
+width:45px;
+height:46px;
+background-position: 0 -92px;
+}
+img.c_mv
+{
+width:45px;
+height:46px;
+background-position: -45px -92px;
+}
+img.c_sports
+{
+width:45px;
+height:46px;
+background-position: 0 -138px;
+}
+img.c_misc
+{
+width:45px;
+height:46px;
+background-position: -45px -138px;
+}
+img.c_hqaudio
+{
+width:45px;
+height:46px;
+background-position: 0 -184px;
+}

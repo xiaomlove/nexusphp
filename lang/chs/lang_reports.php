@@ -1,0 +1,41 @@
+<?php
+
+$lang_reports = array
+(
+	'std_oho' => "噢哦！",
+	'std_no_report' => "没有举报信息。",
+	'head_reports' => "举报",
+	'text_reports' => "举报",
+	'col_added' => "时间",
+	'col_reporter' => "举报者",
+	'col_reporting' => "举报内容",
+	'col_type' => "类型",
+	'col_reason' => "原因",
+	'col_dealt_with' => "处理",
+	'col_action' => "行为",
+	'text_yes' => "是",
+	'text_no' => "否",
+	'text_torrent' => "种子",
+	'text_torrent_does_not_exist' => "种子不存在或已被删除。",
+	'text_user' => "用户",
+	'text_user_does_not_exist' => "用户不存在或已被删除。",
+	'text_offer' => "候选",
+	'text_offer_does_not_exist' => "候选不存在或已被删除。",
+	'text_forum_post' => "论坛帖子",
+	'text_post_does_not_exist' => "论坛帖子不存在或已被删除。",
+	'text_post_id' => "帖子ID：",
+	'text_of_topic' => "；主题：",
+	'text_by' => "；作者：",
+	'text_comment' => "评论",
+	'text_comment_does_not_exist' => "评论不存在或已被删除。",
+	'text_of_torrent' => "；种子：",
+	'text_of_offer' => "；候选：",
+	'text_comment_id' => "评论ID：",
+	'text_subtitle' => "字幕",
+	'text_subtitle_does_not_exist' => "字幕不存在或已被删除。",
+	'text_for_torrent_id' => "；种子ID：",
+	'submit_set_dealt' => "设为已处理",
+	'submit_delete' => "删除",
+);
+
+?>

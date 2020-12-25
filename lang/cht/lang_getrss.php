@@ -1,0 +1,46 @@
+<?php
+
+$lang_getrss = array
+(
+	'text_rss_feeds' => "RSS訂閱",
+	'head_rss_feeds' => "RSS訂閱",
+	'std_error' => "錯誤",
+	'std_no_row' => "請選擇每頁內容顯示條數！",
+	'std_no_categories' => "請選擇分類！",
+	'std_done' => "完成！",
+	'std_use_following_url' => "你可以在RSS閱讀器（如Google Reader）使用以下URL：",
+	'std_utorrent_feed_url' => "你可以在支持RSS訂閱功能的BT客戶端（如uTorrent）使用以下URL：",
+	'row_categories_to_retrieve' => "檢索分類",
+	'row_feed_type' => "訂閱類型",
+	'text_web_link' => "網頁鏈接",
+	'text_download_link' => "下載鏈接",
+	'row_rows_per_page' => "每頁條數",
+	'submit_generatte_rss_link' => "生成RSS鏈接",
+	'text_category' => "類型",
+	'text_source' => "來源",
+	'text_codec' => "編碼",
+	'text_standard' => "解析度",
+	'text_processing' => "處理",
+	'text_medium' => "媒介",
+	'text_team' => "製作組",
+	'text_audio_codec' => "音頻編碼",
+	'row_item_title_type' => "項目標題格式",
+	'text_item_category' => "[類型] + ",
+	'text_item_title' => "標題 + ",
+	'text_item_small_description' => "[副標題] + ",
+	'text_item_size' => "[大小] + ",
+	'text_item_uploader' => "[發佈者]",
+	'row_show_bookmarked' => "顯示收藏",
+	'text_all' => "全部",
+	'text_only_bookmarked' => "僅收藏",
+	'text_show_bookmarked_note' => "僅適用BT客戶端",
+	'row_keyword' => "關鍵字",
+	'text_with' => "匹配模式：",
+	'select_and' => "和",
+	'select_or' => "或",
+	'select_exact' => "准確",
+	'text_mode' => "",
+	'text_keyword_note' => "只訂閱標題中包含此關鍵字的項目"
+);
+
+?>
