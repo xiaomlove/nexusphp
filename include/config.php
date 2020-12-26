@@ -58,7 +58,6 @@ if (file_exists('config/allconfig.php')) {
 } else {
 	ReadConfig();
 }
-
 $SITENAME = $BASIC['SITENAME'];
 $BASEURL = $BASIC['BASEURL'];
 $announce_urls = array();
@@ -148,10 +147,10 @@ $smtp_host = $SMTP['smtp_host'];
 $smtp_port = $SMTP['smtp_port'];
 if (strtoupper(substr(PHP_OS,0,3)=='WIN'))
 $smtp_from = $SMTP['smtp_from'];
-$smtpaddress = $SMTP['smtpaddress'];
-$smtpport = $SMTP['smtpport'];
-$accountname = $SMTP['accountname'];
-$accountpassword = $SMTP['accountpassword'];
+$smtpaddress = $SMTP['smtpaddress'] ?? '';
+$smtpport = $SMTP['smtpport'] ?? '';
+$accountname = $SMTP['accountname'] ?? '';
+$accountpassword = $SMTP['accountpassword'] ?? '';
 
 $securelogin = $SECURITY['securelogin'];
 $securetracker = $SECURITY['securetracker'];
@@ -179,7 +178,7 @@ $forummanage_class = $AUTHORITY['forummanage'];
 $viewuserlist_class = $AUTHORITY['viewuserlist'];
 $torrentmanage_class = $AUTHORITY['torrentmanage'];
 $torrentsticky_class = $AUTHORITY['torrentsticky'];
-$torrentonpromotion_class = $AUTHORITY['torrentonpromotion'];
+$torrentonpromotion_class = $AUTHORITY['torrentonpromotion'] ?? '';
 $askreseed_class = $AUTHORITY['askreseed'];
 $viewnfo_class = $AUTHORITY['viewnfo'];
 $torrentstructure_class = $AUTHORITY['torrentstructure'];
@@ -382,9 +381,9 @@ $normalbecome_torrent = $TORRENT['normalbecome'];
 $uploaderdouble_torrent = $TORRENT['uploaderdouble'];
 $deldeadtorrent_torrent = $TORRENT['deldeadtorrent'];
 
-foreach ($CONFIGURATIONS as $CONFIGURATION) {
-	unset($GLOBALS[$CONFIGURATION]);
-}
+//foreach ($CONFIGURATIONS as $CONFIGURATION) {
+//	unset($GLOBALS[$CONFIGURATION]);
+//}
 
 //Directory for subs
 $SUBSPATH = "subs";

@@ -2,9 +2,12 @@
 if(!defined('IN_TRACKER'))
   die('Hacking attempt!');
 error_reporting(E_ERROR | E_PARSE);
-ini_set('display_errors', 0);
-include_once($rootpath . 'classes/class_cache.php'); //Require the caching class
-$Cache = NEW CACHE(); //Load the caching class
+ini_set('display_errors', $TWEAK['display_errors']);
+//include_once($rootpath . 'classes/class_cache.php'); //Require the caching class
+//$Cache = NEW CACHE(); //Load the caching class
+//@todo
+include_once($rootpath . 'classes/class_cache_redis.php'); //Require the caching class
+$Cache = new RedisCache(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 define('TIMENOW', time());
 $USERUPDATESET = array();

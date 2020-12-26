@@ -3,7 +3,6 @@
 if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
 include_once($rootpath . 'include/globalfunctions.php');
-include_once($rootpath . 'include/config.php');
 include_once($rootpath . 'classes/class_advertisement.php');
 require_once($rootpath . get_langfile_path("functions.php"));
 
@@ -1690,8 +1689,9 @@ function dbconn($autoclean = false)
 	global $lang_functions;
 	global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
 	global $useCronTriggerCleanUp;
+	global $BASIC;
 
-	if (!mysql_connect($mysql_host, $mysql_user, $mysql_pass))
+	if (!mysql_connect($mysql_host, $mysql_user, $mysql_pass, $BASIC['mysql_db'], $BASIC['mysql_port']))
 	{
 		switch (mysql_errno())
 		{
@@ -4321,5 +4321,15 @@ function return_category_image($categoryid, $link="")
 		$catimg = "<a href=\"".$link."cat=" . $categoryid . "\">".$catimg."</a>";
 	}
 	return $catimg;
+}
+
+function dd($vars)
+{
+    echo '<pre>';
+    array_map(function ($var) {
+        var_dump($var);
+    }, func_get_args());
+    echo '</pre>';
+    exit(0);
 }
 ?>

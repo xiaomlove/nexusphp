@@ -9,5 +9,12 @@ $showversion = " - Powered by ".PROJECTNAME;
 $rootpath=realpath(dirname(__FILE__) . '/..');
 set_include_path(get_include_path() . PATH_SEPARATOR . $rootpath);
 $rootpath .= "/";
-include($rootpath . 'include/core.php');
-include_once($rootpath . 'include/functions.php');
+require $rootpath . 'include/config.php';
+require $rootpath . 'include/functions.php';
+
+require $rootpath . 'classes/interface_db.php';
+require $rootpath . 'classes/class_db_mysqli.php';
+require $rootpath . 'classes/class_db.php';
+require $rootpath . 'include/functions_db.php';
+
+require $rootpath . 'include/core.php';
