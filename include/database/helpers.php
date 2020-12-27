@@ -30,9 +30,9 @@ function mysql_num_rows($result)
     return DB::getInstance()->numRows($result);
 }
 
-function mysql_fetch_array($result)
+function mysql_fetch_array($result, $type = null)
 {
-    return DB::getInstance()->fetchAssoc($result);
+    return DB::getInstance()->fetchArray($result, $type);
 }
 
 function mysql_fetch_assoc($result)

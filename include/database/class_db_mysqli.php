@@ -53,6 +53,14 @@ class DBMysqli implements DBInterface
         return $mysqliResult->fetch_row();
     }
 
+    public function fetchArray($mysqliResult, $type): array|null
+    {
+        if (is_null($type)) {
+            $type = MYSQLI_BOTH;
+        }
+        return $mysqliResult->fetch_array($type);
+    }
+
     public function affectedRows(): int
     {
         return $this->mysqli->affected_rows;

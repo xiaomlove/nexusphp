@@ -18,6 +18,8 @@ interface DBInterface
 
     public function fetchRow($result): array|null;
 
+    public function fetchArray($result, $type): array|null;
+
     public function affectedRows(): int;
 
     public function escapeString(string $string): string;

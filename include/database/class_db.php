@@ -44,7 +44,12 @@ class DB
 
     public function query(string $sql)
     {
-        return $this->driver->query($sql);
+        try {
+            return $this->driver->query($sql);
+        } catch (\Exception $e) {
+            throw new \DatabaseException($sql, $e->getMessage());
+        }
+
     }
 
     public function error()
@@ -75,6 +80,11 @@ class DB
     public function fetchRow($result)
     {
         return $this->driver->fetchRow($result);
+    }
+
+    public function fetchArray($result, $type = null)
+    {
+        return $this->driver->fetchArray($result, $type);
     }
 
     public function affectedRows()

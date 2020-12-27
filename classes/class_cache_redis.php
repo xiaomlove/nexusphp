@@ -205,6 +205,7 @@ class RedisCache {
 
     // Wrapper for Memcache::set, with the zlib option removed and default duration of 1 hour
     function cache_value($Key, $Value, $Duration = 3600){
+        $Value = $this->serialize($Value);
 //        $this->set($Key,$Value, 0, $Duration);
         $this->redis->set($Key, $Value, $Duration);
         $this->cacheWriteTimes++;
@@ -273,6 +274,7 @@ class RedisCache {
         }*/
 
         $Return = $this->redis->get($Key);
+        $Return = ! is_null($Return) ? $this->unserialize($Return) : null;
         $this->cacheReadTimes++;
         $this->keyHits['read'][$Key] = !$this->keyHits['read'][$Key] ? 1 : $this->keyHits['read'][$Key]+1;
         return $Return;
@@ -300,5 +302,27 @@ class RedisCache {
 
     function getKeyHits ($type='read') {
         return (array)$this->keyHits[$type];
+    }
+
+    /**
+     * Serialize the value.
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function serialize($value)
+    {
+        return is_numeric($value) && ! in_array($value, [INF, -INF]) && ! is_nan($value) ? $value : serialize($value);
+    }
+
+    /**
+     * Unserialize the value.
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function unserialize($value)
+    {
+        return is_numeric($value) ? $value : unserialize($value);
     }
 }

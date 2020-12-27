@@ -12,9 +12,10 @@ $rootpath .= "/";
 require $rootpath . 'include/config.php';
 require $rootpath . 'include/functions.php';
 
-require $rootpath . 'classes/interface_db.php';
-require $rootpath . 'classes/class_db_mysqli.php';
-require $rootpath . 'classes/class_db.php';
-require $rootpath . 'include/functions_db.php';
+require $rootpath . 'include/database/interface_db.php';
+require $rootpath . 'include/database/class_db_mysqli.php';
+require $rootpath . 'include/database/class_db.php';
+require $rootpath . 'include/database/helpers.php';
+require $rootpath . 'include/database/class_exception.php';
 
 require $rootpath . 'include/core.php';
