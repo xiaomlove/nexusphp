@@ -40,7 +40,7 @@ else	// when it's op, default is not use secure login
 	$securelogin_indentity_cookie = false;
 	$passh = md5($row["passhash"]);
 }
-logincookie($row["id"], $passh,1,0x7fffffff,$securelogin_indentity_cookie);
+logincookie($id, $passh,1,0x7fffffff,$securelogin_indentity_cookie);
 //sessioncookie($row["id"], $passh,false);
 
 header("Refresh: 0; url=ok.php?type=confirm");

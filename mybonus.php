@@ -96,8 +96,8 @@ function bonusarray($option){
 if ($bonus_tweak == "disable" || $bonus_tweak == "disablesave")
 	stderr($lang_mybonus['std_sorry'],$lang_mybonus['std_karma_system_disabled'].($bonus_tweak == "disablesave" ? "<b>".$lang_mybonus['std_points_active']."</b>" : ""),false);
 
-$action = htmlspecialchars($_GET['action']);
-$do = htmlspecialchars($_GET['do']);
+$action = htmlspecialchars($_GET['action'] ?? '');
+$do = htmlspecialchars($_GET['do'] ?? null);
 unset($msg);
 if (isset($do)) {
 	if ($do == "upload")

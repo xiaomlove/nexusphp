@@ -253,7 +253,7 @@ if (!$topicsperpage){
 $today_date = date("Y-m-d",TIMENOW);
 // ------------- end: Global variables ------------------//
 
-$action = htmlspecialchars(trim($_GET["action"]));
+$action = htmlspecialchars(trim($_GET["action"] ?? ''));
 
 //-------- Action: New topic
 if ($action == "newtopic")
@@ -1408,7 +1408,7 @@ stdfoot();
 die;
 }
 
-if ($_GET["catchup"] == 1){
+if (isset($_GET["catchup"]) && $_GET["catchup"] == 1){
 	catch_up();
 }
 

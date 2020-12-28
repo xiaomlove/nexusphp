@@ -19,7 +19,7 @@ if (!$is_rulelang){
 }
 $res = sql_query("SELECT * FROM rules WHERE lang_id = ".sqlesc($lang_id)." ORDER BY id");
 while ($arr=mysql_fetch_assoc($res)){
-	begin_frame($arr[title], false);
+	begin_frame($arr['title'], false);
 	print(format_comment($arr["text"]));
 	end_frame();
 }

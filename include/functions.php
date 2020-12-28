@@ -2,9 +2,6 @@
 # IMPORTANT: Do not edit below unless you know what you are doing!
 if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
-include_once($rootpath . 'include/globalfunctions.php');
-include_once($rootpath . 'classes/class_advertisement.php');
-require_once($rootpath . get_langfile_path("functions.php"));
 
 function get_langfolder_cookie()
 {
@@ -283,12 +280,22 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 
 	if ($enableattach_attachment == 'yes' && $imagenum != 1){
 		$limit = 20;
-		$s = preg_replace("/\[attach\]([0-9a-zA-z][0-9a-zA-z]*)\[\/attach\]/ies", "print_attachment('\\1', ".($enableimage ? 1 : 0).", ".($imageresizer ? 1 : 0).")", $s, $limit);
+//		$s = preg_replace("/\[attach\]([0-9a-zA-z][0-9a-zA-z]*)\[\/attach\]/ies", "print_attachment('\\1', ".($enableimage ? 1 : 0).", ".($imageresizer ? 1 : 0).")", $s, $limit);
+		$s = preg_replace_callback("/\[attach\]([0-9a-zA-z][0-9a-zA-z]*)\[\/attach\]/is", function ($matches) use ($enableimage, $imageresizer) {
+		        return print_attachment($matches[1], ".($enableimage ? 1 : 0).", ".($imageresizer ? 1 : 0).");
+		    }, $s, $limit);
 	}
 
 	if ($enableimage) {
-		$s = preg_replace("/\[img\]([^\<\r\n\"']+?)\[\/img\]/ei", "formatImg('\\1',".$imageresizer.",".$image_max_width.",".$image_max_height.")", $s, $imagenum, $imgReplaceCount);
-		$s = preg_replace("/\[img=([^\<\r\n\"']+?)\]/ei", "formatImg('\\1',".$imageresizer.",".$image_max_width.",".$image_max_height.")", $s, ($imagenum != -1 ? max($imagenum-$imgReplaceCount, 0) : -1));
+//		$s = preg_replace("/\[img\]([^\<\r\n\"']+?)\[\/img\]/ei", "formatImg('\\1',".$imageresizer.",".$image_max_width.",".$image_max_height.")", $s, $imagenum, $imgReplaceCount);
+		$s = preg_replace_callback("/\[img\]([^\<\r\n\"']+?)\[\/img\]/i", function ($matches) use ($imageresizer, $image_max_width, $image_max_height) {
+		    return formatImg($matches[1],".$imageresizer.",".$image_max_width.",".$image_max_height.");
+        }, $s, $imagenum, $imgReplaceCount);
+
+//		$s = preg_replace("/\[img=([^\<\r\n\"']+?)\]/ei", "formatImg('\\1',".$imageresizer.",".$image_max_width.",".$image_max_height.")", $s, ($imagenum != -1 ? max($imagenum-$imgReplaceCount, 0) : -1));
+		$s = preg_replace_callback("/\[img=([^\<\r\n\"']+?)\]/i", function ($matches) use ($imageresizer, $image_max_width, $image_max_height) {
+		    return formatImg($matches[1],".$imageresizer.",".$image_max_width.",".$image_max_height.");
+        }, $s, ($imagenum != -1 ? max($imagenum-$imgReplaceCount, 0) : -1));
 	} else {
 		$s = preg_replace("/\[img\]([^\<\r\n\"']+?)\[\/img\]/i", '', $s, -1);
 		$s = preg_replace("/\[img=([^\<\r\n\"']+?)\]/i", '', $s, -1);
@@ -366,6 +373,7 @@ function get_user_class()
 
 function get_user_class_name($class, $compact = false, $b_colored = false, $I18N = false)
 {
+    global $SITENAME;
 	static $en_lang_functions;
 	static $current_user_lang_functions;
 	if (!$en_lang_functions) {
@@ -1142,7 +1150,7 @@ function EmailBanned($newEmail)
 	$newEmail = trim(strtolower($newEmail));
 	$sql = sql_query("SELECT * FROM bannedemails") or sqlerr(__FILE__, __LINE__);
 	$list = mysql_fetch_array($sql);
-	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list[value])) );
+	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'])) );
 
 	if(count($addresses) > 0)
 	{
@@ -1986,7 +1994,7 @@ function tr_small($x,$y,$noesc=0,$relation='') {
 }
 
 function twotd($x,$y,$nosec=0){
-	if ($noesc)
+	if ($nosec)
 	$a = $y;
 	else {
 		$a = htmlspecialchars($y);
@@ -2032,6 +2040,8 @@ function menu ($selected = "home") {
 	global $BASEURL,$CURUSER;
 	global $enableoffer, $enablespecial, $enableextforum, $extforumurl, $where_tweak;
 	global $USERUPDATESET;
+	//no this option in config.php
+    $enablerequest = 'no';
 	$script_name = $_SERVER["SCRIPT_FILENAME"];
 	if (preg_match("/index/i", $script_name)) {
 		$selected = "home";
@@ -2133,14 +2143,14 @@ function get_style_addicode()
 function get_cat_folder($cat = 101)
 {
 	static $catPath = array();
-	if (!$catPath[$cat]) {
+	if (!isset($catPath[$cat])) {
 		global $CURUSER, $CURLANGDIR;
 		$catrow = get_category_row($cat);
 		$catmode = $catrow['catmodename'];
 		$caticonrow = get_category_icon_row($CURUSER['caticon']);
 		$catPath[$cat] = "category/".$catmode."/".$caticonrow['folder'] . ($caticonrow['multilang'] == 'yes' ? $CURLANGDIR."/" : "");
 	}
-	return $catPath[$cat];
+	return $catPath[$cat] ?? '';
 }
 
 function get_style_highlight()
@@ -2174,7 +2184,6 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	$cssupdatedate = $cssdate_tweak;
 	// Variable for Start Time
 	$tstart = getmicrotime(); // Start time
-
 	//Insert old ip into iplog
 	if ($CURUSER){
 		if ($iplog1 == "yes") {
@@ -2356,7 +2365,7 @@ else {
 
 	<font class="color_ratio"><?php echo $lang_functions['text_ratio'] ?></font> <?php echo $ratio?>  <font class='color_uploaded'><?php echo $lang_functions['text_uploaded'] ?></font> <?php echo mksize($CURUSER['uploaded'])?><font class='color_downloaded'> <?php echo $lang_functions['text_downloaded'] ?></font> <?php echo mksize($CURUSER['downloaded'])?>  <font class='color_active'><?php echo $lang_functions['text_active_torrents'] ?></font> <img class="arrowup" alt="Torrents seeding" title="<?php echo $lang_functions['title_torrents_seeding'] ?>" src="pic/trans.gif" /><?php echo $activeseed?>  <img class="arrowdown" alt="Torrents leeching" title="<?php echo $lang_functions['title_torrents_leeching'] ?>" src="pic/trans.gif" /><?php echo $activeleech?>&nbsp;&nbsp;<font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?></span></td>
 
-	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum[hours].":".$datum[minutes]?><br />
+	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum['hours'].":".$datum['minutes']?><br />
 
 <?php
 	if (get_user_class() >= $staffmem_class){
@@ -2690,7 +2699,7 @@ function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
 	global $lang_functions,$add_key_shortcut;
 	$pages = ceil($count / $rpp);
 
-	if (!$opts["lastpagedefault"])
+	if (empty($opts["lastpagedefault"]))
 	$pagedefault = 0;
 	else {
 		$pagedefault = floor(($count - 1) / $rpp);
@@ -3244,7 +3253,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 	global $lang_functions;
 	$id = 0+$id;
 
-	if (func_num_args() == 1 && $usernameArray[$id]) {  //One argument=is default display of username. Get it directly from static array if available
+	if (func_num_args() == 1 && isset($usernameArray[$id])) {  //One argument=is default display of username. Get it directly from static array if available
 		return $usernameArray[$id];
 	}
 	$arr = get_user_row($id);
@@ -4004,7 +4013,7 @@ function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 		}
 		$Cache->cache_value('searchbox_content', $rows, 100500);
 	}
-	return $rows[$mode][$item];
+	return $rows[$mode][$item] ?? '';
 }
 
 function get_ratio($userid, $html = true){
@@ -4310,7 +4319,7 @@ function return_avatar_image($url)
 function return_category_image($categoryid, $link="")
 {
 	static $catImg = array();
-	if ($catImg[$categoryid]) {
+	if (isset($catImg[$categoryid])) {
 		$catimg = $catImg[$categoryid];
 	} else {
 		$categoryrow = get_category_row($categoryid);
@@ -4321,6 +4330,41 @@ function return_category_image($categoryid, $link="")
 		$catimg = "<a href=\"".$link."cat=" . $categoryid . "\">".$catimg."</a>";
 	}
 	return $catimg;
+}
+
+
+function strip_magic_quotes($arr)
+{
+    foreach ($arr as $k => $v)
+    {
+        if (is_array($v))
+        {
+            $arr[$k] = strip_magic_quotes($v);
+        } else {
+            $arr[$k] = stripslashes($v);
+        }
+    }
+    return $arr;
+}
+
+if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
+{
+    if (!empty($_GET)) {
+        $_GET = strip_magic_quotes($_GET);
+    }
+    if (!empty($_POST)) {
+        $_POST = strip_magic_quotes($_POST);
+    }
+    if (!empty($_COOKIE)) {
+        $_COOKIE = strip_magic_quotes($_COOKIE);
+    }
+}
+
+
+function get_langfolder_list()
+{
+    //do not access db for speed up, or for flexibility
+    return array("en", "chs", "cht", "ko", "ja");
 }
 
 function dd($vars)

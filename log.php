@@ -33,7 +33,7 @@ function searchtable($title, $action, $opts = array()){
 		print("<table border=1 cellspacing=0 width=940 cellpadding=5>\n");
 		print("<tr><td class=colhead align=left>".$title."</td></tr>\n");
 		print("<tr><td class=toolbox align=left><form method=\"get\" action='" . $_SERVER['PHP_SELF'] . "'>\n");
-		print("<input type=\"text\" name=\"query\" style=\"width:500px\" value=\"".$_GET['query']."\">\n");
+		print("<input type=\"text\" name=\"query\" style=\"width:500px\" value=\"".($_GET['query'] ?? '')."\">\n");
 		if ($opts) {
 			print($lang_log['text_in']."<select name=search>");
 			foreach($opts as $value => $text)
@@ -50,7 +50,7 @@ function additem($title, $action){
 		print("<table border=1 cellspacing=0 width=940 cellpadding=5>\n");
 		print("<tr><td class=colhead align=left>".$title."</td></tr>\n");
 		print("<tr><td class=toolbox align=left><form method=\"post\" action='" . $_SERVER['PHP_SELF'] . "'>\n");
-		print("<textarea name=\"txt\" style=\"width:500px\" rows=\"3\" >".$row["txt"]."</textarea>\n");
+		print("<textarea name=\"txt\" style=\"width:500px\" rows=\"3\" >".$title."</textarea>\n");
 		print("<input type=\"hidden\" name=\"action\" value=".$action.">");
 		print("<input type=\"hidden\" name=\"do\" value=\"add\">");
 		print("<input type=submit value=" . $lang_log['submit_add'] . "></form>\n");
@@ -84,8 +84,8 @@ else {
 	case "dailylog":
 		stdhead($lang_log['head_site_log']);
 
-		$query = mysql_real_escape_string(trim($_GET["query"]));
-		$search = $_GET["search"];
+		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$search = $_GET["search"] ?? '';
 
 		$addparam = "";
 		$wherea = "";
@@ -108,7 +108,7 @@ else {
 		}
 
 		logmenu('dailylog');
-		$opt = array (all => $lang_log['text_all'], normal => $lang_log['text_normal'], mod => $lang_log['text_mod']);
+		$opt = array ('all' => $lang_log['text_all'], 'normal' => $lang_log['text_normal'], 'mod' => $lang_log['text_mod']);
 		searchtable($lang_log['text_search_log'], 'dailylog',$opt);
 
 		$res = sql_query("SELECT COUNT(*) FROM sitelog".$wherea);
@@ -151,7 +151,7 @@ else {
 		break;
 	case "chronicle":
 		stdhead($lang_log['head_chronicle']);
-		$query = mysql_real_escape_string(trim($_GET["query"]));
+		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
 		if($query){
 		$wherea=" WHERE txt LIKE '%$query%' ";
 		$addparam = "query=".rawurlencode($query)."&";
@@ -164,21 +164,27 @@ else {
 		searchtable($lang_log['text_search_chronicle'], 'chronicle');
 		if (get_user_class() >= $chrmanage_class)
 			additem($lang_log['text_add_chronicle'], 'chronicle');
-		if ($_GET['do'] == "del" || $_GET['do'] == 'edit' || $_POST['do'] == "add" || $_POST['do'] == "update") {
-			$txt = $_POST['txt'];
+		if (
+			(isset($_GET['do']) && $_GET['do'] == "del")
+			|| (isset($_GET['do'] ) && $_GET['do'] == 'edit')
+			|| (isset($_POST['do']) && $_POST['do'] == "add")
+			|| (isset($_POST['do']) && $_POST['do'] == "update")
+		)
+		{
+			$txt = $_POST['txt'] ?? '';
 			if (get_user_class() < $chrmanage_class)
 				permissiondeny();
-			elseif ($_POST['do'] == "add")
+			elseif (isset($_POST['do']) && $_POST['do'] == "add")
 					sql_query ("INSERT INTO chronicle (userid,added, txt) VALUES ('".$CURUSER["id"]."', now(), ".sqlesc($txt).")") or sqlerr(__FILE__, __LINE__);
-			elseif ($_POST['do'] == "update"){
+			elseif (isset($_POST['do'] ) && $_POST['do'] == "update"){
 				$id = 0 + $_POST['id'];
 				if (!$id) { header("Location: log.php?action=chronicle"); die();}
 				else sql_query ("UPDATE chronicle SET txt=".sqlesc($txt)." WHERE id=".$id) or sqlerr(__FILE__, __LINE__);}
-			else {$id = 0 + $_GET['id'];
+			else {$id = 0 + ($_GET['id'] ?? 0);
 				if (!$id) { header("Location: log.php?action=chronicle"); die();}
 				elseif ($_GET['do'] == "del")
 					sql_query ("DELETE FROM chronicle where id = '".$id."'") or sqlerr(__FILE__, __LINE__);
-				elseif ($_GET['do'] == "edit")
+				elseif (isset($_GET['do']) && $_GET['do'] == "edit")
 					edititem($lang_log['text_edit_chronicle'],'chronicle', $id);
 				}
 		}
@@ -203,7 +209,7 @@ else {
 			while ($arr = mysql_fetch_assoc($res))
 			{
 				$date = gettime($arr['added'],true,false);
-				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(get_user_class() >= $chrmanage_class ? "<td align=center nowrap><b><a href=\"".$PHP_SELF."?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"".$PHP_SELF."?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
+				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(get_user_class() >= $chrmanage_class ? "<td align=center nowrap><b><a href=\"".$_SERVER['PHP_SELF']."?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"".$_SERVER['PHP_SELF']."?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
 			}
 			print("</table>");
 			echo $pagerbottom;
@@ -261,8 +267,8 @@ else {
 		break;
 	case "news":
 		stdhead($lang_log['head_news']);
-		$query = mysql_real_escape_string(trim($_GET["query"]));
-		$search = $_GET["search"];
+		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$search = $_GET["search"] ?? '';
 		if($query){
 			switch ($search){
 				case "title": $wherea=" WHERE title LIKE '%$query%' "; break;
@@ -276,7 +282,7 @@ else {
 		$addparam = "";
 		}
 		logmenu("news");
-		$opt = array (title => $lang_log['text_title'], body => $lang_log['text_body'], both => $lang_log['text_both']);
+		$opt = array ('title' => $lang_log['text_title'], 'body' => $lang_log['text_body'], 'both' => $lang_log['text_both']);
 		searchtable($lang_log['text_search_news'], 'news', $opt);
 
 		$res = sql_query("SELECT COUNT(*) FROM news".$wherea);
@@ -308,9 +314,9 @@ else {
 		die;
 		break;
 	case "poll":
-		$do = $_GET["do"];
-  		$pollid = $_GET["pollid"];
-  		$returnto = htmlspecialchars($_GET["returnto"]);
+		$do = $_GET["do"] ?? '';
+  		$pollid = $_GET["pollid"] ?? 0;
+  		$returnto = htmlspecialchars($_GET["returnto"] ?? '');
   		if ($do == "delete")
   		{
   		if (get_user_class() < $chrmanage_class)

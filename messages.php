@@ -9,10 +9,10 @@ define('PM_DELETED',0); // Message was deleted
 define('PM_INBOX',1); // Message located in Inbox for reciever
 define('PM_SENTBOX',-1); // GET value for sent box
 // Determine action
-$action = (string) $_GET['action'];
+$action = $_GET['action'] ?? '';
 if (!$action)
 {
-	$action = (string) $_POST['action'];
+	$action = $_POST['action'] ?? '';
 	if (!$action)
 		$action = 'viewmailbox';
 }
@@ -21,7 +21,7 @@ if (!$action)
 if ($action == "viewmailbox")
 {
 // Get Mailbox Number
-$mailbox = (int) $_GET['box'];
+$mailbox = $_GET['box'] ?? 0;
 if (!$mailbox)
 	$mailbox = PM_INBOX;
 
@@ -58,8 +58,8 @@ stdhead($mailbox_name);
 
 <?php
 //search
-		$keyword = mysql_real_escape_string(trim($_GET["keyword"]));
-		$place = $_GET["place"];
+		$keyword = mysql_real_escape_string(trim($_GET["keyword"] ?? ''));
+		$place = $_GET["place"] ?? '';
 		if($keyword)
 			switch ($place){
 				case "body": $wherea=" AND msg LIKE '%$keyword%' "; break;
@@ -69,7 +69,7 @@ stdhead($mailbox_name);
 				}
 		else
 		$wherea="";
-		$unread=$_GET["unread"];
+		$unread=$_GET["unread"] ?? '';
 		if ($unread)
 			switch ($unread){
 				case "yes": $wherea.=" AND unread = 'yes' "; break;
@@ -674,10 +674,10 @@ function insertJumpTo($selected = 0)
 global $lang_messages;
 global $CURUSER;
 $res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' ORDER BY boxnumber'); 
-$place = $_GET['place'];
+$place = $_GET['place'] ?? '';
 ?>
 <form action="messages.php" method="get">
-<input type="hidden" name="action" value="viewmailbox"><?php echo $lang_messages['text_search'] ?>&nbsp;&nbsp;<input id="searchinput" name="keyword" type="text" value="<?php echo $_GET['keyword']?>" style="width: 200px"/>
+<input type="hidden" name="action" value="viewmailbox"><?php echo $lang_messages['text_search'] ?>&nbsp;&nbsp;<input id="searchinput" name="keyword" type="text" value="<?php echo $_GET['keyword'] ?? ''?>" style="width: 200px"/>
 <?php echo $lang_messages['text_in'] ?>&nbsp;<select name="place">
 <option value="both" <?php echo ($place == 'both' ? " selected" : "")?>><?php echo $lang_messages['select_both'] ?></option>
 <option value="title" <?php echo ($place == 'title' ? " selected" : "")?>><?php echo $lang_messages['select_title'] ?></option>

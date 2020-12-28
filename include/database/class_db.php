@@ -97,6 +97,11 @@ class DB
         return $this->driver->escapeString($string);
     }
 
+    public function lastInsertId()
+    {
+        return $this->driver->lastInsertId();
+    }
+
 
 
 

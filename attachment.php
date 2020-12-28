@@ -12,7 +12,7 @@ $count_left = $Attach->get_count_left();
 $size_limit = $Attach->get_size_limit_byte();
 $allowed_exts = $Attach->get_allowed_ext();
 $css_uri = get_css_uri();
-$altsize = $_POST['altsize'];
+$altsize = $_POST['altsize'] ?? '';
 ?>
 <html>
 <head>

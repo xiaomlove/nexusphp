@@ -51,18 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	}
 	foreach ($brcats as $cat)
 	{
-		if ($_POST["cat$cat[id]"])
+		if (!empty($_POST["cat{$cat['id']}"]))
 		{
-			$query[] = "cat$cat[id]=1";
+			$query[] = "cat{$cat['id']}=1";
 		}
 	}
 	if ($enablespecial == 'yes')
 	{
 		foreach ($spcats as $cat)
 		{
-			if ($_POST["cat$cat[id]"])
+			if (!empty($_POST["cat{$cat['id']}"]))
 			{
-				$query[] = "cat$cat[id]=1";
+				$query[] = "cat{$cat['id']}=1";
 			}
 		}
 	}
@@ -70,84 +70,84 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 		if ($showsource)
 		foreach ($sources as $source)
 		{
-			if ($_POST["sou$source[id]"])
+			if (!empty($_POST["sou{$source['id']}"]))
 			{
-				$query[] = "sou$source[id]=1";
+				$query[] = "sou{$source['id']}=1";
 			}
 		}
 		if ($showmedium)
 		foreach ($media as $medium)
 		{
-			if ($_POST["med$medium[id]"])
+			if (!empty($_POST["med{$medium['id']}"]))
 			{
-				$query[] = "med$medium[id]=1";
+				$query[] = "med{$medium['id']}=1";
 			}
 		}
 		if ($showcodec)
 		foreach ($codecs as $codec)
 		{
-			if ($_POST["cod$codec[id]"])
+			if (!empty($_POST["cod{$codec['id']}"]))
 			{
-				$query[] = "cod$codec[id]=1";
+				$query[] = "cod{$codec['id']}=1";
 			}
 		}
 		if ($showstandard)
 		foreach ($standards as $standard)
 		{
-			if ($_POST["sta$standard[id]"])
+			if (!empty($_POST["sta{$standard['id']}"]))
 			{
-				$query[] = "sta$standard[id]=1";
+				$query[] = "sta{$standard['id']}=1";
 			}
 		}
 		if ($showprocessing)
 		foreach ($processings as $processing)
 		{
-			if ($_POST["pro$processing[id]"])
+			if (!empty($_POST["pro{$processing['id']}"]))
 			{
-				$query[] = "pro$processing[id]=1";
+				$query[] = "pro{$processing['id']}=1";
 			}
 		}
 		if ($showteam)
 		foreach ($teams as $team)
 		{
-			if ($_POST["tea$team[id]"])
+			if (!empty($_POST["tea{$team['id']}"]))
 			{
-				$query[] = "tea$team[id]=1";
+				$query[] = "tea{$team['id']}=1";
 			}
 		}
 		if ($showaudiocodec)
 		foreach ($audiocodecs as $audiocodec)
 		{
-			if ($_POST["aud$audiocodec[id]"])
+			if (!empty($_POST["aud{$audiocodec['id']}"]))
 			{
-				$query[] = "aud$audiocodec[id]=1";
+				$query[] = "aud{$audiocodec['id']}=1";
 			}
 		}
 	}
-	if ($_POST["itemcategory"])
+	if (!empty($_POST["itemcategory"]))
 	{
 		$query[] = "icat=1";
 	}
-	if ($_POST["itemsmalldescr"])
+	if (!empty($_POST["itemsmalldescr"]))
 	{
 		$query[] = "ismalldescr=1";
 	}
-	if ($_POST["itemsize"])
+	if (!empty($_POST["itemsize"]))
 	{
 		$query[] = "isize=1";
 	}
-	if ($_POST["itemuploader"])
+	if (!empty($_POST["itemuploader"]))
 	{
 		$query[] = "iuplder=1";
 	}
-	$searchstr = mysql_real_escape_string(trim($_POST["search"]));
+	$searchstr = mysql_real_escape_string(trim($_POST["search"] ?? ''));
 	if (empty($searchstr))
 		unset($searchstr);
 	if ($searchstr)
 	{
 		$query[] = "search=".rawurlencode($searchstr);
 		if ($_POST["search_mode"]){
-			$search_mode = 0 + $_POST["search_mode"];
+			$search_mode = $_POST["search_mode"] ?? 0;
 			if (!in_array($search_mode,array(0,1,2)))
 			{
 				$search_mode = 0;
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 			$query[] = "search_mode=".$search_mode;
 		}
 	}
-	$inclbookmarked=0+$_POST['inclbookmarked'];
+	$inclbookmarked=$_POST['inclbookmarked'] ?? 0;
 	if($inclbookmarked)
 	{
 		if (!in_array($inclbookmarked,array(0,1)))
@@ -194,7 +194,7 @@ foreach ($brcats as $cat)//print category list of Torrents section
 	if ($i && $numinrow == 0){
 		$categories .= "</tr>".($brenablecatrow ? "<tr><td class=\"embedded\" align=\"left\"><b>".$brcatrow[$rownum]."</b></td></tr>" : "")."<tr>";
 	}
-	$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"cat".$cat[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat[id]."]") !== false ? " checked=\"checked\"" : "")." value='yes' />".return_category_image($cat['id'], "torrents.php?allsec=1&amp;")."</td>\n";
+	$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"cat".$cat['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat['id']."]") !== false ? " checked=\"checked\"" : "")." value='yes' />".return_category_image($cat['id'], "torrents.php?allsec=1&amp;")."</td>\n";
 	$i++;
 }
 $categories .= "</tr>";
@@ -209,7 +209,7 @@ if ($allowspecial) //print category list of Special section
 		if ($i && $numinrow == 0){
 			$categories .= "</tr>".($spenablecatrow ? "<tr><td class=\"embedded\" align=\"left\"><b>".$spcatrow[$rownum]."</b></td></tr>" : "")."<tr>";
 		}
-		$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"cat".$cat[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat[id]."]") !== false ? " checked=\"checked\"" : "")." value='yes' />".return_category_image($cat['id'], "torrents.php?allsec=1&amp;")."</td>\n";
+		$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"cat".$cat['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat['id']."]") !== false ? " checked=\"checked\"" : "")." value='yes' />".return_category_image($cat['id'], "torrents.php?allsec=1&amp;")."</td>\n";
 		$i++;
 	}
 	$categories .= "</tr>";
@@ -222,7 +222,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($sources as $source)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"sou".$source[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[sou".$source[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$source[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"sou".$source['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[sou".$source['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$source['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";
@@ -233,7 +233,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($media as $medium)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"med".$medium[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[med".$medium[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$medium[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"med".$medium['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[med".$medium['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$medium['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";
@@ -244,7 +244,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($codecs as $codec)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"cod".$codec[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cod".$codec[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$codec[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"cod".$codec['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cod".$codec['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$codec['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";
@@ -255,7 +255,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($audiocodecs as $audiocodec)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"aud".$audiocodec[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[aud".$audiocodec[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$audiocodec[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"aud".$audiocodec['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[aud".$audiocodec['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$audiocodec['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";
@@ -266,7 +266,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($standards as $standard)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"sta".$standard[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[sta".$standard[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$standard[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"sta".$standard['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[sta".$standard['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$standard['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";
@@ -277,7 +277,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($processings as $processing)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"pro".$processing[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[pro".$processing[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$processing[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"pro".$processing['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[pro".$processing['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$processing['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";
@@ -288,7 +288,7 @@ if ($allowspecial) //print category list of Special section
 				foreach ($teams as $team)
 				{
 					$categories .= ($i && $i % $catsperrow == 0) ? "</tr><tr>" : "";
-					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"tea".$team[id]."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[tea".$team[id]."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$team[name]."</td>\n";
+					$categories .= "<td align=\"left\" class=\"bottom\" style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input name=\"tea".$team['id']."\" type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[tea".$team['id']."]") !== false ? " checked=\"checked\"" : "") . " value='yes' />".$team['name']."</td>\n";
 					$i++;
 				}
 				$categories .= "</tr>";

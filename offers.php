@@ -15,20 +15,20 @@ function bark($msg) {
 	exit;
 }
 
-if ($_GET["category"]){
+if (isset($_GET['category']) && $_GET["category"]){
 	$categ = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 	if(!is_valid_id($categ))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 }
 
-if ($_GET["id"]){
+if (isset($_GET['id']) && $_GET["id"]){
 	$id = 0 + htmlspecialchars($_GET["id"]);
 	if (preg_match('/^[0-9]+$/', !$id))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 }
 
 //==== add offer
-if ($_GET["add_offer"]){
+if (isset($_GET['add_offer']) && $_GET["add_offer"]){
 	if (get_user_class() < $addoffer_class)
 		permissiondenied();
 	$add_offer = 0 + $_GET["add_offer"];
@@ -60,7 +60,7 @@ if ($_GET["add_offer"]){
 //=== end add offer
 
 //=== take new offer
-if ($_GET["new_offer"]){
+if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 	if (get_user_class() < $addoffer_class)
 		permissiondenied();
 	$new_offer = 0 + $_GET["new_offer"];
@@ -125,7 +125,7 @@ if ($_GET["new_offer"]){
 //==end take new offer
 
 //=== offer details
-if ($_GET["off_details"]){
+if (isset($_GET['off_details']) && $_GET["off_details"]){
 
 	$off_details = 0 + $_GET["off_details"];
 	if($off_details != '1')
@@ -233,7 +233,7 @@ if ($_GET["off_details"]){
 }
 //=== end offer details
 //=== allow offer by staff
-if ($_GET["allow_offer"]) {
+if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 
 	if (get_user_class() < $offermanage_class)
 	stderr($lang_offers['std_access_denied'], $lang_offers['std_mans_job']);
@@ -268,7 +268,7 @@ if ($_GET["allow_offer"]) {
 //=== end allow the offer
 
 //=== allow offer by vote
-if ($_GET["finish_offer"]) {
+if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 
 	if (get_user_class() < $offermanage_class)
 	stderr($lang_offers['std_access_denied'], $lang_offers['std_have_no_permission']);
@@ -321,7 +321,7 @@ if ($_GET["finish_offer"]) {
 
 //=== edit offer
 
-if ($_GET["edit_offer"]) {
+if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 
 	$edit_offer = 0 + $_GET["edit_offer"];
 	if($edit_offer != '1')
@@ -367,7 +367,7 @@ if ($_GET["edit_offer"]) {
 //=== end edit offer
 
 //==== take offer edit
-if ($_GET["take_off_edit"]){
+if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 
 	$take_off_edit = 0 + $_GET["take_off_edit"];
 	if($take_off_edit != '1')
@@ -410,7 +410,7 @@ if ($_GET["take_off_edit"]){
 //======end take offer edit
 
 //=== offer votes list
-if ($_GET["offer_vote"]){
+if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 
 	$offer_vote = 0 + $_GET["offer_vote"];
 	if($offer_vote != '1')
@@ -458,7 +458,7 @@ if ($_GET["offer_vote"]){
 //=== end offer votes list
 
 //=== offer votes
-if ($_GET["vote"]){
+if (isset($_GET["vote"]) && $_GET["vote"]){
 	$offerid = 0 + htmlspecialchars($_GET["id"]);
 	$vote = htmlspecialchars($_GET["vote"]);
 	if ($vote == 'against' && get_user_class() < $againstoffer_class)
@@ -530,7 +530,7 @@ if ($_GET["vote"]){
 //=== end offer votes
 
 //=== delete offer
-if ($_GET["del_offer"]){
+if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 
 	$del_offer = 0 + $_GET["del_offer"];
 	if($del_offer != '1')
@@ -590,7 +590,8 @@ if ($_GET["del_offer"]){
 //== end  delete offer
 
 //=== prolly not needed, but what the hell... basically stopping the page getting screwed up
-if ($_GET["sort"])
+$sort = '';
+if (isset($_GET["sort"]) && $_GET["sort"])
 {
 	$sort = $_GET["sort"];
 	if($sort == 'cat' || $sort == 'name' || $sort == 'added' || $sort == 'comments' || $sort == 'yeah' || $sort == 'against' || $sort == 'v_res')
@@ -600,15 +601,15 @@ if ($_GET["sort"])
 }
 //=== end of prolly not needed, but what the hell :P
 
-$categ = 0 + $_GET["category"];
-
-if ($_GET["offerorid"]){
+$categ = $_GET["category"] ?? 0;
+$offerorid = 0;
+if (isset($_GET["offerorid"]) && $_GET["offerorid"]){
 	$offerorid = 0 + htmlspecialchars($_GET["offerorid"]);
 	if (preg_match("/^[0-9]+$/", !$offerorid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 }
 
-$search = ($_GET["search"]);
+$search = ($_GET["search"] ?? '');
 
 if ($search) {
 	$search = " AND offers.name like ".sqlesc("%$search%");
@@ -684,7 +685,7 @@ $count = $row[0];
 
 $perpage = 25;
 
-list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"] ."?" . "category=" . $_GET["category"] . "&sort=" . $_GET["sort"] . "&" );
+list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"] ."?" . "category=" . ($_GET["category"] ?? '') . "&sort=" . ($_GET["sort"] ?? '') . "&" );
 
 //stderr("", $sort);
 if($sort == "")

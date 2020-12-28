@@ -24,4 +24,6 @@ interface DBInterface
 
     public function escapeString(string $string): string;
 
+    public function lastInsertId(): int;
+
 }

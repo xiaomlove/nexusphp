@@ -9,7 +9,7 @@ class DBMysqli implements DBInterface
         $mysqli = new mysqli($host, $username, $password, $database, $port);
         /* check connection */
         if (mysqli_connect_errno()) {
-            throw new \RuntimeException(mysqli_connect_error());
+            throw new \DatabaseException('', mysqli_connect_error());
         }
         /* activate reporting */
         $driver = new mysqli_driver();
@@ -69,6 +69,11 @@ class DBMysqli implements DBInterface
     public function escapeString(string $string): string
     {
         return $this->mysqli->real_escape_string($string);
+    }
+
+    public function lastInsertId(): int
+    {
+        return $this->mysqli->insert_id;
     }
 
 

@@ -264,10 +264,10 @@ elseif ($action == 'smtpsettings')	// stmp settings
 		tr($lang_settings['row_smtp_sendmail_path'], $lang_settings['text_smtp_sendmail_path_note'], 1);
 	print("</tbody><tbody id=\"smtp_external\"".($SMTP['smtptype'] == "external" ? "" : " style=\"display: none;\"").">");
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_setting_for_external_type']."</b></td></tr>");
-	tr($lang_settings['row_outgoing_mail_address'], "<input type=text name=smtpaddress style=\"width: 300px\" ".($SMTP['smtpaddress'] ? "value=\"".$SMTP['smtpaddress']."\"" : "")."> ".$lang_settings['text_outgoing_mail_address_note'], 1);
-	tr($lang_settings['row_outgoing_mail_port'], "<input type=text name=smtpport style=\"width: 300px\" ".($SMTP['smtpport'] ? "value=\"".$SMTP['smtpport']."\"" : "")."> ".$lang_settings['text_outgoing_mail_port_note'], 1);
-	tr($lang_settings['row_smtp_account_name'], "<input type=text name=accountname style=\"width: 300px\" ".($SMTP['accountname'] ? "value=\"".$SMTP['accountname']."\"" : "")."> ".$lang_settings['text_smtp_account_name_note'], 1);
-	tr($lang_settings['row_smtp_account_password'], "<input type=password name=accountpassword style=\"width: 300px\" ".($SMTP['accountpassword'] ? "value=\"".$SMTP['accountpassword']."\"" : "")."> ".$lang_settings['text_smtp_account_password_note'], 1);
+	tr($lang_settings['row_outgoing_mail_address'], "<input type=text name=smtpaddress style=\"width: 300px\" ".(!empty($SMTP['smtpaddress']) ? "value=\"".$SMTP['smtpaddress']."\"" : "")."> ".$lang_settings['text_outgoing_mail_address_note'], 1);
+	tr($lang_settings['row_outgoing_mail_port'], "<input type=text name=smtpport style=\"width: 300px\" ".(!empty($SMTP['smtpport']) ? "value=\"".$SMTP['smtpport']."\"" : "")."> ".$lang_settings['text_outgoing_mail_port_note'], 1);
+	tr($lang_settings['row_smtp_account_name'], "<input type=text name=accountname style=\"width: 300px\" ".(!empty($SMTP['accountname']) ? "value=\"".$SMTP['accountname']."\"" : "")."> ".$lang_settings['text_smtp_account_name_note'], 1);
+	tr($lang_settings['row_smtp_account_password'], "<input type=password name=accountpassword style=\"width: 300px\" ".(!empty($SMTP['accountpassword']) ? "value=\"".$SMTP['accountpassword']."\"" : "")."> ".$lang_settings['text_smtp_account_password_note'], 1);
 	print("</tbody><tbody>");
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 print ("<tr><td colspan=2 align=center>".$lang_settings['text_mail_test_note']."<a href=\"mailtest.php\" target=\"_blank\"><b>".$lang_settings['text_here']."</b></a></td></tr>");
@@ -312,7 +312,7 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_view_userlist'], $lang_settings['text_minimum_class'].classlist('viewuserlist',$maxclass,$AUTHORITY['viewuserlist']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_view_userlist_note'],1);
 	tr($lang_settings['row_torrent_management'], $lang_settings['text_minimum_class'].classlist('torrentmanage',$maxclass,$AUTHORITY['torrentmanage']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_torrent_management_note'], 1);
 	tr($lang_settings['row_torrent_sticky'], $lang_settings['text_minimum_class'].classlist('torrentsticky',$maxclass,$AUTHORITY['torrentsticky']).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_sticky_note'],1);
-	tr($lang_settings['row_torrent_on_promotion'], $lang_settings['text_minimum_class'].classlist('torrentonpromotion',$maxclass,$AUTHORITY['torrentonpromotion']).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_promotion_note'],1);
+	tr($lang_settings['row_torrent_on_promotion'], $lang_settings['text_minimum_class'].classlist('torrentonpromotion',$maxclass,$AUTHORITY['torrentonpromotion'] ?? '').$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_promotion_note'],1);
 	tr($lang_settings['row_ask_for_reseed'],  $lang_settings['text_minimum_class'].classlist('askreseed',$maxclass,$AUTHORITY['askreseed']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_ask_for_reseed_note'],1);
 	tr($lang_settings['row_view_nfo'], $lang_settings['text_minimum_class'].classlist('viewnfo',$maxclass,$AUTHORITY['viewnfo']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_view_nfo_note'],1);
 	tr($lang_settings['row_view_torrent_structure'], $lang_settings['text_minimum_class'].classlist('torrentstructure',$maxclass,$AUTHORITY['torrentstructure']).$lang_settings['text_default'].get_user_class_name(UC_ULTIMATE_USER,false,true,true).$lang_settings['text_view_torrent_structure_note'],1);
@@ -404,7 +404,7 @@ elseif ($action == 'codesettings')	// code settings
 	tr($lang_settings['row_main_version'],"<input type='text' style=\"width: 300px\" name=mainversion value='".($CODE["mainversion"] ? $CODE["mainversion"] : PROJECTNAME." PHP")."'> ".$lang_settings['text_main_version_note'], 1);
 	tr($lang_settings['row_sub_version'],"<input type='text' style=\"width: 300px\" name=subversion value='".($CODE["subversion"] ? $CODE["subversion"] : "1.0")."'> ".$lang_settings['text_sub_version_note'], 1);
 	tr($lang_settings['row_release_date'],"<input type='text' style=\"width: 300px\" name=releasedate value='".($CODE["releasedate"] ? $CODE["releasedate"] : "2008-12-10")."'> ".$lang_settings['text_release_date_note'], 1);
-	tr($lang_settings['row_web_site'],"<input type='text' style=\"width: 300px\" name=website value='".($CODE["website"] ? $CODE["website"] : "")."'> ".$lang_settings['text_web_site_note_one'].PROJECTNAME.$lang_settings['text_web_site_note_two'], 1);
+	tr($lang_settings['row_web_site'],"<input type='text' style=\"width: 300px\" name=website value='".($CODE["website"] ? $CODE["website"] : "")."'> ".($lang_settings['text_web_site_note_one'] ?? '').PROJECTNAME.$lang_settings['text_web_site_note_two'], 1);
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }
@@ -558,6 +558,7 @@ elseif ($action == 'mainsettings')	// main settings
 	tr($lang_settings['row_external_forum_url'],"<input type='text' style=\"width: 300px\" name=extforumurl value='".($MAIN["extforumurl"] ? $MAIN["extforumurl"] : "")."'> ".$lang_settings['text_external_forum_url_note'], 1);
 	$res = sql_query("SELECT id, name FROM searchbox") or sqlerr(__FILE__, __LINE__);
 	$catlist = "";
+	$bcatlist = $scatlist = '';
 	while($array = mysql_fetch_array($res)){
 		$bcatlist .= "<input type=radio name=browsecat value='".$array['id']."'".($MAIN["browsecat"] == $array['id'] ? " checked" : "").">".$array['name']."&nbsp;";
 		$scatlist .= "<input type=radio name=specialcat value='".$array['id']."'".($MAIN["specialcat"] == $array['id'] ? " checked" : "").">".$array['name']."&nbsp;";

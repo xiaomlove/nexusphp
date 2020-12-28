@@ -5,7 +5,7 @@ require_once(get_langfile_path());
 loggedinorreturn();
 parked();
 $id = 0 + $_GET["id"];
-$type = unesc($_GET["type"]);
+$type = unesc($_GET["type"] ?? '');
 
 registration_check('invitesystem',true,false);
 

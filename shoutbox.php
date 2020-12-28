@@ -59,8 +59,8 @@ countdown(time);
 </head>
 <body class='inframe' <?php if ($_GET["type"] != "helpbox"){?> onload="<?php echo $startcountdown?>" <?php } else {?> onload="hbquota()" <?php } ?>>
 <?php
-if($_GET["sent"]=="yes"){
-if(!$_GET["shbox_text"])
+if(isset($_GET["sent"]) && $_GET["sent"]=="yes"){
+if(!isset($_GET["shbox_text"]) || !$_GET['shbox_text'])
 {
 	$userid=0+$CURUSER["id"];
 }

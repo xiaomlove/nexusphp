@@ -55,3 +55,7 @@ function mysql_real_escape_string($string)
     return DB::getInstance()->escapeString($string);
 }
 
+function mysql_insert_id()
+{
+    return DB::getInstance()->lastInsertId();
+}

@@ -15,7 +15,7 @@ $onlineimg = "<img class=\"button_online\" src=\"pic/trans.gif\" alt=\"online\" 
 $offlineimg = "<img class=\"button_offline\" src=\"pic/trans.gif\" alt=\"offline\" title=\"".$lang_staff['title_offline']."\" />";
 $sendpmimg = "<img class=\"button_pm\" src=\"pic/trans.gif\" alt=\"pm\" />";
 //--------------------- FIRST LINE SUPPORT SECTION ---------------------------//
-unset($ppl);
+$ppl = '';
 $res = sql_query("SELECT * FROM users WHERE users.support='yes' AND users.status='confirmed' ORDER BY users.username") or sqlerr();
 while ($arr = mysql_fetch_assoc($res))
 {
@@ -53,7 +53,7 @@ end_frame();
 //--------------------- FIRST LINE SUPPORT SECTION ---------------------------//
 
 //--------------------- film critics section ---------------------------//
-unset($ppl);
+$ppl = '';
 $res = sql_query("SELECT * FROM users WHERE users.picker='yes' AND users.status='confirmed' ORDER BY users.username") or sqlerr();
 while ($arr = mysql_fetch_assoc($res))
 {
@@ -89,7 +89,7 @@ end_frame();
 //--------------------- film critics section ---------------------------//
 
 //--------------------- forum moderators section ---------------------------//
-unset($ppl);
+$ppl = '';
 $res = sql_query("SELECT forummods.userid AS userid, users.last_access, users.country FROM forummods LEFT JOIN users ON forummods.userid = users.id GROUP BY userid ORDER BY forummods.forumid, forummods.userid") or sqlerr();
 while ($arr = mysql_fetch_assoc($res))
 {
@@ -131,8 +131,9 @@ end_frame();
 //--------------------- film critics section ---------------------------//
 
 //--------------------- general staff section ---------------------------//
-unset($ppl);
+$ppl = '';
 $res = sql_query("SELECT * FROM users WHERE class > ".UC_VIP." AND status='confirmed' ORDER BY class DESC, username") or sqlerr();
+$curr_class = '';
 while ($arr = mysql_fetch_assoc($res))
 {
 	if($curr_class != $arr['class'])
@@ -172,7 +173,7 @@ end_frame();
 
 //--------------------- VIP section ---------------------------//
 
-unset($ppl);
+$ppl = '';
 $res = sql_query("SELECT * FROM users WHERE class=".UC_VIP." AND status='confirmed' ORDER BY username") or sqlerr();
 while ($arr = mysql_fetch_assoc($res))
 {

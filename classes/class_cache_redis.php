@@ -209,7 +209,7 @@ class RedisCache {
 //        $this->set($Key,$Value, 0, $Duration);
         $this->redis->set($Key, $Value, $Duration);
         $this->cacheWriteTimes++;
-        $this->keyHits['write'][$Key] = !$this->keyHits['write'][$Key] ? 1 : $this->keyHits['write'][$Key]+1;
+        $this->keyHits['write'][$Key] = !isset($this->keyHits['write'][$Key]) ? 1 : $this->keyHits['write'][$Key]+1;
     }
 
     //---------- Getting functions ----------//
@@ -219,7 +219,7 @@ class RedisCache {
     function next_row(){
         $this->Row++;
         $this->Part = 0;
-        if($this->Page[$this->Row] == false){
+        if(!isset($this->Page[$this->Row]) || $this->Page[$this->Row] == false){
             return false;
         }
         elseif(count($this->Page[$this->Row]) == 1){
@@ -276,7 +276,7 @@ class RedisCache {
         $Return = $this->redis->get($Key);
         $Return = ! is_null($Return) ? $this->unserialize($Return) : null;
         $this->cacheReadTimes++;
-        $this->keyHits['read'][$Key] = !$this->keyHits['read'][$Key] ? 1 : $this->keyHits['read'][$Key]+1;
+        $this->keyHits['read'][$Key] = !isset($this->keyHits['read'][$Key]) ? 1 : $this->keyHits['read'][$Key]+1;
         return $Return;
     }
 
