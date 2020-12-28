@@ -92,7 +92,7 @@ if ($showsubcat){
 }
 //----------------- start whether show torrents from all sections---------------------//
 if ($_GET)
-	$allsec = 0 + $_GET["allsec"];
+	$allsec = $_GET["allsec"] ?? 0;
 else $allsec = 0;
 if ($allsec == 1)		//show torrents from all sections
 {
@@ -101,7 +101,7 @@ if ($allsec == 1)		//show torrents from all sections
 // ----------------- end whether ignoring section ---------------------//
 // ----------------- start bookmarked ---------------------//
 if ($_GET)
-	$inclbookmarked = 0 + $_GET["inclbookmarked"];
+	$inclbookmarked = $_GET["inclbookmarked"] ?? 0;
 elseif ($CURUSER['notifs']){
 	if (strpos($CURUSER['notifs'], "[inclbookmarked=0]") !== false)
 		$inclbookmarked = 0;
@@ -139,7 +139,7 @@ if (!isset($CURUSER) || get_user_class() < $seebanned_class)
 	$wherea[] = "banned != 'yes'";
 // ----------------- start include dead ---------------------//
 if (isset($_GET["incldead"]))
-	$include_dead = 0 + $_GET["incldead"];
+	$include_dead = $_GET["incldead"] ?? 0;
 elseif ($CURUSER['notifs']){
 	if (strpos($CURUSER['notifs'], "[incldead=0]") !== false)
 		$include_dead = 0;
@@ -675,7 +675,7 @@ if (isset($searchstr))
 	else{
 		$notnewword="notnewword=1&";
 	}
-	$search_mode = 0 + $_GET["search_mode"];
+	$search_mode = $_GET["search_mode"] ?? 0;
 	if (!in_array($search_mode,array(0,1,2)))
 	{
 		$search_mode = 0;

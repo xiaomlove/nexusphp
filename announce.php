@@ -15,7 +15,7 @@ foreach (array("passkey","info_hash","peer_id","event") as $x)
 // get integer type port, downloaded, uploaded, left from client
 foreach (array("port","downloaded","uploaded","left","compact","no_peer_id") as $x)
 {
-	$GLOBALS[$x] = 0 + $_GET[$x];
+	$GLOBALS[$x] = $_GET[$x] ?? 0;
 }
 //check info_hash, peer_id and passkey
 foreach (array("passkey","info_hash","peer_id","port","downloaded","uploaded","left") as $x)
@@ -42,7 +42,7 @@ foreach(array("numwant", "num want", "num_want") as $k)
 {
 	if (isset($_GET[$k]))
 	{
-		$rsize = 0 + $_GET[$k];
+		$rsize = $_GET[$k] ?? 0;
 		break;
 	}
 }

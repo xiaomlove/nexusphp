@@ -247,8 +247,10 @@ function formatFlv($src, $width, $height) {
 	return addTempCode("<object width=\"$width\" height=\"$height\"><param name=\"movie\" value=\"flvplayer.swf?file=$src\" /><param name=\"allowFullScreen\" value=\"true\" /><embed src=\"flvplayer.swf?file=$src\" type=\"application/x-shockwave-flash\" allowfullscreen=\"true\" width=\"$width\" height=\"$height\"></embed></object>");
 }
 function format_urls($text, $newWindow = false) {
-	return preg_replace("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/ei",
-	"formatUrl('\\1', ".($newWindow==true ? 1 : 0).", '', 'faqlink')", $text);
+//	return preg_replace("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/ei", "formatUrl('\\1', ".($newWindow==true ? 1 : 0).", '', 'faqlink')", $text);
+	return preg_replace_callback("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/i", function ($matches) use ($newWindow) {
+	    return formatUrl($matches[1], ".($newWindow==true ? 1 : 0).", '', 'faqlink');
+    }, $text);
 }
 function format_comment($text, $strip_html = true, $xssclean = false, $newtab = false, $imageresizer = true, $image_max_width = 700, $enableimage = true, $enableflash = true , $imagenum = -1, $image_max_height = 0, $adid = 0)
 {
@@ -267,7 +269,10 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	$s = nl2br($s);
 
 	if (strpos($s,"[code]") !== false && strpos($s,"[/code]") !== false) {
-		$s = preg_replace("/\[code\](.+?)\[\/code\]/eis","formatCode('\\1')", $s);
+//		$s = preg_replace("/\[code\](.+?)\[\/code\]/eis","formatCode('\\1')", $s);
+		$s = preg_replace_callback("/\[code\](.+?)\[\/code\]/is",function ($matches) {
+		    return formatCode($matches[1]);
+        }, $s);
 	}
 
 	$originalBbTagArray = array('[siteurl]', '[site]','[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[pre]', '[/pre]', '[/color]', '[/font]', '[/size]', "  ");
@@ -304,7 +309,10 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	// [flash,500,400]http://www/image.swf[/flash]
 	if (strpos($s,"[flash") !== false) { //flash is not often used. Better check if it exist before hand
 		if ($enableflash) {
-			$s = preg_replace("/\[flash(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(swf)))\[\/flash\]/ei", "formatFlash('\\4', '\\2', '\\3')", $s);
+//			$s = preg_replace("/\[flash(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(swf)))\[\/flash\]/ei", "formatFlash('\\4', '\\2', '\\3')", $s);
+			$s = preg_replace_callback("/\[flash(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(swf)))\[\/flash\]/i", function ($matches) {
+			    return formatFlash($matches[4], $matches[2], $matches[3]);
+            }, $s);
 		} else {
 			$s = preg_replace("/\[flash(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(swf)))\[\/flash\]/i", '', $s);
 		}
@@ -312,7 +320,10 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	//[flv,320,240]http://www/a.flv[/flv]
 	if (strpos($s,"[flv") !== false) { //flv is not often used. Better check if it exist before hand
 		if ($enableflash) {
-			$s = preg_replace("/\[flv(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(flv)))\[\/flv\]/ei", "formatFlv('\\4', '\\2', '\\3')", $s);
+//			$s = preg_replace("/\[flv(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(flv)))\[\/flv\]/ei", "formatFlv('\\4', '\\2', '\\3')", $s);
+			$s = preg_replace_callback("/\[flv(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(flv)))\[\/flv\]/i", function ($matches) {
+			    return formatFlv($matches[4], $matches[2], $matches[3]);
+            }, $s);
 		} else {
 			$s = preg_replace("/\[flv(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(flv)))\[\/flv\]/i", '', $s);
 		}
@@ -320,14 +331,22 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 
 	// [url=http://www.example.com]Text[/url]
 	if ($adid) {
-		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatAdUrl(".$adid." ,'\\1', '\\2', ".($newtab==true ? 1 : 0).", 'faqlink')", $s);
+//		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatAdUrl(".$adid." ,'\\1', '\\2', ".($newtab==true ? 1 : 0).", 'faqlink')", $s);
+		$s = preg_replace_callback("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/i", function ($matches) use ($adid, $newtab) {
+		    return formatAdUrl(".$adid." ,$matches[1], $matches[2], ".($newtab==true ? 1 : 0).", 'faqlink');
+        }, $s);
 	} else {
-		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatUrl('\\1', ".($newtab==true ? 1 : 0).", '\\2', 'faqlink')", $s);
+//		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatUrl('\\1', ".($newtab==true ? 1 : 0).", '\\2', 'faqlink')", $s);
+		$s = preg_replace_callback("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/i", function ($matches) use ($newtab) {
+		    return formatUrl($matches[1], ".($newtab==true ? 1 : 0).", $matches[2], 'faqlink');
+        }, $s);
 	}
 
 	// [url]http://www.example.com[/url]
-	$s = preg_replace("/\[url\]([^\[\s]+?)\[\/url\]/ei",
-	"formatUrl('\\1', ".($newtab==true ? 1 : 0).", '', 'faqlink')", $s);
+//	$s = preg_replace("/\[url\]([^\[\s]+?)\[\/url\]/ei", "formatUrl('\\1', ".($newtab==true ? 1 : 0).", '', 'faqlink')", $s);
+	$s = preg_replace_callback("/\[url\]([^\[\s]+?)\[\/url\]/i", function ($matches) use ($newtab) {
+	    return formatUrl($matches[1], ".($newtab==true ? 1 : 0).", '', 'faqlink');
+    }, $s);
 
 	$s = format_urls($s, $newtab);
 	// Quotes
@@ -335,9 +354,12 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 		$s = format_quotes($s);
 	}
 
-	$s = preg_replace("/\[em([1-9][0-9]*)\]/ie", "(\\1 < 192 ? '<img src=\"pic/smilies/\\1.gif\" alt=\"[em\\1]\" />' : '[em\\1]')", $s);
+//	$s = preg_replace("/\[em([1-9][0-9]*)\]/ie", "(\\1 < 192 ? '<img src=\"pic/smilies/\\1.gif\" alt=\"[em\\1]\" />' : '[em\\1]')", $s);
+	$s = preg_replace_callback("/\[em([1-9][0-9]*)\]/i", function ($matches) {
+	    return $matches[1] < 192 ? '<img src="pic/smilies/' . $matches[1] . '.gif" alt="[em' . $matches[1] . ']" />' : '[em' . $matches[1] . ']';
+    }, $s);
 	reset($tempCode);
-	$j = 0;
+	$j = $i = 0;
 	while(count($tempCode) || $j > 5) {
 		foreach($tempCode as $key=>$code) {
 			$s = str_replace("<tempCode_$key>", $code, $s, $count);
@@ -1506,7 +1528,7 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 function random_str($length="6")
 {
 	$set = array("A","B","C","D","E","F","G","H","P","R","M","N","1","2","3","4","5","6","7","8","9");
-	$str;
+	$str = '';
 	for($i=1;$i<=$length;$i++)
 	{
 		$ch = rand(0, count($set)-1);
@@ -4049,7 +4071,7 @@ function get_ratio($userid, $html = true){
 function add_s($num, $es = false)
 {
 	global $lang_functions;
-	return ($num > 1 ? ($es ? $lang_functions['text_es'] : $lang_functions['text_s']) : "");
+	return ($num > 1 ? ($es ? ($lang_functions['text_es'] ?? '') : $lang_functions['text_s']) : "");
 }
 
 function is_or_are($num)
@@ -4182,7 +4204,7 @@ function get_forum_moderators($forumid, $plaintext = true)
 		}
 		$Cache->cache_value('forum_moderator_array', $moderatorsArray, 86200);
 	}
-	$ret = (array)$moderatorsArray[$forumid];
+	$ret = $moderatorsArray[$forumid] ?? [];
 
 	$moderators = "";
 	foreach($ret as $userid) {

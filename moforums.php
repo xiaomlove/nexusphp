@@ -7,8 +7,11 @@ if (get_user_class() < $forummanage_class)
 	permissiondenied();
 
 //Presets
-$act = $_GET['action'];
-$id = 0 + $_GET['id'];
+$act = $_GET['action'] ?? '';
+$id = $_GET['id'] ?? 0;
+$PHP_SELF = $_SERVER['PHP_SELF'];
+$user = $CURUSER;
+$prefix = '';
 
 if (!$act) {
 $act = "forum";
@@ -28,7 +31,7 @@ die();
 }
 
 //EDIT FORUM ACTION
-if ($_POST['action'] == "editforum") {
+if (isset($_POST['action']) && $_POST['action'] == "editforum") {
 if (get_user_class() < $forummanage_class)
 	permissiondenied();
 
@@ -44,7 +47,7 @@ die();
 }
 
 //ADD FORUM ACTION
-if ($_POST['action'] == "addforum") {
+if (isset($_POST['action']) && $_POST['action'] == "addforum") {
 if (get_user_class() < $forummanage_class)
 	permissiondenied();
 
@@ -133,7 +136,7 @@ $nr = mysql_num_rows($res);
 	    print("<option value=$i>$i \n");
 ?>
 	</select>
-    <?php echo $lang_forummanage['text_overforum_order_note']?></td>
+    <?php echo $lang_moforums['text_overforum_order_note']?></td>
   </tr>
 
   <tr align="center">

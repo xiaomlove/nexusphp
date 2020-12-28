@@ -34,7 +34,7 @@ if ($action == "add")
 			}
 		}
 
-		$parent_id = 0 + $_POST["pid"];
+		$parent_id = $_POST["pid"] ?? 0;
 		int_check($parent_id,true);
 
 		if($type == "torrent")
@@ -105,12 +105,12 @@ if ($action == "add")
 		die;
 	}
 
-	$parent_id = 0 + $_GET["pid"];
+	$parent_id = $_GET["pid"] ?? 0;
 	int_check($parent_id,true);
 
 	if($sub == "quote")
 	{
-		$commentid = 0 + $_GET["cid"];
+		$commentid = $_GET["cid"] ?? 0;
 		int_check($commentid,true);
 
 		$res2 = sql_query("SELECT comments.text, users.username FROM comments JOIN users ON comments.user = users.id WHERE comments.id=$commentid") or sqlerr(__FILE__, __LINE__);
@@ -151,7 +151,7 @@ if ($action == "add")
 }
 elseif ($action == "edit")
 {
-		$commentid = 0 + $_GET["cid"];
+		$commentid = $_GET["cid"] ?? 0;
 		int_check($commentid,true);
 
 		if($type == "torrent")
@@ -211,7 +211,7 @@ elseif ($action == "delete")
 		if (get_user_class() < $commanage_class)
 		stderr($lang_comment['std_error'], $lang_comment['std_permission_denied']);
 
-		$commentid = 0 + $_GET["cid"];
+		$commentid = $_GET["cid"] ?? 0;
 		$sure = $_GET["sure"];
 		int_check($commentid,true);
 
@@ -268,7 +268,7 @@ elseif ($action == "vieworiginal")
 	if (get_user_class() < $commanage_class)
 	stderr($lang_comment['std_error'], $lang_comment['std_permission_denied']);
 
-		$commentid = 0 + $_GET["cid"];
+		$commentid = $_GET["cid"] ?? 0;
 		int_check($commentid,true);
 
 		if($type == "torrent")

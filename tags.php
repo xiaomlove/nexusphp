@@ -21,7 +21,7 @@ function insert_tag($name, $description, $syntax, $example, $remarks)
 stdhead($lang_tags['head_tags']);
 begin_main_frame();
 begin_frame($lang_tags['text_tags']);
-$test = $_POST["test"];
+$test = $_POST["test"] ?? '';
 ?>
 <p><?php echo $lang_tags['text_bb_tags_note'] ?></p>
 

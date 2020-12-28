@@ -28,7 +28,7 @@ $db = preg_replace($pattern, "\\36", $_SERVER['REQUEST_URI']);
 $ds = preg_replace($pattern, "\\38", $_SERVER['REQUEST_URI']);
 $dx = preg_replace($pattern, "\\40", $_SERVER['REQUEST_URI']);
 $dy = preg_replace($pattern, "\\42", $_SERVER['REQUEST_URI']);
-$bg = 0 + preg_replace($pattern, "\\44", $_SERVER['REQUEST_URI']);
+$bg = (int)preg_replace($pattern, "\\44", $_SERVER['REQUEST_URI']);
 $id = preg_replace($pattern, "\\45", $_SERVER['REQUEST_URI']);
 
 $res = sql_query("SELECT username, uploaded, downloaded, class, privacy FROM users WHERE id=".sqlesc($id)." LIMIT 1");

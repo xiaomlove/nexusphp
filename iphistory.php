@@ -23,7 +23,7 @@ $perpage = 20;
 $ipcountres = sql_query("SELECT COUNT(DISTINCT(access)) FROM iplog WHERE userid = $userid");
 $ipcountres = mysql_fetch_row($ipcountres);
 $countrows = $ipcountres[0]+1;
-$order = $_GET['order'];
+$order = $_GET['order'] ?? '';
 
 list($pagertop, $pagerbottom, $limit) = pager($perpage, $countrows, "iphistory.php?id=$userid&order=$order&");
 

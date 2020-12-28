@@ -14,7 +14,7 @@ function bark($msg)
 	exit;
 }
 
-$id = 0 + $_GET["id"];
+$id = $_GET["id"] ?? 0;
 int_check($id,true);
 
 if ($id != $CURUSER['id']){
@@ -28,10 +28,10 @@ else
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
-if ($user[added] == "0000-00-00 00:00:00")
+if ($user['added'] == "0000-00-00 00:00:00")
 $joindate = $lang_userdetails['text_not_available'];
 else
-$joindate = $user[added]." (" . gettime($user["added"], true, false, true).")";
+$joindate = $user['added']." (" . gettime($user["added"], true, false, true).")";
 $lastseen = $user["last_access"];
 if ($lastseen == "0000-00-00 00:00:00")
 $lastseen = $lang_userdetails['text_not_available'];
@@ -39,24 +39,27 @@ else
 {
 	$lastseen .= " (" . gettime($lastseen, true, false, true).")";
 }
-$res = sql_query("SELECT COUNT(*) FROM comments WHERE user=" . $user[id]) or sqlerr();
+$res = sql_query("SELECT COUNT(*) FROM comments WHERE user=" . $user['id']) or sqlerr();
 $arr3 = mysql_fetch_row($res);
 $torrentcomments = $arr3[0];
-$res = sql_query("SELECT COUNT(*) FROM posts WHERE userid=" . $user[id]) or sqlerr();
+$res = sql_query("SELECT COUNT(*) FROM posts WHERE userid=" . $user['id']) or sqlerr();
 $arr3 = mysql_fetch_row($res);
 $forumposts = $arr3[0];
 
-	$arr = get_country_row($user[country]);
-	$country = "<img src=\"pic/flag/".$arr[flagpic]."\" alt=\"".$arr[name]."\" style='margin-left: 8pt' />";
+	$arr = get_country_row($user['country']);
+	$country = "<img src=\"pic/flag/".$arr['flagpic']."\" alt=\"".$arr['name']."\" style='margin-left: 8pt' />";
 
-	$arr = get_downloadspeed_row($user[download]);
-	$download = "<img class=\"speed_down\" src=\"pic/trans.gif\" alt=\"Downstream Rate\" title=\"".$lang_userdetails['title_download'].$arr[name]."\" /> ".$arr[name];
+	$arr = (array)get_downloadspeed_row($user['download']);
+	$name = $arr['name'] ?? '';
+	$download = "<img class=\"speed_down\" src=\"pic/trans.gif\" alt=\"Downstream Rate\" title=\"".$lang_userdetails['title_download'].$name."\" /> ".$name;
 
-	$arr = get_uploadspeed_row($user[upload]);
-	$upload = "<img class=\"speed_up\" src=\"pic/trans.gif\" alt=\"Upstream Rate\" title=\"".$lang_userdetails['title_upload'].$arr[name]."\" /> ".$arr[name];
+	$arr = (array)get_uploadspeed_row($user['upload']);
+    $name = $arr['name'] ?? '';
+	$upload = "<img class=\"speed_up\" src=\"pic/trans.gif\" alt=\"Upstream Rate\" title=\"".$lang_userdetails['title_upload'].$name."\" /> ".$name;
 
-	$arr = get_isp_row($user[isp]);
-	$isp = $arr[name];
+	$arr = get_isp_row($user['isp']);
+    $name = $arr['name'] ?? '';
+	$isp = $name;
 
 if ($user["gender"] == "Male")
 $gender = "<img class='male' src='pic/trans.gif' alt='Male' title='".$lang_userdetails['title_male']."' style='margin-left: 4pt' />";
@@ -69,15 +72,15 @@ stdhead($lang_userdetails['head_details_for']. $user["username"]);
 $enabled = $user["enabled"] == 'yes';
 $moviepicker = $user["picker"] == 'yes';
 
-print("<h1 style='margin:0px'>" . get_username($user[id], true,false) . $country."</h1>");
+print("<h1 style='margin:0px'>" . get_username($user['id'], true,false) . $country."</h1>");
 
 if (!$enabled)
 print("<p><b>".$lang_userdetails['text_account_disabled_note']."</b></p>");
 elseif ($CURUSER["id"] <> $user["id"])
 {
-	$r = sql_query("SELECT id FROM friends WHERE userid=$CURUSER[id] AND friendid=$id") or sqlerr(__FILE__, __LINE__);
+	$r = sql_query("SELECT id FROM friends WHERE userid={$CURUSER['id']} AND friendid=$id") or sqlerr(__FILE__, __LINE__);
 	$friend = mysql_num_rows($r);
-	$r = sql_query("SELECT id FROM blocks WHERE userid=$CURUSER[id] AND blockid=$id") or sqlerr(__FILE__, __LINE__);
+	$r = sql_query("SELECT id FROM blocks WHERE userid={$CURUSER['id']} AND blockid=$id") or sqlerr(__FILE__, __LINE__);
 	$block = mysql_num_rows($r);
 
 	if ($friend)
@@ -91,17 +94,17 @@ elseif ($CURUSER["id"] <> $user["id"])
 	}
 }
 begin_main_frame();
-if ($CURUSER[id] == $user[id] || get_user_class() >= $cruprfmanage_class)
+if ($CURUSER['id'] == $user['id'] || get_user_class() >= $cruprfmanage_class)
 	print("<h2>".$lang_userdetails['text_flush_ghost_torrents']."<a class=\"altlink\" href=\"takeflush.php?id=".$id."\">".$lang_userdetails['text_here']."</a></h2>\n");
 ?>
 <table width="100%" border="1" cellspacing="0" cellpadding="5">
 <?php
-if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || $CURUSER[id] == $user[id]){
+if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || $CURUSER['id'] == $user['id']){
 //Xia Zuojie: Taste compatibility is extremely slow. It can takes thounsands of datebase queries. It is disabled until someone makes it fast.
 /*
-	if (isset($CURUSER) && $CURUSER[id] != $user[id])
+	if (isset($CURUSER) && $CURUSER['id'] != $user['id'])
 	{
-		$user_snatched = sql_query("SELECT * FROM snatched WHERE userid = $CURUSER[id]") or sqlerr(__FILE__, __LINE__);
+		$user_snatched = sql_query("SELECT * FROM snatched WHERE userid = $CURUSER['id']") or sqlerr(__FILE__, __LINE__);
 		if(mysql_num_rows($user_snatched) == 0)
 		$compatibility_info = $lang_userdetails['text_unknown'];
 		else
@@ -110,7 +113,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 			{
 				$torrent_2_user_value = get_torrent_2_user_value($user_snatched_arr);
 
-				$user_snatched_res_target = sql_query("SELECT * FROM snatched WHERE torrentid = " . $user_snatched_arr['torrentid'] . " AND userid = " . $user[id]) or sqlerr(__FILE__, __LINE__);	//
+				$user_snatched_res_target = sql_query("SELECT * FROM snatched WHERE torrentid = " . $user_snatched_arr['torrentid'] . " AND userid = " . $user['id']) or sqlerr(__FILE__, __LINE__);	//
 				if(mysql_num_rows($user_snatched_res_target) == 1)	// have other peole snatched this torrent
 				{
 					$user_snatched_arr_target = mysql_fetch_array($user_snatched_res_target) or sqlerr(__FILE__, __LINE__);	// find target user's current analyzing torrent's snatch info
@@ -123,7 +126,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 				}
 			}
 			
-			$val = $other_user_2_curuser_value[$user[id]];
+			$val = $other_user_2_curuser_value[$user['id']];
 			if ($val > 1)
 			{
 				$val = 1;
@@ -165,17 +168,17 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 	}
 */
 
-	if ($CURUSER[id] == $user[id] || get_user_class() >= $viewinvite_class){
+	if ($CURUSER['id'] == $user['id'] || get_user_class() >= $viewinvite_class){
 	if ($user["invites"] <= 0)
 	tr_small($lang_userdetails['row_invitation'], $lang_userdetails['text_no_invitation'], 1);
 	else
-	tr_small($lang_userdetails['row_invitation'], "<a href=\"invite.php?id=".$user[id]."\" title=\"".$lang_userdetails['link_send_invitation']."\">".$user[invites]."</a>", 1);}
+	tr_small($lang_userdetails['row_invitation'], "<a href=\"invite.php?id=".$user['id']."\" title=\"".$lang_userdetails['link_send_invitation']."\">".$user['invites']."</a>", 1);}
 	else{
-	if ($CURUSER[id] != $user[id] || get_user_class() != $viewinvite_class){
+	if ($CURUSER['id'] != $user['id'] || get_user_class() != $viewinvite_class){
 	if ($user["invites"] <= 0)
 	tr_small($lang_userdetails['row_invitation'], $lang_userdetails['text_no_invitation'], 1);
 	else
-	tr($lang_userdetails['row_invitation'], $user[invites], 1);}
+	tr($lang_userdetails['row_invitation'], $user['invites'], 1);}
 	}
 	if ($user["invited_by"] > 0) {
 		tr_small($lang_userdetails['row_invited_by'], get_username($user['invited_by']), 1);
@@ -186,7 +189,7 @@ if ($where_tweak == "yes") {
 	tr_small($lang_userdetails['row_last_seen_location'], $user[page], 1);
 }
 if (get_user_class() >= $userprofile_class OR $user["privacy"] == "low") {
-	tr_small($lang_userdetails['row_email'], "<a href=\"mailto:".$user[email]."\">".$user[email]."</a>", 1);
+	tr_small($lang_userdetails['row_email'], "<a href=\"mailto:".$user['email']."\">".$user['email']."</a>", 1);
 }
 if (get_user_class() >= $userprofile_class) {
 	$resip = sql_query("SELECT ip FROM iplog WHERE userid =$id GROUP BY ip") or sqlerr(__FILE__, __LINE__);
@@ -199,18 +202,18 @@ if (get_user_class() >= $userprofile_class) {
 if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"])
 {
 	if ($enablelocation_tweak == 'yes'){
-		list($loc_pub, $loc_mod) = get_ip_location($user[ip]);
+		list($loc_pub, $loc_mod) = get_ip_location($user['ip']);
 		$locationinfo = "<span title=\"" . $loc_mod . "\">[" . $loc_pub . "]</span>";
 	}
 	else $locationinfo = "";
-	tr_small($lang_userdetails['row_ip_address'], $user[ip].$locationinfo, 1);
+	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo, 1);
 }
 
-$res = sql_query("SELECT agent, peer_id, ip, port FROM peers WHERE userid = $user[id] GROUP BY agent") or sqlerr();
+$res = sql_query("SELECT agent, peer_id, ip, port FROM peers WHERE userid = {$user['id']} GROUP BY agent") or sqlerr();
+    $clientselect = "";
 if (mysql_num_rows($res) > 0)
 {
 	$first = true;
-	$clientselect = "";
 	while($arr = mysql_fetch_assoc($res))
 	{
 		$clientselect .= ($first == true ? "" : " ; ") . get_agent($arr["peer_id"], $arr["agent"]);
@@ -232,7 +235,7 @@ if ($user["downloaded"] > 0)
 
 $xfer = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_uploaded'] . "</strong>:  ". mksize($user["uploaded"]) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['row_downloaded'] . "</strong>:  " . mksize($user["downloaded"]) . "</td></tr>";
 
-tr_small($lang_userdetails['row_transfer'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . $sr . $xfer . "</table>", 1);
+tr_small($lang_userdetails['row_transfer'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . ($sr ?? '') . $xfer . "</table>", 1);
 
 
 if ($user["leechtime"] > 0)
@@ -243,26 +246,26 @@ if ($user["leechtime"] > 0)
 
 $slt = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['text_seeding_time'] . "</strong>:  ". mkprettytime($user["seedtime"]) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['text_leeching_time'] . "</strong>:  " . mkprettytime($user["leechtime"]) . "</td></tr>";
 
-	tr_small($lang_userdetails['row_sltime'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . $slr . $slt . "</table>", 1);
+	tr_small($lang_userdetails['row_sltime'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . ($slr ?? '') . $slt . "</table>", 1);
 
 if ($user["download"] && $user["upload"])
 tr_small($lang_userdetails['row_internet_speed'], $download."&nbsp;&nbsp;&nbsp;&nbsp;".$upload."&nbsp;&nbsp;&nbsp;&nbsp;".$isp, 1);
 tr_small($lang_userdetails['row_gender'], $gender, 1);
 
 if (($user['donated'] > 0 || $user['donated_cny'] > 0 )&& (get_user_class() >= $userprofile_class || $CURUSER["id"] == $user["id"]))
-tr_small($lang_userdetails['row_donated'], "$".htmlspecialchars($user[donated])."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".htmlspecialchars($user[donated_cny]), 1);
+tr_small($lang_userdetails['row_donated'], "$".htmlspecialchars($user['donated'])."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".htmlspecialchars($user[donated_cny]), 1);
 
 if ($user["avatar"])
 tr_small($lang_userdetails['row_avatar'], return_avatar_image(htmlspecialchars(trim($user["avatar"]))), 1);
 $uclass = get_user_class_image($user["class"]);
-tr_small($lang_userdetails['row_class'], "<img alt=\"".get_user_class_name($user["class"],false,false,true)."\" title=\"".get_user_class_name($user["class"],false,false,true)."\" src=\"".$uclass."\" /> ".($user[title]!=="" ? "&nbsp;".htmlspecialchars(trim($user["title"]))."" :  ""), 1);
+tr_small($lang_userdetails['row_class'], "<img alt=\"".get_user_class_name($user["class"],false,false,true)."\" title=\"".get_user_class_name($user["class"],false,false,true)."\" src=\"".$uclass."\" /> ".($user['title']!=="" ? "&nbsp;".htmlspecialchars(trim($user["title"]))."" :  ""), 1);
 
 tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewcomments&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_comments']."\">".$torrentcomments."</a>" : $torrentcomments), 1);
 
 tr_small($lang_userdetails['row_forum_posts'], ($forumposts && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewposts&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_posts']."\">".$forumposts."</a>" : $forumposts), 1);
 
 if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class)
-tr_small($lang_userdetails['row_karma_points'], htmlspecialchars($user[seedbonus]), 1);
+tr_small($lang_userdetails['row_karma_points'], htmlspecialchars($user['seedbonus']), 1);
 
 if ($user["ip"] && (get_user_class() >= $torrenthistory_class || $user["id"] == $CURUSER["id"])){
 
@@ -285,27 +288,27 @@ if ($user["info"])
 }
 else
 {
-	print("<tr><td align=\"left\" colspan=\"2\" class=\"text\"><font color=\"blue\">".$lang_userdetails['text_public_access_denied'].$user[username].$lang_userdetails['text_user_wants_privacy']."</font></td></tr>\n");
+	print("<tr><td align=\"left\" colspan=\"2\" class=\"text\"><font color=\"blue\">".$lang_userdetails['text_public_access_denied'].$user['username'].$lang_userdetails['text_user_wants_privacy']."</font></td></tr>\n");
 }
 if ($CURUSER["id"] != $user["id"])
 if (get_user_class() >= $staffmem_class)
 $showpmbutton = 1;
 elseif ($user["acceptpms"] == "yes")
 {
-	$r = sql_query("SELECT id FROM blocks WHERE userid=$user[id] AND blockid=$CURUSER[id]") or sqlerr(__FILE__,__LINE__);
+	$r = sql_query("SELECT id FROM blocks WHERE userid={$user['id']} AND blockid={$CURUSER['id']}") or sqlerr(__FILE__,__LINE__);
 	$showpmbutton = (mysql_num_rows($r) == 1 ? 0 : 1);
 }
 elseif ($user["acceptpms"] == "friends")
 {
-	$r = sql_query("SELECT id FROM friends WHERE userid=$user[id] AND friendid=$CURUSER[id]") or sqlerr(__FILE__,__LINE__);
+	$r = sql_query("SELECT id FROM friends WHERE userid={$user['id']} AND friendid={$CURUSER['id']}") or sqlerr(__FILE__,__LINE__);
 	$showpmbutton = (mysql_num_rows($r) == 1 ? 1 : 0);
 }
 if ($CURUSER["id"] != $user["id"]){
 print("<tr><td colspan=\"2\" align=\"center\">");
 if ($showpmbutton)
-print("<a href=\"sendmessage.php?receiver=".htmlspecialchars($user[id])."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_userdetails['title_send_pm']."\" /></a>");
+print("<a href=\"sendmessage.php?receiver=".htmlspecialchars($user['id'])."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_userdetails['title_send_pm']."\" /></a>");
 
-print("<a href=\"report.php?user=".htmlspecialchars($user[id])."\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_userdetails['title_report_user']."\" /></a>");
+print("<a href=\"report.php?user=".htmlspecialchars($user['id'])."\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_userdetails['title_report_user']."\" /></a>");
 print("</td></tr>");
 }
 print("</table>\n");
@@ -318,7 +321,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	print("<input type=\"hidden\" name=\"userid\" value=\"".$id."\" />");
 	print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars("userdetails.php?id=$id")."\" />");
 	print("<table width=\"100%\" class=\"main\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
-	tr($lang_userdetails['row_title'], "<input type=\"text\" size=\"60\" name=\"title\" value=\"" . htmlspecialchars(trim($user[title])) . "\" />", 1);
+	tr($lang_userdetails['row_title'], "<input type=\"text\" size=\"60\" name=\"title\" value=\"" . htmlspecialchars(trim($user['title'])) . "\" />", 1);
 	$avatar = htmlspecialchars(trim($user["avatar"]));
 
 	tr($lang_userdetails['row_privacy_level'], "<input type=\"radio\" name=\"privacy\" value=\"low\"".($user["privacy"] == "low" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_low']."<input type=\"radio\" name=\"privacy\" value=\"normal\"".($user["privacy"] == "normal" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_normal']."<input type=\"radio\" name=\"privacy\" value=\"strong\"".($user["privacy"] == "strong" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_strong'], 1);
@@ -329,7 +332,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	if (get_user_class() == UC_STAFFLEADER)
 	{
 		tr($lang_userdetails['row_donor_status'], "<input type=\"radio\" name=\"donor\" value=\"yes\"" .($user["donor"] == "yes" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_yes']." <input type=\"radio\" name=\"donor\" value=\"no\"" .($user["donor"] == "no" ? " checked=\"checked\"" : "").">".$lang_userdetails['radio_no'], 1);
-		tr($lang_userdetails['row_donated'], "USD: <input type=\"text\" size=\"5\" name=\"donated\" value=\"" . htmlspecialchars($user[donated]) . "\" />&nbsp;&nbsp;&nbsp;&nbsp;CNY: <input type=\"text\" size=\"5\" name=\"donated_cny\" value=\"" . htmlspecialchars($user[donated_cny]) . "\" />" . $lang_userdetails['text_transaction_memo'] . "<input type=\"text\" size=\"50\" name=\"donation_memo\" />", 1);
+		tr($lang_userdetails['row_donated'], "USD: <input type=\"text\" size=\"5\" name=\"donated\" value=\"" . htmlspecialchars($user['donated']) . "\" />&nbsp;&nbsp;&nbsp;&nbsp;CNY: <input type=\"text\" size=\"5\" name=\"donated_cny\" value=\"" . htmlspecialchars($user[donated_cny]) . "\" />" . $lang_userdetails['text_transaction_memo'] . "<input type=\"text\" size=\"50\" name=\"donation_memo\" />", 1);
 	}
 	if (get_user_class() == $prfmanage_class)
 		$maxclass = UC_VIP;
@@ -390,7 +393,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 
 
 	$elapsedlw = get_elapsed_time(strtotime($user["lastwarned"]));
-	print("<tr><td align=\"left\" class=\"rowfollow\">".$lang_userdetails['text_times_warned']."</td><td align=\"left\" class=\"rowfollow\">".$user[timeswarned]."</td></tr>\n");
+	print("<tr><td align=\"left\" class=\"rowfollow\">".$lang_userdetails['text_times_warned']."</td><td align=\"left\" class=\"rowfollow\">".$user['timeswarned']."</td></tr>\n");
 
 	if ($user["timeswarned"] == 0)
 	{
@@ -398,7 +401,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	}else{
 		if ($user["warnedby"] != "System")
 		{
-			$res = sql_query("SELECT id, username, warnedby FROM users WHERE id = " . $user['warnedby'] . "") or sqlerr(__FILE__,__LINE__);
+			$res = sql_query("SELECT id, username, warnedby FROM users WHERE id = " . $user['warnedby']) or sqlerr(__FILE__,__LINE__);
 			$arr = mysql_fetch_assoc($res);
 			$warnedby = "<br />[".$lang_userdetails['text_by']."<u>" . get_username($arr['id']) . "</u></a>]";
 		}else{
@@ -435,9 +438,9 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	tr($lang_userdetails['row_no_ad_until'], "<input type=\"text\" name=\"noaduntil\" value=\"".htmlspecialchars($user["noaduntil"])."\" /> ".$lang_userdetails['text_no_ad_until_note'], 1);
 	if (get_user_class() >= $cruprfmanage_class)
 	{
-		tr($lang_userdetails['row_change_username'], "<input type=\"text\" size=\"25\" name=\"username\" value=\"" . htmlspecialchars($user[username]) . "\" />", 1);
+		tr($lang_userdetails['row_change_username'], "<input type=\"text\" size=\"25\" name=\"username\" value=\"" . htmlspecialchars($user['username']) . "\" />", 1);
 
-		tr($lang_userdetails['row_change_email'], "<input type=\"text\" size=\"80\" name=\"email\" value=\"" . htmlspecialchars($user[email]) . "\" />", 1);
+		tr($lang_userdetails['row_change_email'], "<input type=\"text\" size=\"80\" name=\"email\" value=\"" . htmlspecialchars($user['email']) . "\" />", 1);
 	}
 
 	tr($lang_userdetails['row_change_password'], "<input type=\"password\" name=\"chpassword\" size=\"50\" />", 1);
@@ -445,10 +448,10 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 
 	if (get_user_class() >= $cruprfmanage_class)
 	{
-		tr($lang_userdetails['row_amount_uploaded'], "<input type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user[uploaded]) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user[uploaded]) . "\" />", 1);
-		tr($lang_userdetails['row_amount_downloaded'], "<input type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user[downloaded]) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user[downloaded]) . "\" />", 1);
-		tr($lang_userdetails['row_seeding_karma'], "<input type=\"text\" size=\"60\" name=\"bonus\" value=\"" .htmlspecialchars($user[seedbonus]) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .htmlspecialchars($user[seedbonus]) . "\" />", 1);
-		tr($lang_userdetails['row_invites'], "<input type=\"text\" size=\"60\" name=\"invites\" value=\"" .htmlspecialchars($user[invites]) . "\" />", 1);
+		tr($lang_userdetails['row_amount_uploaded'], "<input type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" />", 1);
+		tr($lang_userdetails['row_amount_downloaded'], "<input type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" />", 1);
+		tr($lang_userdetails['row_seeding_karma'], "<input type=\"text\" size=\"60\" name=\"bonus\" value=\"" .htmlspecialchars($user['seedbonus']) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .htmlspecialchars($user['seedbonus']) . "\" />", 1);
+		tr($lang_userdetails['row_invites'], "<input type=\"text\" size=\"60\" name=\"invites\" value=\"" .htmlspecialchars($user['invites']) . "\" />", 1);
 	}
 	tr($lang_userdetails['row_passkey'], "<input name=\"resetkey\" value=\"yes\" type=\"checkbox\" />".$lang_userdetails['checkbox_reset_passkey'], 1);
 

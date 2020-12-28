@@ -3,13 +3,17 @@ require "include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
+//lots of place use this variable
+$prefix = '';
+$user = $CURUSER;
+$PHP_SELF = $_SERVER['PHP_SELF'];
 
 if (get_user_class() < $forummanage_class)
     permissiondenied();
 
 // DELETE FORUM ACTION
-if ($_GET['action'] == "del") {
-	$id = 0 + $_GET['id'];
+if (isset($_GET['action']) && $_GET['action'] == "del") {
+	$id = $_GET['id'] ?? 0;
 	if (!$id) {
 		header("Location: forummanage.php");
 		die();
@@ -30,7 +34,7 @@ if ($_GET['action'] == "del") {
 }
 
 //EDIT FORUM ACTION
-elseif ($_POST['action'] == "editforum") {
+elseif (isset($_POST['action']) && $_POST['action'] == "editforum") {
 	$name = $_POST['name'];
 	$desc = $_POST['desc'];
 	$id = $_POST['id'];
@@ -38,7 +42,7 @@ elseif ($_POST['action'] == "editforum") {
 		header("Location: " . get_protocol_prefix() . "$BASEURL/forummanage.php");
 		die();
 	}
-	if ($_POST["moderator"]){
+	if (!empty($_POST["moderator"])) {
 	$moderator = $_POST["moderator"];
 	set_forum_moderators($moderator,$id);
 	}
@@ -53,7 +57,7 @@ elseif ($_POST['action'] == "editforum") {
 }
 
 //ADD FORUM ACTION
-elseif ($_POST['action'] == "addforum") {
+elseif (isset($_POST['action']) && $_POST['action'] == "addforum") {
 	$name = ($_POST['name']);
 	$desc = ($_POST['desc']);
 	if (!$name && !$desc) {
@@ -74,9 +78,9 @@ elseif ($_POST['action'] == "addforum") {
 // SHOW FORUMS WITH FORUM MANAGMENT TOOLS
 stdhead($lang_forummanage['head_forum_management']);
 begin_main_frame();
-if ($_GET['action'] == "editforum") {
+if (isset($_GET['action']) && $_GET['action'] == "editforum") {
 	//EDIT PAGE FOR THE FORUMS
-	$id = 0 + ($_GET["id"]);
+	$id = ($_GET["id"] ?? 0);
 	$result = sql_query ("SELECT * FROM forums where id = ".sqlesc($id));
 	if ($row = mysql_fetch_array($result)) {
 		do {
@@ -183,7 +187,7 @@ $nr = mysql_num_rows($res);
 	}
 }
 //
-elseif ($_GET['action'] == "newforum"){
+elseif (isset($_GET['action']) && $_GET['action'] == "newforum"){
 ?>
 <h2 class=transparentbg align=center><a class=faqlink href=forummanage.php><?php echo $lang_forummanage['text_forum_management']?></a><b>--></b><?php echo $lang_forummanage['text_add_forum']?></h2>
 <br />

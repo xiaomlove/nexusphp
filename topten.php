@@ -451,10 +451,10 @@ function languagetable($res, $frame_caption)
 
 stdhead($lang_topten['head_top_ten']);
 begin_main_frame();
-$type = isset($_GET["type"]) ? 0 + $_GET["type"] : 0;
+$type = isset($_GET["type"]) ? (int)$_GET["type"] : 0;
 if (!in_array($type,array(1,2,3,4,5,6,7)))
 $type = 1;
-$limit = isset($_GET["lim"]) ? 0 + $_GET["lim"] : false;
+$limit = isset($_GET["lim"]) ? (int)$_GET["lim"] : false;
 $subtype = isset($_GET["subtype"]) ? $_GET["subtype"] : false;
 
 print("<p align=\"center\">"  .
@@ -473,6 +473,9 @@ $cachename = "topten_type_".$type."_limit_".$limit."_subtype_".$subtype;
 $cachetime = 60 * 60; // 60 minutes
 // START CACHE
 $Cache->new_page($cachename, $cachetime, true);
+//no this option
+$reviewenabled = 'no';
+
 if (!$Cache->get_page())
 {
 $Cache->add_whole_row();

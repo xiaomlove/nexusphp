@@ -164,7 +164,7 @@ function get_last_read_post_id($topicid) {
 		}
 		else $Cache->cache_value('user_'.$CURUSER['id'].'_last_read_post_list', 'no record', 900);
 	}
-	if ($ret != "no record" && $ret[$topicid] && $CURUSER['last_catchup'] < $ret[$topicid]){
+	if ($ret != "no record" && isset($ret[$topicid]) && $CURUSER['last_catchup'] < $ret[$topicid]){
 		return $ret[$topicid];
 	}
 	elseif ($CURUSER['last_catchup'])
@@ -329,7 +329,7 @@ if ($action == "post")
 	}
 	$id = $_POST["id"];
 	$type = $_POST["type"];
-	$subject = $_POST["subject"];
+	$subject = $_POST["subject"] ?? '';
 	$body = trim($_POST["body"]);
 	$hassubject = false;
 	switch ($type){
@@ -403,7 +403,7 @@ if ($action == "post")
 			if ($forum_last_replied_topic_row && $forum_last_replied_topic_row['id'] == $topicid)
 				$Cache->delete_value('forum_'.$forumid.'_last_replied_topic_content');
 		}
-		sql_query("UPDATE posts SET body=".sqlesc($body).", editdate=".sqlesc($date).", editedby=".sqlesc($CURUSER[id])." WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+		sql_query("UPDATE posts SET body=".sqlesc($body).", editdate=".sqlesc($date).", editedby=".sqlesc($CURUSER['id'])." WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 		$postid = $id;
 		$Cache->delete_value('post_'.$postid.'_content');
 	}
@@ -470,12 +470,12 @@ if ($action == "post")
 
 if ($action == "viewtopic")
 {
-	$highlight = htmlspecialchars(trim($_GET["highlight"]));
+	$highlight = htmlspecialchars(trim($_GET["highlight"] ?? ''));
 
-	$topicid = 0+$_GET["topicid"];
+	$topicid = $_GET["topicid"] ?? 0;
 	int_check($topicid,true);
-	$page = $_GET["page"];
-	$authorid = 0+$_GET["authorid"];
+	$page = $_GET["page"] ?? '';
+	$authorid = $_GET["authorid"] ?? 0;
 	if ($authorid)
 	{
 		$where = "WHERE topicid=".sqlesc($topicid)." AND userid=".sqlesc($authorid);
@@ -532,7 +532,7 @@ if ($action == "viewtopic")
 
 	$pages = ceil($postcount / $perpage);
 
-	if ($page[0] == "p")
+	if (isset($page[0]) && $page[0] == "p")
 	{
 		$findpost = substr($page, 1);
 		$res = sql_query("SELECT id FROM posts $where ORDER BY added") or sqlerr(__FILE__, __LINE__);
@@ -635,7 +635,7 @@ if ($action == "viewtopic")
 		if ($pn>=1)
 		{
 			if ($Advertisement->enable_ad()){
-				if ($forumpostad[$pn-1])
+				if (!empty($forumpostad[$pn-1]))
 				echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"ad_forumpost_".$pn."\">".$forumpostad[$pn-1]."</div>";
 			}
 		}
@@ -735,11 +735,11 @@ if ($action == "viewtopic")
 		print("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" align=\"left\">\n");
 		print("<tr><td class=\"embedded\"><form method=\"post\" action=\"?action=setsticky\">\n");
 		print("<input type=\"hidden\" name=\"topicid\" value=\"".$topicid."\" />\n");
-		print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars($_SERVER[REQUEST_URI])."\" />\n");
+		print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars($_SERVER['REQUEST_URI'])."\" />\n");
 		print("<input type=\"hidden\" name=\"sticky\" value=\"".($sticky ? 'no' : 'yes')."\" /><input type=\"submit\" class=\"medium\" value=\"".($sticky ? $lang_forums['submit_unsticky'] : $lang_forums['submit_sticky'])."\" /></form></td>\n");
 		print("<td class=\"embedded\"><form method=\"post\" action=\"?action=setlocked\">\n");
 		print("<input type=\"hidden\" name=\"topicid\" value=\"".$topicid."\" />\n");
-		print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars($_SERVER[REQUEST_URI])."\" />\n");
+		print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars($_SERVER['REQUEST_URI'])."\" />\n");
 		print("<input type=\"hidden\" name=\"locked\" value=\"".($locked ? 'no' : 'yes')."\" /><input type=\"submit\" class=\"medium\" value=\"".($locked ? $lang_forums['submit_unlock'] : $lang_forums['submit_lock'])."\" /></form></td>\n");
 		print("<td class=\"embedded\"><form method=\"get\" action=\"?\">\n");
 		print("<input type=\"hidden\" name=\"action\" value=\"deletetopic\" />\n");
@@ -796,7 +796,7 @@ if ($action == "viewtopic")
 <option style='background-color: plum' value=\"39\">Plum</option>
 <option style='background-color: white' value=\"40\">White</option>");
 		print("</select>");
-		print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars($_SERVER[REQUEST_URI])."\" />\n");
+		print("<input type=\"hidden\" name=\"returnto\" value=\"".htmlspecialchars($_SERVER['REQUEST_URI'])."\" />\n");
 		print("<input type=\"submit\" class=\"medium\" value=\"".$lang_forums['submit_change']."\" /></form></td>");
 		print("</tr>\n");
 		print("</table>\n");
@@ -988,7 +988,7 @@ if ($action == "deletepost")
 
 if ($action == "setlocked")
 {
-	$topicid = 0 + $_POST["topicid"];
+	$topicid = $_POST["topicid"] ?? 0;
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -1002,7 +1002,7 @@ if ($action == "setlocked")
 
 if ($action == 'hltopic')
 {
-	$topicid = 0 + $_GET["topicid"];
+	$topicid = $_GET["topicid"] ?? 0;
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -1022,9 +1022,9 @@ if ($action == 'hltopic')
 
 if ($action == "setsticky")
 {
-	$topicid = 0 + $_POST["topicid"];
+	$topicid = $_POST["topicid"] ?? 0;
 	$ismod = is_forum_moderator($topicid,'topic');
-	if (!topicid || (get_user_class() < $postmanage_class && !$ismod))
+	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
 
 	$sticky = sqlesc($_POST["sticky"]);
@@ -1052,7 +1052,7 @@ if ($action == "viewforum")
 	
 	$forumname = $row['name'];
 	$forummoderators = get_forum_moderators($forumid,false);
-	$search = mysql_real_escape_string(trim($_GET["search"]));
+	$search = mysql_real_escape_string(trim($_GET["search"] ?? ''));
 	if ($search){
 		$wherea = " AND subject LIKE '%$search%'";
 		$addparam .= "&search=".rawurlencode($search);
@@ -1064,7 +1064,7 @@ if ($action == "viewforum")
 	$num = get_row_count("topics","WHERE forumid=".sqlesc($forumid).$wherea);
 
 	list($pagertop, $pagerbottom, $limit) = pager($topicsperpage, $num, "?"."action=viewforum&forumid=".$forumid.$addparam."&");
-	if ($_GET["sort"]){
+	if (isset($_GET["sort"])){
 		switch ($_GET["sort"]){
 			case 'firstpostasc': 
 			{
@@ -1121,7 +1121,7 @@ if ($action == "viewforum")
 	{
 		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"940\">");
 
-		print("<tr><td class=\"colhead\" align=\"center\" width=\"99%\">".$lang_forums['col_topic']."</td><td class=\"colhead\" align=\"center\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$forumid.$addparam."&sort=".($_GET["sort"] == 'firstpostdesc' ? "firstpostasc" : "firstpostdesc"))."\" title=\"".($_GET["sort"] == 'firstpostdesc' ?  $lang_forums['title_order_topic_asc'] : $lang_forums['title_order_topic_desc'])."\">".$lang_forums['col_author']."</a></td><td class=\"colhead\" align=\"center\">".$lang_forums['col_replies']."/".$lang_forums['col_views']."</td><td class=\"colhead\" align=\"center\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$forumid.$addparam."&sort=".($_GET["sort"] == 'lastpostasc' ? "lastpostdesc" : "lastpostasc"))."\" title=\"".($_GET["sort"] == 'lastpostasc' ? $lang_forums['title_order_post_desc'] : $lang_forums['title_order_post_asc'])."\">".$lang_forums['col_last_post']."</a></td>\n");
+		print("<tr><td class=\"colhead\" align=\"center\" width=\"99%\">".$lang_forums['col_topic']."</td><td class=\"colhead\" align=\"center\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$forumid.$addparam."&sort=".(isset($_GET["sort"]) && $_GET["sort"] == 'firstpostdesc' ? "firstpostasc" : "firstpostdesc"))."\" title=\"".(isset($_GET["sort"]) && $_GET["sort"] == 'firstpostdesc' ?  $lang_forums['title_order_topic_asc'] : $lang_forums['title_order_topic_desc'])."\">".$lang_forums['col_author']."</a></td><td class=\"colhead\" align=\"center\">".$lang_forums['col_replies']."/".$lang_forums['col_views']."</td><td class=\"colhead\" align=\"center\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$forumid.$addparam."&sort=".(isset($_GET["sort"]) && $_GET["sort"] == 'lastpostasc' ? "lastpostdesc" : "lastpostasc"))."\" title=\"".(isset($_GET["sort"]) && $_GET["sort"] == 'lastpostasc' ? $lang_forums['title_order_post_desc'] : $lang_forums['title_order_post_asc'])."\">".$lang_forums['col_last_post']."</a></td>\n");
 
 		print("</tr>\n");
 		$counter = 0;
@@ -1179,8 +1179,8 @@ if ($action == "viewforum")
 			//---- Get userID and date of last post
 
 			$arr = get_post_row($topicarr['lastpost']);
-			$lppostid = 0 + $arr["id"];
-			$lpuserid = 0 + $arr["userid"];
+			$lppostid = $arr["id"] ?? 0;
+			$lpuserid = $arr["userid"] ?? 0;
 			$lpusername = get_username($lpuserid);
 			$lpadded = gettime($arr["added"],true,false);
 			$onmouseover = "";
@@ -1196,7 +1196,7 @@ if ($action == "viewforum")
 			}
 
 			$arr = get_post_row($topicarr['firstpost']);
-			$fpuserid = 0 + $arr["userid"];
+			$fpuserid = $arr["userid"] ?? 0;
 			$fpauthor = get_username($arr["userid"]);
 
 			$subject = ($sticky ? "<img class=\"sticky\" src=\"pic/trans.gif\" alt=\"Sticky\" title=\"".$lang_forums['title_sticky']."\" />&nbsp;&nbsp;" : "") . "<a href=\"".htmlspecialchars("?action=viewtopic&forumid=".$forumid."&topicid=".$topicid)."\" ".$onmouseover.">" .highlight_topic(highlight($search,htmlspecialchars($topicarr["subject"])), $hlcolor) . "</a>".$topicpages;
@@ -1263,7 +1263,7 @@ if ($action == "viewunread")
 {
 	$userid = $CURUSER['id'];
 
-	$beforepostid = 0+$_GET['beforepostid'];
+	$beforepostid = $_GET['beforepostid'] ?? 0;
 	$maxresults = 25;
 	$res = sql_query("SELECT id, forumid, subject, lastpost, hlcolor FROM topics WHERE lastpost > ".$CURUSER['last_catchup'].($beforepostid ? " AND lastpost < ".sqlesc($beforepostid) : "")." ORDER BY lastpost DESC LIMIT 100") or sqlerr(__FILE__, __LINE__);
 
@@ -1332,7 +1332,7 @@ if ($action == "search")
 
 		$res = sql_query("SELECT COUNT(posts.id) FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= ".sqlesc(get_user_class())." AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql)") or sqlerr(__FILE__, __LINE__);
 		$arr = mysql_fetch_row($res);
-		$hits = 0 + $arr[0];
+		$hits = $arr[0] ?? 0;
 		if ($hits){
 			$error = false;
 			$found = "[<b><font class=\"striking\"> ".$lang_forums['text_found'].$hits.$lang_forums['text_num_posts']." </font></b>]";
@@ -1445,7 +1445,7 @@ foreach ($overforums as $a)
 		continue;
 	if ($count>=1)
 	if ($Advertisement->enable_ad()){
-		if ($interoverforumsad[$count-1])
+		if (!empty($interoverforumsad[$count-1]))
 			echo "<tr><td colspan=\"5\" align=\"center\" id=\"ad_interoverforums_".($count-1)."\">".$interoverforumsad[$count-1]."</td></tr>";
 	}
 	$forid = $a["id"];

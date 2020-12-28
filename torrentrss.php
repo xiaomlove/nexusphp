@@ -30,7 +30,7 @@ $searchstr = mysql_real_escape_string(trim($_GET["search"]));
 if (empty($searchstr))
 	unset($searchstr);
 if (isset($searchstr)){
-	$search_mode = 0 + $_GET["search_mode"];
+	$search_mode = $_GET["search_mode"] ?? 0;
 	if (!in_array($search_mode,array(0,1,2)))
 	{
 		$search_mode = 0;

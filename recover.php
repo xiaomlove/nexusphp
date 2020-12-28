@@ -4,7 +4,7 @@ dbconn();
 failedloginscheck ("Recover",true);
 
 $take_recover = !isset($_GET['sitelanguage']);
-$langid = 0 + $_GET['sitelanguage'];
+$langid = $_GET['sitelanguage'] ?? 0;
 if ($langid)
 {
 	$lang_folder = validlang($langid);
@@ -60,7 +60,7 @@ EOD;
 }
 elseif($_SERVER["REQUEST_METHOD"] == "GET" && $take_recover && isset($_GET["id"]) && isset($_GET["secret"]))
 {
-	$id = 0 + $_GET["id"];
+	$id = $_GET["id"] ?? 0;
 	$md5 = $_GET["secret"];
 
 	if (!$id)

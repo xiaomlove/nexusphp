@@ -14,7 +14,7 @@ if (!mkglobal("id:name:descr:type")){
 	bark($lang_takeedit['std_missing_form_data']);
 }
 
-$id = 0 + $id;
+$id = $id ?? 0;
 if (!$id)
 	die();
 
@@ -57,7 +57,7 @@ elseif ($nfoaction == "remove"){
 }
 }
 
-$catid = (0 + $type);
+$catid = ($type ?? 0);
 if (!is_valid_id($catid))
 bark($lang_takeedit['std_missing_form_data']);
 if (!$name || !$descr)
@@ -75,13 +75,13 @@ $updateset[] = "url = " . sqlesc($url);
 $updateset[] = "small_descr = " . sqlesc($_POST["small_descr"]);
 //$updateset[] = "ori_descr = " . sqlesc($descr);
 $updateset[] = "category = " . sqlesc($catid);
-$updateset[] = "source = " . sqlesc(0 + $_POST["source_sel"]);
-$updateset[] = "medium = " . sqlesc(0 + $_POST["medium_sel"]);
-$updateset[] = "codec = " . sqlesc(0 + $_POST["codec_sel"]);
-$updateset[] = "standard = " . sqlesc(0 + $_POST["standard_sel"]);
-$updateset[] = "processing = " . sqlesc(0 + $_POST["processing_sel"]);
-$updateset[] = "team = " . sqlesc(0 + $_POST["team_sel"]);
-$updateset[] = "audiocodec = " . sqlesc(0 + $_POST["audiocodec_sel"]);
+$updateset[] = "source = " . sqlesc($_POST["source_sel"] ?? 0);
+$updateset[] = "medium = " . sqlesc($_POST["medium_sel"] ?? 0);
+$updateset[] = "codec = " . sqlesc($_POST["codec_sel"] ?? 0);
+$updateset[] = "standard = " . sqlesc($_POST["standard_sel"] ?? 0);
+$updateset[] = "processing = " . sqlesc($_POST["processing_sel"] ?? 0);
+$updateset[] = "team = " . sqlesc($_POST["team_sel"] ?? 0);
+$updateset[] = "audiocodec = " . sqlesc($_POST["audiocodec_sel"] ?? 0);
 
 if (get_user_class() >= $torrentmanage_class) {
 	if ($_POST["banned"]) {
@@ -96,17 +96,17 @@ if(get_user_class()>=$torrentonpromotion_class)
 {
 	if(!isset($_POST["sel_spstate"]) || $_POST["sel_spstate"] == 1)
 		$updateset[] = "sp_state = 1";
-	elseif((0 + $_POST["sel_spstate"]) == 2)
+	elseif(($_POST["sel_spstate"] ?? 0) == 2)
 		$updateset[] = "sp_state = 2";
-	elseif((0 + $_POST["sel_spstate"]) == 3)
+	elseif(($_POST["sel_spstate"] ?? 0) == 3)
 		$updateset[] = "sp_state = 3";
-	elseif((0 + $_POST["sel_spstate"]) == 4)
+	elseif(($_POST["sel_spstate"] ?? 0) == 4)
 		$updateset[] = "sp_state = 4";
-	elseif((0 + $_POST["sel_spstate"]) == 5)
+	elseif(($_POST["sel_spstate"] ?? 0) == 5)
 		$updateset[] = "sp_state = 5";
-	elseif((0 + $_POST["sel_spstate"]) == 6)
+	elseif(($_POST["sel_spstate"] ?? 0) == 6)
 		$updateset[] = "sp_state = 6";
-	elseif((0 + $_POST["sel_spstate"]) == 7)
+	elseif(($_POST["sel_spstate"] ?? 0) == 7)
 		$updateset[] = "sp_state = 7";
 
 	//promotion expiration type
@@ -128,37 +128,37 @@ if(get_user_class()>=$torrentonpromotion_class)
 }
 if(get_user_class()>=$torrentsticky_class)
 {
-	if((0 + $_POST["sel_posstate"]) == 0)
+	if(($_POST["sel_posstate"] ?? 0) == 0)
 		$updateset[] = "pos_state = 'normal'";
-	elseif((0 + $_POST["sel_posstate"]) == 1)
+	elseif(($_POST["sel_posstate"] ?? 0) == 1)
 		$updateset[] = "pos_state = 'sticky'";
 }
 
 $pick_info = "";
 if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 {
-	if((0 + $_POST["sel_recmovie"]) == 0)
+	if(($_POST["sel_recmovie"] ?? 0) == 0)
 	{
 		if($row["picktype"] != 'normal')
 			$pick_info = ", recomendation canceled!";
 		$updateset[] = "picktype = 'normal'";
 		$updateset[] = "picktime = '0000-00-00 00:00:00'";
 	}
-	elseif((0 + $_POST["sel_recmovie"]) == 1)
+	elseif(($_POST["sel_recmovie"] ?? 0) == 1)
 	{
 		if($row["picktype"] != 'hot')
 			$pick_info = ", recommend as hot movie";
 		$updateset[] = "picktype = 'hot'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
 	}
-	elseif((0 + $_POST["sel_recmovie"]) == 2)
+	elseif(($_POST["sel_recmovie"] ?? 0) == 2)
 	{
 		if($row["picktype"] != 'classic')
 			$pick_info = ", recommend as classic movie";
 		$updateset[] = "picktype = 'classic'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
 	}
-	elseif((0 + $_POST["sel_recmovie"]) == 3)
+	elseif(($_POST["sel_recmovie"] ?? 0) == 3)
 	{
 		if($row["picktype"] != 'recommended')
 			$pick_info = ", recommend as recommended movie";

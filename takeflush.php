@@ -11,7 +11,7 @@ function bark($msg)
    exit;
 }
 
-$id = 0 + $_GET['id'];
+$id = $_GET['id'] ?? 0;
 int_check($id,true);
 
 if (get_user_class() >= UC_MODERATOR || $CURUSER[id] == "$id")

@@ -1,8 +1,8 @@
 <?php
 require "include/bittorrent.php";
 dbconn();
-$userid = 0 + $_GET["userid"];
-$bgpic = 0 + $_GET["bgpic"];
+$userid = $_GET["userid"] ?? 0;
+$bgpic = $_GET["bgpic"] ?? 0;
 if (!$userid)
 	die;
 if (!preg_match("/.*userid=([0-9]+)\.png$/i", $_SERVER['REQUEST_URI']))
@@ -27,22 +27,22 @@ imagealphablending($my_img, false);
 if (!$_GET['noname'])
 {
 	if (isset($_GET['namered']) && $_GET['namered']>=0 && $_GET['namered']<=255)
-		$namered = 0 + $_GET['namered'];
+		$namered = $_GET['namered'] ?? 0;
 	else $namered=255;
 	if (isset($_GET['namegreen']) && $_GET['namegreen']>=0 && $_GET['namegreen']<=255)
-		$namegreen = 0 + $_GET['namegreen'];
+		$namegreen = $_GET['namegreen'] ?? 0;
 	else $namegreen=255;
 	if (isset($_GET['nameblue']) && $_GET['nameblue']>=0 && $_GET['nameblue']<=255)
-		$nameblue = 0 + $_GET['nameblue'];
+		$nameblue = $_GET['nameblue'] ?? 0;
 	else $nameblue=255;
 	if (isset($_GET['namesize']) && $_GET['namesize']>=1 && $_GET['namesize']<=5)
-		$namesize = 0 + $_GET['namesize'];
+		$namesize = $_GET['namesize'] ?? 0;
 	else $namesize=3;
 	if (isset($_GET['namex']) && $_GET['namex']>=0 && $_GET['namex']<=350)
-		$namex = 0 + $_GET['namex'];
+		$namex = $_GET['namex'] ?? 0;
 	else $namex=10;
 	if (isset($_GET['namey']) && $_GET['namey']>=0 && $_GET['namey']<=19)
-		$namey = 0 + $_GET['namey'];
+		$namey = $_GET['namey'] ?? 0;
 	else $namey=3;
 	$name_colour = imagecolorallocate($my_img, $namered, $namegreen, $nameblue);
 	imagestring($my_img, $namesize, $namex, $namey, $username, $name_colour);
@@ -51,22 +51,22 @@ if (!$_GET['noname'])
 if (!$_GET['noup'])
 {
 	if (isset($_GET['upred']) && $_GET['upred']>=0 && $_GET['upred']<=255)
-		$upred = 0 + $_GET['upred'];
+		$upred = $_GET['upred'] ?? 0;
 	else $upred=0;
 	if (isset($_GET['upgreen']) && $_GET['upgreen']>=0 && $_GET['upgreen']<=255)
-		$upgreen = 0 + $_GET['upgreen'];
+		$upgreen = $_GET['upgreen'] ?? 0;
 	else $upgreen=255;
 	if (isset($_GET['upblue']) && $_GET['upblue']>=0 && $_GET['upblue']<=255)
-		$upblue = 0 + $_GET['upblue'];
+		$upblue = $_GET['upblue'] ?? 0;
 	else $upblue=0;
 	if (isset($_GET['upsize']) && $_GET['upsize']>=1 && $_GET['upsize']<=5)
-		$upsize = 0 + $_GET['upsize'];
+		$upsize = $_GET['upsize'] ?? 0;
 	else $upsize=3;
 	if (isset($_GET['upx']) && $_GET['upx']>=0 && $_GET['upx']<=350)
-		$upx = 0 + $_GET['upx'];
+		$upx = $_GET['upx'] ?? 0;
 	else $upx=100;
 	if (isset($_GET['upy']) && $_GET['upy']>=0 && $_GET['upy']<=19)
-		$upy = 0 + $_GET['upy'];
+		$upy = $_GET['upy'] ?? 0;
 	else $upy=3;
 	$up_colour = imagecolorallocate($my_img, $upred, $upgreen, $upblue);
 	imagestring($my_img, $upsize, $upx, $upy, $uploaded, $up_colour);
@@ -75,22 +75,22 @@ if (!$_GET['noup'])
 if (!$_GET['nodown'])
 {
 	if (isset($_GET['downred']) && $_GET['downred']>=0 && $_GET['downred']<=255)
-		$downred = 0 + $_GET['downred'];
+		$downred = $_GET['downred'] ?? 0;
 	else $downred=255;
 	if (isset($_GET['downgreen']) && $_GET['downgreen']>=0 && $_GET['downgreen']<=255)
-		$downgreen = 0 + $_GET['downgreen'];
+		$downgreen = $_GET['downgreen'] ?? 0;
 	else $downgreen=0;
 	if (isset($_GET['downblue']) && $_GET['downblue']>=0 && $_GET['downblue']<=255)
-		$downblue = 0 + $_GET['downblue'];
+		$downblue = $_GET['downblue'] ?? 0;
 	else $downblue=0;
 	if (isset($_GET['downsize']) && $_GET['downsize']>=1 && $_GET['downsize']<=5)
-		$downsize = 0 + $_GET['downsize'];
+		$downsize = $_GET['downsize'] ?? 0;
 	else $downsize=3;
 	if (isset($_GET['downx']) && $_GET['downx']>=0 && $_GET['downx']<=350)
-		$downx = 0 + $_GET['downx'];
+		$downx = $_GET['downx'] ?? 0;
 	else $downx=180;
 	if (isset($_GET['downy']) && $_GET['downy']>=0 && $_GET['downy']<=19)
-		$downy = 0 + $_GET['downy'];
+		$downy = $_GET['downy'];
 	else $downy=3;
 	$down_colour = imagecolorallocate($my_img, $downred, $downgreen, $downblue);
 	imagestring($my_img, $downsize, $downx, $downy, $downloaded, $down_colour);

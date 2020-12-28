@@ -3,7 +3,7 @@ require "include/bittorrent.php";
 dbconn();
 failedloginscheck ("Re-send",true);
 
-$langid = 0 + $_GET['sitelanguage'];
+$langid = $_GET['sitelanguage'] ?? 0;
 if ($langid)
 {
 	$lang_folder = validlang($langid);
