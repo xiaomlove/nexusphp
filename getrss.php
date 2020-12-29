@@ -141,8 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 		$query[] = "iuplder=1";
 	}
 	$searchstr = mysql_real_escape_string(trim($_POST["search"] ?? ''));
-	if (empty($searchstr))
-		unset($searchstr);
+//	if (empty($searchstr))
+//		unset($searchstr);
 	if ($searchstr)
 	{
 		$query[] = "search=".rawurlencode($searchstr);

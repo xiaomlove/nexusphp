@@ -32,7 +32,7 @@ if($delid > 0) {
 
 $edited = $_GET['edited'];
 if($edited == 1) {
-	$id = 0 + $_GET['id'];
+	$id = $_GET['id'] ?? 0;
 	$name = $_GET['name'];
 	$flagpic = $_GET['flagpic'];
 	$location_main = $_GET['location_main'];
@@ -65,7 +65,7 @@ if($edited == 1) {
 
 }
 
-$editid = 0 + $_GET['editid'];
+$editid = $_GET['editid'] ?? 0;
 if($editid > 0) {
 	
 	$query = "SELECT * FROM locations WHERE id=" . sqlesc($editid);

@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 if ($enablead_advertisement != 'yes')
 	stderr($lang_adredir['std_error'], $lang_adredir['std_ad_system_disabled']);
-$id=0+$_GET['id'];
+$id=$_GET['id'] ?? 0;
 if (!$id)
 	stderr($lang_adredir['std_error'], $lang_adredir['std_invalid_ad_id']);
 $redir=htmlspecialchars_decode(urldecode($_GET['url']));

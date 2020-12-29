@@ -67,9 +67,14 @@ function getip() {
 
 function sql_query($query)
 {
+	$begin = getmicrotime();
 	global $query_name;
-	$query_name[] = $query;
-	return mysql_query($query);
+	$result = mysql_query($query);
+	$query_name[] = [
+		'query' => $query,
+		'time' => sprintf('%.3f', getmicrotime() - $begin),
+	];
+	return $result;
 }
 
 function sqlesc($value) {

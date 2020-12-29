@@ -12,12 +12,12 @@ $action = htmlspecialchars($_GET["action"]);
 
 if ($action == 'delete')
 {
-	$newsid = 0+$_GET["newsid"];
+	$newsid = $_GET["newsid"] ?? 0;
 	int_check($newsid,true);
 
 	$returnto = $_GET["returnto"] ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]);
 
-	$sure = 0+$_GET["sure"];
+	$sure = $_GET["sure"] ?? 0;
 	if (!$sure)
 	stderr($lang_news['std_delete_news_item'], $lang_news['std_are_you_sure'] . "<a class=altlink href=?action=delete&newsid=$newsid&returnto=$returnto&sure=1>".$lang_news['std_here']."</a>".$lang_news['std_if_sure'],false);
 
@@ -59,7 +59,7 @@ if ($action == 'add')
 if ($action == 'edit')
 {
 
-	$newsid = 0+$_GET["newsid"];
+	$newsid = $_GET["newsid"] ?? 0;
 	int_check($newsid,true);
 
 	$res = sql_query("SELECT * FROM news WHERE id=".sqlesc($newsid)) or sqlerr(__FILE__, __LINE__);

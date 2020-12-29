@@ -9,7 +9,7 @@ header("Cache-Control: no-cache, must-revalidate" );
 header("Pragma: no-cache" );
 header("Content-Type: text/xml; charset=utf-8");
 
-$torrentid = 0 + $_GET['torrentid'];
+$torrentid = $_GET['torrentid'] ?? 0;
 if(isset($CURUSER))
 {
 	$res_bookmark = sql_query("SELECT * FROM bookmarks WHERE torrentid=" . sqlesc($torrentid) . " AND userid=" . sqlesc($CURUSER[id]));

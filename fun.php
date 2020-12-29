@@ -12,7 +12,7 @@ if (!$action)
 }
 if ($action == 'delete')
 {
-	$id = 0+$_GET["id"];
+	$id = $_GET["id"] ?? 0;
 	int_check($id,true);
 	$res = sql_query("SELECT userid FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
 	$arr = mysql_fetch_array($res);
@@ -20,7 +20,7 @@ if ($action == 'delete')
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
 	if (get_user_class() < $funmanage_class)
 		permissiondenied();
-	$sure = 0+$_GET["sure"];
+	$sure = $_GET["sure"] ?? 0;
 	$returnto = $_GET["returnto"] ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]);
 	if (!$sure)
 		stderr($lang_fun['std_delete_fun'],$lang_fun['text_please_click'] ."<a class=altlink href=?action=delete&id=$id&returnto=$returnto&sure=1>".$lang_fun['text_here_if_sure'],false);
@@ -123,7 +123,7 @@ if ($row){
 print("</body></html>");
 }
 if ($action == 'edit'){
-	$id = 0+$_GET["id"];
+	$id = $_GET["id"] ?? 0;
 	int_check($id,true);
 	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
 	$arr = mysql_fetch_array($res);
@@ -165,7 +165,7 @@ if ($action == 'ban')
 {
 	if (get_user_class() < $funmanage_class)
 		permissiondenied();
-	$id = 0+$_GET["id"];
+	$id = $_GET["id"] ?? 0;
 	int_check($id,true);
 	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
 	$arr = mysql_fetch_array($res);
@@ -210,7 +210,7 @@ function funreward($funvote, $totalvote, $title, $posterid, $bonus)
 
 if ($action == 'vote')
 {
-	$id = 0+$_GET["id"];
+	$id = $_GET["id"] ?? 0;
 	int_check($id,true);
 	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
 	$arr = mysql_fetch_array($res);

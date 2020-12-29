@@ -1,7 +1,7 @@
 <?php
 require "include/bittorrent.php";
 dbconn();
-$id = 0 + $_GET["id"];
+$id = $_GET["id"] ?? 0;
 int_check($id,true);
 
 $res = sql_query("SELECT username, class, email FROM users WHERE id=".mysql_real_escape_string($id));

@@ -384,13 +384,13 @@ if ($action == "exchange") {
 		}
 		elseif($art == 'gift_2') // charity giving
 		{
-			$points = 0+$_POST["bonuscharity"];
+			$points = $_POST["bonuscharity"] ?? 0;
 			if ($points < 1000 || $points > 50000){
 				stdmsg($lang_mybonus['text_error'], $lang_mybonus['bonus_amount_not_allowed_two'], 0);
 				stdfoot();
 				die();
 			}
-			$ratiocharity = 0.0+$_POST["ratiocharity"];
+			$ratiocharity = $_POST["ratiocharity"];
 			if ($ratiocharity < 0.1 || $ratiocharity > 0.8){
 				stdmsg($lang_mybonus['text_error'], $lang_mybonus['bonus_ratio_not_allowed']);
 				stdfoot();
@@ -416,7 +416,7 @@ if ($action == "exchange") {
 		}
 		elseif($art == "gift_1" && $bonusgift_bonus == 'yes') {
 			//=== trade for giving the gift of karma
-			$points = 0+$_POST["bonusgift"];
+			$points = $_POST["bonusgift"];
 			$message = $_POST["message"];
 			//==gift for peeps with no more options
 			$usernamegift = sqlesc(trim($_POST["username"]));

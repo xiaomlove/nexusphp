@@ -5,7 +5,7 @@ require_once(get_langfile_path());
 require(get_langfile_path("",true));
 
 $action = htmlspecialchars($_GET["action"]);
-$sub = htmlspecialchars($_GET["sub"]);
+$sub = htmlspecialchars($_GET["sub"] ?? '');
 $type = htmlspecialchars($_GET["type"]);
 
 loggedinorreturn();

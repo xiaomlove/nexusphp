@@ -9,7 +9,7 @@ header("Cache-Control: no-cache, must-revalidate" );
 header("Pragma: no-cache" );
 header("Content-Type: text/xml; charset=utf-8");
 
-$id = 0 + $_GET['id'];
+$id = $_GET['id'] ?? 0;
 if(isset($CURUSER))
 {
 function dltable($name, $arr, $torrent)

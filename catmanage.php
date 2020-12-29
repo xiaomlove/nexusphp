@@ -575,7 +575,7 @@ print($pagerbottom);
 }
 elseif($action == 'del')
 {
-	$id = 0 + $_GET['id'];
+	$id = $_GET['id'] ?? 0;
 	if (!$id)
 	{
 		stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
@@ -602,7 +602,7 @@ elseif($action == 'del')
 }
 elseif($action == 'edit')
 {
-	$id = 0 + $_GET['id'];
+	$id = $_GET['id'] ?? 0;
 	if (!$id)
 	{
 		stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
@@ -640,7 +640,7 @@ elseif($action == 'submit')
 {
 	$dbtablename=return_category_db_table_name($type);
 	if ($_POST['isedit']){
-		$id = 0 + $_POST['id'];
+		$id = $_POST['id'] ?? 0;
 		if (!$id)
 		{
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
@@ -658,23 +658,23 @@ elseif($action == 'submit')
 		if (!$name)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
 		$updateset[] = "name=".sqlesc($name);
-		$sort_index = 0+$_POST['sort_index'];
+		$sort_index = $_POST['sort_index'] ?? 0;
 		$updateset[] = "sort_index=".sqlesc($sort_index);
 		$Cache->delete_value($dbtablename.'_list');
 	}
 	elseif ($type=='searchbox'){
 		$name = $_POST['name'];
-		$catsperrow = 0+$_POST['catsperrow'];
-		$catpadding = 0+$_POST['catpadding'];
+		$catsperrow = $_POST['catsperrow'] ?? 0;
+		$catpadding = $_POST['catpadding'] ?? 0;
 		if (!$name || !$catsperrow || !$catpadding)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
-		$showsource = 0+$_POST['showsource'];
-		$showmedium = 0+$_POST['showmedium'];
-		$showcodec = 0+$_POST['showcodec'];
-		$showstandard = 0+$_POST['showstandard'];
-		$showprocessing = 0+$_POST['showprocessing'];
-		$showteam = 0+$_POST['showteam'];
-		$showaudiocodec = 0+$_POST['showaudiocodec'];
+		$showsource = $_POST['showsource'] ?? 0;
+		$showmedium = $_POST['showmedium'] ?? 0;
+		$showcodec = $_POST['showcodec'] ?? 0;
+		$showstandard = $_POST['showstandard'] ?? 0;
+		$showprocessing = $_POST['showprocessing'] ?? 0;
+		$showteam = $_POST['showteam'] ?? 0;
+		$showaudiocodec = $_POST['showaudiocodec'];
 		$updateset[] = "catsperrow=".sqlesc($catsperrow);
 		$updateset[] = "catpadding=".sqlesc($catpadding);
 		$updateset[] = "name=".sqlesc($name);
@@ -720,13 +720,13 @@ elseif($action == 'submit')
 		$name = $_POST['name'];
 		$image = trim($_POST['image']);
 		$class_name = trim($_POST['class_name']);
-		$source = 0+$_POST['source'];
-		$medium = 0+$_POST['medium'];
-		$codec = 0+$_POST['codec'];
-		$standard = 0+$_POST['standard'];
-		$processing = 0+$_POST['processing'];
-		$team = 0+$_POST['team'];
-		$audiocodec = 0+$_POST['audiocodec'];
+		$source = $_POST['source'] ?? 0;
+		$medium = $_POST['medium'] ?? 0;
+		$codec = $_POST['codec'] ?? 0;
+		$standard = $_POST['standard'] ?? 0;
+		$processing = $_POST['processing'] ?? 0;
+		$team = $_POST['team'] ?? 0;
+		$audiocodec = $_POST['audiocodec'] ?? 0;
 		if (!$name || !$image)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
 		if (!valid_file_name($image))
@@ -756,9 +756,9 @@ elseif($action == 'submit')
 	elseif ($type=='category'){
 		$name = $_POST['name'];
 		$image = trim($_POST['image']);
-		$mode = 0+$_POST['mode'];
+		$mode = $_POST['mode'] ?? 0;
 		$class_name = trim($_POST['class_name']);
-		$sort_index = 0+$_POST['sort_index'];
+		$sort_index = $_POST['sort_index'] ?? 0;
 		if (!$name || !$image)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
 		if (!valid_file_name($image))

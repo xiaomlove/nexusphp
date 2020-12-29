@@ -55,7 +55,7 @@ if ($lang_id)
 }
 
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["action"] == "upload" && ($in_detail!= 'in_detail'))
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["action"] == "upload" && ($in_detail!= 'in_detail'))
 {
 	//start process upload file
 	$file = $_FILES['file'];
@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["action"] == "upload" && ($in
 		exit;
 	}
 
-	$accept_ext = array('sub' => sub, 'srt' => srt, 'zip' => zip, 'rar' => rar, 'ace' => ace, 'txt' => txt, 'SUB' => SUB, 'SRT' => SRT, 'ZIP' => ZIP, 'RAR' => RAR, 'ACE' => ACE, 'TXT' => TXT, 'ssa' => ssa, 'ass' => ass, 'cue' => cue);
+	$accept_ext = array('sub' => 'sub', 'srt' => 'srt', 'zip' => 'zip', 'rar' => 'rar', 'ace' => 'ace', 'txt' => 'txt', 'SUB' => 'SUB', 'SRT' => 'SRT', 'ZIP' => 'ZIP', 'RAR' => 'RAR', 'ACE' => 'ACE', 'TXT' => 'TXT', 'ssa' => 'ssa', 'ass' => 'ass', 'cue' => 'cue');
 	$ext_l = strrpos($file['name'], ".");
 	$ext = strtolower(substr($file['name'], $ext_l+1, strlen($file['name'])-($ext_l+1)));
 
@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["action"] == "upload" && ($in
 	}
 	//end process language
 
-	if ($_POST['uplver'] == 'yes' && get_user_class()>=$beanonymous_class) {
+	if (isset($_POST['uplver']) && $_POST['uplver'] == 'yes' && get_user_class()>=$beanonymous_class) {
 		$anonymous = "yes";
 		$anon = "Anonymous";
 	}
@@ -206,12 +206,12 @@ if (get_user_class() >= $delownsub_class)
 			$a = mysql_fetch_assoc($r);
 			if (get_user_class() >= $submanage_class || $a["uppedby"] == $CURUSER["id"])
 			{
-				$sure = $_GET["sure"];
+				$sure = $_GET["sure"] ?? 0;
 				if ($sure == 1)
 				{
 					$reason = $_POST["reason"];
 					sql_query("DELETE FROM subs WHERE id=$delete") or sqlerr(__FILE__, __LINE__);
-					if (!unlink("$SUBSPATH/$a[torrent_id]/$a[id].$a[ext]"))
+					if (!@unlink("$SUBSPATH/$a[torrent_id]/$a[id].$a[ext]"))
 					{
 						stdmsg($lang_subtitles['std_error'], $lang_subtitles['std_this_file']."$a[filename]".$lang_subtitles['std_is_invalid']);
 						stdfoot();

@@ -1037,7 +1037,7 @@ function insert_suggest($keyword, $userid, $pre_escaped = true)
 {
 	if(mb_strlen($keyword,"UTF-8") >= 2)
 	{
-		$userid = 0 + $userid;
+		$userid = $userid ?? 0;
 		if($userid)
 		sql_query("INSERT INTO suggest(keywords, userid, adddate) VALUES (" . ($pre_escaped == true ? "'" . $keyword . "'" : sqlesc($keyword)) . "," . sqlesc($userid) . ", NOW())") or sqlerr(__FILE__,__LINE__);
 	}
@@ -1053,7 +1053,7 @@ function get_external_tr($imdb_url = "")
 
 function get_torrent_extinfo_identifier($torrentid)
 {
-	$torrentid = 0 + $torrentid;
+	$torrentid = $torrentid ?? 0;
 
 	$result = array('imdb_id');
 	unset($result);
@@ -1796,7 +1796,7 @@ function userlogin() {
 		//return;
 	}
 	$b_id = base64($_COOKIE["c_secure_uid"],false);
-	$id = 0 + $b_id;
+	$id = $b_id ?? 0;
 	if (!$id || !is_valid_id($id) || strlen($_COOKIE["c_secure_pass"]) != 32)
 	return;
 
@@ -2036,7 +2036,7 @@ function validemail($email) {
 
 function validlang($langid) {
 	global $deflang;
-	$langid = 0 + $langid;
+	$langid = $langid ?? 0;
 	$res = sql_query("SELECT * FROM language WHERE site_lang = 1 AND id = " . sqlesc($langid)) or sqlerr(__FILE__, __LINE__);
 	if(mysql_num_rows($res) == 1)
 	{
@@ -2474,13 +2474,13 @@ if ($msgalert)
 /*
 	$pending_invitee = $Cache->get_value('user_'.$CURUSER["id"].'_pending_invitee_count');
 	if ($pending_invitee == ""){
-		$pending_invitee = get_row_count("users","WHERE status = 'pending' AND invited_by = ".sqlesc($CURUSER[id]));
+		$pending_invitee = get_row_count("users","WHERE status = 'pending' AND invited_by = ".sqlesc($CURUSER['id']));
 		$Cache->cache_value('user_'.$CURUSER["id"].'_pending_invitee_count', $pending_invitee, 900);
 	}
 	if ($pending_invitee > 0)
 	{
 		$text = $lang_functions['text_your_friends'].add_s($pending_invitee).is_or_are($pending_invitee).$lang_functions['text_awaiting_confirmation'];
-		msgalert("invite.php?id=".$CURUSER[id],$text, "red");
+		msgalert("invite.php?id=".$CURUSER['id'],$text, "red");
 	}*/
 	$settings_script_name = $_SERVER["SCRIPT_FILENAME"];
 	if (!preg_match("/index/i", $settings_script_name))
@@ -2557,21 +2557,21 @@ function stdfoot() {
 	$year = substr($datefounded, 0, 4);
 	$yearfounded = ($year ? $year : 2007);
 	print(" (c) "." <a href=\"" . get_protocol_prefix() . $BASEURL."\" target=\"_self\">".$SITENAME."</a> ".($icplicense_main ? " ".$icplicense_main." " : "").(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y")." ".VERSION."<br /><br />");
-	printf ("[page created in <b> %f </b> sec", $totaltime);
-	print (" with <b>".count($query_name)."</b> db queries, <b>".$Cache->getCacheReadTimes()."</b> reads and <b>".$Cache->getCacheWriteTimes()."</b> writes of memcached and <b>".mksize(memory_get_usage())."</b> ram]");
+	printf ("[page created in <b> %s </b> ms", sprintf("%.1f", $totaltime * 1000));
+	print (" with <b>".count($query_name)."</b> db queries, <b>".$Cache->getCacheReadTimes()."</b> reads and <b>".$Cache->getCacheWriteTimes()."</b> writes of Redis and <b>".mksize(memory_get_usage())."</b> ram]");
 	print ("</div>\n");
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
 		print("<div id=\"sql_debug\">SQL query list: <ul>");
 		foreach($query_name as $query) {
-			print("<li>".htmlspecialchars($query)."</li>");
+			print(sprintf('<li>%s [%s ms]</li>', htmlspecialchars($query['query']), $query['time'] * 1000));
 		}
 		print("</ul>");
-		print("Memcached key read: <ul>");
+		print("Redis key read: <ul>");
 		foreach($Cache->getKeyHits('read') as $keyName => $hits) {
 			print("<li>".htmlspecialchars($keyName)." : ".$hits."</li>");
 		}
 		print("</ul>");
-		print("Memcached key write: <ul>");
+		print("Redis key write: <ul>");
 		foreach($Cache->getKeyHits('write') as $keyName => $hits) {
 			print("<li>".htmlspecialchars($keyName)." : ".$hits."</li>");
 		}
@@ -2731,7 +2731,7 @@ function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
 	}
 
 	if (isset($_GET[$pagename])) {
-		$page = 0 + $_GET[$pagename];
+		$page = $_GET[$pagename] ?? 0;
 		if ($page < 0)
 		$page = $pagedefault;
 	}
@@ -2817,14 +2817,14 @@ function commenttable($rows, $type, $parent_id, $review = false)
 		if ($count>=1)
 		{
 			if ($Advertisement->enable_ad()){
-				if ($commentad[$count-1])
+				if (!empty($commentad[$count-1]))
 				echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"ad_comment_".$count."\">".$commentad[$count-1]."</div>";
 			}
 		}
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");
 		print(get_username($row["user"],false,true,true,false,false,true));
 		print("&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_at']."</font>".gettime($row["added"]).
-		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row[id]."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
+		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars(trim($userRow["avatar"])) : "");
 		if (!$avatar)
 			$avatar = "pic/default_avatar.png";
@@ -2842,8 +2842,8 @@ function commenttable($rows, $type, $parent_id, $review = false)
 		print("<td class=\"rowfollow\" width=\"150\" valign=\"top\" style=\"padding: 0px;\">".return_avatar_image($avatar)."</td>\n");
 		print("<td class=\"rowfollow\" valign=\"top\"><br />".$text.$text_editby."</td>\n");
 		print("</tr>\n");
-		$actionbar = "<a href=\"comment.php?action=add&amp;sub=quote&amp;cid=".$row[id]."&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_functions['title_reply_with_quote']."\" /></a>".
-		"<a href=\"comment.php?action=add&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_reply\" src=\"pic/trans.gif\" alt=\"Add Reply\" title=\"".$lang_functions['title_add_reply']."\" /></a>".(get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=delete&amp;cid=".$row[id]."&amp;type=".$type."\"><img class=\"f_delete\" src=\"pic/trans.gif\" alt=\"Delete\" title=\"".$lang_functions['title_delete']."\" /></a>" : "").($row["user"] == $CURUSER["id"] || get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=edit&amp;cid=".$row[id]."&amp;type=".$type."\"><img class=\"f_edit\" src=\"pic/trans.gif\" alt=\"Edit\" title=\"".$lang_functions['title_edit']."\" />"."</a>" : "");
+		$actionbar = "<a href=\"comment.php?action=add&amp;sub=quote&amp;cid=".$row['id']."&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_functions['title_reply_with_quote']."\" /></a>".
+		"<a href=\"comment.php?action=add&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_reply\" src=\"pic/trans.gif\" alt=\"Add Reply\" title=\"".$lang_functions['title_add_reply']."\" /></a>".(get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=delete&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_delete\" src=\"pic/trans.gif\" alt=\"Delete\" title=\"".$lang_functions['title_delete']."\" /></a>" : "").($row["user"] == $CURUSER["id"] || get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=edit&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_edit\" src=\"pic/trans.gif\" alt=\"Edit\" title=\"".$lang_functions['title_edit']."\" />"."</a>" : "");
 		print("<tr><td class=\"toolbox\"> ".("'".$userRow['last_access']."'"> $dt ? "<img class=\"f_online\" src=\"pic/trans.gif\" alt=\"Online\" title=\"".$lang_functions['title_online']."\" />":"<img class=\"f_offline\" src=\"pic/trans.gif\" alt=\"Offline\" title=\"".$lang_functions['title_offline']."\" />" )."<a href=\"sendmessage.php?receiver=".htmlspecialchars(trim($row["user"]))."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_functions['title_send_message_to'].htmlspecialchars($userRow["username"])."\" /></a><a href=\"report.php?commentid=".htmlspecialchars(trim($row["id"]))."\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_functions['title_report_this_comment']."\" /></a></td><td class=\"toolbox\" align=\"right\">".$actionbar."</td>");
 
 		print("</tr></table>\n");
@@ -2933,8 +2933,8 @@ function return_torrent_bookmark_array($userid)
 function get_torrent_bookmark_state($userid, $torrentid, $text = false)
 {
 	global $lang_functions;
-	$userid = 0 + $userid;
-	$torrentid = 0 + $torrentid;
+	$userid = $userid ?? 0;
+	$torrentid = $torrentid ?? 0;
 	$ret = array();
 	$ret = return_torrent_bookmark_array($userid);
 	if (!count($ret) || !in_array($torrentid, $ret, false)) // already bookmarked
@@ -2969,7 +2969,7 @@ function torrenttable($res, $variant = "torrent") {
 	if ($last_browse > $time_now) {
 		$last_browse=$time_now;
 	}
-
+    $wait = 0;
 	if (get_user_class() < UC_VIP && $waitsystem == "yes") {
 		$ratio = get_ratio($CURUSER["id"], false);
 		$gigs = $CURUSER["uploaded"] / (1024*1024*1024);
@@ -3006,7 +3006,7 @@ foreach ($_GET as $get_name => $get_value) {
 if ($count_get > 0) {
 	$oldlink = $oldlink . "&amp;";
 }
-$sort = $_GET['sort'];
+$sort = $_GET['sort'] ?? '';
 $link = array();
 for ($i=1; $i<=9; $i++){
 	if ($sort == $i)
@@ -3180,6 +3180,8 @@ while ($row = mysql_fetch_assoc($res))
 	//comments
 
 	$nl = "<br />";
+	$lastcom_tooltip = [];
+	$torrent_tooltip = [];
 	if (!$row["comments"]) {
 		print("<a href=\"comment.php?action=add&amp;pid=".$id."&amp;type=torrent\" title=\"".$lang_functions['title_add_comments']."\">" . $row["comments"] .  "</a>");
 	} else {
@@ -3236,7 +3238,7 @@ while ($row = mysql_fetch_assoc($res))
 		print("<td class=\"rowfollow\">0</td>\n");
 
 	if ($row["times_completed"] >=1)
-	print("<td class=\"rowfollow\"><a href=\"viewsnatches.php?id=".$row[id]."\"><b>" . number_format($row["times_completed"]) . "</b></a></td>\n");
+	print("<td class=\"rowfollow\"><a href=\"viewsnatches.php?id=".$row['id']."\"><b>" . number_format($row["times_completed"]) . "</b></a></td>\n");
 	else
 	print("<td class=\"rowfollow\">" . number_format($row["times_completed"]) . "</td>\n");
 
@@ -3255,7 +3257,7 @@ while ($row = mysql_fetch_assoc($res))
 
 	if (get_user_class() >= $torrentmanage_class)
 	{
-		print("<td class=\"rowfollow\"><a href=\"".htmlspecialchars("fastdelete.php?id=".$row[id])."\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_functions['text_delete']."\" /></a>");
+		print("<td class=\"rowfollow\"><a href=\"".htmlspecialchars("fastdelete.php?id=".$row['id'])."\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_functions['text_delete']."\" /></a>");
 		print("<br /><a href=\"edit.php?returnto=" . rawurlencode($_SERVER["REQUEST_URI"]) . "&amp;id=" . $row["id"] . "\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_functions['text_edit']."\" /></a></td>\n");
 	}
 	print("</tr>\n");
@@ -3274,7 +3276,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 {
 	static $usernameArray = array();
 	global $lang_functions;
-	$id = 0+$id;
+	$id = (int)$id;
 
 	if (func_num_args() == 1 && isset($usernameArray[$id])) {  //One argument=is default display of username. Get it directly from static array if available
 		return $usernameArray[$id];

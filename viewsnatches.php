@@ -60,7 +60,7 @@ if ($count){
 }
 else
 {
-	stdmsg($lang_viewsnatches['std_sorry'], $lang_viewsnatches['std_no_snatched_users']);
+	stdmsg($lang_viewsnatches['std_sorry'], $lang_viewsnatches['text_no_snatched_users']);
 }
 end_main_frame();
 stdfoot();

@@ -30,7 +30,7 @@ $f = $_FILES["file"];
 $fname = unesc($f["name"]);
 if (empty($fname))
 bark($lang_takeupload['std_empty_filename']);
-if (get_user_class()>=$beanonymous_class && $_POST['uplver'] == 'yes') {
+if (get_user_class()>=$beanonymous_class && isset($_POST['uplver']) && $_POST['uplver'] == 'yes') {
 	$anonymous = "yes";
 	$anon = "Anonymous";
 }
@@ -39,7 +39,7 @@ else {
 	$anon = $CURUSER["username"];
 }
 
-$url = parse_imdb_id($_POST['url']);
+$url = parse_imdb_id($_POST['url'] ?? '');
 
 $nfo = '';
 if ($enablenfo_main=='yes'){
@@ -67,14 +67,14 @@ $descr = unesc($_POST["descr"]);
 if (!$descr)
 bark($lang_takeupload['std_blank_description']);
 
-$catid = (0 + $_POST["type"]);
-$sourceid = (0 + $_POST["source_sel"]);
-$mediumid = (0 + $_POST["medium_sel"]);
-$codecid = (0 + $_POST["codec_sel"]);
-$standardid = (0 + $_POST["standard_sel"]);
-$processingid = (0 + $_POST["processing_sel"]);
-$teamid = (0 + $_POST["team_sel"]);
-$audiocodecid = (0 + $_POST["audiocodec_sel"]);
+$catid = ($_POST["type"] ?? 0);
+$sourceid = ($_POST["source_sel"] ?? 0);
+$mediumid = ($_POST["medium_sel"] ?? 0);
+$codecid = ($_POST["codec_sel"] ?? 0);
+$standardid = ($_POST["standard_sel"] ?? 0);
+$processingid = ($_POST["processing_sel"] ?? 0);
+$teamid = ($_POST["team_sel"] ?? 0);
+$audiocodecid = ($_POST["audiocodec_sel"] ?? 0);
 
 if (!is_valid_id($catid))
 bark($lang_takeupload['std_category_unselected']);
@@ -214,7 +214,7 @@ $allowtorrents = user_can_upload("torrents");
 $allowspecial = user_can_upload("music");
 
 $catmod = get_single_value("categories","mode","WHERE id=".sqlesc($catid));
-$offerid = $_POST['offer'];
+$offerid = $_POST['offer'] ?? 0;
 $is_offer=false;
 if ($browsecatmode != $specialcatmode && $catmod == $specialcatmode){//upload to special section
 	if (!$allowspecial)

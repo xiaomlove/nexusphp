@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-$id = 0 + $_GET["id"];
+$id = $_GET["id"] ?? 0;
 int_check($id,true);
 function bark($msg)
 {

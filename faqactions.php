@@ -108,7 +108,7 @@ elseif ($_GET[action] == "editsect" && $_POST[id] != NULL && $_POST[title] != NU
 // ACTION: delete - delete a section or item
 elseif ($_GET[action] == "delete" && isset($_GET[id])) {
 	if ($_GET[confirm] == "yes") {
-		sql_query("DELETE FROM `faq` WHERE `id`=".sqlesc(0+$_GET[id])." LIMIT 1") or sqlerr();
+		sql_query("DELETE FROM `faq` WHERE `id`=".sqlesc($_GET[id] ?? 0)." LIMIT 1") or sqlerr();
 		header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 		die;
 	}
@@ -132,8 +132,8 @@ elseif ($_GET[action] == "additem" && $_GET[inid] && $_GET[langid]) {
 	print("<tr><td>Question:</td><td><input style=\"width: 600px;\" type=\"text\" name=\"question\" value=\"\" /></td></tr>\n");
 	print("<tr><td style=\"vertical-align: top;\">Answer:</td><td><textarea rows=20 style=\"width: 600px; height=600px;\" name=\"answer\"></textarea></td></tr>\n");
 	print("<tr><td>Status:</td><td><select name=\"flag\" style=\"width: 110px;\"><option value=\"0\" style=\"color: #FF0000;\">Hidden</option><option value=\"1\" style=\"color: #000000;\">Normal</option><option value=\"2\" style=\"color: #0000FF;\">Updated</option><option value=\"3\" style=\"color: #008000;\" selected=\"selected\">New</option></select></td></tr>");
-	print("<input type=hidden name=categ value=\"".(0+$_GET[inid])."\">");
-	print("<input type=hidden name=langid value=\"".(0+$_GET[langid])."\">");
+	print("<input type=hidden name=categ value=\"".($_GET[inid] ?? 0)."\">");
+	print("<input type=hidden name=langid value=\"".($_GET[langid] ?? 0)."\">");
 	print("<tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"Add\" style=\"width: 60px;\"></td></tr>\n");
 	print("</table></form>");
 	end_main_frame();
@@ -168,23 +168,23 @@ elseif ($_GET[action] == "addsection") {
 elseif ($_GET[action] == "addnewitem" && $_POST[question] != NULL && $_POST[answer] != NULL) {
 	$question = $_POST[question];
 	$answer = $_POST[answer];
-	$categ = 0+$_POST[categ];
-	$langid = 0+$_POST[langid];
+	$categ = $_POST[categ] ?? 0;
+	$langid = $_POST[langid] ?? 0;
 	$res = sql_query("SELECT MAX(`order`) AS maxorder, MAX(`link_id`) AS maxlinkid FROM `faq` WHERE `type`='item' AND `categ`=".sqlesc($categ)." AND lang_id=".sqlesc($langid));
 	while ($arr = mysql_fetch_array($res, MYSQL_BOTH)) 
 	{
 		$order = $arr['maxorder'] + 1;
 		$link_id = $arr['maxlinkid']+1;
 	}
-	sql_query("INSERT INTO `faq` (`link_id`, `type`, `lang_id`, `question`, `answer`, `flag`, `categ`, `order`) VALUES ('$link_id', 'item', ".sqlesc($langid).", ".sqlesc($question).", ".sqlesc($answer).", " . sqlesc(0+$_POST[flag]) . ", ".sqlesc($categ).", ".sqlesc($order).")") or sqlerr();
+	sql_query("INSERT INTO `faq` (`link_id`, `type`, `lang_id`, `question`, `answer`, `flag`, `categ`, `order`) VALUES ('$link_id', 'item', ".sqlesc($langid).", ".sqlesc($question).", ".sqlesc($answer).", " . sqlesc($_POST['flag'] ?? 0) . ", ".sqlesc($categ).", ".sqlesc($order).")") or sqlerr();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 }
 
 // subACTION: addnewsect - add a new section to the db
-elseif ($_GET[action] == "addnewsect" && $_POST[title] != NULL && $_POST[flag] != NULL) {
-	$title = $_POST[title];
-	$language = 0+$_POST['language'];
+elseif ($_GET['action'] == "addnewsect" && $_POST['title'] != NULL && $_POST['flag'] != NULL) {
+	$title = $_POST['title'];
+	$language = $_POST['language'] ?? 0;
 	$res = sql_query("SELECT MAX(`order`) AS maxorder, MAX(`link_id`) AS maxlinkid FROM `faq` WHERE `type`='categ' AND `lang_id` = ".sqlesc($language));
 	while ($arr = mysql_fetch_array($res, MYSQL_BOTH)) {$order = $arr['maxorder'] + 1;$link_id = $arr['maxlinkid']+1;}
 	sql_query("INSERT INTO `faq` (`link_id`,`type`,`lang_id`, `question`, `answer`, `flag`, `categ`, `order`) VALUES (".sqlesc($link_id).",'categ', ".sqlesc($language).", ".sqlesc($title).", '', ".sqlesc($_POST[flag]).", '0', ".sqlesc($order).")") or sqlerr();

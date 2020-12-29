@@ -33,7 +33,7 @@ function searchform () {
 <?php
 }
 $countrows = number_format(get_row_count("loginattempts")) + 1;
-$page = 0 + $_GET["page"];
+$page = $_GET["page"] ?? 0;
 
 $order = $_GET['order'];
 if ($order == 'id')
@@ -120,7 +120,7 @@ stdfoot();
 	stdfoot();
 	
 }elseif ($action == 'save') {
-	$id = sqlesc(0+$_POST['id']);
+	$id = sqlesc($_POST['id']);
 	$ip = sqlesc($_POST['ip']);
 	$attempts = sqlesc($_POST['attempts']);
 	$type = sqlesc($_POST['type']);

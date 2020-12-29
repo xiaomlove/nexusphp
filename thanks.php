@@ -4,7 +4,7 @@ dbconn();
 loggedinorreturn();
 
 
-if ($_GET['id'])
+if (isset($_GET['id']))
 	stderr("Party is over!", "This trick doesn't work anymore. You need to click the button!");
 $userid = $CURUSER["id"];
 $torrentid = $_POST["id"];

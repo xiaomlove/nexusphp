@@ -57,7 +57,7 @@ if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
-$userid = 0+$az['id'];
+$userid = $az['id'] ?? 0;
 
 //3. CHECK IF CLIENT IS ALLOWED
 $clicheck_res = check_client($peer_id,$agent,$client_familyid);

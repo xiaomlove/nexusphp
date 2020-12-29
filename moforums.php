@@ -151,7 +151,7 @@ $nr = mysql_num_rows($res);
 <?php if ($act == "editforum") {
 
 //EDIT PAGE FOR THE FORUMS
-$id = 0+$_GET["id"];
+$id = $_GET["id"] ?? 0;
 
 $result = sql_query ("SELECT * FROM overforums where id = '$id'");
 if ($row = mysql_fetch_array($result)) {

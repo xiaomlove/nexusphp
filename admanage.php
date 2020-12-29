@@ -190,7 +190,7 @@ tr($lang_admanage['row_flash_height']."<font color=\"red\">*</font>", "<input ty
 $action = $_GET['action'];
 if ($action == 'del')
 {
-	$id = 0 + $_GET['id'];
+	$id = $_GET['id'] ?? 0;
 	if (!$id)
 	{
 		stderr($lang_admanage['std_error'], $lang_admanage['std_invalid_id']);
@@ -204,7 +204,7 @@ if ($action == 'del')
 }
 elseif ($action == 'edit')
 {
-	$id = 0 + $_GET['id'];
+	$id = $_GET['id'] ?? 0;
 	if (!$id)
 	{
 		stderr($lang_admanage['std_error'], $lang_admanage['std_invalid_id']);
@@ -252,7 +252,7 @@ elseif ($action == 'submit')
 	else
 	{
 		if ($_POST['isedit']){
-			$id = 0 + $_POST['id'];
+			$id = $_POST['id'] ?? 0;
 			if (!$id)
 			{
 				stderr($lang_admanage['std_error'], $lang_admanage['std_invalid_id']);
@@ -276,8 +276,8 @@ elseif ($action == 'submit')
 		$name = $_POST['ad']['name'];
 		$starttime = $_POST['ad']['starttime'];
 		$endtime = $_POST['ad']['endtime'];
-		$displayorder = 0+$_POST['ad']['displayorder'];
-		$enabled = 0+$_POST['ad']['enabled'];
+		$displayorder = $_POST['ad']['displayorder'] ?? 0;
+		$enabled = $_POST['ad']['enabled'] ?? 0;
 		$type = $_POST['ad']['type'];
 		if (!$name || !$type)
 		{
@@ -317,8 +317,8 @@ elseif ($action == 'submit')
 			case 'image':
 				if (!$_POST['ad']['image']['url'] || !$_POST['ad']['image']['link'])
 					stderr($lang_admanage['std_error'], $lang_admanage['std_missing_form_data']);
-				$_POST['ad']['image']['width'] = 0+$_POST['ad']['image']['width'];
-				$_POST['ad']['image']['height'] = 0+$_POST['ad']['image']['height'];
+				$_POST['ad']['image']['width'] = $_POST['ad']['image']['width'] ?? 0;
+				$_POST['ad']['image']['height'] = $_POST['ad']['image']['height'] ?? 0;
 				$parameters = serialize($_POST['ad']['image']);
 				$imgadd = "";
 				if ($_POST['ad']['image']['width'])
@@ -330,8 +330,8 @@ elseif ($action == 'submit')
 				$code = "<a href=\"adredir.php?id=".$adid."&amp;url=".rawurlencode(htmlspecialchars($_POST['ad']['image']['link']))."\" target=\"_blank\"><img border=\"0\" src=\"".htmlspecialchars($_POST['ad']['image']['url'])."\"".$imgadd." alt=\"ad\" /></a>";
 				break;
 			case 'flash':
-				$_POST['ad']['flash']['width'] = 0+$_POST['ad']['flash']['width'];
-				$_POST['ad']['flash']['height'] = 0+$_POST['ad']['flash']['height'];
+				$_POST['ad']['flash']['width'] = $_POST['ad']['flash']['width'] ?? 0;
+				$_POST['ad']['flash']['height'] = $_POST['ad']['flash']['height'] ?? 0;
 				if (!$_POST['ad']['flash']['url'] || !$_POST['ad']['flash']['width'] || !$_POST['ad']['flash']['height'])
 					stderr($lang_admanage['std_error'], $lang_admanage['std_missing_form_data']);
 				$parameters = serialize($_POST['ad']['flash']);

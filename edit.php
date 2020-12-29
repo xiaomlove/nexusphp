@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 
-$id = 0 + $_GET['id'];
+$id = $_GET['id'] ?? 0;
 if (!$id)
 	die();
 

@@ -36,7 +36,7 @@ $updateset = array();
 //$shortfname = $matches[1];
 //$dname = $row["save_as"];
 
-$url = parse_imdb_id($_POST['url']);
+$url = parse_imdb_id($_POST['url'] ?? '');
 
 if ($enablenfo_main=='yes'){
 $nfoaction = $_POST['nfoaction'];
@@ -68,7 +68,7 @@ if ($enablespecial == 'yes' && get_user_class() >= $movetorrent_class)
 else $allowmove = false;
 if ($oldcatmode != $newcatmode && !$allowmove)
 	bark($lang_takeedit['std_cannot_move_torrent']);
-$updateset[] = "anonymous = '" . ($_POST["anonymous"] ? "yes" : "no") . "'";
+$updateset[] = "anonymous = '" . (!empty($_POST["anonymous"]) ? "yes" : "no") . "'";
 $updateset[] = "name = " . sqlesc($name);
 $updateset[] = "descr = " . sqlesc($descr);
 $updateset[] = "url = " . sqlesc($url);
@@ -84,14 +84,14 @@ $updateset[] = "team = " . sqlesc($_POST["team_sel"] ?? 0);
 $updateset[] = "audiocodec = " . sqlesc($_POST["audiocodec_sel"] ?? 0);
 
 if (get_user_class() >= $torrentmanage_class) {
-	if ($_POST["banned"]) {
+	if (!empty($_POST["banned"])) {
 		$updateset[] = "banned = 'yes'";
 		$_POST["visible"] = 0;
 	}
 	else
 		$updateset[] = "banned = 'no'";
 }
-$updateset[] = "visible = '" . ($_POST["visible"] ? "yes" : "no") . "'";
+$updateset[] = "visible = '" . (!empty($_POST["visible"]) ? "yes" : "no") . "'";
 if(get_user_class()>=$torrentonpromotion_class)
 {
 	if(!isset($_POST["sel_spstate"]) || $_POST["sel_spstate"] == 1)
@@ -135,6 +135,7 @@ if(get_user_class()>=$torrentsticky_class)
 }
 
 $pick_info = "";
+$place_info = "";
 if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 {
 	if(($_POST["sel_recmovie"] ?? 0) == 0)

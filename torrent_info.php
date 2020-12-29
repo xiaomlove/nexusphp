@@ -12,8 +12,7 @@ function print_array($array, $offset_symbol = "|--", $offset = "", $parent = "")
  
   reset($array);
 
-
-	switch($array['type'])
+	switch($array['type'] ?? '')
 	{
 		case "string":
 			printf("<li><div align=left class=string> - <span class=icon>[STRING]</span> <span class=title>[%s]</span> <span class=length>(%d)</span>: <span class=value>%s</span></div></li>",$parent,$array['strlen'],$array['value']);
@@ -29,7 +28,7 @@ function print_array($array, $offset_symbol = "|--", $offset = "", $parent = "")
 			break;
 		case "dictionary":
 			printf("<li><div align=left class=dictionary> + <span class=icon>[DICT]</span> <span class=title>[%s]</span> <span class=length>(%d)</span></div>",$parent,$array['strlen']);
-			while (list($key, $val) = each($array))
+            foreach ($array as $key => $val)
 			{
 				if (is_array($val))
 				{
@@ -42,7 +41,7 @@ function print_array($array, $offset_symbol = "|--", $offset = "", $parent = "")
 
 			break;
 		default:
-			  while (list($key, $val) = each($array))
+                foreach ($array as $key => $val)
 			  {
 			    if (is_array($val))
 			    {

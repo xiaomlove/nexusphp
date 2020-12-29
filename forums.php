@@ -258,7 +258,7 @@ $action = htmlspecialchars(trim($_GET["action"] ?? ''));
 //-------- Action: New topic
 if ($action == "newtopic")
 {
-	$forumid = 0+$_GET["forumid"];
+	$forumid = $_GET["forumid"] ?? 0;
 	check_whether_exist($forumid, 'forum');
 	stdhead($lang_forums['head_new_topic']);
 	begin_main_frame();
@@ -269,7 +269,7 @@ if ($action == "newtopic")
 }
 if ($action == "quotepost")
 {
-	$postid = 0+$_GET["postid"];
+	$postid = $_GET["postid"] ?? 0;
 	check_whether_exist($postid, 'post');
 	stdhead($lang_forums['head_post_reply']);
 	begin_main_frame();
@@ -283,7 +283,7 @@ if ($action == "quotepost")
 
 if ($action == "reply")
 {
-	$topicid = 0+$_GET["topicid"];
+	$topicid = $_GET["topicid"] ?? 0;
 	check_whether_exist($topicid, 'topic');
 	stdhead($lang_forums['head_post_reply']);
 	begin_main_frame();
@@ -297,7 +297,7 @@ if ($action == "reply")
 
 if ($action == "editpost")
 {
-	$postid = 0+$_GET["postid"];
+	$postid = $_GET["postid"] ?? 0;
 	check_whether_exist($postid, 'post');
 
 	$res = sql_query("SELECT userid, topicid FROM posts WHERE id=".sqlesc($postid)) or sqlerr(__FILE__, __LINE__);
@@ -383,7 +383,7 @@ if ($action == "post")
 	if ($body == "")
 		stderr($lang_forums['std_error'], $lang_forums['std_no_body_text']);
 
-	$userid = 0+$CURUSER["id"];
+	$userid = $CURUSER["id"] ?? 0;
 	$date = date("Y-m-d H:i:s");
 
 	if ($type != 'new'){
@@ -829,9 +829,9 @@ if ($action == "viewtopic")
 
 if ($action == "movetopic")
 {
-	$forumid = 0+$_POST["forumid"];
+	$forumid = $_POST["forumid"] ?? 0;
 
-	$topicid = 0+$_GET["topicid"];
+	$topicid = $_GET["topicid"] ?? 0;
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!is_valid_id($forumid) || !is_valid_id($topicid) || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -885,7 +885,7 @@ if ($action == "movetopic")
 
 if ($action == "deletetopic")
 {
-	$topicid = 0+$_GET["topicid"];
+	$topicid = $_GET["topicid"] ?? 0;
 	$res1 = sql_query("SELECT forumid, userid FROM topics WHERE id=".sqlesc($topicid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
 	$row1 = mysql_fetch_array($res1);
 	if (!$row1){
@@ -899,7 +899,7 @@ if ($action == "deletetopic")
 	if (!is_valid_id($topicid) || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
 
-	$sure = 0+$_GET["sure"];
+	$sure = $_GET["sure"] ?? 0;
 	if (!$sure)
 	{
 		stderr($lang_forums['std_delete_topic'], $lang_forums['std_delete_topic_note'] .
@@ -929,8 +929,8 @@ if ($action == "deletetopic")
 
 if ($action == "deletepost")
 {
-	$postid = 0+$_GET["postid"];
-	$sure = 0+$_GET["sure"];
+	$postid = $_GET["postid"] ?? 0;
+	$sure = $_GET["sure"] ?? 0;
 
 	$ismod = is_forum_moderator($postid, 'post');
 	if ((get_user_class() < $postmanage_class && !$ismod) || !is_valid_id($postid))
@@ -1038,9 +1038,9 @@ if ($action == "setsticky")
 
 if ($action == "viewforum")
 {
-	$forumid = 0+$_GET["forumid"];
+	$forumid = $_GET["forumid"] ?? 0;
 	int_check($forumid,true);
-	$userid = 0+$CURUSER["id"];
+	$userid = $CURUSER["id"] ?? 0;
 	//------ Get forum name, moderators
 	$row = get_forum_row($forumid);
 	if (!$row){

@@ -280,7 +280,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 					$updateset[] = "lang = " . sqlesc($sitelanguage);
 				}
 
-				$updateset[] = "torrentsperpage = " . min(100, 0 + $_POST["torrentsperpage"]);
+				$updateset[] = "torrentsperpage = " . min(100, $_POST["torrentsperpage"] ?? 0);
 				if ($showmovies['hot'] == "yes"){
 					$showhot = $_POST["show_hot"];
 					$updateset[] = "showhot = " . sqlesc($showhot);
@@ -323,9 +323,9 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				$updateset[] = "pmnum = " . $pmnum;
 				if ($showfunbox_main == 'yes'){$showfb = ($_POST["showfb"] == 'yes' ? "yes" : "no");
 				$updateset[] = "showfb = " . sqlesc($showfb);}
-				$sbnum = ($_POST["sbnum"] ? max(10, min(500, 0 + $_POST["sbnum"])) : 70);		
+				$sbnum = ($_POST["sbnum"] ? max(10, min(500, $_POST["sbnum"] ?? 0)) : 70);
 				$updateset[] = "sbnum = " . $sbnum;
-				$sbrefresh = ($_POST["sbrefresh"] ? max(10, min(3600, 0 + $_POST["sbrefresh"])) : 120);
+				$sbrefresh = ($_POST["sbrefresh"] ? max(10, min(3600, $_POST["sbrefresh"] ?? 0)) : 120);
 				$updateset[] = "sbrefresh = " . $sbrefresh;
 
 				if ($_POST["hidehb"] == 'yes')
@@ -616,8 +616,8 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 				$signatures = ($_POST["signatures"] != "" ? "yes" : "no");
 				$signature = htmlspecialchars( trim($_POST["signature"]) );
 
-				$updateset[] = "topicsperpage = " . min(100, 0 + $_POST["topicsperpage"]);
-				$updateset[] = "postsperpage = " . min(100, 0 + $_POST["postsperpage"]);
+				$updateset[] = "topicsperpage = " . min(100, $_POST["topicsperpage"] ?? 0);
+				$updateset[] = "postsperpage = " . min(100, $_POST["postsperpage"] ?? 0);
 				$updateset[] = "avatars = " . sqlesc($avatars);
 				if ($showtooltipsetting)
 					$updateset[] = "showlastpost = " . sqlesc($ttlastpost);
@@ -844,6 +844,7 @@ if (!$forumposts = $Cache->get_value('user_'.$CURUSER['id'].'_post_count')){
 	$forumposts = get_row_count("posts","WHERE userid=".$CURUSER['id']);
 	$Cache->cache_value('user_'.$CURUSER['id'].'_post_count', $forumposts, 3600);
 }
+$dayposts = 0;
 if ($forumposts)
 {
 	$seconds3 = (TIMENOW - strtotime($CURUSER["added"]));
@@ -915,8 +916,8 @@ while ($topicarr = mysql_fetch_assoc($res_topics))
 
 	/// GETTING USERID AND DATE OF LAST POST ///
 	$arr = get_post_row($topicarr['lastpost']);
-	$postid = 0 + $arr["id"];
-	$userid = 0 + $arr["userid"];
+	$postid = $arr["id"] ?? 0;
+	$userid = $arr["userid"] ?? 0;
 	$added = gettime($arr['added'],true,false);
 
 	/// GET NAME OF LAST POSTER ///

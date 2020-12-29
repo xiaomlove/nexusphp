@@ -4,7 +4,7 @@ dbconn();
 $id = (int)$_GET["id"];
 if (!$id)
 	httperr();
-$passkey = $_GET['passkey'];
+$passkey = $_GET['passkey'] ?? '';
 if ($passkey){
 	$res = sql_query("SELECT * FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$user = mysql_fetch_array($res);
@@ -20,7 +20,7 @@ else
 {
 	loggedinorreturn();
 	parked();
-	$letdown = $_GET['letdown'];
+	$letdown = $_GET['letdown'] ?? 0;
 	if (!$letdown && $CURUSER['showdlnotice'] == 1)
 	{
 		header("Location: " . get_protocol_prefix() . "$BASEURL/downloadnotice.php?torrentid=".$id."&type=firsttime");

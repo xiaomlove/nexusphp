@@ -131,7 +131,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	if($off_details != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$id = 0+$_GET["id"];
+	$id = $_GET["id"] ?? 0;
 	if(!$id)
 		die();
 		//stderr("Error", "I smell a rat!");
@@ -465,7 +465,7 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 		stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 	if ($vote =='yeah' || $vote =='against')
 	{
-		$userid = 0+$CURUSER["id"];
+		$userid = $CURUSER["id"] ?? 0;
 		$res = sql_query("SELECT * FROM offervotes WHERE offerid=".sqlesc($offerid)." AND userid=".sqlesc($userid)) or sqlerr(__FILE__,__LINE__);
 		$arr = mysql_fetch_assoc($res);
 		$voted = $arr;

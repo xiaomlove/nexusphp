@@ -4,7 +4,7 @@ dbconn();
 loggedinorreturn();
 if (get_user_class() < UC_SYSOP)
 stderr("Error", "Permission denied.");
-$class = 0 + $_POST["class"];
+$class = $_POST["class"] ?? 0;
 	if ($class)
 		int_check($class,true);
 $or = $_POST["or"];

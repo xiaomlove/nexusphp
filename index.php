@@ -269,8 +269,8 @@ if ($CURUSER && $showpolls_main == "yes")
 			print("</h2>");
 		if ($pollexists)
 		{
-			$pollid = 0+$arr["id"];
-			$userid = 0+$CURUSER["id"];
+			$pollid = $arr["id"] ?? 0;
+			$userid = $CURUSER["id"];
 			$question = $arr["question"];
 			$o = array($arr["option0"], $arr["option1"], $arr["option2"], $arr["option3"], $arr["option4"],
 			$arr["option5"], $arr["option6"], $arr["option7"], $arr["option8"], $arr["option9"],

@@ -198,8 +198,8 @@ function check_client($peer_id, $agent, &$agent_familyid)
 					{
 						if($row_allowed_ua['peer_id_matchtype'] == 'dec')
 						{
-							$match_target[$i+1] = 0 + $match_target[$i+1];
-							$match_bench[$i+1] = 0 + $match_bench[$i+1];
+							$match_target[$i+1] = $match_target[$i+1] ?? 0;
+							$match_bench[$i+1] = $match_bench[$i+1] ?? 0;
 						}
 						else if($row_allowed_ua['peer_id_matchtype'] == 'hex')
 						{
@@ -248,8 +248,8 @@ function check_client($peer_id, $agent, &$agent_familyid)
 					{
 						if($row_allowed_ua['agent_matchtype'] == 'dec')
 						{
-							$match_target[$i+1] = 0 + $match_target[$i+1];
-							$match_bench[$i+1] = 0 + $match_bench[$i+1];
+							$match_target[$i+1] = $match_target[$i+1] ?? 0;
+							$match_bench[$i+1] = $match_bench[$i+1] ?? 0;
 						}
 						else if($row_allowed_ua['agent_matchtype'] == 'hex')
 						{

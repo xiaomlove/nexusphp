@@ -16,7 +16,7 @@ if ($passkey){
 		die("account disabed or parked");
 	elseif ($_GET['linktype'] == 'dl')
 		$dllink = true;
-	$inclbookmarked=0+$_GET['inclbookmarked'];
+	$inclbookmarked=$_GET['inclbookmarked'] ?? 0;
 	if($inclbookmarked == 1)
 	{
 		$bookmarkarray = return_torrent_bookmark_array($user['id']);
@@ -26,7 +26,7 @@ if ($passkey){
 		}
 	}
 }
-$searchstr = mysql_real_escape_string(trim($_GET["search"]));
+$searchstr = mysql_real_escape_string(trim($_GET["search"] ?? ''));
 if (empty($searchstr))
 	unset($searchstr);
 if (isset($searchstr)){
@@ -66,10 +66,10 @@ if (isset($searchstr)){
 }
 
 $limit = "";
-$startindex = 0+$_GET['startindex'];
+$startindex = $_GET['startindex'] ?? 0;
 if ($startindex)
 $limit .= $startindex.", ";
-$showrows = 0+$_GET['rows'];
+$showrows = $_GET['rows'] ?? 0;
 if($showrows < 1 || $showrows > 50)
 	$showrows = 10;
 $limit .= $showrows;
@@ -81,9 +81,9 @@ function get_where($tablename = "sources", $itemname = "source", $getname = "sou
 	$whereitemina = array();
 	foreach ($items as $item)
 	{
-		if ($_GET[$getname.$item[id]])
+		if (!empty($_GET[$getname.$item['id']]))
 		{
-			$whereitemina[] = $item[id];
+			$whereitemina[] = $item['id'];
 		}
 	}
 	if (count($whereitemina) >= 1){

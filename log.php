@@ -177,10 +177,10 @@ else {
 			elseif (isset($_POST['do']) && $_POST['do'] == "add")
 					sql_query ("INSERT INTO chronicle (userid,added, txt) VALUES ('".$CURUSER["id"]."', now(), ".sqlesc($txt).")") or sqlerr(__FILE__, __LINE__);
 			elseif (isset($_POST['do'] ) && $_POST['do'] == "update"){
-				$id = 0 + $_POST['id'];
+				$id = $_POST['id'] ?? 0;
 				if (!$id) { header("Location: log.php?action=chronicle"); die();}
 				else sql_query ("UPDATE chronicle SET txt=".sqlesc($txt)." WHERE id=".$id) or sqlerr(__FILE__, __LINE__);}
-			else {$id = 0 + ($_GET['id'] ?? 0);
+			else {$id = ($_GET['id'] ?? 0);
 				if (!$id) { header("Location: log.php?action=chronicle"); die();}
 				elseif ($_GET['do'] == "del")
 					sql_query ("DELETE FROM chronicle where id = '".$id."'") or sqlerr(__FILE__, __LINE__);

@@ -81,7 +81,7 @@ elseif (get_user_class() < $linkmanage_class)
 	permissiondenied();
 else{
 if ($_GET['action'] == "del") {
-$id = 0 + $_GET['id'];
+$id = $_GET['id'] ?? 0;
 if (!$id) { header("Location: linksmanage.php"); die();}
 $result = sql_query ("SELECT * FROM links where id = '".$id."'");
 if ($row = mysql_fetch_array($result))
@@ -148,7 +148,7 @@ echo "<tr><td>".$row["name"]."</td><td>".$row["url"]."</td><td>".$row["title"]. 
 echo "</table>";
 ?>
 <?php if ($_GET['action'] == "edit") {
-$id = 0 + ($_GET["id"]);
+$id = ($_GET["id"] ?? 0);
 $result = sql_query ("SELECT * FROM links where id = ".sqlesc($id));
 if ($row = mysql_fetch_array($result)) {
 ?>

@@ -16,7 +16,7 @@ function bark($msg) {
 if (!mkglobal("id"))
 	bark($lang_delete['std_missing_form_date']);
 
-$id = 0 + $id;
+$id = $id ?? 0;
 if (!$id)
 	die();
 
@@ -28,7 +28,7 @@ if (!$row)
 if ($CURUSER["id"] != $row["owner"] && get_user_class() < $torrentmanage_class)
 	bark($lang_delete['std_not_owner']);
 
-$rt = 0 + $_POST["reasontype"];
+$rt = $_POST["reasontype"] ?? 0;
 
 if (!is_int($rt) || $rt < 1 || $rt > 5)
 	bark($lang_delete['std_invalid_reason']."$rt.");
