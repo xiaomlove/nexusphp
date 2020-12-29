@@ -399,13 +399,14 @@ else {
 
     reset($o);
     for ($i = 0; $i < count($o); ++$i)
-      if ($o[$i])
+      if (isset($o[$i]) && isset($vs[$i]))
         $os[$i] = array($vs[$i], $o[$i]);
 
     print("<table width=100% class=main border=0 cellspacing=0 cellpadding=0>\n");
     $i = 0;
-    while ($a = $os[$i])
+    while (isset($os[$i]))
     {
+		$a = $os[$i];
 	  	if ($tvotes > 0)
 	  		$p = round($a[0] / $tvotes * 100);
 	  	else

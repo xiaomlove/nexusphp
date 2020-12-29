@@ -12,7 +12,7 @@ if (isset($_GET['del']))
 		}
 	}
 }
-$where=$_GET["type"];
+$where=$_GET["type"] ?? '';
 $refresh = ($CURUSER['sbrefresh'] ? $CURUSER['sbrefresh'] : 120)
 ?>
 <html><head>
@@ -57,7 +57,7 @@ countdown(time);
 }
 </script>
 </head>
-<body class='inframe' <?php if ($_GET["type"] != "helpbox"){?> onload="<?php echo $startcountdown?>" <?php } else {?> onload="hbquota()" <?php } ?>>
+<body class='inframe' <?php if (isset($_GET["type"]) && $_GET["type"] != "helpbox"){?> onload="<?php echo $startcountdown?>" <?php } else {?> onload="hbquota()" <?php } ?>>
 <?php
 if(isset($_GET["sent"]) && $_GET["sent"]=="yes"){
 if(!isset($_GET["shbox_text"]) || !$_GET['shbox_text'])
@@ -82,7 +82,7 @@ else
 			write_log("Someone is hacking shoutbox. - IP : ".getip(),'mod');
 			die($lang_shoutbox['text_no_permission_to_shoutbox']);
 		}
-		if ($_GET["toguest"])
+		if (!empty($_GET["toguest"]))
 			$type ='hb';
 		else $type = 'sb';
 	}
@@ -118,11 +118,11 @@ else
 	while ($arr = mysql_fetch_assoc($res))
 	{
 		if (get_user_class() >= $sbmanage_class) {
-			$del="[<a href=\"shoutbox.php?del=".$arr[id]."\">".$lang_shoutbox['text_del']."</a>]";
+			$del="[<a href=\"shoutbox.php?del=".$arr['id']."\">".$lang_shoutbox['text_del']."</a>]";
 		}
 		if ($arr["userid"]) {
 			$username = get_username($arr["userid"],false,true,true,true,false,false,"",true);
-			if ($_GET["type"] != 'helpbox' && $arr["type"] == 'hb')
+			if (isset($arr["type"]) && isset($_GET['type']) && $_GET["type"] != 'helpbox' && $arr["type"] == 'hb')
 				$username .= $lang_shoutbox['text_to_guest'];
 			}
 		else $username = $lang_shoutbox['text_guest'];

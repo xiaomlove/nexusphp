@@ -18,7 +18,7 @@ function purge_neighbors_cache()
 //make_folder("cache/" , get_langfolder_cookie() . "/neighbors");
 
 $userid = $CURUSER['id'];
-$action = $_GET['action'];
+$action = $_GET['action'] ?? '';
 
 if (!is_valid_id($userid))
 stderr($lang_friends['std_error'], $lang_friends['std_invalid_id']."$userid.");
@@ -106,7 +106,7 @@ if ($action == 'delete')
 stdhead($lang_friends['head_personal_lists_for']. $user['username']);
 
 print("<p><table class=main border=0 cellspacing=0 cellpadding=0>".
-"<tr><td class=embedded><h1 style='margin:0px'> " . $lang_friends['text_personallist'] . " ".get_username($user[id])."</h1></td></tr></table></p>\n");
+"<tr><td class=embedded><h1 style='margin:0px'> " . $lang_friends['text_personallist'] . " ".get_username($user['id'])."</h1></td></tr></table></p>\n");
 
 //Start: Friends
 print("<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>");

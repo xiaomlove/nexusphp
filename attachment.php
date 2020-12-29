@@ -23,6 +23,7 @@ $altsize = $_POST['altsize'] ?? '';
 <body class="inframe">
 <table width="100%">
 <?php
+$warning = "";
 if ($Attach->enable_attachment())
 {
 	if ($_SERVER["REQUEST_METHOD"] == "POST")
@@ -35,7 +36,7 @@ if ($Attach->enable_attachment())
 		$ext = strtolower(substr($origfilename, $ext_l+1, strlen($origfilename)-($ext_l+1)));
 		$banned_ext = array('exe', 'com', 'bat', 'msi');
 		$img_ext = array('jpeg', 'jpg', 'png', 'gif');
-		$warning = "";
+
 		if (!$file || $filesize == 0 || $file["name"] == "") // nothing received
 		{
 			$warning = $lang_attachment['text_nothing_received'];

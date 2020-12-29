@@ -6,8 +6,9 @@ loggedinorreturn();
 if (get_user_class() < $pollmanage_class)
   permissiondenied();
 
-$action = $_GET["action"];
-$pollid = $_GET["pollid"];
+$action = $_GET["action"] ?? '';
+$pollid = $_GET["pollid"] ?? 0;
+$poll = [];
 
 if ($action == "edit")
 {
@@ -20,7 +21,7 @@ if ($action == "edit")
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	$pollid = (int)$_POST["pollid"];
+	$pollid = $_POST["pollid"] ?? 0;
 	$question = htmlspecialchars($_POST["question"]);
 	$option0 = htmlspecialchars($_POST["option0"]);
 	$option1 = htmlspecialchars($_POST["option1"]);
@@ -141,27 +142,27 @@ input.mp
 	width: 450px;
 }
 </style>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_question']?> <font color=red>*</font></td><td align=left><input name=question class=mp maxlength=255 value="<?php echo $poll['question']?>"></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>1 <font color=red>*</font></td><td align=left><input name=option0 class=mp maxlength=40 value="<?php echo $poll['option0']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>2 <font color=red>*</font></td><td align=left><input name=option1 class=mp maxlength=40 value="<?php echo $poll['option1']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>3</td><td align=left><input name=option2 class=mp maxlength=40 value="<?php echo $poll['option2']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>4</td><td align=left><input name=option3 class=mp maxlength=40 value="<?php echo $poll['option3']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>5</td><td align=left><input name=option4 class=mp maxlength=40 value="<?php echo $poll['option4']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>6</td><td align=left><input name=option5 class=mp maxlength=40 value="<?php echo $poll['option5']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>7</td><td align=left><input name=option6 class=mp maxlength=40 value="<?php echo $poll['option6']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>8</td><td align=left><input name=option7 class=mp maxlength=40 value="<?php echo $poll['option7']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>9</td><td align=left><input name=option8 class=mp maxlength=40 value="<?php echo $poll['option8']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>10</td><td align=left><input name=option9 class=mp maxlength=40 value="<?php echo $poll['option9']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>11</td><td align=left><input name=option10 class=mp maxlength=40 value="<?php echo $poll['option10']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>12</td><td align=left><input name=option11 class=mp maxlength=40 value="<?php echo $poll['option11']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>13</td><td align=left><input name=option12 class=mp maxlength=40 value="<?php echo $poll['option12']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>14</td><td align=left><input name=option13 class=mp maxlength=40 value="<?php echo $poll['option13']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>15</td><td align=left><input name=option14 class=mp maxlength=40 value="<?php echo $poll['option14']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>16</td><td align=left><input name=option15 class=mp maxlength=40 value="<?php echo $poll['option15']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>17</td><td align=left><input name=option16 class=mp maxlength=40 value="<?php echo $poll['option16']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>18</td><td align=left><input name=option17 class=mp maxlength=40 value="<?php echo $poll['option17']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>19</td><td align=left><input name=option18 class=mp maxlength=40 value="<?php echo $poll['option18']?>"><br /></td></tr>
-<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>20</td><td align=left><input name=option19 class=mp maxlength=40 value="<?php echo $poll['option19']?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_question']?> <font color=red>*</font></td><td align=left><input name=question class=mp maxlength=255 value="<?php echo $poll['question'] ?? ''?>"></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>1 <font color=red>*</font></td><td align=left><input name=option0 class=mp maxlength=40 value="<?php echo $poll['option0'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>2 <font color=red>*</font></td><td align=left><input name=option1 class=mp maxlength=40 value="<?php echo $poll['option1'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>3</td><td align=left><input name=option2 class=mp maxlength=40 value="<?php echo $poll['option2'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>4</td><td align=left><input name=option3 class=mp maxlength=40 value="<?php echo $poll['option3'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>5</td><td align=left><input name=option4 class=mp maxlength=40 value="<?php echo $poll['option4'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>6</td><td align=left><input name=option5 class=mp maxlength=40 value="<?php echo $poll['option5'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>7</td><td align=left><input name=option6 class=mp maxlength=40 value="<?php echo $poll['option6'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>8</td><td align=left><input name=option7 class=mp maxlength=40 value="<?php echo $poll['option7'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>9</td><td align=left><input name=option8 class=mp maxlength=40 value="<?php echo $poll['option8'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>10</td><td align=left><input name=option9 class=mp maxlength=40 value="<?php echo $poll['option9'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>11</td><td align=left><input name=option10 class=mp maxlength=40 value="<?php echo $poll['option10'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>12</td><td align=left><input name=option11 class=mp maxlength=40 value="<?php echo $poll['option11'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>13</td><td align=left><input name=option12 class=mp maxlength=40 value="<?php echo $poll['option12'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>14</td><td align=left><input name=option13 class=mp maxlength=40 value="<?php echo $poll['option13'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>15</td><td align=left><input name=option14 class=mp maxlength=40 value="<?php echo $poll['option14'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>16</td><td align=left><input name=option15 class=mp maxlength=40 value="<?php echo $poll['option15'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>17</td><td align=left><input name=option16 class=mp maxlength=40 value="<?php echo $poll['option16'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>18</td><td align=left><input name=option17 class=mp maxlength=40 value="<?php echo $poll['option17'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>19</td><td align=left><input name=option18 class=mp maxlength=40 value="<?php echo $poll['option18'] ?? ''?>"><br /></td></tr>
+<tr><td class=rowhead><?php echo $lang_makepoll['text_option']?>20</td><td align=left><input name=option19 class=mp maxlength=40 value="<?php echo $poll['option19'] ?? ''?>"><br /></td></tr>
 <tr><td colspan=2 align=center><input type=submit value="<?php echo $pollid ? $lang_makepoll['submit_edit_poll'] : $lang_makepoll['submit_create_poll']?>" style='height: 20pt'></td></tr>
 </table>
 <p><font color=red>*</font><?php echo $lang_makepoll['text_required']?></p>
@@ -169,7 +170,7 @@ input.mp
 if ($pollid)
 print("<input type=hidden name=pollid value=\"".$poll["id"]."\">");
 ?>
-<input type=hidden name=returnto value="<?php echo htmlspecialchars($_GET["returnto"]) ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"])?>">
+<input type=hidden name=returnto value="<?php echo htmlspecialchars($_GET["returnto"] ?? '') ? htmlspecialchars($_GET["returnto"] ?? '') : htmlspecialchars($_SERVER["HTTP_REFERER"] ?? '')?>">
 </form>
 
 <?php

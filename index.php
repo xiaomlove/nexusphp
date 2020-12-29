@@ -3,6 +3,7 @@ require "include/bittorrent.php";
 dbconn(true);
 require_once(get_langfile_path());
 loggedinorreturn(true);
+$userid = $CURUSER["id"];
 if ($showextinfo['imdb'] == 'yes')
 	require_once ("imdb/imdb.class.php");
 if ($_SERVER["REQUEST_METHOD"] == "POST")
@@ -166,7 +167,7 @@ if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes
 		$Cache->cache_value('current_fun_vote_funny_count', $funvote, 756);
 	}
 //check whether current user has voted
-	$funvoted = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id'])." AND userid=".sqlesc($CURUSER[id]));
+	$funvoted = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id'])." AND userid=".sqlesc($CURUSER['id']));
 
 	print ("<h2>".$lang_index['text_funbox']);
 	if ($CURUSER)
@@ -260,9 +261,9 @@ if ($CURUSER && $showpolls_main == "yes")
 				print("<font class=\"small\"> - [<a class=\"altlink\" href=\"makepoll.php?returnto=main\"><b>".$lang_index['text_new']."</b></a>]\n");
 				if ($pollexists)
 				{
-					print(" - [<a class=\"altlink\" href=\"makepoll.php?action=edit&amp;pollid=".$arr[id]."&amp;returnto=main\"><b>".$lang_index['text_edit']."</b></a>]\n");
-					print(" - [<a class=\"altlink\" href=\"log.php?action=poll&amp;do=delete&amp;pollid=".$arr[id]."&amp;returnto=main\"><b>".$lang_index['text_delete']."</b></a>]");
-					print(" - [<a class=\"altlink\" href=\"polloverview.php?id=".$arr[id]."\"><b>".$lang_index['text_detail']."</b></a>]");
+					print(" - [<a class=\"altlink\" href=\"makepoll.php?action=edit&amp;pollid=".$arr['id']."&amp;returnto=main\"><b>".$lang_index['text_edit']."</b></a>]\n");
+					print(" - [<a class=\"altlink\" href=\"log.php?action=poll&amp;do=delete&amp;pollid=".$arr['id']."&amp;returnto=main\"><b>".$lang_index['text_delete']."</b></a>]");
+					print(" - [<a class=\"altlink\" href=\"polloverview.php?id=".$arr['id']."\"><b>".$lang_index['text_detail']."</b></a>]");
 				}
 				print("</font>");
 			}
@@ -270,7 +271,7 @@ if ($CURUSER && $showpolls_main == "yes")
 		if ($pollexists)
 		{
 			$pollid = $arr["id"] ?? 0;
-			$userid = $CURUSER["id"];
+
 			$question = $arr["question"];
 			$o = array($arr["option0"], $arr["option1"], $arr["option2"], $arr["option3"], $arr["option4"],
 			$arr["option5"], $arr["option6"], $arr["option7"], $arr["option8"], $arr["option9"],
@@ -299,7 +300,7 @@ if ($CURUSER && $showpolls_main == "yes")
 				$os = array();
 
 				// Count votes
-				while ($arr2 = mysql_fetch_row($res))
+				while (($arr2 = mysql_fetch_row($res) !== null) && isset($vs[$arr2[0]]))
 				$vs[$arr2[0]] ++;
 
 				reset($o);
@@ -320,8 +321,9 @@ if ($CURUSER && $showpolls_main == "yes")
 				print("<table class=\"main\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
 				$Cache->end_whole_row();
 				$i = 0;
-				while ($a = $os[$i])
+				while (isset($os[$i]))
 				{
+				    $a = $os[$i];
 					if ($tvotes == 0)
 						$p = 0;
 					else

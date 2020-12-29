@@ -6,7 +6,7 @@ loggedinorreturn();
 if (get_user_class() < $staffmem_class)
 	permissiondenied();
 
-$action = $_GET["action"];
+$action = $_GET["action"] ?? '';
 
 ///////////////////////////
 //        SHOW PM'S        //
@@ -14,7 +14,7 @@ $action = $_GET["action"];
 
 if (!$action) {
 	stdhead($lang_staffbox['head_staff_pm']);
-	$url = $_SERVER[PHP_SELF]."?";
+	$url = $_SERVER['PHP_SELF']."?";
 	$count = get_row_count("staffmessages");
 	$perpage = 20;
 	list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $url);

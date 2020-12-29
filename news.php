@@ -6,7 +6,7 @@ loggedinorreturn();
 if (get_user_class() < $newsmanage_class)
 	permissiondenied();
 
-$action = htmlspecialchars($_GET["action"]);
+$action = htmlspecialchars($_GET["action"] ?? '');
 
 //  Delete News Item    //////////////////////////////////////////////////////
 
@@ -15,7 +15,7 @@ if ($action == 'delete')
 	$newsid = $_GET["newsid"] ?? 0;
 	int_check($newsid,true);
 
-	$returnto = $_GET["returnto"] ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]);
+	$returnto = !empty($_GET["returnto"]) ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]);
 
 	$sure = $_GET["sure"] ?? 0;
 	if (!$sure)
@@ -41,10 +41,10 @@ if ($action == 'add')
 	if (!$title)
 	stderr($lang_news['std_error'], $lang_news['std_news_title_empty']);
 
-	$added = $_POST["added"];
+	$added = $_POST["added"] ?? 0;
 	if (!$added)
 	$added = sqlesc(date("Y-m-d H:i:s"));
-	$notify = $_POST['notify'];
+	$notify = $_POST['notify'] ?? '';
 	if ($notify != 'yes')
 		$notify = 'no'; 
 	sql_query("INSERT INTO news (userid, added, body, title, notify) VALUES (".sqlesc($CURUSER['id']) . ", $added, " . sqlesc($body) . ", " . sqlesc($title) . ", " . sqlesc($notify).")") or sqlerr(__FILE__, __LINE__);
@@ -84,7 +84,7 @@ if ($action == 'edit')
 		$body = sqlesc($body);
 
 		$editdate = sqlesc(date("Y-m-d H:i:s"));
-		$notify = $_POST['notify'];
+		$notify = $_POST['notify'] ?? '';
 		if ($notify != 'yes')
 			$notify = 'no';
 		$notify = sqlesc($notify);
@@ -101,7 +101,7 @@ if ($action == 'edit')
 		$subject = htmlspecialchars($arr['title']);
 		$title = $lang_news['text_edit_site_news'];
 		print("<form id=\"compose\" name=\"compose\" method=\"post\" action=\"".htmlspecialchars("?action=edit&newsid=".$newsid)."\">");
-		print("<input type=\"hidden\" name=\"returnto\" value=\"".$returnto."\" />");
+		print("<input type=\"hidden\" name=\"returnto\" value=\"".($returnto ?? '')."\" />");
 		begin_compose($title, "edit", $body, true, $subject);
 		print("<tr><td class=\"toolbox\" align=\"center\" colspan=\"2\"><input type=\"checkbox\" name=\"notify\" value=\"yes\" ".($arr['notify'] == 'yes' ? " checked=\"checked\"" : "")." />".$lang_news['text_notify_users_of_this']."</td></tr>\n");
 		end_compose();
