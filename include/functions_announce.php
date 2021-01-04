@@ -7,8 +7,9 @@ include_once($rootpath . 'include/config.php');
 
 function dbconn_announce() {
 	global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
+	global $BASIC;
 
-	if (!@mysql_connect($mysql_host, $mysql_user, $mysql_pass))
+	if (!@mysql_connect($mysql_host, $mysql_user, $mysql_pass, $BASIC['mysql_db'], $BASIC['mysql_port']))
 	{
 		die('dbconn: mysql_connect: ' . mysql_error());
 	}
