@@ -474,7 +474,7 @@ if ($action == "viewtopic")
 
 	$topicid = $_GET["topicid"] ?? 0;
 	int_check($topicid,true);
-	$page = $_GET["page"] ?? '';
+	$page = $_GET["page"] ?? 0;
 	$authorid = $_GET["authorid"] ?? 0;
 	if ($authorid)
 	{

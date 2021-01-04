@@ -14,11 +14,11 @@ interface DBInterface
 
     public function selectDb($database);
 
-    public function fetchAssoc($result): array|null;
+    public function fetchAssoc($result);
 
-    public function fetchRow($result): array|null;
+    public function fetchRow($result);
 
-    public function fetchArray($result, $type): array|null;
+    public function fetchArray($result, $type);
 
     public function affectedRows(): int;
 

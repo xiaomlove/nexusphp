@@ -2,7 +2,7 @@
 
 class DBMysqli implements DBInterface
 {
-    private mysqli $mysqli;
+    private $mysqli;
 
     public function connect($host, $username, $password, $database, $port)
     {
@@ -43,17 +43,17 @@ class DBMysqli implements DBInterface
         return $this->mysqli->select_db($database);
     }
 
-    public function fetchAssoc($mysqliResult): array|null
+    public function fetchAssoc($mysqliResult)
     {
         return $mysqliResult->fetch_assoc();
     }
 
-    public function fetchRow($mysqliResult): array|null
+    public function fetchRow($mysqliResult)
     {
         return $mysqliResult->fetch_row();
     }
 
-    public function fetchArray($mysqliResult, $type): array|null
+    public function fetchArray($mysqliResult, $type)
     {
         if (is_null($type)) {
             $type = MYSQLI_BOTH;

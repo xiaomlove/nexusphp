@@ -2,11 +2,11 @@
 
 class DB
 {
-    private  DBInterface $driver;
+    private $driver;
 
     private static $instance;
 
-    private static array $queries = [];
+    private static $queries = [];
 
     private function __construct()
     {

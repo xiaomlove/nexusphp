@@ -19,7 +19,7 @@ class RedisCache {
     public $redis;
 
     function __construct() {
-        $success = $this->createRedisClient(); // Connect to Redis
+        $success = $this->connect($host = 'localhost', $port = 6379); // Connect to Redis
         if ($success) {
             $this->isEnabled = 1;
         } else {
@@ -27,9 +27,9 @@ class RedisCache {
         }
     }
 
-    private function createRedisClient()
+    private function connect($host, $port)
     {
-        global $BASIC;
+        global $BASIC, $TWEAK;
         $redis = new Redis();
         $params = [
             $BASIC['redis_host'],
@@ -40,29 +40,26 @@ class RedisCache {
         if (!empty($BASIC['redis_timeout'])) {
             $params[] = $BASIC['redis_timeout'];
         }
-        $connectResult = $redis->connect(...$params);
-        $auth = [];
-        if (!empty($BASIC['redis_password'])) {
-            $auth['pass'] = $BASIC['redis_password'];
-            if (!empty($BASIC['redis_username'])) {
-                $auth['user'] = $BASIC['redis_username'];
+        try {
+            $connectResult = $redis->connect(...$params);
+            $auth = [];
+            if (!empty($BASIC['redis_password'])) {
+                $auth['pass'] = $BASIC['redis_password'];
+                if (!empty($BASIC['redis_username'])) {
+                    $auth['user'] = $BASIC['redis_username'];
+                }
+                $connectResult = $connectResult && $redis->auth($auth);
             }
-            $connectResult = $connectResult && $redis->auth($auth);
-        }
-        if ($connectResult) {
-            if (is_numeric($BASIC['redis_database'])) {
-                $selectDatabaseResult = $redis->select($BASIC['redis_database']);
-                if (!$selectDatabaseResult) {
-                    $msg = "select redis database: {$BASIC['redis_database']} fail";
-                    write_log($msg);
-                    throw new \RuntimeException($msg);
+            if ($connectResult) {
+                $this->redis = $redis;
+                if (is_numeric($BASIC['redis_database'])) {
+                    $redis->select($BASIC['redis_database']);
                 }
             }
-            $this->redis = $redis;
-        } else {
-            write_log(sprintf('connect to redis with params: %s , with auth: %s fail', json_encode($params), json_encode($auth)));
+            return $connectResult;
+        } catch (\Exception $exception) {
+            return false;
         }
-        return $connectResult;
     }
 
     function getIsEnabled() {
@@ -205,6 +202,9 @@ class RedisCache {
 
     // Wrapper for Memcache::set, with the zlib option removed and default duration of 1 hour
     function cache_value($Key, $Value, $Duration = 3600){
+        if (!$this->getIsEnabled()) {
+            return;
+        }
         $Value = $this->serialize($Value);
 //        $this->set($Key,$Value, 0, $Duration);
         $this->redis->set($Key, $Value, $Duration);
@@ -263,6 +263,9 @@ class RedisCache {
 
     // Wrapper for Memcache::get. Why? Because wrappers are cool.
     function get_value($Key) {
+        if (!$this->getIsEnabled()) {
+            return false;
+        }
         if($this->getClearCache()){
             $this->delete_value($Key);
             return false;
@@ -282,6 +285,9 @@ class RedisCache {
 
     // Wrapper for Memcache::delete. For a reason, see above.
     function delete_value($Key, $AllLang = false){
+        if (!$this->getIsEnabled()) {
+            return 0;
+        }
         if ($AllLang){
             $langfolder_array = $this->getLanguageFolderArray();
             foreach($langfolder_array as $lf)
