@@ -4401,4 +4401,23 @@ function dd($vars)
     echo '</pre>';
     exit(0);
 }
+
+function do_log($log)
+{
+    global $TWEAK;
+    if (!empty($TWEAK['logging'])) {
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $content = sprintf(
+            "[%s] %s%s%s %s%s",
+            date('Y-m-d H:i:s'),
+            $backtrace[1]['class'] ?? '',
+            $backtrace[1]['type'] ?? '',
+            $backtrace[1]['function'] ?? '',
+            $log,
+            PHP_EOL
+        );
+        file_put_contents($TWEAK['logging'], $content, FILE_APPEND);
+    }
+}
+
 ?>
