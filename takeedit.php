@@ -96,17 +96,17 @@ if(get_user_class()>=$torrentonpromotion_class)
 {
 	if(!isset($_POST["sel_spstate"]) || $_POST["sel_spstate"] == 1)
 		$updateset[] = "sp_state = 1";
-	elseif(($_POST["sel_spstate"] ?? 0) == 2)
+	elseif(intval($_POST["sel_spstate"] ?? 0) == 2)
 		$updateset[] = "sp_state = 2";
-	elseif(($_POST["sel_spstate"] ?? 0) == 3)
+	elseif(intval($_POST["sel_spstate"] ?? 0) == 3)
 		$updateset[] = "sp_state = 3";
-	elseif(($_POST["sel_spstate"] ?? 0) == 4)
+	elseif(intval($_POST["sel_spstate"] ?? 0) == 4)
 		$updateset[] = "sp_state = 4";
-	elseif(($_POST["sel_spstate"] ?? 0) == 5)
+	elseif(intval($_POST["sel_spstate"] ?? 0) == 5)
 		$updateset[] = "sp_state = 5";
-	elseif(($_POST["sel_spstate"] ?? 0) == 6)
+	elseif(intval($_POST["sel_spstate"] ?? 0) == 6)
 		$updateset[] = "sp_state = 6";
-	elseif(($_POST["sel_spstate"] ?? 0) == 7)
+	elseif(intval($_POST["sel_spstate"] ?? 0) == 7)
 		$updateset[] = "sp_state = 7";
 
 	//promotion expiration type
@@ -128,9 +128,9 @@ if(get_user_class()>=$torrentonpromotion_class)
 }
 if(get_user_class()>=$torrentsticky_class)
 {
-	if(($_POST["sel_posstate"] ?? 0) == 0)
+	if(intval($_POST["sel_posstate"] ?? 0) == 0)
 		$updateset[] = "pos_state = 'normal'";
-	elseif(($_POST["sel_posstate"] ?? 0) == 1)
+	elseif(intval($_POST["sel_posstate"] ?? 0) == 1)
 		$updateset[] = "pos_state = 'sticky'";
 }
 
@@ -138,28 +138,28 @@ $pick_info = "";
 $place_info = "";
 if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 {
-	if(($_POST["sel_recmovie"] ?? 0) == 0)
+	if(intval($_POST["sel_recmovie"] ?? 0) == 0)
 	{
 		if($row["picktype"] != 'normal')
 			$pick_info = ", recomendation canceled!";
 		$updateset[] = "picktype = 'normal'";
 		$updateset[] = "picktime = '0000-00-00 00:00:00'";
 	}
-	elseif(($_POST["sel_recmovie"] ?? 0) == 1)
+	elseif(intval($_POST["sel_recmovie"] ?? 0) == 1)
 	{
 		if($row["picktype"] != 'hot')
 			$pick_info = ", recommend as hot movie";
 		$updateset[] = "picktype = 'hot'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
 	}
-	elseif(($_POST["sel_recmovie"] ?? 0) == 2)
+	elseif(intval($_POST["sel_recmovie"] ?? 0) == 2)
 	{
 		if($row["picktype"] != 'classic')
 			$pick_info = ", recommend as classic movie";
 		$updateset[] = "picktype = 'classic'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
 	}
-	elseif(($_POST["sel_recmovie"] ?? 0) == 3)
+	elseif(intval($_POST["sel_recmovie"] ?? 0) == 3)
 	{
 		if($row["picktype"] != 'recommended')
 			$pick_info = ", recommend as recommended movie";

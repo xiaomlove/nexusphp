@@ -8,7 +8,7 @@ if (get_user_class() < $viewuserlist_class)
 permissiondenied();
 $search = trim($_GET['search']);
 $class = $_GET['class'];
-$country = $_GET['country'] ?? 0;
+$country = intval($_GET['country'] ?? 0);
 $letter = trim($_GET["letter"]);
 
 if (strlen($letter) > 1)

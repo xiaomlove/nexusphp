@@ -101,7 +101,7 @@ if ($allsec == 1)		//show torrents from all sections
 // ----------------- end whether ignoring section ---------------------//
 // ----------------- start bookmarked ---------------------//
 if ($_GET)
-	$inclbookmarked = $_GET["inclbookmarked"] ?? 0;
+	$inclbookmarked = intval($_GET["inclbookmarked"] ?? 0);
 elseif ($CURUSER['notifs']){
 	if (strpos($CURUSER['notifs'], "[inclbookmarked=0]") !== false)
 		$inclbookmarked = 0;
@@ -139,7 +139,7 @@ if (!isset($CURUSER) || get_user_class() < $seebanned_class)
 	$wherea[] = "banned != 'yes'";
 // ----------------- start include dead ---------------------//
 if (isset($_GET["incldead"]))
-	$include_dead = $_GET["incldead"] ?? 0;
+	$include_dead = intval($_GET["incldead"] ?? 0);
 elseif ($CURUSER['notifs']){
 	if (strpos($CURUSER['notifs'], "[incldead=0]") !== false)
 		$include_dead = 0;
@@ -172,7 +172,7 @@ elseif ($include_dead == 2)		//dead
 }
 // ----------------- end include dead ---------------------//
 if ($_GET)
-	$special_state = $_GET["spstate"] ?? 0;
+	$special_state = intval($_GET["spstate"] ?? 0);
 elseif ($CURUSER['notifs']){
 	if (strpos($CURUSER['notifs'], "[spstate=0]") !== false)
 		$special_state = 0;
@@ -291,19 +291,19 @@ elseif ($special_state == 7)	//30% down
 	}
 }
 
-$category_get = $_GET["cat"] ?? 0;
+$category_get = intval($_GET["cat"] ?? 0);
 $source_get = $medium_get = $codec_get = $standard_get = $processing_get = $team_get = $audiocodec_get = 0;
 if ($showsubcat){
-if ($showsource) $source_get = $_GET["source"] ?? 0;
-if ($showmedium) $medium_get = $_GET["medium"] ?? 0;
-if ($showcodec) $codec_get = $_GET["codec"] ?? 0;
-if ($showstandard) $standard_get = $_GET["standard"] ?? 0;
-if ($showprocessing) $processing_get = $_GET["processing"] ?? 0;
-if ($showteam) $team_get = $_GET["team"] ?? 0;
-if ($showaudiocodec) $audiocodec_get = $_GET["audiocodec"] ?? 0;
+if ($showsource) $source_get = intval($_GET["source"] ?? 0);
+if ($showmedium) $medium_get = intval($_GET["medium"] ?? 0);
+if ($showcodec) $codec_get = intval($_GET["codec"] ?? 0);
+if ($showstandard) $standard_get = intval($_GET["standard"] ?? 0);
+if ($showprocessing) $processing_get = intval($_GET["processing"] ?? 0);
+if ($showteam) $team_get = intval($_GET["team"] ?? 0);
+if ($showaudiocodec) $audiocodec_get = intval($_GET["audiocodec"] ?? 0);
 }
 
-$all = $_GET["all"] ?? 0;
+$all = intval($_GET["all"] ?? 0);
 
 if (!$all)
 {
@@ -675,14 +675,14 @@ if (isset($searchstr))
 	else{
 		$notnewword="notnewword=1&";
 	}
-	$search_mode = $_GET["search_mode"] ?? 0;
+	$search_mode = intval($_GET["search_mode"] ?? 0);
 	if (!in_array($search_mode,array(0,1,2)))
 	{
 		$search_mode = 0;
 		write_log("User " . $CURUSER["username"] . "," . $CURUSER["ip"] . " is hacking search_mode field in" . $_SERVER['SCRIPT_NAME'], 'mod');
 	}
 
-	$search_area = $_GET["search_area"] ?? 0 ;
+	$search_area = intval($_GET["search_area"] ?? 0) ;
 
 	if ($search_area == 4) {
 		$searchstr = (int)parse_imdb_id($searchstr);

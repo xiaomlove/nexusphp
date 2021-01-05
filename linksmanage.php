@@ -148,7 +148,7 @@ echo "<tr><td>".$row["name"]."</td><td>".$row["url"]."</td><td>".$row["title"]. 
 echo "</table>";
 ?>
 <?php if ($_GET['action'] == "edit") {
-$id = ($_GET["id"] ?? 0);
+$id = intval($_GET["id"] ?? 0);
 $result = sql_query ("SELECT * FROM links where id = ".sqlesc($id));
 if ($row = mysql_fetch_array($result)) {
 ?>
