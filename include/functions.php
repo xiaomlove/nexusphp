@@ -2934,8 +2934,8 @@ function return_torrent_bookmark_array($userid)
 function get_torrent_bookmark_state($userid, $torrentid, $text = false)
 {
 	global $lang_functions;
-	$userid = $userid ?? 0;
-	$torrentid = $torrentid ?? 0;
+	$userid = intval($userid ?? 0);
+	$torrentid = intval($torrentid ?? 0);
 	$ret = array();
 	$ret = return_torrent_bookmark_array($userid);
 	if (!count($ret) || !in_array($torrentid, $ret, false)) // already bookmarked
