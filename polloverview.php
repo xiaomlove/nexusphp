@@ -7,7 +7,7 @@ loggedinorreturn();
 if (get_user_class() < $pollmanage_class)
 	permissiondenied();
 
-$pollid = $_GET['id'] ?? 0;
+$pollid = intval($_GET['id'] ?? 0);
 
 if ($pollid)
 {

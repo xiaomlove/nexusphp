@@ -2,9 +2,8 @@
 require "include/bittorrent.php";
 dbconn();
 failedloginscheck ("Recover",true);
-
 $take_recover = !isset($_GET['sitelanguage']);
-$langid = $_GET['sitelanguage'] ?? 0;
+$langid = intval($_GET['sitelanguage'] ?? 0);
 if ($langid)
 {
 	$lang_folder = validlang($langid);
@@ -60,9 +59,8 @@ EOD;
 }
 elseif($_SERVER["REQUEST_METHOD"] == "GET" && $take_recover && isset($_GET["id"]) && isset($_GET["secret"]))
 {
-	$id = $_GET["id"] ?? 0;
+	$id = intval($_GET["id"] ?? 0);
 	$md5 = $_GET["secret"];
-
 	if (!$id)
 	httperr();
 
@@ -70,7 +68,6 @@ elseif($_SERVER["REQUEST_METHOD"] == "GET" && $take_recover && isset($_GET["id"]
 	$arr = mysql_fetch_array($res) or httperr();
 
 	$email = $arr["email"];
-
 	$sec = hash_pad($arr["editsecret"]);
 	if (preg_match('/^ *$/s', $sec))
 	httperr();

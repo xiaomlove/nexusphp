@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	{
 		$query[] = "search=".rawurlencode($searchstr);
 		if ($_POST["search_mode"]){
-			$search_mode = $_POST["search_mode"] ?? 0;
+			$search_mode = intval($_POST["search_mode"] ?? 0);
 			if (!in_array($search_mode,array(0,1,2)))
 			{
 				$search_mode = 0;
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 			$query[] = "search_mode=".$search_mode;
 		}
 	}
-	$inclbookmarked=$_POST['inclbookmarked'] ?? 0;
+	$inclbookmarked=intval($_POST['inclbookmarked'] ?? 0);
 	if($inclbookmarked)
 	{
 		if (!in_array($inclbookmarked,array(0,1)))

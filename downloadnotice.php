@@ -5,7 +5,7 @@ require_once(get_langfile_path());
 loggedinorreturn();
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	$torrentid = $_POST['id'] ?? 0;
+	$torrentid = intval($_POST['id'] ?? 0);
 	$type = $_POST['type'];
 	$hidenotice = $_POST['hidenotice'];
 	if (!$torrentid || !in_array($type,array('firsttime', 'client', 'ratio')))

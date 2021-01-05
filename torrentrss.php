@@ -16,7 +16,7 @@ if ($passkey){
 		die("account disabed or parked");
 	elseif ($_GET['linktype'] == 'dl')
 		$dllink = true;
-	$inclbookmarked=$_GET['inclbookmarked'] ?? 0;
+	$inclbookmarked=intval($_GET['inclbookmarked'] ?? 0);
 	if($inclbookmarked == 1)
 	{
 		$bookmarkarray = return_torrent_bookmark_array($user['id']);
@@ -30,7 +30,7 @@ $searchstr = mysql_real_escape_string(trim($_GET["search"] ?? ''));
 if (empty($searchstr))
 	unset($searchstr);
 if (isset($searchstr)){
-	$search_mode = $_GET["search_mode"] ?? 0;
+	$search_mode = intval($_GET["search_mode"] ?? 0);
 	if (!in_array($search_mode,array(0,1,2)))
 	{
 		$search_mode = 0;
@@ -66,10 +66,10 @@ if (isset($searchstr)){
 }
 
 $limit = "";
-$startindex = $_GET['startindex'] ?? 0;
+$startindex = intval($_GET['startindex'] ?? 0);
 if ($startindex)
 $limit .= $startindex.", ";
-$showrows = $_GET['rows'] ?? 0;
+$showrows = intval($_GET['rows'] ?? 0);
 if($showrows < 1 || $showrows > 50)
 	$showrows = 10;
 $limit .= $showrows;

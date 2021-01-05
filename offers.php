@@ -22,7 +22,7 @@ if (isset($_GET['category']) && $_GET["category"]){
 }
 
 if (isset($_GET['id']) && $_GET["id"]){
-	$id = htmlspecialchars($_GET["id"] ?? 0);
+	$id = htmlspecialchars(intval($_GET["id"] ?? 0));
 	if (preg_match('/^[0-9]+$/', !$id))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 }
@@ -31,7 +31,7 @@ if (isset($_GET['id']) && $_GET["id"]){
 if (isset($_GET['add_offer']) && $_GET["add_offer"]){
 	if (get_user_class() < $addoffer_class)
 		permissiondenied();
-	$add_offer = $_GET["add_offer"] ?? 0;
+	$add_offer = intval($_GET["add_offer"] ?? 0);
 	if($add_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
@@ -63,11 +63,11 @@ if (isset($_GET['add_offer']) && $_GET["add_offer"]){
 if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 	if (get_user_class() < $addoffer_class)
 		permissiondenied();
-	$new_offer = $_GET["new_offer"] ?? 0;
+	$new_offer = intval($_GET["new_offer"] ?? 0);
 	if($new_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$userid = $CURUSER["id"] ?? 0;
+	$userid = intval($CURUSER["id"] ?? 0);
 	if (preg_match("/^[0-9]+$/", !$userid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
@@ -75,7 +75,7 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 	if ($name == "")
 	bark($lang_offers['std_must_enter_name']);
 
-	$cat = ($_POST["type"] ?? 0);
+	$cat = intval($_POST["type"] ?? 0);
 	if (!is_valid_id($cat))
 	bark($lang_offers['std_must_select_category']);
 
@@ -101,7 +101,7 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 		//===end
 
 		$ret = sql_query("INSERT INTO offers (userid, name, descr, category, added) VALUES (" .
-		implode(",", array_map("sqlesc", array($CURUSER["id"], $name, $descr, $_POST["type"] ?? 0))) .
+		implode(",", array_map("sqlesc", array($CURUSER["id"], $name, $descr, intval($_POST["type"] ?? 0)))) .
 		", '" . date("Y-m-d H:i:s") . "')");
 		if (!$ret) {
 			if (mysql_errno() == 1062)
@@ -127,11 +127,11 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 //=== offer details
 if (isset($_GET['off_details']) && $_GET["off_details"]){
 
-	$off_details = $_GET["off_details"] ?? 0;
+	$off_details = intval($_GET["off_details"] ?? 0);
 	if($off_details != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$id = $_GET["id"] ?? 0;
+	$id = intval($_GET["id"] ?? 0);
 	if(!$id)
 		die();
 		//stderr("Error", "I smell a rat!");
@@ -238,13 +238,13 @@ if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 	if (get_user_class() < $offermanage_class)
 	stderr($lang_offers['std_access_denied'], $lang_offers['std_mans_job']);
 
-	$allow_offer = $_GET["allow_offer"] ?? 0;
+	$allow_offer = intval($_GET["allow_offer"] ?? 0);
 	if($allow_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
 	//=== to allow the offer  credit to S4NE for this next bit :)
 	//if ($_POST["offerid"]){
-	$offid = $_POST["offerid"] ?? 0;
+	$offid = intval($_POST["offerid"] ?? 0);
 	if(!is_valid_id($offid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
@@ -273,11 +273,11 @@ if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 	if (get_user_class() < $offermanage_class)
 	stderr($lang_offers['std_access_denied'], $lang_offers['std_have_no_permission']);
 
-	$finish_offer = $_GET["finish_offer"] ?? 0;
+	$finish_offer = intval($_GET["finish_offer"] ?? 0);
 	if($finish_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$offid = $_POST["finish"] ?? 0;
+	$offid = intval($_POST["finish"] ?? 0);
 	if(!is_valid_id($offid))
 		stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
@@ -323,11 +323,11 @@ if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 
 if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 
-	$edit_offer =  $_GET["edit_offer"] ?? 0;
+	$edit_offer =  intval($_GET["edit_offer"] ?? 0);
 	if($edit_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$id = $_GET["id"] ?? 0;
+	$id = intval($_GET["id"] ?? 0);
 
 	$res = sql_query("SELECT * FROM offers WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 	$num = mysql_fetch_array($res);
@@ -369,11 +369,11 @@ if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 //==== take offer edit
 if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 
-	$take_off_edit = $_GET["take_off_edit"] ?? 0;
+	$take_off_edit = intval($_GET["take_off_edit"] ?? 0);
 	if($take_off_edit != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$id = $_GET["id"] ?? 0;
+	$id = intval($_GET["id"] ?? 0);
 
 	$res = sql_query("SELECT userid FROM offers WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 	$num = mysql_fetch_array($res);
@@ -395,7 +395,7 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 	bark($lang_offers['std_must_enter_name']);
 	if (!$descr)
 	bark($lang_offers['std_must_enter_description']);
-	$cat = ($_POST["category"] ?? 0);
+	$cat = intval($_POST["category"] ?? 0);
 	if (!is_valid_id($cat))
 	bark($lang_offers['std_must_select_category']);
 
@@ -412,11 +412,11 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 //=== offer votes list
 if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 
-	$offer_vote = $_GET["offer_vote"] ?? 0;
+	$offer_vote = intval($_GET["offer_vote"] ?? 0);
 	if($offer_vote != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$offerid = htmlspecialchars($_GET['id'] ?? 0);
+	$offerid = htmlspecialchars(intval($_GET['id'] ?? 0));
 
 	$res2 = sql_query("SELECT COUNT(*) FROM offervotes WHERE offerid = ".sqlesc($offerid)) or sqlerr(__FILE__, __LINE__);
 	$row = mysql_fetch_array($res2);
@@ -459,13 +459,13 @@ if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 
 //=== offer votes
 if (isset($_GET["vote"]) && $_GET["vote"]){
-	$offerid = htmlspecialchars($_GET["id"] ?? 0);
+	$offerid = htmlspecialchars(intval($_GET["id"] ?? 0));
 	$vote = htmlspecialchars($_GET["vote"]);
 	if ($vote == 'against' && get_user_class() < $againstoffer_class)
 		stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 	if ($vote =='yeah' || $vote =='against')
 	{
-		$userid = $CURUSER["id"] ?? 0;
+		$userid = intval($CURUSER["id"] ?? 0);
 		$res = sql_query("SELECT * FROM offervotes WHERE offerid=".sqlesc($offerid)." AND userid=".sqlesc($userid)) or sqlerr(__FILE__,__LINE__);
 		$arr = mysql_fetch_assoc($res);
 		$voted = $arr;
@@ -532,13 +532,13 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 //=== delete offer
 if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 
-	$del_offer = $_GET["del_offer"] ?? 0;
+	$del_offer = intval($_GET["del_offer"] ?? 0);
 	if($del_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$offer = $_GET["id"] ?? 0;
+	$offer = intval($_GET["id"] ?? 0);
 
-	$userid = $CURUSER["id"] ?? 0;
+	$userid = intval($CURUSER["id"] ?? 0);
 	if (!is_valid_id($userid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
@@ -554,7 +554,7 @@ if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 	{
 		$sure = $_GET["sure"];
 		if($sure == '0' || $sure == '1')
-		$sure = $_GET["sure"] ?? 0;
+		$sure = intval($_GET["sure"] ?? 0);
 		else
 		stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 	}
@@ -601,10 +601,10 @@ if (isset($_GET["sort"]) && $_GET["sort"])
 }
 //=== end of prolly not needed, but what the hell :P
 
-$categ = $_GET["category"] ?? 0;
+$categ = intval($_GET["category"] ?? 0);
 $offerorid = 0;
 if (isset($_GET["offerorid"]) && $_GET["offerorid"]){
-	$offerorid = htmlspecialchars($_GET["offerorid"] ?? 0);
+	$offerorid = htmlspecialchars(intval($_GET["offerorid"] ?? 0));
 	if (preg_match("/^[0-9]+$/", !$offerorid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 }

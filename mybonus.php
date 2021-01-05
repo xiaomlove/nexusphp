@@ -384,7 +384,7 @@ if ($action == "exchange") {
 		}
 		elseif($art == 'gift_2') // charity giving
 		{
-			$points = $_POST["bonuscharity"] ?? 0;
+			$points = intval($_POST["bonuscharity"] ?? 0);
 			if ($points < 1000 || $points > 50000){
 				stdmsg($lang_mybonus['text_error'], $lang_mybonus['bonus_amount_not_allowed_two'], 0);
 				stdfoot();

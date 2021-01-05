@@ -1037,7 +1037,7 @@ function insert_suggest($keyword, $userid, $pre_escaped = true)
 {
 	if(mb_strlen($keyword,"UTF-8") >= 2)
 	{
-		$userid = $userid ?? 0;
+		$userid = intval($userid ?? 0);
 		if($userid)
 		sql_query("INSERT INTO suggest(keywords, userid, adddate) VALUES (" . ($pre_escaped == true ? "'" . $keyword . "'" : sqlesc($keyword)) . "," . sqlesc($userid) . ", NOW())") or sqlerr(__FILE__,__LINE__);
 	}
@@ -1053,7 +1053,7 @@ function get_external_tr($imdb_url = "")
 
 function get_torrent_extinfo_identifier($torrentid)
 {
-	$torrentid = $torrentid ?? 0;
+	$torrentid = intval($torrentid ?? 0);
 
 	$result = array('imdb_id');
 	unset($result);
@@ -1358,6 +1358,7 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 	elseif ($smtptype == 'advanced') {
 		$mid = md5(getip() . $fromname);
 		$name = $_SERVER["SERVER_NAME"];
+        $headers = '';
 		$headers .= "From: $fromname <$fromemail>".$eol;
 		$headers .= "Reply-To: $fromname <$fromemail>".$eol;
 		$headers .= "Return-Path: $fromname <$fromemail>".$eol;
@@ -1796,7 +1797,7 @@ function userlogin() {
 		//return;
 	}
 	$b_id = base64($_COOKIE["c_secure_uid"],false);
-	$id = $b_id ?? 0;
+	$id = intval($b_id ?? 0);
 	if (!$id || !is_valid_id($id) || strlen($_COOKIE["c_secure_pass"]) != 32)
 	return;
 
@@ -2036,7 +2037,7 @@ function validemail($email) {
 
 function validlang($langid) {
 	global $deflang;
-	$langid = $langid ?? 0;
+	$langid = intval($langid ?? 0);
 	$res = sql_query("SELECT * FROM language WHERE site_lang = 1 AND id = " . sqlesc($langid)) or sqlerr(__FILE__, __LINE__);
 	if(mysql_num_rows($res) == 1)
 	{
@@ -2731,7 +2732,7 @@ function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
 	}
 
 	if (isset($_GET[$pagename])) {
-		$page = $_GET[$pagename] ?? 0;
+		$page = intval($_GET[$pagename] ?? 0);
 		if ($page < 0)
 		$page = $pagedefault;
 	}

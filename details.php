@@ -7,7 +7,7 @@ if ($showextinfo['imdb'] == 'yes')
 	require_once("imdb/imdb.class.php");
 loggedinorreturn();
 
-$id = $_GET["id"] ?? 0;
+$id = intval($_GET["id"] ?? 0);
 
 int_check($id);
 if (!isset($id) || !$id)

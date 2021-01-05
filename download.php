@@ -20,7 +20,7 @@ else
 {
 	loggedinorreturn();
 	parked();
-	$letdown = $_GET['letdown'] ?? 0;
+	$letdown = intval($_GET['letdown'] ?? 0);
 	if (!$letdown && $CURUSER['showdlnotice'] == 1)
 	{
 		header("Location: " . get_protocol_prefix() . "$BASEURL/downloadnotice.php?torrentid=".$id."&type=firsttime");
@@ -85,7 +85,7 @@ require_once "include/benc.php";
 
 if (strlen($CURUSER['passkey']) != 32) {
 	$CURUSER['passkey'] = md5($CURUSER['username'].date("Y-m-d H:i:s").$CURUSER['passhash']);
-	sql_query("UPDATE users SET passkey=".sqlesc($CURUSER[passkey])." WHERE id=".sqlesc($CURUSER[id]));
+	sql_query("UPDATE users SET passkey=".sqlesc($CURUSER['passkey'])." WHERE id=".sqlesc($CURUSER['id']));
 }
 
 $dict = bdec_file($fn, $max_torrent_size);

@@ -258,7 +258,7 @@ $action = htmlspecialchars(trim($_GET["action"] ?? ''));
 //-------- Action: New topic
 if ($action == "newtopic")
 {
-	$forumid = $_GET["forumid"] ?? 0;
+	$forumid = intval($_GET["forumid"] ?? 0);
 	check_whether_exist($forumid, 'forum');
 	stdhead($lang_forums['head_new_topic']);
 	begin_main_frame();
@@ -269,7 +269,7 @@ if ($action == "newtopic")
 }
 if ($action == "quotepost")
 {
-	$postid = $_GET["postid"] ?? 0;
+	$postid = intval($_GET["postid"] ?? 0);
 	check_whether_exist($postid, 'post');
 	stdhead($lang_forums['head_post_reply']);
 	begin_main_frame();
@@ -283,7 +283,7 @@ if ($action == "quotepost")
 
 if ($action == "reply")
 {
-	$topicid = $_GET["topicid"] ?? 0;
+	$topicid = intval($_GET["topicid"] ?? 0);
 	check_whether_exist($topicid, 'topic');
 	stdhead($lang_forums['head_post_reply']);
 	begin_main_frame();
@@ -297,7 +297,7 @@ if ($action == "reply")
 
 if ($action == "editpost")
 {
-	$postid = $_GET["postid"] ?? 0;
+	$postid = intval($_GET["postid"] ?? 0);
 	check_whether_exist($postid, 'post');
 
 	$res = sql_query("SELECT userid, topicid FROM posts WHERE id=".sqlesc($postid)) or sqlerr(__FILE__, __LINE__);
@@ -383,7 +383,7 @@ if ($action == "post")
 	if ($body == "")
 		stderr($lang_forums['std_error'], $lang_forums['std_no_body_text']);
 
-	$userid = $CURUSER["id"] ?? 0;
+	$userid = intval($CURUSER["id"] ?? 0);
 	$date = date("Y-m-d H:i:s");
 
 	if ($type != 'new'){
@@ -472,10 +472,10 @@ if ($action == "viewtopic")
 {
 	$highlight = htmlspecialchars(trim($_GET["highlight"] ?? ''));
 
-	$topicid = $_GET["topicid"] ?? 0;
+	$topicid = intval($_GET["topicid"] ?? 0);
 	int_check($topicid,true);
-	$page = $_GET["page"] ?? 0;
-	$authorid = $_GET["authorid"] ?? 0;
+	$page = intval($_GET["page"] ?? 0);
+	$authorid = intval($_GET["authorid"] ?? 0);
 	if ($authorid)
 	{
 		$where = "WHERE topicid=".sqlesc($topicid)." AND userid=".sqlesc($authorid);
@@ -829,9 +829,9 @@ if ($action == "viewtopic")
 
 if ($action == "movetopic")
 {
-	$forumid = $_POST["forumid"] ?? 0;
+	$forumid = intval($_POST["forumid"] ?? 0);
 
-	$topicid = $_GET["topicid"] ?? 0;
+	$topicid = intval($_GET["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!is_valid_id($forumid) || !is_valid_id($topicid) || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -885,7 +885,7 @@ if ($action == "movetopic")
 
 if ($action == "deletetopic")
 {
-	$topicid = $_GET["topicid"] ?? 0;
+	$topicid = intval($_GET["topicid"] ?? 0);
 	$res1 = sql_query("SELECT forumid, userid FROM topics WHERE id=".sqlesc($topicid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
 	$row1 = mysql_fetch_array($res1);
 	if (!$row1){
@@ -899,7 +899,7 @@ if ($action == "deletetopic")
 	if (!is_valid_id($topicid) || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
 
-	$sure = $_GET["sure"] ?? 0;
+	$sure = intval($_GET["sure"] ?? 0);
 	if (!$sure)
 	{
 		stderr($lang_forums['std_delete_topic'], $lang_forums['std_delete_topic_note'] .
@@ -929,8 +929,8 @@ if ($action == "deletetopic")
 
 if ($action == "deletepost")
 {
-	$postid = $_GET["postid"] ?? 0;
-	$sure = $_GET["sure"] ?? 0;
+	$postid = intval($_GET["postid"] ?? 0);
+	$sure = intval($_GET["sure"] ?? 0);
 
 	$ismod = is_forum_moderator($postid, 'post');
 	if ((get_user_class() < $postmanage_class && !$ismod) || !is_valid_id($postid))
@@ -988,7 +988,7 @@ if ($action == "deletepost")
 
 if ($action == "setlocked")
 {
-	$topicid = $_POST["topicid"] ?? 0;
+	$topicid = intval($_POST["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -1002,7 +1002,7 @@ if ($action == "setlocked")
 
 if ($action == 'hltopic')
 {
-	$topicid = $_GET["topicid"] ?? 0;
+	$topicid = intval($_GET["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -1022,7 +1022,7 @@ if ($action == 'hltopic')
 
 if ($action == "setsticky")
 {
-	$topicid = $_POST["topicid"] ?? 0;
+	$topicid = intval($_POST["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
 	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
 		permissiondenied();
@@ -1038,9 +1038,9 @@ if ($action == "setsticky")
 
 if ($action == "viewforum")
 {
-	$forumid = $_GET["forumid"] ?? 0;
+	$forumid = intval($_GET["forumid"] ?? 0);
 	int_check($forumid,true);
-	$userid = $CURUSER["id"] ?? 0;
+	$userid = intval($CURUSER["id"] ?? 0);
 	//------ Get forum name, moderators
 	$row = get_forum_row($forumid);
 	if (!$row){
@@ -1179,8 +1179,8 @@ if ($action == "viewforum")
 			//---- Get userID and date of last post
 
 			$arr = get_post_row($topicarr['lastpost']);
-			$lppostid = $arr["id"] ?? 0;
-			$lpuserid = $arr["userid"] ?? 0;
+			$lppostid = intval($arr["id"] ?? 0);
+			$lpuserid = intval($arr["userid"] ?? 0);
 			$lpusername = get_username($lpuserid);
 			$lpadded = gettime($arr["added"],true,false);
 			$onmouseover = "";
@@ -1196,7 +1196,7 @@ if ($action == "viewforum")
 			}
 
 			$arr = get_post_row($topicarr['firstpost']);
-			$fpuserid = $arr["userid"] ?? 0;
+			$fpuserid = intval($arr["userid"] ?? 0);
 			$fpauthor = get_username($arr["userid"]);
 
 			$subject = ($sticky ? "<img class=\"sticky\" src=\"pic/trans.gif\" alt=\"Sticky\" title=\"".$lang_forums['title_sticky']."\" />&nbsp;&nbsp;" : "") . "<a href=\"".htmlspecialchars("?action=viewtopic&forumid=".$forumid."&topicid=".$topicid)."\" ".$onmouseover.">" .highlight_topic(highlight($search,htmlspecialchars($topicarr["subject"])), $hlcolor) . "</a>".$topicpages;
@@ -1263,7 +1263,7 @@ if ($action == "viewunread")
 {
 	$userid = $CURUSER['id'];
 
-	$beforepostid = $_GET['beforepostid'] ?? 0;
+	$beforepostid = intval($_GET['beforepostid'] ?? 0);
 	$maxresults = 25;
 	$res = sql_query("SELECT id, forumid, subject, lastpost, hlcolor FROM topics WHERE lastpost > ".$CURUSER['last_catchup'].($beforepostid ? " AND lastpost < ".sqlesc($beforepostid) : "")." ORDER BY lastpost DESC LIMIT 100") or sqlerr(__FILE__, __LINE__);
 
@@ -1332,7 +1332,7 @@ if ($action == "search")
 
 		$res = sql_query("SELECT COUNT(posts.id) FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= ".sqlesc(get_user_class())." AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql)") or sqlerr(__FILE__, __LINE__);
 		$arr = mysql_fetch_row($res);
-		$hits = $arr[0] ?? 0;
+		$hits = intval($arr[0] ?? 0);
 		if ($hits){
 			$error = false;
 			$found = "[<b><font class=\"striking\"> ".$lang_forums['text_found'].$hits.$lang_forums['text_num_posts']." </font></b>]";

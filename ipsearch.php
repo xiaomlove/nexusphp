@@ -82,7 +82,7 @@ GROUP BY u.id
 	}
 
 	$order = $_GET['order'] ?? '';
-	$page = $_GET["page"] ?? 0;
+	$page = intval($_GET["page"] ?? 0);
 	$perpage = 20;
 
 	list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "$_SERVER[PHP_SELF]?ip=$ip&mask=$mask&order=$order&");

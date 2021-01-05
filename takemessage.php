@@ -8,7 +8,7 @@ loggedinorreturn();
 if ($_SERVER["REQUEST_METHOD"] != "POST")
 	stderr($lang_takemessage['std_error'], $lang_takemessage['std_permission_denied']);
 
-	$origmsg = $_POST["origmsg"] ?? 0;
+	$origmsg = intval($_POST["origmsg"] ?? 0);
 	$msg = trim($_POST["body"]);
 	if ($_POST['forward'] == 1) //this is forwarding
 	{
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 	}
 	else
 	{
-		$receiver = $_POST["receiver"] ?? 0;
+		$receiver = intval($_POST["receiver"] ?? 0);
 		if (!is_valid_id($receiver) || ($origmsg && !is_valid_id($origmsg)))
 			stderr($lang_takemessage['std_error'],$lang_takemessage['std_invalid_id']);
 		$bodyadd = "";

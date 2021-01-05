@@ -7,7 +7,7 @@ if (get_user_class() < $pollmanage_class)
   permissiondenied();
 
 $action = $_GET["action"] ?? '';
-$pollid = $_GET["pollid"] ?? 0;
+$pollid = intval($_GET["pollid"] ?? 0);
 $poll = [];
 
 if ($action == "edit")
@@ -21,7 +21,7 @@ if ($action == "edit")
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	$pollid = $_POST["pollid"] ?? 0;
+	$pollid = intval($_POST["pollid"] ?? 0);
 	$question = htmlspecialchars($_POST["question"]);
 	$option0 = htmlspecialchars($_POST["option0"]);
 	$option1 = htmlspecialchars($_POST["option1"]);

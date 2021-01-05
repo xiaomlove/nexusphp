@@ -7,7 +7,7 @@ loggedinorreturn();
 if (get_user_class() < $askreseed_class)
 permissiondenied();
 
-$reseedid = $_GET["reseedid"] ?? 0;
+$reseedid = intval($_GET["reseedid"] ?? 0);
 $res = sql_query("SELECT seeders, last_reseed FROM torrents WHERE id=".sqlesc($reseedid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_array($res);
 if ($row['seeders'] > 0)
