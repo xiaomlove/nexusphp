@@ -15,7 +15,7 @@ function bark($msg) {
 if (!mkglobal("id"))
     bark($lang_fastdelete['std_missing_form_data']);
 
-$id = $id ?? 0;
+$id = intval($id ?? 0);
 int_check($id);
 $sure = $_GET["sure"];
 

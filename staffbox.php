@@ -68,7 +68,7 @@ if ($action == "viewpm")
 	if (get_user_class() < $staffmem_class)
 		permissiondenied();
 
-$pmid = $_GET["pmid"] ?? 0;
+$pmid = intval($_GET["pmid"] ?? 0);
 
 $ress4 = sql_query("SELECT * FROM staffmessages WHERE id=".sqlesc($pmid));
 $arr4 = mysql_fetch_assoc($ress4);
@@ -126,7 +126,7 @@ if ($action == "answermessage") {
 		permissiondenied();
 
         $answeringto = $_GET["answeringto"];
-        $receiver = $_GET["receiver"] ?? 0;
+        $receiver = intval($_GET["receiver"] ?? 0);
 
         int_check($receiver,true);
 
@@ -166,7 +166,7 @@ if ($action == "takeanswer") {
     if (get_user_class() < $staffmem_class)
    permissiondenied();
 
-     $receiver = $_POST["receiver"] ?? 0;
+     $receiver = intval($_POST["receiver"] ?? 0);
    $answeringto = $_POST["answeringto"];
 
    int_check($receiver,true);
@@ -195,7 +195,7 @@ $Cache->delete_value('staff_new_message_count');
 
 if ($action == "deletestaffmessage") {
 
-   $id = $_GET["id"] ?? 0;
+   $id = intval($_GET["id"] ?? 0);
 
     if (!is_numeric($id) || $id < 1 || floor($id) != $id)
     die;
@@ -218,7 +218,7 @@ if ($action == "setanswered") {
  if (get_user_class() < $staffmem_class)
     permissiondenied();
 
-$id = $_GET["id"] ?? 0;
+$id = intval($_GET["id"] ?? 0);
 
 sql_query ("UPDATE staffmessages SET answered=1, answeredby = $CURUSER[id] WHERE id = $id") or sqlerr();
 $Cache->delete_value('staff_new_message_count');

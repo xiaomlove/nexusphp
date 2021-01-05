@@ -13,8 +13,8 @@ $dirname = $_GET["torrentid"];
 if (!$filename || !$dirname)
 die("File name missing\n");
 
-$filename = $filename ?? 0;
-$dirname = $dirname ?? 0;
+$filename = intval($filename ?? 0);
+$dirname = intval($dirname ?? 0);
 
 $res = sql_query("SELECT * FROM subs WHERE id=$filename") or sqlerr(__FILE__, __LINE__);
 $arr = mysql_fetch_assoc($res);

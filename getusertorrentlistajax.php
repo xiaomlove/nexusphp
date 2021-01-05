@@ -161,7 +161,7 @@ function maketable($res, $mode = 'seeding')
 	return $ret;
 }
 
-$id = $_GET['userid'] ?? 0;
+$id = intval($_GET['userid'] ?? 0);
 $type = $_GET['type'];
 if (!in_array($type,array('uploaded','seeding','leeching','completed','incomplete')))
 die;

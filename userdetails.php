@@ -14,7 +14,7 @@ function bark($msg)
 	exit;
 }
 
-$id = $_GET["id"] ?? 0;
+$id = intval($_GET["id"] ?? 0);
 int_check($id,true);
 
 if ($id != $CURUSER['id']){

@@ -11,7 +11,7 @@ if (!isset($CURUSER))
 stdhead($lang_subtitles['head_subtitles']);
 
 $in_detail = $_POST['in_detail'] ?? '';
-$detail_torrent_id = $_POST['detail_torrent_id'] ?? 0;
+$detail_torrent_id = intval($_POST['detail_torrent_id'] ?? 0);
 $torrent_name = $_POST['torrent_name'] ?? '';
 
 function isInteger($n)
@@ -23,7 +23,7 @@ function isInteger($n)
 	return true;
 }
 
-$act = $_GET["act"] ?? 0;
+$act = intval($_GET["act"] ?? 0);
 $search = trim($_GET['search'] ?? '');
 $letter = trim($_GET["letter"] ?? '');
 if (strlen($letter) > 1)
@@ -31,7 +31,7 @@ if (strlen($letter) > 1)
 if ($letter == "" || strpos("abcdefghijklmnopqrstuvwxyz", $letter) === false)
 	$letter = "";
 
-$lang_id = $_GET['lang_id'] ?? 0;
+$lang_id = intval($_GET['lang_id'] ?? 0);
 if (!is_valid_id($lang_id))
 $lang_id = '';
 
@@ -197,7 +197,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 
 if (get_user_class() >= $delownsub_class)
 {
-	$delete = $_GET["delete"] ?? 0;
+	$delete = intval($_GET["delete"] ?? 0);
 	if (is_valid_id($delete))
 	{
 		$r = sql_query("SELECT id,torrent_id,ext,lang_id,title,filename,uppedby,anonymous FROM subs WHERE id=".sqlesc($delete)) or sqlerr(__FILE__, __LINE__);
@@ -206,7 +206,7 @@ if (get_user_class() >= $delownsub_class)
 			$a = mysql_fetch_assoc($r);
 			if (get_user_class() >= $submanage_class || $a["uppedby"] == $CURUSER["id"])
 			{
-				$sure = $_GET["sure"] ?? 0;
+				$sure = intval($_GET["sure"] ?? 0);
 				if ($sure == 1)
 				{
 					$reason = $_POST["reason"];

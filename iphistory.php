@@ -7,7 +7,7 @@ loggedinorreturn();
 if (get_user_class() < $userprofile_class)
 	permissiondenied();
 
-$userid = $_GET["id"] ?? 0;
+$userid = intval($_GET["id"] ?? 0);
 if (!is_valid_id($userid))
 	stderr($lang_iphistory['std_error'], $lang_iphistory['std_invalid_id']);
 

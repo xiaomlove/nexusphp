@@ -63,7 +63,7 @@ elseif ($_GET["act"] == "edit"){
 	stdfoot();
 }
 elseif ($_GET["act"]=="edited"){
-	$id = $_POST["id"] ?? 0;
+	$id = intval($_POST["id"] ?? 0);
 	$title = $_POST["title"];
 	$text = $_POST["text"];
 	$language = $_POST["language"];
@@ -72,7 +72,7 @@ elseif ($_GET["act"]=="edited"){
 }
 elseif ($_GET["act"]=="del"){
 	$id = (int)$_GET["id"];
-	$sure = $_GET["sure"] ?? 0;
+	$sure = intval($_GET["sure"] ?? 0);
 	if (!$sure)
 	{
 		stderr("Delete Rule","You are about to delete a rule. Click <a class=altlink href=?act=del&id=$id&sure=1>here</a> if you are sure.",false);

@@ -640,7 +640,7 @@ elseif($action == 'submit')
 {
 	$dbtablename=return_category_db_table_name($type);
 	if ($_POST['isedit']){
-		$id = $_POST['id'] ?? 0;
+		$id = intval($_POST['id'] ?? 0);
 		if (!$id)
 		{
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
@@ -658,22 +658,22 @@ elseif($action == 'submit')
 		if (!$name)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
 		$updateset[] = "name=".sqlesc($name);
-		$sort_index = $_POST['sort_index'] ?? 0;
+		$sort_index = intval($_POST['sort_index'] ?? 0);
 		$updateset[] = "sort_index=".sqlesc($sort_index);
 		$Cache->delete_value($dbtablename.'_list');
 	}
 	elseif ($type=='searchbox'){
 		$name = $_POST['name'];
-		$catsperrow = $_POST['catsperrow'] ?? 0;
-		$catpadding = $_POST['catpadding'] ?? 0;
+		$catsperrow = intval($_POST['catsperrow'] ?? 0);
+		$catpadding = intval($_POST['catpadding'] ?? 0);
 		if (!$name || !$catsperrow || !$catpadding)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
-		$showsource = $_POST['showsource'] ?? 0;
-		$showmedium = $_POST['showmedium'] ?? 0;
-		$showcodec = $_POST['showcodec'] ?? 0;
-		$showstandard = $_POST['showstandard'] ?? 0;
-		$showprocessing = $_POST['showprocessing'] ?? 0;
-		$showteam = $_POST['showteam'] ?? 0;
+		$showsource = intval($_POST['showsource'] ?? 0);
+		$showmedium = intval($_POST['showmedium'] ?? 0);
+		$showcodec = intval($_POST['showcodec'] ?? 0);
+		$showstandard = intval($_POST['showstandard'] ?? 0);
+		$showprocessing = intval($_POST['showprocessing'] ?? 0);
+		$showteam = intval($_POST['showteam'] ?? 0);
 		$showaudiocodec = $_POST['showaudiocodec'];
 		$updateset[] = "catsperrow=".sqlesc($catsperrow);
 		$updateset[] = "catpadding=".sqlesc($catpadding);
@@ -720,13 +720,13 @@ elseif($action == 'submit')
 		$name = $_POST['name'];
 		$image = trim($_POST['image']);
 		$class_name = trim($_POST['class_name']);
-		$source = $_POST['source'] ?? 0;
-		$medium = $_POST['medium'] ?? 0;
-		$codec = $_POST['codec'] ?? 0;
-		$standard = $_POST['standard'] ?? 0;
-		$processing = $_POST['processing'] ?? 0;
-		$team = $_POST['team'] ?? 0;
-		$audiocodec = $_POST['audiocodec'] ?? 0;
+		$source = intval($_POST['source'] ?? 0);
+		$medium = intval($_POST['medium'] ?? 0);
+		$codec = intval($_POST['codec'] ?? 0);
+		$standard = intval($_POST['standard'] ?? 0);
+		$processing = intval($_POST['processing'] ?? 0);
+		$team = intval($_POST['team'] ?? 0;
+		$audiocodec = intval($_POST['audiocodec'] ?? 0);
 		if (!$name || !$image)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
 		if (!valid_file_name($image))
@@ -756,9 +756,9 @@ elseif($action == 'submit')
 	elseif ($type=='category'){
 		$name = $_POST['name'];
 		$image = trim($_POST['image']);
-		$mode = $_POST['mode'] ?? 0;
+		$mode = intval($_POST['mode'] ?? 0);
 		$class_name = trim($_POST['class_name']);
-		$sort_index = $_POST['sort_index'] ?? 0;
+		$sort_index = intval($_POST['sort_index'] ?? 0);
 		if (!$name || !$image)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
 		if (!valid_file_name($image))

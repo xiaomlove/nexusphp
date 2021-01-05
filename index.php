@@ -270,7 +270,7 @@ if ($CURUSER && $showpolls_main == "yes")
 			print("</h2>");
 		if ($pollexists)
 		{
-			$pollid = $arr["id"] ?? 0;
+			$pollid = intval($arr["id"] ?? 0);
 
 			$question = $arr["question"];
 			$o = array($arr["option0"], $arr["option1"], $arr["option2"], $arr["option3"], $arr["option4"],

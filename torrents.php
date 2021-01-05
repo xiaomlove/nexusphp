@@ -92,7 +92,7 @@ if ($showsubcat){
 }
 //----------------- start whether show torrents from all sections---------------------//
 if ($_GET)
-	$allsec = $_GET["allsec"] ?? 0;
+	$allsec = intval($_GET["allsec"] ?? 0);
 else $allsec = 0;
 if ($allsec == 1)		//show torrents from all sections
 {

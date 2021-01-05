@@ -62,7 +62,7 @@ countdown(time);
 if(isset($_GET["sent"]) && $_GET["sent"]=="yes"){
 if(!isset($_GET["shbox_text"]) || !$_GET['shbox_text'])
 {
-	$userid=$CURUSER["id"] ?? 0;
+	$userid=intval($CURUSER["id"] ?? 0);
 }
 else
 {
@@ -77,7 +77,7 @@ else
 	}
 	elseif ($_GET["type"] == 'shoutbox')
 	{
-		$userid=$CURUSER["id"] ?? 0;
+		$userid=intval($CURUSER["id"] ?? 0);
 		if (!$userid){
 			write_log("Someone is hacking shoutbox. - IP : ".getip(),'mod');
 			die($lang_shoutbox['text_no_permission_to_shoutbox']);

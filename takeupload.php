@@ -67,14 +67,14 @@ $descr = unesc($_POST["descr"]);
 if (!$descr)
 bark($lang_takeupload['std_blank_description']);
 
-$catid = ($_POST["type"] ?? 0);
-$sourceid = ($_POST["source_sel"] ?? 0);
-$mediumid = ($_POST["medium_sel"] ?? 0);
-$codecid = ($_POST["codec_sel"] ?? 0);
-$standardid = ($_POST["standard_sel"] ?? 0);
-$processingid = ($_POST["processing_sel"] ?? 0);
-$teamid = ($_POST["team_sel"] ?? 0);
-$audiocodecid = ($_POST["audiocodec_sel"] ?? 0);
+$catid = intval($_POST["type"] ?? 0);
+$sourceid = intval($_POST["source_sel"] ?? 0);
+$mediumid = intval($_POST["medium_sel"] ?? 0);
+$codecid = intval($_POST["codec_sel"] ?? 0);
+$standardid = intval($_POST["standard_sel"] ?? 0);
+$processingid = intval($_POST["processing_sel"] ?? 0);
+$teamid = intval($_POST["team_sel"] ?? 0);
+$audiocodecid = intval($_POST["audiocodec_sel"] ?? 0);
 
 if (!is_valid_id($catid))
 bark($lang_takeupload['std_category_unselected']);
@@ -214,7 +214,7 @@ $allowtorrents = user_can_upload("torrents");
 $allowspecial = user_can_upload("music");
 
 $catmod = get_single_value("categories","mode","WHERE id=".sqlesc($catid));
-$offerid = $_POST['offer'] ?? 0;
+$offerid = intval($_POST['offer'] ?? 0);
 $is_offer=false;
 if ($browsecatmode != $specialcatmode && $catmod == $specialcatmode){//upload to special section
 	if (!$allowspecial)
