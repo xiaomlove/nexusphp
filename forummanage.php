@@ -13,7 +13,7 @@ if (get_user_class() < $forummanage_class)
 
 // DELETE FORUM ACTION
 if (isset($_GET['action']) && $_GET['action'] == "del") {
-	$id = $_GET['id'] ?? 0;
+	$id = intval($_GET['id'] ?? 0);
 	if (!$id) {
 		header("Location: forummanage.php");
 		die();
@@ -80,7 +80,7 @@ stdhead($lang_forummanage['head_forum_management']);
 begin_main_frame();
 if (isset($_GET['action']) && $_GET['action'] == "editforum") {
 	//EDIT PAGE FOR THE FORUMS
-	$id = ($_GET["id"] ?? 0);
+	$id = intval($_GET["id"] ?? 0);
 	$result = sql_query ("SELECT * FROM forums where id = ".sqlesc($id));
 	if ($row = mysql_fetch_array($result)) {
 		do {

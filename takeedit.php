@@ -14,7 +14,7 @@ if (!mkglobal("id:name:descr:type")){
 	bark($lang_takeedit['std_missing_form_data']);
 }
 
-$id = $id ?? 0;
+$id = intval($id ?? 0);
 if (!$id)
 	die();
 
@@ -57,7 +57,7 @@ elseif ($nfoaction == "remove"){
 }
 }
 
-$catid = ($type ?? 0);
+$catid = intval($type ?? 0);
 if (!is_valid_id($catid))
 bark($lang_takeedit['std_missing_form_data']);
 if (!$name || !$descr)
@@ -75,13 +75,13 @@ $updateset[] = "url = " . sqlesc($url);
 $updateset[] = "small_descr = " . sqlesc($_POST["small_descr"]);
 //$updateset[] = "ori_descr = " . sqlesc($descr);
 $updateset[] = "category = " . sqlesc($catid);
-$updateset[] = "source = " . sqlesc($_POST["source_sel"] ?? 0);
-$updateset[] = "medium = " . sqlesc($_POST["medium_sel"] ?? 0);
-$updateset[] = "codec = " . sqlesc($_POST["codec_sel"] ?? 0);
-$updateset[] = "standard = " . sqlesc($_POST["standard_sel"] ?? 0);
-$updateset[] = "processing = " . sqlesc($_POST["processing_sel"] ?? 0);
-$updateset[] = "team = " . sqlesc($_POST["team_sel"] ?? 0);
-$updateset[] = "audiocodec = " . sqlesc($_POST["audiocodec_sel"] ?? 0);
+$updateset[] = "source = " . sqlesc(intval($_POST["source_sel"] ?? 0));
+$updateset[] = "medium = " . sqlesc(intval($_POST["medium_sel"] ?? 0));
+$updateset[] = "codec = " . sqlesc(intval($_POST["codec_sel"] ?? 0));
+$updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"] ?? 0));
+$updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"] ?? 0));
+$updateset[] = "team = " . sqlesc(intval($_POST["team_sel"] ?? 0));
+$updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"] ?? 0));
 
 if (get_user_class() >= $torrentmanage_class) {
 	if (!empty($_POST["banned"])) {

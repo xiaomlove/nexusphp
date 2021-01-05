@@ -8,7 +8,7 @@ if (get_user_class() < $forummanage_class)
 
 //Presets
 $act = $_GET['action'] ?? '';
-$id = $_GET['id'] ?? 0;
+$id = intval($_GET['id'] ?? 0);
 $PHP_SELF = $_SERVER['PHP_SELF'];
 $user = $CURUSER;
 $prefix = '';

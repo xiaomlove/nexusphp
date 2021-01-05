@@ -7,10 +7,10 @@ loggedinorreturn();
 if (get_user_class() < UC_UPLOADER)
     permissiondenied();
 
-$year=$_GET['year'] ?? 0;
+$year=intval($_GET['year'] ?? 0);
 if (!$year || $year < 2000)
 $year=date('Y');
-$month=$_GET['month'] ?? 0;
+$month=intval($_GET['month'] ?? 0);
 if (!$month || $month<=0 || $month>12)
 $month=date('m');
 $order=$_GET['order'];

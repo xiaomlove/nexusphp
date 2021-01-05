@@ -6,9 +6,9 @@ loggedinorreturn();
 if (get_user_class() < $updateextinfo_class) {
 permissiondenied();
 }
-$id = $_GET["id"] ?? 0;
-$type = $_GET["type"] ?? 0;
-$siteid = $_GET["siteid"] ?? 0; // 1 for IMDb
+$id = intval($_GET["id"] ?? 0);
+$type = intval($_GET["type"] ?? 0);
+$siteid = intval($_GET["siteid"] ?? 0); // 1 for IMDb
 
 if (!isset($id) || !$id || !is_numeric($id) || !isset($type) || !$type || !is_numeric($type) || !isset($siteid) || !$siteid || !is_numeric($siteid))
 die();

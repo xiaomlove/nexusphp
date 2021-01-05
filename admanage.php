@@ -190,7 +190,7 @@ tr($lang_admanage['row_flash_height']."<font color=\"red\">*</font>", "<input ty
 $action = $_GET['action'];
 if ($action == 'del')
 {
-	$id = $_GET['id'] ?? 0;
+	$id = intval($_GET['id'] ?? 0);
 	if (!$id)
 	{
 		stderr($lang_admanage['std_error'], $lang_admanage['std_invalid_id']);
@@ -204,7 +204,7 @@ if ($action == 'del')
 }
 elseif ($action == 'edit')
 {
-	$id = $_GET['id'] ?? 0;
+	$id = intval($_GET['id'] ?? 0);
 	if (!$id)
 	{
 		stderr($lang_admanage['std_error'], $lang_admanage['std_invalid_id']);

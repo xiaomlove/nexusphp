@@ -32,7 +32,7 @@ if($delid > 0) {
 
 $edited = $_GET['edited'];
 if($edited == 1) {
-	$id = $_GET['id'] ?? 0;
+	$id = intval($_GET['id'] ?? 0);
 	$name = $_GET['name'];
 	$flagpic = $_GET['flagpic'];
 	$location_main = $_GET['location_main'];

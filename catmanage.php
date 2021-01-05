@@ -575,7 +575,7 @@ print($pagerbottom);
 }
 elseif($action == 'del')
 {
-	$id = $_GET['id'] ?? 0;
+	$id = intval($_GET['id'] ?? 0);
 	if (!$id)
 	{
 		stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
@@ -602,7 +602,7 @@ elseif($action == 'del')
 }
 elseif($action == 'edit')
 {
-	$id = $_GET['id'] ?? 0;
+	$id = intval($_GET['id'] ?? 0);
 	if (!$id)
 	{
 		stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
