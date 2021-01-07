@@ -29,6 +29,7 @@ function oldReadConfig ($configname) {
 		$configname = basename($configname);
 		$path = './config/'.$configname;
 		if (!file_exists($path)) {
+			do_log($path);
 				die("Error! File <b>".htmlspecialchars($configname)."</b> doesn't exist!</font><br /><font color=blue>Before the setup starts, please ensure that you have properly configured file and directory access permissions. Please see below.</font><br /><br />chmod 777 config/<br />chmod 777 config/".$configname);
 		}
 

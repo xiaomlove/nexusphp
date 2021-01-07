@@ -5,10 +5,10 @@ require_once(get_langfile_path());
 loggedinorreturn();
 parked();
 
-	$receiver = $_GET["receiver"];
+	$receiver = intval($_GET["receiver"] ?? 0);
 	int_check($receiver,true);
 
-	$replyto = $_GET["replyto"];
+	$replyto = $_GET["replyto"] ?? '';
 	if ($replyto && !is_valid_id($replyto))
 		stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_permission_denied']);
 
@@ -43,8 +43,8 @@ parked();
 	begin_main_frame();
 	print("<form id=compose name=\"compose\" method=post action=takemessage.php>");
 	print("<input type=hidden name=receiver value=".$receiver.">");
-	if ($_GET["returnto"] || $_SERVER["HTTP_REFERER"])
-		print("<input type=hidden name=returnto value=\"".(htmlspecialchars($_GET["returnto"]) ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]))."\">");
+	if ((isset($_GET["returnto"]) && $_GET["returnto"]) || $_SERVER["HTTP_REFERER"])
+		print("<input type=hidden name=returnto value=\"".(htmlspecialchars($_GET["returnto"] ?? '') ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]))."\">");
 	$title = $lang_sendmessage['text_message_to'].get_username($receiver);
 	begin_compose($title, ($replyto ? "reply" : "new"), $body, true, $subject);
 	print("<tr><td class=toolbox colspan=2 align=center>");

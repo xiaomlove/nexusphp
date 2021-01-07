@@ -57,7 +57,7 @@ v1.0
      var $port;
      var $lastResponse = Array ();
 
-     function BrowserEmulator () {
+     function __construct () {
 	  $this->resetHeaderLines ();
 	  $this->resetPort ();
      }

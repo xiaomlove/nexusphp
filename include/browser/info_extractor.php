@@ -1,7 +1,7 @@
 <?php
 
 class info_extractor{
-	function info_extractor(){}
+	function __construct(){}
 	
 	/** truncate a given string
    * @method truncate

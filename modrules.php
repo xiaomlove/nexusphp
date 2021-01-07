@@ -46,8 +46,8 @@ elseif (isset($_GET["act"]) && $_GET["act"] == "edit"){
 	print("<h1 align=center>Edit Rules</h1>");
 	print("<form method=\"post\" action=\"modrules.php?act=edited\">");
 	print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"10\" align=\"center\">\n");
-	print("<tr><td>Title:</td><td align=left><input style=\"width: 400px;\" type=\"text\" name=\"title\" value=\"".htmlspecialchars($res[title])."\" /></td></tr>\n");
-	print("<tr><td style=\"vertical-align: top;\">Rules:</td><td><textarea cols=90 rows=20 name=\"text\">$res[text]</textarea></td></tr>\n");
+	print("<tr><td>Title:</td><td align=left><input style=\"width: 400px;\" type=\"text\" name=\"title\" value=\"".htmlspecialchars($res['title'])."\" /></td></tr>\n");
+	print("<tr><td style=\"vertical-align: top;\">Rules:</td><td><textarea cols=90 rows=20 name=\"text\">{$res['text']}</textarea></td></tr>\n");
 	$s = "<select name=language>";
 	$langs = langlist("site_lang");
 	foreach ($langs as $row)

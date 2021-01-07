@@ -272,7 +272,7 @@ $responseBody = $response->getBody();
    * @constructor imdb
    * @param string id
    */
-  function imdb ($id) {
+  function __construct ($id) {
    $this->imdb_config();
    $this->setid($id);
    //if ($this->storecache && ($this->cache_expire > 0)) $this->purge();
@@ -1159,7 +1159,7 @@ $responseBody = $response->getBody();
   /** Read the config
    * @constructor imdbsearch
    */
-  function imdbsearch() {
+  function __construct() {
     $this->imdb_config();
   }
 
@@ -1213,7 +1213,6 @@ $responseBody = $response->getBody();
        if ($header = $be->getResponseHeader("Location")){
         if (strpos($header,$this->imdbsite."/find?")) {
           return $this->results($header);
-          break(4);
         }
         #--- @moonface variant (not tested)
         # $idpos = strpos($header, "/Title?") + 7;
