@@ -39,7 +39,7 @@ class imdb_config {
    */
   function __construct(){
   	// protocol prefix
-    $this->protocol_prefix = "http://";
+    $this->protocol_prefix = "https://";
     // the imdb server to use.
     // choices are us.imdb.com uk.imdb.com german.imdb.com and italian.imdb.com
     // the localized ones (i.e. italian and german) are only qualified to find

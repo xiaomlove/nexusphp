@@ -307,7 +307,7 @@ class RedisCache {
     }
 
     function getKeyHits ($type='read') {
-        return (array)$this->keyHits[$type];
+        return $this->keyHits[$type] ?? [];
     }
 
     /**

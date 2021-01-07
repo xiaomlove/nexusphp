@@ -207,7 +207,7 @@ else {
 						else
 							$smallth = "<img src=\"pic/imdb_pic/nophoto.gif\" alt=\"no poster\" />";
 
-						$autodata = '<a href="http://www.imdb.com/title/tt'.$thenumbers.'">http://www.imdb.com/title/tt'.$thenumbers."</a><br /><strong><font color=\"navy\">------------------------------------------------------------------------------------------------------------------------------------</font><br />\n";
+						$autodata = '<a href="https://www.imdb.com/title/tt'.$thenumbers.'">https://www.imdb.com/title/tt'.$thenumbers."</a><br /><strong><font color=\"navy\">------------------------------------------------------------------------------------------------------------------------------------</font><br />\n";
 						$autodata .= "<font color=\"darkred\" size=\"3\">".$lang_details['text_information']."</font><br />\n";
 						$autodata .= "<font color=\"navy\">------------------------------------------------------------------------------------------------------------------------------------</font></strong><br />\n";
 						$autodata .= "<strong><font color=\"DarkRed\">". $lang_details['text_title']."</font></strong>" . "".$movie->title ()."<br />\n";
@@ -248,7 +248,7 @@ else {
 							$temp = "";
 							for ($i = 0; $i < count ($director); $i++)
 							{
-								$temp .= "<a target=\"_blank\" href=\"http://www.imdb.com/Name?" . "".$director[$i]["imdb"]."" ."\">" . $director[$i]["name"] . "</a>, ";
+								$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$director[$i]["imdb"]."" ."\">" . $director[$i]["name"] . "</a>, ";
 							}
 							$autodata .= rtrim(trim($temp), ",");
 						}
@@ -259,7 +259,7 @@ else {
 						$temp = "";
 						for ($i = 0; $i < count ($write); $i++)
 						{
-							$temp .= "<a target=\"_blank\" href=\"http://www.imdb.com/Name?" . "".$write[$i]["imdb"]."" ."\">" . "".$write[$i]["name"]."" . "</a>, ";
+							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$write[$i]["imdb"]."" ."\">" . "".$write[$i]["name"]."" . "</a>, ";
 						}
 						$autodata .= rtrim(trim($temp), ",");
 
@@ -267,7 +267,7 @@ else {
 						$temp = "";
 						for ($i = 0; $i < count ($produce); $i++)
 						{
-							$temp .= "<a target=\"_blank\" href=\"http://www.imdb.com/Name?" . "".$produce[$i]["imdb"]."" ." \">" . "".$produce[$i]["name"]."" . "</a>, ";
+							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$produce[$i]["imdb"]."" ." \">" . "".$produce[$i]["name"]."" . "</a>, ";
 						}
 						$autodata .= rtrim(trim($temp), ",");
 
@@ -275,7 +275,7 @@ else {
 						$temp = "";
 						for ($i = 0; $i < count($compose); $i++)
 						{
-							$temp .= "<a target=\"_blank\" href=\"http://www.imdb.com/Name?" . "".$compose[$i]["imdb"]."" ." \">" . "".$compose[$i]["name"]."" . "</a>, ";
+							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$compose[$i]["imdb"]."" ." \">" . "".$compose[$i]["name"]."" . "</a>, ";
 						}
 						$autodata .= rtrim(trim($temp), ",");
 
@@ -307,7 +307,7 @@ else {
 							{
 								break;
 							}
-							$autodata .= "<font color=\"DarkRed\">.</font> " . "<a target=\"_blank\" href=\"http://www.imdb.com/Name?" . "".$cast[$i]["imdb"]."" ."\">" . $cast[$i]["name"] . "</a> " .$lang_details['text_as']."<strong><font color=\"DarkRed\">" . "".$cast[$i]["role"]."" . " </font></strong><br />\n";
+							$autodata .= "<font color=\"DarkRed\">.</font> " . "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$cast[$i]["imdb"]."" ."\">" . $cast[$i]["name"] . "</a> " .$lang_details['text_as']."<strong><font color=\"DarkRed\">" . "".$cast[$i]["role"]."" . " </font></strong><br />\n";
 						}
 
 
@@ -346,7 +346,7 @@ else {
 
 						$Cache->add_whole_row();
 						print("<tr>");
-						print("<td class=\"rowhead\"><a href=\"javascript: klappe_ext('imdb')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picimdb\" title=\"".$lang_details['title_show_or_hide']."\" /> ".$lang_details['text_imdb'] . $lang_details['row_info'] ."</span></a><div id=\"posterimdb\">".  $smallth."</div></td>");
+						print("<td class=\"rowhead\"><a href=\"javascript: klappe_ext('imdb')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picimdb\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['text_imdb'] . $lang_details['row_info'] ."</span></a><div id=\"posterimdb\">".  $smallth."</div></td>");
 						$Cache->end_whole_row();
 						$Cache->add_row();
 						$Cache->add_part();
