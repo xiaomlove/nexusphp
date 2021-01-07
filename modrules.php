@@ -6,7 +6,7 @@ if (get_user_class() < UC_ADMINISTRATOR) {
 	stderr("Error","Only Administrators and above can modify the Rules, sorry.");
 }
 
-if ($_GET["act"] == "newsect")
+if (isset($_GET["act"]) && $_GET["act"] == "newsect")
 {
 	stdhead("Add section");
 	//print("<td valign=top style=\"padding: 10px;\" colspan=2 align=center>");
@@ -30,14 +30,14 @@ if ($_GET["act"] == "newsect")
 	print("</td></tr></table>");
 	stdfoot();
 }
-elseif ($_GET["act"]=="addsect"){
+elseif (isset($_GET["act"]) && $_GET["act"]=="addsect"){
 	$title = $_POST["title"];
 	$text = $_POST["text"];
 	$language = $_POST["language"];
 	sql_query("insert into rules (title, text, lang_id) values(".sqlesc($title).", ".sqlesc($text).", ".sqlesc($language).")") or sqlerr(__FILE__,__LINE__);
 	header("Refresh: 0; url=modrules.php");
 }
-elseif ($_GET["act"] == "edit"){
+elseif (isset($_GET["act"]) && $_GET["act"] == "edit"){
 	$id = $_GET["id"];
 	$res = @mysql_fetch_array(@sql_query("select * from rules where id='$id'"));
 	stdhead("Edit rules");
@@ -62,7 +62,7 @@ elseif ($_GET["act"] == "edit"){
 	print("</td></tr></table>");
 	stdfoot();
 }
-elseif ($_GET["act"]=="edited"){
+elseif (isset($_GET["act"]) && $_GET["act"]=="edited"){
 	$id = intval($_POST["id"] ?? 0);
 	$title = $_POST["title"];
 	$text = $_POST["text"];
@@ -70,7 +70,7 @@ elseif ($_GET["act"]=="edited"){
 	sql_query("update rules set title=".sqlesc($title).", text=".sqlesc($text).", lang_id = ".sqlesc($language)." where id=".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
 	header("Refresh: 0; url=modrules.php");
 }
-elseif ($_GET["act"]=="del"){
+elseif (isset($_GET["act"]) && $_GET["act"]=="del"){
 	$id = (int)$_GET["id"];
 	$sure = intval($_GET["sure"] ?? 0);
 	if (!$sure)

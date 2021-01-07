@@ -5,11 +5,11 @@ loggedinorreturn();
 if (get_user_class() < UC_ADMINISTRATOR)
 stderr("Sorry", "Access denied.");
 
-$remove = (int)$_GET['remove'];
+$remove = intval($_GET['remove'] ?? 0);
 if (is_valid_id($remove))
 {
   sql_query("DELETE FROM bans WHERE id=".mysql_real_escape_string($remove)) or sqlerr();
-  write_log("Ban ".htmlspecialchars($remove)." was removed by $CURUSER[id] ($CURUSER[username])",'mod');
+  write_log("Ban ".htmlspecialchars($remove)." was removed by {$CURUSER['id']} ($CURUSER[username])",'mod');
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && get_user_class() >= UC_ADMINISTRATOR)
@@ -25,8 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && get_user_class() >= UC_ADMINISTRATOR
 		stderr("Error", "Bad IP address.");
 	$comment = sqlesc($comment);
 	$added = sqlesc(date("Y-m-d H:i:s"));
-	sql_query("INSERT INTO bans (added, addedby, first, last, comment) VALUES($added, ".mysql_real_escape_string($CURUSER[id]).", $firstlong, $lastlong, $comment)") or sqlerr(__FILE__, __LINE__);
-	header("Location: $_SERVER[REQUEST_URI]");
+	sql_query("INSERT INTO bans (added, addedby, first, last, comment) VALUES($added, ".mysql_real_escape_string($CURUSER['id']).", $firstlong, $lastlong, $comment)") or sqlerr(__FILE__, __LINE__);
+	header("Location: {$_SERVER['REQUEST_URI']}");
 	die;
 }
 
@@ -48,8 +48,8 @@ else
 
   while ($arr = mysql_fetch_assoc($res))
   {
- 	  print("<tr><td>".gettime($arr[added])."</td><td align=left>".long2ip($arr[first])."</td><td align=left>".long2ip($arr[last])."</td><td align=left>". get_username($arr['addedby']) .
- 	    "</td><td align=left>$arr[comment]</td><td><a href=bans.php?remove=$arr[id]>Remove</a></td></tr>\n");
+ 	  print("<tr><td>".gettime($arr['added'])."</td><td align=left>".long2ip($arr['first'])."</td><td align=left>".long2ip($arr['last'])."</td><td align=left>". get_username($arr['addedby']) .
+ 	    "</td><td align=left>{$arr['comment']}</td><td><a href=bans.php?remove={$arr['id']}>Remove</a></td></tr>\n");
   }
   print("</table>\n");
 }

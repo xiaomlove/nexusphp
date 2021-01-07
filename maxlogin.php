@@ -35,7 +35,7 @@ function searchform () {
 $countrows = number_format(get_row_count("loginattempts")) + 1;
 $page = intval($_GET["page"] ?? 0);
 
-$order = $_GET['order'];
+$order = $_GET['order'] ?? '';
 if ($order == 'id')
 	$orderby = "id";
 elseif ($order == 'ip')
@@ -53,7 +53,7 @@ else
 			
 $perpage = 5;
 list($pagertop, $pagerbottom, $limit) = pager($perpage, $countrows, "maxlogin.php?order=$order&");
-
+$msg = '';
 if ($action == 'showlist') {
 stdhead ("Max. Login Attemps - Show List");
 print("<h1>Failed Login Attempts</h1>");

@@ -102,6 +102,11 @@ class DB
         return $this->driver->lastInsertId();
     }
 
+    public function freeResult($result)
+    {
+        return $this->driver->freeResult($result);
+    }
+
 
 
 

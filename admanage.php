@@ -68,6 +68,7 @@ function get_type_name($type)
 function print_ad_editor($position, $row = "")
 {
 	global $lang_admanage;
+	global $allowxhtmlclass;
 	switch ($position)
 	{
 		case 'header': 
@@ -136,11 +137,11 @@ tr($lang_admanage['row_type']."<font color=\"red\">*</font>", "<select name=\"ad
 <h2 align="left"><?php echo $lang_admanage['text_image']?></h2>
 <table border="1" cellspacing="0" cellpadding="10" width="100%">
 <?php
-tr($lang_admanage['row_image_url']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[image][url]\"".($type == 'image' ? " value=\"".$pararow['url']."\"" : "")." style=\"width: 300px\" /> ".$lang_admanage['text_image_url_note'], 1);
-tr($lang_admanage['row_image_link']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[image][link]\"".($type == 'image' ? " value=\"".$pararow['link']."\"" : "")." style=\"width: 300px\" /> ".$lang_admanage['text_image_link_note'], 1);
-tr($lang_admanage['row_image_width'], "<input type=\"text\" name=\"ad[image][width]\"".($type == 'image' ? " value=\"".$pararow['width']."\"" : "")." style=\"width: 100px\" /> ".$lang_admanage['text_image_width_note'], 1);
-tr($lang_admanage['row_image_height'], "<input type=\"text\" name=\"ad[image][height]\"".($type == 'image' ? " value=\"".$pararow['height']."\"" : "")." style=\"width: 100px\" /> ".$lang_admanage['text_image_height_note'], 1);
-tr($lang_admanage['row_image_tooltip'], "<input type=\"text\" name=\"ad[image][title]\"".($type == 'image' ? " value=\"".$pararow['title']."\"" : "")." style=\"width: 300px\" /> ".$lang_admanage['text_image_tooltip_note'], 1);
+tr($lang_admanage['row_image_url']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[image][url]\"".($type == 'image' ? " value=\"".($pararow['url'] ?? '')."\"" : "")." style=\"width: 300px\" /> ".$lang_admanage['text_image_url_note'], 1);
+tr($lang_admanage['row_image_link']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[image][link]\"".($type == 'image' ? " value=\"".($pararow['link'] ?? '')."\"" : "")." style=\"width: 300px\" /> ".$lang_admanage['text_image_link_note'], 1);
+tr($lang_admanage['row_image_width'], "<input type=\"text\" name=\"ad[image][width]\"".($type == 'image' ? " value=\"".($pararow['width'] ?? '')."\"" : "")." style=\"width: 100px\" /> ".$lang_admanage['text_image_width_note'], 1);
+tr($lang_admanage['row_image_height'], "<input type=\"text\" name=\"ad[image][height]\"".($type == 'image' ? " value=\"".($pararow['height'] ?? '')."\"" : "")." style=\"width: 100px\" /> ".$lang_admanage['text_image_height_note'], 1);
+tr($lang_admanage['row_image_tooltip'], "<input type=\"text\" name=\"ad[image][title]\"".($type == 'image' ? " value=\"".($pararow['title'] ?? '')."\"" : "")." style=\"width: 300px\" /> ".$lang_admanage['text_image_tooltip_note'], 1);
 ?>
 </table>
 </div>
@@ -187,7 +188,7 @@ tr($lang_admanage['row_flash_height']."<font color=\"red\">*</font>", "<input ty
 <?php
 }
 
-$action = $_GET['action'];
+$action = $_GET['action'] ?? '';
 if ($action == 'del')
 {
 	$id = intval($_GET['id'] ?? 0);
@@ -380,7 +381,7 @@ begin_main_frame();
 		print("<p align=\"center\">".$lang_admanage['text_no_ads_yet']."</p>");
 	else{
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
-		$res = sql_query("SELECT * FROM advertisements ORDER BY id DESC ".(int)$limit) or sqlerr(__FILE__, __LINE__);
+		$res = sql_query("SELECT * FROM advertisements ORDER BY id DESC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="940">
 <tr>

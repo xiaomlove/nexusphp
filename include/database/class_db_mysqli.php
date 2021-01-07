@@ -76,5 +76,9 @@ class DBMysqli implements DBInterface
         return $this->mysqli->insert_id;
     }
 
+    public function freeResult($mysqliResult)
+    {
+        return $mysqliResult->free_result();
+    }
 
 }

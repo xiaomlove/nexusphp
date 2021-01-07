@@ -61,7 +61,7 @@ if (get_user_class() >= UC_ADMINISTRATOR) {
 print("<tr><td colspan=10 align=right><input type=\"submit\" name=\"submit\" value=\"Apply Changes\"></td></tr>\n");
 print("<input type=\"hidden\" name=\"nowarned\" value=\"nowarned\"></form></table>\n");
 }
-print("<p>$pagemenu<br>$browsemenu</p>");
+print("<p>" . ($pagemenu ?? '') . "<br>" . ($browsemenu ?? '') . "</p>");
 
 die;
 

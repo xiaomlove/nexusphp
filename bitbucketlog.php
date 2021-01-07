@@ -8,7 +8,7 @@ stderr("Sorry", "Access denied.");
 $bucketpath = "$bitbucket";
 if (get_user_class() >= UC_MODERATOR)
 {
-	 $delete = $_GET["delete"];
+	 $delete = intval($_GET["delete"] ?? 0);
 	 if (is_valid_id($delete)) {
 		 $r = sql_query("SELECT name,owner FROM bitbucket WHERE id=".mysql_real_escape_string($delete)) or sqlerr(__FILE__, __LINE__);			
 		 if (mysql_num_rows($r) == 1) {				
@@ -21,7 +21,7 @@ if (get_user_class() >= UC_MODERATOR)
 				 				stdhead("BitBucket Log");	
 				 				$res = sql_query("SELECT count(*) FROM bitbucket") or die(mysql_error());	$row = mysql_fetch_array($res);	$count = $row[0];	
 				 				$perpage = 10;		
-				 				list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"] . "?out=" . $_GET["out"] . "&" );	
+				 				list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"] . "?out=" . ($_GET["out"] ?? '') . "&" );
 				 				print("<h1>BitBucket Log</h1>\n");	
 				 				print("Total Images Stored: $count");	
 				 				echo $pagertop;	
@@ -38,8 +38,8 @@ if (get_user_class() >= UC_MODERATOR)
 						 				$url = str_replace(" ", "%20", htmlspecialchars("$bitbucket/$name"));
 						 				print("<tr>");
 						 				print("<td><center><a href=$url><img src=\"".$url."\" border=0 onLoad='SetSize(this, 400)'></a></center>");			
-						 				print("Uploaded by:  " . get_username($arr[owner]). "<br />");
-						 				print("(#$arr[id]) Filename: $name ($width&nbsp;x&nbsp;$height)");			
+						 				print("Uploaded by:  " . get_username($arr['owner']). "<br />");
+						 				print("(#{$arr['id']}) Filename: $name ($width&nbsp;x&nbsp;$height)");
 						 				if (get_user_class() >= UC_MODERATOR)				
 						 				print(" <b><a href=?delete=$arr[id]>[Delete]</a></b><br />");			
 						 				print("Added: $date $time");			

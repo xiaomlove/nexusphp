@@ -59,3 +59,8 @@ function mysql_insert_id()
 {
     return DB::getInstance()->lastInsertId();
 }
+
+function mysql_free_result($result)
+{
+    return DB::getInstance()->freeResult($result);
+}

@@ -11,7 +11,7 @@ echo "<p>";
 echo "clean-up in progress...please wait<br />";
 ob_flush();
 flush();
-if ($_GET['forceall']) {
+if (isset($_GET['forceall']) && $_GET['forceall']) {
 	$forceall = 1;
 } else {
 	$forceall = 0;

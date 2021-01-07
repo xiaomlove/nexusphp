@@ -7,7 +7,7 @@ stderr("Error", "Permission denied.");
 $class = intval($_POST["class"] ?? 0);
 	if ($class)
 		int_check($class,true);
-$or = $_POST["or"];
+$or = $_POST["or"] ?? '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
@@ -55,6 +55,7 @@ if (get_user_class() == UC_MODERATOR && $CURUSER["class"] > UC_POWER_USER)
 printf("<input type=hidden name=class value=$CURUSER[class]\n");
 else
 {
+    $prefix = '';
 print("<tr><td class=rowhead>Classe</td><td colspan=2 align=left><select name=or><option value='<'><<option value='>'>><option value='='>=<option value='<='><=<option value='>='>>=</select><select name=class>\n");
 if (get_user_class() == UC_MODERATOR)
 $maxclass = UC_POWER_USER;

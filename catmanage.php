@@ -356,12 +356,12 @@ tr($lang_catmanage['col_order'], "<input type=\"text\" name=\"sort_index\" value
 }
 
 $validsubcattype=array('source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec');
-$type = $_GET['type'];
+$type = $_GET['type'] ?? '';
 if ($type == '')
 	$type = 'searchbox';
 else
 	check_valid_type($type);
-$action = $_GET['action'];
+$action = $_GET['action'] ?? '';
 if ($action == '')
 	$action = 'view';
 if ($action == 'view')
@@ -725,7 +725,7 @@ elseif($action == 'submit')
 		$codec = intval($_POST['codec'] ?? 0);
 		$standard = intval($_POST['standard'] ?? 0);
 		$processing = intval($_POST['processing'] ?? 0);
-		$team = intval($_POST['team'] ?? 0;
+		$team = intval($_POST['team'] ?? 0);
 		$audiocodec = intval($_POST['audiocodec'] ?? 0);
 		if (!$name || !$image)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);

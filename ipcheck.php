@@ -22,6 +22,7 @@ if (get_user_class() >= UC_MODERATOR || $CURUSER["guard"] == "yes")
  <td class=colhead width=125>IP</td>
  <td class=colhead width=40>Peer</td></tr>\n");
  $uc = 0;
+ $ip = '';
   while($ras = mysql_fetch_assoc($res))
   {
 	if ($ras["dupl"] <= 1)

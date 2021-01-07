@@ -12,7 +12,7 @@ stdhead("Add Upload", false);
 <form method=post action=takeamountupload.php>
 <?php
 
-if ($_GET["returnto"] || $_SERVER["HTTP_REFERER"])
+if (isset($_GET["returnto"]) || $_SERVER["HTTP_REFERER"])
 {
 ?>
 <input type=hidden name=returnto value="<?php echo htmlspecialchars($_GET["returnto"]) ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"])?>">
@@ -21,7 +21,7 @@ if ($_GET["returnto"] || $_SERVER["HTTP_REFERER"])
 ?>
 <table cellspacing=0 cellpadding=5>
 <?php
-if ($_GET["sent"] == 1) {
+if (isset($_GET["sent"]) && $_GET["sent"] == 1) {
 ?>
 <tr><td colspan=2 class="text" align="center"><font color=red><b>Upload amount has been added and inform message has been sent.</font></b></tr></td>
 <?php
@@ -108,7 +108,7 @@ if ($_GET["sent"] == 1) {
   </td>
 </tr>
 <tr><td class="rowhead" valign="top">Subject </td><td class="rowfollow"><input type=text name=subject size=82></td></tr>
-<tr><td class="rowhead" valign="top">Reason </td><td class="rowfollow"><textarea name=msg cols=80 rows=5><?php echo $body?></textarea></td></tr>
+<tr><td class="rowhead" valign="top">Reason </td><td class="rowfollow"><textarea name=msg cols=80 rows=5><?php echo $body ?? ''?></textarea></td></tr>
 <tr>
 <td class="rowfollow" colspan=2><div align="center"><b>Operator:&nbsp;&nbsp;</b>
 <?php echo $CURUSER['username']?>
@@ -118,7 +118,7 @@ if ($_GET["sent"] == 1) {
 </div></td></tr>
 <tr><td class="rowfollow" colspan=2 align=center><input type=submit value="Do It!" class=btn></td></tr>
 </table>
-<input type=hidden name=receiver value=<?php echo $receiver?>>
+<input type=hidden name=receiver value=<?php echo $receiver ?? ''?>>
 </form>
 
  </div></td></tr></table>

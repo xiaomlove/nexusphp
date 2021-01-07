@@ -16,14 +16,14 @@ if ($action == 'showlist') {
 <form method=post action=bannedemails.php>
 <input type=hidden name=action value=savelist>
 <tr><td>Enter a list of banned email addresses (separated by spaces):<br />To ban a specific address enter "email@domain.com", to ban an entire domain enter "@domain.com"</td>
-<td><textarea name="value" rows="5" cols="40"><?php echo $list[value]?></textarea>
+<td><textarea name="value" rows="5" cols="40"><?php echo $list['value']?></textarea>
 <input type=submit value="save"></form></td>
 </tr></table>
 <?php
 stdfoot () ;
 }elseif ($action == 'savelist') {
 	stdhead (VERSION." - Save List");
-	$value = trim ( htmlspecialchars ( $_POST[value] ) ) ;
+	$value = trim ( htmlspecialchars ( $_POST['value'] ?? '' ) ) ;
 	sql_query("UPDATE bannedemails SET value = ".sqlesc($value)) or sqlerr(__FILE__, __LINE__);
 	Print ("Saved.");
 	stdfoot () ;

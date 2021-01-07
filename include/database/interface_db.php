@@ -26,4 +26,6 @@ interface DBInterface
 
     public function lastInsertId(): int;
 
+    public function freeResult($result);
+
 }

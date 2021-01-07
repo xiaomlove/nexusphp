@@ -13,7 +13,7 @@ $year=date('Y');
 $month=intval($_GET['month'] ?? 0);
 if (!$month || $month<=0 || $month>12)
 $month=date('m');
-$order=$_GET['order'];
+$order=$_GET['order'] ?? '';
 if (!in_array($order, array('username', 'torrent_size', 'torrent_count')))
 	$order='username';
 if ($order=='username')
@@ -88,6 +88,7 @@ else{
 		unset($row2);
 	}
 	$res3=sql_query("SELECT users.id AS userid, users.username AS username, 0 AS torrent_count, 0 AS torrent_size FROM users WHERE class >= ".UC_UPLOADER.(count($hasupuserid) ? " AND users.id NOT IN (".implode(",",$hasupuserid).")" : "")." ORDER BY username ASC") or sqlerr(__FILE__, __LINE__);
+    $count = 0;
 	while($row = mysql_fetch_array($res3))
 	{
 		$res2 = sql_query("SELECT torrents.id, torrents.name, torrents.added FROM torrents WHERE owner=".$row['userid']." ORDER BY id DESC LIMIT 1");

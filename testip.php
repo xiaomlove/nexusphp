@@ -8,7 +8,7 @@ if (get_user_class() < UC_MODERATOR) stderr("Error", "Permission denied");
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$ip = $_POST["ip"];
 else
-	$ip = $_GET["ip"];
+	$ip = $_GET["ip"] ?? '';
 if ($ip)
 {
 	$nip = ip2long($ip);

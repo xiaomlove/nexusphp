@@ -6,13 +6,13 @@ loggedinorreturn();
 if (get_user_class() < UC_SYSOP) {
 	die("access denied.");
 }
-mysql_connect($mysql_host,$mysql_user,$mysql_pass);
+mysql_connect($mysql_host,$mysql_user,$mysql_pass, $BASIC['mysql_db'], $BASIC['mysql_port']);
 mysql_select_db($mysql_db);
 stdhead("Manage Locations");
 begin_main_frame("",false,100);
 begin_frame("Manage Locations",true,10,"100%","center");
 
-$sure = $_GET['sure'];
+$sure = $_GET['sure'] ?? '';
 if($sure == "yes") {
 	$delid = $_GET['delid'];
 	$query = "DELETE FROM locations WHERE id=" .sqlesc($delid) . " LIMIT 1";
@@ -22,7 +22,7 @@ if($sure == "yes") {
 	stdfoot();
 	die();
 }
-$delid = $_GET['delid'];
+$delid = intval($_GET['delid'] ?? 0);
 if($delid > 0) {
 	echo("Are you sure you would like to delete this Location?( <strong><a href='". $_SERVER['PHP_SELF'] . "?delid=$delid&sure=yes'>Yes!</a></strong> / <strong><a href='". $_SERVER['PHP_SELF'] . "'>No</a></strong> )");
 	end_frame();
@@ -30,7 +30,7 @@ if($delid > 0) {
 	die();
 }
 
-$edited = $_GET['edited'];
+$edited = intval($_GET['edited'] ?? 0);
 if($edited == 1) {
 	$id = intval($_GET['id'] ?? 0);
 	$name = $_GET['name'];
@@ -103,7 +103,7 @@ if($editid > 0) {
 	die();
 }
 
-$add = $_GET['add'];
+$add = $_GET['add'] ?? '';
 $success = false;
 if($add == 'true') {
 	$name = $_GET['name'];
@@ -154,8 +154,8 @@ echo("<tr><td class=toolbox align=center colspan=2><input class=btn type='Submit
 echo("</table>");
 echo("</form>");
 
-$range_start_ip = $_GET['range_start_ip'];
-$range_end_ip = $_GET['range_end_ip'];
+$range_start_ip = $_GET['range_start_ip'] ?? '';
+$range_end_ip = $_GET['range_end_ip'] ?? '';
 
 echo("<form name='form2' method='get' action='" . $_SERVER['PHP_SELF'] . "'>");
 echo("<table class=main cellspacing=0 cellpadding=5 width=48% align=right>");
@@ -171,8 +171,8 @@ print("<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><
 
 
 unset($wherea);
-
-$check_range = $_GET['check_range'];
+$wherea = '';
+$check_range = $_GET['check_range'] ?? '';
 if($check_range == 'true') {
 
 	//stderr("",$range_start_ip . $range_end_ip . validip_format($range_start_ip) . validip_format($range_end_ip));
