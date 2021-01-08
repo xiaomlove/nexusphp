@@ -195,7 +195,7 @@ else {
 						$write = $movie->writing();
 						$produce = $movie->producer();
 						$cast = $movie->cast();
-						$plot = $movie->plot ();
+//						$plot = $movie->plot ();
 						$plot_outline = $movie->plotoutline();
 						$compose = $movie->composer();
 						$gen = $movie->genres();
@@ -284,18 +284,21 @@ else {
 						$autodata .= "<font color=\"darkred\" size=\"3\">".$lang_details['text_plot_outline']."</font><br />\n";
 						$autodata .= "<font color=\"navy\">------------------------------------------------------------------------------------------------------------------------------------</font></strong>";
 
-						if(count($plot) == 0)
-						{
-							$autodata .= "<br />\n".$plot_outline;
-						}
-						else
-						{
-							for ($i = 0; $i < count ($plot); $i++)
-							{
-								$autodata .= "<br />\n<font color=\"DarkRed\">.</font> ";
-								$autodata .= $plot[$i];
-							}
-						}
+//						if(count($plot) == 0)
+//						{
+//							$autodata .= "<br />\n".$plot_outline;
+//						}
+//						else
+//						{
+//							for ($i = 0; $i < count ($plot); $i++)
+//							{
+//								$autodata .= "<br />\n<font color=\"DarkRed\">.</font> ";
+//								$autodata .= $plot[$i];
+//							}
+//						}
+                        if (!empty($plot_outline)) {
+                            $autodata .= "<br />\n".$plot_outline;
+                        }
 
 
 						$autodata .= "<br /><br />\n\n<strong><font color=\"navy\">------------------------------------------------------------------------------------------------------------------------------------</font><br />\n";

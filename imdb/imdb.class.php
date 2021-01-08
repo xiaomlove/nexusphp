@@ -48,7 +48,7 @@
   var $taglines = "";
 
   var $credits_cast = "";
-  var $credits_director = "";
+  var $credits_director = [];
   var $credits_writing = "";
   var $credits_producer = "";
 
@@ -594,6 +594,12 @@ $responseBody = $response->getBody();
    */
   function genres () {
    if ($this->main_genres == "") {
+       $result = $this->retrieveFromPage('Genres:</h4>', '</div>');
+       $result = strip_tags($result);
+       //no need more...
+       return $this->main_genres = explode('|', $result);
+
+
     if ($this->page["Title"] == "") $this->openpage ("Title");
     $this->main_genres = array();
     $genre_s = strpos($this->page["Title"],"/Sections/Genres/") -5;
@@ -643,6 +649,11 @@ $responseBody = $response->getBody();
    */
   function tagline () {
    if ($this->main_tagline == "") {
+       $result = $this->retrieveFromPage('Taglines:</h4>', '</div>');
+       $result = strstr($result, '<span', true);
+       //no need more...
+       return $this->main_tagline = $result;
+
     if ($this->page["Title"] == "") $this->openpage ("Title");
     $tag_s = strpos ($this->page["Title"], "Tagline:");
     if ( $tag_s == 0) return FALSE;
@@ -660,6 +671,12 @@ $responseBody = $response->getBody();
   function plotoutline () {
     if ($this->main_plotoutline == "") {
       if ($this->page["Title"] == "") $this->openpage ("Title");
+
+      $result = $this->retrieveFromPage('Storyline</h2>', '</span>');
+      $result = strip_tags($result);
+      //no need more...
+      return $this->main_plotoutline = $result;
+
       $plotoutline_s = strpos ($this->page["Title"], "Plot:");
       if ( $plotoutline_s == 0) return FALSE;
       $plotoutline_s = strpos ($this->page["Title"], ">", $plotoutline_s);
@@ -721,21 +738,31 @@ $responseBody = $response->getBody();
    * @return mixed rows (FALSE if table not found, array[0..n] of strings otherwise)
    */
   function get_table_rows ( $html, $table_start ){
-   $row_s = strpos ( $html, ">".$table_start."<");
+//   $row_s = strpos ( $html, ">".$table_start."<");
+   $row_s = strpos ( $html, $table_start);
    $row_e = $row_s;
    if ( $row_s == 0 )  return [];
    $endtable = strpos($html, "</table>", $row_s);
+   do_log("table_start: $table_start, row_s: $row_s, endtable: $endtable");
    $i=0;
    $rows = [];
-   while ( ($row_e + 5 < $endtable) && ($row_s != 0) ){
-     $row_s = strpos ( $html, "<tr>", $row_s);
+   // the value: 23, maybe should change, by debug and test --- xiaomlove at 2021-01-29 00:29
+   while ( ($row_e + 23 < $endtable) && ($row_s != 0) ){
+     $row_s = strpos ( $html, "<tr", $row_s);
      $row_e = strpos ($html, "</tr>", $row_s);
+     do_log("row_s: $row_s, row_e: $row_e");
+     if (empty($row_s) || empty($row_e)) {
+         break;
+     }
      $temp = trim(substr ($html, $row_s + 4 , $row_e - $row_s - 4));
-     if ( strncmp( $temp, "<td valign=",10) == 0 ){
+     $tdPos = strpos($temp, '<td');
+     $temp = substr($temp, $tdPos);
+     if ( strncmp( $temp, "<td class=",10) == 0 ){
        $rows[$i] = $temp;
        $i++;
      }
      $row_s = $row_e;
+
    }
    return $rows;
   }
@@ -747,14 +774,16 @@ $responseBody = $response->getBody();
    * @return mixed rows (FALSE if table not found, array[0..n] of strings otherwise)
    */
   function get_table_rows_cast ( $html, $table_start ){
-   $row_s = strpos ( $html, '<table class="cast">');
+   $row_s = strpos ( $html, '<table class="cast_list">');
    $row_e = $row_s;
    if ( $row_s == 0 )  return [];
    $endtable = strpos($html, "</table>", $row_s);
+   do_log("row_s: $row_s, endtable: $endtable");
    $i=0;
    while ( ($row_e + 5 < $endtable) && ($row_s != 0) ){
      $row_s = strpos ( $html, "<tr", $row_s);
      $row_e = strpos ($html, "</tr>", $row_s);
+     do_log("row_s: $row_s, row_e: $row_e");
      $temp = trim(substr ($html, $row_s , $row_e - $row_s));
 #     $row_x = strpos( $temp, '<td valign="middle"' );
      $row_x = strpos( $temp, '<td class="nm">' );
@@ -810,7 +839,7 @@ $responseBody = $response->getBody();
    * @return array director (array[0..n] of strings)
    */
   function director () {
-   if ($this->credits_director == ""){
+   if (empty($this->credits_director)){
     if ($this->page["Credits"] == "") $this->openpage ("Credits");
    }
    $director_rows = $this->get_table_rows($this->page["Credits"], "Directed by");
@@ -854,9 +883,13 @@ $responseBody = $response->getBody();
    */
   function cast () {
    if ($this->credits_cast == "") {
-    if ($this->page["Credits"] == "") $this->openpage ("Credits");
+//       if ($this->page["Credits"] == "") $this->openpage ("Credits");
+       if ($this->page["Credits"] == "") $this->openpage ("Title");
    }
-   $cast_rows = $this->get_table_rows_cast($this->page["Credits"], "Cast");
+//   $cast_rows = $this->get_table_rows_cast($this->page["Credits"], "Cast");
+   $cast_rows = $this->get_table_rows($this->page["Title"], "Cast</h2>");
+   do_log("cast_rows: " . json_encode($cast_rows));
+//   dd($cast_rows);
    for ( $i = 0; $i < count ($cast_rows); $i++){
 	$cels = $this->get_row_cels ($cast_rows[$i]);
 	if (!isset ($cels[0])) return array();
@@ -882,7 +915,8 @@ $responseBody = $response->getBody();
     if ($this->page["Credits"] == "") $this->openpage ("Credits");
    }
    $this->credits_writing = array();
-   $writing_rows = $this->get_table_rows($this->page["Credits"], "Writing credits");
+   $writing_rows = $this->get_table_rows($this->page["Credits"], "Writing Credits");
+   do_log("writing_rows: " . json_encode($writing_rows));
    for ( $i = 0; $i < count ($writing_rows); $i++){
      $cels = $this->get_row_cels ($writing_rows[$i]);
      if ( count ( $cels) > 2){
@@ -936,7 +970,7 @@ $responseBody = $response->getBody();
     if ($this->page["Credits"] == "") $this->openpage ("Credits");
    }
    $this->credits_composer = array();
-   $composer_rows = $this->get_table_rows($this->page["Credits"], "Original Music by");
+   $composer_rows = $this->get_table_rows($this->page["Credits"], "Music by");
    for ( $i = 0; $i < count ($composer_rows); $i++){
 	$cels = $this->get_row_cels ($composer_rows[$i]);
 	if ( count ( $cels) > 2){
@@ -1024,6 +1058,11 @@ $responseBody = $response->getBody();
   {
    if ($this->main_country == "") 
    {
+       $result = $this->retrieveFromPage('Country:</h4>', '</div>');
+       $result = strip_tags($result);
+       //no need more...
+       return $this->main_country = explode('|', $result);
+
     if ($this->page["Title"] == "") $this->openpage ("Title");
     $this->main_country = array();
     $country_s = strpos($this->page["Title"],"/Sections/Countries/") -5;
@@ -1167,6 +1206,21 @@ $responseBody = $response->getBody();
     }
    }
    return $this->main_mpaa;
+  }
+
+
+  private function retrieveFromPage($beginDelimiter, $endDelimiter, $page = 'Title')
+  {
+      if (empty($this->page[$page])) {
+          $this->openpage ($page);
+      }
+      $string = utf8_decode($this->page[$page]);
+      $lang_s = mb_strpos ($string, $beginDelimiter, 0, 'utf-8');
+      $lang_e = mb_strpos ($string, $endDelimiter, $lang_s, 'utf-8');
+      $result = mb_substr ($string, $lang_s, $lang_e - $lang_s,'utf-8');
+      $result = str_replace($beginDelimiter, '', $result);
+      do_log("begin: $beginDelimiter, 'end: $endDelimiter, result: $result");
+      return $result;
   }
 
  } // end class imdb
