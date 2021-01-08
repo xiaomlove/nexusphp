@@ -56,7 +56,7 @@
   var $main_credits = "";
   var $main_photo = "";
   var $main_country = "";
-  var $main_alsoknow = "";
+  var $main_alsoknow = [];
   var $main_sound = "";
 
   var $info_excer;
@@ -468,14 +468,18 @@ $responseBody = $response->getBody();
     if ($this->page["Title"] == "") {
 	$this->openpage ("Title");
     }
-    $rate_s = strpos ($this->page["Title"], "User Rating:");
+    $string = utf8_decode($this->page["Title"]);
+    $startStr = '>';
+    $rate_s = mb_strpos ($string, 'itemprop="ratingValue"', 0, 'utf-8');
 #    $rate_s = strpos ($this->page["Title"], '/ratings">');
     if ( $rate_s == 0 )	return FALSE;
-    if (strpos ($this->page["Title"], "awaiting 5 votes")) return false;
-    $rate_s = strpos ($this->page["Title"], "<b>", $rate_s);
-    $rate_e = strpos ($this->page["Title"], "/", $rate_s);
-    $this->main_rating = substr ($this->page["Title"], $rate_s + 3, $rate_e - $rate_s - 3);
-    if ($rate_e - $rate_s > 7) $this->main_rating = "";
+    if (mb_strpos ($string, "awaiting 5 votes")) return false;
+    $rate_s = mb_strpos ($string, $startStr, $rate_s, 'utf-8');
+    $rate_e = mb_strpos ($string, "<", $rate_s, 'utf-8');
+    $result = mb_substr ($this->page["Title"], $rate_s, $rate_e - $rate_s, 'utf-8');
+    $result = str_replace($startStr, '', $result);
+    $this->main_rating = $result;
+//    if ($rate_e - $rate_s > 7) $this->main_rating = "";
     return $this->main_rating;
    }
   }
@@ -509,14 +513,18 @@ $responseBody = $response->getBody();
   function votes () {
    if ($this->main_votes == "") {
     if ($this->page["Title"] == "") $this->openpage ("Title");
-    $vote_s = strpos ($this->page["Title"], "User Rating:");
+    $string = utf8_decode($this->page["Title"]);
+    $vote_s = mb_strpos ($string, "imdbRating", 0, 'utf-8');
     if ( $vote_s == 0) return false;
-    if (strpos ($this->page["Title"], "awaiting 5 votes")) return false;
-//    $vote_s = strpos ($this->page["Title"], "<a", $vote_s);
-//    $vote_e = strpos ($this->page["Title"], "votes", $vote_s);
-//    $this->main_votes = substr ($this->page["Title"], $vote_s, $vote_e - $vote_s);
-    preg_match('/href=\"ratings\".*>([0-9,][0-9,]*)/', $this->page["Title"], $matches);
-    $this->main_votes = $matches[1];
+    if (strpos ($string, "awaiting 5 votes")) return false;
+    $startStr = 'ratingCount">';
+    $vote_s = mb_strpos ($string, $startStr, $vote_s, 'utf-8');
+    $vote_e = mb_strpos ($string, "</span>", $vote_s, 'utf-8');
+    $result = mb_substr ($this->page["Title"], $vote_s, $vote_e - $vote_s, 'utf-8');
+    do_log("start: $vote_s, end: $vote_e, result: $result");
+    $this->main_votes = trim(str_replace($startStr, '', $result));
+//    preg_match('/href=\"ratings\".*>([0-9,][0-9,]*)/', $this->page["Title"], $matches);
+//    $this->main_votes = $matches[1];
     $this->main_votes = "<a href=\"https://".$this->imdbsite."/title/tt".$this->imdbID."/ratings\">" . $this->main_votes . "</a>";
    }
    return $this->main_votes;
@@ -529,11 +537,15 @@ $responseBody = $response->getBody();
   function language () {
    if ($this->main_language == "") {
     if ($this->page["Title"] == "") $this->openpage ("Title");
-    $lang_s = strpos ($this->page["Title"], "/Sections/Languages/");
-    if ( $lang_s == 0) return FALSE;
-    $lang_s = strpos ($this->page["Title"], ">", $lang_s);
-    $lang_e = strpos ($this->page["Title"], "<", $lang_s);
-    $this->main_language = substr ($this->page["Title"], $lang_s + 1, $lang_e - $lang_s - 1);
+    $string = utf8_decode($this->page["Title"]);
+    $startStr = 'Language:</h4>';
+    $lang_s = mb_strpos ($string, $startStr, 0, 'utf-8');
+    $lang_e = mb_strpos ($string, "</div>", $lang_s);
+    $result = mb_substr ($string, $lang_s, $lang_e - $lang_s);
+    $result = str_replace($startStr, '', $result);
+    do_log("start: $lang_s, 'end: $lang_e, result: $result");
+    $result = strip_tags($result);
+    $this->main_language = $result;
    }
    return $this->main_language;
   }
@@ -950,12 +962,14 @@ $responseBody = $response->getBody();
    if ($this->main_photo == "") {
     if ($this->page["Title"] == "") $this->openpage ("Title");
 #    $tag_s = strpos ($this->page["Title"], "<img border=\"0\" alt=\"cover\"");
-    $tag_s = strpos ($this->page["Title"], "<a name=\"poster\"");
+//    $tag_s = strpos ($this->page["Title"], "<a name=\"poster\"");
+    $tag_s = strpos ($this->page["Title"], "class=\"poster\"");
     if ($tag_s == 0) return FALSE;
 #    $tag_s = strpos ($this->page["Title"], "http://ia.imdb.com/media",$tag_s);
     $tag_s = strpos ($this->page["Title"], "https://",$tag_s);
     $tag_e = strpos ($this->page["Title"], '"', $tag_s);
     $this->main_photo = substr ($this->page["Title"], $tag_s, $tag_e - $tag_s);
+    do_log("start: $tag_s, end: $tag_e, photo: " . $this->main_photo);
     if ($tag_s == 0) return FALSE;
    }
    return $this->main_photo;
@@ -1039,9 +1053,21 @@ $responseBody = $response->getBody();
    * @return array aka (array[0..n] of strings)
    */
   function alsoknow () {
-   if ($this->main_alsoknow == "") {
+   if (empty($this->main_alsoknow)) {
     if ($this->page["Title"] == "") $this->openpage ("Title");
-    $ak_s = strpos ($this->page["Title"], "Also Known As:</h5>");
+    $string = utf8_decode($this->page["Title"]);
+    $startStr = 'Also Known As:</h4>';
+    $ak_s = mb_strpos ($string, $startStr, 0, 'utf-8');
+    $ak_e = mb_strpos($string, '<span', $ak_s, 'utf-8');
+    $originalTitle = mb_substr($string, $ak_s, $ak_e - $ak_s, 'utf-8');
+    do_log("start: $ak_s, end: $ak_e, originalTitle: $originalTitle");
+    $title = trim(str_replace($startStr, '', $originalTitle));
+    $item = [
+        'title' => $title,
+    ];
+    //no need more...
+    return $this->main_alsoknow = [$item];
+
     if ($ak_s>0) $ak_s += 19;
     if ($ak_s == 0) $ak_s = strpos ($this->page["Title"], "Alternativ:");
     if ($ak_s == 0) return array();

@@ -4409,8 +4409,10 @@ function do_log($log)
     if (!empty($TWEAK['logging'])) {
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $content = sprintf(
-            "[%s] %s%s%s %s%s",
+            "[%s] %s:%s %s%s%s %s%s",
             date('Y-m-d H:i:s'),
+            $backtrace[0]['file'] ?? '',
+            $backtrace[0]['line'] ?? '',
             $backtrace[1]['class'] ?? '',
             $backtrace[1]['type'] ?? '',
             $backtrace[1]['function'] ?? '',
