@@ -47,7 +47,7 @@
   var $plot_plot = "";
   var $taglines = "";
 
-  var $credits_cast = "";
+  var $credits_cast = [];
   var $credits_director = [];
   var $credits_writing = "";
   var $credits_producer = "";
@@ -259,7 +259,7 @@ $responseBody = $response->getBody();
    $this->main_plotoutline = "";
    $this->main_alttitle = "";
    $this->main_colors = "";
-   $this->credits_cast = "";
+   $this->credits_cast = [];
    $this->main_director = "";
    $this->main_creator = "";
    
@@ -825,10 +825,13 @@ $responseBody = $response->getBody();
    */
   function get_imdbname( $href){
    if ( strlen( $href) == 0) return $href;
-   $name_s = 15;
-   $name_e = strpos ( $href, '"', $name_s);
+//   $name_s = 15;
+      $startStr = 'href="/';
+   $name_s = strpos($href, $startStr);
+   $name_e = strpos ( $href, '?', $name_s);
    if ( $name_e != 0){
-	return substr( $href, $name_s, $name_e -1 - $name_s);
+       $result = substr( $href, $name_s, $name_e -1 - $name_s);
+	return substr($result, strlen($startStr));
    }else{
 	return $href;
    }
@@ -843,12 +846,14 @@ $responseBody = $response->getBody();
     if ($this->page["Credits"] == "") $this->openpage ("Credits");
    }
    $director_rows = $this->get_table_rows($this->page["Credits"], "Directed by");
+   do_log("director_rows: " . json_encode($director_rows));
    for ( $i = 0; $i < count ($director_rows); $i++){
 	$cels = $this->get_row_cels ($director_rows[$i]);
+	do_log("director cels: " . json_encode($cels));
 	if (!isset ($cels[0])) return array();
 	$dir["imdb"] = $this->get_imdbname($cels[0]);
 	$dir["name"] = strip_tags($cels[0]);
-	$role = trim(strip_tags($cels[2]));
+	$role = trim(strip_tags($cels[1]));
 	if ( $role == ""){
 		$dir["role"] = NULL;
 	}else{
@@ -889,13 +894,14 @@ $responseBody = $response->getBody();
 //   $cast_rows = $this->get_table_rows_cast($this->page["Credits"], "Cast");
    $cast_rows = $this->get_table_rows($this->page["Title"], "Cast</h2>");
    do_log("cast_rows: " . json_encode($cast_rows));
-//   dd($cast_rows);
    for ( $i = 0; $i < count ($cast_rows); $i++){
 	$cels = $this->get_row_cels ($cast_rows[$i]);
 	if (!isset ($cels[0])) return array();
+	$dir = [];
 	$dir["imdb"] = $this->get_imdbname($cels[0]);
-	$dir["name"] = strip_tags($cels[0]);
-	$role = strip_tags($cels[2]);
+	$dir["name"] = trim(strip_tags($cels[1]));
+	$role = trim(strip_tags($cels[3]));
+	do_log("cast cels: " . json_encode($cels) . ", dir: " . json_encode($dir) . ", role: $role");
 	if ( $role == ""){
 		$dir["role"] = NULL;
 	}else{

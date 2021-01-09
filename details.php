@@ -249,7 +249,7 @@ else {
 							$temp = "";
 							for ($i = 0; $i < count ($director); $i++)
 							{
-								$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$director[$i]["imdb"]."" ."\">" . $director[$i]["name"] . "</a>, ";
+								$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/" . "".$director[$i]["imdb"]."" ."\">" . $director[$i]["name"] . "</a>, ";
 							}
 							$autodata .= rtrim(trim($temp), ",");
 						}
@@ -260,7 +260,7 @@ else {
 						$temp = "";
 						for ($i = 0; $i < count ($write); $i++)
 						{
-							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$write[$i]["imdb"]."" ."\">" . "".$write[$i]["name"]."" . "</a>, ";
+							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/" . "".$write[$i]["imdb"]."" ."\">" . "".$write[$i]["name"]."" . "</a>, ";
 						}
 						$autodata .= rtrim(trim($temp), ",");
 
@@ -268,7 +268,7 @@ else {
 						$temp = "";
 						for ($i = 0; $i < count ($produce); $i++)
 						{
-							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$produce[$i]["imdb"]."" ." \">" . "".$produce[$i]["name"]."" . "</a>, ";
+							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/" . "".$produce[$i]["imdb"]."" ." \">" . "".$produce[$i]["name"]."" . "</a>, ";
 						}
 						$autodata .= rtrim(trim($temp), ",");
 
@@ -276,7 +276,7 @@ else {
 						$temp = "";
 						for ($i = 0; $i < count($compose); $i++)
 						{
-							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$compose[$i]["imdb"]."" ." \">" . "".$compose[$i]["name"]."" . "</a>, ";
+							$temp .= "<a target=\"_blank\" href=\"https://www.imdb.com/" . "".$compose[$i]["imdb"]."" ." \">" . "".$compose[$i]["name"]."" . "</a>, ";
 						}
 						$autodata .= rtrim(trim($temp), ",");
 
@@ -307,11 +307,11 @@ else {
 
 						for ($i = 0; $i < count ($cast); $i++)
 						{
-							if ($i > 9)
-							{
-								break;
-							}
-							$autodata .= "<font color=\"DarkRed\">.</font> " . "<a target=\"_blank\" href=\"https://www.imdb.com/Name?" . "".$cast[$i]["imdb"]."" ."\">" . $cast[$i]["name"] . "</a> " .$lang_details['text_as']."<strong><font color=\"DarkRed\">" . "".$cast[$i]["role"]."" . " </font></strong><br />\n";
+//							if ($i > 9)
+//							{
+//								break;
+//							}
+							$autodata .= "<font color=\"DarkRed\">.</font> " . "<a target=\"_blank\" href=\"https://www.imdb.com/" . "".$cast[$i]["imdb"]."" ."\">" . $cast[$i]["name"] . "</a> " .$lang_details['text_as']."<strong><font color=\"DarkRed\">" . "".$cast[$i]["role"]."" . " </font></strong><br />\n";
 						}
 
 
@@ -357,7 +357,7 @@ else {
 						print("<td class=\"rowfollow\" align=\"left\"><div id='kimdb'>".$autodata);
 						$Cache->end_part();
 						$Cache->add_part();
-						print($lang_details['text_information_updated_at'] . date("Y-m-d", $cache_time) . $lang_details['text_might_be_outdated']."<a href=\"".htmlspecialchars("retriver.php?id=". $id ."&type=2&siteid=1")."\">".$lang_details['text_here_to_update']);
+						print($lang_details['text_information_updated_at'] . date("Y-m-d H:i:s", $cache_time) . $lang_details['text_might_be_outdated']."<a href=\"".htmlspecialchars("retriver.php?id=". $id ."&type=2&siteid=1")."\">".$lang_details['text_here_to_update']);
 						$Cache->end_part();
 						$Cache->end_row();
 						$Cache->add_whole_row();
