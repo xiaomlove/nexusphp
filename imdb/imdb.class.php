@@ -359,12 +359,9 @@ $responseBody = $response->getBody();
     if ($this->page["Title"] == "") {
      $this->openpage ("Title");
     }
-    $this->main_title = strstr ($this->page["Title"], "<title>");
-    $endpos = strpos ($this->main_title, "</title>");
-    $this->main_title = substr ($this->main_title, 7, $endpos - 7);
-    $year_s = strpos ($this->main_title, "(", 0);
-    $year_e = strpos ($this->main_title, ")", 0);
-    $this->main_title = substr ($this->main_title, 0, $year_s - 1);
+    $result = $this->retrieveFromPage('<title>', '</title>');
+    $result = strstr($result, '(', true);
+    $this->main_title = trim($result);
    }
    return $this->main_title;
   }
@@ -378,12 +375,12 @@ $responseBody = $response->getBody();
     if ($this->page["Title"] == "") {
      $this->openpage ("Title");
     }
-    $this->main_year = strstr ($this->page["Title"], "<title>");
-    $endpos = strpos ($this->main_title, "</title>");
-    $this->main_year = substr ($this->main_year, 7, $endpos - 7);
-    $year_s = strpos ($this->main_year, "(", 0);
-    $year_e = strpos ($this->main_year, ")", 0);
-    $this->main_year = substr ($this->main_year, $year_s + 1, $year_e - $year_s - 1);
+   $result = $this->retrieveFromPage('<title>', '</title>');
+   $begin = mb_strpos($result, '(', 0, 'utf-8');
+   $end = mb_strpos($result, ')', $begin, 'utf-8');
+   do_log("year, result: $result, begin: $begin, end: $end");
+   $result = mb_substr($result, $begin + 1, $end - $begin - 1, 'utf-8');
+   $this->main_year = trim($result);
    }
    return $this->main_year;
   }
@@ -650,7 +647,9 @@ $responseBody = $response->getBody();
   function tagline () {
    if ($this->main_tagline == "") {
        $result = $this->retrieveFromPage('Taglines:</h4>', '</div>');
-       $result = strstr($result, '<span', true);
+       if (strpos($result, '<span')) {
+           $result = strstr($result, '<span', true);
+       }
        //no need more...
        return $this->main_tagline = $result;
 
@@ -977,19 +976,20 @@ $responseBody = $response->getBody();
    }
    $this->credits_composer = array();
    $composer_rows = $this->get_table_rows($this->page["Credits"], "Music by");
+   do_log("composer_rows: " . json_encode($composer_rows));
    for ( $i = 0; $i < count ($composer_rows); $i++){
 	$cels = $this->get_row_cels ($composer_rows[$i]);
-	if ( count ( $cels) > 2){
+//	if ( count ( $cels) > 2){
 		$wrt["imdb"] = $this->get_imdbname($cels[0]);
 		$wrt["name"] = strip_tags($cels[0]);
-		$role = strip_tags($cels[2]);
-		if ( $role == ""){
-			$wrt["role"] = NULL;
-		}else{
-			$wrt["role"] = $role;
-		}
+//		$role = strip_tags($cels[2]);
+//		if ( $role == ""){
+//			$wrt["role"] = NULL;
+//		}else{
+//			$wrt["role"] = $role;
+//		}
 		$this->credits_composer[$i] = $wrt;
-	}
+//	}
    }
    return $this->credits_composer;
   }
