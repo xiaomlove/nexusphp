@@ -465,18 +465,8 @@ $responseBody = $response->getBody();
     if ($this->page["Title"] == "") {
 	$this->openpage ("Title");
     }
-    $string = utf8_decode($this->page["Title"]);
-    $startStr = '>';
-    $rate_s = mb_strpos ($string, 'itemprop="ratingValue"', 0, 'utf-8');
-#    $rate_s = strpos ($this->page["Title"], '/ratings">');
-    if ( $rate_s == 0 )	return FALSE;
-    if (mb_strpos ($string, "awaiting 5 votes")) return false;
-    $rate_s = mb_strpos ($string, $startStr, $rate_s, 'utf-8');
-    $rate_e = mb_strpos ($string, "<", $rate_s, 'utf-8');
-    $result = mb_substr ($this->page["Title"], $rate_s, $rate_e - $rate_s, 'utf-8');
-    $result = str_replace($startStr, '', $result);
+    $result = $this->retrieveFromPage('itemprop="ratingValue">', '</span>');
     $this->main_rating = $result;
-//    if ($rate_e - $rate_s > 7) $this->main_rating = "";
     return $this->main_rating;
    }
   }
@@ -514,12 +504,8 @@ $responseBody = $response->getBody();
     $vote_s = mb_strpos ($string, "imdbRating", 0, 'utf-8');
     if ( $vote_s == 0) return false;
     if (strpos ($string, "awaiting 5 votes")) return false;
-    $startStr = 'ratingCount">';
-    $vote_s = mb_strpos ($string, $startStr, $vote_s, 'utf-8');
-    $vote_e = mb_strpos ($string, "</span>", $vote_s, 'utf-8');
-    $result = mb_substr ($this->page["Title"], $vote_s, $vote_e - $vote_s, 'utf-8');
-    do_log("start: $vote_s, end: $vote_e, result: $result");
-    $this->main_votes = trim(str_replace($startStr, '', $result));
+    $result = $this->retrieveFromPage('itemprop="ratingCount">', '</span>');
+    $this->main_votes = $result;
 //    preg_match('/href=\"ratings\".*>([0-9,][0-9,]*)/', $this->page["Title"], $matches);
 //    $this->main_votes = $matches[1];
     $this->main_votes = "<a href=\"https://".$this->imdbsite."/title/tt".$this->imdbID."/ratings\">" . $this->main_votes . "</a>";
