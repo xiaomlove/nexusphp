@@ -359,6 +359,8 @@ elseif ($action == 'basicsettings')	// basic settings
 	tr($lang_settings['row_mysql_user'],"<input type='text' style=\"width: 300px\" name=mysql_user value='".($BASIC["mysql_user"] ? $BASIC["mysql_user"] : "root")."'> ".$lang_settings['text_mysql_user_note'], 1);
 	tr($lang_settings['row_mysql_password'],"<input type='password' style=\"width: 300px\" name=mysql_pass value=''> ".$lang_settings['text_mysql_password_note'], 1);
 	tr($lang_settings['row_mysql_database_name'],"<input type='text' style=\"width: 300px\" name=mysql_db value='".($BASIC["mysql_db"] ? $BASIC["mysql_db"] : "nexus")."'> ".$lang_settings['text_mysql_database_name_note'], 1);
+	tr($lang_settings['row_mysql_database_port'],"<input type='text' style=\"width: 300px\" name=mysql_db value='".($BASIC["mysql_port"] ? $BASIC["mysql_port"] : "3306")."'> ".$lang_settings['text_mysql_database_port_note'], 1);
+
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }
