@@ -1,7 +1,24 @@
 <?php
 if(!defined('IN_TRACKER'))
   die('Hacking attempt!');
-error_reporting(E_ERROR | E_PARSE);
+error_reporting(E_ALL);
+
+require $rootpath . 'include/functions.php';
+require $rootpath . 'include/globalfunctions.php';
+
+require $rootpath . 'include/database/interface_db.php';
+require $rootpath . 'include/database/class_db_mysqli.php';
+require $rootpath . 'include/database/class_db.php';
+require $rootpath . 'include/database/helpers.php';
+require $rootpath . 'include/database/class_exception.php';
+
+require $rootpath . 'classes/class_advertisement.php';
+require $rootpath . 'classes/class_cache_redis.php';
+
+require $rootpath . 'include/config.php';
+require $rootpath . get_langfile_path("functions.php");
+
+
 ini_set('display_errors', $TWEAK['display_errors']);
 $Cache = new RedisCache(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());

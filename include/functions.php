@@ -1717,6 +1717,9 @@ function getExportedValue($input,$t = null) {
 
 function dbconn($autoclean = false)
 {
+    if (DB::getInstance()->isConnected()) {
+        return;
+    }
 	global $lang_functions;
 	global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
 	global $useCronTriggerCleanUp;
@@ -1770,6 +1773,9 @@ function get_user_row($id)
 }
 
 function userlogin() {
+    if (isset($GLOBALS['CURUSER'])) {
+        return;
+    }
 	global $lang_functions;
 	global $Cache;
 	global $SITE_ONLINE, $oldip;
@@ -4427,7 +4433,6 @@ function do_log($log)
  *
  * @author xiaomlove
  * @date 2021/1/11
- * @time 10:42
  * @param null $name
  * @param null $prefix
  * @return mixed|string
@@ -4444,8 +4449,8 @@ function __($name = null, $prefix = null)
         $prefix = strstr($prefix, '.php', true);
     }
     if (is_null($i18n)) {
-        //get all in18 may be used, incldue user locale and default locale, and name = _target(because it is common) or prefixed with given prefix
-        $sql = "select locale, name, translation from i18n where locale in (" . sqlesc($userLocale) . ", " . sqlesc($defaultLocale) . ") and (name = '_target' or name like '{$prefix}%')";
+        //get all in18 may be used, incldue user locale and default locale, and name in('_target', 'functions') (because they are common) or prefixed with given prefix
+        $sql = "select locale, name, translation from i18n where locale in (" . sqlesc($userLocale) . ", " . sqlesc($defaultLocale) . ") and (name in ('_target', 'functions') or name like '{$prefix}%')";
         $result = sql_query($sql);
         while ($row = mysql_fetch_assoc($result)) {
             $i18n[$row['locale']][$row['name']] = $row['translation'];
@@ -4460,24 +4465,44 @@ function __($name = null, $prefix = null)
 
 }
 
+function config($key, $default = null)
+{
+    static $configs;
+    if (is_null($configs)) {
+        //get all configuration from config file
+        $files = glob($rootpath . 'config/*.php');
+        foreach ($files as $file) {
+            $basename = basename($file);
+            if ($basename != 'allconfig.php') {
+                continue;
+            }
+            $values = require $file;
+            $configPrefix = strstr($basename, '.php', true);
+            foreach ($values as $key => $value) {
+                $configs["$configPrefix.$key"] = $value;
+            }
+        }
+    }
+    return $configs[$key] ?? $default;
+}
+
 /**
- * get configuation for given name and prefix
+ * get setting for given name and prefix
  *
  * $name == null and $prefix == null, return all
  * $name == null and $prefix != null, return with specified prefix, but the result's prefix will be stripped
  *
  * @author xiaomlove
  * @date 2021/1/11
- * @time 16:37
  * @param null $name
  * @param null $prefix
  * @return array|mixed|string
  */
-function config($name = null, $prefix = null)
+function get_setting($name = null, $prefix = null)
 {
-    static $config;
-    if (is_null($config)) {
-        //get all configuations
+    static $settings;
+    if (is_null($settings)) {
+        //get all settings from database
         $sql = "select config_name, config_value from configs";
         $result = sql_query($sql);
         while ($row = mysql_fetch_assoc($result)) {
@@ -4486,20 +4511,21 @@ function config($name = null, $prefix = null)
             if (is_array($arr)) {
                 $value = $arr;
             }
-            $config[$row['config_name']] = $value;
+            $settings[$row['config_name']] = $value;
         }
+
     }
     if (!is_null($name)) {
         if (!is_null($prefix)) {
             $name = "$prefix.$name";
         }
-        return $config[$name] ?? '';
+        return $settings[$name] ?? null;
     }
     if (is_null($prefix)) {
-        return $config;
+        return $settings;
     }
     $filtered = [];
-    foreach ($config as $name => $value) {
+    foreach ($settings as $name => $value) {
         if (preg_match("/^$prefix/", $name)) {
             $nameWithoutPrefix = substr($name, strpos($name, '.') + 1);
             $filtered[$nameWithoutPrefix] = $value;
@@ -4507,6 +4533,54 @@ function config($name = null, $prefix = null)
     }
     return $filtered;
 
+}
+
+function env($key, $default = null)
+{
+    static $env;
+    if (is_null($env)) {
+        $envFile = $rootpath . '.env';
+        if (!file_exists($envFile)) {
+            throw new \RuntimeException(".env file is not exists in the root path.");
+        }
+        $fp = fopen($envFile, 'r');
+        if ($fp === false) {
+            throw new \RuntimeException(".env file: $envFile is not readable.");
+        }
+        while ($line = trim(fgets($fp))) {
+            if (empty($line)) {
+                continue;
+            }
+            $pos = strpos($line, '=');
+            $key = normalize_env(mb_substr($line, 0, $pos, 'utf-8'));
+            $value = normalize_env(mb_substr($line, $pos + 1, null, 'utf-8'));
+            $env[$key] = $value;
+        }
+    }
+    return $env[$key] ?? $default;
+
+}
+
+function normalize_env($value)
+{
+    $value = trim($value);
+    $toStrip = ['\'', '"'];
+    if (in_array(mb_substr($value, 0, 1, 'utf-8'), $toStrip)) {
+        $value = mb_substr($value, 1, null, 'utf-8');
+    }
+    if (in_array(mb_substr($value, -1, 'utf-8'), $toStrip)) {
+        $value = mb_substr($value, 0, -1, 'utf-8');
+    }
+    switch (strtolower($value)) {
+        case 'true':
+            return true;
+        case 'false':
+            return false;
+        case 'null':
+            return null;
+        default:
+            return $value;
+    }
 }
 
 ?>

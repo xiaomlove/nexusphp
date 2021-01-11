@@ -5,27 +5,30 @@ die('Hacking attempt!');
 
 $CONFIGURATIONS = array('ACCOUNT', 'ADVERTISEMENT', 'ATTACHMENT', 'AUTHORITY', 'BASIC', 'BONUS', 'CODE', 'MAIN', 'SECURITY', 'SMTP', 'TORRENT', 'TWEAK');
 function ReadConfig ($configname = NULL) {
-//	static $allConfig;
-//	if (is_null($allConfig)) {
-//		$configs = config();
-//		foreach ($configs as $name => $value) {
-//			$prefix = strtoupper(strstr($name, '.', true));
-//			$pureName = substr($name, strpos($name, '.') + 1);
-//			$GLOBALS[$prefix][$pureName] = $value;
-//		}
-//	}
+	static $allConfig;
+
 	global $CONFIGURATIONS;
-	if ($configname) {
-		$configname = basename($configname);
-		$tmp = oldReadConfig($configname);
-		WriteConfig($configname, $tmp);
-		@unlink('./config/'.$configname);
-		return $tmp;
-	} else {
-		foreach ($CONFIGURATIONS as $CONFIGURATION) {
-			$GLOBALS[$CONFIGURATION] = ReadConfig($CONFIGURATION);
+
+	if (is_null($allConfig)) {
+		$configs = config();
+		foreach ($configs as $name => $value) {
+			$prefix = strtoupper(strstr($name, '.', true));
+			$pureName = substr($name, strpos($name, '.') + 1);
+			$GLOBALS[$prefix][$pureName] = $value;
 		}
 	}
+dd($GLOBALS);
+//	if ($configname) {
+//		$configname = basename($configname);
+//		$tmp = oldReadConfig($configname);
+//		WriteConfig($configname, $tmp);
+//		@unlink('./config/'.$configname);
+//		return $tmp;
+//	} else {
+//		foreach ($CONFIGURATIONS as $CONFIGURATION) {
+//			$GLOBALS[$CONFIGURATION] = ReadConfig($CONFIGURATION);
+//		}
+//	}
 }
 
 function oldReadConfig ($configname) {
@@ -62,12 +65,13 @@ function oldReadConfig ($configname) {
 	}
 }
 
+ReadConfig();
 
-if (file_exists('config/allconfig.php')) {
-	require('config/allconfig.php');
-} else {
-	ReadConfig();
-}
+//if (file_exists('config/allconfig.php')) {
+//	require('config/allconfig.php');
+//} else {
+//	ReadConfig();
+//}
 $SITENAME = $BASIC['SITENAME'];
 $BASEURL = $BASIC['BASEURL'];
 $announce_urls = array();

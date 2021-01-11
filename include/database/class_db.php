@@ -39,7 +39,9 @@ class DB
 
     public function connect($host, $username, $password, $database, $port)
     {
-        return $this->driver->connect($host, $username, $password, $database, $port);
+        if (is_null($this->driver)) {
+            $this->driver->connect($host, $username, $password, $database, $port);
+        }
     }
 
     public function query(string $sql)
@@ -106,6 +108,11 @@ class DB
     public function freeResult($result)
     {
         return $this->driver->freeResult($result);
+    }
+
+    public function isConnected()
+    {
+        return !is_null($this->driver);
     }
 
 
