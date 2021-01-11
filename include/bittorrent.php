@@ -1,4 +1,5 @@
 <?php
+define('NEXUS_START', microtime(true));
 define('IN_TRACKER', true);
 define("PROJECTNAME","NexusPHP");
 define("NEXUSPHPURL","http://www.nexusphp.com");
@@ -24,7 +25,3 @@ require $rootpath . 'classes/class_advertisement.php';
 require $rootpath . 'classes/class_cache_redis.php';
 
 require $rootpath . 'include/core.php';
-
-if (!session_id()) {
-    session_start();
-}

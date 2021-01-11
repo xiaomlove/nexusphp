@@ -1392,7 +1392,7 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 	elseif ($smtptype == 'external') {
 		require_once ($rootpath . 'include/smtp/smtp.lib.php');
 		$mail = new smtp($hdr_encoding,'eYou');
-		$mail->debug(false);
+		$mail->debug(true);
 		$mail->open($smtpaddress, $smtpport);
 		$mail->auth($accountname, $accountpassword);
 		//	$mail->bcc($multiplemail);
@@ -1841,7 +1841,7 @@ function userlogin() {
 	$oldip = $row['ip'];
 	$row['ip'] = $ip;
 	$GLOBALS["CURUSER"] = $row;
-	if ($_GET['clearcache'] && get_user_class() >= UC_MODERATOR) {
+	if (isset($_GET['clearcache']) && $_GET['clearcache'] && get_user_class() >= UC_MODERATOR) {
 	    $Cache->setClearCache(1);
 	}
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
@@ -2553,12 +2553,12 @@ function stdfoot() {
 		sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$CURUSER['id']);
 	}
 	// Variables for End Time
-	$tend = getmicrotime();
-	$totaltime = ($tend - $tstart);
+	$tend = microtime(true);
+	$totaltime = ($tend - NEXUS_START);
 	$year = substr($datefounded, 0, 4);
 	$yearfounded = ($year ? $year : 2007);
 	print(" (c) "." <a href=\"" . get_protocol_prefix() . $BASEURL."\" target=\"_self\">".$SITENAME."</a> ".($icplicense_main ? " ".$icplicense_main." " : "").(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y")." ".VERSION."<br /><br />");
-	printf ("[page created in <b> %s </b> ms", sprintf("%.1f", $totaltime * 1000));
+	printf ("[page created in <b> %s </b> sec", sprintf("%.3f", $totaltime));
 	print (" with <b>".count($query_name)."</b> db queries, <b>".$Cache->getCacheReadTimes()."</b> reads and <b>".$Cache->getCacheWriteTimes()."</b> writes of Redis and <b>".mksize(memory_get_usage())."</b> ram]");
 	print ("</div>\n");
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
@@ -2588,8 +2588,7 @@ function stdfoot() {
 	print("</body></html>");
 
 	//echo replacePngTags(ob_get_clean());
-
-	unset($_SESSION['queries']);
+//	unset($_SESSION['queries']);
 }
 
 function genbark($x,$y) {
@@ -4421,6 +4420,93 @@ function do_log($log)
         );
         file_put_contents($TWEAK['logging'], $content, FILE_APPEND);
     }
+}
+
+/**
+ * get translation for given name
+ *
+ * @author xiaomlove
+ * @date 2021/1/11
+ * @time 10:42
+ * @param null $name
+ * @param null $prefix
+ * @return mixed|string
+ */
+function __($name = null, $prefix = null)
+{
+    static $i18n;
+    static $i18nWithoutPrefix;
+    $userLocale = get_langfolder_cookie();
+    $defaultLocale = 'en';
+    if (is_null($prefix)) {
+        //get prefix from scripe name
+        $prefix = basename($_SERVER['SCRIPT_NAME']);
+        $prefix = strstr($prefix, '.php', true);
+    }
+    if (is_null($i18n)) {
+        //get all in18 may be used, incldue user locale and default locale, and name = _target(because it is common) or prefixed with given prefix
+        $sql = "select locale, name, translation from i18n where locale in (" . sqlesc($userLocale) . ", " . sqlesc($defaultLocale) . ") and (name = '_target' or name like '{$prefix}%')";
+        $result = sql_query($sql);
+        while ($row = mysql_fetch_assoc($result)) {
+            $i18n[$row['locale']][$row['name']] = $row['translation'];
+            $i18nWithoutPrefix[$row['locale']][substr($row['name'], strpos($row['name'], '.') + 1)] = $row['translation'];
+        }
+    }
+    if (is_null($name)) {
+        return $i18nWithoutPrefix[$userLocale] ?? $i18nWithoutPrefix[$defaultLocale] ?? [];
+    }
+    $name = "$prefix.$name";
+    return $i18n[$userLocale][$name] ?? $i18n[$defaultLocale][$name] ?? '';
+
+}
+
+/**
+ * get configuation for given name and prefix
+ *
+ * $name == null and $prefix == null, return all
+ * $name == null and $prefix != null, return with specified prefix, but the result's prefix will be stripped
+ *
+ * @author xiaomlove
+ * @date 2021/1/11
+ * @time 16:37
+ * @param null $name
+ * @param null $prefix
+ * @return array|mixed|string
+ */
+function config($name = null, $prefix = null)
+{
+    static $config;
+    if (is_null($config)) {
+        //get all configuations
+        $sql = "select config_name, config_value from configs";
+        $result = sql_query($sql);
+        while ($row = mysql_fetch_assoc($result)) {
+            $value = $row['config_value'];
+            $arr = json_decode($value, true);
+            if (is_array($arr)) {
+                $value = $arr;
+            }
+            $config[$row['config_name']] = $value;
+        }
+    }
+    if (!is_null($name)) {
+        if (!is_null($prefix)) {
+            $name = "$prefix.$name";
+        }
+        return $config[$name] ?? '';
+    }
+    if (is_null($prefix)) {
+        return $config;
+    }
+    $filtered = [];
+    foreach ($config as $name => $value) {
+        if (preg_match("/^$prefix/", $name)) {
+            $nameWithoutPrefix = substr($name, strpos($name, '.') + 1);
+            $filtered[$nameWithoutPrefix] = $value;
+        }
+    }
+    return $filtered;
+
 }
 
 ?>

@@ -1,4 +1,5 @@
 <?php
+define('NEXUS_START', microtime(true));
 # IMPORTANT: Do not edit below unless you know what you are doing!
 define('IN_TRACKER', true);
 $rootpath=realpath(dirname(__FILE__) . '/..')."/";
@@ -18,8 +19,3 @@ require $rootpath . 'classes/class_cache_redis.php';
 
 require $rootpath . 'include/core.php';
 require $rootpath . 'include/functions_announce.php';
-
-if (!session_id()) {
-    session_start();
-}
-?>

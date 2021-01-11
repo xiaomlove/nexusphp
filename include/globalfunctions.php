@@ -78,7 +78,10 @@ function sql_query($query)
 }
 
 function sqlesc($value) {
-		$value = "'" . mysql_real_escape_string($value) . "'";
+	if (is_null($value)) {
+		return 'null';
+	}
+	$value = "'" . mysql_real_escape_string($value) . "'";
 	return $value;
 }
 

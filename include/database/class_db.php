@@ -47,6 +47,7 @@ class DB
         try {
             return $this->driver->query($sql);
         } catch (\Exception $e) {
+            do_log(sprintf("%s [%s] %s", $e->getMessage(), $sql, $e->getTraceAsString()));
             throw new \DatabaseException($sql, $e->getMessage());
         }
 

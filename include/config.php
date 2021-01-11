@@ -5,6 +5,15 @@ die('Hacking attempt!');
 
 $CONFIGURATIONS = array('ACCOUNT', 'ADVERTISEMENT', 'ATTACHMENT', 'AUTHORITY', 'BASIC', 'BONUS', 'CODE', 'MAIN', 'SECURITY', 'SMTP', 'TORRENT', 'TWEAK');
 function ReadConfig ($configname = NULL) {
+//	static $allConfig;
+//	if (is_null($allConfig)) {
+//		$configs = config();
+//		foreach ($configs as $name => $value) {
+//			$prefix = strtoupper(strstr($name, '.', true));
+//			$pureName = substr($name, strpos($name, '.') + 1);
+//			$GLOBALS[$prefix][$pureName] = $value;
+//		}
+//	}
 	global $CONFIGURATIONS;
 	if ($configname) {
 		$configname = basename($configname);

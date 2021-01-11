@@ -1,20 +1,17 @@
 <?php
 require "include/bittorrent.php";
 dbconn();
-//require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-
 if (get_user_class() < UC_SYSOP)
     permissiondenied();
 
-//read all configuration files
-require('config/allconfig.php');
+$lang_i18n = __();
 
 function go_back()
 {
-    global $lang_settings;
-    stdmsg($lang_settings['std_message'], $lang_settings['std_click']."<a class=\"altlink\" href=\"settings.php\">".$lang_settings['std_here']."</a>".$lang_settings['std_to_go_back']);
+    global $lang_i18n;
+    stdmsg($lang_i18n['std_message'], $lang_i18n['std_click']."<a class=\"altlink\" href=\"i18n.php\">".$lang_i18n['std_here']."</a>".$lang_i18n['std_to_go_back']);
 }
 
 function yesorno($title, $name, $value, $note="")
@@ -34,14 +31,14 @@ function searchtable($title, $action, $opts = array()){
     print("</td></tr></table><br />\n");
 }
 
-$action = isset($_POST['action']) ? $_POST['action'] : 'i18n';
-$allowed_actions = array('saveI18n', 'basicsettings','mainsettings','smtpsettings','securitysettings','authoritysettings','tweaksettings', 'botsettings','codesettings','bonussettings','accountsettings','torrentsettings', 'attachmentsettings', 'advertisementsettings', 'savesettings_basic', 'savesettings_main','savesettings_smtp','savesettings_security','savesettings_authority','savesettings_tweak','savesettings_bot','savesettings_code','savesettings_bonus', 'savesettings_account','savesettings_torrent', 'savesettings_attachment', 'savesettings_advertisement', 'showmenu');
+$action = isset($_REQUEST['action']) ? $_REQUEST['action'] : 'i18n';
+$allowed_actions = array('saveI18n', 'import','mainsettings','smtpsettings','securitysettings','authoritysettings','tweaksettings', 'botsettings','codesettings','bonussettings','accountsettings','torrentsettings', 'attachmentsettings', 'advertisementsettings', 'savesettings_basic', 'savesettings_main','savesettings_smtp','savesettings_security','savesettings_authority','savesettings_tweak','savesettings_bot','savesettings_code','savesettings_bonus', 'savesettings_account','savesettings_torrent', 'savesettings_attachment', 'savesettings_advertisement', 'showmenu');
 if (!in_array($action, $allowed_actions)) {
     $action = 'i18n';
 }
 
-$notice = "<h1 align=\"center\"><a class=\"faqlink\" href=\"settings.php\">".$lang_settings['text_website_settings']."</a></h1><table cellspacing=\"0\" cellpadding=\"10\" width=\"940\"><tr><td colspan=\"2\" style='padding: 10px; background: black' align=\"center\">
-<font color=\"white\">".$lang_settings['text_configuration_file_saving_note']."
+$notice = "<table cellspacing=\"0\" cellpadding=\"10\" width=\"940\"><tr><td colspan=\"2\" style='padding: 10px; background: black' align=\"center\">
+<font color=\"white\">". __('internationalization_form') ."
 </font></td></tr>";
 
 if ($action == 'savesettings_main')	// save main
@@ -638,8 +635,8 @@ elseif ($action == 'showmenu')	// settings main page
 }
 elseif ($action == 'i18n')
 {
-    stdhead('国际化');
-    searchtable('搜索国际化翻译', 'i18n');
+    stdhead(__('internationalization'));
+    searchtable(__('query_internationalization'), 'i18n');
     print ($notice);
     if (!empty($_GET['action']) && $_GET['action'] == 'i18n' && !empty($_GET['query'])) {
         $result = sql_query(sprintf("select * from i18n where name = %s", sqlesc($_GET['query'])));
@@ -650,19 +647,19 @@ elseif ($action == 'i18n')
     }
 
     print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='saveI18n'>");
-    tr('键名','<input type="text" style="width: 300px" name="name" value="' . ($_GET['query'] ?? '') . '">' . ' 翻译内容标识', 1);
+    tr(__('internationalization_name'),'<input type="text" style="width: 300px" name="name" value="' . ($_GET['query'] ?? '') . '">', 1);
 
     $result = sql_query(sprintf("select * from language where site_lang_folder in ('en', 'chs', 'cht')"));
     while ($row = mysql_fetch_assoc($result)) {
-        tr($row['lang_name'],'<input type="text" style="width: 300px" name="translation[' . $row['site_lang_folder'] . ']" value="' . ($i18n[$row['site_lang_folder']] ?? '') . '">' . " {$row['lang_name']}的翻译结果", 1);
+        tr($row['lang_name'],'<input type="text" style="width: 300px" name="translation[' . $row['site_lang_folder'] . ']" value="' . ($i18n[$row['site_lang_folder']] ?? '') . '">' . " {$row['lang_name']} - " . __('internationalization_translation'), 1);
     }
 
-    tr('保存','<input type="submit" name="save" value="保存">', 1);
+    tr(__('internationalization_form_save_btn'),'<input type="submit" name="save" value="' . __('internationalization_form_save_btn') .'">', 1);
     print ("</form>");
 }
 elseif ($action == 'saveI18n')
 {
-    stdhead('保存国际化支持');
+    stdhead(__('internationalization_form_submit'));
     foreach ($_POST['translation'] as $locale => $translation) {
         $sql = sprintf(
             "insert into i18n (name, locale, translation) values (%s, %s, %s) on duplicate key update translation = values(translation)",
