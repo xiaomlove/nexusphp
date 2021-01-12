@@ -78,11 +78,6 @@ $SITENAME = $BASIC['SITENAME'];
 $BASEURL = $BASIC['BASEURL'];
 $announce_urls = array();
 $announce_urls[] = $BASIC['announce_url'];
-$mysql_host = $BASIC['mysql_host'];
-$mysql_user = $BASIC['mysql_user'];
-$mysql_pass = $BASIC['mysql_pass'];
-$mysql_db = $BASIC['mysql_db'];
-
 
 $SITE_ONLINE = $MAIN['site_online'];
 $max_torrent_size = $MAIN['max_torrent_size'];
