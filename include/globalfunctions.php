@@ -242,15 +242,15 @@ function get_setting($name = null, $prefix = null)
 	static $settings;
 	if (is_null($settings)) {
 		//get all settings from database
-		$sql = "select config_name, config_value from configs";
+		$sql = "select name, value from settings";
 		$result = sql_query($sql);
 		while ($row = mysql_fetch_assoc($result)) {
-			$value = $row['config_value'];
+			$value = $row['value'];
 			$arr = json_decode($value, true);
 			if (is_array($arr)) {
 				$value = $arr;
 			}
-			$settings[$row['config_name']] = $value;
+			$settings[$row['name']] = $value;
 		}
 
 	}
