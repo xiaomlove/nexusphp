@@ -1720,32 +1720,20 @@ function dbconn($autoclean = false)
     if (DB::getInstance()->isConnected()) {
         return;
     }
-	global $lang_functions;
-	global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-	global $useCronTriggerCleanUp;
-	global $BASIC;
-
-	if (!mysql_connect($mysql_host, $mysql_user, $mysql_pass, $BASIC['mysql_db'], $BASIC['mysql_port']))
+	$config = config('database.mysql');
+	if (!mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']))
 	{
-		switch (mysql_errno())
-		{
-			case 1040:
-			case 2002:
-				die("<html><head><meta http-equiv=refresh content=\"10 $_SERVER[REQUEST_URI]\"><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><table border=0 width=100% height=100%><tr><td><h3 align=center>".$lang_functions['std_server_load_very_high']."</h3></td></tr></table></body></html>");
-			default:
-				die("[" . mysql_errno() . "] dbconn: mysql_connect: " . mysql_error());
-		}
+        die("[" . mysql_errno() . "] dbconn: mysql_connect: " . mysql_error());
 	}
 	mysql_query("SET NAMES UTF8");
 	mysql_query("SET collation_connection = 'utf8_general_ci'");
 	mysql_query("SET sql_mode=''");
-	mysql_select_db($mysql_db) or die('dbconn: mysql_select_db: ' + mysql_error());
 
 	userlogin();
 
-	if (!$useCronTriggerCleanUp && $autoclean) {
-		register_shutdown_function("autoclean");
-	}
+//	if (!$useCronTriggerCleanUp && $autoclean) {
+//		register_shutdown_function("autoclean");
+//	}
 }
 function get_user_row($id)
 {
@@ -1773,9 +1761,6 @@ function get_user_row($id)
 }
 
 function userlogin() {
-    if (isset($GLOBALS['CURUSER'])) {
-        return;
-    }
 	global $lang_functions;
 	global $Cache;
 	global $SITE_ONLINE, $oldip;
@@ -4361,226 +4346,6 @@ function return_category_image($categoryid, $link="")
 		$catimg = "<a href=\"".$link."cat=" . $categoryid . "\">".$catimg."</a>";
 	}
 	return $catimg;
-}
-
-
-function strip_magic_quotes($arr)
-{
-    foreach ($arr as $k => $v)
-    {
-        if (is_array($v))
-        {
-            $arr[$k] = strip_magic_quotes($v);
-        } else {
-            $arr[$k] = stripslashes($v);
-        }
-    }
-    return $arr;
-}
-
-if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
-{
-    if (!empty($_GET)) {
-        $_GET = strip_magic_quotes($_GET);
-    }
-    if (!empty($_POST)) {
-        $_POST = strip_magic_quotes($_POST);
-    }
-    if (!empty($_COOKIE)) {
-        $_COOKIE = strip_magic_quotes($_COOKIE);
-    }
-}
-
-
-function get_langfolder_list()
-{
-    //do not access db for speed up, or for flexibility
-    return array("en", "chs", "cht", "ko", "ja");
-}
-
-function dd($vars)
-{
-    echo '<pre>';
-    array_map(function ($var) {
-        var_dump($var);
-    }, func_get_args());
-    echo '</pre>';
-    exit(0);
-}
-
-function do_log($log)
-{
-    global $TWEAK;
-    if (!empty($TWEAK['logging'])) {
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $content = sprintf(
-            "[%s] %s:%s %s%s%s %s%s",
-            date('Y-m-d H:i:s'),
-            $backtrace[0]['file'] ?? '',
-            $backtrace[0]['line'] ?? '',
-            $backtrace[1]['class'] ?? '',
-            $backtrace[1]['type'] ?? '',
-            $backtrace[1]['function'] ?? '',
-            $log,
-            PHP_EOL
-        );
-        file_put_contents($TWEAK['logging'], $content, FILE_APPEND);
-    }
-}
-
-/**
- * get translation for given name
- *
- * @author xiaomlove
- * @date 2021/1/11
- * @param null $name
- * @param null $prefix
- * @return mixed|string
- */
-function __($name = null, $prefix = null)
-{
-    static $i18n;
-    static $i18nWithoutPrefix;
-    $userLocale = get_langfolder_cookie();
-    $defaultLocale = 'en';
-    if (is_null($prefix)) {
-        //get prefix from scripe name
-        $prefix = basename($_SERVER['SCRIPT_NAME']);
-        $prefix = strstr($prefix, '.php', true);
-    }
-    if (is_null($i18n)) {
-        //get all in18 may be used, incldue user locale and default locale, and name in('_target', 'functions') (because they are common) or prefixed with given prefix
-        $sql = "select locale, name, translation from i18n where locale in (" . sqlesc($userLocale) . ", " . sqlesc($defaultLocale) . ") and (name in ('_target', 'functions') or name like '{$prefix}%')";
-        $result = sql_query($sql);
-        while ($row = mysql_fetch_assoc($result)) {
-            $i18n[$row['locale']][$row['name']] = $row['translation'];
-            $i18nWithoutPrefix[$row['locale']][substr($row['name'], strpos($row['name'], '.') + 1)] = $row['translation'];
-        }
-    }
-    if (is_null($name)) {
-        return $i18nWithoutPrefix[$userLocale] ?? $i18nWithoutPrefix[$defaultLocale] ?? [];
-    }
-    $name = "$prefix.$name";
-    return $i18n[$userLocale][$name] ?? $i18n[$defaultLocale][$name] ?? '';
-
-}
-
-function config($key, $default = null)
-{
-    static $configs;
-    if (is_null($configs)) {
-        //get all configuration from config file
-        $files = glob($rootpath . 'config/*.php');
-        foreach ($files as $file) {
-            $basename = basename($file);
-            if ($basename != 'allconfig.php') {
-                continue;
-            }
-            $values = require $file;
-            $configPrefix = strstr($basename, '.php', true);
-            foreach ($values as $key => $value) {
-                $configs["$configPrefix.$key"] = $value;
-            }
-        }
-    }
-    return $configs[$key] ?? $default;
-}
-
-/**
- * get setting for given name and prefix
- *
- * $name == null and $prefix == null, return all
- * $name == null and $prefix != null, return with specified prefix, but the result's prefix will be stripped
- *
- * @author xiaomlove
- * @date 2021/1/11
- * @param null $name
- * @param null $prefix
- * @return array|mixed|string
- */
-function get_setting($name = null, $prefix = null)
-{
-    static $settings;
-    if (is_null($settings)) {
-        //get all settings from database
-        $sql = "select config_name, config_value from configs";
-        $result = sql_query($sql);
-        while ($row = mysql_fetch_assoc($result)) {
-            $value = $row['config_value'];
-            $arr = json_decode($value, true);
-            if (is_array($arr)) {
-                $value = $arr;
-            }
-            $settings[$row['config_name']] = $value;
-        }
-
-    }
-    if (!is_null($name)) {
-        if (!is_null($prefix)) {
-            $name = "$prefix.$name";
-        }
-        return $settings[$name] ?? null;
-    }
-    if (is_null($prefix)) {
-        return $settings;
-    }
-    $filtered = [];
-    foreach ($settings as $name => $value) {
-        if (preg_match("/^$prefix/", $name)) {
-            $nameWithoutPrefix = substr($name, strpos($name, '.') + 1);
-            $filtered[$nameWithoutPrefix] = $value;
-        }
-    }
-    return $filtered;
-
-}
-
-function env($key, $default = null)
-{
-    static $env;
-    if (is_null($env)) {
-        $envFile = $rootpath . '.env';
-        if (!file_exists($envFile)) {
-            throw new \RuntimeException(".env file is not exists in the root path.");
-        }
-        $fp = fopen($envFile, 'r');
-        if ($fp === false) {
-            throw new \RuntimeException(".env file: $envFile is not readable.");
-        }
-        while ($line = trim(fgets($fp))) {
-            if (empty($line)) {
-                continue;
-            }
-            $pos = strpos($line, '=');
-            $key = normalize_env(mb_substr($line, 0, $pos, 'utf-8'));
-            $value = normalize_env(mb_substr($line, $pos + 1, null, 'utf-8'));
-            $env[$key] = $value;
-        }
-    }
-    return $env[$key] ?? $default;
-
-}
-
-function normalize_env($value)
-{
-    $value = trim($value);
-    $toStrip = ['\'', '"'];
-    if (in_array(mb_substr($value, 0, 1, 'utf-8'), $toStrip)) {
-        $value = mb_substr($value, 1, null, 'utf-8');
-    }
-    if (in_array(mb_substr($value, -1, 'utf-8'), $toStrip)) {
-        $value = mb_substr($value, 0, -1, 'utf-8');
-    }
-    switch (strtolower($value)) {
-        case 'true':
-            return true;
-        case 'false':
-            return false;
-        case 'null':
-            return null;
-        default:
-            return $value;
-    }
 }
 
 ?>

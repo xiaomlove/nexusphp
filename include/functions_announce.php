@@ -2,21 +2,18 @@
 # IMPORTANT: Do not edit below unless you know what you are doing!
 if(!defined('IN_TRACKER'))
 	die('Hacking attempt!');
-include_once($rootpath . 'include/globalfunctions.php');
-include_once($rootpath . 'include/config.php');
 
 function dbconn_announce() {
-	global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-	global $BASIC;
 
-	if (!@mysql_connect($mysql_host, $mysql_user, $mysql_pass, $BASIC['mysql_db'], $BASIC['mysql_port']))
+	$config = config('database.mysql');
+
+	if (!@mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']))
 	{
 		die('dbconn: mysql_connect: ' . mysql_error());
 	}
 	mysql_query("SET NAMES UTF8");
 	mysql_query("SET collation_connection = 'utf8_general_ci'");
 	mysql_query("SET sql_mode=''");
-	mysql_select_db($mysql_db) or die('dbconn: mysql_select_db: ' + mysql_error());
 }
 
 function hash_where_arr($name, $hash_arr) {

@@ -676,6 +676,12 @@ $lang_settings = array
 	'text_email_notification_note' => "是否允許用戶在收取新短訊、評論等時候收到郵件輔助說明。",
 	'text_users_get' => "首次升級至此等級的用戶將獲得",
 	'text_invitations_default' => "個邀請名額。預設",
+	'row_use_cron_trigger_cleanup' => '使用定時器進行清理',
+	'text_use_cron_trigger_cleanup_note' => '確保已經配置好定時任務',
+	'row_display_errors' => '顯示錯誤',
+	'text_display_errors_note' => '在網頁上展示錯誤信息',
+	'row_logging' => '運行日誌路徑',
+	'text_logging_note' => '請填寫妳的運行時日誌路徑',
 );
 
 ?>

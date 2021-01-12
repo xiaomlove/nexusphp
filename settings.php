@@ -1,8 +1,7 @@
 <?php
 require "include/bittorrent.php";
 dbconn();
-//require_once(get_langfile_path());
-$lang_settings = __();
+require_once(get_langfile_path());
 loggedinorreturn();
 parked();
 
@@ -72,24 +71,17 @@ elseif ($action == 'savesettings_basic') 	// save basic
 	stdhead($lang_settings['head_save_basic_settings']);
 	$validConfig = array(
 		'SITENAME', 'BASEURL', 'announce_url',
-		'mysql_host', 'mysql_user', 'mysql_pass', 'mysql_db', 'mysql_port',
-		'redis_host', 'redis_port', 'redis_database'
 	);
 	GetVar($validConfig);
-	if (!mysql_connect($mysql_host, $mysql_user, $mysql_pass, $mysql_db, $mysql_port)) {
-		stdmsg($lang_settings['std_error'], $lang_settings['std_mysql_connect_error'].$lang_settings['std_click']."<a class=\"altlink\" href=\"settings.php\">".$lang_settings['std_here']."</a>".$lang_settings['std_to_go_back']);
-	} else {
-		dbconn();
-		$BASIC = [];
-		foreach($validConfig as $config) {
-			$BASIC[$config] = $$config;
-		}
-//		WriteConfig('BASIC', $BASIC);
-		saveConfig('basic', $BASIC);
-		$actiontime = date("F j, Y, g:i a");
-		write_log("Tracker basic settings updated by $CURUSER[username]. $actiontime",'mod');
-		go_back();
+	$BASIC = [];
+	foreach($validConfig as $config) {
+		$BASIC[$config] = $$config ?? null;
 	}
+//		WriteConfig('BASIC', $BASIC);
+	saveConfig('basic', $BASIC);
+	$actiontime = date("F j, Y, g:i a");
+	write_log("Tracker basic settings updated by $CURUSER[username]. $actiontime",'mod');
+	go_back();
 }
 elseif ($action == 'savesettings_code') 	// save database
 {
@@ -182,7 +174,7 @@ elseif ($action == 'savesettings_security') 	// save security
 	GetVar($validConfig);
 	$SECURITY = [];
 	foreach($validConfig as $config) {
-		$SECURITY[$config] = $$config;
+		$SECURITY[$config] = $$config ?? null;
 	}
 //	WriteConfig('SECURITY', $SECURITY);
 	saveConfig('security', $SECURITY);
@@ -255,7 +247,7 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 }
 elseif ($action == 'tweaksettings')		// tweak settings
 {
-	$TWEAK = config(null, 'tweak');
+	$TWEAK = get_setting(null, 'tweak');
 	stdhead($lang_settings['head_tweak_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_tweak' />");
@@ -280,7 +272,7 @@ elseif ($action == 'tweaksettings')		// tweak settings
 }
 elseif ($action == 'smtpsettings')	// stmp settings
 {
-	$SMTP = config(null, 'smtp');
+	$SMTP = get_setting(null, 'smtp');
 	stdhead($lang_settings['head_smtp_settings']);
 	print ($notice);
 	print("<tbody>");
@@ -310,7 +302,7 @@ print("</tbody>");
 }
 elseif ($action == 'securitysettings')	//security settings
 {
-	$SECURITY = config(null, 'security');
+	$SECURITY = get_setting(null, 'security');
 	stdhead($lang_settings['head_security_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_security'>");
@@ -328,7 +320,7 @@ elseif ($action == 'securitysettings')	//security settings
 }
 elseif ($action == 'authoritysettings')	//Authority settings
 {
-	$AUTHORITY = config(null, 'authority');
+	$AUTHORITY = get_setting(null, 'authority');
 	stdhead($lang_settings['head_authority_settings']);
 	print ($notice);
 	$maxclass = UC_SYSOP;
@@ -387,26 +379,26 @@ elseif ($action == 'basicsettings')	// basic settings
 {
 	stdhead($lang_settings['head_basic_settings']);
 	print ($notice);
-	$config = config(null, 'basic');
+	$config = get_setting(null, 'basic');
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_basic'>");
 	tr($lang_settings['row_site_name'],"<input type='text' style=\"width: 300px\" name=SITENAME value='".($config["SITENAME"] ? $config["SITENAME"]: "Nexus")."'> ".$lang_settings['text_site_name_note'], 1);
 	tr($lang_settings['row_base_url'],"<input type='text' style=\"width: 300px\" name=BASEURL value='".($config["BASEURL"] ? $config["BASEURL"] : $_SERVER["HTTP_HOST"])."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"] . $lang_settings['text_base_url_note'], 1);
 	tr($lang_settings['row_announce_url'],"<input type='text' style=\"width: 300px\" name=announce_url value='".($config["announce_url"] ? $config["announce_url"] : $_SERVER["HTTP_HOST"]."/announce.php")."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"]."/announce.php", 1);
-	tr($lang_settings['row_mysql_host'],"<input type='text' style=\"width: 300px\" name=mysql_host value='".($config["mysql_host"] ? $config["mysql_host"] : "localhost")."'> ".$lang_settings['text_mysql_host_note'], 1);
-	tr($lang_settings['row_mysql_user'],"<input type='text' style=\"width: 300px\" name=mysql_user value='".($config["mysql_user"] ? $config["mysql_user"] : "root")."'> ".$lang_settings['text_mysql_user_note'], 1);
-	tr($lang_settings['row_mysql_password'],"<input type='password' style=\"width: 300px\" name=mysql_pass value=''> ".$lang_settings['text_mysql_password_note'], 1);
-	tr($lang_settings['row_mysql_database_name'],"<input type='text' style=\"width: 300px\" name=mysql_db value='".($config["mysql_db"] ? $config["mysql_db"] : "nexus")."'> ".$lang_settings['text_mysql_database_name_note'], 1);
-	tr($lang_settings['row_mysql_database_port'],"<input type='text' style=\"width: 300px\" name=mysql_port value='".($config["mysql_port"] ? $config["mysql_port"] : "3306")."'> ".$lang_settings['text_mysql_database_port_note'], 1);
-	tr($lang_settings['row_redis_host'],"<input type='text' style=\"width: 300px\" name=redis_host value='".($config["redis_host"] ? $config["redis_host"] : "127.0.0.1")."'> ".$lang_settings['text_row_redis_host_note'], 1);
-	tr($lang_settings['row_redis_port'],"<input type='text' style=\"width: 300px\" name=redis_port value='".($config["redis_port"] ? $config["redis_port"] : "6379")."'> ".$lang_settings['text_row_redis_port_note'], 1);
-	tr($lang_settings['row_redis_database'],"<input type='text' style=\"width: 300px\" name=redis_database value='".($config["redis_database"] ? $config["redis_database"] : "0")."'> ".$lang_settings['text_row_redis_database'], 1);
+//	tr($lang_settings['row_mysql_host'],"<input type='text' style=\"width: 300px\" name=mysql_host value='".($config["mysql_host"] ? $config["mysql_host"] : "localhost")."'> ".$lang_settings['text_mysql_host_note'], 1);
+//	tr($lang_settings['row_mysql_user'],"<input type='text' style=\"width: 300px\" name=mysql_user value='".($config["mysql_user"] ? $config["mysql_user"] : "root")."'> ".$lang_settings['text_mysql_user_note'], 1);
+//	tr($lang_settings['row_mysql_password'],"<input type='password' style=\"width: 300px\" name=mysql_pass value=''> ".$lang_settings['text_mysql_password_note'], 1);
+//	tr($lang_settings['row_mysql_database_name'],"<input type='text' style=\"width: 300px\" name=mysql_db value='".($config["mysql_db"] ? $config["mysql_db"] : "nexus")."'> ".$lang_settings['text_mysql_database_name_note'], 1);
+//	tr($lang_settings['row_mysql_database_port'],"<input type='text' style=\"width: 300px\" name=mysql_port value='".($config["mysql_port"] ? $config["mysql_port"] : "3306")."'> ".$lang_settings['text_mysql_database_port_note'], 1);
+//	tr($lang_settings['row_redis_host'],"<input type='text' style=\"width: 300px\" name=redis_host value='".($config["redis_host"] ? $config["redis_host"] : "127.0.0.1")."'> ".$lang_settings['text_row_redis_host_note'], 1);
+//	tr($lang_settings['row_redis_port'],"<input type='text' style=\"width: 300px\" name=redis_port value='".($config["redis_port"] ? $config["redis_port"] : "6379")."'> ".$lang_settings['text_row_redis_port_note'], 1);
+//	tr($lang_settings['row_redis_database'],"<input type='text' style=\"width: 300px\" name=redis_database value='".($config["redis_database"] ? $config["redis_database"] : "0")."'> ".$lang_settings['text_row_redis_database'], 1);
 
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }
 elseif ($action == 'attachmentsettings')	// basic settings
 {
-	$ATTACHMENT = config(null, 'attachment');
+	$ATTACHMENT = get_setting(null, 'attachment');
 	stdhead($lang_settings['head_attachment_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_attachment'>");
@@ -428,7 +420,7 @@ elseif ($action == 'attachmentsettings')	// basic settings
 }
 elseif ($action == 'advertisementsettings')
 {
-	$ADVERTISEMENT = config(null, 'advertisement');
+	$ADVERTISEMENT = get_setting(null, 'advertisement');
 	stdhead($lang_settings['head_advertisement_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_advertisement'>");
@@ -442,7 +434,7 @@ elseif ($action == 'advertisementsettings')
 }
 elseif ($action == 'codesettings')	// code settings
 {
-	$CODE = config(null, 'code');
+	$CODE = get_setting(null, 'code');
 	stdhead($lang_settings['head_code_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_code'>");
@@ -454,7 +446,7 @@ elseif ($action == 'codesettings')	// code settings
 	print ("</form>");
 }
 elseif ($action == 'bonussettings'){
-	$BONUS = config(null, 'bonus');
+	$BONUS = get_setting(null, 'bonus');
 	stdhead($lang_settings['head_bonus_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_bonus'>");
@@ -488,7 +480,7 @@ elseif ($action == 'bonussettings'){
 	print ("</form>");
 }
 elseif ($action == 'accountsettings'){
-	$ACCOUNT = config(null, 'account');
+	$ACCOUNT = get_setting(null, 'account');
 	stdhead($lang_settings['head_account_settings']);
 	print ($notice);
 	$maxclass = UC_VIP;
@@ -532,7 +524,7 @@ elseif ($action == 'accountsettings'){
 }
 elseif ($action == 'torrentsettings')
 {
-	$TORRENT = config(null, 'torrent');
+	$TORRENT = get_setting(null, 'torrent');
 	stdhead($lang_settings['head_torrent_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_torrent'>");
@@ -564,7 +556,7 @@ elseif ($action == 'torrentsettings')
 }
 elseif ($action == 'mainsettings')	// main settings
 {
-	$MAIN = config(null, 'main');
+	$MAIN = get_setting(null, 'main');
 	stdhead($lang_settings['head_main_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_main'>");

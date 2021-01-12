@@ -10,5 +10,9 @@ $showversion = " - Powered by ".PROJECTNAME;
 $rootpath=realpath(dirname(__FILE__) . '/..');
 set_include_path(get_include_path() . PATH_SEPARATOR . $rootpath);
 $rootpath .= "/";
-
+require $rootpath . 'include/functions.php';
+require $rootpath . 'include/globalfunctions.php';
+require $rootpath . get_langfile_path("functions.php");
 require $rootpath . 'include/core.php';
+
+

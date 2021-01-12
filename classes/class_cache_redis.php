@@ -19,7 +19,7 @@ class RedisCache {
     public $redis;
 
     function __construct() {
-        $success = $this->connect($host = 'localhost', $port = 6379); // Connect to Redis
+        $success = $this->connect(); // Connect to Redis
         if ($success) {
             $this->isEnabled = 1;
         } else {
@@ -27,33 +27,33 @@ class RedisCache {
         }
     }
 
-    private function connect($host, $port)
+    private function connect()
     {
-        global $BASIC, $TWEAK;
+        $config = config('database.redis');
         $redis = new Redis();
         $params = [
-            $BASIC['redis_host'],
+            $config['host'],
         ];
-        if (!empty($BASIC['redis_port'])) {
-            $params[] = $BASIC['redis_port'];
+        if (!empty($config['port'])) {
+            $params[] = $config['port'];
         }
-        if (!empty($BASIC['redis_timeout'])) {
-            $params[] = $BASIC['redis_timeout'];
+        if (!empty($config['timeout'])) {
+            $params[] = $config['timeout'];
         }
         try {
             $connectResult = $redis->connect(...$params);
             $auth = [];
-            if (!empty($BASIC['redis_password'])) {
-                $auth['pass'] = $BASIC['redis_password'];
-                if (!empty($BASIC['redis_username'])) {
-                    $auth['user'] = $BASIC['redis_username'];
+            if (!empty($config['password'])) {
+                $auth['pass'] = $config['password'];
+                if (!empty($config['username'])) {
+                    $auth['user'] = $config['username'];
                 }
                 $connectResult = $connectResult && $redis->auth($auth);
             }
             if ($connectResult) {
                 $this->redis = $redis;
-                if (is_numeric($BASIC['redis_database'])) {
-                    $redis->select($BASIC['redis_database']);
+                if (is_numeric($config['database'])) {
+                    $redis->select($config['database']);
                 }
             }
             return $connectResult;

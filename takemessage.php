@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 
 	$origmsg = intval($_POST["origmsg"] ?? 0);
 	$msg = trim($_POST["body"]);
-	if ($_POST['forward'] == 1) //this is forwarding
+	if (isset($_POST['forward']) && $_POST['forward'] == 1) //this is forwarding
 	{
 		if (!$origmsg)
 			stderr($lang_takemessage['std_error'], $lang_takemessage['std_invalid_id']);

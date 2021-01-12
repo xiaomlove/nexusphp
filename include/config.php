@@ -2,33 +2,22 @@
 # IMPORTANT: Do not edit below unless you know what you are doing!
 if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
-
+/*
 $CONFIGURATIONS = array('ACCOUNT', 'ADVERTISEMENT', 'ATTACHMENT', 'AUTHORITY', 'BASIC', 'BONUS', 'CODE', 'MAIN', 'SECURITY', 'SMTP', 'TORRENT', 'TWEAK');
+
 function ReadConfig ($configname = NULL) {
-	static $allConfig;
-
 	global $CONFIGURATIONS;
-
-	if (is_null($allConfig)) {
-		$configs = config();
-		foreach ($configs as $name => $value) {
-			$prefix = strtoupper(strstr($name, '.', true));
-			$pureName = substr($name, strpos($name, '.') + 1);
-			$GLOBALS[$prefix][$pureName] = $value;
+	if ($configname) {
+		$configname = basename($configname);
+		$tmp = oldReadConfig($configname);
+		WriteConfig($configname, $tmp);
+		@unlink('./config/'.$configname);
+		return $tmp;
+	} else {
+		foreach ($CONFIGURATIONS as $CONFIGURATION) {
+			$GLOBALS[$CONFIGURATION] = ReadConfig($CONFIGURATION);
 		}
 	}
-dd($GLOBALS);
-//	if ($configname) {
-//		$configname = basename($configname);
-//		$tmp = oldReadConfig($configname);
-//		WriteConfig($configname, $tmp);
-//		@unlink('./config/'.$configname);
-//		return $tmp;
-//	} else {
-//		foreach ($CONFIGURATIONS as $CONFIGURATION) {
-//			$GLOBALS[$CONFIGURATION] = ReadConfig($CONFIGURATION);
-//		}
-//	}
 }
 
 function oldReadConfig ($configname) {
@@ -41,8 +30,7 @@ function oldReadConfig ($configname) {
 		$configname = basename($configname);
 		$path = './config/'.$configname;
 		if (!file_exists($path)) {
-			do_log($path);
-				die("Error! File <b>".htmlspecialchars($configname)."</b> doesn't exist!</font><br /><font color=blue>Before the setup starts, please ensure that you have properly configured file and directory access permissions. Please see below.</font><br /><br />chmod 777 config/<br />chmod 777 config/".$configname);
+			die("Error! File <b>".htmlspecialchars($configname)."</b> doesn't exist!</font><br /><font color=blue>Before the setup starts, please ensure that you have properly configured file and directory access permissions. Please see below.</font><br /><br />chmod 777 config/<br />chmod 777 config/".$configname);
 		}
 
 		$fp = fopen($path, 'r');
@@ -65,13 +53,27 @@ function oldReadConfig ($configname) {
 	}
 }
 
-ReadConfig();
 
-//if (file_exists('config/allconfig.php')) {
-//	require('config/allconfig.php');
-//} else {
-//	ReadConfig();
-//}
+if (file_exists('config/allconfig.php')) {
+	require('config/allconfig.php');
+} else {
+	ReadConfig();
+}
+*/
+
+//load settings from database
+if (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php') {
+    dbconn_announce();
+} else {
+    dbconn();
+}
+$settings = get_setting();
+foreach ($settings as $name => $value) {
+    $prefix = strtoupper(strstr($name, '.', true));
+    $pureName = substr($name, strpos($name, '.') + 1);
+    $GLOBALS[$prefix][$pureName] = $value;
+}
+
 $SITENAME = $BASIC['SITENAME'];
 $BASEURL = $BASIC['BASEURL'];
 $announce_urls = array();

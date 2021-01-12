@@ -9,7 +9,7 @@ $type = unesc($_GET["type"] ?? '');
 
 registration_check('invitesystem',true,false);
 
-if (($CURUSER[id] != $id && get_user_class() < $viewinvite_class) || !is_valid_id($id))
+if (($CURUSER['id'] != $id && get_user_class() < $viewinvite_class) || !is_valid_id($id))
 stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied']);
 if (get_user_class() < $sendinvite_class)
 stderr($lang_invite['std_sorry'],$lang_invite['std_only'].get_user_class_name($sendinvite_class,false,true,true).$lang_invite['std_or_above_can_invite'],false);
@@ -19,7 +19,7 @@ stdhead($lang_invite['head_invites']);
 print("<table width=700 class=main border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>");
 
 print("<h1 align=center><a href=\"invite.php?id=".$id."\">".$user['username'].$lang_invite['text_invite_system']."</a></h1>");
-	$sent = htmlspecialchars($_GET['sent']);
+	$sent = htmlspecialchars($_GET['sent'] ?? '');
 	if ($sent == 1){
 		$msg = $lang_invite['text_invite_code_sent'];
 		print("<p align=center><font color=red>".$msg."</font></p>");
@@ -108,7 +108,7 @@ if ($type == 'new'){
 		}
 	}
 
-	if ($CURUSER[id] == $id || get_user_class() >= UC_SYSOP)
+	if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP)
 	{
 
 		$pendingcount = number_format(get_row_count("users", "WHERE  status='pending' AND invited_by=$CURUSER[id]"));
@@ -117,7 +117,7 @@ if ($type == 'new'){
 		print("<tr><td colspan=7 align=right><input type=submit style='height: 20px' value=".$lang_invite['submit_confirm_users']."></td></tr>");
 		}
 		print("</form>");
-		print("<tr><td colspan=7 align=center><form method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".($CURUSER[invites] <= 0 ? "disabled " : "")." value='".$lang_invite['sumbit_invite_someone']."'></form></td></tr>");
+		print("<tr><td colspan=7 align=center><form method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".($CURUSER['invites'] <= 0 ? "disabled " : "")." value='".$lang_invite['sumbit_invite_someone']."'></form></td></tr>");
 	}
 	print("</table>");
 

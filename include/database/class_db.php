@@ -8,6 +8,8 @@ class DB
 
     private static $queries = [];
 
+    private $isConnected = false;
+
     private function __construct()
     {
 
@@ -39,9 +41,11 @@ class DB
 
     public function connect($host, $username, $password, $database, $port)
     {
-        if (is_null($this->driver)) {
+        if (!$this->isConnected) {
             $this->driver->connect($host, $username, $password, $database, $port);
+            $this->isConnected = true;
         }
+        return true;
     }
 
     public function query(string $sql)
@@ -112,7 +116,7 @@ class DB
 
     public function isConnected()
     {
-        return !is_null($this->driver);
+        return $this->isConnected;
     }
 
 
