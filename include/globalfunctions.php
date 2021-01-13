@@ -233,7 +233,7 @@ function config($key, $default = null)
  * @param null $name
  * @return array|mixed|string
  */
-function get_setting($name = null)
+function get_setting($name = null, $prefix = null)
 {
 	static $settings;
 	if (is_null($settings)) {
@@ -342,15 +342,21 @@ function arr_get($array, $key, $default = null)
 
 function arr_set(&$array, $key, $value)
 {
-	if (strpos($key, '.') === false) {
-		$array[$key] = $value;
-	}
-	foreach (explode('.', $key) as $segment) {
-		if (isset($array[$segment])) {
-			$array = $array[$segment];
-		} else {
-			return $default;
-		}
-	}
-	return $array;
+    $parts = explode('.', $key);
+    $last = null;
+    while (true) {
+        $segment = array_pop($parts);
+        if (empty($segment)) {
+            return $array;
+        }
+        if (is_null($last)) {
+            $array[$segment] = $value;
+        } else {
+            $array[$segment] = $array;
+            unset($array[$last]);
+        }
+        $last = $segment;
+
+    }
+    return $array;
 }
