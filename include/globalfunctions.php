@@ -228,16 +228,12 @@ function config($key, $default = null)
 /**
  * get setting for given name and prefix
  *
- * $name == null and $prefix == null, return all
- * $name == null and $prefix != null, return with specified prefix, but the result's prefix will be stripped
- *
- * @author xiaomlove
+ * @author xiaomlove<1939737565@qq.com>
  * @date 2021/1/11
  * @param null $name
- * @param null $prefix
  * @return array|mixed|string
  */
-function get_setting($name = null, $prefix = null)
+function get_setting($name = null)
 {
 	static $settings;
 	if (is_null($settings)) {
@@ -343,4 +339,18 @@ function arr_get($array, $key, $default = null)
 	}
 	return $array;
 }
-?>
+
+function arr_set(&$array, $key, $value)
+{
+	if (strpos($key, '.') === false) {
+		$array[$key] = $value;
+	}
+	foreach (explode('.', $key) as $segment) {
+		if (isset($array[$segment])) {
+			$array = $array[$segment];
+		} else {
+			return $default;
+		}
+	}
+	return $array;
+}

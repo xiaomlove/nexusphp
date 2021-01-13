@@ -1,0 +1,21 @@
+{
+    "name": "xiaomlove/nexusphp",
+    "description": "A private tracker server application base on NexusPHP.",
+    "type": "project",
+    "license": "GPL-2.0-only",
+    "authors": [
+        {
+            "name": "xiaomlove",
+            "email": "1939737565@qq.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Nexus\\": "nexus/"
+        }
+    },
+    "require": {
+        "php": "^7.2|^8",
+        "swiftmailer/swiftmailer": "^6.2"
+    }
+}

@@ -41,3 +41,5 @@ define ("UC_SYSOP",15);
 define ("UC_STAFFLEADER",16);
 ignore_user_abort(1);
 @set_time_limit(60);
+
+require dirname(__DIR__) . '/vendor/autoload.php';

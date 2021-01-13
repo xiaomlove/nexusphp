@@ -1390,6 +1390,7 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 		ini_restore(sendmail_from);
 	}
 	elseif ($smtptype == 'external') {
+	    /*
 		require_once ($rootpath . 'include/smtp/smtp.lib.php');
 		$mail = new smtp($hdr_encoding,'eYou');
 		$mail->debug(true);
@@ -1411,6 +1412,36 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 		$mail->body($body);
 		$mail->send() or stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail']);
 		$mail->close();
+	    */
+
+        /**
+         * use swiftmailer instead
+         *
+         * @since 1.6
+         * @author xiaomlove<1939737565@qq.com>
+         */
+
+        $setting = get_setting('smtp');
+        // Create the Transport
+        $transport = (new Swift_SmtpTransport('smtp.example.org', 25))
+            ->setUsername('your username')
+            ->setPassword('your password')
+        ;
+
+        // Create the Mailer using your created Transport
+        $mailer = new Swift_Mailer($transport);
+
+        // Create a message
+        $message = (new Swift_Message('Wonderful Subject'))
+            ->setFrom(['john@doe.com' => 'John Doe'])
+            ->setTo(['receiver@domain.org', 'other@domain.org' => 'A name'])
+            ->setBody('Here is the message itself')
+        ;
+
+        // Send the message
+        $result = $mailer->send($message);
+
+
 	}
 	if ($showmsg) {
 		if ($type == "confirmation")

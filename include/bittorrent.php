@@ -7,7 +7,7 @@ define("NEXUSWIKIURL","http://www.nexusphp.com/wiki");
 define("VERSION","Powered by <a href=\"aboutnexus.php\">".PROJECTNAME."</a>");
 define("THISTRACKER","General");
 $showversion = " - Powered by ".PROJECTNAME;
-$rootpath=realpath(dirname(__FILE__) . '/..');
+$rootpath= dirname(__DIR__);
 set_include_path(get_include_path() . PATH_SEPARATOR . $rootpath);
 $rootpath .= "/";
 require $rootpath . 'include/functions.php';

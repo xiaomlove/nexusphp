@@ -2,8 +2,11 @@
 /vendor
 /.idea
 /.vagrant
+/.settings
+/attachments
+/bitbucket
+/subs
 npm-debug.log
 .env
-/.settings
 .buildpath
 .project
