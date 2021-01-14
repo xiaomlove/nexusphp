@@ -100,8 +100,8 @@ class PTGen
             throw new PTGenException("not support site: $site, only support: " . implode(", ", array_keys(self::$validSites)));
         }
         $siteInfo = self::$validSites[$site];
-        $isIdValid = preg_match($siteInfo['url_pattern'], $url, $matches);
-        if (!$isIdValid) {
+        $isUrlValid = preg_match($siteInfo['url_pattern'], $url, $matches);
+        if (!$isUrlValid) {
             throw new PTGenException("invalid url: $url");
         }
         return sprintf('%s/?site=%s&sid=%s', trim($this->apiPoint, '/'), $site , $matches[1]);
