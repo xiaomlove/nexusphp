@@ -229,7 +229,6 @@ function config($key, $default = null)
 /**
  * get setting for given name and prefix
  *
- * @author xiaomlove<1939737565@qq.com>
  * @date 2021/1/11
  * @param null $name
  * @return array|mixed|string
@@ -313,9 +312,8 @@ function normalize_env($value)
 /**
  * Get an item from an array using "dot" notation.
  *
- * referance to Laravel
+ * reference to Laravel
  *
- * @author xiaomlove<1939737565@qq.com>
  * @date 2021/1/14
  * @param $array
  * @param $key
