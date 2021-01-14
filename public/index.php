@@ -300,13 +300,18 @@ if ($CURUSER && $showpolls_main == "yes")
 				$os = array();
 
 				// Count votes
-				while (($arr2 = mysql_fetch_row($res) !== null) && isset($arr2[0]) && isset($vs[$arr2[0]]))
-				$vs[$arr2[0]] ++;
+                while ($arr2 = mysql_fetch_row($res)) {
+                    if (!isset($vs[$arr2[0]])) {
+                        $vs[$arr2[0]] = 0;
+                    }
+                    $vs[$arr2[0]] ++;
+                }
+
 
 				reset($o);
 				for ($i = 0; $i < count($o); ++$i){
-					if (isset($vs[$i]) && isset($o[$i]) && $o[$i])
-						$os[$i] = array($vs[$i], $o[$i], $i);
+					if ($o[$i])
+						$os[$i] = array($vs[$i] ?? 0, $o[$i], $i);//field 1: options vote count, field 2: option name, field 3: option index
 				}
 
 				function srt($a,$b)

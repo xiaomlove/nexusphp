@@ -19,7 +19,8 @@ if ($action == "sendmail")
 {$lang_mailtest['mail_test_mail_content']}
 EOD;
 
-	sent_mail($email, $SITENAME, $SITEEMAIL, change_email_encode(get_langfolder_cookie(), $title), change_email_encode(get_langfolder_cookie(),$body), '', false, false, '', get_email_encode(get_langfolder_cookie()));
+//	sent_mail($email, $SITENAME, $SITEEMAIL, change_email_encode(get_langfolder_cookie(), $title), change_email_encode(get_langfolder_cookie(),$body), '', false, false, '', get_email_encode(get_langfolder_cookie()));
+	sent_mail($email, $SITENAME, $SITEEMAIL, $title, $body, '', false, false, '', get_email_encode(get_langfolder_cookie()));
 
 	stderr($lang_mailtest['std_success'], $lang_mailtest['std_success_note']);
 }

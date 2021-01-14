@@ -147,14 +147,16 @@ function dd($vars)
 	exit(0);
 }
 
-function do_log($log)
+function do_log($log, $level = 'info')
 {
 	global $TWEAK;
 	if (!empty($TWEAK['logging'])) {
 		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 		$content = sprintf(
-			"[%s] %s:%s %s%s%s %s%s",
+			"[%s] [%s] [%s] %s:%s %s%s%s %s%s",
 			date('Y-m-d H:i:s'),
+			$level,
+            REQUEST_ID,
 			$backtrace[0]['file'] ?? '',
 			$backtrace[0]['line'] ?? '',
 			$backtrace[1]['class'] ?? '',
@@ -206,11 +208,10 @@ function __($name = null, $prefix = null)
 
 function config($key, $default = null)
 {
-	global $rootpath;
 	static $configs;
 	if (is_null($configs)) {
 		//get all configuration from config file
-		$files = glob($rootpath . 'config/*.php');
+		$files = glob(ROOT_PATH . 'config/*.php');
 		foreach ($files as $file) {
 			$basename = basename($file);
 			if ($basename == 'allconfig.php') {
@@ -233,7 +234,7 @@ function config($key, $default = null)
  * @param null $name
  * @return array|mixed|string
  */
-function get_setting($name = null, $prefix = null)
+function get_setting($name = null)
 {
 	static $settings;
 	if (is_null($settings)) {
@@ -246,36 +247,20 @@ function get_setting($name = null, $prefix = null)
 			if (is_array($arr)) {
 				$value = $arr;
 			}
-			$settings[$row['name']] = $value;
-		}
-
-	}
-	if (!is_null($name)) {
-		if (!is_null($prefix)) {
-			$name = "$prefix.$name";
-		}
-		return $settings[$name] ?? null;
-	}
-	if (is_null($prefix)) {
-		return $settings;
-	}
-	$filtered = [];
-	foreach ($settings as $name => $value) {
-		if (preg_match("/^$prefix/", $name)) {
-			$nameWithoutPrefix = substr($name, strpos($name, '.') + 1);
-			$filtered[$nameWithoutPrefix] = $value;
+			arr_set($settings, $row['name'], $value);
 		}
 	}
-	return $filtered;
-
+	if (is_null($name)) {
+	    return $settings;
+    }
+    return arr_get($settings, $name);
 }
 
 function env($key, $default = null)
 {
-	global $rootpath;
 	static $env;
 	if (is_null($env)) {
-		$envFile = $rootpath . '.env';
+		$envFile = ROOT_PATH . '.env';
 		if (!file_exists($envFile)) {
 			throw new \RuntimeException(".env file is not exists in the root path.");
 		}
@@ -325,6 +310,18 @@ function normalize_env($value)
 	}
 }
 
+/**
+ * Get an item from an array using "dot" notation.
+ *
+ * referance to Laravel
+ *
+ * @author xiaomlove<1939737565@qq.com>
+ * @date 2021/1/14
+ * @param $array
+ * @param $key
+ * @param null $default
+ * @return mixed|null
+ */
 function arr_get($array, $key, $default = null)
 {
 	if (strpos($key, '.') === false) {
@@ -340,23 +337,44 @@ function arr_get($array, $key, $default = null)
 	return $array;
 }
 
+/**
+ * From Laravel
+ *
+ * Set an array item to a given value using "dot" notation.
+ *
+ * If no key is given to the method, the entire array will be replaced.
+ *
+ * @param  array  $array
+ * @param  string|null  $key
+ * @param  mixed  $value
+ * @return array
+ */
 function arr_set(&$array, $key, $value)
 {
-    $parts = explode('.', $key);
-    $last = null;
-    while (true) {
-        $segment = array_pop($parts);
-        if (empty($segment)) {
-            return $array;
-        }
-        if (is_null($last)) {
-            $array[$segment] = $value;
-        } else {
-            $array[$segment] = $array;
-            unset($array[$last]);
-        }
-        $last = $segment;
-
+    if (is_null($key)) {
+        return $array = $value;
     }
+
+    $keys = explode('.', $key);
+
+    foreach ($keys as $i => $key) {
+        if (count($keys) === 1) {
+            break;
+        }
+
+        unset($keys[$i]);
+
+        // If the key doesn't exist at this depth, we will just create an empty array
+        // to hold the next value, allowing us to create the arrays to hold final
+        // values at the correct depth. Then we'll keep digging into the array.
+        if (! isset($array[$key]) || ! is_array($array[$key])) {
+            $array[$key] = [];
+        }
+
+        $array = &$array[$key];
+    }
+
+    $array[array_shift($keys)] = $value;
+
     return $array;
 }

@@ -1,7 +1,14 @@
 <?php
-if(!defined('IN_TRACKER'))
-  die('Hacking attempt!');
+if(!defined('IN_TRACKER')) {
+    die('Hacking attempt!');
+}
 error_reporting(E_ALL);
+if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
+    define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
+} else {
+    define('REQUEST_ID', intval(NEXUS_START * 10000));
+}
+define('ROOT_PATH', $rootpath);
 
 require $rootpath . 'include/database/interface_db.php';
 require $rootpath . 'include/database/class_db_mysqli.php';

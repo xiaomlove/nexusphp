@@ -47,7 +47,7 @@ class imdb_config {
     $this->imdbsite = "www.imdb.com";
     // cachedir should be writable by the webserver. This doesn't need to be
     // under documentroot.
-    $this->cachedir = './imdb/cache';
+    $this->cachedir = ROOT_PATH . 'imdb/cache';
     //whether to use a cached page to retrieve the information if available.
     $this->usecache = true;
     //whether to store the pages retrieved for later use.
@@ -58,10 +58,10 @@ class imdb_config {
     $this->imageext = '.jpg';
     // images are stored here after calling photo_localurl()
     // this needs to be under documentroot to be able to display them on your pages.
-    $this->photodir = './imdb/images/';
+    $this->photodir = ROOT_PATH . 'imdb/pic_imdb/';
     // this is the URL to the images, i.e. start at your servers DOCUMENT_ROOT
     // when specifying absolute path
-    $this->photoroot = './imdb/images/';
+    $this->photoroot = '/pic_imdb/';
     // TWEAKING OPTIONS:
     // limit the result set to X movies (0 to disable, comment out to use default of 20)
     $this->maxresults = 5000;

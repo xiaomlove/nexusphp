@@ -69,9 +69,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php') {
 }
 $settings = get_setting();
 foreach ($settings as $name => $value) {
-    $prefix = strtoupper(strstr($name, '.', true));
-    $pureName = substr($name, strpos($name, '.') + 1);
-    $GLOBALS[$prefix][$pureName] = $value;
+    $GLOBALS[strtoupper($name)] = $value;
 }
 
 $SITENAME = $BASIC['SITENAME'];

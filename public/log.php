@@ -222,8 +222,8 @@ else {
 		break;
 	case "funbox":
 		stdhead($lang_log['head_funbox']);
-		$query = mysql_real_escape_string(trim($_GET["query"]));
-		$search = $_GET["search"];
+		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$search = $_GET["search"] ?? '';
 		if($query){
 			switch ($search){
 				case "title": $wherea=" WHERE title LIKE '%$query%' AND status != 'banned'"; break;
@@ -237,7 +237,7 @@ else {
 		$addparam = "";
 		}
 		logmenu("funbox");
-		$opt = array (title => $lang_log['text_title'], body => $lang_log['text_body'], both => $lang_log['text_both']);
+		$opt = array ('title' => $lang_log['text_title'], 'body' => $lang_log['text_body'], 'both' => $lang_log['text_both']);
 		searchtable($lang_log['text_search_funbox'], 'funbox', $opt);
 		$res = sql_query("SELECT COUNT(*) FROM fun ".$wherea);
 		$row = mysql_fetch_array($res);
@@ -324,7 +324,7 @@ else {
 
   		int_check($pollid,true);
 
-   		$sure = $_GET["sure"];
+   		$sure = $_GET["sure"] ?? '';
    		if (!$sure)
     		stderr($lang_log['std_delete_poll'],$lang_log['std_delete_poll_confirmation'] .
     		"<a href=?action=poll&do=delete&pollid=$pollid&returnto=$returnto&sure=1>".$lang_log['std_here_if_sure'],false);
@@ -394,13 +394,20 @@ else {
     $os = array(); // votes and options: array(array(123, "Option 1"), array(45, "Option 2"))
 
     // Count votes
-    while ($pollanswer = mysql_fetch_row($pollanswers))
-      $vs[$pollanswer[0]] += 1;
+    while ($pollanswer = mysql_fetch_row($pollanswers)) {
+    	if (isset($pollanswer[0])) {
+    		if (!isset($vs[$pollanswer[0]])) {
+				$vs[$pollanswer[0]] = 0;
+			}
+			$vs[$pollanswer[0]] += 1;
+		}
+	}
+
 
     reset($o);
     for ($i = 0; $i < count($o); ++$i)
-      if (isset($o[$i]) && isset($vs[$i]))
-        $os[$i] = array($vs[$i], $o[$i]);
+		if ($o[$i])
+			$os[$i] = array($vs[$i] ?? 0, $o[$i]);
 
     print("<table width=100% class=main border=0 cellspacing=0 cellpadding=0>\n");
     $i = 0;

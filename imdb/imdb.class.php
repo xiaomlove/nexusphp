@@ -209,6 +209,9 @@ $responseBody = $response->getBody();
    }
    if( $this->page[$wt] ){ //storecache
     if ($this->storecache) {
+        if (!is_dir($this->cachedir)) {
+            $mkdirResult = mkdir($this->cachedir, 0777, true);
+        }
      $fp = fopen ("$this->cachedir/$this->imdbID.$wt", "w");
      fputs ($fp, $this->page[$wt]);
      fclose ($fp);

@@ -1339,6 +1339,7 @@ function check_email ($email) {
 }
 
 function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation",$showmsg=true,$multiple=false,$multiplemail='',$hdr_encoding = 'UTF-8', $specialcase = '') {
+    do_log("to: $to, fromname: $fromname, fromemail: $fromemail, subject: $subject, body: $body. type: $type");
 	global $lang_functions;
 	global $rootpath,$SITENAME,$SITEEMAIL,$smtptype,$smtp,$smtp_host,$smtp_port,$smtp_from,$smtpaddress,$smtpport,$accountname,$accountpassword;
 	# Is the OS Windows or Mac or Linux?
@@ -1423,24 +1424,31 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 
         $setting = get_setting('smtp');
         // Create the Transport
-        $transport = (new Swift_SmtpTransport('smtp.example.org', 25))
-            ->setUsername('your username')
-            ->setPassword('your password')
+        $transport = (new Swift_SmtpTransport($setting['smtpaddress'], $setting['smtpport']))
+            ->setUsername($setting['accountname'])
+            ->setPassword($setting['accountpassword'])
         ;
 
         // Create the Mailer using your created Transport
         $mailer = new Swift_Mailer($transport);
 
         // Create a message
-        $message = (new Swift_Message('Wonderful Subject'))
-            ->setFrom(['john@doe.com' => 'John Doe'])
-            ->setTo(['receiver@domain.org', 'other@domain.org' => 'A name'])
-            ->setBody('Here is the message itself')
+        $message = (new Swift_Message($subject))
+            ->setFrom($fromemail, $fromname)
+            ->setTo([$to])
+            ->setBody($body)
         ;
 
         // Send the message
-        $result = $mailer->send($message);
-
+        try {
+            $result = $mailer->send($message);
+            if ($result == 0) {
+                stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail']);
+            }
+        } catch (\Exception $e) {
+            do_log("send email fail: " . $e->getMessage() . ", trace: " . $e->getTraceAsString());
+            stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail']);
+        }
 
 	}
 	if ($showmsg) {

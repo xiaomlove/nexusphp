@@ -247,7 +247,7 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 }
 elseif ($action == 'tweaksettings')		// tweak settings
 {
-	$TWEAK = get_setting(null, 'tweak');
+	$TWEAK = get_setting('tweak');
 	stdhead($lang_settings['head_tweak_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_tweak' />");
@@ -272,7 +272,7 @@ elseif ($action == 'tweaksettings')		// tweak settings
 }
 elseif ($action == 'smtpsettings')	// stmp settings
 {
-	$SMTP = get_setting(null, 'smtp');
+	$SMTP = get_setting('smtp');
 	stdhead($lang_settings['head_smtp_settings']);
 	print ($notice);
 	print("<tbody>");
@@ -302,7 +302,7 @@ print("</tbody>");
 }
 elseif ($action == 'securitysettings')	//security settings
 {
-	$SECURITY = get_setting(null, 'security');
+	$SECURITY = get_setting('security');
 	stdhead($lang_settings['head_security_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_security'>");
@@ -320,7 +320,7 @@ elseif ($action == 'securitysettings')	//security settings
 }
 elseif ($action == 'authoritysettings')	//Authority settings
 {
-	$AUTHORITY = get_setting(null, 'authority');
+	$AUTHORITY = get_setting('authority');
 	stdhead($lang_settings['head_authority_settings']);
 	print ($notice);
 	$maxclass = UC_SYSOP;
@@ -379,7 +379,7 @@ elseif ($action == 'basicsettings')	// basic settings
 {
 	stdhead($lang_settings['head_basic_settings']);
 	print ($notice);
-	$config = get_setting(null, 'basic');
+	$config = get_setting('basic');
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_basic'>");
 	tr($lang_settings['row_site_name'],"<input type='text' style=\"width: 300px\" name=SITENAME value='".($config["SITENAME"] ? $config["SITENAME"]: "Nexus")."'> ".$lang_settings['text_site_name_note'], 1);
 	tr($lang_settings['row_base_url'],"<input type='text' style=\"width: 300px\" name=BASEURL value='".($config["BASEURL"] ? $config["BASEURL"] : $_SERVER["HTTP_HOST"])."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"] . $lang_settings['text_base_url_note'], 1);
@@ -398,7 +398,7 @@ elseif ($action == 'basicsettings')	// basic settings
 }
 elseif ($action == 'attachmentsettings')	// basic settings
 {
-	$ATTACHMENT = get_setting(null, 'attachment');
+	$ATTACHMENT = get_setting('attachment');
 	stdhead($lang_settings['head_attachment_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_attachment'>");
@@ -420,7 +420,7 @@ elseif ($action == 'attachmentsettings')	// basic settings
 }
 elseif ($action == 'advertisementsettings')
 {
-	$ADVERTISEMENT = get_setting(null, 'advertisement');
+	$ADVERTISEMENT = get_setting('advertisement');
 	stdhead($lang_settings['head_advertisement_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_advertisement'>");
@@ -434,7 +434,7 @@ elseif ($action == 'advertisementsettings')
 }
 elseif ($action == 'codesettings')	// code settings
 {
-	$CODE = get_setting(null, 'code');
+	$CODE = get_setting('code');
 	stdhead($lang_settings['head_code_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_code'>");
@@ -446,7 +446,7 @@ elseif ($action == 'codesettings')	// code settings
 	print ("</form>");
 }
 elseif ($action == 'bonussettings'){
-	$BONUS = get_setting(null, 'bonus');
+	$BONUS = get_setting('bonus');
 	stdhead($lang_settings['head_bonus_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_bonus'>");
@@ -480,7 +480,7 @@ elseif ($action == 'bonussettings'){
 	print ("</form>");
 }
 elseif ($action == 'accountsettings'){
-	$ACCOUNT = get_setting(null, 'account');
+	$ACCOUNT = get_setting('account');
 	stdhead($lang_settings['head_account_settings']);
 	print ($notice);
 	$maxclass = UC_VIP;
@@ -524,7 +524,7 @@ elseif ($action == 'accountsettings'){
 }
 elseif ($action == 'torrentsettings')
 {
-	$TORRENT = get_setting(null, 'torrent');
+	$TORRENT = get_setting('torrent');
 	stdhead($lang_settings['head_torrent_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_torrent'>");
@@ -556,7 +556,7 @@ elseif ($action == 'torrentsettings')
 }
 elseif ($action == 'mainsettings')	// main settings
 {
-	$MAIN = get_setting(null, 'main');
+	$MAIN = get_setting('main');
 	stdhead($lang_settings['head_main_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_main'>");
