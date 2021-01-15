@@ -14,19 +14,30 @@ class PTGen
 {
     private $apiPoint;
 
+    const FORMAT_HTML = 1;
+    const FORMAT_JSON = 2;
+
+    private static $formatText = [
+        self::FORMAT_HTML => 'HTML',
+        self::FORMAT_JSON => 'json',
+    ];
+
     const SITE_DOUBAN = 'douban';
     const SITE_IMDB = 'imdb';
     const SITE_BANGUMI = 'bangumi';
 
     private static $validSites = [
-        self::SITE_DOUBAN => [
-            'url_pattern' => '/(?:https?:\/\/)?(?:(?:movie|www)\.)?douban\.com\/(?:subject|movie)\/(\d+)\/?/',
-        ],
         self::SITE_IMDB => [
             'url_pattern' => '/(?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/(tt\d+)\/?/',
+            'home_page' => 'https://www.imdb.com/',
+        ],
+        self::SITE_DOUBAN => [
+            'url_pattern' => '/(?:https?:\/\/)?(?:(?:movie|www)\.)?douban\.com\/(?:subject|movie)\/(\d+)\/?/',
+            'home_page' => 'https://www.douban.com/',
         ],
         self::SITE_BANGUMI => [
             'url_pattern' => '/(?:https?:\/\/)?(?:bgm\.tv|bangumi\.tv|chii\.in)\/subject\/(\d+)\/?/',
+            'home_page' => 'https://bangumi.tv/',
         ],
     ];
 
@@ -46,27 +57,61 @@ class PTGen
         $this->apiPoint = $apiPoint;
     }
 
-    public function generateDouban(string $url): string
+    public function generate(string $url): array
     {
-        return $this->request($url, self::SITE_DOUBAN);
+        foreach (self::$validSites as $site => $info) {
+            if (preg_match($info['url_pattern'], $url, $matches)) {
+                $targetUrl = sprintf('%s/?site=%s&sid=%s', trim($this->apiPoint, '/'), $site , $matches[1]);
+                return $this->request($targetUrl);
+            }
+        }
+        throw new PTGenException("invalid url: $url");
     }
 
-    public function generateImdb(string $url): string
+    private function buildDetailsPageTableRow($ptGenArr, $site)
     {
-        return $this->request($url, self::SITE_IMDB);
+        global $lang_details;
+        $ptGenFormatted = $ptGenArr['format'];
+        $prefix = sprintf("[img]%s[/img]\n", $ptGenArr['poster']);
+        $ptGenFormatted = mb_substr($ptGenFormatted, mb_strlen($prefix, 'utf-8') + 1);
+        $ptGenFormatted = format_comment($ptGenFormatted);
+        $titleShowOrHide = $lang_details['title_show_or_hide'] ?? '';
+        $id = 'pt-gen-' . $site;
+        $html = <<<HTML
+<tr>
+    <td class="rowhead">
+        <a href="javascript: klappe_ext('{$id}')">
+            <span class="nowrap">
+                <img id="pic{$id}" class="minus" src="pic/trans.gif" alt="Show/Hide" title="{$titleShowOrHide}" />
+                PT-Gen-{$site}
+            </span>
+        </a>
+        <div id="poster{$id}">
+            <img src="{$ptGenArr['poster']}" width="105" onclick="Preview(this);" alt="poster" />
+        </div>
+    </td>
+    <td class="rowfollow" align="left">
+        <div id="k{$id}">
+            {$ptGenFormatted}
+        </div>
+    </td>
+</tr>
+HTML;
+       return $html;
     }
 
-    public function generateBangumi(string $url): string
+    private function request(string $url): array
     {
-        return $this->request($url, self::SITE_BANGUMI);
-    }
-
-    private function request(string $url, string $site): string
-    {
-        $url = $this->buildUrl($url, $site);
+        global $Cache;
         $logPrefix = "url: $url";
+        $cacheKey = __METHOD__ . ":$url";
+        $cache = $Cache->get_value($cacheKey);
+        if ($cache) {
+            do_log("$logPrefix, from cache");
+            return $cache;
+        }
         $http = new Client();
-        $response = $http->get($url, ['timeout' => 5]);
+        $response = $http->get($url, ['timeout' => 10]);
         $statusCode = $response->getStatusCode();
         if ($statusCode != 200) {
             $msg = "api point response http status code: $statusCode";
@@ -90,20 +135,53 @@ class PTGen
             do_log("$logPrefix, response: $bodyString");
             throw new PTGenException($msg);
         }
-
-        return $bodyString;
+        $Cache->cache_value($cacheKey, $bodyArr, 24 * 3600);
+        return $bodyArr;
     }
 
-    private function buildUrl(string $url, string $site): string
+    public function renderUploadPageFormInput($ptGen = '')
     {
-        if (!isset(self::$validSites[$site])) {
-            throw new PTGenException("not support site: $site, only support: " . implode(", ", array_keys(self::$validSites)));
+        global $lang_functions;
+        $html = '';
+        $ptGen = (array)json_decode($ptGen, true);
+        foreach (self::$validSites as $site => $info) {
+            $value = $ptGen[$site]['link'] ?? '';
+            $x = $lang_functions["row_pt_gen_{$site}_url"];
+            $y = "<input type=\"text\" style=\"width: 650px;\" name=\"pt_gen[{$site}][link]\" value=\"{$value}\" /><br /><font class=\"medium\">".$lang_functions["text_pt_gen_{$site}_url_note"]."</font>";
+            $html .= tr($x, $y, 1);
         }
-        $siteInfo = self::$validSites[$site];
-        $isUrlValid = preg_match($siteInfo['url_pattern'], $url, $matches);
-        if (!$isUrlValid) {
-            throw new PTGenException("invalid url: $url");
+        return $html;
+    }
+
+    public function renderDetailsPageDescription(array $torrentPtGenArr): array
+    {
+        $html = '';
+        $jsonArr = [];
+        $update = false;
+        foreach (self::$validSites as $site => $info) {
+            if (empty($torrentPtGenArr[$site]['link'])) {
+                continue;
+            }
+            $link = $torrentPtGenArr[$site]['link'];
+            $data = $torrentPtGenArr[$site]['data'] ?? [];
+            if (!empty($data)) {
+                $jsonArr[$site] = [
+                    'link' => $link,
+                    'data' => $data,
+                ];
+                $html .= $this->buildDetailsPageTableRow($data, $site);
+            } else {
+                $ptGenArr = $this->generate($torrentPtGenArr[$site]['link']);
+                $jsonArr[$site] = [
+                    'link' => $link,
+                    'data' => $ptGenArr,
+                ];
+                $html .= $this->buildDetailsPageTableRow($ptGenArr, $site);
+                if (!$update) {
+                    $update = true;
+                }
+            }
         }
-        return sprintf('%s/?site=%s&sid=%s', trim($this->apiPoint, '/'), $site , $matches[1]);
+        return ['json_arr' => $jsonArr, 'html' => $html, 'update' => $update];
     }
 }

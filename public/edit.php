@@ -35,7 +35,7 @@ $showstandard = (get_searchbox_value($sectionmode, 'showstandard') || ($allowmov
 $showprocessing = (get_searchbox_value($sectionmode, 'showprocessing') || ($allowmove && get_searchbox_value($othermode, 'showprocessing'))); //whether show processings or not
 $showteam = (get_searchbox_value($sectionmode, 'showteam') || ($allowmove && get_searchbox_value($othermode, 'showteam'))); //whether show teams or not
 $showaudiocodec = (get_searchbox_value($sectionmode, 'showaudiocodec') || ($allowmove && get_searchbox_value($othermode, 'showaudiocodec'))); //whether show audio codecs or not
-
+$settingMain = get_setting('main');
 stdhead($lang_edit['head_edit_torrent'] . "\"". $row["name"] . "\"");
 
 if (!isset($CURUSER) || ($CURUSER["id"] != $row["owner"] && get_user_class() < $torrentmanage_class)) {
@@ -54,6 +54,10 @@ else {
 		tr($lang_edit['row_small_description'], "<input type=\"text\" style=\"width: 650px;\" name=\"small_descr\" value=\"" . htmlspecialchars($row["small_descr"]) . "\" />", 1);
 
 	get_external_tr($row["url"]);
+    if ($settingMain['enable_pt_gen_system'] == 'yes') {
+        $ptGen = new \Nexus\PTGen\PTGen();
+        echo $ptGen->renderUploadPageFormInput($row['pt_gen']);
+    }
 
 	if ($enablenfo_main=='yes')
 		tr($lang_edit['row_nfo_file'], "<font class=\"medium\"><input type=\"radio\" name=\"nfoaction\" value=\"keep\" checked=\"checked\" />".$lang_edit['radio_keep_current'].

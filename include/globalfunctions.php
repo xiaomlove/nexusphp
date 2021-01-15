@@ -70,9 +70,10 @@ function sql_query($query)
 	$begin = microtime(true);
 	global $query_name;
 	$result = mysql_query($query);
+	$end = microtime(true);
 	$query_name[] = [
 		'query' => $query,
-		'time' => microtime(true) - $begin,
+		'time' => sprintf('%.3f ms', ($end - $begin) * 1000),
 	];
 	return $result;
 }

@@ -288,6 +288,11 @@ $lang_functions = array
 	'text_thirty_percent_down' => "30%",
 	'text_please_download_something_within' => "請在",
 	'text_inactive_account_be_deleted' => "內做些下載。沒有流量的用戶會被移除賬號。",
+	'text_pt_gen_douban_url_note' => "(來自 <strong><a href=\"https://www.douban.com/\">douban</a></strong> 的鏈接。如電影 <b>Transformers</b> 的鏈接是<b> https://movie.douban.com/subject/1794171/</b>)",
+	'row_pt_gen_imdb_url' => "PT-Gen imdb 鏈接",
+	'text_pt_gen_imdb_url_note' => "(來自 <strong><a href=\"https://www.imdb.com//\">imdb</a></strong> 的鏈接。如電影 <b>Transformers</b> 的鏈接是<b> https://www.imdb.com/title/tt0418279/</b>)",
+	'row_pt_gen_bangumi_url' => "PT-Gen bangumi 鏈接",
+	'text_pt_gen_bangumi_url_note' => "(來自 <strong><a href=\"https://bangumi.tv/\">bangumi</a></strong> 的鏈接。如動畫 <b>星際牛仔</b> 的鏈接是<b> https://bangumi.tv/subject/253/</b>)",
 );
 
 ?>

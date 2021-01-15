@@ -2594,7 +2594,7 @@ function stdfoot() {
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
 		print("<div id=\"sql_debug\">SQL query list: <ul>");
 		foreach($query_name as $query) {
-			print(sprintf('<li>%s [%s ms]</li>', htmlspecialchars($query['query']), $query['time'] * 1000));
+			print(sprintf('<li>%s [%s]</li>', htmlspecialchars($query['query']), $query['time']));
 		}
 		print("</ul>");
 		print("Redis key read: <ul>");

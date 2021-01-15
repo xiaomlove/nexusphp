@@ -167,6 +167,15 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
 	}
 }
+
+/**
+ * add PT-Gen
+ * @since 1.6
+ */
+if (!empty($_POST['pt_gen'])) {
+    $updateset[] = "pt_gen = " . sqlesc(json_encode($_POST['pt_gen']));
+}
+
 sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 
 if($CURUSER["id"] == $row["owner"])

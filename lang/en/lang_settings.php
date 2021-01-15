@@ -393,6 +393,8 @@ $lang_settings = array
 	'text_show_classic_note' => "Default 'no'. Show classic resources on main page. Only designated moderators or above can pick classic resources.",
 	'row_enable_imdb_system' => "Enable IMDb system",
 	'text_imdb_system_note' => "Default 'yes'. System-wide IMDb info setting.",
+	'text_enable_pt_gen_system_note' => 'Enable PT-Gen system',
+	'text_enable_pt_gen_note' => "Default 'yes'. System-wide PT-Gen info setting.",
 	'row_enable_school_system' => "Enable school system",
 	'text_school_system_note' => "Default 'no'. <font class=striking><b>DO NOT</b></font> enable this unless you know what you are doing!",
 	'row_restrict_email_domain' => "Restrict Email Domain",

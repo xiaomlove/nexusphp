@@ -331,4 +331,18 @@ class RedisCache {
     {
         return is_numeric($value) ? $value : unserialize($value);
     }
+
+    /**
+     * get the redis client
+     *
+     * @date 2021/1/15
+     * @return Redis
+     */
+    public function getRedis()
+    {
+        if ($this->getIsEnabled()) {
+            return $this->redis;
+        }
+        return null;
+    }
 }

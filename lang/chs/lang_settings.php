@@ -393,6 +393,8 @@ $lang_settings = array
 	'text_show_classic_note' => "默认'否'。在首页显示经典资源。只有指定的总版主或以上等级能够挑选热门资源。",
 	'row_enable_imdb_system' => "开启IMDb系统",
 	'text_imdb_system_note' => "默认'是'。全局IMDb系统设定。",
+	'row_enable_pt_gen_system' => '开启 PT-Gen 系统',
+	'text_enable_pt_gen_system_note' => "默认'是'。全局 PT-Gen 系统设定。",
 	'row_enable_school_system' => "开启学校系统",
 	'text_school_system_note' => "默认'否'。如果对这项功能不清楚，<font class=striking><b>不要</b></font>开启它。",
 	'row_restrict_email_domain' => "限制邮箱域",
