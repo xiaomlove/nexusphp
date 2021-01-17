@@ -14,14 +14,6 @@ class PTGen
 {
     private $apiPoint;
 
-    const FORMAT_HTML = 1;
-    const FORMAT_JSON = 2;
-
-    private static $formatText = [
-        self::FORMAT_HTML => 'HTML',
-        self::FORMAT_JSON => 'json',
-    ];
-
     const SITE_DOUBAN = 'douban';
     const SITE_IMDB = 'imdb';
     const SITE_BANGUMI = 'bangumi';
@@ -57,24 +49,39 @@ class PTGen
         $this->apiPoint = $apiPoint;
     }
 
-    public function generate(string $url): array
+    public function generate(string $url, bool $withoutCache = false): array
+    {
+        $parsed = $this->parse($url);
+        $targetUrl = sprintf('%s/?site=%s&sid=%s', trim($this->apiPoint, '/'), $parsed['site'] , $parsed['id']);
+        return $this->request($targetUrl, $withoutCache);
+    }
+
+    public function parse(string $url): array
     {
         foreach (self::$validSites as $site => $info) {
             if (preg_match($info['url_pattern'], $url, $matches)) {
-                $targetUrl = sprintf('%s/?site=%s&sid=%s', trim($this->apiPoint, '/'), $site , $matches[1]);
-                return $this->request($targetUrl);
+                return [
+                    'site' => $site,
+                    'url' => $matches[0],
+                    'id' => $matches[1]
+                ];
             }
         }
         throw new PTGenException("invalid url: $url");
     }
 
-    private function buildDetailsPageTableRow($ptGenArr, $site)
+    private function buildDetailsPageTableRow($torrentId, $ptGenArr, $site)
     {
         global $lang_details;
         $ptGenFormatted = $ptGenArr['format'];
         $prefix = sprintf("[img]%s[/img]\n", $ptGenArr['poster']);
         $ptGenFormatted = mb_substr($ptGenFormatted, mb_strlen($prefix, 'utf-8') + 1);
         $ptGenFormatted = format_comment($ptGenFormatted);
+        $ptGenFormatted .= sprintf(
+            '%s%s%s<a href="retriver.php?id=%s&type=1&siteid=%s">%s</a>',
+            $lang_details['text_information_updated_at'], date('Y-m-d H:i:s', intval($ptGenArr['generate_at'] / 1000)), $lang_details['text_might_be_outdated'],
+            $torrentId, $site, $lang_details['text_here_to_update']
+        );
         $titleShowOrHide = $lang_details['title_show_or_hide'] ?? '';
         $id = 'pt-gen-' . $site;
         $html = <<<HTML
@@ -100,15 +107,17 @@ HTML;
        return $html;
     }
 
-    private function request(string $url): array
+    private function request(string $url, bool $withoutCache = false): array
     {
         global $Cache;
         $logPrefix = "url: $url";
-        $cacheKey = __METHOD__ . ":$url";
-        $cache = $Cache->get_value($cacheKey);
-        if ($cache) {
-            do_log("$logPrefix, from cache");
-            return $cache;
+        $cacheKey = $this->getApiPointResultCacheKey($url);
+        if (!$withoutCache) {
+            $cache = $Cache->get_value($cacheKey);
+            if ($cache) {
+                do_log("$logPrefix, from cache");
+                return $cache;
+            }
         }
         $http = new Client();
         $response = $http->get($url, ['timeout' => 10]);
@@ -136,7 +145,19 @@ HTML;
             throw new PTGenException($msg);
         }
         $Cache->cache_value($cacheKey, $bodyArr, 24 * 3600);
+        do_log("$logPrefix, success get from api point");
         return $bodyArr;
+    }
+
+    public function deleteApiPointResultCache($url)
+    {
+        global $Cache;
+        $Cache->delete_value($this->getApiPointResultCacheKey($url));
+    }
+
+    private function getApiPointResultCacheKey($url)
+    {
+        return __METHOD__ . "_$url";
     }
 
     public function renderUploadPageFormInput($ptGen = '')
@@ -153,7 +174,7 @@ HTML;
         return $html;
     }
 
-    public function renderDetailsPageDescription(array $torrentPtGenArr): array
+    public function renderDetailsPageDescription($torrentId, array $torrentPtGenArr): array
     {
         $html = '';
         $jsonArr = [];
@@ -169,14 +190,14 @@ HTML;
                     'link' => $link,
                     'data' => $data,
                 ];
-                $html .= $this->buildDetailsPageTableRow($data, $site);
+                $html .= $this->buildDetailsPageTableRow($torrentId, $data, $site);
             } else {
                 $ptGenArr = $this->generate($torrentPtGenArr[$site]['link']);
                 $jsonArr[$site] = [
                     'link' => $link,
                     'data' => $ptGenArr,
                 ];
-                $html .= $this->buildDetailsPageTableRow($ptGenArr, $site);
+                $html .= $this->buildDetailsPageTableRow($torrentId, $ptGenArr, $site);
                 if (!$update) {
                     $update = true;
                 }

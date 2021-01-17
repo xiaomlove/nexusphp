@@ -16,7 +16,6 @@ die();
 $res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, categories.name AS cat_name, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name FROM torrents LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN sources ON torrents.source = sources.id LEFT JOIN media ON torrents.medium = media.id LEFT JOIN codecs ON torrents.codec = codecs.id LEFT JOIN standards ON torrents.standard = standards.id LEFT JOIN processings ON torrents.processing = processings.id LEFT JOIN teams ON torrents.team = teams.id LEFT JOIN audiocodecs ON torrents.audiocodec = audiocodecs.id WHERE torrents.id = $id LIMIT 1")
 or sqlerr();
 $row = mysql_fetch_array($res);
-
 if (get_user_class() >= $torrentmanage_class || $CURUSER["id"] == $row["owner"])
 $owned = 1;
 else $owned = 0;
@@ -26,8 +25,9 @@ if (!$row)
 elseif ($row['banned'] == 'yes' && get_user_class() < $seebanned_class)
 	permissiondenied();
 else {
+    $torrentUpdate = [];
 	if (!empty($_GET["hit"])) {
-		sql_query("UPDATE torrents SET views = views + 1 WHERE id = $id");
+        $torrentUpdate[] = 'views = views + 1';
 	}
 
 	if (!isset($_GET["cmtpage"])) {
@@ -396,9 +396,9 @@ else {
 
 	if (!empty($row['pt_gen'])) {
 	    $ptGen = new \Nexus\PTGen\PTGen();
-	    $ptGenResult = $ptGen->renderDetailsPageDescription(json_decode($row['pt_gen'], true));
+	    $ptGenResult = $ptGen->renderDetailsPageDescription($id, json_decode($row['pt_gen'], true));
 	    if ($ptGenResult['update']) {
-            //@todo do some update
+            $torrentUpdate[] = 'pt_gen = ' . sqlesc(json_encode($ptGenResult['json_arr']));
         }
 	    echo $ptGenResult['html'];
     }
@@ -567,6 +567,9 @@ echo "</script>";
 		stdhead($lang_details['head_comments_for_torrent']."\"" . $row["name"] . "\"");
 		print("<h1 id=\"top\">".$lang_details['text_comments_for']."<a href=\"details.php?id=".$id."\">" . htmlspecialchars($row["name"]) . "</a></h1>\n");
 	}
+	if (!empty($torrentUpdate)) {
+        sql_query("UPDATE torrents SET " . join(",", $torrentUpdate) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+    }
 
 	// -----------------COMMENT SECTION ---------------------//
 if ($CURUSER['showcomment'] != 'no'){

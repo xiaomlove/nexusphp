@@ -37,6 +37,23 @@ $updateset = array();
 //$dname = $row["save_as"];
 
 $url = parse_imdb_id($_POST['url'] ?? '');
+/**
+ * add PT-Gen
+ * @since 1.6
+ */
+if (!empty($_POST['pt_gen'])) {
+    //use PT-Gen imdb  for url
+    $postPtGen = $_POST['pt_gen'];
+    $ptGenImdbLink = $postPtGen[\Nexus\PTGen\PTGen::SITE_IMDB]['link'] ?? '';
+    if (empty($url) && !empty($ptGenImdbLink)) {
+        $ptGen = new \Nexus\PTGen\PTGen();
+        $ptGenImdbInfo = $ptGen->parse($ptGenImdbLink);
+        $url = str_replace('tt', '', $ptGenImdbInfo['id']);
+    }
+    $updateset[] = "pt_gen = " . sqlesc(json_encode($postPtGen));
+} else {
+    $updateset[] = "pt_gen = ''";
+}
 
 if ($enablenfo_main=='yes'){
 $nfoaction = $_POST['nfoaction'];
@@ -168,13 +185,6 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 	}
 }
 
-/**
- * add PT-Gen
- * @since 1.6
- */
-if (!empty($_POST['pt_gen'])) {
-    $updateset[] = "pt_gen = " . sqlesc(json_encode($_POST['pt_gen']));
-}
 
 sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 

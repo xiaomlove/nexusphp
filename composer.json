@@ -17,6 +17,7 @@
     "require": {
         "php": "^7.2|^8",
         "swiftmailer/swiftmailer": "^6.2",
-        "guzzlehttp/guzzle": "~6.0"
+        "guzzlehttp/guzzle": "~6.0",
+        "imdbphp/imdbphp": "^6.4"
     }
 }
