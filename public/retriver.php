@@ -1,6 +1,5 @@
 <?php
 require_once("../include/bittorrent.php");
-require ("imdb/imdb.class.php");
 dbconn();
 loggedinorreturn();
 if (get_user_class() < $updateextinfo_class) {
@@ -27,13 +26,12 @@ switch ($siteid)
 		if ($imdb_id)
 		{
 			$thenumbers = $imdb_id;
-			$movie = new imdb ($thenumbers);
+			$imdb = new \Nexus\Imdb\Imdb();
+			$movie = $imdb->getMovie($imdb_id);
 			$movieid = $thenumbers;
-			$movie->setid ($movieid);
 			$target = array('Title', 'Credits', 'Plot');
-			($type == 2 ? $movie->purge_single(true) : "");
+			($type == 2 ? $imdb->purgeSingle($imdb_id) : "");
 			set_cachetimestamp($id,"cache_stamp");
-			$movie->preparecache($target,true);
 			$Cache->delete_value('imdb_id_'.$thenumbers.'_movie_name');
 			$Cache->delete_value('imdb_id_'.$thenumbers.'_large', true);
 			$Cache->delete_value('imdb_id_'.$thenumbers.'_median', true);

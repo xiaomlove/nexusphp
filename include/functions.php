@@ -2982,6 +2982,12 @@ function torrenttable($res, $variant = "torrent") {
 	global $torrentmanage_class, $smalldescription_main, $enabletooltip_tweak;
 	global $CURLANGDIR;
 
+	$setting = get_setting('main');
+	$enablePtGen = $setting['enable_pt_gen_system'] == 'yes';
+	if ($enablePtGen) {
+	    $ptGen = new Nexus\PTGen\PTGen();
+    }
+
 	if ($variant == "torrent"){
 		$last_browse = $CURUSER['last_browse'];
 		$sectiontype = $browsecatmode;
@@ -3178,7 +3184,9 @@ while ($row = mysql_fetch_assoc($res))
 		print($dissmall_descr == "" ? "" : "<br />".htmlspecialchars($dissmall_descr));
 	}
 	print("</td>");
-
+    if ($enablePtGen && !empty($row['pt_gen'])) {
+        echo $ptGen->renderTorrentsPageAverageRating(json_decode($row['pt_gen'], true));
+    }
 		$act = "";
 		if ($CURUSER["dlicon"] != 'no' && $CURUSER["downloadpos"] != "no")
 		$act .= "<a href=\"download.php?id=".$id."\"><img class=\"download\" src=\"pic/trans.gif\" style='padding-bottom: 2px;' alt=\"download\" title=\"".$lang_functions['title_download_torrent']."\" /></a>" ;

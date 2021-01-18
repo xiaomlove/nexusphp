@@ -294,6 +294,10 @@ $lang_functions = array
 	'text_pt_gen_imdb_url_note' => "(URL taken from <strong><a href=\"https://www.imdb.com/\">imdb</a></strong>. e.g.&nbsp;for movie <b>Transformers</b> the URL is <b> https://www.imdb.com/title/tt0418279/</b>)",
 	'row_pt_gen_bangumi_url' => "PT-Gen bangumi link",
 	'text_pt_gen_bangumi_url_note' => "(URL taken from <strong><a href=\"https://bangumi.tv/\">bangumi</a></strong>. e.g.&nbsp;for animation <b>Cowboy Bebop</b> the URL is <b>https://bangumi.tv/subject/253/</b>)",
+	'imdb_cache_dir_can_not_create' => 'imdb cache dir can not create',
+	'imdb_cache_dir_is_not_writeable' => 'imdb cache dir is not writeable',
+	'imdb_photo_dir_can_not_create' => 'imdb photo dir can not create',
+	'imdb_photo_dir_is_not_writeable' => 'imdb photo dir is not writeable',
 );
 
 ?>

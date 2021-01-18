@@ -294,6 +294,10 @@ $lang_functions = array
 	'text_pt_gen_imdb_url_note' => "(来自 <strong><a href=\"https://www.imdb.com//\">imdb</a></strong> 的链接。如电影 <b>Transformers</b> 的链接是<b> https://www.imdb.com/title/tt0418279/</b>)",
 	'row_pt_gen_bangumi_url' => "PT-Gen bangumi 链接",
 	'text_pt_gen_bangumi_url_note' => "(来自 <strong><a href=\"https://bangumi.tv/\">bangumi</a></strong> 的链接。如动画 <b>星际牛仔</b> 的链接是<b> https://bangumi.tv/subject/253/</b>)",
+	'imdb_cache_dir_can_not_create' => 'imdb 缓存目录无法创建',
+	'imdb_cache_dir_is_not_writeable' => 'imdb 缓存目录不可写',
+	'imdb_photo_dir_can_not_create' => 'imdb 图片目录无法创建',
+	'imdb_photo_dir_is_not_writeable' => 'imdb 图片目录不可写',
 );
 
 ?>

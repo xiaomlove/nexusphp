@@ -22,14 +22,17 @@ class PTGen
         self::SITE_IMDB => [
             'url_pattern' => '/(?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/(tt\d+)\/?/',
             'home_page' => 'https://www.imdb.com/',
+            'rating_average_img' => 'pic/imdb2.png',
         ],
         self::SITE_DOUBAN => [
             'url_pattern' => '/(?:https?:\/\/)?(?:(?:movie|www)\.)?douban\.com\/(?:subject|movie)\/(\d+)\/?/',
             'home_page' => 'https://www.douban.com/',
+            'rating_average_img' => 'pic/douban2.png',
         ],
         self::SITE_BANGUMI => [
             'url_pattern' => '/(?:https?:\/\/)?(?:bgm\.tv|bangumi\.tv|chii\.in)\/subject\/(\d+)\/?/',
             'home_page' => 'https://bangumi.tv/',
+            'rating_average_img' => 'pic/douban2.png',
         ],
     ];
 
@@ -204,5 +207,28 @@ HTML;
             }
         }
         return ['json_arr' => $jsonArr, 'html' => $html, 'update' => $update];
+    }
+
+    public function renderTorrentsPageAverageRating(array $ptGenData)
+    {
+        $result = '<td class="embedded" style="text-align: right; width: 40px;padding-right: 5px"><div style="display: flex;flex-direction: column">';
+        $count = 1;
+        foreach (self::$validSites as $site => $info) {
+            $rating = $ptGenData[$site]['data']["{$site}_rating_average"] ?? '';
+            if (empty($rating)) {
+                continue;
+            }
+            if ($count > 2) {
+                //only show the first two
+                break;
+            }
+            $result .= sprintf(
+                '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
+                $info['rating_average_img'], $site, $site, $rating
+            );
+            $count++;
+        }
+        $result .= '</div></td>';
+        return $result;
     }
 }
