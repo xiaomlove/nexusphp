@@ -27,15 +27,20 @@ switch ($siteid)
 		{
 			$thenumbers = $imdb_id;
 			$imdb = new \Nexus\Imdb\Imdb();
-			$movie = $imdb->getMovie($imdb_id);
-			$movieid = $thenumbers;
-			$target = array('Title', 'Credits', 'Plot');
-			($type == 2 ? $imdb->purgeSingle($imdb_id) : "");
 			set_cachetimestamp($id,"cache_stamp");
-			$Cache->delete_value('imdb_id_'.$thenumbers.'_movie_name');
-			$Cache->delete_value('imdb_id_'.$thenumbers.'_large', true);
-			$Cache->delete_value('imdb_id_'.$thenumbers.'_median', true);
-			$Cache->delete_value('imdb_id_'.$thenumbers.'_minor', true);
+
+			$imdb->purgeSingle($imdb_id);
+
+			try {
+				$imdb->updateCache($imdb_id);
+				$Cache->delete_value('imdb_id_'.$thenumbers.'_movie_name');
+				$Cache->delete_value('imdb_id_'.$thenumbers.'_large', true);
+				$Cache->delete_value('imdb_id_'.$thenumbers.'_median', true);
+				$Cache->delete_value('imdb_id_'.$thenumbers.'_minor', true);
+			} catch (\Exception $e) {
+				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
+				do_log($log, 'error');
+			}
 			header("Location: " . get_protocol_prefix() . "$BASEURL/details.php?id=".htmlspecialchars($id));
 		}
 		break;
@@ -47,9 +52,14 @@ switch ($siteid)
 			$ptGenInfo = json_decode($row['pt_gen'], true);
 			$link = $ptGenInfo[$siteid]['link'];
 			$ptGen = new \Nexus\PTGen\PTGen();
-			$result = $ptGen->generate($link, true);
-			$ptGenInfo[$siteid]['data'] = $result;
-			sql_query(sprintf("update torrents set pt_gen = %s where id = %s", sqlesc(json_encode($ptGenInfo)), $id))  or sqlerr(__FILE__, __LINE__);
+			try {
+				$result = $ptGen->generate($link, true);
+				$ptGenInfo[$siteid]['data'] = $result;
+				sql_query(sprintf("update torrents set pt_gen = %s where id = %s", sqlesc(json_encode($ptGenInfo)), $id))  or sqlerr(__FILE__, __LINE__);
+			} catch (\Exception $e) {
+				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
+				do_log($log, 'error');
+			}
 			header("Location: " . get_protocol_prefix() . "$BASEURL/details.php?id=".htmlspecialchars($id));
 			break;
 		}

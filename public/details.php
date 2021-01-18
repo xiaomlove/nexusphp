@@ -139,7 +139,7 @@ else {
 		{
 			$thenumbers = $imdb_id;
 			if (!$moviename = $Cache->get_value('imdb_id_'.$thenumbers.'_movie_name')){
-				switch ($imdb->getCacheStatus($imdb_id, 'Title')){
+				switch ($imdb->getCacheStatus($imdb_id)){
 					case "1":{
 						$moviename = $movie->title (); break;
 						$Cache->cache_value('imdb_id_'.$thenumbers.'_movie_name', $moviename, 1296000);
@@ -172,7 +172,7 @@ else {
 
 		$Cache->new_page('imdb_id_'.$thenumbers.'_large', 1296000, true);
 		if (!$Cache->get_page()){
-			switch ($imdb->getCacheStatus($imdb_id, 'Title'))
+			switch ($imdb->getCacheStatus($imdb_id))
 			{
 				case "0" : //cache is not ready, try to
 				{
@@ -191,7 +191,7 @@ else {
                             $smallth = "<img src=\"pic/nophoto.gif\" alt=\"no poster\" />";
 
                         $autodata = $imdb->renderDetailsPageDescription($row['id'], $imdb_id);
-                        $cache_time = $imdb->getCachedAt($imdb_id, 'Title');
+                        $cache_time = $imdb->getCachedAt($imdb_id);
                         $Cache->add_whole_row();
                         print("<tr>");
                         print("<td class=\"rowhead\"><a href=\"javascript: klappe_ext('imdb')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picimdb\" title=\"".$lang_details['title_show_or_hide']."\" /> ".$lang_details['text_imdb'] . $lang_details['row_info'] ."</span></a><div id=\"posterimdb\">".  $smallth."</div></td>");

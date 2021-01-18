@@ -11,7 +11,7 @@ class Imdb
 
     private $movie;
 
-    private $pages = array('Title', 'Credits', 'Amazon', 'Goofs', 'Plot', 'Comments', 'Quotes', 'Taglines', 'Plotoutline', 'Trivia', 'Directed');
+    private $pages = array('Title', 'Credits', 'ReleaseInfo', );
 
     public function __construct()
     {
@@ -47,16 +47,16 @@ class Imdb
         return true;
     }
 
-    public function getCachedAt(int $id, string $page)
+    public function getCachedAt(int $id)
     {
         $id = parse_imdb_id($id);
-        $log = "id: $id, page: $page";
-        $cacheFile = $this->getCacheFilePath($id, $page);
+        $log = "id: $id";
+        $cacheFile = $this->getCacheFilePath($id);
         if (!file_exists($cacheFile)) {
             $log .= ", file: $cacheFile not exits";
         }
         $result = filemtime($cacheFile);
-        $log .= ", cache at: $result";
+        $log .= ", file: $cacheFile cache at: $result";
         do_log($log);
         return $result;
     }
@@ -64,15 +64,13 @@ class Imdb
     /**
      * @date 2021/1/18
      * @param int $id
-     * @param string $page Title, Credits, etc...
      * @return int state (0-not complete, 1-cache complete)
      */
-    public function getCacheStatus(int $id, string $page)
+    public function getCacheStatus(int $id)
     {
-        return 1;
         $id = parse_imdb_id($id);
-        $log = "id: $id, page: $page";
-        $cacheFile = $this->getCacheFilePath($id, $page);
+        $log = "id: $id";
+        $cacheFile = $this->getCacheFilePath($id);
         if (!file_exists($cacheFile)) {
             $log .= ", file: $cacheFile not exits";
             do_log($log);
@@ -88,9 +86,10 @@ class Imdb
 
     public function purgeSingle($id)
     {
-        foreach ($this->pages as $page) {
-            $file = $this->getCacheFilePath($id, $page);
+        $mainCacheFile =  $this->getCacheFilePath($id);
+        foreach (glob("$mainCacheFile*") as $file) {
             if (file_exists($file)) {
+                do_log("unlink: $file");
                 unlink($file);
             }
         }
@@ -105,9 +104,26 @@ class Imdb
         return $this->movie;
     }
 
-    private function getCacheFilePath($id, $page)
+    private function getCacheFilePath($id, $suffix = '')
     {
-        return sprintf('%s%s.%s', $this->config->cachedir, $id, $page);
+        $id = parse_imdb_id($id);
+        $result = sprintf('%stitle.tt%s', $this->config->cachedir, $id);
+        if ($suffix) {
+            $result .= ".$suffix";
+        }
+        return $result;
+    }
+
+    public function updateCache($id)
+    {
+        $id = parse_imdb_id($id);
+        $movie = $this->getMovie($id);
+        //because getPate() is protected, so...
+        $movie->title();
+        $movie->photo_localurl();
+        $movie->releaseInfo();
+        return true;
+
     }
 
     public function renderDetailsPageDescription($torrentId, $imdbId)

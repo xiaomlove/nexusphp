@@ -77,12 +77,16 @@ class PTGen
     {
         global $lang_details;
         $ptGenFormatted = $ptGenArr['format'];
-        $prefix = sprintf("[img]%s[/img]\n", $ptGenArr['poster']);
-        $ptGenFormatted = mb_substr($ptGenFormatted, mb_strlen($prefix, 'utf-8') + 1);
+        $poster = '';
+        if (!empty($ptGenArr['poster'])) {
+            $poster = $ptGenArr['poster'];
+            $prefix = sprintf("[img]%s[/img]\n", $poster);
+            $ptGenFormatted = mb_substr($ptGenFormatted, mb_strlen($prefix, 'utf-8') + 1);
+        }
         $ptGenFormatted = format_comment($ptGenFormatted);
         $ptGenFormatted .= sprintf(
             '%s%s%s<a href="retriver.php?id=%s&type=1&siteid=%s">%s</a>',
-            $lang_details['text_information_updated_at'], date('Y-m-d H:i:s', intval($ptGenArr['generate_at'] / 1000)), $lang_details['text_might_be_outdated'],
+            $lang_details['text_information_updated_at'], !empty($ptGenArr['generate_at']) ? date('Y-m-d H:i:s', intval($ptGenArr['generate_at'] / 1000)) : '', $lang_details['text_might_be_outdated'],
             $torrentId, $site, $lang_details['text_here_to_update']
         );
         $titleShowOrHide = $lang_details['title_show_or_hide'] ?? '';
@@ -97,7 +101,7 @@ class PTGen
             </span>
         </a>
         <div id="poster{$id}">
-            <img src="{$ptGenArr['poster']}" width="105" onclick="Preview(this);" alt="poster" />
+            <img src="{$poster}" width="105" onclick="Preview(this);" alt="poster" />
         </div>
     </td>
     <td class="rowfollow" align="left">
@@ -113,6 +117,7 @@ HTML;
     private function request(string $url, bool $withoutCache = false): array
     {
         global $Cache;
+        $begin = microtime(true);
         $logPrefix = "url: $url";
         $cacheKey = $this->getApiPointResultCacheKey($url);
         if (!$withoutCache) {
@@ -123,7 +128,7 @@ HTML;
             }
         }
         $http = new Client();
-        $response = $http->get($url, ['timeout' => 10]);
+        $response = $http->get($url, ['timeout' => 5]);
         $statusCode = $response->getStatusCode();
         if ($statusCode != 200) {
             $msg = "api point response http status code: $statusCode";
@@ -148,7 +153,7 @@ HTML;
             throw new PTGenException($msg);
         }
         $Cache->cache_value($cacheKey, $bodyArr, 24 * 3600);
-        do_log("$logPrefix, success get from api point");
+        do_log("$logPrefix, success get from api point, use time: " . (microtime(true) - $begin));
         return $bodyArr;
     }
 
@@ -195,7 +200,16 @@ HTML;
                 ];
                 $html .= $this->buildDetailsPageTableRow($torrentId, $data, $site);
             } else {
-                $ptGenArr = $this->generate($torrentPtGenArr[$site]['link']);
+                try {
+                    $ptGenArr = $this->generate($torrentPtGenArr[$site]['link']);
+                } catch (\Exception $e) {
+                    $log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
+                    do_log($log,'error');
+                    $ptGenArr = [
+                        'format' => $e->getMessage()
+                    ];
+                }
+
                 $jsonArr[$site] = [
                     'link' => $link,
                     'data' => $ptGenArr,
