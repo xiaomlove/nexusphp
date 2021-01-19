@@ -128,10 +128,10 @@ $limit";
 
 	while ($user = mysql_fetch_array($res))
 	{
-		if ($user['added'] == '0000-00-00 00:00:00')
+		if ($user['added'] == '0000-00-00 00:00:00' || $user['added'] == null)
 			$added = $lang_ipsearch['text_not_available'];
 		else $added = gettime($user['added']);
-		if ($user['last_access'] == '0000-00-00 00:00:00')
+		if ($user['last_access'] == '0000-00-00 00:00:00' || $user['added'] == null)
 			$lastaccess = $lang_ipsearch['text_not_available'];
 		else $lastaccess = gettime($user['last_access']);
 

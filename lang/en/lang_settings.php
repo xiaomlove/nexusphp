@@ -395,6 +395,8 @@ $lang_settings = array
 	'text_imdb_system_note' => "Default 'yes'. System-wide IMDb info setting.",
 	'text_enable_pt_gen_system_note' => 'Enable PT-Gen system',
 	'text_enable_pt_gen_note' => "Default 'yes'. System-wide PT-Gen info setting.",
+	'row_pt_gen_api_point' => "PT-Gen api point",
+	'text_pt_gen_api_point_note' => "Default 'https://ptgen.rhilip.info', when broken, reference to<b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">Documatation</a></b>uild yourself",
 	'row_enable_school_system' => "Enable school system",
 	'text_school_system_note' => "Default 'no'. <font class=striking><b>DO NOT</b></font> enable this unless you know what you are doing!",
 	'row_restrict_email_domain' => "Restrict Email Domain",

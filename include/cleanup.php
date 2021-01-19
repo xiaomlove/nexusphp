@@ -275,7 +275,7 @@ function torrent_promotion_expire($days, $type = 2, $targettype = 1){
 		torrent_promotion_expire($expirenormal_torrent, 1, $normalbecome_torrent);
 
 	//expire individual torrent promotion
-	sql_query("UPDATE torrents SET sp_state = 1, promotion_time_type=0, promotion_until='0000-00-00 00:00:00' WHERE promotion_time_type=2 AND promotion_until < ".sqlesc(date("Y-m-d H:i:s",TIMENOW))) or sqlerr(__FILE__, __LINE__);
+	sql_query("UPDATE torrents SET sp_state = 1, promotion_time_type=0, promotion_until=null WHERE promotion_time_type=2 AND promotion_until < ".sqlesc(date("Y-m-d H:i:s",TIMENOW))) or sqlerr(__FILE__, __LINE__);
 
 	//End: expire torrent promotion
 	if ($printProgress) {
@@ -396,7 +396,7 @@ function torrent_promotion_expire($days, $type = 2, $targettype = 1){
 			$modcomment =  date("Y-m-d") . " - VIP status removed by - AutoSystem.\n". $modcomment;
 			$modcom =  sqlesc($modcomment);
 			///---end
-			sql_query("UPDATE users SET class = '1', vip_added = 'no', vip_until = '0000-00-00 00:00:00', modcomment = $modcom WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
+			sql_query("UPDATE users SET class = '1', vip_added = 'no', vip_until = null, modcomment = $modcom WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
 			sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, $arr[id], $dt, $msg, $subject)") or sqlerr(__FILE__, __LINE__);
 		}
 	}
@@ -420,7 +420,7 @@ function peasant_to_user($down_floor_gb, $down_roof_gb, $minratio){
 				$subject = sqlesc($lang_cleanup_target[get_user_lang($arr[id])]['msg_low_ratio_warning_removed']);
 				$msg = sqlesc($lang_cleanup_target[get_user_lang($arr[id])]['msg_your_ratio_warning_removed']);
 				writecomment($arr[id],"Leech Warning removed by System.");
-				sql_query("UPDATE users SET class = 1, leechwarn = 'no', leechwarnuntil = '0000-00-00 00:00:00' WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
+				sql_query("UPDATE users SET class = 1, leechwarn = 'no', leechwarnuntil = null WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
 				sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, $arr[id], $dt, $subject, $msg)") or sqlerr(__FILE__, __LINE__);
 			}
 		}
@@ -552,7 +552,7 @@ function user_to_peasant($down_floor_gb, $minratio){
 		{
 			writecomment($arr[id],"Banned by System because of Leech Warning expired.");
 
-			sql_query("UPDATE users SET enabled = 'no', leechwarnuntil = '0000-00-00 00:00:00' WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
+			sql_query("UPDATE users SET enabled = 'no', leechwarnuntil = null WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
 		}
 	}
 	if ($printProgress) {
@@ -570,7 +570,7 @@ function user_to_peasant($down_floor_gb, $minratio){
 			$subject = $lang_cleanup_target[get_user_lang($arr[id])]['msg_warning_removed'];
 			$msg = $lang_cleanup_target[get_user_lang($arr[id])]['msg_your_warning_removed'];
 			writecomment($arr[id],"Warning removed by System.");
-			sql_query("UPDATE users SET warned = 'no', warneduntil = '0000-00-00 00:00:00' WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
+			sql_query("UPDATE users SET warned = 'no', warneduntil = null WHERE id = $arr[id]") or sqlerr(__FILE__, __LINE__);
 			sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, $arr[id], $dt, ".sqlesc($subject).", ".sqlesc($msg).")") or sqlerr(__FILE__, __LINE__);
 		}
 	}

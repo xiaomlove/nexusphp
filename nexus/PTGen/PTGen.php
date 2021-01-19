@@ -32,14 +32,19 @@ class PTGen
         self::SITE_BANGUMI => [
             'url_pattern' => '/(?:https?:\/\/)?(?:bgm\.tv|bangumi\.tv|chii\.in)\/subject\/(\d+)\/?/',
             'home_page' => 'https://bangumi.tv/',
-            'rating_average_img' => 'pic/douban2.png',
+            'rating_average_img' => 'pic/bangumi.jpg',
         ],
     ];
 
 
     public function __construct()
     {
-        $this->setApiPoint('https://ptgen.rhilip.info');
+        $setting = get_setting('main');
+        if (empty($setting['pt_gen_api_point'])) {
+            do_log("empty PT-Gen api point", 'warning');
+        } else {
+            $this->setApiPoint($setting['pt_gen_api_point']);
+        }
     }
 
     public function getApiPoint(): string

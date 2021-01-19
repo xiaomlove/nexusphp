@@ -253,4 +253,22 @@ class Imdb
        return $autodata;
 
     }
+
+    public function renderTorrentsPageAverageRating(int $imdbId)
+    {
+        $imdbId = parse_imdb_id($imdbId);
+        if ($this->getCacheStatus($imdbId) != 1) {
+            return '';
+        }
+        $movie = $this->getMovie($imdbId);
+        $site = 'imdb';
+        $rating = $movie->rating();
+        $result = '<td class="embedded" style="text-align: right; width: 40px;padding-right: 5px"><div style="display: flex;flex-direction: column">';
+        $result .= sprintf(
+            '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
+            'pic/imdb2.png', $site, $site, $rating
+        );
+        $result .= '</div></td>';
+        return $result;
+    }
 }

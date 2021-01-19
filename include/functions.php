@@ -2984,8 +2984,11 @@ function torrenttable($res, $variant = "torrent") {
 
 	$setting = get_setting('main');
 	$enablePtGen = $setting['enable_pt_gen_system'] == 'yes';
+	$enableImdb = $setting['showimdbinfo'] == 'yes';
 	if ($enablePtGen) {
 	    $ptGen = new Nexus\PTGen\PTGen();
+    } elseif ($enableImdb) {
+	    $imdb = new Nexus\Imdb\Imdb();
     }
 
 	if ($variant == "torrent"){
@@ -3186,6 +3189,8 @@ while ($row = mysql_fetch_assoc($res))
 	print("</td>");
     if ($enablePtGen && !empty($row['pt_gen'])) {
         echo $ptGen->renderTorrentsPageAverageRating(json_decode($row['pt_gen'], true));
+    } elseif ($enableImdb && !empty($row['url'])) {
+        echo $imdb->renderTorrentsPageAverageRating($row['url']);
     }
 		$act = "";
 		if ($CURUSER["dlicon"] != 'no' && $CURUSER["downloadpos"] != "no")

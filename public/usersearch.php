@@ -777,9 +777,9 @@ if (count($_GET) > 0 && !$_GET['h'])
         "<td class=colhead>History</td></tr>";
     while ($user = mysql_fetch_array($res))
     {
-    	if ($user['added'] == '0000-00-00 00:00:00')
+    	if ($user['added'] == '0000-00-00 00:00:00' || $user['added'] == null)
       	$user['added'] = '---';
-      if ($user['last_access'] == '0000-00-00 00:00:00')
+      if ($user['last_access'] == '0000-00-00 00:00:00' || $user['last_access'] == null)
       	$user['last_access'] = '---';
 
       if ($user['ip'])

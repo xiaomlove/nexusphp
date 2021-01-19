@@ -28,12 +28,12 @@ else
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
-if ($user['added'] == "0000-00-00 00:00:00")
+if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
 $joindate = $lang_userdetails['text_not_available'];
 else
 $joindate = $user['added']." (" . gettime($user["added"], true, false, true).")";
 $lastseen = $user["last_access"];
-if ($lastseen == "0000-00-00 00:00:00")
+if ($lastseen == "0000-00-00 00:00:00" || $lastseen == null)
 $lastseen = $lang_userdetails['text_not_available'];
 else
 {
@@ -369,7 +369,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	if ($warned)
 	{
 		$warneduntil = $user['warneduntil'];
-		if ($warneduntil == '0000-00-00 00:00:00')
+		if ($warneduntil == '0000-00-00 00:00:00' || $warneduntil == null)
 		print("<td align=\"center\" class=\"rowfollow\">".$lang_userdetails['text_arbitrary_duration']."</td>\n");
 		else
 		{
@@ -418,7 +418,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	{
 		print("<td align=\"left\" class=\"rowfollow\"><font color=\"red\">".$lang_userdetails['text_leech_warned']."</font> ");
 		$leechwarnuntil = $user['leechwarnuntil'];
-		if ($leechwarnuntil != '0000-00-00 00:00:00')
+		if ($leechwarnuntil != '0000-00-00 00:00:00' || $leechwarnuntil != null)
 		{
 			print($lang_userdetails['text_until'].$leechwarnuntil);
 			print("<br />(" . mkprettytime(strtotime($leechwarnuntil) - strtotime(date("Y-m-d H:i:s"))) .$lang_userdetails['text_to_go'].")");

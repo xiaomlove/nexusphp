@@ -395,6 +395,8 @@ $lang_settings = array
 	'text_imdb_system_note' => "默认'是'。全局IMDb系统设定。",
 	'row_enable_pt_gen_system' => '开启 PT-Gen 系统',
 	'text_enable_pt_gen_system_note' => "默认'是'。全局 PT-Gen 系统设定。",
+	'row_pt_gen_api_point' => "PT-Gen 接口地址",
+	'text_pt_gen_api_point_note' => "默认 'https://ptgen.rhilip.info'，不可用时<b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">参考文档</a></b>自行搭建。",
 	'row_enable_school_system' => "开启学校系统",
 	'text_school_system_note' => "默认'否'。如果对这项功能不清楚，<font class=striking><b>不要</b></font>开启它。",
 	'row_restrict_email_domain' => "限制邮箱域",

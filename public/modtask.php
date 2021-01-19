@@ -28,7 +28,7 @@ if ($action == "edituser")
 	$userid = $_POST["userid"];
 	$class = intval($_POST["class"] ?? 0);
 	$vip_added = ($_POST["vip_added"] == 'yes' ? 'yes' : 'no');
-	$vip_until = ($_POST["vip_until"] ? $_POST["vip_until"] : '0000-00-00 00:00:00');
+	$vip_until = ($_POST["vip_until"] ? $_POST["vip_until"] : null);
 	
 	$warned = $_POST["warned"];
 	$warnlength = intval($_POST["warnlength"] ?? 0);
@@ -209,7 +209,7 @@ if ($action == "edituser")
 	if ($warned && $curwarned != $warned)
 	{
 		$updateset[] = "warned = " . sqlesc($warned);
-		$updateset[] = "warneduntil = '0000-00-00 00:00:00'";
+		$updateset[] = "warneduntil = null";
 
 		if ($warned == 'no')
 		{
@@ -227,7 +227,7 @@ if ($action == "edituser")
 		{
 			$modcomment = date("Y-m-d") . " - Warned by " . $CURUSER['username'] . ".\nReason: $warnpm.\n". $modcomment;
 			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_are_warned_by'].$CURUSER[username]."." . ($warnpm ? $lang_modtask_target[get_user_lang($userid)]['msg_reason'].$warnpm : ""));
-			$updateset[] = "warneduntil = '0000-00-00 00:00:00'";
+			$updateset[] = "warneduntil = null";
 		}else{
 			$warneduntil = date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $warnlength * 604800)); 
 			$dur = $warnlength . $lang_modtask_target[get_user_lang($userid)]['msg_week'] . ($warnlength > 1 ? $lang_modtask_target[get_user_lang($userid)]['msg_s'] : "");

@@ -83,7 +83,7 @@ print("<tr><th class=\"left\">User name</th><th>Registered</th><th>Uploaded</th>
 $res = sql_query("SELECT * FROM users $query ORDER BY cheat DESC $limit") or sqlerr();
 while ($arr = mysql_fetch_assoc($res))
 {
-  if ($arr['added'] == "0000-00-00 00:00:00") $joindate = 'N/A';
+  if ($arr['added'] == "0000-00-00 00:00:00" || $arr['added'] == null) $joindate = 'N/A';
   else $joindate = get_elapsed_time(strtotime($arr['added'])).' ago';
   $age = date('U') - date('U',strtotime($arr['added']));
   if ($arr["downloaded"] > 0)
@@ -94,7 +94,7 @@ while ($arr = mysql_fetch_assoc($res))
     if ($arr["uploaded"] > 0) $ratio = "Inf.";
     else $ratio = "---";
   }
-  if ($arr['added'] == '0000-00-00 00:00:00') $arr['added'] = '-';
+  if ($arr['added'] == '0000-00-00 00:00:00' || $arr['added'] == null) $arr['added'] = '-';
   echo '<tr><th class="left"><a href="userdetails.php?id='.$arr['id'].'"><b>'.$arr['username'].'</b></a></th>';
   echo '<td>'.$joindate.'</td>';
   echo '<td class="right">'.mksize($arr['uploaded']).' @ '.mksize($arr['uploaded'] / $age).'ps</td>';

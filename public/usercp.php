@@ -834,7 +834,7 @@ usercpmenu ();
 $commentcount = get_row_count("comments", "WHERE user=" . sqlesc($CURUSER["id"]));
 
 //Join Date
-if ($CURUSER['added'] == "0000-00-00 00:00:00")
+if ($CURUSER['added'] == "0000-00-00 00:00:00" || $CURUSER['added'] == null)
 	$joindate = 'N/A';
 else
 	$joindate = $CURUSER['added']." (" . gettime($CURUSER['added'],true,false,true).")";

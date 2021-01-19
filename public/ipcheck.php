@@ -36,9 +36,9 @@ if (get_user_class() >= UC_MODERATOR || $CURUSER["guard"] == "yes")
 		$uc++;
 	    while($arr = mysql_fetch_assoc($ros))
 		{
-		  if ($arr['added'] == '0000-00-00 00:00:00')
+		  if ($arr['added'] == '0000-00-00 00:00:00' || $arr['added'] == null)
 			$arr['added'] = '-';
-		  if ($arr['last_access'] == '0000-00-00 00:00:00')
+		  if ($arr['last_access'] == '0000-00-00 00:00:00' || $arr['last_access'] == null)
 			$arr['last_access'] = '-';
 		  if($arr["downloaded"] != 0)
 			$ratio = number_format($arr["uploaded"] / $arr["downloaded"], 3);

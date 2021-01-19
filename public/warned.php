@@ -27,9 +27,9 @@ print("<tr align=center><td class=colhead width=90>User Name</td>
 for ($i = 1; $i <= $num; $i++)
 {
 $arr = mysql_fetch_assoc($res);
-if ($arr['added'] == '0000-00-00 00:00:00')
+if ($arr['added'] == '0000-00-00 00:00:00' || $arr['added'] == null)
   $arr['added'] = '-';
-if ($arr['last_access'] == '0000-00-00 00:00:00')
+if ($arr['last_access'] == '0000-00-00 00:00:00' || $arr['added'] == null)
   $arr['last_access'] = '-';
 if($arr["downloaded"] != 0){
 $ratio = number_format($arr["uploaded"] / $arr["downloaded"], 3);

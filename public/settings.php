@@ -54,7 +54,7 @@ if ($action == 'savesettings_main')	// save main
 		'minoffervotes','offervotetimeout','offeruptimeout','maxsubsize','postsperpage', 'topicsperpage', 'torrentsperpage', 'maxnewsnum',
 		'max_dead_torrent_time','maxusers','torrent_dir', 'iniupload','SITEEMAIL', 'ACCOUNTANTID', 'ALIPAYACCOUNT', 'PAYPALACCOUNT', 'SLOGAN',
 		'icplicense', 'autoclean_interval_one', 'autoclean_interval_two', 'autoclean_interval_three','autoclean_interval_four', 'autoclean_interval_five',
-		'reportemail','invitesystem','registration','showhotmovies','showclassicmovies','showimdbinfo', 'enable_pt_gen_system', 'enablenfo', 'enableschool','restrictemail',
+		'reportemail','invitesystem','registration','showhotmovies','showclassicmovies','showimdbinfo', 'enable_pt_gen_system', 'pt_gen_api_point', 'enablenfo', 'enableschool','restrictemail',
 		'showpolls','showstats','showlastxtorrents', 'showtrackerload','showshoutbox','showfunbox','showoffer','sptime','showhelpbox','enablebitbucket',
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
@@ -591,6 +591,7 @@ elseif ($action == 'mainsettings')	// main settings
 	yesorno($lang_settings['row_show_classic'],'showclassicmovies', $MAIN['showclassicmovies'], $lang_settings['text_show_classic_note']);
 	yesorno($lang_settings['row_enable_imdb_system'],'showimdbinfo', $MAIN['showimdbinfo'], $lang_settings['text_imdb_system_note']);
 	yesorno($lang_settings['row_enable_pt_gen_system'],'enable_pt_gen_system', $MAIN['enable_pt_gen_system'], $lang_settings['text_enable_pt_gen_system_note']);
+	tr($lang_settings['row_pt_gen_api_point'],"<input type='text' name=\"pt_gen_api_point\" style=\"width: 300px\" value={$MAIN['pt_gen_api_point']}> ".$lang_settings['text_pt_gen_api_point_note'], 1);
 	yesorno($lang_settings['row_enable_nfo'],'enablenfo', $MAIN['enablenfo'], $lang_settings['text_enable_nfo_note']);
 	yesorno($lang_settings['row_enable_school_system'],'enableschool', $MAIN['enableschool'], $lang_settings['text_school_system_note']);
 	yesorno($lang_settings['row_restrict_email_domain'],'restrictemail', $MAIN['restrictemail'], $lang_settings['text_restrict_email_domain_note']);

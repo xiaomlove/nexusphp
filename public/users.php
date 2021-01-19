@@ -109,10 +109,10 @@ $sql = sprintf('SELECT
          users.country >0, %s, \'---\'
        ) as country,
        IF (
-         users.added = "0000-00-00 00:00:00", "-", users.added
+         users.added = null, "-", users.added
        ) as added,
        IF (
-         users.last_access = "0000-00-00 00:00:00", "-", users.last_access
+         users.last_access = null, "-", users.last_access
        ) as last_access
        
        

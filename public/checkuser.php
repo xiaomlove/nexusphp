@@ -27,7 +27,7 @@ if ($user["gender"] == "Male") $gender = "<img src=pic/male.png alt='Male' style
 elseif ($user["gender"] == "Female") $gender = "<img src=pic/female.png alt='Female' style='margin-left: 4pt'>";
 elseif ($user["gender"] == "N/A") $gender = "<img src=pic/na.gif alt='N/A' style='margin-left: 4pt'>";
 
-if ($user[added] == "0000-00-00 00:00:00")
+if ($user[added] == "0000-00-00 00:00:00" || $user['added'] == null)
   $joindate = 'N/A';
 else
   $joindate = "$user[added] (" . get_elapsed_time(strtotime($user["added"])) . " ago)";

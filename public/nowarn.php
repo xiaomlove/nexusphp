@@ -30,7 +30,7 @@ $exmodcomment = $user["modcomment"];
 $modcomment = date("Y-m-d") . " - Warning Removed By " . $CURUSER['username'] . ".\n". $modcomment . $exmodcomment;
 sql_query("UPDATE users SET modcomment=" . sqlesc($modcomment) . " WHERE id IN (" . implode(", ", $_POST[usernw]) . ")") or sqlerr(__FILE__, __LINE__);
 
-$do="UPDATE users SET warned='no', warneduntil='0000-00-00 00:00:00' WHERE id IN (" . implode(", ", $_POST[usernw]) . ")";
+$do="UPDATE users SET warned='no', warneduntil=null WHERE id IN (" . implode(", ", $_POST[usernw]) . ")";
 $res=sql_query($do);}
 
 if (!empty($_POST["desact"])){
