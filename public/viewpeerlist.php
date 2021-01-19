@@ -34,6 +34,7 @@ function dltable($name, $arr, $torrent)
 	"<td class=colhead align=center width=1%>".$lang_viewpeerlist['col_idle']."</td>" .
 	"<td class=colhead align=center width=1%>".$lang_viewpeerlist['col_client']."</td></tr>\n";
 	$now = time();
+	$num = 0;
 	foreach ($arr as $e) {
 		$privacy = get_single_value("users", "privacy","WHERE id=".sqlesc($e['userid']));
 		++$num;
@@ -62,7 +63,7 @@ function dltable($name, $arr, $torrent)
 		}
 		else $location = "";
 
-		$s .= "<td class=rowfollow align=center width=1%><nobr>" . ($e[connectable] == "yes" ? $lang_viewpeerlist['text_yes'] : "<font color=red>".$lang_viewpeerlist['text_no']."</font>") . "</nobr></td>\n";
+		$s .= "<td class=rowfollow align=center width=1%><nobr>" . ($e['connectable'] == "yes" ? $lang_viewpeerlist['text_yes'] : "<font color=red>".$lang_viewpeerlist['text_no']."</font>") . "</nobr></td>\n";
 		$s .= "<td class=rowfollow align=center width=1%><nobr>" . mksize($e["uploaded"]) . "</nobr></td>\n";
 
 		$s .= "<td class=rowfollow align=center width=1%><nobr>" . mksize(($e["uploaded"] - $e["uploadoffset"]) / $secs) . "/s</nobr></td>\n";
@@ -71,7 +72,7 @@ function dltable($name, $arr, $torrent)
 		if ($e["seeder"] == "no")
 		$s .= "<td class=rowfollow align=center width=1%><nobr>" . mksize(($e["downloaded"] - $e["downloadoffset"]) / $secs) . "/s</nobr></td>\n";
 		else
-		$s .= "<td class=rowfollow align=center width=1%><nobr>" . mksize(($e["downloaded"] - $e["downloadoffset"]) / max(1, $e["finishedat"] - $e[st])) .	"/s</nobr></td>\n";
+		$s .= "<td class=rowfollow align=center width=1%><nobr>" . mksize(($e["downloaded"] - $e["downloadoffset"]) / max(1, $e["finishedat"] - $e['st'])) .	"/s</nobr></td>\n";
 		if ($e["downloaded"])
 		{
 			$ratio = floor(($e["uploaded"] / $e["downloaded"]) * 1000) / 1000;

@@ -1,5 +1,5 @@
 <?php
-require_once("include/benc.php");
+require_once("../include/benc.php");
 require_once("../include/bittorrent.php");
 
 ini_set("upload_max_filesize",$max_torrent_size);

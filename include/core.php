@@ -9,6 +9,7 @@ if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', intval(NEXUS_START * 10000));
 }
 define('ROOT_PATH', $rootpath);
+define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
 
 require $rootpath . 'include/database/interface_db.php';
 require $rootpath . 'include/database/class_db_mysqli.php';
@@ -19,6 +20,9 @@ require $rootpath . 'include/database/class_exception.php';
 require $rootpath . 'classes/class_advertisement.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/config.php';
+if (!IS_ANNOUNCE) {
+    require $rootpath . get_langfile_path("functions.php");
+}
 
 ini_set('display_errors', $TWEAK['display_errors']);
 

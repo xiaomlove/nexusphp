@@ -42,7 +42,7 @@ function block_browser()
 	//else
 	//	$headers = emu_getallheaders();
 
-	if($_SERVER["HTTPS"] != "on")
+	if(isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] != "on")
 	{
 		if (isset($headers["Cookie"]) || isset($headers["Accept-Language"]) || isset($headers["Accept-Charset"]))
 			err("Anti-Cheater: You cannot use this agent");
@@ -59,7 +59,7 @@ function benc_resp_raw($x) {
 	header("Content-Type: text/plain; charset=utf-8");
 	header("Pragma: no-cache");
 
-	if ($_SERVER["HTTP_ACCEPT_ENCODING"] == "gzip" && function_exists('gzencode')) {
+	if (isset($_SERVER["HTTP_ACCEPT_ENCODING"]) && $_SERVER["HTTP_ACCEPT_ENCODING"] == "gzip" && function_exists('gzencode')) {
 		header("Content-Encoding: gzip");
 		echo gzencode($x, 9, FORCE_GZIP);
 	} 

@@ -8,10 +8,6 @@ parked();
 if (get_user_class() < UC_SYSOP)
 permissiondenied();
 
-//read all configuration files
-require('config/allconfig.php');
-
-
 function go_back()
 {
 	global $lang_settings;
@@ -372,9 +368,9 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_add_offer'], $lang_settings['text_minimum_class'].classlist('addoffer',$maxclass,$AUTHORITY['addoffer']).$lang_settings['text_default'].get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_add_offer_note'], 1);
 	tr($lang_settings['row_offer_management'], $lang_settings['text_minimum_class'].classlist('offermanage',$maxclass,$AUTHORITY['offermanage']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_offer_management_note'],1);
 	tr($lang_settings['row_upload_torrent'], $lang_settings['text_minimum_class'].classlist('upload',$maxclass,$AUTHORITY['upload']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_upload_torrent_note'], 1);
-	if (THISTRACKER == "HDStar")
+//	if (THISTRACKER == "HDStar")
 	tr($lang_settings['row_upload_special_torrent'], $lang_settings['text_minimum_class'].classlist('uploadspecial',$maxclass,$AUTHORITY['uploadspecial']).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).$lang_settings['text_upload_special_torrent_note'],1);
-	if (THISTRACKER == "HDStar")
+//	if (THISTRACKER == "HDStar")
 	tr($lang_settings['row_move_torrent'], $lang_settings['text_minimum_class'].classlist('movetorrent',$maxclass,$AUTHORITY['movetorrent']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_move_torrent_note'],1);
 	tr($lang_settings['row_chronicle_management'], $lang_settings['text_minimum_class'].classlist('chrmanage',$maxclass,$AUTHORITY['chrmanage']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_chronicle_management_note'],1);
 	tr($lang_settings['row_view_invite'], $lang_settings['text_minimum_class'].classlist('viewinvite',$maxclass,$AUTHORITY['viewinvite']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_view_invite_note'],1);

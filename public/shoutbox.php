@@ -117,8 +117,9 @@ else
 
 	while ($arr = mysql_fetch_assoc($res))
 	{
+        $del = '';
 		if (get_user_class() >= $sbmanage_class) {
-			$del="[<a href=\"shoutbox.php?del=".$arr['id']."\">".$lang_shoutbox['text_del']."</a>]";
+			$del .= "[<a href=\"shoutbox.php?del=".$arr['id']."\">".$lang_shoutbox['text_del']."</a>]";
 		}
 		if ($arr["userid"]) {
 			$username = get_username($arr["userid"],false,true,true,true,false,false,"",true);

@@ -1,6 +1,6 @@
 <?php
 require_once('../include/bittorrent_announce.php');
-require_once('include/benc.php');
+require_once('../include/benc.php');
 dbconn_announce();
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"];

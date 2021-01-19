@@ -67,6 +67,7 @@ if ($Attach->enable_attachment())
 			$filemd5 = md5_file($file['tmp_name']);
 			$filename = date("YmdHis").$filemd5;
 			$file_location = make_folder($savedirectory_attachment."/", $savepath)  . $filename;
+			do_log("file_location: $file_location");
 			$db_file_location = $savepath.$filename;
 			$abandonorig = false;
 			$hasthumb = false;

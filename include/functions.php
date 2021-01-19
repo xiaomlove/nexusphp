@@ -2703,7 +2703,9 @@ function get_langid_from_langcookie()
 function make_folder($pre, $folder_name)
 {
 	$path = $pre . $folder_name;
-	if(!file_exists($path))
+	$path = ROOT_PATH . ltrim($path, './');
+	do_log($path);
+	if(!is_dir($path))
 	mkdir($path,0777,true);
 	return $path;
 }

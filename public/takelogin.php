@@ -30,7 +30,7 @@ if ($row["passhash"] != md5($row["secret"] . $password . $row["secret"]))
 if ($row["enabled"] == "no")
 	bark($lang_takelogin['std_account_disabled']);
 
-if ($_POST["securelogin"] == "yes")
+if (isset($_POST["securelogin"]) && $_POST["securelogin"] == "yes")
 {
 	$securelogin_indentity_cookie = true;
 	$passh = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
@@ -41,7 +41,7 @@ else
 	$passh = md5($row["passhash"]);
 }
 
-if ($securelogin=='yes' || $_POST["ssl"] == "yes")
+if ($securelogin=='yes' || (isset($_POST["ssl"]) && $_POST["ssl"] == "yes"))
 {
 	$pprefix = "https://";
 	$ssl = true;
@@ -51,7 +51,7 @@ else
 	$pprefix = "http://";
 	$ssl = false;
 }
-if ($securetracker=='yes' || $_POST["trackerssl"] == "yes")
+if ($securetracker=='yes' || (isset($_POST["trackerssl"] ) && $_POST["trackerssl"] == "yes"))
 {
 	$trackerssl = true;
 }
@@ -59,7 +59,7 @@ else
 {
 	$trackerssl = false;
 }
-if ($_POST["logout"] == "yes")
+if (isset($_POST["logout"]) && $_POST["logout"] == "yes")
 {
 	logincookie($row["id"], $passh,1,900,$securelogin_indentity_cookie, $ssl, $trackerssl);
 	//sessioncookie($row["id"], $passh,true);
