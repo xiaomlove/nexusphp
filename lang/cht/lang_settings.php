@@ -509,7 +509,7 @@ $lang_settings = array
 	'head_website_settings' => "網站設定",
 	'row_basic_settings' => "基礎設定",
 	'submit_basic_settings' => "基礎設定",
-	'text_basic_settings_note' => "設定最基礎的項目，如資料程式庫，網站名等。如果對設定項目的功能不清楚，請<font class=striking><b>不要</b></font>做任何修改。<br />基礎設定出錯可能導致<b>網站無法執行</b>。",
+	'text_basic_settings_note' => "設定最基礎的項目，網站名等。",
 	'row_main_settings' => "主要設定",
 	'submit_main_settings' => "主要設定",
 	'text_main_settings_note' => "配置你的網站各種主要項目。",
@@ -682,8 +682,6 @@ $lang_settings = array
 	'text_invitations_default' => "個邀請名額。預設",
 	'row_use_cron_trigger_cleanup' => '使用定時器進行清理',
 	'text_use_cron_trigger_cleanup_note' => '確保已經配置好定時任務',
-	'row_display_errors' => '顯示錯誤',
-	'text_display_errors_note' => '在網頁上展示錯誤信息',
 	'row_logging' => '運行日誌路徑',
 	'text_logging_note' => '請填寫妳的運行時日誌路徑',
 );

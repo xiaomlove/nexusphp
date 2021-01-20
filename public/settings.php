@@ -44,6 +44,7 @@ $notice = "<h1 align=\"center\"><a class=\"faqlink\" href=\"settings.php\">".$la
 
 if ($action == 'savesettings_main')	// save main
 {
+	do_log(json_encode($_REQUEST));
 	stdhead($lang_settings['head_save_main_settings']);
 	$validConfig = array(
 		'site_online','max_torrent_size','announce_interval', 'annintertwoage', 'annintertwo', 'anninterthreeage', 'anninterthree', 'signup_timeout',
@@ -62,7 +63,6 @@ if ($action == 'savesettings_main')	// save main
 		$MAIN[$config] = $$config ?? null;
 	}
 
-//	WriteConfig('MAIN', $MAIN);
 	saveSetting('main', $MAIN);
 	$Cache->delete_value('recent_news', true);
 	$Cache->delete_value('stats_users', true);
@@ -76,14 +76,13 @@ elseif ($action == 'savesettings_basic') 	// save basic
 {
 	stdhead($lang_settings['head_save_basic_settings']);
 	$validConfig = array(
-		'SITENAME', 'BASEURL', 'announce_url',
+		'SITENAME',
 	);
 	GetVar($validConfig);
 	$BASIC = [];
 	foreach($validConfig as $config) {
 		$BASIC[$config] = $$config ?? null;
 	}
-//		WriteConfig('BASIC', $BASIC);
 	saveSetting('basic', $BASIC);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker basic settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -98,7 +97,6 @@ elseif ($action == 'savesettings_code') 	// save database
 	foreach($validConfig as $config) {
 		$CODE[$config] = $$config ?? null;
 	}
-//	WriteConfig('CODE', $CODE);
 	saveSetting('code', $CODE);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker code settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -113,7 +111,6 @@ elseif ($action == 'savesettings_bonus') 	// save bonus
 	foreach($validConfig as $config) {
 		$BONUS[$config] = $$config ?? null;
 	}
-//	WriteConfig('BONUS', $BONUS);
 	saveSetting('bonus', $BONUS);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker bonus settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -129,7 +126,6 @@ elseif ($action == 'savesettings_account') 	// save account
 	foreach($validConfig as $config) {
 		$ACCOUNT[$config] = $$config ?? null;
 	}
-//	WriteConfig('ACCOUNT', $ACCOUNT);
 	saveSetting('account', $ACCOUNT);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker account settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -145,7 +141,6 @@ elseif($action == 'savesettings_torrent') 	// save account
 		$TORRENT[$config] = $$config ?? null;
 	}
 
-//	WriteConfig('TORRENT', $TORRENT);
 	saveSetting('torrent', $TORRENT);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker torrent settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -167,7 +162,6 @@ elseif ($action == 'savesettings_smtp') 	// save smtp
 	foreach($validConfig as $config) {
 		$SMTP[$config] = $$config ?? null;
 	}
-//	WriteConfig('SMTP', $SMTP);
 	saveSetting('smtp', $SMTP);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker SMTP settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -182,7 +176,6 @@ elseif ($action == 'savesettings_security') 	// save security
 	foreach($validConfig as $config) {
 		$SECURITY[$config] = $$config ?? null;
 	}
-//	WriteConfig('SECURITY', $SECURITY);
 	saveSetting('security', $SECURITY);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker SECURITY settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -198,7 +191,6 @@ elseif ($action == 'savesettings_authority') 	// save user authority
 		$AUTHORITY[$config] = $$config ?? null;
 	}
 
-//	WriteConfig('AUTHORITY', $AUTHORITY);
 	saveSetting('authority', $AUTHORITY);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker USER AUTHORITY settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -207,13 +199,12 @@ elseif ($action == 'savesettings_authority') 	// save user authority
 elseif ($action == 'savesettings_tweak')	// save tweak
 {
 	stdhead($lang_settings['head_save_tweak_settings']);
-	$validConfig = array('where','iplog1','bonus','datefounded', 'enablelocation', 'titlekeywords', 'metakeywords', 'metadescription', 'enablesqldebug', 'sqldebug', 'cssdate', 'enabletooltip', 'prolinkimg', 'analyticscode', 'display_errors', 'logging');
+	$validConfig = array('where','iplog1','bonus','datefounded', 'enablelocation', 'titlekeywords', 'metakeywords', 'metadescription', 'enablesqldebug', 'sqldebug', 'cssdate', 'enabletooltip', 'prolinkimg', 'analyticscode', 'logging');
 	GetVar($validConfig);
 	$TWEAK = [];
 	foreach($validConfig as $config) {
 		$TWEAK[$config] = $$config ?? null;
 	}
-//	WriteConfig('TWEAK', $TWEAK);
 	saveSetting('tweak', $TWEAK);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker TWEAK settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -229,7 +220,6 @@ elseif ($action == 'savesettings_attachment')	// save attachment
 		$ATTACHMENT[$config] = $$config ?? null;
 	}
 
-//	WriteConfig('ATTACHMENT', $ATTACHMENT);
 	saveSetting('attachment', $ATTACHMENT);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker ATTACHMENT settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -245,7 +235,6 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 		$ADVERTISEMENT[$config] = $$config ?? null;
 	}
 
-//	WriteConfig('ADVERTISEMENT', $ADVERTISEMENT);
 	saveSetting('advertisement', $ADVERTISEMENT);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker ADVERTISEMENT settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -270,7 +259,6 @@ elseif ($action == 'tweaksettings')		// tweak settings
 	tr($lang_settings['row_see_sql_debug'], "<input type='checkbox' name='enablesqldebug' value='yes'".($TWEAK['enablesqldebug'] == 'yes' ? " checked='checked'" : "")." />".$lang_settings['text_allow'].classlist('sqldebug',UC_STAFFLEADER,$TWEAK['sqldebug'], UC_MODERATOR).$lang_settings['text_see_sql_list'].get_user_class_name(UC_SYSOP,false,true,true),1);
 	tr($lang_settings['row_tracker_founded_date'],"<input type='text' style=\"width: 300px\" name=datefounded value='".($TWEAK["datefounded"] ? $TWEAK["datefounded"] : '2007-12-24')."'> <br />".$lang_settings['text_tracker_founded_date_note'], 1);
 	tr($lang_settings['row_css_date'],"<input type='text' style=\"width: 300px\" name=cssdate value='".($TWEAK["cssdate"] ? $TWEAK["cssdate"] : '')."'> <br />".$lang_settings['text_css_date'], 1);
-	yesorno($lang_settings['row_display_errors'], 'display_errors', $TWEAK["display_errors"], $lang_settings['text_display_errors_note']);
 	tr($lang_settings['row_logging'],"<input type='text' style=\"width: 300px\" name=logging value='".($TWEAK["logging"] ? $TWEAK["logging"] : '')."'> <br />".$lang_settings['text_logging_note'], 1);
 
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
@@ -388,8 +376,8 @@ elseif ($action == 'basicsettings')	// basic settings
 	$config = get_setting('basic');
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_basic'>");
 	tr($lang_settings['row_site_name'],"<input type='text' style=\"width: 300px\" name=SITENAME value='".($config["SITENAME"] ? $config["SITENAME"]: "Nexus")."'> ".$lang_settings['text_site_name_note'], 1);
-	tr($lang_settings['row_base_url'],"<input type='text' style=\"width: 300px\" name=BASEURL value='".($config["BASEURL"] ? $config["BASEURL"] : $_SERVER["HTTP_HOST"])."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"] . $lang_settings['text_base_url_note'], 1);
-	tr($lang_settings['row_announce_url'],"<input type='text' style=\"width: 300px\" name=announce_url value='".($config["announce_url"] ? $config["announce_url"] : $_SERVER["HTTP_HOST"]."/announce.php")."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"]."/announce.php", 1);
+//	tr($lang_settings['row_base_url'],"<input type='text' style=\"width: 300px\" name=BASEURL value='".($config["BASEURL"] ? $config["BASEURL"] : $_SERVER["HTTP_HOST"])."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"] . $lang_settings['text_base_url_note'], 1);
+//	tr($lang_settings['row_announce_url'],"<input type='text' style=\"width: 300px\" name=announce_url value='".($config["announce_url"] ? $config["announce_url"] : $_SERVER["HTTP_HOST"]."/announce.php")."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"]."/announce.php", 1);
 //	tr($lang_settings['row_mysql_host'],"<input type='text' style=\"width: 300px\" name=mysql_host value='".($config["mysql_host"] ? $config["mysql_host"] : "localhost")."'> ".$lang_settings['text_mysql_host_note'], 1);
 //	tr($lang_settings['row_mysql_user'],"<input type='text' style=\"width: 300px\" name=mysql_user value='".($config["mysql_user"] ? $config["mysql_user"] : "root")."'> ".$lang_settings['text_mysql_user_note'], 1);
 //	tr($lang_settings['row_mysql_password'],"<input type='password' style=\"width: 300px\" name=mysql_pass value=''> ".$lang_settings['text_mysql_password_note'], 1);
@@ -595,13 +583,13 @@ elseif ($action == 'mainsettings')	// main settings
 	yesorno($lang_settings['row_show_funbox'],'showfunbox', $MAIN['showfunbox'], $lang_settings['text_show_funbox_note']);
 	yesorno($lang_settings['row_enable_offer_section'],'showoffer', $MAIN['showoffer'], $lang_settings['text_offer_section_note']);
 	yesorno($lang_settings['row_show_donation'],'donation', $MAIN['donation'], $lang_settings['text_show_donation_note']);
-	if (THISTRACKER == "HDStar")
+//	if (THISTRACKER == "HDStar")
 	yesorno($lang_settings['row_show_special_section'],'spsct', $MAIN['spsct'], $lang_settings['text_show_special_section_note']);
 	yesorno($lang_settings['row_weekend_free_uploading'],'sptime', $MAIN['sptime'], $lang_settings['text_weekend_free_uploading_note']);
 	yesorno($lang_settings['row_enable_helpbox'],'showhelpbox', $MAIN['showhelpbox'], $lang_settings['text_helpbox_note']);
 	yesorno($lang_settings['row_enable_bitbucket'],'enablebitbucket', $MAIN['enablebitbucket'], $lang_settings['text_bitbucket_note']);
 	yesorno($lang_settings['row_enable_small_description'],'smalldescription', $MAIN['smalldescription'], $lang_settings['text_small_description_note']);
-	if (THISTRACKER == "PTShow")
+//	if (THISTRACKER == "PTShow")
 	yesorno($lang_settings['row_ptshow_naming_style'],'altname', $MAIN['altname'], $lang_settings['text_ptshow_naming_style_note']);
 	yesorno($lang_settings['row_use_external_forum'],'extforum', $MAIN['extforum'], $lang_settings['text_use_external_forum_note']);
 	tr($lang_settings['row_external_forum_url'],"<input type='text' style=\"width: 300px\" name=extforumurl value='".($MAIN["extforumurl"] ? $MAIN["extforumurl"] : "")."'> ".$lang_settings['text_external_forum_url_note'], 1);
@@ -613,7 +601,7 @@ elseif ($action == 'mainsettings')	// main settings
 		$scatlist .= "<input type=radio name=specialcat value='".$array['id']."'".($MAIN["specialcat"] == $array['id'] ? " checked" : "").">".$array['name']."&nbsp;";
 	}
 	tr($lang_settings['row_torrents_category_mode'], $bcatlist."<br />".$lang_settings['text_torrents_category_mode_note'], 1);
-	if (THISTRACKER == "HDStar")
+//	if (THISTRACKER == "HDStar")
 	tr($lang_settings['row_special_category_mode'], $scatlist."<br />".$lang_settings['text_special_category_mode_note'], 1);
 	$res = sql_query("SELECT * FROM language WHERE site_lang=1") or sqlerr(__FILE__, __LINE__);
 	$langlist = "";

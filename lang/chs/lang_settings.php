@@ -508,7 +508,7 @@ $lang_settings = array
 	'head_website_settings' => "站点设定",
 	'row_basic_settings' => "基础设定",
 	'submit_basic_settings' => "基础设定",
-	'text_basic_settings_note' => "设定最基础的项目，如数据库，网站名等。如果对设定项目的功能不清楚，请<font class=striking><b>不要</b></font>做任何修改。<br />基础设定出错可能导致<b>网站无法运行</b>。",
+	'text_basic_settings_note' => "设定最基础的项目，网站名等。",
 	'row_main_settings' => "主要设定",
 	'submit_main_settings' => "主要设定",
 	'text_main_settings_note' => "配置你的网站各种主要项目。",
@@ -682,8 +682,6 @@ $lang_settings = array
 	'text_invitations_default' => "个邀请名额。默认",
 	'row_use_cron_trigger_cleanup' => '使用定时器进行清理',
 	'text_use_cron_trigger_cleanup_note' => '确保已经配置好定时任务',
-	'row_display_errors' => '显示错误',
-	'text_display_errors_note' => '在网页上展示错误信息',
 	'row_logging' => '运行日志路径',
 	'text_logging_note' => '请填写你的运行时日志路径',
 );

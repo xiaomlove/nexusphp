@@ -3,6 +3,7 @@ if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
 error_reporting(E_ALL);
+ini_set('display_errors', 0);
 if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
 } else {
@@ -23,9 +24,6 @@ require $rootpath . 'include/config.php';
 if (!IS_ANNOUNCE) {
     require $rootpath . get_langfile_path("functions.php");
 }
-
-ini_set('display_errors', $TWEAK['display_errors']);
-
 $Cache = new RedisCache(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 define('TIMENOW', time());

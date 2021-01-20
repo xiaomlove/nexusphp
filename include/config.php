@@ -73,9 +73,11 @@ foreach ($settings as $name => $value) {
 }
 
 $SITENAME = $BASIC['SITENAME'];
-$BASEURL = $BASIC['BASEURL'];
+//$BASEURL = $BASIC['BASEURL'];
+$BASEURL = $_SERVER['HTTP_HOST'];
 $announce_urls = array();
-$announce_urls[] = $BASIC['announce_url'];
+//$announce_urls[] = $BASIC['announce_url'];
+$announce_urls[] = $BASEURL . '/announce.php';
 
 $SITE_ONLINE = $MAIN['site_online'];
 $max_torrent_size = $MAIN['max_torrent_size'];

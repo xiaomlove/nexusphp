@@ -55,7 +55,7 @@ function benc_resp($d)
 	benc_resp_raw(benc(array('type' => 'dictionary', 'value' => $d)));
 }
 function benc_resp_raw($x) {
-
+	do_log($x);
 	header("Content-Type: text/plain; charset=utf-8");
 	header("Pragma: no-cache");
 
@@ -318,7 +318,7 @@ function check_client($peer_id, $agent, &$agent_familyid)
 			$agent_familyid = $row_allowed_ua['id'];
 		}
 
-		if($_SERVER["HTTPS"] == "on")
+		if(isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on")
 		{
 			if($allow_https == 'yes')
 			return 0;

@@ -508,7 +508,7 @@ $lang_settings = array
 	'head_website_settings' => "Website Settings",
 	'row_basic_settings' => "Basic Settings",
 	'submit_basic_settings' => "Basic Settings",
-	'text_basic_settings_note' => "Setup the most basic things, e.g. database, site name. <font class=striking><b>DO NOT</b></font> touch this unless you know what you are doing! <br />Misconfiguration of Basic Settings may result in <b>AN UNUSABLE SITE</b>.",
+	'text_basic_settings_note' => "Setup the most basic things, site name.",
 	'row_main_settings' => "Main Settings",
 	'submit_main_settings' => "Main Settings",
 	'text_main_settings_note' => "Setup miscellaneous things about your site.",
@@ -682,8 +682,6 @@ $lang_settings = array
 	'text_invitations_default' => " invitations the first time he is promoted to this class. Default ",
 	'row_use_cron_trigger_cleanup' => 'Use cron trigger cleanup',
 	'text_use_cron_trigger_cleanup_note' => 'Make sure have configure crontab job',
-	'row_display_errors' => 'Display errors',
-	'text_display_errors_note' => 'Display errors message on page',
 	'row_logging' => 'Runtime log path',
 	'text_logging_note' => 'Please enter your runtime log path',
 );

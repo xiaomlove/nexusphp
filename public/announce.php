@@ -2,6 +2,8 @@
 require_once('../include/bittorrent_announce.php');
 require_once('../include/benc.php');
 dbconn_announce();
+do_log(json_encode($_SERVER));
+$log = "";
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"];
 block_browser();
@@ -9,7 +11,7 @@ block_browser();
 // get string type passkey, info_hash, peer_id, event, ip from client
 foreach (array("passkey","info_hash","peer_id","event") as $x)
 {
-	if(isset($_GET["$x"]))
+	if(isset($_GET[$x]))
 	$GLOBALS[$x] = $_GET[$x];
 }
 // get integer type port, downloaded, uploaded, left from client
@@ -331,10 +333,11 @@ if (isset($self) && $event == "stopped")
 }
 elseif(isset($self))
 {
+	$finished = $finished_snatched = '';
 	if ($event == "completed")
 	{
 		//sql_query("UPDATE snatched SET  finished  = 'yes', completedat = $dt WHERE torrentid = $torrentid AND userid = $userid");
-		$finished = ", finishedat = ".TIMENOW;
+		$finished .= ", finishedat = ".TIMENOW;
 		$finished_snatched = ", completedat = ".$dt . ", finished  = 'yes'";
 		$updateset[] = "times_completed = times_completed + 1";
 	}
