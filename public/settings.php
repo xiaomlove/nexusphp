@@ -8,6 +8,7 @@ parked();
 if (get_user_class() < UC_SYSOP)
 permissiondenied();
 
+$datetimeNow = date('Y-m-d H:i:s');
 function go_back()
 {
 	global $lang_settings;
@@ -22,13 +23,14 @@ function yesorno($title, $name, $value, $note="")
 
 function saveSetting($prefix, $nameAndValue)
 {
-	$sql = "insert into settings (name, value) values ";
+	global $datetimeNow;
+	$sql = "insert into settings (name, value, created_at, updated_at) values ";
 	$data = [];
 	foreach ($nameAndValue as $name => $value) {
 		if (is_array($value)) {
 			$value = json_encode($value);
 		}
-		$data[] = sprintf("(%s, %s)", sqlesc("$prefix.$name"), sqlesc($value));
+		$data[] = sprintf("(%s, %s, %s, %s)", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow));
 	}
 	$sql .= implode(",", $data) . " on duplicate key update value = values(value)";
 	sql_query($sql) or sqlerr(__FILE__, __LINE__);

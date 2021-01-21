@@ -385,3 +385,30 @@ function arr_set(&$array, $key, $value)
 
     return $array;
 }
+
+
+function getSchemaAndHttpHost()
+{
+    $isHttps = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
+    $protocol = $isHttps ? 'https' : 'http';
+    $port = $_SERVER['SERVER_PORT'];
+    $result = "$protocol://" . $_SERVER['HTTP_HOST'];
+    if ($port != 80) {
+        $result .= ":$port";
+    }
+    return $result;
+
+}
+
+function getBaseUrl()
+{
+    $url = getSchemaAndHttpHost();
+    $requestUri = $_SERVER['REQUEST_URI'];
+    $pos = strpos($requestUri, '?');
+    if ($pos !== false) {
+        $url .= substr($requestUri, 0, $pos);
+    } else {
+        $url .= $requestUri;
+    }
+    return $url;
+}
