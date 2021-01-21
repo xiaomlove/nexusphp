@@ -1,7 +1,4 @@
 <?php
-if(!defined('IN_TRACKER'))
-die('Hacking attempt!');
-
 function get_global_sp_state()
 {
 	global $Cache;
@@ -256,36 +253,47 @@ function get_setting($name = null)
     return arr_get($settings, $name);
 }
 
-function env($key, $default = null)
+function env($key = null, $default = null)
 {
 	static $env;
 	if (is_null($env)) {
 		$envFile = ROOT_PATH . '.env';
-		if (!file_exists($envFile)) {
-			throw new \RuntimeException(".env file is not exists in the root path.");
-		}
-		$fp = fopen($envFile, 'r');
-		if ($fp === false) {
-			throw new \RuntimeException(".env file: $envFile is not readable.");
-		}
-		while ($line = trim(fgets($fp))) {
-			if (empty($line)) {
-				continue;
-			}
-			$pos = strpos($line, '=');
-			if ($pos <= 0) {
-				continue;
-			}
-			if (mb_substr($line, 0, 1, 'utf-8') == '#') {
-				continue;
-			}
-			$lineKey = normalize_env(mb_substr($line, 0, $pos, 'utf-8'));
-			$lineValue = normalize_env(mb_substr($line, $pos + 1, null, 'utf-8'));
-			$env[$lineKey] = $lineValue;
-		}
+		$env = readEnvFile($envFile);
 	}
+	if (is_null($key)) {
+	    return $env;
+    }
 	return $env[$key] ?? $default;
 
+}
+
+function readEnvFile($envFile)
+{
+    if (!file_exists($envFile)) {
+        throw new \RuntimeException("env file is not exists in the root path.");
+    }
+    $env = [];
+    $fp = fopen($envFile, 'r');
+    if ($fp === false) {
+        throw new \RuntimeException(".env file: $envFile is not readable.");
+    }
+    while (($line = fgets($fp)) !== false) {
+        $line = trim($line);
+        if (empty($line)) {
+            continue;
+        }
+        $pos = strpos($line, '=');
+        if ($pos <= 0) {
+            continue;
+        }
+        if (mb_substr($line, 0, 1, 'utf-8') == '#') {
+            continue;
+        }
+        $lineKey = normalize_env(mb_substr($line, 0, $pos, 'utf-8'));
+        $lineValue = normalize_env(mb_substr($line, $pos + 1, null, 'utf-8'));
+        $env[$lineKey] = $lineValue;
+    }
+    return $env;
 }
 
 function normalize_env($value)

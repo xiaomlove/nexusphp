@@ -10,6 +10,7 @@ if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', intval(NEXUS_START * 10000));
 }
 define('ROOT_PATH', $rootpath);
+define('VERSION', '1.6.0');
 define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
 
 require $rootpath . 'include/database/interface_db.php';
