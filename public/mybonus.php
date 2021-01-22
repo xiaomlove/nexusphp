@@ -1,5 +1,5 @@
 <?php
-require_once('include/bittorrent.php');
+require_once('../include/bittorrent.php');
 dbconn();
 require_once(get_langfile_path());
 require(get_langfile_path("",true));
