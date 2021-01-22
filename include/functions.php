@@ -1,8 +1,4 @@
 <?php
-# IMPORTANT: Do not edit below unless you know what you are doing!
-if(!defined('IN_TRACKER'))
-die('Hacking attempt!');
-
 function get_langfolder_cookie()
 {
 	global $deflang;
@@ -1754,7 +1750,7 @@ function getExportedValue($input,$t = null) {
 	 return 'NULL';
 }
 
-function dbconn($autoclean = false)
+function dbconn($autoclean = false, $doLogin = true)
 {
     if (DB::getInstance()->isConnected()) {
         return;
@@ -1768,7 +1764,9 @@ function dbconn($autoclean = false)
 	mysql_query("SET collation_connection = 'utf8_general_ci'");
 	mysql_query("SET sql_mode=''");
 
-	userlogin();
+	if ($doLogin) {
+        userlogin();
+    }
 
 //	if (!$useCronTriggerCleanUp && $autoclean) {
 //		register_shutdown_function("autoclean");
@@ -4400,6 +4398,22 @@ function return_category_image($categoryid, $link="")
 		$catimg = "<a href=\"".$link."cat=" . $categoryid . "\">".$catimg."</a>";
 	}
 	return $catimg;
+}
+
+function saveSetting($prefix, $nameAndValue)
+{
+    $prefix = strtolower($prefix);
+    $datetimeNow = date('Y-m-d H:i:s');
+    $sql = "insert into settings (name, value, created_at, updated_at) values ";
+    $data = [];
+    foreach ($nameAndValue as $name => $value) {
+        if (is_array($value)) {
+            $value = json_encode($value);
+        }
+        $data[] = sprintf("(%s, %s, %s, %s)", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow));
+    }
+    $sql .= implode(",", $data) . " on duplicate key update value = values(value)";
+    sql_query($sql) or sqlerr(__FILE__, __LINE__);
 }
 
 ?>

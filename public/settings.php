@@ -8,7 +8,6 @@ parked();
 if (get_user_class() < UC_SYSOP)
 permissiondenied();
 
-$datetimeNow = date('Y-m-d H:i:s');
 function go_back()
 {
 	global $lang_settings;
@@ -19,21 +18,6 @@ function yesorno($title, $name, $value, $note="")
 {
 	global $lang_settings;
 	tr($title, "<input type='radio' id='".$name."yes' name='".$name."'".($value == "yes" ? " checked=\"checked\"" : "")." value='yes' /> <label for='".$name."yes'>".$lang_settings['text_yes']."</label> <input type='radio' id='".$name."no' name='".$name."'".($value == "no" ? " checked=\"checked\"" : "")." value='no' /> <label for='".$name."no'>".$lang_settings['text_no']."</label><br />".$note, 1);
-}
-
-function saveSetting($prefix, $nameAndValue)
-{
-	global $datetimeNow;
-	$sql = "insert into settings (name, value, created_at, updated_at) values ";
-	$data = [];
-	foreach ($nameAndValue as $name => $value) {
-		if (is_array($value)) {
-			$value = json_encode($value);
-		}
-		$data[] = sprintf("(%s, %s, %s, %s)", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow));
-	}
-	$sql .= implode(",", $data) . " on duplicate key update value = values(value)";
-	sql_query($sql) or sqlerr(__FILE__, __LINE__);
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : 'showmenu';
