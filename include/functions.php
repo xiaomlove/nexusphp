@@ -4416,4 +4416,12 @@ function saveSetting($prefix, $nameAndValue)
     sql_query($sql) or sqlerr(__FILE__, __LINE__);
 }
 
+function getFullDirectory($dir)
+{
+    if (!is_dir($dir)) {
+        $dir = ROOT_PATH . $dir;
+    }
+    return realpath($dir);
+}
+
 ?>
