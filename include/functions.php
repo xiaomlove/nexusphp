@@ -2691,10 +2691,14 @@ function get_protocol_prefix()
 	}
 }
 
-function get_langid_from_langcookie()
+function get_langid_from_langcookie($lang = '')
 {
-	global $CURLANGDIR;
-	$row = mysql_fetch_array(sql_query("SELECT id FROM language WHERE site_lang = 1 AND site_lang_folder = " . sqlesc($CURLANGDIR) . "ORDER BY id ASC")) or sqlerr(__FILE__, __LINE__);
+    if (empty($lang)) {
+        global $CURLANGDIR;
+        $lang = $CURLANGDIR;
+    }
+
+	$row = mysql_fetch_array(sql_query("SELECT id FROM language WHERE site_lang = 1 AND site_lang_folder = " . sqlesc($lang) . "ORDER BY id ASC")) or sqlerr(__FILE__, __LINE__);
 	return $row['id'];
 }
 

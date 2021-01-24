@@ -119,8 +119,16 @@ class DB
         return $this->isConnected;
     }
 
-
-
-
+    public static function insert($table, $data)
+    {
+        if (empty($table) || empty($data) || !is_array($data)) {
+            throw new DatabaseException("require table and data(array).");
+        }
+        $fields = array_map(function ($value) {return "`$value`";}, array_keys($data));
+        $values = array_map(function ($value) {return sqlesc($value);}, array_values($data));
+        $sql = sprintf("insert into `%s` (%s) values (%s)", $table, implode(', ', $fields), implode(', ', $values));
+        sql_query($sql);
+        return mysql_insert_id();
+    }
 
 }

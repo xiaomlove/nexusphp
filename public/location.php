@@ -6,8 +6,8 @@ loggedinorreturn();
 if (get_user_class() < UC_SYSOP) {
 	die("access denied.");
 }
-mysql_connect($mysql_host,$mysql_user,$mysql_pass, $BASIC['mysql_db'], $BASIC['mysql_port']);
-mysql_select_db($mysql_db);
+$config = config('database.mysql');
+mysql_connect($config['host'],$config['username'],$config['password'], $config['database'], $config['port']);
 stdhead("Manage Locations");
 begin_main_frame("",false,100);
 begin_frame("Manage Locations",true,10,"100%","center");

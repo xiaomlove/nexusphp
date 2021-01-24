@@ -75,7 +75,7 @@ $lang_catmanage = array
 	'std_missing_form_data' => "有必填項目未填寫。",
 	'std_invalid_character_in_filename' => "此檔名包含不合法字元：",
 	'std_must_define_one_selection' => "你必須至少指定一個選取！",
-	'std_invalid_mode_id' => "無效的型態id。"
+	'std_invalid_mode_id' => "無效的型態id。",
 );
 
 ?>

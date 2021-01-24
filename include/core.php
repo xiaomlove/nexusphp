@@ -3,14 +3,14 @@ if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
 } else {
     define('REQUEST_ID', intval(NEXUS_START * 10000));
 }
 define('ROOT_PATH', $rootpath);
-define('VERSION', '1.6.0');
+define('VERSION_NUMBER', '1.6.0');
 define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
 
 require $rootpath . 'include/database/interface_db.php';
@@ -28,6 +28,7 @@ if (!IS_ANNOUNCE) {
 $Cache = new RedisCache(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 define('TIMENOW', time());
+define('TIMENOW_STRING', date('Y-m-d H:i:s'));
 $USERUPDATESET = array();
 $query_name=array();
 

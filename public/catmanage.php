@@ -616,7 +616,7 @@ elseif($action == 'edit')
 		else
 		{
 			$typename=return_type_name($type);
-			stdhead($lang_catmanage['head_edit']." - ".$typename);
+			stdhead($typename);
 			print("<form method=\"post\" action=\"?action=submit&amp;type=".$type."\">");
 			print("<input type=\"hidden\" name=\"isedit\" value=\"1\" />");
 			print("<input type=\"hidden\" name=\"id\" value=\"".$id."\" />");
