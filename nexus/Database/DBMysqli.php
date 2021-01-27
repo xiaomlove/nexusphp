@@ -1,4 +1,5 @@
 <?php
+namespace Nexus\Database;
 
 class DBMysqli implements DBInterface
 {
@@ -6,13 +7,13 @@ class DBMysqli implements DBInterface
 
     public function connect($host, $username, $password, $database, $port)
     {
-        $mysqli = new mysqli($host, $username, $password, $database, $port);
+        $mysqli = new \mysqli($host, $username, $password, $database, $port);
         /* check connection */
         if (mysqli_connect_errno()) {
-            throw new \DatabaseException('', mysqli_connect_error());
+            throw new DatabaseException(mysqli_connect_error());
         }
         /* activate reporting */
-        $driver = new mysqli_driver();
+        $driver = new \mysqli_driver();
         $driver->report_mode = MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX;
 
         return $this->mysqli = $mysqli;

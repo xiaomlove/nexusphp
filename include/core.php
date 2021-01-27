@@ -2,8 +2,12 @@
 if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
+if (!file_exists($rootpath . '.env')) {
+    header('Location: ' . getBaseUrl() . '/install/install.php');
+    exit(0);
+}
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
 } else {
@@ -12,13 +16,8 @@ if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
 define('ROOT_PATH', $rootpath);
 define('VERSION_NUMBER', '1.6.0');
 define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
-
-require $rootpath . 'include/database/interface_db.php';
-require $rootpath . 'include/database/class_db_mysqli.php';
-require $rootpath . 'include/database/class_db.php';
-require $rootpath . 'include/database/helpers.php';
-require $rootpath . 'include/database/class_exception.php';
-
+require $rootpath . 'vendor/autoload.php';
+require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_advertisement.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/config.php';
@@ -52,5 +51,3 @@ define ("UC_SYSOP",15);
 define ("UC_STAFFLEADER",16);
 ignore_user_abort(1);
 @set_time_limit(60);
-
-require dirname(__DIR__) . '/vendor/autoload.php';

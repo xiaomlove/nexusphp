@@ -1,4 +1,5 @@
 <?php
+namespace Nexus\Database;
 
 interface DBInterface
 {

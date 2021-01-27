@@ -1,5 +1,7 @@
 <?php
 
+namespace Nexus\Database;
+
 class DB
 {
     private $driver;
@@ -41,20 +43,36 @@ class DB
 
     public function connect($host, $username, $password, $database, $port)
     {
-        if (!$this->isConnected) {
+        if (!$this->isConnected()) {
             $this->driver->connect($host, $username, $password, $database, $port);
             $this->isConnected = true;
         }
         return true;
     }
 
+    public function autoConnect()
+    {
+        if ($this->isConnected()) {
+            return;
+        }
+        $config = config('database.mysql');
+        if (!mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port'])) {
+            throw new DatabaseException(sprintf("mysql connect error: [%s] %s", mysql_errno(), mysql_error()));
+        }
+        mysql_query("SET NAMES UTF8");
+        mysql_query("SET collation_connection = 'utf8_general_ci'");
+        mysql_query("SET sql_mode=''");
+        $this->isConnected = true;
+    }
+
     public function query(string $sql)
     {
         try {
+            $this->autoConnect();
             return $this->driver->query($sql);
         } catch (\Exception $e) {
             do_log(sprintf("%s [%s] %s", $e->getMessage(), $sql, $e->getTraceAsString()));
-            throw new \DatabaseException($sql, $e->getMessage());
+            throw new DatabaseException($e->getMessage(), $sql);
         }
 
     }
@@ -101,6 +119,7 @@ class DB
 
     public function escapeString(string $string)
     {
+        $this->autoConnect();
         return $this->driver->escapeString($string);
     }
 

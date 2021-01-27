@@ -1752,17 +1752,7 @@ function getExportedValue($input,$t = null) {
 
 function dbconn($autoclean = false, $doLogin = true)
 {
-    if (DB::getInstance()->isConnected()) {
-        return;
-    }
-	$config = config('database.mysql');
-	if (!mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']))
-	{
-        die("[" . mysql_errno() . "] dbconn: mysql_connect: " . mysql_error());
-	}
-	mysql_query("SET NAMES UTF8");
-	mysql_query("SET collation_connection = 'utf8_general_ci'");
-	mysql_query("SET sql_mode=''");
+    \Nexus\Database\DB::getInstance()->autoConnect();
 
 	if ($doLogin) {
         userlogin();

@@ -16,6 +16,10 @@
     },
     "require": {
         "php": "^7.2|^8",
+        "ext-gd": "*",
+        "ext-mbstring": "*",
+        "ext-mysqli": "*",
+        "ext-json": "*",
         "swiftmailer/swiftmailer": "^6.2",
         "guzzlehttp/guzzle": "~6.0",
         "imdbphp/imdbphp": "^6.4"

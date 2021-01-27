@@ -1,4 +1,5 @@
 <?php
+use Nexus\Database\DB;
 
 function mysql_connect($host, $username, $password, $database, $port)
 {
