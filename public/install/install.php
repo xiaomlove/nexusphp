@@ -234,15 +234,7 @@ if ($currentStep == 5) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
-    <title>Update NexusPHP | step <?php echo $currentStep?></title>
-      <style type="text/css">
-          .step .none {
-              color: #aaa;
-          }
-          .step .done {
-              color: #67c23a;
-          }
-      </style>
+    <title>Install NexusPHP | step <?php echo $currentStep?></title>
   </head>
   <body>
       <div class="container mx-auto">

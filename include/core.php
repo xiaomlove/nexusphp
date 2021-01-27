@@ -3,7 +3,7 @@ if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
 if (!file_exists($rootpath . '.env')) {
-    header('Location: ' . getBaseUrl() . '/install/install.php');
+    header('Location: ' . getBaseUrl() . 'install/install.php');
     exit(0);
 }
 error_reporting(E_ALL);

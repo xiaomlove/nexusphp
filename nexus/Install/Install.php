@@ -281,7 +281,7 @@ class Install
         $steps = '<div class="flex mt-10 step text-center">';
         $currentStep = $this->currentStep();
         foreach ($this->steps as $key => $value) {
-            $steps .= sprintf('<div class="flex-1 %s">', $currentStep > $key + 1 ? 'done' : ($currentStep < $key + 1 ? 'none' : ''));
+            $steps .= sprintf('<div class="flex-1 %s">', $currentStep > $key + 1 ? 'text-green-500' : ($currentStep < $key + 1 ? 'text-gray-500' : ''));
             $steps .= sprintf('<div>第%s步</div>', $key + 1);
             $steps .= sprintf('<div>%s</div>', $value);
             $steps .= '</div>';
