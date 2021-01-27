@@ -29,63 +29,15 @@ if ($currentStep == 2) {
     $envFormControls = $install->listEnvFormControls();
     $newData = array_column($envFormControls, 'value', 'name');
     while ($isPost) {
-//        $envFile = "$rootpath.env." . time();
-//        $newData = $formData = [];
-//        if (file_exists($envFile) && is_readable($envFile)) {
-//            //already exists, read it ,and merge post data
-//            $newData = readEnvFile($envFile);
-//        }
-//        foreach ($envExampleData as $key => $value) {
-//            $postValue = trim($_POST[$key] ?? '');
-//            if ($postValue) {
-//                $value = $postValue;
-//            }
-//            $newData[$key] = $value;
-//            $envExampleData[] = [
-//                'label' => $key,
-//                'name' => $key,
-//                'value' => $value,
-//            ];
-//        }
-//        unset($key);
-        //check
         try {
-            $connectMysql = mysql_connect($newData['MYSQL_HOST'], $newData['MYSQL_USERNAME'], $newData['MYSQL_PASSWORD'], $newData['MYSQL_DATABASE'], $newData['MYSQL_PORT']);
-        } catch (\Exception $e) {
-            $_SESSION['error'] = "Mysql: " . $e->getMessage();
+            $install->createEnvFile($_POST);
+            $install->nextStep();
+        } catch (\Exception $exception) {
+            $_SESSION['error'] = $exception->getMessage();
             break;
         }
-        if (extension_loaded('redis') && !empty($newData['REDIS_HOST'])) {
-            try {
-                $redis = new Redis();
-                $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
-            } catch (\Exception $e) {
-                $_SESSION['error'] = "Redis: " . $e->getMessage();
-                break;
-            }
-            if (!ctype_digit($newData['REDIS_DATABASE']) || $newData['REDIS_DATABASE'] < 0 || $newData['REDIS_DATABASE'] > 15) {
-                $_SESSION['error'] = "invalid REDIS_DATABASE";
-                break;
-            }
-        }
-
-//        $content = "";
-//        foreach ($newData as $key => $value) {
-//            $content .= "{$key}={$value}\n";
-//        }
-//        $fp = @fopen($envFile, 'w');
-//        if ($fp === false) {
-//            $msg = "文件无法打开, 确保 PHP 有权限在根目录创建文件";
-//            $msg .= "\n也可以复制以下内容保存到 $envFile 中";
-//            $_SESSION['error'] = $msg;
-//            $_SESSION['copy'] = $content;
-//        }
-//        fwrite($fp, $content);
-//        fclose($fp);
-        $install->nextStep();
         break;
     }
-
     $tableRows = [
         [
             'label' => '.env.example',
@@ -100,41 +52,15 @@ if ($currentStep == 2) {
 
 if ($currentStep == 3) {
     $pass = true;
-    $existsTable = $install->listExistsTable();
-    $tableCreate = $install->listAllTableCreate();
-    $shouldCreateTable = [];
-    foreach ($tableCreate as $table => $sql) {
-        if (in_array($table, $existsTable)) {
-            continue;
-        }
-        $shouldCreateTable[$table] = $sql;
-    }
-
-    while (true) {
-//        $sqlFile = $rootpath  . '_db/dbstructure_v1.6.sql';
-//        try {
-//            $tableCreate = listAllTableCreate($sqlFile);
-//        } catch (\Exception $e) {
-//            $_SESSION['error'] = $e->getMessage();
-//            break;
-//        }
-//        if (empty($tableCreate)) {
-//            $_SESSION['error'] = "no table create, make sure sql file is correct";
-//            break;
-//        }
-
-        if ($isPost) {
-            try {
-                foreach ($shouldCreateTable as $table => $sql) {
-                    sql_query($sql);
-                }
-            } catch (\Exception $e) {
-                $_SESSION['error'] = $e->getMessage();
-                break;
-            }
+    $shouldCreateTable = $install->listShouldCreateTable();
+    while ($isPost) {
+        try {
+            $install->createTable($shouldCreateTable);
             $install->nextStep();
+        } catch (\Exception $exception) {
+            $_SESSION['error'] = $exception->getMessage();
+            break;
         }
-
         break;
     }
 }
@@ -178,32 +104,15 @@ if ($currentStep == 4) {
     $symbolicLinks = $settingTableRows['symbolic_links'];
     $tableRows = $settingTableRows['table_rows'];
     $pass = $settingTableRows['pass'];
-    while (true) {
+    while ($isPost) {
         try {
-            foreach ($settings as $prefix => &$group) {
-                if ($isPost) {
-                    $install->doLog("[SAVE] prefix: $prefix, nameAndValues: " . json_encode($group));
-                    foreach ($symbolicLinks as $path) {
-                        $linkName = ROOT_PATH . 'public/' . basename($path);
-                        if (is_dir($linkName)) {
-                            $install->doLog("path: $linkName already exits, skip create symbolic link $linkName -> $path");
-                            continue;
-                        }
-                        //@todo
-//                        $linkResult = symlink($path, $linkName);
-//                        if ($linkResult === false) {
-//                            throw new \Exception("can't not make symbolic link:  $linkName -> $path");
-//                        }
-                    }
-                    //@todo
-//                    saveSetting($prefix, $group);
-                }
-            }
+            $install->saveSettings($settings);
+            $install->createSymbolicLinks($symbolicLinks);
+            $install->nextStep();
         } catch (\Exception $e) {
             $_SESSION['error'] = $e->getMessage();
             break;
         }
-        $isPost && $install->nextStep();
         break;
     }
 }

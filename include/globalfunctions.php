@@ -148,6 +148,10 @@ function dd($vars)
 function do_log($log, $level = 'info')
 {
 	global $TWEAK;
+	$logging = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
+    if (!empty($TWEAK['logging'])) {
+        $logging = $TWEAK['logging'];
+    }
 	if (!empty($TWEAK['logging'])) {
 		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 		$content = sprintf(
@@ -163,7 +167,7 @@ function do_log($log, $level = 'info')
 			$log,
 			PHP_EOL
 		);
-		file_put_contents($TWEAK['logging'], $content, FILE_APPEND);
+		file_put_contents($logging, $content, FILE_APPEND);
 	}
 }
 

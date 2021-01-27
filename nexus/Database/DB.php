@@ -40,13 +40,11 @@ class DB
         return self::$instance = $instance;
     }
 
-
     public function connect($host, $username, $password, $database, $port)
     {
-        if (!$this->isConnected()) {
-            $this->driver->connect($host, $username, $password, $database, $port);
-            $this->isConnected = true;
-        }
+        $this->driver->connect($host, $username, $password, $database, $port);
+        $this->isConnected = true;
+        do_log("do mysql_connect with: " . json_encode(func_get_args()));
         return true;
     }
 

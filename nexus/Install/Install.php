@@ -2,6 +2,7 @@
 
 namespace Nexus\Install;
 
+use http\Exception\InvalidArgumentException;
 use Nexus\Database\DB;
 
 class Install
@@ -354,6 +355,93 @@ class Install
         return DB::insert('users', $insert);
     }
 
+    public function createEnvFile($data)
+    {
+        $envExampleFile = ROOT_PATH . ".env.example";
+        $envExampleData = readEnvFile($envExampleFile);
+        $envFile = ROOT_PATH . ".env";
+        $newData = [];
+        if (file_exists($envFile) && is_readable($envFile)) {
+            //already exists, read it ,and merge post data
+            $newData = readEnvFile($envFile);
+        }
+        foreach ($envExampleData as $key => $value) {
+            if (isset($data[$key])) {
+                $value = trim($data[$key]);
+            }
+            $newData[$key] = $value;
+        }
+        unset($key, $value);
+        mysql_connect($newData['MYSQL_HOST'], $newData['MYSQL_USERNAME'], $newData['MYSQL_PASSWORD'], $newData['MYSQL_DATABASE'], $newData['MYSQL_PORT']);
+        if (extension_loaded('redis') && !empty($newData['REDIS_HOST'])) {
+            $redis = new \Redis();
+            $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
+            if (isset($newData['REDIS_DATABASE'])) {
+                if (!ctype_digit($newData['REDIS_DATABASE']) || $newData['REDIS_DATABASE'] < 0 || $newData['REDIS_DATABASE'] > 15) {
+                    throw new \InvalidArgumentException("invalid redis database: " . $newData['redis_database']);
+                }
+                $redis->select($newData['REDIS_DATABASE']);
+            }
+        }
+        $content = "";
+        foreach ($newData as $key => $value) {
+            $content .= "{$key}={$value}\n";
+        }
+        $fp = @fopen($envFile, 'w');
+        if ($fp === false) {
+            throw new \RuntimeException("can't open env file, make sure php has permission to create file at: " . ROOT_PATH);
+        }
+        fwrite($fp, $content);
+        fclose($fp);
+        $this->doLog("create env file: $envFile with content: \n $content");
+        return true;
+    }
 
+    public function listShouldCreateTable()
+    {
+        $existsTable = $this->listExistsTable();
+        $tableCreate = $this->listAllTableCreate();
+        $shouldCreateTable = [];
+        foreach ($tableCreate as $table => $sql) {
+            if (in_array($table, $existsTable)) {
+                continue;
+            }
+            $shouldCreateTable[$table] = $sql;
+        }
+        return $shouldCreateTable;
+    }
 
+    public function createTable(array $createTable)
+    {
+        foreach ($createTable as $table => $sql) {
+            $this->doLog("create table: $table \n $sql");
+            sql_query($sql);
+        }
+        return true;
+    }
+
+    public function saveSettings($settings)
+    {
+        foreach ($settings as $prefix => &$group) {
+            $this->doLog("[SAVE SETTING], prefix: $prefix, nameAndValues: " . json_encode($group));
+            saveSetting($prefix, $group);
+        }
+    }
+
+    public function createSymbolicLinks($symbolicLinks)
+    {
+        foreach ($symbolicLinks as $path) {
+            $linkName = ROOT_PATH . 'public/' . basename($path);
+            if (is_dir($linkName)) {
+                $this->doLog("path: $linkName already exits, skip create symbolic link $linkName -> $path");
+                continue;
+            }
+            $linkResult = symlink($path, $linkName);
+            if ($linkResult === false) {
+                throw new \RuntimeException("can't not make symbolic link:  $linkName -> $path");
+            }
+            $this->doLog("success make symbolic link: $linkName -> $path");
+        }
+        return true;
+    }
 }
