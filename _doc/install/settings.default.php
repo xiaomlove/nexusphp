@@ -91,8 +91,8 @@
     'smtp_from' => NULL,
     'smtpaddress' => 'smtp.qq.com',
     'smtpport' => '25',
-    'accountname' => '353856593@qq.com',
-    'accountpassword' => 'zixbeopslzidbgbi',
+    'accountname' => '',
+    'accountpassword' => '',
   ),
   'security' => 
   array (
