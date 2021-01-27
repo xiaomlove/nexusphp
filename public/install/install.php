@@ -1,4 +1,6 @@
 <?php
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 0);
 if (!session_id()) {
     session_start();
 }

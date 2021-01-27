@@ -2,7 +2,6 @@
 
 namespace Nexus\Install;
 
-use http\Exception\InvalidArgumentException;
 use Nexus\Database\DB;
 
 class Install
@@ -351,7 +350,7 @@ class Install
             'status' => 'confirmed',
             'added' => date('Y-m-d H:i:s'),
         ];
-        $this->doLog("insert user: " . json_encode($insert));
+        $this->doLog("[CREATE ADMINISTRATOR] " . json_encode($insert));
         return DB::insert('users', $insert);
     }
 
@@ -389,11 +388,11 @@ class Install
         }
         $fp = @fopen($envFile, 'w');
         if ($fp === false) {
-            throw new \RuntimeException("can't open env file, make sure php has permission to create file at: " . ROOT_PATH);
+            throw new \RuntimeException("can't create env file, make sure php has permission to create file at: " . ROOT_PATH);
         }
         fwrite($fp, $content);
         fclose($fp);
-        $this->doLog("create env file: $envFile with content: \n $content");
+        $this->doLog("[CREATE ENV] $envFile with content: \n $content");
         return true;
     }
 
@@ -414,7 +413,7 @@ class Install
     public function createTable(array $createTable)
     {
         foreach ($createTable as $table => $sql) {
-            $this->doLog("create table: $table \n $sql");
+            $this->doLog("[CREATE TABLE] $table \n $sql");
             sql_query($sql);
         }
         return true;
@@ -440,7 +439,7 @@ class Install
             if ($linkResult === false) {
                 throw new \RuntimeException("can't not make symbolic link:  $linkName -> $path");
             }
-            $this->doLog("success make symbolic link: $linkName -> $path");
+            $this->doLog("[CREATE SYMBOLIC LINK] success make symbolic link: $linkName -> $path");
         }
         return true;
     }
