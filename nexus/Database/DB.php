@@ -29,6 +29,11 @@ class DB
         return $this;
     }
 
+    public function getDriver()
+    {
+        return $this->driver;
+    }
+
     public static function getInstance()
     {
         if (self::$instance) {
@@ -42,25 +47,27 @@ class DB
 
     public function connect($host, $username, $password, $database, $port)
     {
-        $this->driver->connect($host, $username, $password, $database, $port);
+        $result = $this->driver->connect($host, $username, $password, $database, $port);
+        if (!$result) {
+            throw new DatabaseException(sprintf('[%s]: %s', $this->errno(), $this->error()));
+        }
+        $this->driver->query("SET NAMES UTF8");
+        $this->driver->query("SET collation_connection = 'utf8_general_ci'");
+        $this->driver->query("SET sql_mode=''");
         $this->isConnected = true;
-        do_log("do mysql_connect with: " . json_encode(func_get_args()));
+        $log = json_encode(func_get_args());
+        do_log($log);
         return true;
     }
 
     public function autoConnect()
     {
         if ($this->isConnected()) {
-            return;
+            return null;
         }
         $config = config('database.mysql');
-        if (!mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port'])) {
-            throw new DatabaseException(sprintf("mysql connect error: [%s] %s", mysql_errno(), mysql_error()));
-        }
-        mysql_query("SET NAMES UTF8");
-        mysql_query("SET collation_connection = 'utf8_general_ci'");
-        mysql_query("SET sql_mode=''");
-        $this->isConnected = true;
+        do_log(json_encode($config));
+        return $this->connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']);
     }
 
     public function query(string $sql)

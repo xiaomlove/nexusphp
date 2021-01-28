@@ -108,6 +108,7 @@ if ($currentStep == 4) {
     $pass = $settingTableRows['pass'];
     while ($isPost) {
         try {
+            $install->importInitialData();
             $install->saveSettings($settings);
             $install->createSymbolicLinks($symbolicLinks);
             $install->nextStep();
@@ -204,6 +205,9 @@ if ($currentStep == 5) {
               </div>
               </form>
           </div>
+      </div>
+      <div class="mt-10 text-center">
+          欢迎使用 NexusPHP 安装程序，如有疑问，点击<a href="http://nexusphp.cn/" target="_blank" class="text-blue-500 p-1">这里</a>获取参考。
       </div>
   </body>
 <script>

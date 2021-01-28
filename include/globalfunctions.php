@@ -152,7 +152,7 @@ function do_log($log, $level = 'info')
     if (!empty($TWEAK['logging'])) {
         $logging = $TWEAK['logging'];
     }
-	if (!empty($TWEAK['logging'])) {
+	if (($fd = fopen($logging, 'a')) !== false) {
 		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 		$content = sprintf(
 			"[%s] [%s] [%s] %s:%s %s%s%s %s%s",
@@ -167,7 +167,8 @@ function do_log($log, $level = 'info')
 			$log,
 			PHP_EOL
 		);
-		file_put_contents($logging, $content, FILE_APPEND);
+		fwrite($fd, $content);
+		fclose($fd);
 	}
 }
 

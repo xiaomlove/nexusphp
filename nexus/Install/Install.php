@@ -10,7 +10,13 @@ class Install
 
     private $minimumPhpVersion = '7.2.0';
 
-    protected $steps = ['环境检测', '添加 .env 文件', '新建数据表', '导入数据', '创建管理员账号'];
+    protected $steps = ['环境检测', '添加 .env 文件', '创建数据表', '导入数据', '创建管理员账号'];
+
+    protected $initializeTables = [
+        'adminpanel', 'agent_allowed_exception', 'agent_allowed_family', 'allowedemails', 'audiocodecs', 'avps', 'bannedemails', 'categories',
+        'caticons', 'codecs', 'countries', 'downloadspeed', 'faq', 'isp', 'language', 'media', 'modpanel', 'processings', 'rules', 'schools',
+        'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed', 'agent_allowed_family',
+    ];
 
 
     public function __construct()
@@ -421,7 +427,7 @@ class Install
 
     public function saveSettings($settings)
     {
-        foreach ($settings as $prefix => &$group) {
+        foreach ($settings as $prefix => $group) {
             $this->doLog("[SAVE SETTING], prefix: $prefix, nameAndValues: " . json_encode($group));
             saveSetting($prefix, $group);
         }
@@ -440,6 +446,26 @@ class Install
                 throw new \RuntimeException("can't not make symbolic link:  $linkName -> $path");
             }
             $this->doLog("[CREATE SYMBOLIC LINK] success make symbolic link: $linkName -> $path");
+        }
+        return true;
+    }
+
+    public function importInitialData($sqlFile = '')
+    {
+        if (empty($sqlFile)) {
+            $sqlFile = ROOT_PATH . '_db/dbstructure_v1.6.sql';
+        }
+        $string = file_get_contents($sqlFile);
+        $pattern = "/INSERT INTO `(\w+)` VALUES \(.*\);\n/i";
+        preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $table = $match[1];
+            $sql = trim($match[0]);
+            if (!in_array($table, $this->initializeTables)) {
+                continue;
+            }
+            $this->doLog("[IMPORT DATA] $table, $sql");
+            sql_query($sql);
         }
         return true;
     }

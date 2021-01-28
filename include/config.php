@@ -62,11 +62,6 @@ if (file_exists('config/allconfig.php')) {
 */
 
 //load settings from database
-if (IS_ANNOUNCE) {
-    dbconn_announce();
-} else {
-    dbconn();
-}
 $settings = get_setting();
 foreach ($settings as $name => $value) {
     $GLOBALS[strtoupper($name)] = $value;
