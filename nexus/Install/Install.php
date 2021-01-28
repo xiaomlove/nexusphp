@@ -160,7 +160,7 @@ class Install
 
     public function listSettingTableRows()
     {
-        $defaultSettingsFile = ROOT_PATH . '_doc/install/settings.default.php';
+        $defaultSettingsFile = __DIR__ . '/settings.default.php';
         $originalConfigFile = ROOT_PATH . 'config/allconfig.php';
         if (!file_exists($defaultSettingsFile)) {
             throw new \RuntimeException("default setting file: $defaultSettingsFile not exists.");

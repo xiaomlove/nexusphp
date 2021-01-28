@@ -24,7 +24,7 @@ require $rootpath . 'include/config.php';
 if (!IS_ANNOUNCE) {
     require $rootpath . get_langfile_path("functions.php");
 }
-$Cache = new RedisCache(); //Load the caching class
+$Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 define('TIMENOW', time());
 define('TIMENOW_STRING', date('Y-m-d H:i:s'));

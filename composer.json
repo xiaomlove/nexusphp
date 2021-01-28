@@ -1,6 +1,6 @@
 {
     "name": "xiaomlove/nexusphp",
-    "description": "A private tracker server application base on NexusPHP.",
+    "description": "A private tracker application base on NexusPHP.",
     "type": "project",
     "license": "GPL-2.0-only",
     "authors": [

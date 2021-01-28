@@ -1,6 +1,6 @@
 <?php
 
-class RedisCache {
+class class_cache_redis {
 
     public $isEnabled;
     public $clearCache = 0;

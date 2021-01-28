@@ -6,6 +6,8 @@
 /attachments
 /bitbucket
 /subs
+/public/install
+/public/update
 npm-debug.log
 .env
 .buildpath
