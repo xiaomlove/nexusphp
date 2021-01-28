@@ -3,8 +3,12 @@ if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
 if (!file_exists($rootpath . '.env')) {
-    header('Location: ' . getBaseUrl() . 'install/install.php');
-    exit(0);
+    $installScriptRelativePath = 'install/install.php';
+    $installScriptFile = $rootpath . "public/$installScriptRelativePath";
+    if (file_exists($installScriptFile)) {
+        header('Location: ' . getBaseUrl() . $installScriptRelativePath);
+        exit(0);
+    }
 }
 error_reporting(E_ALL);
 ini_set('display_errors', 0);

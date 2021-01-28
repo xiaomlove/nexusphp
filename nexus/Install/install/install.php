@@ -108,9 +108,9 @@ if ($currentStep == 4) {
     $pass = $settingTableRows['pass'];
     while ($isPost) {
         try {
-            $install->importInitialData();
-            $install->saveSettings($settings);
             $install->createSymbolicLinks($symbolicLinks);
+            $install->saveSettings($settings);
+            $install->importInitialData();
             $install->nextStep();
         } catch (\Exception $e) {
             $_SESSION['error'] = $e->getMessage();

@@ -30,6 +30,9 @@ class class_cache_redis {
     private function connect()
     {
         $config = config('database.redis');
+        if (empty($config['host'])) {
+            return false;
+        }
         $redis = new Redis();
         $params = [
             $config['host'],

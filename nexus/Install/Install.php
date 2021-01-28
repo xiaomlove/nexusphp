@@ -465,6 +465,7 @@ class Install
                 continue;
             }
             $this->doLog("[IMPORT DATA] $table, $sql");
+            sql_query("truncate table $table");
             sql_query($sql);
         }
         return true;

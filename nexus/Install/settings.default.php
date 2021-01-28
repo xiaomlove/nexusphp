@@ -91,8 +91,8 @@
     'smtp_from' => NULL,
     'smtpaddress' => 'smtp.qq.com',
     'smtpport' => '25',
-    'accountname' => '',
-    'accountpassword' => '',
+    'accountname' => '353856593@qq.com',
+    'accountpassword' => 'zixbeopslzidbgbi',
   ),
   'security' => 
   array (
@@ -347,8 +347,8 @@
   'code' => 
   array (
     'mainversion' => 'NexusPHP',
-    'subversion' => 'Standard v1.5 Beta 4 by xiaomlove',
-    'releasedate' => '2010-09-19',
-    'website' => '<a href="http://nexusphp.cn">http://nexusphp.cn</a>',
+    'subversion' => 'v1.6.0-beta1',
+    'releasedate' => '2021-01-28',
+    'website' => '<a href="http://nexusphp.cn" target="_blank">http://nexusphp.cn</a>',
   ),
 );
