@@ -193,9 +193,9 @@ class Install
             $prefixUpperCase = strtoupper($prefix);
             $oldGroupValues = $$prefixUpperCase ?? null;
             foreach ($group as $key => &$value) {
-                //merge original config to default setting
-                if (isset($oldGroupValues) && isset($oldGroupValues[$key])) {
-                    $value = $oldGroupValues[$key];;
+                //merge original config to default setting, exclude code part
+                if ($prefix != 'code' && isset($oldGroupValues) && isset($oldGroupValues[$key])) {
+                    $value = $oldGroupValues[$key];
                 }
                 if (isset($requireDirs[$prefix]) && in_array($key, $requireDirs[$prefix])) {
                     $dir = getFullDirectory($value);
