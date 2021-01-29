@@ -1752,15 +1752,14 @@ function getExportedValue($input,$t = null) {
 
 function dbconn($autoclean = false, $doLogin = true)
 {
+    global $useCronTriggerCleanUp;
     \Nexus\Database\DB::getInstance()->autoConnect();
-
 	if ($doLogin) {
         userlogin();
     }
-
-//	if (!$useCronTriggerCleanUp && $autoclean) {
-//		register_shutdown_function("autoclean");
-//	}
+	if (!$useCronTriggerCleanUp && $autoclean) {
+		register_shutdown_function("autoclean");
+	}
 }
 function get_user_row($id)
 {

@@ -625,7 +625,6 @@ elseif ($action == 'mainsettings')	// main settings
 	tr($lang_settings['row_torrent_directory'], "<input type='text' style=\"width: 100px\" name=torrent_dir value='".($MAIN["torrent_dir"] ? $MAIN["torrent_dir"] : "torrents")."'> ".$lang_settings['text_torrent_directory'], 1);
 	tr($lang_settings['row_bitbucket_directory'],"<input type='text' style=\"width: 100px\" name=bitbucket value='".($MAIN["bitbucket"] ? $MAIN["bitbucket"] : "bitbucket")."'> ".$lang_settings['text_bitbucket_directory_note'], 1);
 	tr($lang_settings['row_torrent_name_prefix'], "<input type='text' style=\"width: 100px\" name=torrentnameprefix value='".($MAIN["torrentnameprefix"] ? $MAIN["torrentnameprefix"] : "[Nexus]")."'> ".$lang_settings['text_torrent_name_prefix_note'], 1);
-	yesorno($lang_settings['row_use_cron_trigger_cleanup'],'use_cron_trigger_cleanup', $MAIN['use_cron_trigger_cleanup'], $lang_settings['text_use_cron_trigger_cleanup_note']);
 
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
