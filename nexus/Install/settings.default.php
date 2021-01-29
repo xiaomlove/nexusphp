@@ -349,6 +349,6 @@
     'mainversion' => 'NexusPHP',
     'subversion' => 'v1.6.0-beta1',
     'releasedate' => '2021-01-28',
-    'website' => '<a href="http://nexusphp.cn" target="_blank">http://nexusphp.cn</a>',
+    'website' => '<a href="http://nexusphp.org" target="_blank">http://nexusphp.org</a>',
   ),
 );

@@ -172,43 +172,6 @@ function do_log($log, $level = 'info')
 	}
 }
 
-/**
- * get translation for given name
- *
- * @author xiaomlove
- * @date 2021/1/11
- * @param null $name
- * @param null $prefix
- * @return mixed|string
- */
-function __($name = null, $prefix = null)
-{
-	static $i18n;
-	static $i18nWithoutPrefix;
-	$userLocale = get_langfolder_cookie();
-	$defaultLocale = 'en';
-	if (is_null($prefix)) {
-		//get prefix from scripe name
-		$prefix = basename($_SERVER['SCRIPT_NAME']);
-		$prefix = strstr($prefix, '.php', true);
-	}
-	if (is_null($i18n)) {
-		//get all in18 may be used, incldue user locale and default locale, and name in('_target', 'functions') (because they are common) or prefixed with given prefix
-		$sql = "select locale, name, translation from i18n where locale in (" . sqlesc($userLocale) . ", " . sqlesc($defaultLocale) . ") and (name in ('_target', 'functions') or name like '{$prefix}%')";
-		$result = sql_query($sql);
-		while ($row = mysql_fetch_assoc($result)) {
-			$i18n[$row['locale']][$row['name']] = $row['translation'];
-			$i18nWithoutPrefix[$row['locale']][substr($row['name'], strpos($row['name'], '.') + 1)] = $row['translation'];
-		}
-	}
-	if (is_null($name)) {
-		return $i18nWithoutPrefix[$userLocale] ?? $i18nWithoutPrefix[$defaultLocale] ?? [];
-	}
-	$name = "$prefix.$name";
-	return $i18n[$userLocale][$name] ?? $i18n[$defaultLocale][$name] ?? '';
-
-}
-
 function config($key, $default = null)
 {
 	static $configs;
