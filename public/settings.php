@@ -41,7 +41,7 @@ if ($action == 'savesettings_main')	// save main
 		'showpolls','showstats','showlastxtorrents', 'showtrackerload','showshoutbox','showfunbox','showoffer','sptime','showhelpbox','enablebitbucket',
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
-		'startsubid', 'logo', 'use_cron_trigger_cleanup', 'showlastxforumposts'
+		'startsubid', 'logo', 'showlastxforumposts'
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -185,7 +185,7 @@ elseif ($action == 'savesettings_authority') 	// save user authority
 elseif ($action == 'savesettings_tweak')	// save tweak
 {
 	stdhead($lang_settings['head_save_tweak_settings']);
-	$validConfig = array('where','iplog1','bonus','datefounded', 'enablelocation', 'titlekeywords', 'metakeywords', 'metadescription', 'enablesqldebug', 'sqldebug', 'cssdate', 'enabletooltip', 'prolinkimg', 'analyticscode', 'logging');
+	$validConfig = array('where','iplog1','bonus','datefounded', 'enablelocation', 'titlekeywords', 'metakeywords', 'metadescription', 'enablesqldebug', 'sqldebug', 'cssdate', 'enabletooltip', 'prolinkimg', 'analyticscode');
 	GetVar($validConfig);
 	$TWEAK = [];
 	foreach($validConfig as $config) {
@@ -245,7 +245,6 @@ elseif ($action == 'tweaksettings')		// tweak settings
 	tr($lang_settings['row_see_sql_debug'], "<input type='checkbox' name='enablesqldebug' value='yes'".($TWEAK['enablesqldebug'] == 'yes' ? " checked='checked'" : "")." />".$lang_settings['text_allow'].classlist('sqldebug',UC_STAFFLEADER,$TWEAK['sqldebug'], UC_MODERATOR).$lang_settings['text_see_sql_list'].get_user_class_name(UC_SYSOP,false,true,true),1);
 	tr($lang_settings['row_tracker_founded_date'],"<input type='text' style=\"width: 300px\" name=datefounded value='".($TWEAK["datefounded"] ? $TWEAK["datefounded"] : '2007-12-24')."'> <br />".$lang_settings['text_tracker_founded_date_note'], 1);
 	tr($lang_settings['row_css_date'],"<input type='text' style=\"width: 300px\" name=cssdate value='".($TWEAK["cssdate"] ? $TWEAK["cssdate"] : '')."'> <br />".$lang_settings['text_css_date'], 1);
-	tr($lang_settings['row_logging'],"<input type='text' style=\"width: 300px\" name=logging value='".($TWEAK["logging"] ? $TWEAK["logging"] : '')."'> <br />".$lang_settings['text_logging_note'], 1);
 
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");

@@ -147,18 +147,14 @@ function dd($vars)
 
 function do_log($log, $level = 'info')
 {
-	global $TWEAK;
-	$logging = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
-    if (!empty($TWEAK['logging'])) {
-        $logging = $TWEAK['logging'];
-    }
-	if (($fd = fopen($logging, 'a')) !== false) {
+    $logFile = getLogFile();
+	if (($fd = fopen($logFile, 'a')) !== false) {
 		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 		$content = sprintf(
 			"[%s] [%s] [%s] %s:%s %s%s%s %s%s",
 			date('Y-m-d H:i:s'),
 			$level,
-            REQUEST_ID,
+            defined('REQUEST_ID') ? REQUEST_ID : '',
 			$backtrace[0]['file'] ?? '',
 			$backtrace[0]['line'] ?? '',
 			$backtrace[1]['class'] ?? '',
@@ -170,6 +166,43 @@ function do_log($log, $level = 'info')
 		fwrite($fd, $content);
 		fclose($fd);
 	}
+}
+
+function getLogFile()
+{
+    static $logFile;
+    if (!is_null($logFile)) {
+        return $logFile;
+    }
+    $config = config('nexus');
+    $logFile = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
+    if (!empty($config['log_file'])) {
+        $logFile = $config['log_file'];
+    }
+    $validSplit = ['daily', 'monthly'];
+    if (empty($config['log_split']) || !in_array($config['log_split'], $validSplit)) {
+        return $logFile;
+    }
+    $lastDotPos = strrpos($logFile, '.');
+    if ($lastDotPos !== false) {
+        $prefix = substr($logFile, 0, $lastDotPos);
+        $suffix = substr($logFile, $lastDotPos);
+    } else {
+        $prefix = $logFile;
+        $suffix = '';
+    }
+    switch ($config['log_split']) {
+        case 'daily':
+            $logFile = sprintf('%s-%s%s', $prefix, date('Y-m-d'), $suffix);
+            break;
+        case 'monthly':
+            $logFile = sprintf('%s-%s%s', $prefix, date('Ym'), $suffix);
+            break;
+        default:
+            break;
+    }
+    return $logFile;
+
 }
 
 function config($key, $default = null)

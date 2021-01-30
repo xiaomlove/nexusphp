@@ -680,8 +680,6 @@ $lang_settings = array
 	'text_email_notification_note' => "Allow users to receive email notification when he gets new pm, comment, etc.",
 	'text_users_get' => "Users would get ",
 	'text_invitations_default' => " invitations the first time he is promoted to this class. Default ",
-	'row_logging' => 'Runtime log path',
-	'text_logging_note' => 'Please enter your runtime log path',
 );
 
 ?>

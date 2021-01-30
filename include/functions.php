@@ -1870,19 +1870,21 @@ function userlogin() {
 function autoclean() {
 	global $autoclean_interval_one, $rootpath;
 	$now = TIMENOW;
-
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime'");
 	$row = mysql_fetch_array($res);
 	if (!$row) {
+	    do_log("SELECT value_u FROM avps WHERE arg = 'lastcleantime', empty");
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime',$now)") or sqlerr(__FILE__, __LINE__);
 		return false;
 	}
 	$ts = $row[0];
 	if ($ts + $autoclean_interval_one > $now) {
+	    do_log("ts: {$ts} + autoclean_interval_one: $autoclean_interval_one > now: $now");
 		return false;
 	}
 	sql_query("UPDATE avps SET value_u=$now WHERE arg='lastcleantime' AND value_u = $ts") or sqlerr(__FILE__, __LINE__);
 	if (!mysql_affected_rows()) {
+	    do_log("UPDATE avps SET value_u=$now WHERE arg='lastcleantime' AND value_u = $ts, affectedRows = 0");
 		return false;
 	}
 	require_once($rootpath . 'include/cleanup.php');

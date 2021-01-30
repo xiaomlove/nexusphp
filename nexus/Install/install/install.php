@@ -1,9 +1,6 @@
 <?php
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
-if (!session_id()) {
-    session_start();
-}
 $rootpath = dirname(dirname(__DIR__)) . '/';
 define('ROOT_PATH', $rootpath);
 $isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
@@ -15,6 +12,10 @@ require $rootpath . 'nexus/Database/helpers.php';
 $install = new \Nexus\Install\Install();
 $currentStep = $install->currentStep();
 $maxStep = $install->maxStep();
+if (!$install->canAccessStep($currentStep)) {
+    $install->gotoStep(1);
+}
+$error = $copy = '';
 
 //step 1
 if ($currentStep == 1) {
@@ -35,7 +36,7 @@ if ($currentStep == 2) {
             $install->createEnvFile($_POST);
             $install->nextStep();
         } catch (\Exception $exception) {
-            $_SESSION['error'] = $exception->getMessage();
+            $error = $exception->getMessage();
             break;
         }
         break;
@@ -60,7 +61,7 @@ if ($currentStep == 3) {
             $install->createTable($shouldCreateTable);
             $install->nextStep();
         } catch (\Exception $exception) {
-            $_SESSION['error'] = $exception->getMessage();
+            $error = $exception->getMessage();
             break;
         }
         break;
@@ -90,7 +91,7 @@ if ($currentStep == 3) {
 //                        sql_query($sqlAlter);
 //                    }
 //                } catch (\Exception $e) {
-//                    $_SESSION['error'] = $e->getMessage();
+//                    $error = $e->getMessage();
 //                    break;
 //                }
 //            }
@@ -113,7 +114,7 @@ if ($currentStep == 4) {
             $install->importInitialData();
             $install->nextStep();
         } catch (\Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
+            $error = $e->getMessage();
             break;
         }
         break;
@@ -126,7 +127,7 @@ if ($currentStep == 5) {
             $install->createAdministrator($_POST['username'], $_POST['email'], $_POST['password'], $_POST['confirm_password']);
             $install->nextStep();
         } catch (\Exception $exception) {
-            $_SESSION['error'] = $exception->getMessage();
+            $error = $exception->getMessage();
         }
     }
     $pass = true;
@@ -134,7 +135,7 @@ if ($currentStep == 5) {
         ['label' => '用户名', 'name' => 'username', 'value' => $_POST['username'] ?? ''],
         ['label' => '邮箱', 'name' => 'email', 'value' => $_POST['email'] ?? ''],
         ['label' => '密码', 'name' => 'password', 'value' => $_POST['password'] ?? ''],
-        ['label' => '重复密码', 'name' => 'confirm_password', 'value' => $_POST['confirm_password'] ?? ''],
+        ['label' => '确认密码', 'name' => 'confirm_password', 'value' => $_POST['confirm_password'] ?? ''],
     ];
 }
 ?>
@@ -186,13 +187,13 @@ if ($currentStep == 5) {
                 }
                 echo'</div>';
 
-              if (!empty($_SESSION['error'])) {
-                  echo sprintf('<div class="text-center text-red-500 p-4">Error: %s</div>', nl2br($_SESSION['error']));
-                  unset($_SESSION['error']);
+              if (!empty($error)) {
+                  echo sprintf('<div class="text-center text-red-500 p-4">Error: %s</div>', nl2br($error));
+                  unset($error);
               }
-              if (!empty($_SESSION['copy'])) {
-                  echo sprintf('<div class="text-center"><textarea class="w-1/2 h-40 border">%s</textarea></div>', $_SESSION['copy']);
-                  unset($_SESSION['copy']);
+              if (!empty($copy)) {
+                  echo sprintf('<div class="text-center"><textarea class="w-1/2 h-40 border">%s</textarea></div>', $copy);
+                  unset($copy);
               }
               ?>
               <div class="mt-10 text-center">
@@ -207,7 +208,7 @@ if ($currentStep == 5) {
           </div>
       </div>
       <div class="mt-10 text-center">
-          欢迎使用 NexusPHP 安装程序，如有疑问，点击<a href="http://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取参考。
+          欢迎使用 NexusPHP 安装程序，如有疑问，点击<a href="http://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取帮助。
       </div>
   </body>
 <script>

@@ -680,8 +680,6 @@ $lang_settings = array
 	'text_email_notification_note' => "是否允许用户在收取新短讯、评论等时候收到邮件提示。",
 	'text_users_get' => "首次升级至此等级的用户将获得",
 	'text_invitations_default' => "个邀请名额。默认",
-	'row_logging' => '运行日志路径',
-	'text_logging_note' => '请填写你的运行时日志路径',
 );
 
 ?>

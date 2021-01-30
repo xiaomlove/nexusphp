@@ -8,8 +8,6 @@ class DB
 
     private static $instance;
 
-    private static $queries = [];
-
     private $isConnected = false;
 
     private function __construct()
@@ -55,8 +53,6 @@ class DB
         $this->driver->query("SET collation_connection = 'utf8_general_ci'");
         $this->driver->query("SET sql_mode=''");
         $this->isConnected = true;
-        $log = json_encode(func_get_args());
-        do_log($log);
         return true;
     }
 
@@ -66,7 +62,6 @@ class DB
             return null;
         }
         $config = config('database.mysql');
-        do_log(json_encode($config));
         return $this->connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']);
     }
 

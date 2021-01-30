@@ -4,6 +4,7 @@ if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
 
 function printProgress($msg) {
+	do_log($msg);
 	echo $msg.'...done<br />';
 	ob_flush();
 	flush();

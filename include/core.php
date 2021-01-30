@@ -2,6 +2,18 @@
 if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
+define('ROOT_PATH', $rootpath);
+define('VERSION_NUMBER', '1.6.0');
+define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
+if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
+    define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
+} else {
+    define('REQUEST_ID', intval(NEXUS_START * 10000));
+}
+ini_set('date.timezone', config('nexus.timezone'));
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 0);
+
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
@@ -10,16 +22,8 @@ if (!file_exists($rootpath . '.env')) {
         exit(0);
     }
 }
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
-    define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
-} else {
-    define('REQUEST_ID', intval(NEXUS_START * 10000));
-}
-define('ROOT_PATH', $rootpath);
-define('VERSION_NUMBER', '1.6.0');
-define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
+
+
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_advertisement.php';
@@ -31,7 +35,6 @@ if (!IS_ANNOUNCE) {
 $Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 define('TIMENOW', time());
-define('TIMENOW_STRING', date('Y-m-d H:i:s'));
 $USERUPDATESET = array();
 $query_name=array();
 

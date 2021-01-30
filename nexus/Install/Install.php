@@ -10,6 +10,8 @@ class Install
 
     private $minimumPhpVersion = '7.2.0';
 
+    private $progressKeyPrefix = '__step';
+
     protected $steps = ['环境检测', '添加 .env 文件', '创建数据表', '导入数据', '创建管理员账号'];
 
     protected $initializeTables = [
@@ -18,15 +20,46 @@ class Install
         'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed', 'agent_allowed_family',
     ];
 
+    protected $envNames = ['MYSQL_HOST', 'MYSQL_PORT', 'MYSQL_USERNAME', 'MYSQL_PASSWORD', 'MYSQL_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DATABASE'];
+
+
 
     public function __construct()
     {
+        if (!session_id()) {
+            session_start();
+        }
         $this->currentStep = min(intval($_REQUEST['step'] ?? 1) ?: 1, count($this->steps) + 1);
     }
 
     public function currentStep()
     {
         return $this->currentStep;
+    }
+
+    public function canAccessStep($step)
+    {
+        for ($i = 1; $i < $step; $i++) {
+            $progressKey = $this->getProgressKey($i);
+            if (!isset($_SESSION[$progressKey])) {
+                do_log("check step: $i, session doesn't have, session: " . json_encode($_SESSION));
+                return false;
+            }
+        }
+        do_log("check step: $step, can access, session: " . json_encode($_SESSION));
+        return true;
+    }
+
+    public function doneStep($step)
+    {
+        $progressKey = $this->getProgressKey($step);
+        do_log("doneStep: $step, $progressKey = 1");
+        $_SESSION[$progressKey] = 1;
+    }
+
+    private function getProgressKey($step)
+    {
+        return $this->progressKeyPrefix . $step;
     }
 
     public function getLogFile()
@@ -221,6 +254,7 @@ class Install
 
     public function nextStep()
     {
+        $this->doneStep($this->currentStep);
         $this->gotoStep($this->currentStep + 1);
     }
 
@@ -308,13 +342,14 @@ class Install
         }
         $mergeData = array_merge($envExampleData, $envData);
         $formControls = [];
-        foreach ($mergeData as $key => $value) {
-            if (isset($_POST[$key])) {
-                $value = $_POST[$key];
+        foreach ($this->envNames as $name) {
+            $value = $mergeData[$name];
+            if (isset($_POST[$name])) {
+                $value = $_POST[$name];
             }
             $formControls[] = [
-                'label' => $key,
-                'name' => $key,
+                'label' => $name,
+                'name' => $name,
                 'value' => $value,
             ];
         }
@@ -324,6 +359,10 @@ class Install
 
     public function createAdministrator($username, $email, $password, $confirmPassword)
     {
+        $count = get_row_count('users', 'where class = 16');
+        if ($count > 0) {
+            throw new \InvalidArgumentException("Administrator already exists");
+        }
         if (!validusername($username)) {
             throw new \InvalidArgumentException("Innvalid username: $username");
         }
@@ -398,7 +437,7 @@ class Install
         }
         fwrite($fp, $content);
         fclose($fp);
-        $this->doLog("[CREATE ENV] $envFile with content: \n $content");
+        $this->doLog("[CREATE ENV] $envFile with content: $content");
         return true;
     }
 
@@ -462,6 +501,12 @@ class Install
             $table = $match[1];
             $sql = trim($match[0]);
             if (!in_array($table, $this->initializeTables)) {
+                continue;
+            }
+            //if table not empty, skip
+            $count = get_row_count($table);
+            if ($count > 0) {
+                $this->doLog("[IMPORT DATA] $table, not empty, skip");
                 continue;
             }
             $this->doLog("[IMPORT DATA] $table, $sql");

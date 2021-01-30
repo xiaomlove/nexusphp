@@ -5,15 +5,7 @@ if(!defined('IN_TRACKER'))
 
 function dbconn_announce() {
 
-	$config = config('database.mysql');
-
-	if (!@mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']))
-	{
-		die('dbconn: mysql_connect: ' . mysql_error());
-	}
-	mysql_query("SET NAMES UTF8");
-	mysql_query("SET collation_connection = 'utf8_general_ci'");
-	mysql_query("SET sql_mode=''");
+	\Nexus\Database\DB::getInstance()->autoConnect();
 }
 
 function hash_where_arr($name, $hash_arr) {
