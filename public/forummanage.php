@@ -209,7 +209,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "newforum"){
     <td>
     <select name=overforums>
 <?php
-            $forid = $row["forid"];
+            $forid = $row["forid"] ?? 0;
             $res = sql_query("SELECT * FROM overforums");
              while ($arr = mysql_fetch_array($res)) {
 

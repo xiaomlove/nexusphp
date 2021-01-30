@@ -2,8 +2,8 @@
 define('NEXUS_START', microtime(true));
 define('IN_TRACKER', true);
 define("PROJECTNAME","NexusPHP");
-define("NEXUSPHPURL","http://www.nexusphp.com");
-define("NEXUSWIKIURL","http://www.nexusphp.com/wiki");
+define("NEXUSPHPURL","http://nexusphp.org");
+define("NEXUSWIKIURL","http://doc.nexusphp.org");
 define("VERSION","Powered by <a href=\"aboutnexus.php\">".PROJECTNAME."</a>");
 define("THISTRACKER","General");
 $showversion = " - Powered by ".PROJECTNAME;
