@@ -42,18 +42,18 @@ class Install
         for ($i = 1; $i < $step; $i++) {
             $progressKey = $this->getProgressKey($i);
             if (!isset($_SESSION[$progressKey])) {
-                do_log("check step: $i, session doesn't have, session: " . json_encode($_SESSION));
+                $this->doLog("check step: $i, session doesn't have, session: " . json_encode($_SESSION));
                 return false;
             }
         }
-        do_log("check step: $step, can access, session: " . json_encode($_SESSION));
+        $this->doLog("check step: $step, can access, session: " . json_encode($_SESSION));
         return true;
     }
 
     public function doneStep($step)
     {
         $progressKey = $this->getProgressKey($step);
-        do_log("doneStep: $step, $progressKey = 1");
+        $this->doLog("doneStep: $step, $progressKey = 1");
         $_SESSION[$progressKey] = 1;
     }
 
