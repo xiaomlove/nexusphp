@@ -10,10 +10,6 @@ if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
 } else {
     define('REQUEST_ID', intval(NEXUS_START * 10000));
 }
-ini_set('date.timezone', config('nexus.timezone'));
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 0);
-
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
@@ -22,7 +18,9 @@ if (!file_exists($rootpath . '.env')) {
         exit(0);
     }
 }
-
+ini_set('date.timezone', config('nexus.timezone'));
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 0);
 
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
