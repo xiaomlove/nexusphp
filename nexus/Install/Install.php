@@ -6,11 +6,11 @@ use Nexus\Database\DB;
 
 class Install
 {
-    private $currentStep;
+    protected $currentStep;
 
-    private $minimumPhpVersion = '7.2.0';
+    protected $minimumPhpVersion = '7.2.0';
 
-    private $progressKeyPrefix = '__step';
+    protected $progressKeyPrefix = '__step';
 
     protected $steps = ['环境检测', '添加 .env 文件', '创建数据表', '导入数据', '创建管理员账号'];
 
@@ -97,7 +97,6 @@ class Install
 
     public function listExistsTable()
     {
-        dbconn(false, false);
         $sql = 'show tables';
         $res = sql_query($sql);
         $data = [];
