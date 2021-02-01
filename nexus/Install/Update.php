@@ -24,29 +24,32 @@ class Update extends Install
         return ROOT_PATH . 'public/update';
     }
 
-
-    public function listShouldAlterTableTableRows()
+    public function listTableFieldsFromCreateTable($createTableSql)
     {
-        $tables = $this->listExistsTable();
-        $data = [];
-        foreach ($tables as $table) {
-            $sql = "desc $table";
-            $res = sql_query($sql);
-            while ($row = mysql_fetch_assoc($res)) {
-                if ($row['Type'] == 'datetime' && $row['Default'] == '0000-00-00 00:00:00') {
-                    $data[$table][] = $row['Field'];
-                    $data[] = [
-                        'label' => "$table." . $row['Field'],
-                        'required' => 'default null',
-                        'current' => '0000-00-00 00:00:00',
-                        'result' => 'NO',
-                    ];
-                }
+        $arr = preg_split("/[\r\n]+/", $createTableSql);
+        $result = [];
+        foreach ($arr as $value) {
+            $value = trim($value);
+            if (substr($value, 0, 1) != '`') {
+                continue;
             }
+            $pos = strpos($value, '`', 1);
+            $field = substr($value, 1, $pos - 1);
+            $result[$field] = rtrim($value, ',');
+        }
+        return $result;
+    }
+
+    public function listTableFieldsFromDb($table)
+    {
+        $sql = "desc $table";
+        $res = sql_query($sql);
+        $data = [];
+        while ($row = mysql_fetch_assoc($res)) {
+            $data[$row['Field']] = $row;
         }
         return $data;
     }
-
 
     public function importInitialData($sqlFile = '')
     {

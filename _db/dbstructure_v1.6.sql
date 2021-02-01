@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.7.19, for Linux (x86_64)
 --
--- Host: localhost    Database: nexus_php_php8
+-- Host: localhost    Database: nexusphp_update
 -- ------------------------------------------------------
 -- Server version	5.7.19-log
 
@@ -16,10 +16,10 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `nexus_php_php8`
+-- Current Database: `nexusphp_update`
 --
 
-USE `nexus_php_php8`;
+USE `nexusphp_update`;
 
 --
 -- Table structure for table `adclicks`
@@ -111,10 +111,10 @@ DROP TABLE IF EXISTS `agent_allowed_exception`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `agent_allowed_exception` (
-  `family_id` tinyint(3) unsigned NOT NULL,
+  `family_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `name` varchar(100) NOT NULL DEFAULT '',
-  `peer_id` varchar(20) NOT NULL,
-  `agent` varchar(100) NOT NULL,
+  `peer_id` varchar(20) NOT NULL DEFAULT '',
+  `agent` varchar(100) NOT NULL DEFAULT '',
   `comment` varchar(200) NOT NULL DEFAULT '',
   KEY `family_id` (`family_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -141,14 +141,14 @@ CREATE TABLE `agent_allowed_family` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
   `family` varchar(50) NOT NULL DEFAULT '',
   `start_name` varchar(100) NOT NULL DEFAULT '',
-  `peer_id_pattern` varchar(200) NOT NULL,
-  `peer_id_match_num` tinyint(3) unsigned NOT NULL,
+  `peer_id_pattern` varchar(200) NOT NULL DEFAULT '',
+  `peer_id_match_num` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `peer_id_matchtype` enum('dec','hex') NOT NULL DEFAULT 'dec',
-  `peer_id_start` varchar(20) NOT NULL,
-  `agent_pattern` varchar(200) NOT NULL,
-  `agent_match_num` tinyint(3) unsigned NOT NULL,
+  `peer_id_start` varchar(20) NOT NULL DEFAULT '',
+  `agent_pattern` varchar(200) NOT NULL DEFAULT '',
+  `agent_match_num` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `agent_matchtype` enum('dec','hex') NOT NULL DEFAULT 'dec',
-  `agent_start` varchar(100) NOT NULL,
+  `agent_start` varchar(100) NOT NULL DEFAULT '',
   `exception` enum('yes','no') NOT NULL DEFAULT 'no',
   `allowhttps` enum('yes','no') NOT NULL DEFAULT 'no',
   `comment` varchar(200) NOT NULL DEFAULT '',
@@ -163,7 +163,7 @@ CREATE TABLE `agent_allowed_family` (
 
 LOCK TABLES `agent_allowed_family` WRITE;
 /*!40000 ALTER TABLE `agent_allowed_family` DISABLE KEYS */;
-INSERT INTO `agent_allowed_family` VALUES (1,'Azureus 2.5.0.4','Azureus 2.5.0.4','/^-AZ2504-/',0,'dec','-AZ2504-','/^Azureus 2.5.0.4/',0,'dec','Azureus 2.5.0.4','no','yes','',0),(2,'uTorrent 1.6.1','uTorrent 1.6.1','/^-UT1610-/',0,'dec','-UT1610-','/^uTorrent\\/1610/',0,'dec','uTorrent/1610','no','no','',0),(3,'Bittorrent 6.x','Bittorrent 6.0.1','/^M6-([0-9])-([0-9])--/',2,'dec','M6-0-1--','/^BitTorrent\\/6([0-9])([0-9])([0-9])/',3,'dec','BitTorrent/6010','no','yes','',0),(4,'Deluge 0.x','Deluge 0.5.8.9','/^-DE0([0-9])([0-9])([0-9])-/',3,'dec','-DE0589-','/^Deluge 0\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Deluge 0.5.8.9','no','yes','',0),(5,'Transmission1.x','Transmission 1.06 (build 5136)','/^-TR1([0-9])([0-9])([0-9])-/',3,'dec','-TR1060-','/^Transmission\\/1\\.([0-9])([0-9])/',3,'dec','Transmission/1.06','no','yes','',0),(6,'RTorrent 0.x(with libtorrent 0.x)','rTorrent 0.8.0 (with libtorrent 0.12.0)','/^-lt([0-9A-E])([0-9A-E])([0-9A-E])([0-9A-E])-/',4,'hex','-lt0C00-','/^rtorrent\\/0\\.([0-9])\\.([0-9])\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)/',4,'dec','rtorrent/0.8.0/0.12.0','no','no','',0),(7,'Rufus 0.x','Rufus 0.6.9','',0,'dec','','/^Rufus\\/0\\.([0-9])\\.([0-9])/',2,'dec','Rufus/0.6.9','no','no','',0),(8,'Azureus 3.x','Azureus 3.0.5.0','/^-AZ3([0-9])([0-9])([0-9])-/',3,'dec','-AZ3050-','/^Azureus 3\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 3.0.5.0','no','yes','',0),(9,'uTorrent 1.7.x','uTorrent 1.7.5','/^-UT17([0-9])([0-9])-/',2,'dec','-UT1750-','/^uTorrent\\/17([0-9])([0-9])/',2,'dec','uTorrent/1750','no','yes','',0),(10,'BitRocket 0.x','BitRocket 0.3.3(32)','/^-BR0([0-9])([1-9][0-9]*)-/',2,'dec','-BR0332-','/^BitRocket\\/0\\.([0-9])\\.([0-9])\\(([1-9][0-9]*)\\) libtorrent\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)/',6,'dec','BitRocket/0.3.3(32) libtorrent/0.13.0.0','no','yes','',0),(11,'MLDonkey 2.9.x','MLDonkey 2.9.2','/^-ML2\\.9\\.([0-9])-/',1,'dec','-ML2.9.2-','/^MLDonkey\\/2\\.9\\.([0-9])/',1,'dec','MLDonkey/2.9.2','no','yes','',0),(12,'uTorrent 1.8.x','uTorrent 1.8.0','/^-UT18([0-9])([0-9])-/',2,'dec','-UT1800-','/^uTorrent\\/18([0-9])([0-9])/',2,'dec','uTorrent/1800','no','yes','',0),(13,'Azureus 4.x','Vuze 4.0.0.2','/^-AZ4([0-9])([0-9])([0-9])-/',3,'dec','-AZ4002-','/^Azureus 4\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 4.0.0.2','no','yes','',0),(14,'SymTorrent','','',0,'dec','','/^SymTorrent/',0,'dec','SymTorrent','no','no','',0),(15,'Deluge 1.x','Deluge 1.1.6','/^-DE1([0-9])([0-9])([0-9])-/',3,'dec','-DE1160-','/^Deluge 1\\.([0-9])\\.([0-9])/',2,'dec','Deluge 1.1.6','no','yes','',0),(16,'uTorrent 1.8xB','uTorrent 1.80 Beta (build 9137)','/^-UT18([0-9])B-/',1,'dec','-UT180B-','/^uTorrent\\/18([0-9])B\\(([1-9][0-9]*)\\)/',2,'dec','uTorrent/180B(9137)','no','yes','',0),(17,'uTorrent 2.x.x','uTorrent 2.0(build 17624)','/^-UT2([0-9])([0-9])([0-9])-/',3,'dec','-UT2000-','/^uTorrent\\/2([0-9])([0-9])([0-9])/',3,'dec','uTorrent/2000','no','yes','',0),(18,'Transmission2.x','Transmission 2.0','/^-TR2([0-9])([0-9])([0-9])-/',3,'dec','-TR2000-','/^Transmission\\/2\\.([0-9])([0-9])/',3,'dec','Transmission/2.00','no','yes','',0),(19,'uTorrent 3.x','uTorrent/3000','/^-UT3([0-9])([0-9])([0-9])-/',3,'dec','-UT3000-','/^uTorrent\\/3([0-9])([0-9])([0-9])/',3,'dec','uTorrent/3000','no','yes','',0),(20,'uTorrent 3.x','uTorrent','',0,'dec','-UT355W-','/^uTorrent/',0,'dec','uTorrent','no','yes','',0);
+INSERT INTO `agent_allowed_family` VALUES (1,'Azureus 2.5.0.4','Azureus 2.5.0.4','/^-AZ2504-/',0,'dec','-AZ2504-','/^Azureus 2.5.0.4/',0,'dec','Azureus 2.5.0.4','no','yes','',0),(2,'uTorrent 1.6.1','uTorrent 1.6.1','/^-UT1610-/',0,'dec','-UT1610-','/^uTorrent\\/1610/',0,'dec','uTorrent/1610','no','no','',0),(3,'Bittorrent 6.x','Bittorrent 6.0.1','/^M6-([0-9])-([0-9])--/',2,'dec','M6-0-1--','/^BitTorrent\\/6([0-9])([0-9])([0-9])/',3,'dec','BitTorrent/6010','no','yes','',0),(4,'Deluge 0.x','Deluge 0.5.8.9','/^-DE0([0-9])([0-9])([0-9])-/',3,'dec','-DE0589-','/^Deluge 0\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Deluge 0.5.8.9','no','yes','',0),(5,'Transmission1.x','Transmission 1.06 (build 5136)','/^-TR1([0-9])([0-9])([0-9])-/',3,'dec','-TR1060-','/^Transmission\\/1\\.([0-9])([0-9])/',3,'dec','Transmission/1.06','no','yes','',0),(6,'RTorrent 0.x(with libtorrent 0.x)','rTorrent 0.8.0 (with libtorrent 0.12.0)','/^-lt([0-9A-E])([0-9A-E])([0-9A-E])([0-9A-E])-/',4,'hex','-lt0C00-','/^rtorrent\\/0\\.([0-9])\\.([0-9])\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)/',4,'dec','rtorrent/0.8.0/0.12.0','no','no','',0),(7,'Rufus 0.x','Rufus 0.6.9','',0,'dec','','/^Rufus\\/0\\.([0-9])\\.([0-9])/',2,'dec','Rufus/0.6.9','no','no','',0),(8,'Azureus 3.x','Azureus 3.0.5.0','/^-AZ3([0-9])([0-9])([0-9])-/',3,'dec','-AZ3050-','/^Azureus 3\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 3.0.5.0','no','yes','',0),(9,'uTorrent 1.7.x','uTorrent 1.7.5','/^-UT17([0-9])([0-9])-/',2,'dec','-UT1750-','/^uTorrent\\/17([0-9])([0-9])/',2,'dec','uTorrent/1750','no','yes','',0),(10,'BitRocket 0.x','BitRocket 0.3.3(32)','/^-BR0([0-9])([1-9][0-9]*)-/',2,'dec','-BR0332-','/^BitRocket\\/0\\.([0-9])\\.([0-9])\\(([1-9][0-9]*)\\) libtorrent\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)/',6,'dec','BitRocket/0.3.3(32) libtorrent/0.13.0.0','no','yes','',0),(11,'MLDonkey 2.9.x','MLDonkey 2.9.2','/^-ML2\\.9\\.([0-9])-/',1,'dec','-ML2.9.2-','/^MLDonkey\\/2\\.9\\.([0-9])/',1,'dec','MLDonkey/2.9.2','no','yes','',0),(12,'uTorrent 1.8.x','uTorrent 1.8.0','/^-UT18([0-9])([0-9])-/',2,'dec','-UT1800-','/^uTorrent\\/18([0-9])([0-9])/',2,'dec','uTorrent/1800','no','yes','',0),(13,'Azureus 4.x','Vuze 4.0.0.2','/^-AZ4([0-9])([0-9])([0-9])-/',3,'dec','-AZ4002-','/^Azureus 4\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 4.0.0.2','no','yes','',0),(14,'SymTorrent','','',0,'dec','','/^SymTorrent/',0,'dec','SymTorrent','no','no','',0),(15,'Deluge 1.x','Deluge 1.1.6','/^-DE1([0-9])([0-9])([0-9])-/',3,'dec','-DE1160-','/^Deluge 1\\.([0-9])\\.([0-9])/',2,'dec','Deluge 1.1.6','no','yes','',0),(16,'uTorrent 1.8xB','uTorrent 1.80 Beta (build 9137)','/^-UT18([0-9])B-/',1,'dec','-UT180B-','/^uTorrent\\/18([0-9])B\\(([1-9][0-9]*)\\)/',2,'dec','uTorrent/180B(9137)','no','yes','',0),(17,'uTorrent 2.x.x','uTorrent 2.0(build 17624)','/^-UT2([0-9])([0-9])([0-9])-/',3,'dec','-UT2000-','/^uTorrent\\/2([0-9])([0-9])([0-9])/',3,'dec','uTorrent/2000','no','yes','',0),(18,'Transmission2.x','Transmission 2.0','/^-TR2([0-9])([0-9])([0-9])-/',3,'dec','-TR2000-','/^Transmission\\/2\\.([0-9])([0-9])/',3,'dec','Transmission/2.00','no','yes','',0),(19,'uTorrent 3.x','uTorrent/3000','/^-UT3([0-9])([0-9])([0-9])-/',3,'dec','-UT3000-','/^uTorrent\\/3([0-9])([0-9])([0-9])/',3,'dec','uTorrent/3000','no','yes','',0),(20,'uTorrent 3.x','uTorrent','',0,'dec','-UT355W-','/^uTorrent/',0,'dec','uTorrent','no','yes','',1);
 /*!40000 ALTER TABLE `agent_allowed_family` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -207,7 +207,7 @@ CREATE TABLE `attachments` (
   `dlkey` char(32) NOT NULL,
   `filetype` varchar(50) NOT NULL DEFAULT '',
   `filesize` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `location` varchar(255) NOT NULL,
+  `location` varchar(255) NOT NULL DEFAULT '',
   `downloads` mediumint(8) NOT NULL DEFAULT '0',
   `isimage` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `thumb` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -235,11 +235,11 @@ DROP TABLE IF EXISTS `audiocodecs`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `audiocodecs` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
-  `image` varchar(255) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `image` varchar(255) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -313,8 +313,8 @@ CREATE TABLE `bans` (
   `added` datetime DEFAULT NULL,
   `addedby` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `comment` varchar(255) NOT NULL DEFAULT '',
-  `first` bigint(20) NOT NULL,
-  `last` bigint(20) NOT NULL,
+  `first` bigint(20) NOT NULL DEFAULT '0',
+  `last` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `first_last` (`first`,`last`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -339,7 +339,7 @@ DROP TABLE IF EXISTS `bitbucket`;
 CREATE TABLE `bitbucket` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `owner` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
   `added` datetime DEFAULT NULL,
   `public` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
@@ -416,8 +416,8 @@ CREATE TABLE `categories` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `mode` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `class_name` varchar(255) NOT NULL DEFAULT '',
-  `name` varchar(30) NOT NULL,
-  `image` varchar(255) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `image` varchar(255) NOT NULL DEFAULT '',
   `sort_index` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `mode_sort` (`mode`,`sort_index`)
@@ -444,7 +444,7 @@ DROP TABLE IF EXISTS `caticons`;
 CREATE TABLE `caticons` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL DEFAULT '',
-  `folder` varchar(255) NOT NULL,
+  `folder` varchar(255) NOT NULL DEFAULT '',
   `cssfile` varchar(255) NOT NULL DEFAULT '',
   `multilang` enum('yes','no') NOT NULL DEFAULT 'no',
   `secondicon` enum('yes','no') NOT NULL DEFAULT 'no',
@@ -533,7 +533,7 @@ DROP TABLE IF EXISTS `codecs`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `codecs` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -591,7 +591,7 @@ DROP TABLE IF EXISTS `countries`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `countries` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
+  `name` varchar(50) NOT NULL DEFAULT '',
   `flagpic` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -616,7 +616,7 @@ DROP TABLE IF EXISTS `downloadspeed`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `downloadspeed` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
+  `name` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -640,7 +640,7 @@ DROP TABLE IF EXISTS `faq`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `faq` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `link_id` smallint(5) unsigned NOT NULL,
+  `link_id` smallint(5) unsigned NOT NULL DEFAULT '0',
   `lang_id` smallint(5) unsigned NOT NULL DEFAULT '6',
   `type` enum('categ','item') NOT NULL DEFAULT 'item',
   `question` text NOT NULL,
@@ -697,8 +697,8 @@ DROP TABLE IF EXISTS `forummods`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `forummods` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `forumid` smallint(5) unsigned NOT NULL,
-  `userid` mediumint(8) unsigned NOT NULL,
+  `forumid` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `forumid` (`forumid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -723,7 +723,7 @@ DROP TABLE IF EXISTS `forums`;
 CREATE TABLE `forums` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `sort` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(60) NOT NULL,
+  `name` varchar(60) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
   `minclassread` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `minclasswrite` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -753,8 +753,8 @@ DROP TABLE IF EXISTS `friends`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `friends` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `userid` mediumint(8) unsigned NOT NULL,
-  `friendid` mediumint(8) unsigned NOT NULL,
+  `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `friendid` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `userfriend` (`userid`,`friendid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -807,7 +807,7 @@ CREATE TABLE `funds` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `usd` decimal(8,2) NOT NULL DEFAULT '0.00',
   `cny` decimal(8,2) NOT NULL DEFAULT '0.00',
-  `user` mediumint(8) unsigned NOT NULL,
+  `user` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `added` datetime DEFAULT NULL,
   `memo` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
@@ -884,8 +884,8 @@ DROP TABLE IF EXISTS `iplog`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `iplog` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `ip` varchar(64) NOT NULL,
-  `userid` mediumint(8) unsigned NOT NULL,
+  `ip` varchar(64) NOT NULL DEFAULT '',
+  `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `access` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userid` (`userid`)
@@ -934,7 +934,7 @@ DROP TABLE IF EXISTS `language`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `language` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `lang_name` varchar(50) NOT NULL,
+  `lang_name` varchar(50) NOT NULL DEFAULT '',
   `flagpic` varchar(255) NOT NULL DEFAULT '',
   `sub_lang` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `rule_lang` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -964,8 +964,8 @@ DROP TABLE IF EXISTS `links`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `links` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
-  `url` varchar(255) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `url` varchar(255) NOT NULL DEFAULT '',
   `title` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -990,11 +990,11 @@ DROP TABLE IF EXISTS `locations`;
 CREATE TABLE `locations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
-  `location_main` varchar(200) NOT NULL,
-  `location_sub` varchar(200) NOT NULL,
+  `location_main` varchar(200) NOT NULL DEFAULT '',
+  `location_sub` varchar(200) NOT NULL DEFAULT '',
   `flagpic` varchar(50) DEFAULT NULL,
-  `start_ip` varchar(20) NOT NULL,
-  `end_ip` varchar(20) NOT NULL,
+  `start_ip` varchar(20) NOT NULL DEFAULT '',
+  `end_ip` varchar(20) NOT NULL DEFAULT '',
   `theory_upspeed` int(10) unsigned NOT NULL DEFAULT '10',
   `practical_upspeed` int(10) unsigned NOT NULL DEFAULT '10',
   `theory_downspeed` int(10) unsigned NOT NULL DEFAULT '10',
@@ -1049,7 +1049,7 @@ DROP TABLE IF EXISTS `media`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `media` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -1161,7 +1161,7 @@ DROP TABLE IF EXISTS `offers`;
 CREATE TABLE `offers` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(225) NOT NULL,
+  `name` varchar(225) NOT NULL DEFAULT '',
   `descr` text,
   `added` datetime DEFAULT NULL,
   `allowedtime` datetime DEFAULT NULL,
@@ -1219,7 +1219,7 @@ DROP TABLE IF EXISTS `overforums`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `overforums` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(60) NOT NULL,
+  `name` varchar(60) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
   `minclassview` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `sort` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1263,10 +1263,10 @@ CREATE TABLE `peers` (
   `downloadoffset` bigint(20) unsigned NOT NULL DEFAULT '0',
   `uploadoffset` bigint(20) unsigned NOT NULL DEFAULT '0',
   `passkey` char(32) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `userid` (`userid`),
-  KEY `torrent` (`torrent`)
-) ENGINE=MEMORY DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
+  PRIMARY KEY (`id`) USING HASH,
+  KEY `userid` (`userid`) USING HASH,
+  KEY `torrent` (`torrent`) USING HASH
+) ENGINE=MEMORY DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1287,9 +1287,9 @@ DROP TABLE IF EXISTS `pmboxes`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pmboxes` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `userid` mediumint(8) unsigned NOT NULL,
+  `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `boxnumber` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `name` varchar(15) NOT NULL,
+  `name` varchar(15) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1312,9 +1312,9 @@ DROP TABLE IF EXISTS `pollanswers`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pollanswers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `pollid` mediumint(8) unsigned NOT NULL,
-  `userid` mediumint(8) unsigned NOT NULL,
-  `selection` tinyint(3) unsigned NOT NULL,
+  `pollid` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `selection` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `pollid` (`pollid`),
   KEY `selection` (`selection`),
@@ -1417,7 +1417,7 @@ DROP TABLE IF EXISTS `processings`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `processings` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -1549,7 +1549,7 @@ DROP TABLE IF EXISTS `rules`;
 CREATE TABLE `rules` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `lang_id` smallint(5) unsigned NOT NULL DEFAULT '6',
-  `title` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL DEFAULT '',
   `text` text,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -1639,9 +1639,9 @@ CREATE TABLE `secondicons` (
   `processing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `team` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `audiocodec` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `class_name` varchar(255) DEFAULT NULL,
-  `image` varchar(255) NOT NULL,
+  `image` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1680,7 +1680,6 @@ CREATE TABLE `settings` (
 
 LOCK TABLES `settings` WRITE;
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
-INSERT INTO `settings` VALUES (1,'basic.SITENAME','NexusPHP','2021-01-29 10:17:23','2021-01-29 10:17:23'),(2,'main.site_online','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(3,'main.max_torrent_size','1048576','2021-01-29 10:17:23','2021-01-29 10:17:23'),(4,'main.announce_interval','1800','2021-01-29 10:17:23','2021-01-29 10:17:23'),(5,'main.annintertwoage','7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(6,'main.annintertwo','2700','2021-01-29 10:17:23','2021-01-29 10:17:23'),(7,'main.anninterthreeage','30','2021-01-29 10:17:23','2021-01-29 10:17:23'),(8,'main.anninterthree','3600','2021-01-29 10:17:23','2021-01-29 10:17:23'),(9,'main.signup_timeout','259200','2021-01-29 10:17:23','2021-01-29 10:17:23'),(10,'main.minoffervotes','15','2021-01-29 10:17:23','2021-01-29 10:17:23'),(11,'main.offervotetimeout','259200','2021-01-29 10:17:23','2021-01-29 10:17:23'),(12,'main.offeruptimeout','86400','2021-01-29 10:17:23','2021-01-29 10:17:23'),(13,'main.maxsubsize','3145728','2021-01-29 10:17:23','2021-01-29 10:17:23'),(14,'main.postsperpage','10','2021-01-29 10:17:23','2021-01-29 10:17:23'),(15,'main.topicsperpage','20','2021-01-29 10:17:23','2021-01-29 10:17:23'),(16,'main.torrentsperpage','50','2021-01-29 10:17:23','2021-01-29 10:17:23'),(17,'main.maxnewsnum','3','2021-01-29 10:17:23','2021-01-29 10:17:23'),(18,'main.max_dead_torrent_time','21600','2021-01-29 10:17:23','2021-01-29 10:17:23'),(19,'main.maxusers','50000','2021-01-29 10:17:23','2021-01-29 10:17:23'),(20,'main.torrent_dir','torrents','2021-01-29 10:17:23','2021-01-29 10:17:23'),(21,'main.iniupload','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(22,'main.SITEEMAIL','nobody@gmail.com','2021-01-29 10:17:23','2021-01-29 10:17:23'),(23,'main.ACCOUNTANTID','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(24,'main.ALIPAYACCOUNT','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(25,'main.PAYPALACCOUNT','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(26,'main.SLOGAN','The Ultimate File Sharing Experience','2021-01-29 10:17:23','2021-01-29 10:17:23'),(27,'main.icplicense','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(28,'main.autoclean_interval_one','900','2021-01-29 10:17:23','2021-01-29 10:17:23'),(29,'main.autoclean_interval_two','1800','2021-01-29 10:17:23','2021-01-29 10:17:23'),(30,'main.autoclean_interval_three','3600','2021-01-29 10:17:23','2021-01-29 10:17:23'),(31,'main.autoclean_interval_four','43200','2021-01-29 10:17:23','2021-01-29 10:17:23'),(32,'main.autoclean_interval_five','648000','2021-01-29 10:17:23','2021-01-29 10:17:23'),(33,'main.reportemail','nobody@gmail.com','2021-01-29 10:17:23','2021-01-29 10:17:23'),(34,'main.invitesystem','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(35,'main.registration','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(36,'main.showhotmovies','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(37,'main.showclassicmovies','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(38,'main.showimdbinfo','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(39,'main.enablenfo','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(40,'main.enableschool','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(41,'main.restrictemail','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(42,'main.showpolls','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(43,'main.showstats','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(44,'main.showlastxtorrents','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(45,'main.showtrackerload','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(46,'main.showshoutbox','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(47,'main.showfunbox','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(48,'main.showoffer','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(49,'main.sptime','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(50,'main.showhelpbox','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(51,'main.enablebitbucket','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(52,'main.smalldescription','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(53,'main.altname','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(54,'main.extforum','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(55,'main.extforumurl','http://www.cc98.org','2021-01-29 10:17:23','2021-01-29 10:17:23'),(56,'main.defaultlang','en','2021-01-29 10:17:23','2021-01-29 10:17:23'),(57,'main.defstylesheet','3','2021-01-29 10:17:23','2021-01-29 10:17:23'),(58,'main.donation','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(59,'main.spsct','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(60,'main.browsecat','4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(61,'main.specialcat','4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(62,'main.waitsystem','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(63,'main.maxdlsystem','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(64,'main.bitbucket','bitbucket','2021-01-29 10:17:23','2021-01-29 10:17:23'),(65,'main.torrentnameprefix','[Nexus]','2021-01-29 10:17:23','2021-01-29 10:17:23'),(66,'main.showforumstats','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(67,'main.verification','automatic','2021-01-29 10:17:23','2021-01-29 10:17:23'),(68,'main.invite_count','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(69,'main.invite_timeout','7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(70,'main.seeding_leeching_time_calc_start','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(71,'main.startsubid',NULL,'2021-01-29 10:17:23','2021-01-29 10:17:23'),(72,'main.logo','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(74,'main.showlastxforumposts','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(75,'main.pt_gen_api_point','https://ptgen.rhilip.info','2021-01-29 10:17:23','2021-01-29 10:17:23'),(76,'main.enable_pt_gen_system','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(77,'smtp.smtptype','advanced','2021-01-29 10:17:23','2021-01-29 10:17:23'),(78,'smtp.emailnotify','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(79,'smtp.smtp_host','localhost','2021-01-29 10:17:23','2021-01-29 10:17:23'),(80,'smtp.smtp_port','233','2021-01-29 10:17:23','2021-01-29 10:17:23'),(81,'smtp.smtp_from',NULL,'2021-01-29 10:17:23','2021-01-29 10:17:23'),(82,'smtp.smtpaddress','smtp.qq.com','2021-01-29 10:17:23','2021-01-29 10:17:23'),(83,'smtp.smtpport','25','2021-01-29 10:17:23','2021-01-29 10:17:23'),(84,'smtp.accountname','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(85,'smtp.accountpassword','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(86,'security.securelogin','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(87,'security.securetracker','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(88,'security.https_announce_url','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(89,'security.iv','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(90,'security.maxip','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(91,'security.maxloginattempts','10','2021-01-29 10:17:23','2021-01-29 10:17:23'),(92,'security.changeemail','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(93,'security.cheaterdet','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(94,'security.nodetect','11','2021-01-29 10:17:23','2021-01-29 10:17:23'),(95,'authority.defaultclass','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(96,'authority.staffmem','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(97,'authority.newsmanage','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(98,'authority.newfunitem','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(99,'authority.funmanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(100,'authority.sbmanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(101,'authority.pollmanage','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(102,'authority.applylink','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(103,'authority.linkmanage','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(104,'authority.postmanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(105,'authority.commanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(106,'authority.forummanage','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(107,'authority.viewuserlist','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(108,'authority.torrentmanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(109,'authority.torrentsticky','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(110,'authority.torrentonpromotion','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(111,'authority.askreseed','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(112,'authority.viewnfo','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(113,'authority.torrentstructure','8','2021-01-29 10:17:23','2021-01-29 10:17:23'),(114,'authority.sendinvite','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(115,'authority.viewhistory','6','2021-01-29 10:17:23','2021-01-29 10:17:23'),(116,'authority.topten','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(117,'authority.log','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(118,'authority.confilog','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(119,'authority.userprofile','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(120,'authority.torrenthistory','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(121,'authority.prfmanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(122,'authority.cruprfmanage','14','2021-01-29 10:17:23','2021-01-29 10:17:23'),(123,'authority.uploadsub','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(124,'authority.delownsub','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(125,'authority.submanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(126,'authority.updateextinfo','7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(127,'authority.viewanonymous','12','2021-01-29 10:17:23','2021-01-29 10:17:23'),(128,'authority.beanonymous','4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(129,'authority.addoffer','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(130,'authority.offermanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(131,'authority.upload','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(132,'authority.uploadspecial','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(133,'authority.movetorrent','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(134,'authority.chrmanage','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(135,'authority.viewinvite','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(136,'authority.buyinvite','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(137,'authority.seebanned','12','2021-01-29 10:17:23','2021-01-29 10:17:23'),(138,'authority.againstoffer','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(139,'authority.userbar','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(140,'tweak.where','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(141,'tweak.iplog1','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(142,'tweak.bonus','enable','2021-01-29 10:17:23','2021-01-29 10:17:23'),(143,'tweak.datefounded','2010-08-19','2021-01-29 10:17:23','2021-01-29 10:17:23'),(144,'tweak.enablelocation','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(145,'tweak.titlekeywords','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(146,'tweak.metakeywords','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(147,'tweak.metadescription','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(148,'tweak.enablesqldebug','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(149,'tweak.sqldebug','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(150,'tweak.cssdate','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(151,'tweak.enabletooltip','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(152,'tweak.prolinkimg','pic/prolink.png','2021-01-29 10:17:23','2021-01-29 10:17:23'),(153,'tweak.analyticscode','','2021-01-29 10:17:23','2021-01-29 10:17:23'),(155,'bonus.donortimes','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(156,'bonus.perseeding','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(157,'bonus.maxseeding','7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(158,'bonus.tzero','4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(159,'bonus.nzero','7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(160,'bonus.bzero','100','2021-01-29 10:17:23','2021-01-29 10:17:23'),(161,'bonus.l','300','2021-01-29 10:17:23','2021-01-29 10:17:23'),(162,'bonus.uploadtorrent','15','2021-01-29 10:17:23','2021-01-29 10:17:23'),(163,'bonus.uploadsubtitle','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(164,'bonus.starttopic','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(165,'bonus.makepost','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(166,'bonus.addcomment','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(167,'bonus.pollvote','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(168,'bonus.offervote','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(169,'bonus.funboxvote','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(170,'bonus.saythanks','0.5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(171,'bonus.receivethanks','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(172,'bonus.funboxreward','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(173,'bonus.onegbupload','300','2021-01-29 10:17:23','2021-01-29 10:17:23'),(174,'bonus.fivegbupload','800','2021-01-29 10:17:23','2021-01-29 10:17:23'),(175,'bonus.tengbupload','1300','2021-01-29 10:17:23','2021-01-29 10:17:23'),(176,'bonus.ratiolimit','6','2021-01-29 10:17:23','2021-01-29 10:17:23'),(177,'bonus.dlamountlimit','50','2021-01-29 10:17:23','2021-01-29 10:17:23'),(178,'bonus.oneinvite','1000','2021-01-29 10:17:23','2021-01-29 10:17:23'),(179,'bonus.customtitle','5000','2021-01-29 10:17:23','2021-01-29 10:17:23'),(180,'bonus.vipstatus','8000','2021-01-29 10:17:23','2021-01-29 10:17:23'),(181,'bonus.bonusgift','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(182,'bonus.basictax','4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(183,'bonus.taxpercentage','10','2021-01-29 10:17:23','2021-01-29 10:17:23'),(184,'bonus.prolinkpoint','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(185,'bonus.prolinktime','600','2021-01-29 10:17:23','2021-01-29 10:17:23'),(186,'account.neverdelete','6','2021-01-29 10:17:23','2021-01-29 10:17:23'),(187,'account.neverdeletepacked','3','2021-01-29 10:17:23','2021-01-29 10:17:23'),(188,'account.deletepacked','400','2021-01-29 10:17:23','2021-01-29 10:17:23'),(189,'account.deleteunpacked','150','2021-01-29 10:17:23','2021-01-29 10:17:23'),(190,'account.deletenotransfer','60','2021-01-29 10:17:23','2021-01-29 10:17:23'),(191,'account.deletenotransfertwo','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(192,'account.deletepeasant','30','2021-01-29 10:17:23','2021-01-29 10:17:23'),(193,'account.psdlone','50','2021-01-29 10:17:23','2021-01-29 10:17:23'),(194,'account.psratioone','0.4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(195,'account.psdltwo','100','2021-01-29 10:17:23','2021-01-29 10:17:23'),(196,'account.psratiotwo','0.5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(197,'account.psdlthree','200','2021-01-29 10:17:23','2021-01-29 10:17:23'),(198,'account.psratiothree','0.6','2021-01-29 10:17:23','2021-01-29 10:17:23'),(199,'account.psdlfour','400','2021-01-29 10:17:23','2021-01-29 10:17:23'),(200,'account.psratiofour','0.7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(201,'account.psdlfive','800','2021-01-29 10:17:23','2021-01-29 10:17:23'),(202,'account.psratiofive','0.8','2021-01-29 10:17:23','2021-01-29 10:17:23'),(203,'account.putime','4','2021-01-29 10:17:23','2021-01-29 10:17:23'),(204,'account.pudl','50','2021-01-29 10:17:23','2021-01-29 10:17:23'),(205,'account.puprratio','1.05','2021-01-29 10:17:23','2021-01-29 10:17:23'),(206,'account.puderatio','0.95','2021-01-29 10:17:23','2021-01-29 10:17:23'),(207,'account.eutime','8','2021-01-29 10:17:23','2021-01-29 10:17:23'),(208,'account.eudl','120','2021-01-29 10:17:23','2021-01-29 10:17:23'),(209,'account.euprratio','1.55','2021-01-29 10:17:23','2021-01-29 10:17:23'),(210,'account.euderatio','1.45','2021-01-29 10:17:23','2021-01-29 10:17:23'),(211,'account.cutime','15','2021-01-29 10:17:23','2021-01-29 10:17:23'),(212,'account.cudl','300','2021-01-29 10:17:23','2021-01-29 10:17:23'),(213,'account.cuprratio','2.05','2021-01-29 10:17:23','2021-01-29 10:17:23'),(214,'account.cuderatio','1.95','2021-01-29 10:17:23','2021-01-29 10:17:23'),(215,'account.iutime','25','2021-01-29 10:17:23','2021-01-29 10:17:23'),(216,'account.iudl','500','2021-01-29 10:17:23','2021-01-29 10:17:23'),(217,'account.iuprratio','2.55','2021-01-29 10:17:23','2021-01-29 10:17:23'),(218,'account.iuderatio','2.45','2021-01-29 10:17:23','2021-01-29 10:17:23'),(219,'account.vutime','40','2021-01-29 10:17:23','2021-01-29 10:17:23'),(220,'account.vudl','750','2021-01-29 10:17:23','2021-01-29 10:17:23'),(221,'account.vuprratio','3.05','2021-01-29 10:17:23','2021-01-29 10:17:23'),(222,'account.vuderatio','2.95','2021-01-29 10:17:23','2021-01-29 10:17:23'),(223,'account.exutime','60','2021-01-29 10:17:23','2021-01-29 10:17:23'),(224,'account.exudl','1024','2021-01-29 10:17:23','2021-01-29 10:17:23'),(225,'account.exuprratio','3.55','2021-01-29 10:17:23','2021-01-29 10:17:23'),(226,'account.exuderatio','3.45','2021-01-29 10:17:23','2021-01-29 10:17:23'),(227,'account.uutime','80','2021-01-29 10:17:23','2021-01-29 10:17:23'),(228,'account.uudl','1536','2021-01-29 10:17:23','2021-01-29 10:17:23'),(229,'account.uuprratio','4.05','2021-01-29 10:17:23','2021-01-29 10:17:23'),(230,'account.uuderatio','3.95','2021-01-29 10:17:23','2021-01-29 10:17:23'),(231,'account.nmtime','100','2021-01-29 10:17:23','2021-01-29 10:17:23'),(232,'account.nmdl','3072','2021-01-29 10:17:23','2021-01-29 10:17:23'),(233,'account.nmprratio','4.55','2021-01-29 10:17:23','2021-01-29 10:17:23'),(234,'account.nmderatio','4.45','2021-01-29 10:17:23','2021-01-29 10:17:23'),(235,'account.getInvitesByPromotion','{\"2\":\"1\",\"3\":\"0\",\"4\":\"2\",\"5\":\"0\",\"6\":\"3\",\"7\":\"0\",\"8\":\"5\",\"9\":\"10\"}','2021-01-29 10:17:23','2021-01-29 10:17:23'),(236,'torrent.prorules','no','2021-01-29 10:17:23','2021-01-29 10:17:23'),(237,'torrent.randomhalfleech','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(238,'torrent.randomfree','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(239,'torrent.randomtwoup','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(240,'torrent.randomtwoupfree','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(241,'torrent.randomtwouphalfdown','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(242,'torrent.largesize','20','2021-01-29 10:17:23','2021-01-29 10:17:23'),(243,'torrent.largepro','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(244,'torrent.expirehalfleech','150','2021-01-29 10:17:23','2021-01-29 10:17:23'),(245,'torrent.expirefree','60','2021-01-29 10:17:23','2021-01-29 10:17:23'),(246,'torrent.expiretwoup','60','2021-01-29 10:17:23','2021-01-29 10:17:23'),(247,'torrent.expiretwoupfree','30','2021-01-29 10:17:23','2021-01-29 10:17:23'),(248,'torrent.expiretwouphalfleech','30','2021-01-29 10:17:23','2021-01-29 10:17:23'),(249,'torrent.expirenormal','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(250,'torrent.hotdays','7','2021-01-29 10:17:23','2021-01-29 10:17:23'),(251,'torrent.hotseeder','10','2021-01-29 10:17:23','2021-01-29 10:17:23'),(252,'torrent.halfleechbecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(253,'torrent.freebecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(254,'torrent.twoupbecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(255,'torrent.twoupfreebecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(256,'torrent.twouphalfleechbecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(257,'torrent.normalbecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(258,'torrent.uploaderdouble','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(259,'torrent.deldeadtorrent','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(260,'torrent.randomthirtypercentdown','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(261,'torrent.thirtypercentleechbecome','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(262,'torrent.expirethirtypercentleech','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(263,'torrent.minvotes','10','2021-01-29 10:17:23','2021-01-29 10:17:23'),(264,'attachment.enableattach','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(265,'attachment.classone','1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(266,'attachment.countone','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(267,'attachment.sizeone','256','2021-01-29 10:17:23','2021-01-29 10:17:23'),(268,'attachment.extone','jpg, jpeg, png, gif','2021-01-29 10:17:23','2021-01-29 10:17:23'),(269,'attachment.classtwo','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(270,'attachment.counttwo','10','2021-01-29 10:17:23','2021-01-29 10:17:23'),(271,'attachment.sizetwo','512','2021-01-29 10:17:23','2021-01-29 10:17:23'),(272,'attachment.exttwo','torrent, zip, rar, 7z, gzip, gz','2021-01-29 10:17:23','2021-01-29 10:17:23'),(273,'attachment.classthree','5','2021-01-29 10:17:23','2021-01-29 10:17:23'),(274,'attachment.countthree','20','2021-01-29 10:17:23','2021-01-29 10:17:23'),(275,'attachment.sizethree','1024','2021-01-29 10:17:23','2021-01-29 10:17:23'),(276,'attachment.extthree','mp3, ogg, oga, flv','2021-01-29 10:17:23','2021-01-29 10:17:23'),(277,'attachment.classfour','13','2021-01-29 10:17:23','2021-01-29 10:17:23'),(278,'attachment.countfour','500','2021-01-29 10:17:23','2021-01-29 10:17:23'),(279,'attachment.sizefour','2048','2021-01-29 10:17:23','2021-01-29 10:17:23'),(280,'attachment.extfour','doc, xls','2021-01-29 10:17:23','2021-01-29 10:17:23'),(281,'attachment.savedirectory','./attachments','2021-01-29 10:17:23','2021-01-29 10:17:23'),(282,'attachment.httpdirectory','attachments','2021-01-29 10:17:23','2021-01-29 10:17:23'),(283,'attachment.savedirectorytype','monthdir','2021-01-29 10:17:23','2021-01-29 10:17:23'),(284,'attachment.thumbnailtype','createthumb','2021-01-29 10:17:23','2021-01-29 10:17:23'),(285,'attachment.thumbquality','80','2021-01-29 10:17:23','2021-01-29 10:17:23'),(286,'attachment.thumbwidth','500','2021-01-29 10:17:23','2021-01-29 10:17:23'),(287,'attachment.thumbheight','500','2021-01-29 10:17:23','2021-01-29 10:17:23'),(288,'attachment.watermarkpos','9','2021-01-29 10:17:23','2021-01-29 10:17:23'),(289,'attachment.watermarkwidth','300','2021-01-29 10:17:23','2021-01-29 10:17:23'),(290,'attachment.watermarkheight','300','2021-01-29 10:17:23','2021-01-29 10:17:23'),(291,'attachment.watermarkquality','85','2021-01-29 10:17:23','2021-01-29 10:17:23'),(292,'attachment.altthumbwidth','180','2021-01-29 10:17:23','2021-01-29 10:17:23'),(293,'attachment.altthumbheight','135','2021-01-29 10:17:23','2021-01-29 10:17:23'),(294,'advertisement.enablead','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(295,'advertisement.enablenoad','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(296,'advertisement.noad','12','2021-01-29 10:17:23','2021-01-29 10:17:23'),(297,'advertisement.enablebonusnoad','yes','2021-01-29 10:17:23','2021-01-29 10:17:23'),(298,'advertisement.bonusnoad','2','2021-01-29 10:17:23','2021-01-29 10:17:23'),(299,'advertisement.bonusnoadpoint','10000','2021-01-29 10:17:23','2021-01-29 10:17:23'),(300,'advertisement.bonusnoadtime','15','2021-01-29 10:17:23','2021-01-29 10:17:23'),(301,'advertisement.adclickbonus','0','2021-01-29 10:17:23','2021-01-29 10:17:23'),(302,'code.mainversion','NexusPHP','2021-01-29 10:17:23','2021-01-29 10:17:23'),(303,'code.subversion','v1.6.0-beta1','2021-01-29 10:17:23','2021-01-29 10:17:23'),(304,'code.releasedate','2021-01-28','2021-01-29 10:17:23','2021-01-29 10:17:23'),(305,'code.website','<a href=\"http://nexusphp.org\" target=\"_blank\">http://nexusphp.org</a>','2021-01-29 10:17:23','2021-01-29 10:17:23');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1782,7 +1781,7 @@ DROP TABLE IF EXISTS `sources`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sources` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -1836,7 +1835,7 @@ DROP TABLE IF EXISTS `standards`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `standards` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -1889,8 +1888,8 @@ DROP TABLE IF EXISTS `subs`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `subs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `torrent_id` mediumint(8) unsigned NOT NULL,
-  `lang_id` smallint(5) unsigned NOT NULL,
+  `torrent_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `lang_id` smallint(5) unsigned NOT NULL DEFAULT '0',
   `title` varchar(255) NOT NULL DEFAULT '',
   `filename` varchar(255) NOT NULL DEFAULT '',
   `added` datetime DEFAULT NULL,
@@ -1975,10 +1974,10 @@ DROP TABLE IF EXISTS `teams`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `teams` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) NOT NULL DEFAULT '',
   `sort_index` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2027,7 +2026,7 @@ DROP TABLE IF EXISTS `topics`;
 CREATE TABLE `topics` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `userid` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `subject` varchar(128) NOT NULL,
+  `subject` varchar(128) NOT NULL DEFAULT '',
   `locked` enum('yes','no') NOT NULL DEFAULT 'no',
   `forumid` smallint(5) unsigned NOT NULL DEFAULT '0',
   `firstpost` int(10) unsigned NOT NULL DEFAULT '0',
@@ -2235,10 +2234,10 @@ CREATE TABLE `users` (
   `showclassic` enum('yes','no') NOT NULL DEFAULT 'yes',
   `support` enum('yes','no') NOT NULL DEFAULT 'no',
   `picker` enum('yes','no') NOT NULL DEFAULT 'no',
-  `stafffor` varchar(255) NOT NULL,
-  `supportfor` varchar(255) NOT NULL,
-  `pickfor` varchar(255) NOT NULL,
-  `supportlang` varchar(50) NOT NULL,
+  `stafffor` varchar(255) NOT NULL DEFAULT '',
+  `supportfor` varchar(255) NOT NULL DEFAULT '',
+  `pickfor` varchar(255) NOT NULL DEFAULT '',
+  `supportlang` varchar(50) NOT NULL DEFAULT '',
   `passkey` varchar(32) NOT NULL DEFAULT '',
   `promotion_link` varchar(32) DEFAULT NULL,
   `uploadpos` enum('yes','no') NOT NULL DEFAULT 'yes',
@@ -2325,4 +2324,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-01-30 14:14:07
+-- Dump completed on 2021-02-01 20:09:25

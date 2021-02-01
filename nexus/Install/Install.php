@@ -15,7 +15,7 @@ class Install
     protected $steps = ['环境检测', '添加 .env 文件', '创建数据表', '导入数据', '创建管理员账号'];
 
     protected $initializeTables = [
-        'adminpanel', 'agent_allowed_exception', 'agent_allowed_family', 'allowedemails', 'audiocodecs', 'avps', 'bannedemails', 'categories',
+        'adminpanel', 'agent_allowed_exception', 'agent_allowed_family', 'allowedemails', 'audiocodecs', 'bannedemails', 'categories',
         'caticons', 'codecs', 'countries', 'downloadspeed', 'faq', 'isp', 'language', 'media', 'modpanel', 'processings', 'rules', 'schools',
         'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed', 'agent_allowed_family',
     ];
@@ -30,6 +30,11 @@ class Install
             session_start();
         }
         $this->currentStep = min(intval($_REQUEST['step'] ?? 1) ?: 1, count($this->steps) + 1);
+    }
+
+    public function listShouldInitializeTables()
+    {
+        return $this->initializeTables;
     }
 
     public function currentStep()
@@ -215,7 +220,7 @@ class Install
             ],
         ];
         $requireDirs = [
-            'main' => ['bitbucket', 'torrent_dir'],
+//            'main' => ['bitbucket', 'torrent_dir'],
             'attachment' => ['savedirectory', ],
         ];
         $symbolicLinks = [];

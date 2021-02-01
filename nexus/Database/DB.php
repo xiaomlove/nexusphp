@@ -51,7 +51,7 @@ class DB
         }
         $this->driver->query("SET NAMES UTF8");
         $this->driver->query("SET collation_connection = 'utf8_general_ci'");
-        $this->driver->query("SET sql_mode=''");
+//        $this->driver->query("SET sql_mode=''");
         $this->isConnected = true;
         return true;
     }
