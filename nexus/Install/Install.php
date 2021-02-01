@@ -111,28 +111,6 @@ class Install
         return $data;
     }
 
-    public function listShouldAlterTableTableRows()
-    {
-        $tables = $this->listExistsTable();
-        $data = [];
-        foreach ($tables as $table) {
-            $sql = "desc $table";
-            $res = sql_query($sql);
-            while ($row = mysql_fetch_assoc($res)) {
-                if ($row['Type'] == 'datetime' && $row['Default'] == '0000-00-00 00:00:00') {
-                    $data[$table][] = $row['Field'];
-                    $data[] = [
-                        'label' => "$table." . $row['Field'],
-                        'required' => 'default null',
-                        'current' => '0000-00-00 00:00:00',
-                        'result' => 'NO',
-                    ];
-                }
-            }
-        }
-        return $data;
-    }
-
     public function listRequirementTableRows()
     {
         $gdInfo = gd_info();
@@ -294,7 +272,7 @@ class Install
             $table .= '<div class="table-cell bg-gray-200 text-gray-700 px-4 py-2 text-sm">' . $value['label'] . '</div>';
             $table .= '<div class="table-cell bg-gray-200 text-gray-700 px-4 py-2 text-sm">' . $value['required'] . '</div>';
             $table .= '<div class="table-cell bg-gray-200 text-gray-700 px-4 py-2 text-sm">' . $value['current'] . '</div>';
-            $table .= '<div class="table-cell bg-' . ($value['result'] == 'YES' ? 'green' : 'gray') . '-200 text-gray-700 px-4 py-2 text-sm">' . $value['result'] . '</div>';
+            $table .= '<div class="table-cell bg-' . ($value['result'] == 'YES' ? 'green' : 'red') . '-200 text-gray-700 px-4 py-2 text-sm">' . $value['result'] . '</div>';
             $table .= '</div>';
         }
         $table .= '</div>';

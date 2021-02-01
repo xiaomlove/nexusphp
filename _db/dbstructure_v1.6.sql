@@ -1665,7 +1665,7 @@ DROP TABLE IF EXISTS `settings`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
   `value` mediumtext,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
