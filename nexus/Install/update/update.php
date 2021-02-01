@@ -95,7 +95,7 @@ if ($currentStep == 3) {
                     'result' => 'NO',
                 ];
                 $toAlterTable[$table][$field] = "modify $fieldCreate";
-                $toUpdateTable[$table][$field] = "$field = null";
+                $toUpdateTable[$table][$field] = "null";
                 continue;
             }
             //Field invalid
@@ -140,13 +140,9 @@ if ($currentStep == 3) {
                 sql_query($query);
             }
             foreach ($toUpdateTable as $table => $updates) {
-                $whereArr = [];
-                foreach ($updates as $updateField => $updateValue) {
-                    $whereArr[] = "($updateField = '0000-00-00 00:00:00')";
-                }
-                if (!empty($whereArr)) {
-                    $query = sprintf("update %s set %s where (%s)", $table, implode(', ', $updates), implode(' or ', $whereArr));
-                    $update->doLog("[UPDATE TABLE] $query");
+                foreach ($updates as $field => $fieldUpdate) {
+                    $query = sprintf("update %s set %s = %s where %s = '0000-00-00 00:00:00'", $table, $field, $fieldUpdate, $field);
+                    $update->doLog("[UPDATE TABLE] $query, affectedRows: " . mysql_affected_rows());
                     sql_query($query);
                 }
             }
