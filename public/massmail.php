@@ -8,6 +8,9 @@ $class = intval($_POST["class"] ?? 0);
 	if ($class)
 		int_check($class,true);
 $or = $_POST["or"] ?? '';
+if (!in_array($or, ["<", ">", "=", "<=", ">="], true)) {
+    stderr("Error", "Invalid symbol!");
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {

@@ -21,16 +21,16 @@ if (!empty($_POST["usernw"]))
 {
 $msg = sqlesc("Your Warning Has Been Removed By: " . $CURUSER['username'] . ".");
 $added = sqlesc(date("Y-m-d H:i:s"));
-$userid = implode(", ", $_POST[usernw]);
+$userid = implode(", ", $_POST['usernw']);
 //sql_query("INSERT INTO messages (sender, receiver, msg, added) VALUES (0, $userid, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 
-$r = sql_query("SELECT modcomment FROM users WHERE id IN (" . implode(", ", $_POST[usernw]) . ")")or sqlerr(__FILE__, __LINE__);
+$r = sql_query("SELECT modcomment FROM users WHERE id IN (" . implode(", ", $_POST['usernw']) . ")")or sqlerr(__FILE__, __LINE__);
 $user = mysql_fetch_array($r);
 $exmodcomment = $user["modcomment"];
 $modcomment = date("Y-m-d") . " - Warning Removed By " . $CURUSER['username'] . ".\n". $modcomment . $exmodcomment;
-sql_query("UPDATE users SET modcomment=" . sqlesc($modcomment) . " WHERE id IN (" . implode(", ", $_POST[usernw]) . ")") or sqlerr(__FILE__, __LINE__);
+sql_query("UPDATE users SET modcomment=" . sqlesc($modcomment) . " WHERE id IN (" . implode(", ", $_POST['usernw']) . ")") or sqlerr(__FILE__, __LINE__);
 
-$do="UPDATE users SET warned='no', warneduntil=null WHERE id IN (" . implode(", ", $_POST[usernw]) . ")";
+$do="UPDATE users SET warned='no', warneduntil=null WHERE id IN (" . implode(", ", $_POST['usernw']) . ")";
 $res=sql_query($do);}
 
 if (!empty($_POST["desact"])){

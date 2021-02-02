@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 //start apply for links
-if ($_GET['action'] == "apply")
+if (isset($_GET['action']) && $_GET['action'] == "apply")
 {
 if (get_user_class() >= $applylink_class){
 stdhead($lang_linksmanage['head_apply_for_links']);
@@ -38,7 +38,7 @@ begin_frame($lang_linksmanage['text_apply_for_links'], true,10,"100%","center");
 }
 else permissiondenied();
 }
-elseif ($_POST['action'] == "newapply")
+elseif (isset($_POST['action']) && $_POST['action'] == "newapply")
 {
 if (get_user_class() >= $applylink_class){
 $sitename = unesc($_POST["linkname"]);
@@ -80,7 +80,7 @@ else permissiondenied();
 elseif (get_user_class() < $linkmanage_class)
 	permissiondenied();
 else{
-if ($_GET['action'] == "del") {
+if (isset($_GET['action']) && $_GET['action'] == "del") {
 $id = intval($_GET['id'] ?? 0);
 if (!$id) { header("Location: linksmanage.php"); die();}
 $result = sql_query ("SELECT * FROM links where id = '".$id."'");
@@ -93,18 +93,18 @@ header("Location: linksmanage.php");
 die();
 }
 
-if ($_POST['action'] == "editlink") {
+if (isset($_POST['action']) && $_POST['action'] == "editlink") {
 	$name = ($_POST['linkname']);
 	$url = ($_POST['url']);
 	$title = ($_POST['title']);
 if (!$name && !$url && !$title) { header("Location: linksmanage.php"); die();}
-	sql_query("UPDATE links SET name = ".sqlesc($_POST['linkname']).", url = ".sqlesc($_POST['url']).", title = ".sqlesc($_POST['title'])." WHERE id = '".$_POST['id']."'") or sqlerr(__FILE__, __LINE__);
+	sql_query("UPDATE links SET name = ".sqlesc($_POST['linkname']).", url = ".sqlesc($_POST['url']).", title = ".sqlesc($_POST['title'])." WHERE id = ".sqlesc($_POST['id'])) or sqlerr(__FILE__, __LINE__);
 	$Cache->delete_value('links');
 header("Location: linksmanage.php");
 die();
 }
 
-if ($_POST['action'] == "add")
+if (isset($_POST['action']) && $_POST['action'] == "add")
 {
 	if ($_POST["linkname"] == "" || $_POST["url"] == "" || $_POST["title"] == "")
 	stderr($lang_linksmanage['std_error'], $lang_linksmanage['std_missing_form_data']);
@@ -142,12 +142,12 @@ echo "<tr><td class=colhead align=left>".$lang_linksmanage['text_site_name']."</
 $result = sql_query ("SELECT * FROM links ORDER BY id ASC");
 if ($row = mysql_fetch_array($result)) {
 do {
-echo "<tr><td>".$row["name"]."</td><td>".$row["url"]."</td><td>".$row["title"]. "</td><td align=center nowrap><b><a href=\"".$PHP_SELF."?action=edit&id=".$row["id"]."\">".$lang_linksmanage['text_edit']."</a>&nbsp;|&nbsp;<a href=\"javascript:confirm_delete('".$row["id"]."', '".$lang_linksmanage['js_sure_to_delete_link']."', '');\"><font color=red>".$lang_linksmanage['text_delete']."</font></a></b></td></tr>";
+echo "<tr><td>".$row["name"]."</td><td>".$row["url"]."</td><td>".$row["title"]. "</td><td align=center nowrap><b><a href=\"?action=edit&id=".$row["id"]."\">".$lang_linksmanage['text_edit']."</a>&nbsp;|&nbsp;<a href=\"javascript:confirm_delete('".$row["id"]."', '".$lang_linksmanage['js_sure_to_delete_link']."', '');\"><font color=red>".$lang_linksmanage['text_delete']."</font></a></b></td></tr>";
 } while($row = mysql_fetch_array($result));
 } else {print "<tr><td colspan=4>".$lang_linksmanage['text_no_links_found']."</td></tr>";}
 echo "</table>";
 ?>
-<?php if ($_GET['action'] == "edit") {
+<?php if (isset($_GET['action']) && $_GET['action'] == "edit") {
 $id = intval($_GET["id"] ?? 0);
 $result = sql_query ("SELECT * FROM links where id = ".sqlesc($id));
 if ($row = mysql_fetch_array($result)) {

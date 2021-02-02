@@ -1432,7 +1432,7 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
         $message = (new Swift_Message($subject))
             ->setFrom($fromemail, $fromname)
             ->setTo([$to])
-            ->setBody($body)
+            ->setBody($body, 'text/html')
         ;
 
         // Send the message
@@ -2016,14 +2016,23 @@ function mkglobal($vars) {
 	return 1;
 }
 
-function tr($x,$y,$noesc=0,$relation='') {
+function tr($x,$y,$noesc=0,$relation='', $return = false) {
 	if ($noesc)
 	$a = $y;
 	else {
 		$a = htmlspecialchars($y);
 		$a = str_replace("\n", "<br />\n", $a);
 	}
-	print("<tr".( $relation ? " relation = \"$relation\"" : "")."><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">$x</td><td class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>\n");
+//	$result = ("<tr".( $relation ? " relation = \"$relation\"" : "")."><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">$x</td><td class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>\n");
+	$result = sprintf(
+	        '<tr%s><td class="rowhead nowrap" valign="top" align="right">%s</td><td class="rowfollow" valign="top" align="left">%s</td></tr>',
+            $relation ? sprintf(' relation="%s"', $relation) : '',
+            $x, $a
+    );
+	if ($return) {
+	    return $result;
+    }
+	print $result;
 }
 
 function tr_small($x,$y,$noesc=0,$relation='') {

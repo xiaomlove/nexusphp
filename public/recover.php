@@ -54,7 +54,8 @@ http://$BASEURL/recover.php?id={$arr["id"]}&secret=$hash
 {$lang_recover['mail_four']}
 EOD;
 
-	sent_mail($arr["email"],$SITENAME,$SITEEMAIL,change_email_encode(get_langfolder_cookie(), $title),change_email_encode(get_langfolder_cookie(),$body),"confirmation",true,false,'',get_email_encode(get_langfolder_cookie()));
+//	sent_mail($arr["email"],$SITENAME,$SITEEMAIL,change_email_encode(get_langfolder_cookie(), $title),change_email_encode(get_langfolder_cookie(),$body),"confirmation",true,false,'',get_email_encode(get_langfolder_cookie()));
+	sent_mail($arr["email"],$SITENAME,$SITEEMAIL,$title,$body,"confirmation",true,false,'');
 
 }
 elseif($_SERVER["REQUEST_METHOD"] == "GET" && $take_recover && isset($_GET["id"]) && isset($_GET["secret"]))
@@ -97,12 +98,11 @@ elseif($_SERVER["REQUEST_METHOD"] == "GET" && $take_recover && isset($_GET["id"]
 <b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/login.php')">{$lang_recover['mail_here']}</a></b>
 {$lang_recover['mail_three_1']}
 <b><a href="http://www.google.com/support/bin/answer.py?answer=23852" target='_blank'>{$lang_confirm_resend['mail_google_answer']}</a></b>
-{$lang_recover['mail_three_2']}
 {$lang_recover['mail_two_four']}
 
 EOD;
 
-	sent_mail($email,$SITENAME,$SITEEMAIL,change_email_encode(get_langfolder_cookie(), $title),change_email_encode(get_langfolder_cookie(),$body),"details",true,false,'',get_email_encode(get_langfolder_cookie()));
+	sent_mail($email,$SITENAME,$SITEEMAIL,$title,$body,"details",true,false,'');
 
 }
 else

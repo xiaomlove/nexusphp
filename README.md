@@ -1,2 +1,2 @@
 ## Doc
-Visit [here](http://doc.nexusphp.cn/)
+Visit [here](http://doc.nexusphp.org/)

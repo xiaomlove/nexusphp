@@ -49,7 +49,7 @@ elseif (isset($_POST['action']) && $_POST['action'] == "editforum") {
 	else{
 		sql_query("DELETE FROM forummods WHERE forumid=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 	}
-	sql_query("UPDATE forums SET sort = '" . $_POST['sort'] . "', name = " . sqlesc($_POST['name']). ", description = " . sqlesc($_POST['desc']). ", forid = ".sqlesc(($_POST['overforums'])).", minclassread = '" . $_POST['readclass'] . "', minclasswrite = '" . $_POST['writeclass'] . "', minclasscreate = '" . $_POST['createclass'] . "' where id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+	sql_query("UPDATE forums SET sort = " . sqlesc($_POST['sort']) . ", name = " . sqlesc($_POST['name']). ", description = " . sqlesc($_POST['desc']). ", forid = ".sqlesc(($_POST['overforums'])).", minclassread = " . sqlesc($_POST['readclass']) . ", minclasswrite = " . sqlesc($_POST['writeclass']) . ", minclasscreate = " . sqlesc($_POST['createclass']) . " where id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 	$Cache->delete_value('forums_list');
 	$Cache->delete_value('forum_moderator_array');
 	header("Location: forummanage.php");
@@ -64,7 +64,7 @@ elseif (isset($_POST['action']) && $_POST['action'] == "addforum") {
 		header("Location: " . get_protocol_prefix() . "$BASEURL/forummanage.php");
 		die();
 	}
-	sql_query("INSERT INTO forums (sort, name,  description, minclassread,  minclasswrite, minclasscreate, forid) VALUES(" . $_POST['sort'] . ", " . sqlesc($_POST['name']). ", " . sqlesc($_POST['desc']). ", " . $_POST['readclass'] . ", " . $_POST['writeclass'] . ", " . $_POST['createclass'] . ", ".sqlesc(($_POST['overforums'])).")") or sqlerr(__FILE__, __LINE__);
+	sql_query("INSERT INTO forums (sort, name,  description, minclassread,  minclasswrite, minclasscreate, forid) VALUES(" . sqlesc($_POST['sort']) . ", " . sqlesc($_POST['name']). ", " . sqlesc($_POST['desc']). ", " . sqlesc($_POST['readclass']) . ", " . sqlesc($_POST['writeclass']) . ", " . sqlesc($_POST['createclass']) . ", ".sqlesc(($_POST['overforums'])).")") or sqlerr(__FILE__, __LINE__);
 	$Cache->delete_value('forums_list');
 	if ($_POST["moderator"]){
 	$id = mysql_insert_id();

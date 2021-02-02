@@ -59,7 +59,7 @@ $body
 <br /><br />{$lang_takeinvite['mail_six']}
 EOD;
 
-sent_mail($email,$SITENAME,$SITEEMAIL,change_email_encode(get_langfolder_cookie(), $title),change_email_encode(get_langfolder_cookie(),$message),"invitesignup",false,false,'',get_email_encode(get_langfolder_cookie()));
+sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
 //this email is sent only when someone give out an invitation
 
 header("Refresh: 0; url=invite.php?id=".htmlspecialchars($id)."&sent=1");

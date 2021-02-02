@@ -677,7 +677,7 @@ $res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) 
 $place = $_GET['place'] ?? '';
 ?>
 <form action="messages.php" method="get">
-<input type="hidden" name="action" value="viewmailbox"><?php echo $lang_messages['text_search'] ?>&nbsp;&nbsp;<input id="searchinput" name="keyword" type="text" value="<?php echo $_GET['keyword'] ?? ''?>" style="width: 200px"/>
+<input type="hidden" name="action" value="viewmailbox"><?php echo $lang_messages['text_search'] ?>&nbsp;&nbsp;<input id="searchinput" name="keyword" type="text" value="<?php echo htmlspecialchars($_GET['keyword'] ?? '')?>" style="width: 200px"/>
 <?php echo $lang_messages['text_in'] ?>&nbsp;<select name="place">
 <option value="both" <?php echo ($place == 'both' ? " selected" : "")?>><?php echo $lang_messages['select_both'] ?></option>
 <option value="title" <?php echo ($place == 'title' ? " selected" : "")?>><?php echo $lang_messages['select_title'] ?></option>

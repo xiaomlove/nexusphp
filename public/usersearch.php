@@ -37,20 +37,20 @@ if ($_GET['h'])
 }
 else
 {
-	echo "<p align=center>(<a href='".$_SERVER["PHP_SELF"]."?h=1'>Instructions</a>)";
-	echo "&nbsp;-&nbsp;(<a href='".$_SERVER["PHP_SELF"]."'>Reset</a>)</p>\n";
+	echo "<p align=center>(<a href='".$_SERVER["REQUEST_URI"]."?h=1'>Instructions</a>)";
+	echo "&nbsp;-&nbsp;(<a href='".$_SERVER["REQUEST_URI"]."'>Reset</a>)</p>\n";
 }
 
 $highlight = " bgcolor=#BBAF9B";
 
 ?>
 
-<form method=get action=<?php echo $_SERVER["PHP_SELF"]?>>
+<form method=get action=<?php echo $_SERVER["REQUEST_URI"]?>>
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
 
   <td valign="middle" class=rowhead>Name:</td>
-  <td<?php echo $_GET['n']?$highlight:""?>><input name="n" type="text" value="<?php echo $_GET['n']?>" size=35></td>
+  <td<?php echo $_GET['n']?$highlight:""?>><input name="n" type="text" value="<?php echo htmlspecialchars($_GET['n'])?>" size=35></td>
 
   <td valign="middle" class=rowhead>Ratio:</td>
   <td<?php echo $_GET['r']?$highlight:""?>><select name="rt">
@@ -61,8 +61,8 @@ $highlight = " bgcolor=#BBAF9B";
 	}
 	?>
     </select>
-    <input name="r" type="text" value="<?php echo $_GET['r']?>" size="5" maxlength="4">
-    <input name="r2" type="text" value="<?php echo $_GET['r2']?>" size="5" maxlength="4"></td>
+    <input name="r" type="text" value="<?php echo htmlspecialchars($_GET['r'])?>" size="5" maxlength="4">
+    <input name="r2" type="text" value="<?php echo htmlspecialchars($_GET['r2'])?>" size="5" maxlength="4"></td>
 
   <td valign="middle" class=rowhead>Member status:</td>
   <td<?php echo $_GET['st']?$highlight:""?>><select name="st">
@@ -74,9 +74,9 @@ $highlight = " bgcolor=#BBAF9B";
     ?>
     </select></td></tr>
 <tr><td valign="middle" class=rowhead>Email:</td>
-  <td<?php echo $_GET['em']?$highlight:""?>><input name="em" type="text" value="<?php echo $_GET['em']?>" size="35"></td>
+  <td<?php echo $_GET['em']?$highlight:""?>><input name="em" type="text" value="<?php echo htmlspecialchars($_GET['em'])?>" size="35"></td>
   <td valign="middle" class=rowhead>IP:</td>
-  <td<?php echo $_GET['ip']?$highlight:""?>><input name="ip" type="text" value="<?php echo $_GET['ip']?>" maxlength="17"></td>
+  <td<?php echo $_GET['ip']?$highlight:""?>><input name="ip" type="text" value="<?php echo htmlspecialchars($_GET['ip'])?>" maxlength="17"></td>
 
   <td valign="middle" class=rowhead>Account status:</td>
   <td<?php echo $_GET['as']?$highlight:""?>><select name="as">
@@ -89,9 +89,9 @@ $highlight = " bgcolor=#BBAF9B";
     </select></td></tr>
 <tr>
   <td valign="middle" class=rowhead>Comment:</td>
-  <td<?php echo $_GET['co']?$highlight:""?>><input name="co" type="text" value="<?php echo $_GET['co']?>" size="35"></td>
+  <td<?php echo $_GET['co']?$highlight:""?>><input name="co" type="text" value="<?php echo htmlspecialchars($_GET['co'])?>" size="35"></td>
   <td valign="middle" class=rowhead>Mask:</td>
-  <td<?php echo $_GET['ma']?$highlight:""?>><input name="ma" type="text" value="<?php echo $_GET['ma']?>" maxlength="17"></td>
+  <td<?php echo $_GET['ma']?$highlight:""?>><input name="ma" type="text" value="<?php echo htmlspecialchars($_GET['ma'])?>" maxlength="17"></td>
   <td valign="middle" class=rowhead>Class:</td>
   <td<?php echo ($_GET['c'] && $_GET['c'] != 1)?$highlight:""?>><select name="c"><option value='1'>(any)</option>
 <?php
@@ -119,9 +119,9 @@ $highlight = " bgcolor=#BBAF9B";
 ?>
     </select>
 
-    <input name="d" type="text" value="<?php echo $_GET['d']?>" size="12" maxlength="10">
+    <input name="d" type="text" value="<?php echo htmlspecialchars($_GET['d'])?>" size="12" maxlength="10">
 
-    <input name="d2" type="text" value="<?php echo $_GET['d2']?>" size="12" maxlength="10"></td>
+    <input name="d2" type="text" value="<?php echo htmlspecialchars($_GET['d2'])?>" size="12" maxlength="10"></td>
 
 
   <td valign="middle" class=rowhead>Uploaded:</td>
@@ -135,9 +135,9 @@ $highlight = " bgcolor=#BBAF9B";
 ?>
     </select>
 
-    <input name="ul" type="text" id="ul" size="8" maxlength="7" value="<?php echo $_GET['ul']?>">
+    <input name="ul" type="text" id="ul" size="8" maxlength="7" value="<?php echo htmlspecialchars($_GET['ul'])?>">
 
-    <input name="ul2" type="text" id="ul2" size="8" maxlength="7" value="<?php echo $_GET['ul2']?>"></td>
+    <input name="ul2" type="text" id="ul2" size="8" maxlength="7" value="<?php echo htmlspecialchars($_GET['ul2'])?>"></td>
   <td valign="middle" class="rowhead">Donor:</td>
 
   <td<?php echo $_GET['do']?$highlight:""?>><select name="do">
@@ -161,9 +161,9 @@ $highlight = " bgcolor=#BBAF9B";
 ?>
   </select>
 
-  <input name="ls" type="text" value="<?php echo $_GET['ls']?>" size="12" maxlength="10">
+  <input name="ls" type="text" value="<?php echo htmlspecialchars($_GET['ls'])?>" size="12" maxlength="10">
 
-  <input name="ls2" type="text" value="<?php echo $_GET['ls2']?>" size="12" maxlength="10"></td>
+  <input name="ls2" type="text" value="<?php echo htmlspecialchars($_GET['ls2'])?>" size="12" maxlength="10"></td>
 	  <td valign="middle" class=rowhead>Downloaded:</td>
 
   <td<?php echo $_GET['dl']?$highlight:""?>><select name="dlt" id="dlt">
@@ -175,9 +175,9 @@ $highlight = " bgcolor=#BBAF9B";
 ?>
     </select>
 
-    <input name="dl" type="text" id="dl" size="8" maxlength="7" value="<?php echo $_GET['dl']?>">
+    <input name="dl" type="text" id="dl" size="8" maxlength="7" value="<?php echo htmlspecialchars($_GET['dl'])?>">
 
-    <input name="dl2" type="text" id="dl2" size="8" maxlength="7" value="<?php echo $_GET['dl2']?>"></td>
+    <input name="dl2" type="text" id="dl2" size="8" maxlength="7" value="<?php echo htmlspecialchars($_GET['dl2'])?>"></td>
 
 	<td valign="middle" class=rowhead>Warned:</td>
 
@@ -750,7 +750,7 @@ if (count($_GET) > 0 && !$_GET['h'])
 
   $perpage = 30;
 
-  list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"]."?".$q);
+  list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["REQUEST_URI"]."?".$q);
 
   $query .= $limit;
 

@@ -294,6 +294,64 @@ elseif ($action == 'securitysettings')	//security settings
 	tr($lang_settings['row_max_ips'],"<input type='text' style=\"width: 300px\" name=maxip value='" . ($SECURITY["maxip"] ? $SECURITY["maxip"] : "1")."'> ".$lang_settings['text_max_ips_note'], 1);
 	tr($lang_settings['row_max_login_attemps'],"<input type='text' style=\"width: 300px\" name=maxloginattempts value='" . ($SECURITY["maxloginattempts"] ? $SECURITY["maxloginattempts"] : "7")."'> ".$lang_settings['text_max_login_attemps_note'], 1);
 
+	$guestVisitRadios = [
+		[
+			'label' => '正常',
+			'value' => 'normal',
+		],
+		[
+			'label' => '展示指定页面',
+			'value' => 'static-page',
+			'target' => [
+				'type' => 'select',
+				'label' => '指定页面路径',
+				'options' => glob(ROOT_PATH . 'resources/static-pages/*'),
+			],
+		],
+		[
+			'label' => '展示自定义内容',
+			'value' => 'custom-content',
+			'target' => [
+				'type' => 'textarea',
+				'label' => '自定义内容',
+			],
+		],
+		[
+			'label' => '重定向到指定 URL',
+			'value' => 'redirect',
+			'target' => [
+				'type' => 'input',
+				'label' => '指定 URL',
+			],
+		],
+	];
+	$guestVisitHtmlArr = [];
+	$guestVisitTargetHtmlArr = [];
+	foreach($guestVisitRadios as $value) {
+		$guestVisitHtmlArr[] = sprintf(
+			'<label><input type="radio" name="guest_visit_type" value="%s" onclick="">%s</label>',
+			$value['value'], $value['label']
+		);
+		if (!empty($value['target']['type'])) {
+			$targetType = $value['target']['type'];
+			if ($targetType == 'input') {
+				$input = sprintf('<input type="text" name="guest_visit_value_%s" value="" style="width: 300px" />', $value['value']);
+				$guestVisitTargetHtmlArr[] = tr($value['target']['label'], $input, 1, '', true);
+			} elseif ($targetType == 'textarea') {
+
+			} elseif ($targetType == 'select') {
+				$select = sprintf('<select name="guest_visit_value_%s">', $value['value']);
+				foreach ($value['target']['options'] as $option) {
+					$select .= sprintf('<option value="%s">%s</option>', basename($option),  basename($option));
+				}
+				$select .= '</select>';
+				$guestVisitTargetHtmlArr[] = tr($value['target']['label'], $select, 1, '', true);
+			}
+		}
+	}
+	tr("游客访问", implode('<br/>', $guestVisitHtmlArr), 1);
+	print implode('', $guestVisitTargetHtmlArr);
+
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }

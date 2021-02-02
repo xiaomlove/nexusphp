@@ -24,7 +24,7 @@ if (!is_valid_user_class($class-2)) $class = '';
 $ratio = @$_GET['r'];
 if (!is_valid_id($ratio) && $ratio>=1 && $ratio<=7) $ratio = '';
 
-echo '<center><form method="get" action="'.$_SERVER["PHP_SELF"].'">';
+echo '<center><form method="get" action="'.$_SERVER["REQUEST_URI"].'">';
 begin_table();
 
 echo '<tr><th colspan="4">Important</th></tr><tr><td colspan="4" class="left">';

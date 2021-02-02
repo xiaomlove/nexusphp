@@ -17,14 +17,14 @@ if($sure == "yes") {
 	$delid = $_GET['delid'];
 	$query = "DELETE FROM locations WHERE id=" .sqlesc($delid) . " LIMIT 1";
 	$sql = sql_query($query);
-	echo("Location successfuly removed, click <a class=altlink href=" . $_SERVER['PHP_SELF'] .">here</a> to go back.");
+	echo("Location successfuly removed, click <a class=altlink href=" . $_SERVER['REQUEST_URI'] .">here</a> to go back.");
 	end_frame();
 	stdfoot();
 	die();
 }
 $delid = intval($_GET['delid'] ?? 0);
 if($delid > 0) {
-	echo("Are you sure you would like to delete this Location?( <strong><a href='". $_SERVER['PHP_SELF'] . "?delid=$delid&sure=yes'>Yes!</a></strong> / <strong><a href='". $_SERVER['PHP_SELF'] . "'>No</a></strong> )");
+	echo("Are you sure you would like to delete this Location?( <strong><a href='". $_SERVER['REQUEST_URI'] . "?delid=$delid&sure=yes'>Yes!</a></strong> / <strong><a href='". $_SERVER['REQUEST_URI'] . "'>No</a></strong> )");
 	end_frame();
 	stdfoot();
 	die();
@@ -52,7 +52,7 @@ if($edited == 1) {
 			$sql = sql_query($query) or sqlerr(__FILE__, __LINE__);
 			if($sql) 
 			{
-				stdmsg("Success!","Location has been edited, click <a class=altlink href=" . $_SERVER['PHP_SELF'] .">here</a> to go back");
+				stdmsg("Success!","Location has been edited, click <a class=altlink href=" . $_SERVER['REQUEST_URI'] .">here</a> to go back");
 				stdfoot();
 				die();
 			}
@@ -83,7 +83,7 @@ if($editid > 0) {
 	$theory_downspeed = $row['theory_downspeed'];
 	$practical_downspeed = $row['practical_downspeed'];
 
-	echo("<form name='form1' method='get' action='" . $_SERVER['PHP_SELF'] . "'>");
+	echo("<form name='form1' method='get' action='" . $_SERVER['REQUEST_URI'] . "'>");
 	echo("<input type='hidden' name='id' value='$editid'><table class=main cellspacing=0 cellpadding=5 width=50%>");
 	echo("<tr><td class=colhead align=center colspan=2>Editing Locations</td><input type='hidden' name='edited' value='1'></tr>");
 	echo("<tr><td class=rowhead>Name:</td><td class=rowfollow align=left><input type='text' size=10 name='name' value='$name'></td></tr>");
@@ -137,7 +137,7 @@ if($add == 'true') {
 
 }
 
-echo("<form name='form1' method='get' action='" . $_SERVER['PHP_SELF'] . "'>");
+echo("<form name='form1' method='get' action='" . $_SERVER['REQUEST_URI'] . "'>");
 echo("<table class=main cellspacing=0 cellpadding=5 width=48% align= left>");
 echo("<tr><td class=colhead align=center colspan=2>Add New Locations</td></tr>");
 echo("<tr><td class=rowhead>Name:</td><td class=rowfollow align=left><input type='text' size=10 name='name'></td></tr>");
@@ -157,7 +157,7 @@ echo("</form>");
 $range_start_ip = $_GET['range_start_ip'] ?? '';
 $range_end_ip = $_GET['range_end_ip'] ?? '';
 
-echo("<form name='form2' method='get' action='" . $_SERVER['PHP_SELF'] . "'>");
+echo("<form name='form2' method='get' action='" . $_SERVER['REQUEST_URI'] . "'>");
 echo("<table class=main cellspacing=0 cellpadding=5 width=48% align=right>");
 echo("<tr><td class=colhead align=center colspan=2>Check IP Range</td></tr>");
 echo("<tr><td class=rowhead><nobr>Start IP:</nobr></td><td class=rowfollow align=left><input type='text' size=30 name='range_start_ip' value='" . $range_start_ip . "'></td></tr>");
@@ -233,8 +233,8 @@ while ($row = mysql_fetch_array($sql)) {
 	"<td class=rowfollow align=left>$practical_upspeed</td>" .
 	"<td class=rowfollow align=left>$theory_downspeed</td>" .
 	"<td class=rowfollow align=left>$practical_downspeed</td>" .
-	"<td class=rowfollow align=center><a href='" . $_SERVER['PHP_SELF'] . "?editid=$id'>Edit</a></td>".
-	"<td class=rowfollow align=center><a href='" . $_SERVER['PHP_SELF'] . "?delid=$id'>Remove</a></td>" .
+	"<td class=rowfollow align=center><a href='" . $_SERVER['REQUEST_URI'] . "?editid=$id'>Edit</a></td>".
+	"<td class=rowfollow align=center><a href='" . $_SERVER['REQUEST_URI'] . "?delid=$id'>Remove</a></td>" .
 	"</tr>");
 }
 print("</table>");

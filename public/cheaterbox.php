@@ -10,15 +10,15 @@ if (get_user_class() < $staffmem_class)
 
 
 if (!empty($_POST['setdealt'])) {
-	$res = sql_query ("SELECT id FROM cheaters WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST[delcheater]) . ")");
+	$res = sql_query ("SELECT id FROM cheaters WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST['delcheater']) . ")");
 	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("UPDATE cheaters SET dealtwith=1, dealtby = $CURUSER[id] WHERE id = $arr[id]") or sqlerr();
+		sql_query ("UPDATE cheaters SET dealtwith=1, dealtby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
 	$Cache->delete_value('staff_new_cheater_count');
 }
 elseif (!empty($_POST['delete'])) {
-	$res = sql_query ("SELECT id FROM cheaters WHERE id IN (" . implode(", ", $_POST[delcheater]) . ")");
+	$res = sql_query ("SELECT id FROM cheaters WHERE id IN (" . implode(", ", $_POST['delcheater']) . ")");
 	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("DELETE from cheaters WHERE id = $arr[id]") or sqlerr();
+		sql_query ("DELETE from cheaters WHERE id = {$arr['id']}") or sqlerr();
 	$Cache->delete_value('staff_new_cheater_count');
 }
 

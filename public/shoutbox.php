@@ -17,7 +17,7 @@ $refresh = ($CURUSER['sbrefresh'] ? $CURUSER['sbrefresh'] : 120)
 ?>
 <html><head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta http-equiv="Refresh" content="<?php echo $refresh?>; url=<?php echo get_protocol_prefix() . $BASEURL?>/shoutbox.php?type=<?php echo $where?>">
+<meta http-equiv="Refresh" content="<?php echo $refresh?>; url=<?php echo get_protocol_prefix() . $BASEURL?>/shoutbox.php?type=<?php echo htmlspecialchars($where)?>">
 <link rel="stylesheet" href="<?php echo get_font_css_uri()?>" type="text/css">
 <link rel="stylesheet" href="<?php echo get_css_uri()."theme.css"?>" type="text/css">
 <link rel="stylesheet" href="styles/curtain_imageresizer.css" type="text/css">
