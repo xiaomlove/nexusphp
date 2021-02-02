@@ -680,6 +680,15 @@ $lang_settings = array
 	'text_email_notification_note' => "Allow users to receive email notification when he gets new pm, comment, etc.",
 	'text_users_get' => "Users would get ",
 	'text_invitations_default' => " invitations the first time he is promoted to this class. Default ",
+	'row_guest_visit_type' => "游客访问",
+	'text_guest_visit_type_normal' => '正常',
+	'text_guest_visit_type_static_page' => '展示指定静态页',
+	'text_guest_visit_type_custom_content' => '展示自定义内容',
+	'text_guest_visit_type_redirect' => '跳转指定 URL',
+	'row_guest_visit_value_static_page' => '指定静态页',
+	'row_guest_visit_value_custom_content' => '自定义内容',
+	'row_guest_visit_value_redirect' => '指定 URL',
+	'text_guest_visit_value_static_page' => '位于：resources/static-pages/ 目录下的文件',
 );
 
 ?>

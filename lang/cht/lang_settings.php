@@ -680,6 +680,15 @@ $lang_settings = array
 	'text_email_notification_note' => "是否允許用戶在收取新短訊、評論等時候收到郵件輔助說明。",
 	'text_users_get' => "首次升級至此等級的用戶將獲得",
 	'text_invitations_default' => "個邀請名額。預設",
+	'row_guest_visit_type' => "遊客訪問",
+	'text_guest_visit_type_normal' => '正常',
+	'text_guest_visit_type_static_page' => '展示指定靜態頁',
+	'text_guest_visit_type_custom_content' => '展示自定義內容',
+	'text_guest_visit_type_redirect' => '跳轉指定 URL',
+	'row_guest_visit_value_static_page' => '指定靜態頁',
+	'row_guest_visit_value_custom_content' => '自定義內容',
+	'row_guest_visit_value_redirect' => '指定 URL',
+	'text_guest_visit_value_static_page' => '位於：resources/static-pages/ 目錄下的文件',
 );
 
 ?>

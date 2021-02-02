@@ -680,6 +680,15 @@ $lang_settings = array
 	'text_email_notification_note' => "是否允许用户在收取新短讯、评论等时候收到邮件提示。",
 	'text_users_get' => "首次升级至此等级的用户将获得",
 	'text_invitations_default' => "个邀请名额。默认",
+	'row_guest_visit_type' => "游客访问",
+	'text_guest_visit_type_normal' => '正常',
+	'text_guest_visit_type_static_page' => '展示指定静态页',
+	'text_guest_visit_type_custom_content' => '展示自定义内容',
+	'text_guest_visit_type_redirect' => '跳转指定 URL',
+	'row_guest_visit_value_static_page' => '指定静态页',
+	'row_guest_visit_value_custom_content' => '自定义内容',
+	'row_guest_visit_value_redirect' => '指定 URL',
+	'text_guest_visit_value_static_page' => '位于：resources/static-pages/ 目录下的文件',
 );
 
 ?>
