@@ -4,7 +4,8 @@ if(!defined('IN_TRACKER')) {
 }
 define('ROOT_PATH', $rootpath);
 define('VERSION_NUMBER', '1.6.0');
-define('IS_ANNOUNCE', (basename($_SERVER['SCRIPT_FILENAME']) == 'announce.php'));
+define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));
+define('IS_ANNOUNCE', CURRENT_SCRIPT == 'announce');
 if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
 } else {
@@ -29,6 +30,7 @@ require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/config.php';
 if (!IS_ANNOUNCE) {
     require $rootpath . get_langfile_path("functions.php");
+    checkGuestVisit();
 }
 $Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());

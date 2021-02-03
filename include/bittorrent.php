@@ -13,5 +13,3 @@ $rootpath .= "/";
 require $rootpath . 'include/functions.php';
 require $rootpath . 'include/globalfunctions.php';
 require $rootpath . 'include/core.php';
-
-

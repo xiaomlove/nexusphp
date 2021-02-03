@@ -388,7 +388,7 @@ function arr_set(&$array, $key, $value)
 }
 
 
-function getSchemaAndHttpHost()
+function getSchemeAndHttpHost()
 {
     $isHttps = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
     $protocol = $isHttps ? 'https' : 'http';
@@ -403,7 +403,7 @@ function getSchemaAndHttpHost()
 
 function getBaseUrl()
 {
-    $url = getSchemaAndHttpHost();
+    $url = getSchemeAndHttpHost();
     $requestUri = $_SERVER['REQUEST_URI'];
     $pos = strpos($requestUri, '?');
     if ($pos !== false) {

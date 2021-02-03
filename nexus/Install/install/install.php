@@ -201,7 +201,7 @@ if ($currentStep == 5) {
                   <?php if ($currentStep <= $maxStep) {?>
                   <button class="bg-blue-<?php echo $pass ? 500 : 200;?> p-2 m-4 text-white rounded" type="submit" <?php echo $pass ? '' : 'disabled';?>>下一步</button>
                   <?php } else {?>
-                   <a class="bg-blue-500 p-2 m-4 text-white rounded" href="<?php echo getSchemaAndHttpHost()?>">回首页</a>
+                   <a class="bg-blue-500 p-2 m-4 text-white rounded" href="<?php echo getSchemeAndHttpHost()?>">回首页</a>
                   <?php }?>
               </div>
               </form>

@@ -689,6 +689,18 @@ $lang_settings = array
 	'row_guest_visit_value_custom_content' => '自定义内容',
 	'row_guest_visit_value_redirect' => '指定 URL',
 	'text_guest_visit_value_static_page' => '位于：resources/static-pages/ 目录下的文件',
+	'row_login_type' => '登录方式',
+	'text_login_type_normal' => '正常',
+	'text_login_type_secret' => '秘密',
+	'row_login_secret' => '登录密钥',
+	'text_login_secret_current' => '当前密钥',
+	'text_login_url_with_secret' => '登录链接',
+	'text_login_secret_regenerate_yes' => '重新生成(保存后会更新并延长有效期)',
+	'text_login_secret_regenerate_no' => '保持当前(保存后不变)',
+	'text_login_secret_lifetime' => '有效期',
+	'text_login_secret_lifetime_unit' => '分钟',
+	'row_login_secret_lifetime' => '登录密钥有效期',
+	'text_login_secret_lifetime_deadline' => '当前密钥有效期至',
 );
 
 ?>

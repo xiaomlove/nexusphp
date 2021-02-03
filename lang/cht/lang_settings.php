@@ -689,6 +689,18 @@ $lang_settings = array
 	'row_guest_visit_value_custom_content' => '自定義內容',
 	'row_guest_visit_value_redirect' => '指定 URL',
 	'text_guest_visit_value_static_page' => '位於：resources/static-pages/ 目錄下的文件',
+	'row_login_type' => '登錄方式',
+	'text_login_type_normal' => '正常',
+	'text_login_type_secret' => '秘密',
+	'row_login_secret' => '登錄密鑰',
+	'text_login_secret_current' => '當前密鑰',
+	'text_login_url_with_secret' => '登錄鏈接',
+	'text_login_secret_regenerate_yes' => '重新生成(保存後會更新並延長有效期)',
+	'text_login_secret_regenerate_no' => '保持當前(保存後不變)',
+	'text_login_secret_lifetime' => '有效期',
+	'text_login_secret_lifetime_unit' => '分鐘',
+	'row_login_secret_lifetime' => '登錄密鑰有效期',
+	'text_login_secret_lifetime_deadline' => '當前密鑰有效期至',
 );
 
 ?>

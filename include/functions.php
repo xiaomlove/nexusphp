@@ -1610,7 +1610,7 @@ function show_image_code () {
 		unset($imagehash);
 		$imagehash = image_code () ;
 		print ("<tr><td class=\"rowhead\">".$lang_functions['row_security_image']."</td>");
-		print ("<td align=\"left\"><img src=\"".htmlspecialchars("image.php?action=regimage&imagehash=".$imagehash)."\" border=\"0\" alt=\"CAPTCHA\" /></td></tr>");
+		print ("<td align=\"left\"><img src=\"".htmlspecialchars("image.php?action=regimage&imagehash=".$imagehash."&secret=".($_GET['secret'] ?? ''))."\" border=\"0\" alt=\"CAPTCHA\" /></td></tr>");
 		print ("<tr><td class=\"rowhead\">".$lang_functions['row_security_code']."</td><td align=\"left\">");
 		print("<input type=\"text\" autocomplete=\"off\" style=\"width: 180px; border: 1px solid gray\" name=\"imagestring\" value=\"\" />");
 		print("<input type=\"hidden\" name=\"imagehash\" value=\"$imagehash\" /></td></tr>");
@@ -1787,6 +1787,10 @@ function get_user_row($id)
 }
 
 function userlogin() {
+    static $loginResult;
+    if (!is_null($loginResult)) {
+        return $loginResult;
+    }
 	global $lang_functions;
 	global $Cache;
 	global $SITE_ONLINE, $oldip;
@@ -1806,8 +1810,9 @@ function userlogin() {
 		}
 	}
 
-	if (empty($_COOKIE["c_secure_pass"]) || empty($_COOKIE["c_secure_uid"]) || empty($_COOKIE["c_secure_login"]))
-		return;
+	if (empty($_COOKIE["c_secure_pass"]) || empty($_COOKIE["c_secure_uid"]) || empty($_COOKIE["c_secure_login"])) {
+	    return $loginResult = false;
+    }
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
 		//if (empty($_SESSION["s_secure_uid"]) || empty($_SESSION["s_secure_pass"]))
@@ -1815,8 +1820,9 @@ function userlogin() {
 	}
 	$b_id = base64($_COOKIE["c_secure_uid"],false);
 	$id = intval($b_id ?? 0);
-	if (!$id || !is_valid_id($id) || strlen($_COOKIE["c_secure_pass"]) != 32)
-	return;
+	if (!$id || !is_valid_id($id) || strlen($_COOKIE["c_secure_pass"]) != 32) {
+        return $loginResult = false;
+    }
 
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
@@ -1826,8 +1832,9 @@ function userlogin() {
 
 	$res = sql_query("SELECT * FROM users WHERE users.id = ".sqlesc($id)." AND users.enabled='yes' AND users.status = 'confirmed' LIMIT 1");
 	$row = mysql_fetch_array($res);
-	if (!$row)
-	return;
+	if (!$row) {
+        return $loginResult = false;
+    }
 
 	$sec = hash_pad($row["secret"]);
 
@@ -1836,13 +1843,15 @@ function userlogin() {
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
 
-		if ($_COOKIE["c_secure_pass"] != md5($row["passhash"].$_SERVER["REMOTE_ADDR"]))
-		return;
+		if ($_COOKIE["c_secure_pass"] != md5($row["passhash"].$_SERVER["REMOTE_ADDR"])) {
+            return $loginResult = false;
+        }
 	}
 	else
 	{
-		if ($_COOKIE["c_secure_pass"] !== md5($row["passhash"]))
-		return;
+		if ($_COOKIE["c_secure_pass"] !== md5($row["passhash"])) {
+            return $loginResult = false;
+        }
 	}
 
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
@@ -1861,10 +1870,16 @@ function userlogin() {
 	if (isset($_GET['clearcache']) && $_GET['clearcache'] && get_user_class() >= UC_MODERATOR) {
 	    $Cache->setClearCache(1);
 	}
-	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
+    /**
+     * no need any more, already set in core.php
+     * @since v1.6
+     */
+//	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
 //		error_reporting(E_ALL & ~E_NOTICE);
-		error_reporting(-1);
-	}
+//		error_reporting(-1);
+//	}
+
+    return $loginResult = true;
 }
 
 function autoclean() {
@@ -4404,6 +4419,8 @@ function return_category_image($categoryid, $link="")
 	return $catimg;
 }
 
+/******************************************** bellow functioons avaliable since v1.6 ***********************************************************/
+
 function saveSetting($prefix, $nameAndValue)
 {
     $prefix = strtolower($prefix);
@@ -4426,6 +4443,91 @@ function getFullDirectory($dir)
         $dir = ROOT_PATH . $dir;
     }
     return realpath($dir);
+}
+
+function checkGuestVisit()
+{
+    if (userlogin()) {
+        //already login
+        return;
+    }
+    $setting = get_setting('security');
+    //all type: normal, static_page, custom_content, redirect
+    $guestVisitType = $setting['guest_visit_type'] ?? '';
+    if (empty($guestVisitType) || $guestVisitType == 'normal') {
+        return;
+    }
+    if (in_array(CURRENT_SCRIPT, ['login', 'takelogin', 'image']) && canDoLogin()) {
+        return;
+    }
+
+    $valueKey = "guest_visit_value_$guestVisitType";
+    if (empty($setting[$valueKey])) {
+        do_log("setting: security.$valueKey empty");
+        die(0);
+    }
+    $guestVisitValue = $setting[$valueKey];
+    if ($guestVisitType == 'static_page') {
+        $pageFile = ROOT_PATH . 'resources/static-pages/' . $guestVisitValue;
+        if (!file_exists($pageFile) || !is_readable($pageFile)) {
+            do_log("pageFile: $pageFile is not exists or readable");
+            die(0);
+        }
+        $content = file_get_contents($pageFile);
+        die($content);
+    }
+    if ($guestVisitType == 'custom_content') {
+        $content = format_comment($guestVisitValue);
+        render('resources/templates/guest-visit-custom-content', ['content' => $content]);
+    }
+    if ($guestVisitType == 'redirect') {
+        header('Location: ' . $guestVisitValue);
+        die(0);
+    }
+
+}
+
+function render($view, $data, $return = false)
+{
+    extract($data);
+    if (!file_exists($view)) {
+        $view = ROOT_PATH . $view;
+    }
+    if (substr($view, -4) !== '.php') {
+        $view .= ".php";
+    }
+    ob_start();
+    ob_implicit_flush(0);
+    require $view;
+    $result = ob_get_clean();
+    if ($return) {
+        return $result;
+    }
+    die($result);
+}
+
+function canDoLogin()
+{
+    $setting = get_setting('security');
+    if (empty($setting['login_type']) || $setting['login_type'] == 'normal') {
+        return true;
+    }
+    $loginType = $setting['login_type'];
+    if ($loginType == 'secret') {
+        if (empty($_REQUEST['secret'])) {
+            do_log("no secret");
+            return false;
+        }
+        if ($_REQUEST['secret'] != $setting['login_secret']) {
+            do_log("invlaid secret: " . $_REQUEST['secret']);
+            return false;
+        }
+        if ($setting['login_secret_deadline'] < date('Y-m-d H:i:s')) {
+            do_log("secret: {$_REQUEST['secret']} expires(deadline: {$setting['login_secret_deadline']})");
+            return false;
+        }
+    }
+    return true;
 }
 
 ?>

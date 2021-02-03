@@ -159,11 +159,17 @@ elseif ($action == 'savesettings_security') 	// save security
 	$validConfig = array(
 		'securelogin', 'securetracker', 'https_announce_url','iv','maxip','maxloginattempts','changeemail','cheaterdet','nodetect',
 		'guest_visit_type', 'guest_visit_value_static_page', 'guest_visit_value_custom_content', 'guest_visit_value_redirect',
+		'login_type', 'login_secret_lifetime',
 	);
 	GetVar($validConfig);
 	$SECURITY = [];
 	foreach($validConfig as $config) {
 		$SECURITY[$config] = $$config ?? null;
+	}
+	if ($_POST['login_secret_regenerate'] == 'yes') {
+		$minute = intval($_POST['login_secret_lifetime']);
+		$SECURITY['login_secret_deadline'] = date('Y-m-d H:i:s', strtotime("+ $minute minutes"));
+		$SECURITY['login_secret'] = md5(microtime(true));
 	}
 	saveSetting('security', $SECURITY);
 	$actiontime = date("F j, Y, g:i a");
@@ -298,7 +304,7 @@ elseif ($action == 'securitysettings')	//security settings
 	tr($lang_settings['row_max_ips'],"<input type='text' style=\"width: 300px\" name=maxip value='" . ($SECURITY["maxip"] ? $SECURITY["maxip"] : "1")."'> ".$lang_settings['text_max_ips_note'], 1);
 	tr($lang_settings['row_max_login_attemps'],"<input type='text' style=\"width: 300px\" name=maxloginattempts value='" . ($SECURITY["maxloginattempts"] ? $SECURITY["maxloginattempts"] : "7")."'> ".$lang_settings['text_max_login_attemps_note'], 1);
 
-	$guestVisitTypeRadio = '<label><input type="radio" name="guest_visit_type" value="normal"' . ($SECURITY['guest_visit_type'] == 'normal' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_static_page\').style.display=\'none\';document.getElementById(\'tbody_custom_content\').style.display=\'none\';document.getElementById(\'tbody_redirect\').style.display=\'none\';">' . $lang_settings['text_guest_visit_type_normal'] . '</label>';
+	$guestVisitTypeRadio = '<label><input type="radio" name="guest_visit_type" value="normal"' . (empty($SECURITY['guest_visit_type']) || $SECURITY['guest_visit_type'] == 'normal' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_static_page\').style.display=\'none\';document.getElementById(\'tbody_custom_content\').style.display=\'none\';document.getElementById(\'tbody_redirect\').style.display=\'none\';">' . $lang_settings['text_guest_visit_type_normal'] . '</label>';
 	$guestVisitTypeRadio .= '<br/><label><input type="radio" name="guest_visit_type" value="static_page"' . ($SECURITY['guest_visit_type'] == 'static_page' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_static_page\').style.display=\'table-row-group\';document.getElementById(\'tbody_custom_content\').style.display=\'none\';document.getElementById(\'tbody_redirect\').style.display=\'none\';">' . $lang_settings['text_guest_visit_type_static_page'] . '</label>';
 	$guestVisitTypeRadio .= '<br/><label><input type="radio" name="guest_visit_type" value="custom_content"' . ($SECURITY['guest_visit_type'] == 'custom_content' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_static_page\').style.display=\'none\';document.getElementById(\'tbody_custom_content\').style.display=\'table-row-group\';document.getElementById(\'tbody_redirect\').style.display=\'none\';">' . $lang_settings['text_guest_visit_type_custom_content'] . '</label>';
 	$guestVisitTypeRadio .= '<br/><label><input type="radio" name="guest_visit_type" value="redirect"' . ($SECURITY['guest_visit_type'] == 'redirect' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_static_page\').style.display=\'none\';document.getElementById(\'tbody_custom_content\').style.display=\'none\';document.getElementById(\'tbody_redirect\').style.display=\'table-row-group\';">' . $lang_settings['text_guest_visit_type_redirect'] . '</label>';
@@ -320,8 +326,27 @@ elseif ($action == 'securitysettings')	//security settings
 	print '</tbody><tbody id="tbody_redirect" style="display: ' . ($SECURITY['guest_visit_type'] == 'redirect' ? 'table-row-group' : 'none') . '">';
 	$input = sprintf('<input type="text" name="guest_visit_value_redirect" value="%s" style="width: 300px;" />', $SECURITY['guest_visit_value_redirect'] ?? '');
 	tr($lang_settings['row_guest_visit_value_redirect'], $input, 1);
-	print '</tbody>';
+	print '</tbody><tbody>';
 
+	$loginTypeRadio = '<label><input type="radio" name="login_type" value="normal"' . (empty($SECURITY['login_type']) || $SECURITY['login_type'] == 'normal' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_login_secret\').style.display=\'none\';">' . $lang_settings['text_login_type_normal'] . '</label>';
+	$loginTypeRadio .= '<label><input type="radio" name="login_type" value="secret"' . ($SECURITY['login_type'] == 'secret' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_login_secret\').style.display=\'table-row-group\';">' . $lang_settings['text_login_type_secret'] . '</label>';
+	tr($lang_settings['row_login_type'], $loginTypeRadio, 1);
+
+	print '</tbody><tbody id="tbody_login_secret" style="display: ' . ($SECURITY['login_type'] == 'secret' ? 'table-row-group' : 'none') . '">';
+	$loginSecret = sprintf('%s：%s', $lang_settings['text_login_secret_current'], $SECURITY['login_secret'] ?? '');
+	if (!empty($SECURITY['login_secret'])) {
+		$loginSecret .= sprintf('<br/>%s: %s/login.php?secret=%s', $lang_settings['text_login_url_with_secret'], getSchemeAndHttpHost(), $SECURITY['login_secret']);
+	}
+	$loginSecret .= sprintf('<br/><label><input type="radio" name="login_secret_regenerate" value="no"%s />%s</label>', !empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_no']);
+	$loginSecret .= sprintf('<br/><label><input type="radio" name="login_secret_regenerate" value="yes"%s />%s</label>', empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_yes']);
+	tr($lang_settings['row_login_secret'], $loginSecret, 1);
+
+	$loginSecretLifetime = sprintf('<input type="text" name="login_secret_lifetime" value="%s" />%s', $SECURITY['login_secret_lifetime'], $lang_settings['text_login_secret_lifetime_unit']);
+	if (!empty($SECURITY['login_secret_lifetime'])) {
+		$loginSecretLifetime .= sprintf('<span style="margin-left: 20px">%s: %s</span>', $lang_settings['text_login_secret_lifetime_deadline'], $SECURITY['login_secret_deadline']);
+	}
+	tr($lang_settings['row_login_secret_lifetime'], $loginSecretLifetime, 1);
+	print '</tbody>';
 
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");

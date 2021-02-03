@@ -46,6 +46,7 @@ if (!empty($_GET["returnto"])) {
 }
 ?>
 <form method="post" action="takelogin.php">
+    <input type="hidden" name="secret" value="<?php echo $_GET['secret'] ?? ''?>">
 <p><?php echo $lang_login['p_need_cookies_enables']?><br /> [<b><?php echo $maxloginattempts;?></b>] <?php echo $lang_login['p_fail_ban']?></p>
 <p><?php echo $lang_login['p_you_have']?> <b><?php echo remaining ();?></b> <?php echo $lang_login['p_remaining_tries']?></p>
 <table border="0" cellpadding="5">
