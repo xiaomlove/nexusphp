@@ -761,7 +761,7 @@ http://$BASEURL/confirmemail.php/{$CURUSER["id"]}/$hash/$obemail
 {$lang_usercp['mail_change_email_nine']}
 EOD;
 
-					sent_mail($email,$SITENAME,$SITEEMAIL,change_email_encode(get_langfolder_cookie(), $subject),change_email_encode(get_langfolder_cookie(),str_replace("<br />","<br />",nl2br($body))),"profile change",false,false,'',get_email_encode(get_langfolder_cookie()));
+					sent_mail($email,$SITENAME,$SITEEMAIL,$subject,str_replace("<br />","<br />",nl2br($body)),"profile change",false,false,'');
 
 				}
 				if ($privacy != "normal" && $privacy != "low" && $privacy != "strong")

@@ -206,7 +206,7 @@ elseif ($verification == 'automatic' || $smtptype == 'none'){
 	header("Location: " . get_protocol_prefix() . "$BASEURL/confirm.php?id=$id&secret=$psecret");
 }
 else{
-	sent_mail($send_email,$SITENAME,$SITEEMAIL,change_email_encode(get_langfolder_cookie(), $title),change_email_encode(get_langfolder_cookie(),$body),"signup",false,false,'',get_email_encode(get_langfolder_cookie()));
+	sent_mail($send_email,$SITENAME,$SITEEMAIL,$title,$body,"signup",false,false,'');
 	header("Location: " . get_protocol_prefix() . "$BASEURL/ok.php?type=signup&email=" . rawurlencode($send_email));
 }
 

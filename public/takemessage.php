@@ -130,7 +130,7 @@ $prefix$BASEURL/messages.php?action=viewmessage&id=$msgid
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_the_site_team']}
 EOD;
 
-		sent_mail($user["email"],$SITENAME,$SITEEMAIL,change_email_encode(get_user_lang($user["id"]), $title),change_email_encode(get_user_lang($user["id"]),str_replace("<br />","<br />",nl2br($body))),"sendmessage",false,false,'',get_email_encode(get_user_lang($user["id"])));
+		sent_mail($user["email"],$SITENAME,$SITEEMAIL,$title,str_replace("<br />","<br />",nl2br($body)),"sendmessage",false,false,'');
 
 	}
 }
