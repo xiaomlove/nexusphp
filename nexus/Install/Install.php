@@ -204,13 +204,32 @@ class Install
         $symbolicLinks = [];
         require $originalConfigFile;
         $settings = require $defaultSettingsFile;
+        $settingsFromDb = [];
+        if (get_row_count('settings') > 0) {
+            $settingsFromDb = get_setting();
+        }
+        $this->doLog("settings form db: " . json_encode($settingsFromDb));
         foreach ($settings as $prefix => &$group) {
             $prefixUpperCase = strtoupper($prefix);
             $oldGroupValues = $$prefixUpperCase ?? null;
             foreach ($group as $key => &$value) {
-                //merge original config to default setting, exclude code part
-                if ($prefix != 'code' && isset($oldGroupValues) && isset($oldGroupValues[$key])) {
-                    $value = $oldGroupValues[$key];
+                //merge original config or db config to default setting, exclude code part
+                if ($prefix != 'code') {
+                    if (isset($settingsFromDb[$prefix][$key])) {
+                        $this->doLog(sprintf(
+                            "$prefix.$key, db exists, change from: %s => %s",
+                            is_scalar($value) ? $value : json_encode($value),
+                            is_scalar($settingsFromDb[$prefix][$key]) ? $settingsFromDb[$prefix][$key] : json_encode($settingsFromDb[$prefix][$key]))
+                        );
+                        $value = $settingsFromDb[$prefix][$key];
+                    } elseif (isset($oldGroupValues) && isset($oldGroupValues[$key])) {
+                        $this->doLog(sprintf(
+                            "$prefix.$key, original config file exists, change from: %s => %s",
+                            is_scalar($value) ? $value : json_encode($value),
+                            is_scalar($oldGroupValues[$key]) ? $oldGroupValues[$key] : json_encode($oldGroupValues[$key]))
+                        );
+                        $value = $oldGroupValues[$key];
+                    }
                 }
                 if (isset($requireDirs[$prefix]) && in_array($key, $requireDirs[$prefix])) {
                     $dir = getFullDirectory($value);
@@ -458,7 +477,7 @@ class Install
     {
         foreach ($symbolicLinks as $path) {
             $linkName = ROOT_PATH . 'public/' . basename($path);
-            if (is_dir($linkName)) {
+            if (is_link($linkName)) {
                 $this->doLog("path: $linkName already exits, skip create symbolic link $linkName -> $path");
                 continue;
             }

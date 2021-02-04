@@ -107,7 +107,7 @@
     'guest_visit_type' => 'redirect',
     'guest_visit_value_static_page' => 'beian-aliyun.html',
     'guest_visit_value_custom_content' => ' [em24] ',
-    'guest_visit_value_redirect' => 'http://nexusphp.org/',
+    'guest_visit_value_redirect' => 'https://nexusphp.org/',
     'login_type' => 'secret',
     'login_secret_lifetime' => '10',
     'login_secret_deadline' => '2021-02-03 18:55:46',
@@ -353,8 +353,8 @@
   'code' => 
   array (
     'mainversion' => 'NexusPHP',
-    'subversion' => 'v1.6.0-beta1',
-    'releasedate' => '2021-01-30',
-    'website' => '<a href="http://nexusphp.org" target="_blank">http://nexusphp.org</a>',
+    'subversion' => 'v1.6.0-beta2',
+    'releasedate' => '2021-02-03',
+    'website' => '<a href="https://nexusphp.org" target="_blank">https://nexusphp.org</a>',
   ),
 );
