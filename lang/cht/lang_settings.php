@@ -692,6 +692,7 @@ $lang_settings = array
 	'row_login_type' => '登錄方式',
 	'text_login_type_normal' => '正常',
 	'text_login_type_secret' => '秘密',
+	'text_login_type_warning' => '當遊客訪問方式不為正常時，必須使用秘密登錄才能登錄',
 	'row_login_secret' => '登錄密鑰',
 	'text_login_secret_current' => '當前密鑰',
 	'text_login_url_with_secret' => '登錄鏈接',

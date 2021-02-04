@@ -9,7 +9,7 @@ if ($langid)
 	if(get_langfolder_cookie() != $lang_folder)
 	{
 		set_langfolder_cookie($lang_folder);
-		header("Location: " . $_SERVER['PHP_SELF']);
+		header("Location: " . $_SERVER['REQUEST_URI']);
 	}
 }
 require_once(get_langfile_path("", false, $CURLANGDIR));
@@ -29,7 +29,8 @@ foreach ($langs as $row)
 }
 $s .= "\n</select>";
 ?>
-<form method="get" action="<?php echo $_SERVER['PHP_SELF'] ?>">
+<form method="get" action="<?php echo $_SERVER['REQUEST_URI'] ?>">
+    <input type="hidden" name="secret" value="<?php echo $_GET['secret'] ?? '' ?>">
 <?php
 print("<div align=\"right\">".$lang_login['text_select_lang']. $s . "</div>");
 ?>
