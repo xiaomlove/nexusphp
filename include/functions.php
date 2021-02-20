@@ -2108,7 +2108,7 @@ function menu ($selected = "home") {
 	global $enableoffer, $enablespecial, $enableextforum, $extforumurl, $where_tweak;
 	global $USERUPDATESET;
 	//no this option in config.php
-    $enablerequest = 'no';
+    $enablerequest = 'yes';
 	$script_name = $_SERVER["SCRIPT_FILENAME"];
 	if (preg_match("/index/i", $script_name)) {
 		$selected = "home";
@@ -2120,6 +2120,8 @@ function menu ($selected = "home") {
 		$selected = "music";
 	}elseif (preg_match("/offers/i", $script_name) OR preg_match("/offcomment/i", $script_name)) {
 		$selected = "offers";
+    }elseif (preg_match("/requests/i", $script_name)) {
+        $selected = "requests";
 	}elseif (preg_match("/upload/i", $script_name)) {
 		$selected = "upload";
 	}elseif (preg_match("/subtitles/i", $script_name)) {
@@ -2153,7 +2155,7 @@ function menu ($selected = "home") {
 	print ("<li" . ($selected == "requests" ? " class=\"selected\"" : "") . "><a href=\"viewrequests.php\">".$lang_functions['text_request']."</a></li>");
 	print ("<li" . ($selected == "upload" ? " class=\"selected\"" : "") . "><a href=\"upload.php\">".$lang_functions['text_upload']."</a></li>");
 	print ("<li" . ($selected == "subtitles" ? " class=\"selected\"" : "") . "><a href=\"subtitles.php\">".$lang_functions['text_subtitles']."</a></li>");
-	print ("<li" . ($selected == "usercp" ? " class=\"selected\"" : "") . "><a href=\"usercp.php\">".$lang_functions['text_user_cp']."</a></li>");
+//	print ("<li" . ($selected == "usercp" ? " class=\"selected\"" : "") . "><a href=\"usercp.php\">".$lang_functions['text_user_cp']."</a></li>");
 	print ("<li" . ($selected == "topten" ? " class=\"selected\"" : "") . "><a href=\"topten.php\">".$lang_functions['text_top_ten']."</a></li>");
 	print ("<li" . ($selected == "log" ? " class=\"selected\"" : "") . "><a href=\"log.php\">".$lang_functions['text_log']."</a></li>");
 	print ("<li" . ($selected == "rules" ? " class=\"selected\"" : "") . "><a href=\"rules.php\">".$lang_functions['text_rules']."</a></li>");
@@ -2428,12 +2430,24 @@ else {
 
 <table id="info_block" cellpadding="4" cellspacing="0" border="0" width="100%"><tr>
 	<td><table width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
-		<td class="bottom" align="left"><span class="medium"><?php echo $lang_functions['text_welcome_back'] ?>, <?php echo get_username($CURUSER['id'])?>  [<a href="logout.php"><?php echo $lang_functions['text_logout'] ?></a>]<?php if (get_user_class() >= UC_MODERATOR) { ?> [<a href="staffpanel.php"><?php echo $lang_functions['text_staff_panel'] ?></a>] <?php }?> <?php if (get_user_class() >= UC_SYSOP) { ?> [<a href="settings.php"><?php echo $lang_functions['text_site_settings'] ?></a>]<?php } ?> [<a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>] <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <?php echo number_format($CURUSER['seedbonus'], 1)?> <font class = 'color_invite'><?php echo $lang_functions['text_invite'] ?></font>[<a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_send'] ?></a>]: <?php echo $CURUSER['invites']?><br />
-
-	<font class="color_ratio"><?php echo $lang_functions['text_ratio'] ?></font> <?php echo $ratio?>  <font class='color_uploaded'><?php echo $lang_functions['text_uploaded'] ?></font> <?php echo mksize($CURUSER['uploaded'])?><font class='color_downloaded'> <?php echo $lang_functions['text_downloaded'] ?></font> <?php echo mksize($CURUSER['downloaded'])?>  <font class='color_active'><?php echo $lang_functions['text_active_torrents'] ?></font> <img class="arrowup" alt="Torrents seeding" title="<?php echo $lang_functions['title_torrents_seeding'] ?>" src="pic/trans.gif" /><?php echo $activeseed?>  <img class="arrowdown" alt="Torrents leeching" title="<?php echo $lang_functions['title_torrents_leeching'] ?>" src="pic/trans.gif" /><?php echo $activeleech?>&nbsp;&nbsp;<font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?></span></td>
-
+		<td class="bottom" align="left">
+            <span class="medium">
+                <?php echo $lang_functions['text_welcome_back'] ?>, <?php echo get_username($CURUSER['id'])?>
+                [<a href="logout.php"><?php echo $lang_functions['text_logout'] ?></a>]
+                [<a href="usercp.php"><?php echo $lang_functions['text_user_cp'] ?></a>]
+                <?php if (get_user_class() >= UC_MODERATOR) { ?> [<a href="staffpanel.php"><?php echo $lang_functions['text_staff_panel'] ?></a>] <?php }?>
+                <?php if (get_user_class() >= UC_SYSOP) { ?> [<a href="settings.php"><?php echo $lang_functions['text_site_settings'] ?></a>]<?php } ?>
+                [<a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>]
+                <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <?php echo number_format($CURUSER['seedbonus'], 1)?>
+                <font class = 'color_invite'><?php echo $lang_functions['text_invite'] ?></font>[<a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_send'] ?></a>]: <?php echo $CURUSER['invites']?><br />
+	            <font class="color_ratio"><?php echo $lang_functions['text_ratio'] ?></font> <?php echo $ratio?>
+                <font class='color_uploaded'><?php echo $lang_functions['text_uploaded'] ?></font> <?php echo mksize($CURUSER['uploaded'])?>
+                <font class='color_downloaded'> <?php echo $lang_functions['text_downloaded'] ?></font> <?php echo mksize($CURUSER['downloaded'])?>
+                <font class='color_active'><?php echo $lang_functions['text_active_torrents'] ?></font> <img class="arrowup" alt="Torrents seeding" title="<?php echo $lang_functions['title_torrents_seeding'] ?>" src="pic/trans.gif" /><?php echo $activeseed?>  <img class="arrowdown" alt="Torrents leeching" title="<?php echo $lang_functions['title_torrents_leeching'] ?>" src="pic/trans.gif" /><?php echo $activeleech?>&nbsp;&nbsp;
+                <font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?>
+            </span>
+        </td>
 	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum['hours'].":".$datum['minutes']?><br />
-
 <?php
 	if (get_user_class() >= $staffmem_class){
 	$totalreports = $Cache->get_value('staff_report_count');
@@ -3177,9 +3191,8 @@ while ($row = mysql_fetch_assoc($res))
 	if ($row['pos_state'] == 'sticky' && $CURUSER['appendsticky'] == 'yes')
 		$stickyicon = "<img class=\"sticky\" src=\"pic/trans.gif\" alt=\"Sticky\" title=\"".$lang_functions['title_sticky']."\" />&nbsp;";
 	else $stickyicon = "";
-	
-	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\"><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . "><td class=\"embedded\">".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>");
-	$sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until']);
+    $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until']);
+	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\"><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . "><td class=\"embedded\">".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>" . $sp_torrent);
 	$picked_torrent = "";
 	if ($CURUSER['appendpicked'] != 'no'){
 	if($row['picktype']=="hot")
@@ -3193,7 +3206,8 @@ while ($row = mysql_fetch_assoc($res))
 		print("<b> (<font class='new'>".$lang_functions['text_new_uppercase']."</font>)</b>");
 
 	$banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
-	print($banned_torrent.$picked_torrent.$sp_torrent);
+	print($banned_torrent.$picked_torrent);
+	$tags = torrentTags($row['tags'], 'span');
 	if ($displaysmalldescr){
 		//small descr
 		$dissmall_descr = trim($row["small_descr"]);
@@ -3203,8 +3217,10 @@ while ($row = mysql_fetch_assoc($res))
 		{
 			$dissmall_descr=mb_substr($dissmall_descr, 0, $max_lenght_of_small_descr-2,"UTF-8") . "..";
 		}
-		print($dissmall_descr == "" ? "" : "<br />".htmlspecialchars($dissmall_descr));
-	}
+		print($dissmall_descr == "" ? "" : "<br />".$tags.htmlspecialchars($dissmall_descr));
+	} else {
+	    print("<br />$tags");
+    }
 	print("</td>");
     if ($enablePtGen && !empty($row['pt_gen'])) {
         echo $ptGen->renderTorrentsPageAverageRating(json_decode($row['pt_gen'], true));
@@ -4420,6 +4436,68 @@ function return_category_image($categoryid, $link="")
 }
 
 /******************************************** bellow functioons avaliable since v1.6 ***********************************************************/
+
+function get_requestcount()
+{
+    global $CURUSER, $Cache;
+    //return;
+    $CURUSERID = 0 + $CURUSER['id'];
+    if (!$count = $Cache->get_value($CURUSERID . '_get_requestcount')) {
+        $row = @mysql_fetch_array(sql_query(" SELECT count(*) FROM requests LEFT JOIN resreq ON reqid=requests.id WHERE reqid>0 and finish = 'no' and userid= " . $CURUSERID));
+        $count = ($row[0] ? " style='background: none red;' " : " style='' ");
+        $Cache->cache_value($CURUSERID . '_get_requestcount', $count, 120);
+    }
+    return $count;
+}
+
+function torrentTags($tags = 0, $type = 'checkbox')
+{
+    global $lang_functions;
+    $tagsOptions = [
+        [
+            'text' => $lang_functions['text_tag_no_release_to_any_other'],
+            'color' => '#D74D4D',
+        ],
+        [
+            'text' => $lang_functions['text_tag_first_release'],
+            'color' => '#8F77B5',
+        ],
+        [
+            'text' => $lang_functions['text_tag_official'],
+            'color' => '#2F7DB8',
+        ],
+        [
+            'text' => $lang_functions['text_tag_diy'],
+            'color' => '#787878',
+        ],
+        [
+            'text' => $lang_functions['text_tag_mother_language'],
+            'color' => '#FFAA32',
+        ],
+        [
+            'text' => $lang_functions['text_tag_mother_language_subtitle'],
+            'color' => '#91B493',
+        ],
+    ];
+    $html = '';
+    foreach ($tagsOptions as $key => $value) {
+        $currentValue = pow(2, $key);
+        if ($type == 'checkbox') {
+            $checked = '';
+            if ($currentValue & $tags) {
+                $checked = 'checked';
+            }
+            $html .= sprintf(
+                '<label><input type="checkbox" name="tags[]" value="%s" %s />%s</label>',
+                $currentValue, $checked, $value['text']
+            );
+        }
+        if ($type == 'span' && ($currentValue & $tags)) {
+            $html .= "<span style=\"background-color:{$value['color']};color:white;border-radius:15%\">{$value['text']}</span> ";
+        }
+    }
+    return $html;
+}
 
 function saveSetting($prefix, $nameAndValue)
 {

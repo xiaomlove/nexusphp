@@ -251,7 +251,6 @@ $lang_functions = array
 	'text_reply' => "回復",
 	'submit_submit' => "提交",
 	'submit_preview' => "預覽",
-	'text_tags' => "標籤",
 	'row_subject' => "主題",
 	'row_body' => "正文",
 	'text_peasant' => "Peasant",
@@ -297,6 +296,12 @@ $lang_functions = array
 	'imdb_cache_dir_is_not_writeable' => 'imdb 緩存目錄不可寫',
 	'imdb_photo_dir_can_not_create' => 'imdb 圖片目錄無法創建',
 	'imdb_photo_dir_is_not_writeable' => 'imdb 圖片目錄不可寫',
+	'text_tag_no_release_to_any_other' => '禁轉',
+	'text_tag_first_release' => '首發',
+	'text_tag_official' => '官方',
+	'text_tag_diy' => '自制',
+	'text_tag_mother_language' => '國語',
+	'text_tag_mother_language_subtitle' => '中字',
 );
 
 ?>

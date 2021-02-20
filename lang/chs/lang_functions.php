@@ -233,9 +233,7 @@ $lang_functions = array
 	'col_to_make_a' => "得到...",
 	'text_year' => "年",
 	'text_month' => "月",
-	'text_day' => "天",
 	'text_hour' => "时",
-	'text_min' => "分",
 	'select_color' => "颜色",
 	'select_font' => "字体",
 	'select_size' => "字号",
@@ -251,7 +249,6 @@ $lang_functions = array
 	'text_reply' => "回复",
 	'submit_submit' => "提交",
 	'submit_preview' => "预览",
-	'text_tags' => "标签",
 	'row_subject' => "主题",
 	'row_body' => "正文",
 	'text_peasant' => "Peasant",
@@ -298,6 +295,12 @@ $lang_functions = array
 	'imdb_cache_dir_is_not_writeable' => 'imdb 缓存目录不可写',
 	'imdb_photo_dir_can_not_create' => 'imdb 图片目录无法创建',
 	'imdb_photo_dir_is_not_writeable' => 'imdb 图片目录不可写',
+	'text_tag_no_release_to_any_other' => '禁转',
+	'text_tag_first_release' => '首发',
+	'text_tag_official' => '官方',
+	'text_tag_diy' => '自制',
+	'text_tag_mother_language' => '国语',
+	'text_tag_mother_language_subtitle' => '中字',
 );
 
 ?>

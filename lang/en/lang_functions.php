@@ -251,7 +251,6 @@ $lang_functions = array
 	'text_reply' => "Reply",
 	'submit_submit' => "Submit",
 	'submit_preview' => "Preview",
-	'text_tags' => "Tags",
 	'row_subject' => "Subject",
 	'row_body' => "Body",
 	'text_peasant' => "Peasant",
@@ -298,6 +297,12 @@ $lang_functions = array
 	'imdb_cache_dir_is_not_writeable' => 'imdb cache dir is not writeable',
 	'imdb_photo_dir_can_not_create' => 'imdb photo dir can not create',
 	'imdb_photo_dir_is_not_writeable' => 'imdb photo dir is not writeable',
+	'text_tag_no_release_to_any_other' => 'No release to any other',
+	'text_tag_first_release' => 'First release',
+	'text_tag_official' => 'Official',
+	'text_tag_diy' => 'DIY',
+	'text_tag_mother_language' => 'Mother language',
+	'text_tag_mother_language_subtitle' => 'Mother language subtitle',
 );
 
 ?>

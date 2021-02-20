@@ -1,0 +1,21 @@
+<?php
+$lang_viewrequests = [
+    'page_title' => '求种区',
+    'add_request' => '添加',
+    'view_request_all' => '查看所有',
+    'view_request_resolved' => '查看已解决',
+    'view_request_unresolved' => '查看未解决',
+    'view_request_resolving' => '查看解决中',
+    'view_request_my' => '查看我发布的',
+    'thead_name' => '名称',
+    'thead_price_newest' => '最新出价',
+    'thead_price_original' => '原始出价',
+    'thead_comment_count' => '评论数',
+    'thead_on_request_count' => '应求数',
+    'thead_request_user' => '求种者',
+    'thead_created_at' => '时间',
+    'thead_status' => '状态',
+    'request_status_resolved' => '求种成功',
+    'request_status_resolving' => '求种中',
+    'action_search' => '搜索',
+];
