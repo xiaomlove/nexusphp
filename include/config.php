@@ -307,6 +307,10 @@ $basictax_bonus = $BONUS['basictax'];
 $taxpercentage_bonus = $BONUS['taxpercentage'];
 $prolinkpoint_bonus = $BONUS['prolinkpoint'];
 $prolinktime_bonus = $BONUS['prolinktime'];
+$attendance_initial_bonus = isset($BONUS['attendance_initial']) ? (int) $BONUS['attendance_initial'] : 10;
+$attendance_step_bonus = isset($BONUS['attendance_step']) ? (int) $BONUS['attendance_step'] : 5;
+$attendance_max_bonus = isset($BONUS['attendance_max']) ? (int) $BONUS['attendance_max'] : 1000;
+$attendance_continuous_bonus = isset($BONUS['attendance_continuous']) && is_array($BONUS['attendance_continuous']) ? $BONUS['attendance_continuous'] : array(10 => 200, 20 => 500, 30 => 1000);
 
 $neverdelete_account = $ACCOUNT['neverdelete'];
 $neverdeletepacked_account = $ACCOUNT['neverdeletepacked'];

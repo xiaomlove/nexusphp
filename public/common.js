@@ -372,3 +372,15 @@ document.getElementById("giftselect").disabled = true;
 document.getElementById("giftcustom").disabled = false;
 }
 }
+// settings.php
+function NewRow(anchor,up){
+	var thisRow = anchor.parentNode.parentNode;
+	var newRow = thisRow.cloneNode(true);
+	var InputBoxes = newRow.getElementsByTagName("input");
+	for(i=0; i<InputBoxes.length; i++) InputBoxes.item(i).value = "";
+	var position = up ? "beforeBegin" : "afterEnd";
+	thisRow.insertAdjacentElement(position,newRow);
+}
+function DelRow(anchor){
+	anchor.parentNode.parentNode.parentNode.parentNode.deleteRow(anchor.parentNode.parentNode.rowIndex);
+}

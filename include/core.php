@@ -25,7 +25,6 @@ ini_set('display_errors', 0);
 
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
-require $rootpath . 'classes/class_advertisement.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/config.php';
 if (!IS_ANNOUNCE) {

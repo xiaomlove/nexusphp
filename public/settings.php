@@ -91,12 +91,20 @@ elseif ($action == 'savesettings_code') 	// save database
 elseif ($action == 'savesettings_bonus') 	// save bonus
 {
 	stdhead($lang_settings['head_save_bonus_settings']);
-	$validConfig = array('donortimes','perseeding','maxseeding','tzero','nzero','bzero','l', 'uploadtorrent','uploadsubtitle','starttopic','makepost','addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload','tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage', 'prolinkpoint', 'prolinktime');
+	$validConfig = array('donortimes','perseeding','maxseeding','tzero','nzero','bzero','l', 'uploadtorrent','uploadsubtitle','starttopic','makepost','addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload','tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage', 'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max');
 	GetVar($validConfig);
 	$BONUS = [];
 	foreach($validConfig as $config) {
 		$BONUS[$config] = $$config ?? null;
 	}
+	$BONUS['attendance_continuous'] = array();
+	if(count($_POST['attendance_continuous_day']) == count($_POST['attendance_continuous_value'])){
+		foreach($_POST['attendance_continuous_day'] as $k => $day){
+			$value = (int) $_POST['attendance_continuous_value'][$k];
+			if($day > 0 && $value > 0) $BONUS['attendance_continuous'][$day] = $value;
+		}
+	}
+	ksort($BONUS['attendance_continuous']);
 	saveSetting('bonus', $BONUS);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker bonus settings updated by $CURUSER[username]. $actiontime",'mod');
@@ -510,6 +518,24 @@ elseif ($action == 'bonussettings'){
 	tr($lang_settings['row_vip_status'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=vipstatus value='".(isset($BONUS["vipstatus"]) ? $BONUS["vipstatus"] : 8000 )."'>".$lang_settings['text_vip_status_note'], 1);
 	yesorno($lang_settings['row_allow_giving_bonus_gift'], 'bonusgift', $BONUS["bonusgift"], $lang_settings['text_giving_bonus_gift_note']);
 	tr($lang_settings['row_bonus_gift_tax'], $lang_settings['text_system_charges']."<input type='text' style=\"width: 50px\" name='basictax' value='".(isset($BONUS["basictax"]) ? $BONUS["basictax"] : 5 )."'>".$lang_settings['text_bonus_points_plus']."<input type='text' style=\"width: 50px\" name='taxpercentage' value='".(isset($BONUS["taxpercentage"]) ? $BONUS["taxpercentage"] : 10 )."'>".$lang_settings['text_bonus_gift_tax_note'], 1);
+	echo '<tr><td colspan="2" align="center"><b>签到奖励</b></td></tr>';
+	tr('初始奖励',sprintf('首次签到获得 <input type="number" style="width: 30px" name="attendance_initial" value="%u" min="0" /> 个魔力值。', $attendance_initial_bonus),true);
+	tr('奖励增量',sprintf('每次签到增加 <input type="number" style="width: 30px" name="attendance_step" value="%u" min="0" /> 个魔力值。', $attendance_step_bonus),true);
+	tr('奖励上限',sprintf('签到奖励最高 <input type="number" style="width: 50px" name="attendance_max" value="%u" min="0" /> 个魔力值。', $attendance_max_bonus),true);
+	$row = '<table><tr><td class="colhead">连续签到天数</td><td class="colhead">附加奖励</td><td class="colhead">操作</td></tr>'.PHP_EOL;
+	if(is_array($attendance_continuous_bonus)){
+		foreach($attendance_continuous_bonus as $days => $value){
+			$row .= sprintf('<tr>
+			<td><input type="number" min="0" style="width: 40px" name="attendance_continuous_day[]" value="%u" /> 天</td>
+			<td><input type="number" min="0" style="width: 50px;" name="attendance_continuous_value[]" value="%u" /> 魔力值</td>
+			<td><a href="javascript:;" onclick="DelRow(this);">删除</a></td></tr>', $days, $value);
+		}
+	}
+	$row .= '<tr><td colspan="3">请从小到大添加规则。</td></tr><tr>
+	<td><input type="number" min="0" style="width: 40px" name="attendance_continuous_day[]" value="" /> 天</td>
+	<td><input type="number" min="0" style="width: 50px;" name="attendance_continuous_value[]" value="" /> 魔力值</td>
+	<td><a href="javascript:;" onclick="NewRow(this,false);">添加</a></td></tr></table>';
+	tr('连续签到',$row,true);
 	tr($lang_settings['row_save_settings'], "<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }
