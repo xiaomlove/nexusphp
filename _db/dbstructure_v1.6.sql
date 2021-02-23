@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.7.19, for Linux (x86_64)
 --
--- Host: localhost    Database: nexusphp_update
+-- Host: localhost    Database: nexus_php_php8
 -- ------------------------------------------------------
 -- Server version	5.7.19-log
 
@@ -16,10 +16,10 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `nexusphp_update`
+-- Current Database: `nexus_php_php8`
 --
 
-USE `nexusphp_update`;
+USE `nexus_php_php8`;
 
 --
 -- Table structure for table `adclicks`
@@ -224,6 +224,33 @@ CREATE TABLE `attachments` (
 LOCK TABLES `attachments` WRITE;
 /*!40000 ALTER TABLE `attachments` DISABLE KEYS */;
 /*!40000 ALTER TABLE `attachments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `attendance`
+--
+
+DROP TABLE IF EXISTS `attendance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `attendance` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `uid` int(10) unsigned NOT NULL,
+  `added` datetime NOT NULL,
+  `points` int(10) unsigned NOT NULL,
+  `days` int(10) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx_uid` (`uid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `attendance`
+--
+
+LOCK TABLES `attendance` WRITE;
+/*!40000 ALTER TABLE `attendance` DISABLE KEYS */;
+/*!40000 ALTER TABLE `attendance` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -566,6 +593,8 @@ CREATE TABLE `comments` (
   `editedby` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `editdate` datetime DEFAULT NULL,
   `offer` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `request` int(11) NOT NULL DEFAULT '0',
+  `anonymous` enum('yes','no') NOT NULL DEFAULT 'no',
   PRIMARY KEY (`id`),
   KEY `user` (`user`),
   KEY `torrent_id` (`torrent`,`id`),
@@ -1540,6 +1569,69 @@ LOCK TABLES `reports` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `requests`
+--
+
+DROP TABLE IF EXISTS `requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `requests` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `userid` int(10) unsigned NOT NULL DEFAULT '0',
+  `request` varchar(225) CHARACTER SET gbk NOT NULL DEFAULT '',
+  `descr` text CHARACTER SET gbk NOT NULL,
+  `comments` int(11) unsigned NOT NULL DEFAULT '0',
+  `hits` int(10) unsigned NOT NULL DEFAULT '0',
+  `cat` int(10) unsigned NOT NULL DEFAULT '0',
+  `filledby` int(10) unsigned NOT NULL DEFAULT '0',
+  `torrentid` int(10) unsigned NOT NULL DEFAULT '0',
+  `finish` enum('yes','no') CHARACTER SET gbk NOT NULL DEFAULT 'no',
+  `amount` int(10) NOT NULL DEFAULT '0',
+  `ori_descr` varchar(255) CHARACTER SET gbk NOT NULL,
+  `ori_amount` int(10) NOT NULL,
+  `added` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `userid` (`userid`),
+  KEY `finish, userid` (`finish`,`userid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `requests`
+--
+
+LOCK TABLES `requests` WRITE;
+/*!40000 ALTER TABLE `requests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `requests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `resreq`
+--
+
+DROP TABLE IF EXISTS `resreq`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `resreq` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `reqid` int(10) NOT NULL,
+  `torrentid` int(10) NOT NULL,
+  `chosen` enum('yes','no') NOT NULL DEFAULT 'no',
+  PRIMARY KEY (`id`),
+  KEY `reqid` (`reqid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `resreq`
+--
+
+LOCK TABLES `resreq` WRITE;
+/*!40000 ALTER TABLE `resreq` DISABLE KEYS */;
+/*!40000 ALTER TABLE `resreq` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `rules`
 --
 
@@ -2101,6 +2193,7 @@ CREATE TABLE `torrents` (
   `picktime` datetime DEFAULT NULL,
   `last_reseed` datetime DEFAULT NULL,
   `pt_gen` mediumtext,
+  `tags` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `info_hash` (`info_hash`),
   KEY `owner` (`owner`),
@@ -2324,4 +2417,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-02-03 18:34:39
+-- Dump completed on 2021-02-23 19:42:47
