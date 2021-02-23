@@ -198,7 +198,7 @@ class Install
             ],
         ];
         $requireDirs = [
-//            'main' => ['bitbucket', 'torrent_dir'],
+            'main' => ['bitbucket', ],
             'attachment' => ['savedirectory', ],
         ];
         $symbolicLinks = [];
