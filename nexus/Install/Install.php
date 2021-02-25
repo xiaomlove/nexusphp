@@ -113,7 +113,7 @@ class Install
 
     public function listRequirementTableRows()
     {
-        $gdInfo = gd_info();
+        $gdInfo = method_exists('gd_info') ? gd_info() : [];
         $tableRows = [
             [
                 'label' => 'PHP version',
@@ -148,23 +148,23 @@ class Install
             [
                 'label' => 'PHP extension gd JPEG Support',
                 'required' => 'true',
-                'current' => $gdInfo['JPEG Support'],
-                'result' => $this->yesOrNo($gdInfo['JPEG Support']),
+                'current' => $gdInfo['JPEG Support'] ?? '',
+                'result' => $this->yesOrNo($gdInfo['JPEG Support'] ?? ''),
             ],
             [
                 'label' => 'PHP extension gd PNG Support',
                 'required' => 'true',
-                'current' => $gdInfo['PNG Support'],
-                'result' => $this->yesOrNo($gdInfo['PNG Support']),
+                'current' => $gdInfo['PNG Support'] ?? '',
+                'result' => $this->yesOrNo($gdInfo['PNG Support'] ?? ''),
             ],
             [
                 'label' => 'PHP extension gd GIF Read Support',
                 'required' => 'true',
-                'current' => $gdInfo['GIF Read Support'],
-                'result' => $this->yesOrNo($gdInfo['GIF Read Support']),
+                'current' => $gdInfo['GIF Read Support'] ?? '',
+                'result' => $this->yesOrNo($gdInfo['GIF Read Support'] ?? ''),
             ],
         ];
-        $fails = array_filter($tableRows, function ($value) {return $value['required'] == 'true' && $value['result'] == 'NO';});
+        $fails = array_filter($tableRows, function ($value) {return in_array($value['required'], ['true', 'enabled']) && $value['result'] == 'NO';});
         $pass = empty($fails);
 
         return [
