@@ -2217,9 +2217,15 @@ function get_cat_folder($cat = 101)
 		$catrow = get_category_row($cat);
 		$catmode = $catrow['catmodename'];
 		$caticonrow = get_category_icon_row($CURUSER['caticon']);
+        /**
+         * @since v1.6
+         * use setting, not user's caticon, that filed make no sense!
+         */
+//		$caticonrow = get_category_icon_row(get_setting('main.browsecat'));
+//		dd($caticonrow);
 		$catPath[$cat] = "category/".$catmode."/".$caticonrow['folder'] . ($caticonrow['multilang'] == 'yes' ? $CURLANGDIR."/" : "");
 	}
-	return $catPath[$cat] ?? '';
+	return trim($catPath[$cat] ?? '', '/');
 }
 
 function get_style_highlight()
@@ -4430,7 +4436,7 @@ function return_category_image($categoryid, $link="")
 	} else {
 		$categoryrow = get_category_row($categoryid);
 		$catimgurl = get_cat_folder($categoryid);
-		$catImg[$categoryid] = $catimg = "<img".($categoryrow['class_name'] ? " class=\"".$categoryrow['class_name']."\"" : "")." src=\"pic/cattrans.gif\" alt=\"" . $categoryrow["name"] . "\" title=\"" .$categoryrow["name"]. "\" style=\"background-image: url(pic/" . $catimgurl . $categoryrow["image"].");\" />";
+		$catImg[$categoryid] = $catimg = "<img".($categoryrow['class_name'] ? " class=\"".$categoryrow['class_name']."\"" : "")." src=\"pic/cattrans.gif\" alt=\"" . $categoryrow["name"] . "\" title=\"" .$categoryrow["name"]. "\" style=\"background-image: url(pic/" . $catimgurl . '/' . $categoryrow["image"].");\" />";
 	}
 	if ($link) {
 		$catimg = "<a href=\"".$link."cat=" . $categoryid . "\">".$catimg."</a>";

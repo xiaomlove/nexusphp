@@ -49,7 +49,7 @@ function return_category_db_table_name($type)
 	}
 	return $dbtablename;
 }
-function return_category_mode_selection($selname, $selectionid)
+function return_category_mode_selection($selname, $selectedid)
 {
 	$res = sql_query("SELECT * FROM searchbox ORDER BY id ASC");
 	$selection = "<select name=\"".$selname."\">";
