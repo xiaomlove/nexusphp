@@ -113,7 +113,7 @@ class Install
 
     public function listRequirementTableRows()
     {
-        $gdInfo = method_exists('gd_info') ? gd_info() : [];
+        $gdInfo = function_exists('gd_info') ? gd_info() : [];
         $tableRows = [
             [
                 'label' => 'PHP version',

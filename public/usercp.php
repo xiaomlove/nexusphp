@@ -210,8 +210,8 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				$showtooltipsetting = false;
 			if ($type == 'save') {
 				$updateset = array();
-				$pmnotif = $_POST["pmnotif"];
-				$emailnotif = $_POST["emailnotif"];
+				$pmnotif = $_POST["pmnotif"] ?? '';
+				$emailnotif = $_POST["emailnotif"] ?? '';
 				$notifs = ($pmnotif == 'yes' ? "[pm]" : "");
 				$notifs .= ($emailnotif == 'yes' ? "[email]" : "");
 
@@ -223,7 +223,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				for ($i = 0; $i < $rows; ++$i)
 					{
 						$a = mysql_fetch_assoc($r);
-						if ($_POST[$cbname.$a['id']] == 'yes')
+						if (isset($_POST[$cbname.$a['id']]) && $_POST[$cbname.$a['id']] == 'yes')
 						$return .= "[".$cbname.$a['id']."]";
 					}
 				return $return;
@@ -328,7 +328,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				$sbrefresh = ($_POST["sbrefresh"] ? max(10, min(3600, intval($_POST["sbrefresh"] ?? 0))) : 120);
 				$updateset[] = "sbrefresh = " . $sbrefresh;
 
-				if ($_POST["hidehb"] == 'yes')
+				if (isset($_POST["hidehb"]) && $_POST["hidehb"] == 'yes')
 					$hidehb = 'yes';
 				else $hidehb = 'no';
 				$updateset[] = "hidehb = " . sqlesc($hidehb);
@@ -341,7 +341,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				else $showdescription = 'no';
 				$updateset[] = "showdescription = " . sqlesc($showdescription);
 				if ($enablenfo_main == 'yes'){
-				if ($_POST["shownfo"] == 'yes')
+				if (isset($_POST["shownfo"]) && $_POST["shownfo"] == 'yes')
 					$shownfo = 'yes';
 				else $shownfo = 'no';
 				$updateset[] = "shownfo = " . sqlesc($shownfo);
@@ -559,9 +559,12 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 				$categoryicons .= "<option value=".$caticon['id'].$sl.">".$caticon['name']."</option>\n";
 			}
 			tr_small($lang_usercp['row_stylesheet'], "<select name=stylesheet>\n$stylesheets\n</select>&nbsp;&nbsp;<font class=small>".$lang_usercp['text_stylesheet_note']."<a href=\"aboutnexus.php#stylesheet\" ><b>".$lang_usercp['text_stylesheet_link']."</b></a></font>.",1);
-			tr_small($lang_usercp['row_category_icons'], "<select name=caticon>".$categoryicons."</select>",1);
+            /**
+             * make no sense, should no exists!
+             * @since v1.6.0
+             */
+//			tr_small($lang_usercp['row_category_icons'], "<select name=caticon>".$categoryicons."</select>",1);
 			tr_small($lang_usercp['row_font_size'], "<select name=fontsize><option value=small ".($CURUSER['fontsize'] == 'small' ? " selected" : "").">".$lang_usercp['select_small']."</option><option value=medium ".($CURUSER['fontsize'] == 'medium' ? " selected" : "").">".$lang_usercp['select_medium']."</option><option value=large ".($CURUSER['fontsize'] == 'large' ? " selected" : "").">".$lang_usercp['select_large']."</option></select>",1);
-
 
 			$s = "<select name=\"sitelanguage\">\n";
 
