@@ -1,6 +1,6 @@
 <?php
-require_once('include/bittorrent_announce.php');
-require_once('include/benc.php');
+require_once('../include/bittorrent_announce.php');
+require_once('../include/benc.php');
 dbconn_announce();
 
 // BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
