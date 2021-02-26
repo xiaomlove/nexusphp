@@ -101,6 +101,7 @@ if ($allsec == 1)		//show torrents from all sections
 }
 // ----------------- end whether ignoring section ---------------------//
 // ----------------- start bookmarked ---------------------//
+$inclbookmarked = 0;
 if ($_GET)
 	$inclbookmarked = intval($_GET["inclbookmarked"] ?? 0);
 elseif ($CURUSER['notifs']){
@@ -111,7 +112,6 @@ elseif ($CURUSER['notifs']){
 	elseif (strpos($CURUSER['notifs'], "[inclbookmarked=2]") !== false)
 		$inclbookmarked = 2;
 }
-else $inclbookmarked = 0;
 
 if (!in_array($inclbookmarked,array(0,1,2)))
 {
@@ -172,6 +172,7 @@ elseif ($include_dead == 2)		//dead
 	$wherea[] = "visible = 'no'";
 }
 // ----------------- end include dead ---------------------//
+$special_state = 0;
 if ($_GET)
 	$special_state = intval($_GET["spstate"] ?? 0);
 elseif ($CURUSER['notifs']){
@@ -192,7 +193,6 @@ elseif ($CURUSER['notifs']){
 	elseif (strpos($CURUSER['notifs'], "[spstate=6]") !== false)
 		$special_state = 7;
 }
-else $special_state = 0;
 
 if (!in_array($special_state,array(0,1,2,3,4,5,6,7)))
 {

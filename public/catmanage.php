@@ -58,6 +58,17 @@ function return_category_mode_selection($selname, $selectedid)
 	$selection .= "</select>";
 	return $selection;
 }
+
+function category_icon_selection($iconId = 0)
+{
+    $res = sql_query("SELECT * FROM caticons ORDER BY id ASC");
+    $selection = "<select name=\"icon_id\">";
+    while ($row = mysql_fetch_array($res))
+        $selection .= "<option value=\"" . $row["id"] . "\"". ($row["id"]==$iconId ? " selected=\"selected\"" : "").">" . htmlspecialchars($row["name"]) . "</option>\n";
+    $selection .= "</select>";
+    return $selection;
+}
+
 function return_type_name($type)
 {
 	global $lang_catmanage;
@@ -313,6 +324,7 @@ function print_category_editor($type, $row='')
 			tr($lang_catmanage['col_image']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"image\" value=\"".htmlspecialchars($image)."\" style=\"width: 300px\" /><br />" . $lang_catmanage['text_image_note'], 1);
 			tr($lang_catmanage['text_class_name'], "<input type=\"text\" name=\"class_name\" value=\"".htmlspecialchars($class_name)."\" style=\"width: 300px\" /><br />" . $lang_catmanage['text_class_name_note'], 1);
 			tr($lang_catmanage['row_mode']."<font color=\"red\">*</font>", return_category_mode_selection('mode', $mode), 1);
+			tr($lang_catmanage['text_category_icons']."<font color=\"red\">*</font>", category_icon_selection($row['icon_id'] ?? 0), 1);
 			tr($lang_catmanage['col_order'], "<input type=\"text\" name=\"sort_index\" value=\"".$sort_index."\" style=\"width: 100px\" /> " . $lang_catmanage['text_order_note'], 1);
 		}
 ?>
@@ -534,12 +546,14 @@ print($pagerbottom);
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
-		$res = sql_query("SELECT ".$dbtablename.".*, searchbox.name AS catmodename FROM ".$dbtablename." LEFT JOIN searchbox ON ".$dbtablename.".mode=searchbox.id ORDER BY ".$dbtablename.".mode ASC, ".$dbtablename.".id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
+        $res = sql_query("SELECT ".$dbtablename.".*, searchbox.name AS catmodename, caticons.name as icon_name FROM ".$dbtablename." LEFT JOIN searchbox ON ".$dbtablename.".mode=searchbox.id left join caticons on caticons.id = $dbtablename.icon_id ORDER BY ".$dbtablename.".mode ASC, ".$dbtablename.".id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
+
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="940">
 <tr>
 <td class="colhead"><?php echo $lang_catmanage['col_id']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_mode']?></td>
+<td class="colhead"><?php echo $lang_catmanage['text_category_icons']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_name']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_image']?></td>
 <td class="colhead"><?php echo $lang_catmanage['text_class_name']?></td>
@@ -553,6 +567,7 @@ print($pagerbottom);
 <tr>
 <td class="colfollow"><?php echo $row['id']?></td>
 <td class="colfollow"><?php echo htmlspecialchars($row['catmodename'])?></td>
+<td class="colfollow"><?php echo htmlspecialchars($row['icon_name'] ?? '')?></td>
 <td class="colfollow"><?php echo htmlspecialchars($row['name'])?></td>
 <td class="colfollow"><?php echo htmlspecialchars($row['image'])?></td>
 <td class="colfollow"><?php echo $row['class_name'] ? htmlspecialchars($row['class_name']) : $lang_catmanage['text_none']?></td>
@@ -772,6 +787,7 @@ elseif($action == 'submit')
 		$updateset[] = "mode=".sqlesc($mode);
 		$updateset[] = "class_name=".sqlesc($class_name);
 		$updateset[] = "sort_index=".sqlesc($sort_index);
+		$updateset[] = "icon_id=".sqlesc(intval($_POST['icon_id'] ?? 0));
 		if($_POST['isedit']){
 			$Cache->delete_value('category_content');
 		}

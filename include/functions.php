@@ -2214,15 +2214,14 @@ function get_cat_folder($cat = 101)
 	static $catPath = array();
 	if (!isset($catPath[$cat])) {
 		global $CURUSER, $CURLANGDIR;
-		$catrow = get_category_row($cat);
+        $catrow = get_category_row($cat);
 		$catmode = $catrow['catmodename'];
-		$caticonrow = get_category_icon_row($CURUSER['caticon']);
+//		$caticonrow = get_category_icon_row($CURUSER['caticon']);
         /**
          * @since v1.6
          * use setting, not user's caticon, that filed make no sense!
          */
-//		$caticonrow = get_category_icon_row(get_setting('main.browsecat'));
-//		dd($caticonrow);
+		$caticonrow = get_category_icon_row($catrow['icon_id'] ?: 1);
 		$catPath[$cat] = "category/".$catmode."/".$caticonrow['folder'] . ($caticonrow['multilang'] == 'yes' ? $CURLANGDIR."/" : "");
 	}
 	return trim($catPath[$cat] ?? '', '/');
