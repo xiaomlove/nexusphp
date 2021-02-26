@@ -446,6 +446,7 @@ CREATE TABLE `categories` (
   `name` varchar(30) NOT NULL DEFAULT '',
   `image` varchar(255) NOT NULL DEFAULT '',
   `sort_index` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `icon_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `mode_sort` (`mode`,`sort_index`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -457,7 +458,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (401,4,'c_movies','Movies','catsprites.png',0),(402,4,'c_tvseries','TV Series','catsprites.png',3),(403,4,'c_tvshows','TV Shows','catsprites.png',4),(404,4,'c_doc','Documentaries','catsprites.png',1),(405,4,'c_anime','Animations','catsprites.png',2),(406,4,'c_mv','Music Videos','catsprites.png',5),(407,4,'c_sports','Sports','catsprites.png',6),(408,4,'c_hqaudio','HQ Audio','catsprites.png',8),(409,4,'c_misc','Misc','catsprites.png',7);
+INSERT INTO `categories` VALUES (401,4,'c_movies','Movies','catsprites.png',0,1),(402,4,'c_tvseries','TV Series','catsprites.png',3,1),(403,4,'c_tvshows','TV Shows','catsprites.png',4,1),(404,4,'c_doc','Documentaries','catsprites.png',1,1),(405,4,'c_anime','Animations','catsprites.png',2,1),(406,4,'c_mv','Music Videos','catsprites.png',5,1),(407,4,'c_sports','Sports','catsprites.png',6,1),(408,4,'c_hqaudio','HQ Audio','catsprites.png',8,1),(409,4,'c_misc','Misc','catsprites.png',7,1);
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2417,4 +2418,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-02-23 19:42:47
+-- Dump completed on 2021-02-26 14:07:05
