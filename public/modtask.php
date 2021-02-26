@@ -153,7 +153,7 @@ if ($action == "edituser")
 		$this_donated_cny = $donated_cny - $arr["donated_cny"];
 		$memo = sqlesc(htmlspecialchars($_POST["donation_memo"]));
 		
-		if ($donated != $arr[donated] || $donated_cny != $arr[donated_cny]) {
+		if ($donated != $arr['donated'] || $donated_cny != $arr['donated_cny']) {
 			$added = sqlesc(date("Y-m-d H:i:s"));
 			sql_query("INSERT INTO funds (usd, cny, user, added, memo) VALUES ($this_donated_usd, $this_donated_cny, $userid, $added, $memo)") or sqlerr(__FILE__, __LINE__);
 			$updateset[] = "donated = " . sqlesc($donated);
@@ -187,7 +187,7 @@ if ($action == "edituser")
 	{
 		$what = ($class > $curclass ? $lang_modtask_target[get_user_lang($userid)]['msg_promoted'] : $lang_modtask_target[get_user_lang($userid)]['msg_demoted']);
 		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_class_change']);
-		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_have_been'].$what.$lang_modtask_target[get_user_lang($userid)]['msg_to'] . get_user_class_name($class) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_have_been'].$what.$lang_modtask_target[get_user_lang($userid)]['msg_to'] . get_user_class_name($class) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 		$added = sqlesc(date("Y-m-d H:i:s"));
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		$updateset[] = "class = $class";
@@ -200,7 +200,7 @@ if ($action == "edituser")
 		if ($vip_added == 'yes')
 			$updateset[] = "vip_until = ".sqlesc($vip_until);
 		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_vip_status_changed']);
-		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_vip_status_changed_by'].$CURUSER[username]);
+		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_vip_status_changed_by'].$CURUSER['username']);
 		$added = sqlesc(date("Y-m-d H:i:s"));
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		$modcomment = date("Y-m-d") . " - VIP status changed by $CURUSER[username]. VIP added: ".$vip_added.($vip_added == 'yes' ? "; VIP until: ".$vip_until : "").".\n". $modcomment;
@@ -226,7 +226,7 @@ if ($action == "edituser")
 		if ($warnlength == 255)
 		{
 			$modcomment = date("Y-m-d") . " - Warned by " . $CURUSER['username'] . ".\nReason: $warnpm.\n". $modcomment;
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_are_warned_by'].$CURUSER[username]."." . ($warnpm ? $lang_modtask_target[get_user_lang($userid)]['msg_reason'].$warnpm : ""));
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_are_warned_by'].$CURUSER['username']."." . ($warnpm ? $lang_modtask_target[get_user_lang($userid)]['msg_reason'].$warnpm : ""));
 			$updateset[] = "warneduntil = null";
 		}else{
 			$warneduntil = date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $warnlength * 604800)); 
@@ -238,7 +238,7 @@ if ($action == "edituser")
 		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_are_warned']);
 		$added = sqlesc(date("Y-m-d H:i:s"));
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		$updateset[] = "warned = 'yes', timeswarned = timeswarned+1, lastwarned=$added, warnedby=$CURUSER[id]";
+		$updateset[] = "warned = 'yes', timeswarned = timeswarned+1, lastwarned=$added, warnedby={$CURUSER['id']}";
 	}
 	if ($enabled != $curenabled)
 	{
