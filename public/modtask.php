@@ -30,7 +30,7 @@ if ($action == "edituser")
 	$vip_added = ($_POST["vip_added"] == 'yes' ? 'yes' : 'no');
 	$vip_until = ($_POST["vip_until"] ? $_POST["vip_until"] : null);
 	
-	$warned = $_POST["warned"];
+	$warned = $_POST["warned"] ?? '';
 	$warnlength = intval($_POST["warnlength"] ?? 0);
 	$warnpm = $_POST["warnpm"];
 	$title = $_POST["title"];
@@ -84,7 +84,7 @@ if ($action == "edituser")
 	$updateset[] = "supportfor = " . sqlesc($supportfor);
 	$updateset[] = "supportlang = ".sqlesc($supportlang);
 	
-	if(get_user_class<=$cruprfmanage_class)
+	if(get_user_class()<=$cruprfmanage_class)
 	{
 		$modcomment = $arr["modcomment"];
 	}
