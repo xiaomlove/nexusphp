@@ -95,7 +95,7 @@ while ($arr = mysql_fetch_assoc($res))
 {
 	$countryrow = get_country_row($arr['country']);
 	$forums = "";
-	$forumres = sql_query("SELECT forums.id, forums.name FROM forums LEFT JOIN forummods ON forums.id = forummods.forumid WHERE forummods.userid = ".sqlesc($arr[userid]));
+	$forumres = sql_query("SELECT forums.id, forums.name FROM forums LEFT JOIN forummods ON forums.id = forummods.forumid WHERE forummods.userid = ".sqlesc($arr['userid']));
 	while ($forumrow = mysql_fetch_array($forumres)){
 		$forums .= "<a href=forums.php?action=viewforum&forumid=".$forumrow['id'].">".$forumrow['name']."</a>, ";
 	}
