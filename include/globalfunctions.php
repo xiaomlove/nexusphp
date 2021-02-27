@@ -400,7 +400,7 @@ function getSchemeAndHttpHost()
     $protocol = $isHttps ? 'https' : 'http';
     $port = $_SERVER['SERVER_PORT'];
     $result = "$protocol://" . $_SERVER['HTTP_HOST'];
-    if ($port != 80) {
+    if ((!$isHttps && $port != 80) || ($isHttps && $port != 443)) {
         $result .= ":$port";
     }
     return $result;
