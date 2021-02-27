@@ -96,10 +96,10 @@ if ($type == 'new'){
 			else
 			$status = "<a href=checkuser.php?id={$arr['id']}><font color=#ca0226>".$lang_invite['text_pending']."</font></a>";
 
-			print("<tr class=rowfollow>$user<td>$arr[email]</td><td class=rowfollow>" . mksize($arr['uploaded']) . "</td><td class=rowfollow>" . mksize($arr[downloaded]) . "</td><td class=rowfollow>$ratio</td><td class=rowfollow>$status</td>");
+			print("<tr class=rowfollow>$user<td>{$arr['email']}</td><td class=rowfollow>" . mksize($arr['uploaded']) . "</td><td class=rowfollow>" . mksize($arr['downloaded']) . "</td><td class=rowfollow>$ratio</td><td class=rowfollow>$status</td>");
 			if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP){
 				print("<td>");
-				if ($arr[status] == 'pending')
+				if ($arr['status'] == 'pending')
 				print("<input type=\"checkbox\" name=\"conusr[]\" value=\"" . $arr['id'] . "\" />");
 				print("</td>");
 			}
@@ -113,7 +113,7 @@ if ($type == 'new'){
 
 		$pendingcount = number_format(get_row_count("users", "WHERE  status='pending' AND invited_by={$CURUSER['id']}"));
 		if ($pendingcount){
-		print("<input type=hidden name=email value=$arr[email]>");
+		print("<input type=hidden name=email value={$arr['email']}>");
 		print("<tr><td colspan=7 align=right><input type=submit style='height: 20px' value=".$lang_invite['submit_confirm_users']."></td></tr>");
 		}
 		print("</form>");
@@ -141,7 +141,7 @@ if ($type == 'new'){
 		for ($i = 0; $i < $num1; ++$i)
 		{
 			$arr1 = mysql_fetch_assoc($rer);
-			print("<tr><td class=rowfollow>$arr1[invitee]<td class=rowfollow>$arr1[hash]</td><td class=rowfollow>$arr1[time_invited]</td></tr>");
+			print("<tr><td class=rowfollow>{$arr1['invitee']}<td class=rowfollow>{$arr1['hash']}</td><td class=rowfollow>{$arr1['time_invited']}</td></tr>");
 		}
 	}
 	print("</table>");
