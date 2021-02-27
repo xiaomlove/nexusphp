@@ -2715,6 +2715,9 @@ function set_langfolder_cookie($folder, $expires = 0x7fffffff)
 function get_protocol_prefix()
 {
 	global $securelogin;
+	if (isHttps()) {
+        return "https://";
+    }
 	if ($securelogin == "yes") {
 		return "https://";
 	} elseif ($securelogin == "no") {

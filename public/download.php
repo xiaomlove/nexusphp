@@ -89,7 +89,8 @@ if (strlen($CURUSER['passkey']) != 32) {
 }
 
 $dict = bdec_file($fn, $max_torrent_size);
-$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?passkey=$CURUSER[passkey]";
+//$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?passkey=$CURUSER[passkey]";
+$dict['value']['announce']['value'] = getSchemeAndHttpHost() . "/announce.php?passkey=$CURUSER[passkey]";
 $dict['value']['announce']['string'] = strlen($dict['value']['announce']['value']).":".$dict['value']['announce']['value'];
 $dict['value']['announce']['strlen'] = strlen($dict['value']['announce']['string']);
 /*if ($announce_urls[1] != "") // add multi-tracker

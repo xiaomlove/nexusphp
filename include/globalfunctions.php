@@ -387,10 +387,16 @@ function arr_set(&$array, $key, $value)
     return $array;
 }
 
+function isHttps()
+{
+    $result = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
+    return $result;
+}
+
 
 function getSchemeAndHttpHost()
 {
-    $isHttps = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
+    $isHttps = isHttps();
     $protocol = $isHttps ? 'https' : 'http';
     $port = $_SERVER['SERVER_PORT'];
     $result = "$protocol://" . $_SERVER['HTTP_HOST'];
@@ -411,5 +417,5 @@ function getBaseUrl()
     } else {
         $url .= $requestUri;
     }
-    return $url;
+    return trim($url, '/');
 }

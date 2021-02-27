@@ -14,7 +14,7 @@ function bark($msg) {
   exit;
 }
 
-$id = $CURUSER[id];
+$id = $CURUSER['id'];
 $email = unesc(htmlspecialchars(trim($_POST["email"])));
 $email = safe_email($email);
 if (!$email)
@@ -48,13 +48,13 @@ $hash  = md5(mt_rand(1,10000).$CURUSER['username'].TIMENOW.$CURUSER['passhash'])
 $title = $SITENAME.$lang_takeinvite['mail_tilte'];
 
 sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
-sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)."") or sqlerr(__FILE__, __LINE__);
-
+sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
+$signupUrl = getBaseUrl() . "/signup.php?type=invite&invitenumber=$hash";
 $message = <<<EOD
-{$lang_takeinvite['mail_one']}{$arr[username]}{$lang_takeinvite['mail_two']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/signup.php?type=invite&invitenumber=$hash')">{$lang_takeinvite['mail_here']}</a></b><br />
-http://$BASEURL/signup.php?type=invite&invitenumber=$hash
-<br />{$lang_takeinvite['mail_three']}$invite_timeout{$lang_takeinvite['mail_four']}{$arr[username]}{$lang_takeinvite['mail_five']}<br />
+{$lang_takeinvite['mail_one']}{$arr['username']}{$lang_takeinvite['mail_two']}
+<b><a href="javascript:void(null)" onclick="window.open($signupUrl)">{$lang_takeinvite['mail_here']}</a></b><br />
+$signupUrl
+<br />{$lang_takeinvite['mail_three']}$invite_timeout{$lang_takeinvite['mail_four']}{$arr['username']}{$lang_takeinvite['mail_five']}<br />
 $body
 <br /><br />{$lang_takeinvite['mail_six']}
 EOD;
