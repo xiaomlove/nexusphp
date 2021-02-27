@@ -290,6 +290,7 @@ else
 {
 	print("<tr><td align=\"left\" colspan=\"2\" class=\"text\"><font color=\"blue\">".$lang_userdetails['text_public_access_denied'].$user['username'].$lang_userdetails['text_user_wants_privacy']."</font></td></tr>\n");
 }
+$showpmbutton = 0;
 if ($CURUSER["id"] != $user["id"])
 if (get_user_class() >= $staffmem_class)
 $showpmbutton = 1;

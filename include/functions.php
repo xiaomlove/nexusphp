@@ -626,7 +626,7 @@ function get_elapsed_time($ts,$shortunit = false)
 	$months -= $years * 12;
 	$t = "";
 	if ($years > 0)
-	return $years.($shortunit ? $lang_functions['text_short_year'] : $lang_functions['text_year'] . add_s($year)) ."&nbsp;".$months.($shortunit ? $lang_functions['text_short_month'] : $lang_functions['text_month'] . add_s($months));
+	return $years.($shortunit ? $lang_functions['text_short_year'] : $lang_functions['text_year'] . add_s($years)) ."&nbsp;".$months.($shortunit ? $lang_functions['text_short_month'] : $lang_functions['text_month'] . add_s($months));
 	if ($months > 0)
 	return $months.($shortunit ?  $lang_functions['text_short_month'] : $lang_functions['text_month'] . add_s($months)) ."&nbsp;".$days2.($shortunit ? $lang_functions['text_short_day'] : $lang_functions['text_day'] . add_s($days2));
 	if ($days > 0)

@@ -254,7 +254,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				if ($inclbookmarked)
 					$notifs .= "[inclbookmarked=".$inclbookmarked."]";
 				$stylesheet = $_POST["stylesheet"];
-				$caticon = $_POST["caticon"];
+//				$caticon = $_POST["caticon"];
 				$sitelanguage = $_POST["sitelanguage"];
 				$fontsize = $_POST["fontsize"];
 				if ($fontsize == 'large')

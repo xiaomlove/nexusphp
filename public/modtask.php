@@ -173,7 +173,7 @@ if ($action == "edituser")
 			$passupdate=true;
 	}
 	
-	if ($passupdate) {
+	if (isset($passupdate) && $passupdate) {
 		$sec = mksecret();
 		$passhash = md5($sec . $chpassword . $sec);
 		$updateset[] = "secret = " . sqlesc($sec);
@@ -267,7 +267,7 @@ if ($action == "edituser")
 	if ($privacy == "low" OR $privacy == "normal" OR $privacy == "strong")
 		$updateset[] = "privacy = " . sqlesc($privacy);
 	
-	if ($_POST["resetkey"] == "yes")
+	if (isset($_POST["resetkey"]) && $_POST["resetkey"] == "yes")
 	{
 		$newpasskey = md5($arr['username'].date("Y-m-d H:i:s").$arr['passhash']);
 		$updateset[] = "passkey = ".sqlesc($newpasskey);
