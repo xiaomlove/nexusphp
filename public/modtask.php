@@ -103,44 +103,44 @@ if ($action == "edituser")
 		$added = sqlesc(date("Y-m-d H:i:s"));
 		if ($arr['email'] != $email){
 			$updateset[] = "email = " . sqlesc($email);
-			$modcomment = date("Y-m-d") . " - Email changed from $arr[email] to $email by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Email changed from $arr[email] to $email by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_email_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_email_changed_from'].$arr['email'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $email .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_email_changed_from'].$arr['email'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $email .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
 		if ($arr['username'] != $username){
 			$updateset[] = "username = " . sqlesc($username);
-			$modcomment = date("Y-m-d") . " - Usernmae changed from $arr[username] to $username by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Usernmae changed from $arr[username] to $username by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_username_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_username_changed_from'].$arr['username'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $username .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_username_changed_from'].$arr['username'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $username .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
 		if ($ori_downloaded != $downloaded){
 			$updateset[] = "downloaded = " . sqlesc($downloaded);
-			$modcomment = date("Y-m-d") . " - Downloaded amount changed from $arr[downloaded] to $downloaded by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Downloaded amount changed from $arr[downloaded] to $downloaded by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_downloaded_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_downloaded_changed_from'].mksize($arr['downloaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($downloaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_downloaded_changed_from'].mksize($arr['downloaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($downloaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
 		if ($ori_uploaded != $uploaded){
 			$updateset[] = "uploaded = " . sqlesc($uploaded);
-			$modcomment = date("Y-m-d") . " - Uploaded amount changed from $arr[uploaded] to $uploaded by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Uploaded amount changed from $arr[uploaded] to $uploaded by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_uploaded_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_uploaded_changed_from'].mksize($arr['uploaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($uploaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_uploaded_changed_from'].mksize($arr['uploaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($uploaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
 		if ($ori_bonus != $bonus){
 			$updateset[] = "seedbonus = " . sqlesc($bonus);
-			$modcomment = date("Y-m-d") . " - Bonus amount changed from $arr[seedbonus] to $bonus by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Bonus amount changed from $arr[seedbonus] to $bonus by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_bonus_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_bonus_changed_from'].$arr['seedbonus'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $bonus .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_bonus_changed_from'].$arr['seedbonus'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $bonus .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
 		if ($arr['invites'] != $invites){
 			$updateset[] = "invites = " . sqlesc($invites);
-			$modcomment = date("Y-m-d") . " - Invite amount changed from $arr[invites] to $invites by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Invite amount changed from $arr[invites] to $invites by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_invite_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_invite_changed_from'].$arr['invites'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $invites .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER[username]);
+			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_invite_changed_from'].$arr['invites'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $invites .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
 	}
@@ -192,7 +192,7 @@ if ($action == "edituser")
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		$updateset[] = "class = $class";
 		$what = ($class > $curclass ? "Promoted" : "Demoted");
-		$modcomment = date("Y-m-d") . " - $what to '" . get_user_class_name($class) . "' by $CURUSER[username].\n". $modcomment;
+		$modcomment = date("Y-m-d") . " - $what to '" . get_user_class_name($class) . "' by {$CURUSER['username']}.\n". $modcomment;
 	}
 	if ($class == UC_VIP)
 	{
@@ -203,7 +203,7 @@ if ($action == "edituser")
 		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_vip_status_changed_by'].$CURUSER['username']);
 		$added = sqlesc(date("Y-m-d H:i:s"));
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		$modcomment = date("Y-m-d") . " - VIP status changed by $CURUSER[username]. VIP added: ".$vip_added.($vip_added == 'yes' ? "; VIP until: ".$vip_until : "").".\n". $modcomment;
+		$modcomment = date("Y-m-d") . " - VIP status changed by {$CURUSER['username']}. VIP added: ".$vip_added.($vip_added == 'yes' ? "; VIP until: ".$vip_until : "").".\n". $modcomment;
 	}
 	
 	if ($warned && $curwarned != $warned)
@@ -213,7 +213,7 @@ if ($action == "edituser")
 
 		if ($warned == 'no')
 		{
-			$modcomment = date("Y-m-d") . " - Warning removed by $CURUSER[username].\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Warning removed by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_warn_removed']);
 			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_warning_removed_by'] . $CURUSER['username'] . ".");
 		}

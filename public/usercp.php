@@ -266,8 +266,8 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 
 				if (is_valid_id($stylesheet))
 				$updateset[] = "stylesheet = " . sqlesc($stylesheet);
-				if (is_valid_id($caticon))
-				$updateset[] = "caticon = " . sqlesc($caticon);
+//				if (is_valid_id($caticon))
+//				$updateset[] = "caticon = " . sqlesc($caticon);
 
 				if (is_valid_id($sitelanguage))
 				{
@@ -553,18 +553,19 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 				if ($ss_id == $CURUSER["stylesheet"]) $ss = " selected"; else $ss = "";
 				$stylesheets .= "<option value=$ss_id$ss>$ss_name</option>\n";
 			}
-			$cires = sql_query("SELECT * FROM caticons ORDER BY name") or die;
-			while($caticon = mysql_fetch_array($cires)){
-				if ($caticon['id'] == $CURUSER['caticon']) $sl = " selected"; else $sl = "";
-				$categoryicons .= "<option value=".$caticon['id'].$sl.">".$caticon['name']."</option>\n";
-			}
-			tr_small($lang_usercp['row_stylesheet'], "<select name=stylesheet>\n$stylesheets\n</select>&nbsp;&nbsp;<font class=small>".$lang_usercp['text_stylesheet_note']."<a href=\"aboutnexus.php#stylesheet\" ><b>".$lang_usercp['text_stylesheet_link']."</b></a></font>.",1);
+            tr_small($lang_usercp['row_stylesheet'], "<select name=stylesheet>\n$stylesheets\n</select>&nbsp;&nbsp;<font class=small>".$lang_usercp['text_stylesheet_note']."<a href=\"aboutnexus.php#stylesheet\" ><b>".$lang_usercp['text_stylesheet_link']."</b></a></font>.",1);
             /**
              * make no sense, should no exists!
              * @since v1.6.0
              */
+//			$cires = sql_query("SELECT * FROM caticons ORDER BY name") or die;
+//			while($caticon = mysql_fetch_array($cires)){
+//				if ($caticon['id'] == $CURUSER['caticon']) $sl = " selected"; else $sl = "";
+//				$categoryicons .= "<option value=".$caticon['id'].$sl.">".$caticon['name']."</option>\n";
+//			}
 //			tr_small($lang_usercp['row_category_icons'], "<select name=caticon>".$categoryicons."</select>",1);
-			tr_small($lang_usercp['row_font_size'], "<select name=fontsize><option value=small ".($CURUSER['fontsize'] == 'small' ? " selected" : "").">".$lang_usercp['select_small']."</option><option value=medium ".($CURUSER['fontsize'] == 'medium' ? " selected" : "").">".$lang_usercp['select_medium']."</option><option value=large ".($CURUSER['fontsize'] == 'large' ? " selected" : "").">".$lang_usercp['select_large']."</option></select>",1);
+
+            tr_small($lang_usercp['row_font_size'], "<select name=fontsize><option value=small ".($CURUSER['fontsize'] == 'small' ? " selected" : "").">".$lang_usercp['select_small']."</option><option value=medium ".($CURUSER['fontsize'] == 'medium' ? " selected" : "").">".$lang_usercp['select_medium']."</option><option value=large ".($CURUSER['fontsize'] == 'large' ? " selected" : "").">".$lang_usercp['select_large']."</option></select>",1);
 
 			$s = "<select name=\"sitelanguage\">\n";
 
