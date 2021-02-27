@@ -49,7 +49,7 @@ $title = $SITENAME.$lang_takeinvite['mail_tilte'];
 
 sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
 sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
-$signupUrl = getBaseUrl() . "/signup.php?type=invite&invitenumber=$hash";
+$signupUrl = getSchemeAndHttpHost() . "/signup.php?type=invite&invitenumber=$hash";
 $message = <<<EOD
 {$lang_takeinvite['mail_one']}{$arr['username']}{$lang_takeinvite['mail_two']}
 <b><a href="javascript:void(null)" onclick="window.open($signupUrl)">{$lang_takeinvite['mail_here']}</a></b><br />

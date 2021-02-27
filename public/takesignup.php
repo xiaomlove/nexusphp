@@ -64,7 +64,7 @@ $ip = getip();
 
 $res = sql_query("SELECT username FROM users WHERE id = $inviter") or sqlerr(__FILE__, __LINE__);
 $arr = mysql_fetch_assoc($res);
-$invusername = $arr[username];
+$invusername = $arr['username'];
 }
 
 if (!mkglobal("wantusername:wantpassword:passagain:email"))
@@ -171,14 +171,16 @@ $psecret = md5($row['secret']);
 $ip = getip();
 $usern = htmlspecialchars($wantusername);
 $title = $SITENAME.$lang_takesignup['mail_title'];
+$confirmUrl = getSchemeAndHttpHost() . "/confirm.php?id=$id&secret=$psecret";
+$confirmResendUrl = getSchemeAndHttpHost() . "/confirm_resend.php";
 $body = <<<EOD
 {$lang_takesignup['mail_one']}$usern{$lang_takesignup['mail_two']}($email){$lang_takesignup['mail_three']}$ip{$lang_takesignup['mail_four']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/confirm.php?id=$id&secret=$psecret')">
+<b><a href="javascript:void(null)" onclick="window.open($confirmUrl)">
 {$lang_takesignup['mail_this_link']} </a></b><br />
-http://$BASEURL/confirm.php?id=$id&secret=$psecret
+$confirmUrl
 {$lang_takesignup['mail_four_1']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/confirm_resend.php')">{$lang_takesignup['mail_here']}</a></b><br />
-http://$BASEURL/confirm_resend.php
+<b><a href="javascript:void(null)" onclick="window.open($confirmResendUrl)">{$lang_takesignup['mail_here']}</a></b><br />
+$confirmResendUrl
 <br />
 {$lang_takesignup['mail_five']}
 EOD;
