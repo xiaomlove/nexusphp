@@ -27,7 +27,7 @@ require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/config.php';
-if (!IS_ANNOUNCE) {
+if (!in_array(CURRENT_SCRIPT, ['announce', 'scrape'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();
 }

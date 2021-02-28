@@ -178,7 +178,8 @@ function check_client($peer_id, $agent, &$agent_familyid)
 		if($row_allowed_ua['peer_id_pattern'] != '')
 		{
 			if(!preg_match($row_allowed_ua['peer_id_pattern'], $row_allowed_ua['peer_id_start'], $match_bench))
-			err("regular expression err for: " . $row_allowed_ua['peer_id_start'] . ", please ask sysop to fix this");
+			err("regular expression err for peer_id: " . $row_allowed_ua['peer_id_start'] . ", please ask sysop to fix this");
+			do_log("[peer_id] match_bench: " . json_encode($match_bench));
 
 			if(preg_match($row_allowed_ua['peer_id_pattern'], $peer_id, $match_target))
 			{
@@ -228,10 +229,12 @@ function check_client($peer_id, $agent, &$agent_familyid)
 		if($row_allowed_ua['agent_pattern'] != '')
 		{
 			if(!preg_match($row_allowed_ua['agent_pattern'], $row_allowed_ua['agent_start'], $match_bench))
-			err("regular expression err for: " . $row_allowed_ua['agent_start'] . ", please ask sysop to fix this");
+			err("regular expression err for agent: " . $row_allowed_ua['agent_start'] . ", please ask sysop to fix this");
+			do_log("[agent] match_bench: " . json_encode($match_bench));
 
 			if(preg_match($row_allowed_ua['agent_pattern'], $agent, $match_target))
 			{
+				do_log("[agent] match_target: " . json_encode($match_target));
 				if( $row_allowed_ua['agent_match_num'] != 0)
 				{
 					for($i = 0 ; $i < $row_allowed_ua['agent_match_num']; $i++)
@@ -268,6 +271,8 @@ function check_client($peer_id, $agent, &$agent_familyid)
 				}
 				else // no need to compare version
 				$allowed_flag_agent = true;
+			} else {
+				do_log("[agent] agent_pattern: {$row_allowed_ua['agent_pattern']} not match agent: {$agent}");
 			}
 		}
 		else
@@ -283,6 +288,7 @@ function check_client($peer_id, $agent, &$agent_familyid)
 		elseif(($allowed_flag_peer_id || $allowed_flag_agent) || ($version_low_peer_id || $version_low_agent))	//client spoofing possible
 		;//add anti-cheat code here
 	}
+	do_log("agent: $agent, peer_id: $peer_id, allowed_flag_peer_id: $allowed_flag_peer_id, allowed_flag_agent: $allowed_flag_agent");
 
 	if($allowed_flag_peer_id && $allowed_flag_agent)
 	{
