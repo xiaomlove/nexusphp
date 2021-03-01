@@ -22,7 +22,7 @@ if (!$arr)
 die("Not found\n");
 
 sql_query("UPDATE subs SET hits=hits+1 WHERE id=$filename") or sqlerr(__FILE__, __LINE__);
-$file = "$SUBSPATH/$dirname/$filename.$arr[ext]";
+$file = ROOT_PATH . "$SUBSPATH/$dirname/$filename.$arr[ext]";
 
 if (!is_file($file))
 die("File not found\n");
