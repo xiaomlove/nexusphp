@@ -30,7 +30,7 @@ $lang_subtitles = array
 	'row_file' => "文件",
 	'text_maximum_file_size' => "文件最大限制：",
 	'row_torrent_id' => "种子ID",
-	'text_torrent_id_note' => "(种子详情页面网址末尾的数字。<br />如&nbsp<b>http://".$BASEURL."/details.php?id=16</b>&nbsp数字<b>16</b>即种子ID)",
+	'text_torrent_id_note' => "(种子详情页面网址末尾的数字。<br />如&nbsp<b>".getSchemeAndHttpHost()."/details.php?id=16</b>&nbsp数字<b>16</b>即种子ID)",
 	'row_title' => "标题",
 	'text_title_note' => "(可选，不填则使用种子文件名)",
 	'row_language' => "语言",
