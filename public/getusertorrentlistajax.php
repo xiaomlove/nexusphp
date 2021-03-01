@@ -113,7 +113,7 @@ function maketable($res, $mode = 'seeding')
 		}
 		else $dissmall_descr == "";
 		$ret .= "<tr" .  $sphighlight  . "><td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>".return_category_image($arr['category'], "torrents.php?allsec=1&amp;")."</td>\n" .
-		"<td class=\"rowfollow\" width=\"100%\" align=\"left\"><a href=\"".htmlspecialchars("details.php?id=".$arr[torrent]."&hit=1")."\" title=\"".$nametitle."\"><b>" . $dispname . "</b></a>". $sp_torrent .($dissmall_descr == "" ? "" : "<br />" . $dissmall_descr) . "</td>";
+		"<td class=\"rowfollow\" width=\"100%\" align=\"left\"><a href=\"".htmlspecialchars("details.php?id=".$arr['torrent']."&hit=1")."\" title=\"".$nametitle."\"><b>" . $dispname . "</b></a>". $sp_torrent .($dissmall_descr == "" ? "" : "<br />" . $dissmall_descr) . "</td>";
 		//size
 		if ($showsize)
 			$ret .= "<td class=\"rowfollow\" align=\"center\">". mksize_compact($arr['size'])."</td>";
