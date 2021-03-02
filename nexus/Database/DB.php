@@ -164,4 +164,20 @@ class DB
         return mysql_affected_rows();
     }
 
+    public static function getOne($table, $whereStr, $fields = '*')
+    {
+        if ($fields != '*') {
+            if (is_array($fields)) {
+                $fields = implode(', ', $fields);
+            }
+        }
+        if (empty($fields)) {
+            do_log("args: " . json_encode(func_get_args()));
+            throw new DatabaseException("empty fields.");
+        }
+        $sql = "select $fields from $table where $whereStr limit 1";
+        $res = sql_query($sql);
+        return mysql_fetch_assoc($res);
+    }
+
 }

@@ -41,6 +41,14 @@ if ($action == 'view') {
     stdhead($lang_fields['field_management']." - ".$lang_fields['text_edit']);
     begin_main_frame();
     echo $field->buildFieldForm($row);
+} elseif ($action == 'del') {
+    $id = intval($_GET['id'] ?? 0);
+    if ($id == 0) {
+        stderr($lang_fields['field_management'], "invalid id");
+    }
+    $sql = "delete from torrents_custom_fields where id = $id";
+    $res = sql_query($sql);
+    redirect('fields.php?action=view&type=');
 }
 
 

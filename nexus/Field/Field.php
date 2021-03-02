@@ -75,7 +75,7 @@ HTML;
         $perPage = 10;
         $total = get_row_count('torrents_custom_fields');
         list($paginationTop, $paginationBottom, $limit) = pager($perPage, $total, "?");
-        $sql = "select * from torrents_custom_fields order by id desc $limit";
+        $sql = "select * from torrents_custom_fields order by id asc $limit";
         $res = sql_query($sql);
         $header = [
             'id' => $lang_fields['col_id'],
@@ -177,5 +177,34 @@ HEAD;
         }
         $table .= '</tbody></table>';
         return $table;
+    }
+
+    public function buildFieldCheckbox($name, $current = [])
+    {
+        $sql = 'select * from torrents_custom_fields';
+        $res = sql_query($sql);
+        $checkbox = [];
+        if (!is_array($current)) {
+            $current = explode(',', $current);
+        }
+        while ($row = mysql_fetch_assoc($res)) {
+            $checkbox[] = sprintf(
+                '<label style="margin-right: 4px;"><input type="checkbox" name="%s" value="%s"%s>%s</label>',
+                $name, $row['id'], in_array($row['id'], $current) ? ' checked' : '', "{$row['label']}({$row['id']})"
+            );
+        }
+        return implode('', $checkbox);
+
+    }
+
+    public function renderUploadPage()
+    {
+        $searchBoxId = get_setting('main.browsecat');
+        $searchBox = DB::getOne('searchbox', "id = $searchBoxId");
+        if (empty($searchBox)) {
+            throw new \RuntimeException("Invalid search box: $searchBoxId");
+        }
+        $customFieldIdArr = explode(',', $searchBox['custom_fields']);
+        
     }
 }
