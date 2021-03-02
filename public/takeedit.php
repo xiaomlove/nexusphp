@@ -55,7 +55,7 @@ if (!empty($_POST['pt_gen'])) {
     $updateset[] = "pt_gen = ''";
 }
 
-$updateset[] = "tags = " . array_sum($_POST['tags']);
+$updateset[] = "tags = " . array_sum($_POST['tags'] ?? []);
 
 if ($enablenfo_main=='yes'){
 $nfoaction = $_POST['nfoaction'];

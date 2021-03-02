@@ -2630,7 +2630,7 @@ function stdfoot() {
 	print (" with <b>".count($query_name)."</b> db queries, <b>".$Cache->getCacheReadTimes()."</b> reads and <b>".$Cache->getCacheWriteTimes()."</b> writes of Redis and <b>".mksize(memory_get_usage())."</b> ram]");
 	print ("</div>\n");
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
-		print("<div id=\"sql_debug\">SQL query list: <ul>");
+		print("<div id=\"sql_debug\" style='text-align: left;'>SQL query list: <ul>");
 		foreach($query_name as $query) {
 			print(sprintf('<li>%s [%s]</li>', htmlspecialchars($query['query']), $query['time']));
 		}

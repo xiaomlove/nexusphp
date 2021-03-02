@@ -14,20 +14,21 @@ class Field
     const TYPE_FILE = 'file';
 
     public static $types = [
-        self::TYPE_TEXT => '短文本',
-        self::TYPE_TEXTAREA => '长文本',
-        self::TYPE_RADIO => '横向单选',
-        self::TYPE_CHECKBOX => '横向多选',
-        self::TYPE_SELECT => '下拉单选',
-        self::TYPE_FILE => '文件',
+        self::TYPE_TEXT => '短文本(text)',
+        self::TYPE_TEXTAREA => '长文本(textarea)',
+        self::TYPE_RADIO => '横向单选(radio)',
+        self::TYPE_CHECKBOX => '横向多选(checkbox)',
+        self::TYPE_SELECT => '下拉单选(select)',
+        self::TYPE_FILE => '文件(file)',
     ];
+
 
     public function radio($name, $options, $current = null)
     {
         $arr = [];
         foreach ($options as $value => $label) {
             $arr[] = sprintf(
-                '<label><input type="radio" name="%s" value="%s"%s />%s</label>',
+                '<label style="margin-right: 4px;"><input type="radio" name="%s" value="%s"%s />%s</label>',
                 $name, $value, (string)$current === (string)$value ? ' checked' : '', $label
             );
         }
@@ -45,7 +46,7 @@ class Field
         $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>类型为单选、多选、下拉时必填，一行一个，格式：选项值|选项描述文本', 1, '', true);
         $id = $row['id'] ?? 0;
         $form = <<<HTML
-<div style="width: 940px">
+<div>
 <h1 align="center"><a class="faqlink" href="?action=view&type=">{$lang_fields['text_field']}</a></h1>
 <form method="post" action="fields.php?action=submit&type=">
 <div>
@@ -71,27 +72,47 @@ HTML;
     function buildFieldTable()
     {
         global $lang_fields;
-        $sql = 'select * from torrents_custom_fields';
+        $perPage = 10;
+        $total = get_row_count('torrents_custom_fields');
+        list($paginationTop, $paginationBottom, $limit) = pager($perPage, $total, "?");
+        $sql = "select * from torrents_custom_fields order by id desc $limit";
         $res = sql_query($sql);
         $header = [
             'id' => $lang_fields['col_id'],
             'name' => $lang_fields['col_name'],
             'label' => $lang_fields['col_label'],
-            'type' => $lang_fields['col_type'],
+            'type_text' => $lang_fields['col_type'],
             'required_text' => $lang_fields['col_required'],
             'action' => $lang_fields['col_action'],
         ];
         $rows = [];
         while ($row = mysql_fetch_assoc($res)) {
             $row['required_text'] = $row['required'] ? '是' : '否';
+            $row['type_text'] = self::$types[$row['type']] ?? '';
             $row['action'] = sprintf(
                 "<a href=\"javascript:confirm_delete('%s', '%s', '');\">%s</a> | <a href=\"?action=edit&type=&id=%s\">%s</a>",
                 $row['id'], $lang_fields['js_sure_to_delete_this'], $lang_fields['text_delete'], $row['id'], $lang_fields['text_edit']
             );
             $rows[] = $row;
         }
+        $head = <<<HEAD
+<h1 align="center">{$lang_fields['field_management']} - </h1>
+<div style="margin-bottom: 8px;">
+    <span id="item" onclick="dropmenu(this);">
+        <span style="cursor: pointer;" class="big"><b>{$lang_fields['text_manage']}</b></span>
+        <div id="itemlist" class="dropmenu" style="display: none">
+            <ul>
+                <li><a href="?action=view&type=field">{$lang_fields['text_field']}</a></li>
+            </ul>
+        </div>
+    </span>
+    <span id="add">
+        <a href="?action=add&type=" class="big"><b>{$lang_fields['text_add']}</b></a>
+    </span>
+</div>
+HEAD;
         $table = $this->buildTable($header, $rows);
-        return $table;
+        return $head . $table . $paginationBottom;
     }
 
     public function save($data)
@@ -154,7 +175,7 @@ HTML;
             }
             $table .= '</tr>';
         }
-        $table .= '</tbody>';
+        $table .= '</tbody></table>';
         return $table;
     }
 }
