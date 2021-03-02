@@ -150,4 +150,18 @@ class DB
         return mysql_insert_id();
     }
 
+    public static function update($table, $data, $whereStr)
+    {
+        if (empty($table) || empty($data) || !is_array($data) || empty($whereStr)) {
+            throw new DatabaseException("require table and data(array) and whereStr.");
+        }
+        $updateArr = [];
+        foreach ($data as $field => $value) {
+            $updateArr[] = "`$field` = " . sqlesc($value);
+        }
+        $sql = sprintf("update `%s` set %s where %s", $table, implode(', ', $updateArr), $whereStr);
+        sql_query($sql);
+        return mysql_affected_rows();
+    }
+
 }

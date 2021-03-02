@@ -1253,11 +1253,14 @@ function allowedemails()
 
 function redirect($url)
 {
+    if (substr($url, 0, 4) != 'http') {
+        $url = getSchemeAndHttpHost() . '/' . trim($url, '/');
+    }
 	if(!headers_sent()){
-	header("Location : $url");
-	}
-	else
-	echo "<script type=\"text/javascript\">window.location.href = '$url';</script>";
+	    header("Location: $url", true, 302);
+	} else {
+        echo "<script type=\"text/javascript\">window.location.href = '$url';</script>";
+    }
 	exit;
 }
 
