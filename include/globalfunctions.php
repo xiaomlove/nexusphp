@@ -147,14 +147,17 @@ function dd($vars)
 
 function do_log($log, $level = 'info')
 {
+    global $CURUSER;
     $logFile = getLogFile();
 	if (($fd = fopen($logFile, 'a')) !== false) {
 		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 		$content = sprintf(
-			"[%s] [%s] [%s] %s:%s %s%s%s %s%s",
+			"[%s] [%s] [%s] [%s] [%s] %s:%s %s%s%s %s%s",
 			date('Y-m-d H:i:s'),
 			$level,
             defined('REQUEST_ID') ? REQUEST_ID : '',
+            $CURUSER['id'] ?? 0,
+            $CURUSER['passkey'] ?? $_REQUEST['passkey'] ?? '',
 			$backtrace[0]['file'] ?? '',
 			$backtrace[0]['line'] ?? '',
 			$backtrace[1]['class'] ?? '',

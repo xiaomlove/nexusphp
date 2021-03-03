@@ -6,11 +6,7 @@ define('ROOT_PATH', $rootpath);
 define('VERSION_NUMBER', '1.6.0');
 define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));
 define('IS_ANNOUNCE', CURRENT_SCRIPT == 'announce');
-if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
-    define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
-} else {
-    define('REQUEST_ID', intval(NEXUS_START * 10000));
-}
+define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? intval(NEXUS_START * 10000));
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
