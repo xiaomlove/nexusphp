@@ -230,11 +230,19 @@ if ($Attach->enable_attachment())
 				$dlkey = md5($db_file_location.".".$ext);
 				sql_query("INSERT INTO attachments (userid, width, added, filename, filetype, filesize, location, dlkey, isimage, thumb) VALUES (".$CURUSER['id'].", ".$width.", ".sqlesc(date("Y-m-d H:i:s")).", ".sqlesc($origfilename).", ".sqlesc($filetype).", ".$filesize.", ".sqlesc($db_file_location.".".$ext).", ".sqlesc($dlkey).", ".($isimage ? 1 : 0).", ".($hasthumb ? 1 : 0).")") or sqlerr(__FILE__, __LINE__);
 				$count_left--;
-				echo("<script type=\"text/javascript\">parent.tag_extimage('". "[attach]" . $dlkey . "[/attach]" . "');</script>");
+				if (!empty($_REQUEST['callback_func'])) {
+				    $url = $httpdirectory_attachment."/".$db_file_location . ".$ext";
+                    if ($hasthumb) {
+                        $url .= ".thumb.jpg";
+                    }
+                    echo sprintf('<script type="text/javascript">parent.%s("%s", "%s")</script>', $_REQUEST['callback_func'], $dlkey, $url);
+                } else {
+                    echo("<script type=\"text/javascript\">parent.tag_extimage('". "[attach]" . $dlkey . "[/attach]" . "');</script>");
+                }
 			}
 		}
 	}
-	print("<form enctype=\"multipart/form-data\" name=\"attachment\" method=\"post\" action=\"attachment.php\">");
+	print("<form enctype=\"multipart/form-data\" name=\"attachment\" method=\"post\" action=\"attachment.php?callback_func=" . ($_REQUEST['callback_func'] ?? '') . "\">");
 	print("<tr>");
 	print("<td class=\"embedded\" colspan=\"2\" align=left>");
 	print("<input type=\"file\" name=\"file\"".($count_left ? "" : " disabled=\"disabled\"")." />&nbsp;");

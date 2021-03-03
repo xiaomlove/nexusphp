@@ -11,6 +11,7 @@ class Field
     const TYPE_RADIO = 'radio';
     const TYPE_CHECKBOX = 'checkbox';
     const TYPE_SELECT = 'select';
+    const TYPE_IMAGE = 'image';
     const TYPE_FILE = 'file';
 
     public static $types = [
@@ -19,6 +20,7 @@ class Field
         self::TYPE_RADIO => '横向单选(radio)',
         self::TYPE_CHECKBOX => '横向多选(checkbox)',
         self::TYPE_SELECT => '下拉单选(select)',
+        self::TYPE_IMAGE => '图片(image)',
         self::TYPE_FILE => '文件(file)',
     ];
 
@@ -197,14 +199,107 @@ HEAD;
 
     }
 
-    public function renderUploadPage()
+    public function renderUploadPage(array $customValues = [])
     {
         $searchBoxId = get_setting('main.browsecat');
         $searchBox = DB::getOne('searchbox', "id = $searchBoxId");
         if (empty($searchBox)) {
             throw new \RuntimeException("Invalid search box: $searchBoxId");
         }
-        $customFieldIdArr = explode(',', $searchBox['custom_fields']);
-        
+        $sql = sprintf('select * from torrents_custom_fields where id in (%s)', $searchBox['custom_fields']);
+        $res = sql_query($sql);
+        $html = '';
+        while ($row = mysql_fetch_assoc($res)) {
+            $name = "custom_fields[{$row['id']}]";
+            $currentValue = $customValues[$row['id']] ?? '';
+            if ($row['type'] == self::TYPE_TEXT) {
+                $html .= tr($row['label'], sprintf('<input type="text" name="%s" value="%s" style="width: 650px"/>', $name, $currentValue), 1);
+            } elseif ($row['type'] == self::TYPE_TEXTAREA) {
+                $html .= tr($row['label'], sprintf('<textarea name="%s" rows="4" style="width: 650px">%s</textarea>', $name, $currentValue), 1);
+            } elseif ($row['type'] == self::TYPE_RADIO || $row['type'] == self::TYPE_CHECKBOX) {
+                $part = "";
+                foreach (preg_split('/[\r\n]+/', trim($row['options'])) as $option) {
+                    if (empty($option) || ($pos = strpos($option, '|')) === false) {
+                        continue;
+                    }
+                    $key = substr($option, 0, $pos);
+                    $value = substr($option, $pos + 1);
+                    $checked = "";
+                    if ($row['type'] == self::TYPE_RADIO && (string)$currentValue === (string)$value) {
+                        $checked = " checked";
+                    }
+                    if ($row['type'] == self::TYPE_CHECKBOX && in_array($value, (array)$currentValue)) {
+                        $checked = " checked";
+                    }
+                    $part .= sprintf(
+                        '<label style="margin-right: 4px"><input type="%s" name="%s" value="%s"%s />%s</label>',
+                        $row['type'], $name, $key, $checked, $value
+                    );
+                }
+                $html .= tr($row['label'], $part, 1);
+            } elseif ($row['type'] == self::TYPE_SELECT) {
+                $part = '<select name="' . $name . '">';
+                foreach (preg_split('/[\r\n]+/', trim($row['options'])) as $option) {
+                    if (empty($option) || ($pos = strpos($option, '|')) === false) {
+                        continue;
+                    }
+                    $key = substr($option, 0, $pos);
+                    $value = substr($option, $pos + 1);
+                    $selected = "";
+                    if (in_array($value, (array)$currentValue)) {
+                        $selected = " selected";
+                    }
+                    $part .= sprintf(
+                        '<option value="%s"%s>%s</option>',
+                        $key, $selected, $value
+                    );
+                }
+                $part .= '</select>';
+                $html .= tr($row['label'], $part, 1);
+            } elseif ($row['type'] == self::TYPE_IMAGE) {
+                $callbackFunc = "preview_custom_field_image_" . $row['id'];
+                $iframeId = "iframe_$callbackFunc";
+                $inputId = "input_$callbackFunc";
+                $imgId = "attach" . $row['id'];
+                $previewBoxId = "preview_$callbackFunc";
+                $y = '<iframe id="' . $iframeId . '" src="' . getSchemeAndHttpHost() . '/attachment.php?callback_func=' . $callbackFunc . '" width="100%" height="24" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>';
+                $y .= sprintf('<input id="%s" type="text" name="%s" value="%s" style="width: 650px;margin: 10px 0">', $inputId, $name, $currentValue);
+                $y .= '<div id="' . $previewBoxId . '">';
+                if (!empty($currentValue)) {
+                    if (substr($currentValue, 0, 4) == 'http') {
+                        $y .= formatImg($currentValue, true, 700, 0, $imgId);
+                    } else {
+                        $y .= format_comment($currentValue);
+                    }
+                }
+                $y .= '</div>';
+                $y .= <<<JS
+<script>
+    function {$callbackFunc}(delkey, url)
+    {
+        var previewBox = $('$previewBoxId')
+        var existsImg = $('$imgId')
+        var input = $('$inputId')
+        if (existsImg) {
+            previewBox.removeChild(existsImg)
+            input.value = ''
+        }
+        var img = document.createElement('img')
+        img.src=url
+        img.setAttribute('onload', 'Scale(this, 700, 0);')
+        img.setAttribute('onclick', 'Preview(this);')
+        input.value = '[attach]' + delkey + '[/attach]'
+        img.id='$imgId'
+        previewBox.appendChild(img)
     }
+</script>
+JS;
+                $html .= tr($row['label'], $y, 1);
+            } elseif ($row['type'] == self::TYPE_FILE) {
+                $html .= tr($row['label'], sprintf('<input type="file" name="%s" />', $name), 1);
+            }
+        }
+        return $html;
+    }
+
 }

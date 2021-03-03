@@ -220,8 +220,8 @@ function formatCode($text) {
 	return addTempCode("<br /><div class=\"codetop\">".$lang_functions['text_code']."</div><div class=\"codemain\">$text</div><br />");
 }
 
-function formatImg($src, $enableImageResizer, $image_max_width, $image_max_height) {
-	return addTempCode("<img alt=\"image\" src=\"$src\"" .($enableImageResizer ?  " onload=\"Scale(this,$image_max_width,$image_max_height);\" onclick=\"Preview(this);\"" : "") .  " />");
+function formatImg($src, $enableImageResizer, $image_max_width, $image_max_height, $imgId = "") {
+	return addTempCode("<img id=\"$imgId\" alt=\"image\" src=\"$src\"" .($enableImageResizer ?  " onload=\"Scale(this,$image_max_width,$image_max_height);\" onclick=\"Preview(this);\"" : "") .  " />");
 }
 
 function formatFlash($src, $width, $height) {

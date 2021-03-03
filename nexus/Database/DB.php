@@ -152,14 +152,21 @@ class DB
 
     public static function update($table, $data, $whereStr)
     {
-        if (empty($table) || empty($data) || !is_array($data) || empty($whereStr)) {
-            throw new DatabaseException("require table and data(array) and whereStr.");
-        }
         $updateArr = [];
         foreach ($data as $field => $value) {
             $updateArr[] = "`$field` = " . sqlesc($value);
         }
         $sql = sprintf("update `%s` set %s where %s", $table, implode(', ', $updateArr), $whereStr);
+        sql_query($sql);
+        return mysql_affected_rows();
+    }
+
+    public static function delete($table, $whereStr, $limit = null)
+    {
+        $sql = "delete from $table where $whereStr";
+        if (!is_null($limit)) {
+            $sql .= " limit $limit";
+        }
         sql_query($sql);
         return mysql_affected_rows();
     }

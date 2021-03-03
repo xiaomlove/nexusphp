@@ -12,6 +12,16 @@ $res = sql_query("SELECT torrents.*, categories.mode as cat_mode FROM torrents L
 $row = mysql_fetch_array($res);
 if (!$row) die();
 
+/**
+ * custom fields
+ * @since v1.6
+ */
+$customFieldValueRes = sql_query("select * from torrents_custom_field_values where torrent_id = $id");
+$customFieldValues = [];
+while ($row = mysql_fetch_assoc($res)) {
+    $customFieldValues[$row['custom_field_id']] = unserialize($row['custom_field_value']);
+}
+
 if ($enablespecial == 'yes' && get_user_class() >= $movetorrent_class)
 	$allowmove = true; //enable moving torrent to other section
 else $allowmove = false;

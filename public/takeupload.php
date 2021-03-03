@@ -352,6 +352,24 @@ if (!$ret) {
 }
 $id = mysql_insert_id();
 
+/**
+ * add custom fields
+ * @since v1.6
+ */
+if (!empty($_POST['custom_fields'])) {
+	$now = date('Y-m-d H:i:s');
+	foreach ($_POST['custom_fields'] as $customField => $customValue) {
+		$customData = [
+			'torrent_id' => $id,
+			'custom_field_id' => $customField,
+			'custom_field_value' => serialize($customValue),
+			'created_at' => $now,
+			'updated_at' => $now,
+		];
+		\Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+	}
+}
+
 @sql_query("DELETE FROM files WHERE torrent = $id");
 foreach ($filelist as $file) {
 	@sql_query("INSERT INTO files (torrent, filename, size) VALUES ($id, ".sqlesc($file[0]).",".$file[1].")");
