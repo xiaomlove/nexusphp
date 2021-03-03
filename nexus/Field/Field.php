@@ -217,13 +217,16 @@ HEAD;
             } elseif ($row['type'] == self::TYPE_TEXTAREA) {
                 $html .= tr($row['label'], sprintf('<textarea name="%s" rows="4" style="width: 650px">%s</textarea>', $name, $currentValue), 1);
             } elseif ($row['type'] == self::TYPE_RADIO || $row['type'] == self::TYPE_CHECKBOX) {
+                if ($row['type'] == self::TYPE_CHECKBOX) {
+                    $name .= '[]';
+                }
                 $part = "";
                 foreach (preg_split('/[\r\n]+/', trim($row['options'])) as $option) {
                     if (empty($option) || ($pos = strpos($option, '|')) === false) {
                         continue;
                     }
-                    $key = substr($option, 0, $pos);
-                    $value = substr($option, $pos + 1);
+                    $value = substr($option, 0, $pos);
+                    $label = substr($option, $pos + 1);
                     $checked = "";
                     if ($row['type'] == self::TYPE_RADIO && (string)$currentValue === (string)$value) {
                         $checked = " checked";
@@ -233,7 +236,7 @@ HEAD;
                     }
                     $part .= sprintf(
                         '<label style="margin-right: 4px"><input type="%s" name="%s" value="%s"%s />%s</label>',
-                        $row['type'], $name, $key, $checked, $value
+                        $row['type'], $name, $value, $checked, $label
                     );
                 }
                 $html .= tr($row['label'], $part, 1);
@@ -243,15 +246,15 @@ HEAD;
                     if (empty($option) || ($pos = strpos($option, '|')) === false) {
                         continue;
                     }
-                    $key = substr($option, 0, $pos);
-                    $value = substr($option, $pos + 1);
+                    $value = substr($option, 0, $pos);
+                    $label = substr($option, $pos + 1);
                     $selected = "";
                     if (in_array($value, (array)$currentValue)) {
                         $selected = " selected";
                     }
                     $part .= sprintf(
                         '<option value="%s"%s>%s</option>',
-                        $key, $selected, $value
+                        $value, $selected, $label
                     );
                 }
                 $part .= '</select>';
@@ -300,6 +303,20 @@ JS;
             }
         }
         return $html;
+    }
+
+    public function listTorrentCustomField($torrentId)
+    {
+        $res = sql_query("select v.*, f.type as custom_field_type from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id where torrent_id = $torrentId");
+        $result = [];
+        while ($row = mysql_fetch_assoc($res)) {
+            if ($row['custom_field_type'] == self::TYPE_CHECKBOX) {
+                $result[$row['custom_field_id']][] = $row['custom_field_value'];
+            } else {
+                $result[$row['custom_field_id']] = $row['custom_field_value'];
+            }
+        }
+        return $result;
     }
 
 }

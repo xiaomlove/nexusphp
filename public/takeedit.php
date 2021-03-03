@@ -189,6 +189,26 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 
 
 sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+/**
+ * add custom fields
+ * @since v1.6
+ */
+if (!empty($_POST['custom_fields'])) {
+    \Nexus\Database\DB::delete('torrents_custom_field_values', "torrent_id = $id");
+    $now = date('Y-m-d H:i:s');
+    foreach ($_POST['custom_fields'] as $customField => $customValue) {
+        foreach ((array)$customValue as $value) {
+            $customData = [
+                'torrent_id' => $id,
+                'custom_field_id' => $customField,
+                'custom_field_value' => $value,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+            \Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+        }
+    }
+}
 
 if($CURUSER["id"] == $row["owner"])
 {

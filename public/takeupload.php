@@ -359,14 +359,16 @@ $id = mysql_insert_id();
 if (!empty($_POST['custom_fields'])) {
 	$now = date('Y-m-d H:i:s');
 	foreach ($_POST['custom_fields'] as $customField => $customValue) {
-		$customData = [
-			'torrent_id' => $id,
-			'custom_field_id' => $customField,
-			'custom_field_value' => serialize($customValue),
-			'created_at' => $now,
-			'updated_at' => $now,
-		];
-		\Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+		foreach ((array)$customValue as $value) {
+			$customData = [
+				'torrent_id' => $id,
+				'custom_field_id' => $customField,
+				'custom_field_value' => $value,
+				'created_at' => $now,
+				'updated_at' => $now,
+			];
+			\Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+		}
 	}
 }
 

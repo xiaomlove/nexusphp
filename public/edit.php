@@ -16,11 +16,9 @@ if (!$row) die();
  * custom fields
  * @since v1.6
  */
-$customFieldValueRes = sql_query("select * from torrents_custom_field_values where torrent_id = $id");
-$customFieldValues = [];
-while ($row = mysql_fetch_assoc($res)) {
-    $customFieldValues[$row['custom_field_id']] = unserialize($row['custom_field_value']);
-}
+$customField = new \Nexus\Field\Field();
+$customFieldValues = $customField->listTorrentCustomField($id);
+//dd($customFieldValues);
 
 if ($enablespecial == 'yes' && get_user_class() >= $movetorrent_class)
 	$allowmove = true; //enable moving torrent to other section
@@ -68,6 +66,8 @@ else {
         $ptGen = new \Nexus\PTGen\PTGen();
         echo $ptGen->renderUploadPageFormInput($row['pt_gen']);
     }
+
+    $customField->renderUploadPage($customFieldValues);
 
 	if ($enablenfo_main=='yes')
 		tr($lang_edit['row_nfo_file'], "<font class=\"medium\"><input type=\"radio\" name=\"nfoaction\" value=\"keep\" checked=\"checked\" />".$lang_edit['radio_keep_current'].
