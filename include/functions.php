@@ -4622,4 +4622,62 @@ function canDoLogin()
     return true;
 }
 
+function displayHotAndClassic()
+{
+    global $showextinfo, $showmovies, $Cache, $lang_functions;
+
+    if (($showextinfo['imdb'] == 'yes' || get_setting('main.enable_pt_gen_system')) && ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes"))
+    {
+        $imdb = new \Nexus\Imdb\Imdb();
+        $type = array('hot', 'classic');
+        foreach($type as $type_each)
+        {
+            if($showmovies[$type_each] == 'yes' && (!isset($CURUSER) || $CURUSER['show' . $type_each] == 'yes'))
+            {
+                $Cache->new_page($type_each.'_resources', 900, true);
+                if (!$Cache->get_page())
+                {
+                    $Cache->add_whole_row();
+
+                    $res = sql_query("SELECT * FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND url != '' ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
+                    if (mysql_num_rows($res) > 0)
+                    {
+                        $movies_list = "";
+                        $count = 0;
+                        $allImdb = array();
+                        while($array = mysql_fetch_array($res))
+                        {
+                            $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word');
+                            if ($imdb_id = parse_imdb_id($array["url"]))
+                            {
+                                if (array_search($imdb_id, $allImdb) !== false) { //a torrent with the same IMDb url already exists
+                                    continue;
+                                }
+                                $allImdb[]=$imdb_id;
+                                $photo_url = $imdb->getMovie($imdb_id)->photo(true);
+                                $thumbnail = "<img width=\"101\" height=\"140\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
+                            }
+                            else continue;
+                            $thumbnail = "<a href=\"details.php?id=" . $array['id'] . "&amp;hit=1\" onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class=\'big\'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class=\'medium\'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">" . $thumbnail . "</a>";
+                            $movies_list .= $thumbnail;
+                            $count++;
+                            if ($count >= 9)
+                                break;
+                        }
+                        ?>
+                        <h2><?php echo $lang_functions['text_' . $type_each] ?></h2>
+                        <table width="100%" border="1" cellspacing="0" cellpadding="5"><tr><td class="text nowrap" align="center">
+                                    <?php echo $movies_list ?></td></tr></table>
+                        <?php
+                    }
+                    $Cache->end_whole_row();
+                    $Cache->cache_page();
+                }
+                echo $Cache->next_row();
+            }
+        }
+    }
+
+}
+
 ?>

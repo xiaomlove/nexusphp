@@ -155,7 +155,7 @@ else {
 		// ---------------- end subtitle block -------------------//
 
         /**************start custom fields****************/
-        echo $customField->renderTorrentDetailPageMixed($id);
+        echo $customField->renderOnTorrentDetailsPage($id);
 
         /**************end custom fields****************/
 

@@ -65,7 +65,7 @@ stdhead($lang_upload['head_upload']);
                     echo $ptGen->renderUploadPageFormInput("");
                 }
                 $field = new \Nexus\Field\Field();
-                $field->renderUploadPage();
+                $field->renderOnUploadPage();
 				if ($enablenfo_main=='yes') {
                     tr($lang_upload['row_nfo_file'], "<input type=\"file\" class=\"file\" name=\"nfo\" /><br /><font class=\"medium\">".$lang_upload['text_only_viewed_by'].get_user_class_name($viewnfo_class,false,true,true).$lang_upload['text_or_above']."</font>", 1);
                 }

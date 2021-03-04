@@ -1,12 +1,9 @@
 <?php
 require_once("../include/bittorrent.php");
 dbconn(true);
-require_once(get_langfile_path("torrents.php"));
+require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-if ($showextinfo['imdb'] == 'yes') {
-    $imdb = new \Nexus\Imdb\Imdb();
-}
 
 //check searchbox
 $sectiontype = $browsecatmode;
@@ -875,6 +872,10 @@ elseif ($sectiontype == $browsecatmode)
 	stdhead($lang_torrents['head_torrents']);
 else stdhead($lang_torrents['head_music']);
 print("<table width=\"940\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
+
+displayHotAndClassic();
+
+
 if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showing bookmarked torrents from all sections;
 ?>
 <form method="get" name="searchbox" action="?">

@@ -17,8 +17,6 @@ if (!$row) die();
  * @since v1.6
  */
 $customField = new \Nexus\Field\Field();
-$customFieldValues = $customField->listTorrentCustomField($id);
-//dd($customFieldValues);
 
 if ($enablespecial == 'yes' && get_user_class() >= $movetorrent_class)
 	$allowmove = true; //enable moving torrent to other section
@@ -67,7 +65,7 @@ else {
         echo $ptGen->renderUploadPageFormInput($row['pt_gen']);
     }
 
-    $customField->renderUploadPage($customFieldValues);
+    $customField->renderOnUploadPage($id);
 
 	if ($enablenfo_main=='yes')
 		tr($lang_edit['row_nfo_file'], "<font class=\"medium\"><input type=\"radio\" name=\"nfoaction\" value=\"keep\" checked=\"checked\" />".$lang_edit['radio_keep_current'].

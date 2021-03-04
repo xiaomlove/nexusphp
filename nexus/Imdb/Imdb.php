@@ -271,4 +271,16 @@ class Imdb
         $result .= '</div></td>';
         return $result;
     }
+
+    public function renderHotAndClassic()
+    {
+        global $showextinfo, $showmovies;
+
+        $shouldDisplay = ($showextinfo['imdb'] == 'yes' || get_setting('main.enable_pt_gen_system')) && ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes");
+        if (!$shouldDisplay) {
+            return '';
+        }
+
+
+    }
 }

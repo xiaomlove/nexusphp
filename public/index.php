@@ -4,8 +4,6 @@ dbconn(true);
 require_once(get_langfile_path());
 loggedinorreturn(true);
 $userid = $CURUSER["id"];
-if ($showextinfo['imdb'] == 'yes')
-	require_once ("imdb/imdb.class.php");
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 	if ($showpolls_main == "yes")
@@ -87,60 +85,7 @@ while($Cache->next_row()){
 echo $Cache->next_row();
 // ------------- end: recent news ------------------//
 // ------------- start: hot and classic movies ------------------//
-if ($showextinfo['imdb'] == 'yes' && ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes"))
-{
-	$type = array('hot', 'classic');
-	foreach($type as $type_each)
-	{
-		if($showmovies[$type_each] == 'yes' && (!isset($CURUSER) || $CURUSER['show' . $type_each] == 'yes'))
-		{
-			$Cache->new_page($type_each.'_resources', 900, true);
-			if (!$Cache->get_page())
-			{
-				$Cache->add_whole_row();
-
-				$imdbcfg = new imdb_config();
-				$res = sql_query("SELECT * FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND url != '' ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
-				if (mysql_num_rows($res) > 0)
-				{
-					$movies_list = "";
-					$count = 0;
-					$allImdb = array();
-					while($array = mysql_fetch_array($res))
-					{
-						$pro_torrent = get_torrent_promotion_append($array[sp_state],'word');
-						if ($imdb_id = parse_imdb_id($array["url"]))
-						{
-							if (array_search($imdb_id, $allImdb) !== false) { //a torrent with the same IMDb url already exists
-								continue;
-							}
-							$allImdb[]=$imdb_id;
-							$photo_url = $imdbcfg->photodir . $imdb_id. $imdbcfg->imageext;
-
-							if (file_exists($photo_url))
-								$thumbnail = "<img width=\"101\" height=\"140\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
-							else continue;
-						}
-						else continue;
-						$thumbnail = "<a href=\"details.php?id=" . $array['id'] . "&amp;hit=1\" onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class=\'big\'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class=\'medium\'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">" . $thumbnail . "</a>";
-						$movies_list .= $thumbnail;
-						$count++;
-						if ($count >= 9)
-							break;
-					}
-?>
-<h2><?php echo $lang_index['text_' . $type_each . 'movies'] ?></h2>
-<table width="100%" border="1" cellspacing="0" cellpadding="5"><tr><td class="text nowrap" align="center">
-<?php echo $movies_list ?></td></tr></table>
-<?php
-				}
-				$Cache->end_whole_row();
-				$Cache->cache_page();
-			}
-			echo $Cache->next_row();
-		}
-	}
-}
+displayHotAndClassic();
 // ------------- end: hot and classic movies ------------------//
 // ------------- start: funbox ------------------//
 if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes")){

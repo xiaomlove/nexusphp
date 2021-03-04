@@ -57,7 +57,7 @@ class Field
         global $lang_fields;
         $map = [
             self::TYPE_TEXT => $lang_fields['field_type_text'],
-            self::TYPE_TEXTAREA => $lang_fields['field_type_textara'],
+            self::TYPE_TEXTAREA => $lang_fields['field_type_textarea'],
             self::TYPE_RADIO => $lang_fields['field_type_radio'],
             self::TYPE_CHECKBOX => $lang_fields['field_type_checkbox'],
             self::TYPE_SELECT => $lang_fields['field_type_select'],
@@ -227,7 +227,7 @@ HEAD;
         return $result;
     }
 
-    public function buildTable(array $header, array $rows)
+    protected function buildTable(array $header, array $rows)
     {
         $table = '<table border="1" cellspacing="0" cellpadding="5" width="100%"><thead><tr>';
         foreach ($header as $key => $value) {
@@ -264,19 +264,20 @@ HEAD;
 
     }
 
-    public function renderUploadPage(array $customValues = [])
+    public function renderOnUploadPage($torrentId = 0)
     {
-        $searchBoxId = get_setting('main.browsecat');
-        $searchBox = DB::getOne('searchbox', "id = $searchBoxId");
+        global $browsecatmode;
+        $searchBox = DB::getOne('searchbox', "id = $browsecatmode");
         if (empty($searchBox)) {
-            throw new \RuntimeException("Invalid search box: $searchBoxId");
+            throw new \RuntimeException("Invalid search box: $browsecatmode");
         }
+        $customValues = $this->listTorrentCustomField($torrentId);
         $sql = sprintf('select * from torrents_custom_fields where id in (%s)', $searchBox['custom_fields']);
         $res = sql_query($sql);
         $html = '';
         while ($row = mysql_fetch_assoc($res)) {
             $name = "custom_fields[{$row['id']}]";
-            $currentValue = $customValues[$row['id']] ?? '';
+            $currentValue = $customValues[$row['id']]['custom_field_value'] ?? '';
             if ($row['type'] == self::TYPE_TEXT) {
                 $html .= tr($row['label'], sprintf('<input type="text" name="%s" value="%s" style="width: 650px"/>', $name, $currentValue), 1);
             } elseif ($row['type'] == self::TYPE_TEXTAREA) {
@@ -402,43 +403,16 @@ JS;
         return $result;
     }
 
-    public function renderTorrentDetailPageMixed($torretnId)
+    public function renderOnTorrentDetailsPage($torrentId)
     {
         global $browsecatmode;
         $displayName = get_searchbox_value($browsecatmode, 'custom_fields_display_name');
         $displayOrder = get_searchbox_value($browsecatmode, 'custom_fields_display_order');
-        $customFields = $this->listTorrentCustomField($torretnId);
+        $customFields = $this->listTorrentCustomField($torrentId);
         $mixedRowContent = nl2br($displayOrder);
         $rowByRowHtml = '';
         foreach ($customFields as $field) {
-            $content = '';
-            $fieldValue = $field['custom_field_value'];
-            $typeInfo = self::$types[$field['type']];
-            switch ($field['type']) {
-                case self::TYPE_TEXT:
-                case self::TYPE_TEXTAREA:
-                case self::TYPE_FILE:
-                    $content .= format_comment($fieldValue);
-                    break;
-                case self::TYPE_IMAGE:
-                    if (substr($fieldValue, 0, 4) == 'http') {
-                        $content .= formatImg($fieldValue, true, 700, 0, "attach{$field['id']}");
-                    } else {
-                        $content .= format_comment($fieldValue);
-                    }
-                    break;
-                case self::TYPE_RADIO:
-                case self::TYPE_CHECKBOX:
-                case self::TYPE_SELECT;
-                    $fieldContent = [];
-                    foreach ((array)$fieldValue as $item) {
-                        $fieldContent[] = $field['options'][$item] ?? '';
-                    }
-                    $content .= implode(' ', $fieldContent);
-                    break;
-                default:
-                    break;
-            }
+            $content = $this->formatCustomFieldValue($field);
             $mixedRowContent = str_replace("<%{$field['name']}.label%>", $field['label'], $mixedRowContent);
             $mixedRowContent = str_replace("<%{$field['name']}.value%>", $content, $mixedRowContent);
             if ($field['is_single_row']) {
@@ -450,6 +424,55 @@ JS;
             $result .= tr($displayName, $mixedRowContent, 1);
         }
         return $result;
+    }
+
+
+
+    protected function formatCustomFieldValue(array $customFieldWithValue)
+    {
+        $result = '';
+        $fieldValue = $customFieldWithValue['custom_field_value'];
+        switch ($customFieldWithValue['type']) {
+            case self::TYPE_TEXT:
+            case self::TYPE_TEXTAREA:
+            case self::TYPE_FILE:
+                $result .= format_comment($fieldValue);
+                break;
+            case self::TYPE_IMAGE:
+                if (substr($fieldValue, 0, 4) == 'http') {
+                    $result .= formatImg($fieldValue, true, 700, 0, "attach{$customFieldWithValue['id']}");
+                } else {
+                    $result .= format_comment($fieldValue);
+                }
+                break;
+            case self::TYPE_RADIO:
+            case self::TYPE_CHECKBOX:
+            case self::TYPE_SELECT;
+                $fieldContent = [];
+                foreach ((array)$fieldValue as $item) {
+                    $fieldContent[] = $customFieldWithValue['options'][$item] ?? '';
+                }
+                $result .= implode(' ', $fieldContent);
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
+
+    public function getFieldValue($torrentId, $fieldName = null)
+    {
+        static $result;
+        if (is_null($result)) {
+            $customFields = $this->listTorrentCustomField($torrentId);
+            $result = [];
+            foreach ($customFields as &$field) {
+                $field['custom_field_value_formatted'] = $this->formatCustomFieldValue($field);
+                $result[$field['name']] = $field;
+            }
+        }
+        return is_null($fieldName) ? $result : ($result[$fieldName] ?? '');
+
     }
 
 
