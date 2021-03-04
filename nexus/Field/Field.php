@@ -15,14 +15,66 @@ class Field
     const TYPE_FILE = 'file';
 
     public static $types = [
-        self::TYPE_TEXT => '短文本(text)',
-        self::TYPE_TEXTAREA => '长文本(textarea)',
-        self::TYPE_RADIO => '横向单选(radio)',
-        self::TYPE_CHECKBOX => '横向多选(checkbox)',
-        self::TYPE_SELECT => '下拉单选(select)',
-        self::TYPE_IMAGE => '图片(image)',
-        self::TYPE_FILE => '文件(file)',
+        self::TYPE_TEXT => [
+            'text' => 'text',
+            'has_option' => false,
+            'is_value_multiple' => false,
+        ],
+        self::TYPE_TEXTAREA => [
+            'text' => 'textarea',
+            'has_option' => false,
+            'is_value_multiple' => false,
+        ],
+        self::TYPE_RADIO => [
+            'text' => 'radio',
+            'has_option' => true,
+            'is_value_multiple' => false,
+        ],
+        self::TYPE_CHECKBOX => [
+            'text' => 'checkbox',
+            'has_option' => true,
+            'is_value_multiple' => true,
+        ],
+        self::TYPE_SELECT => [
+            'text' => 'select',
+            'has_option' => true,
+            'is_value_multiple' => false,
+        ],
+        self::TYPE_IMAGE => [
+            'text' => 'image',
+            'has_option' => false,
+            'is_value_multiple' => false,
+        ],
+        self::TYPE_FILE => [
+            'text' => 'file',
+            'has_option' => false,
+            'is_value_multiple' => false,
+        ],
     ];
+
+    public function getTypeHuman($type)
+    {
+        global $lang_fields;
+        $map = [
+            self::TYPE_TEXT => $lang_fields['field_type_text'],
+            self::TYPE_TEXTAREA => $lang_fields['field_type_textara'],
+            self::TYPE_RADIO => $lang_fields['field_type_radio'],
+            self::TYPE_CHECKBOX => $lang_fields['field_type_checkbox'],
+            self::TYPE_SELECT => $lang_fields['field_type_select'],
+            self::TYPE_IMAGE => $lang_fields['field_type_image'],
+            self::TYPE_FILE => $lang_fields['field_type_file'],
+        ];
+        return $map[$type] ?? '';
+    }
+
+    public function getTypeRadioOptions()
+    {
+        $out = [];
+        foreach (self::$types as $key => $value) {
+            $out[$key] = sprintf('%s(%s)', $this->getTypeHuman($key), $value['text']);
+        }
+        return $out;
+    }
 
 
     public function radio($name, $options, $current = null)
@@ -42,10 +94,11 @@ class Field
         global $lang_fields;
         $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;仅允许数字、字母、下划线', 1, '', true);
         $trLabel = tr($lang_fields['col_label'] . '<font color="red">*</font>', '<input type="text" name="label" value="' . ($row['label'] ?? '') . '"  style="width: 300px" />', 1, '', true);
-        $trType = tr($lang_fields['col_type'] . '<font color="red">*</font>', $this->radio('type', self::$types, $row['type'] ?? null), 1, '', true);
+        $trType = tr($lang_fields['col_type'] . '<font color="red">*</font>', $this->radio('type', $this->getTypeRadioOptions(), $row['type'] ?? null), 1, '', true);
         $trRequired = tr($lang_fields['col_required'] . '<font color="red">*</font>', $this->radio('required', ['0' => '否', '1' => '是'], $row['required'] ?? null), 1, '', true);
         $trHelp = tr($lang_fields['col_help'], '<textarea name="help" rows="4" cols="80">' . ($row['help'] ?? '') . '</textarea>', 1, '', true);
         $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>类型为单选、多选、下拉时必填，一行一个，格式：选项值|选项描述文本', 1, '', true);
+        $trIsSingleRow = tr($lang_fields['col_is_single_row'] . '<font color="red">*</font>', $this->radio('is_single_row', ['0' => '否', '1' => '是'], $row['is_single_row'] ?? null), 1, '', true);
         $id = $row['id'] ?? 0;
         $form = <<<HTML
 <div>
@@ -60,6 +113,7 @@ class Field
             {$trRequired}
             {$trHelp}
             {$trOptions}
+            {$trIsSingleRow}
     </table>
 </div>
 <div style="text-align: center; margin-top: 10px;">
@@ -85,12 +139,14 @@ HTML;
             'label' => $lang_fields['col_label'],
             'type_text' => $lang_fields['col_type'],
             'required_text' => $lang_fields['col_required'],
+            'is_single_row_text' => $lang_fields['col_is_single_row'],
             'action' => $lang_fields['col_action'],
         ];
         $rows = [];
         while ($row = mysql_fetch_assoc($res)) {
             $row['required_text'] = $row['required'] ? '是' : '否';
-            $row['type_text'] = self::$types[$row['type']] ?? '';
+            $row['is_single_row_text'] = $row['is_single_row'] ? '是' : '否';
+            $row['type_text'] = sprintf('%s(%s)', $this->getTypeHuman($row['type']), $row['type']);
             $row['action'] = sprintf(
                 "<a href=\"javascript:confirm_delete('%s', '%s', '');\">%s</a> | <a href=\"?action=edit&type=&id=%s\">%s</a>",
                 $row['id'], $lang_fields['js_sure_to_delete_this'], $lang_fields['text_delete'], $row['id'], $lang_fields['text_edit']
@@ -149,6 +205,14 @@ HEAD;
         }
         $attributes['required'] = $data['required'];
 
+        if (!isset($data['is_single_row'])) {
+            throw new \InvalidArgumentException("展示时单独一行 必须");
+        }
+        if (!in_array($data['is_single_row'], ["0", "1"], true)) {
+            throw new \InvalidArgumentException("展示时单独一行 非法");
+        }
+        $attributes['is_single_row'] = $data['is_single_row'];
+
         $attributes['help'] = $data['help'] ?? '';
         $attributes['options'] = trim($data['options'] ?? '');
         $now = date('Y-m-d H:i:s');
@@ -185,17 +249,18 @@ HEAD;
     {
         $sql = 'select * from torrents_custom_fields';
         $res = sql_query($sql);
-        $checkbox = [];
         if (!is_array($current)) {
             $current = explode(',', $current);
         }
+        $checkbox = '';
         while ($row = mysql_fetch_assoc($res)) {
-            $checkbox[] = sprintf(
+            $checkbox .= sprintf(
                 '<label style="margin-right: 4px;"><input type="checkbox" name="%s" value="%s"%s>%s</label>',
-                $name, $row['id'], in_array($row['id'], $current) ? ' checked' : '', "{$row['label']}({$row['id']})"
+                $name, $row['id'], in_array($row['id'], $current) ? ' checked' : '', "{$row['label']}[{$row['id']}]"
             );
         }
-        return implode('', $checkbox);
+        $checkbox .= '';
+        return $checkbox;
 
     }
 
@@ -307,16 +372,85 @@ JS;
 
     public function listTorrentCustomField($torrentId)
     {
-        $res = sql_query("select v.*, f.type as custom_field_type from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id where torrent_id = $torrentId");
+        global $browsecatmode;
+        $res = sql_query("select f.*, v.custom_field_value from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id inner join searchbox box on box.id = $browsecatmode and find_in_set(f.id, box.custom_fields) where torrent_id = $torrentId");
+        $values = [];
         $result = [];
         while ($row = mysql_fetch_assoc($res)) {
-            if ($row['custom_field_type'] == self::TYPE_CHECKBOX) {
-                $result[$row['custom_field_id']][] = $row['custom_field_value'];
-            } else {
-                $result[$row['custom_field_id']] = $row['custom_field_value'];
+            $typeInfo = self::$types[$row['type']];
+            if ($typeInfo['has_option']) {
+                $options = preg_split('/[\r\n]+/', $row['options']);
+                $optionsArr = [];
+                foreach ($options as $option) {
+                    $pos = strpos($option, '|');
+                    $value = substr($option, 0, $pos);
+                    $label = substr($option, $pos + 1);
+                    $optionsArr[$value] = $label;
+                }
+                $row['options'] = $optionsArr;
             }
+            $result[$row['id']] = $row;
+            if ($typeInfo['is_value_multiple']) {
+                $values[$row['id']][] = $row['custom_field_value'];
+            } else {
+                $values[$row['id']] = $row['custom_field_value'];
+            }
+        }
+        foreach ($result as &$value) {
+            $value['custom_field_value'] = $values[$value['id']];
         }
         return $result;
     }
+
+    public function renderTorrentDetailPageMixed($torretnId)
+    {
+        global $browsecatmode;
+        $displayName = get_searchbox_value($browsecatmode, 'custom_fields_display_name');
+        $displayOrder = get_searchbox_value($browsecatmode, 'custom_fields_display_order');
+        $customFields = $this->listTorrentCustomField($torretnId);
+        $mixedRowContent = nl2br($displayOrder);
+        $rowByRowHtml = '';
+        foreach ($customFields as $field) {
+            $content = '';
+            $fieldValue = $field['custom_field_value'];
+            $typeInfo = self::$types[$field['type']];
+            switch ($field['type']) {
+                case self::TYPE_TEXT:
+                case self::TYPE_TEXTAREA:
+                case self::TYPE_FILE:
+                    $content .= format_comment($fieldValue);
+                    break;
+                case self::TYPE_IMAGE:
+                    if (substr($fieldValue, 0, 4) == 'http') {
+                        $content .= formatImg($fieldValue, true, 700, 0, "attach{$field['id']}");
+                    } else {
+                        $content .= format_comment($fieldValue);
+                    }
+                    break;
+                case self::TYPE_RADIO:
+                case self::TYPE_CHECKBOX:
+                case self::TYPE_SELECT;
+                    $fieldContent = [];
+                    foreach ((array)$fieldValue as $item) {
+                        $fieldContent[] = $field['options'][$item] ?? '';
+                    }
+                    $content .= implode(' ', $fieldContent);
+                    break;
+                default:
+                    break;
+            }
+            $mixedRowContent = str_replace("<%{$field['name']}.label%>", $field['label'], $mixedRowContent);
+            $mixedRowContent = str_replace("<%{$field['name']}.value%>", $content, $mixedRowContent);
+            if ($field['is_single_row']) {
+                $rowByRowHtml .= tr($field['label'], $content, 1);
+            }
+        }
+        $result = $rowByRowHtml;
+        if (!empty($mixedRowContent)) {
+            $result .= tr($displayName, $mixedRowContent, 1);
+        }
+        return $result;
+    }
+
 
 }

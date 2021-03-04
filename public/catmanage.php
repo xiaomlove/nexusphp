@@ -233,10 +233,14 @@ function print_category_editor($type, $row='')
 			}
 			tr($lang_catmanage['row_searchbox_name']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"name\" value=\"".htmlspecialchars($name)."\" style=\"width: 300px\" /> " . $lang_catmanage['text_searchbox_name_note'], 1);
 			tr($lang_catmanage['row_show_sub_category'], "<input type=\"checkbox\" name=\"showsource\" value=\"1\"".($showsource ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_sources'] . "<input type=\"checkbox\" name=\"showmedium\" value=\"1\"".($showmedium ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_media'] . "<input type=\"checkbox\" name=\"showcodec\" value=\"1\"".($showcodec ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_codecs'] . "<input type=\"checkbox\" name=\"showstandard\" value=\"1\"".($showstandard ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_standards'] . "<input type=\"checkbox\" name=\"showprocessing\" value=\"1\"".($showprocessing ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_processings'] . "<input type=\"checkbox\" name=\"showteam\" value=\"1\"".($showteam ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_teams'] . "<input type=\"checkbox\" name=\"showaudiocodec\" value=\"1\"".($showaudiocodec ? " checked=\"checked\"" : "")." /> " . $lang_catmanage['text_audio_codecs']."<br />".$lang_catmanage['text_show_sub_category_note'], 1);
-			$field = new \Nexus\Field\Field();
-			tr('显示自字义字段', $field->buildFieldCheckbox('custom_fields[]', $row['custom_fields']), 1);
 			tr($lang_catmanage['row_items_per_row']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"catsperrow\" value=\"".$catsperrow."\" style=\"width: 100px\" /> " . $lang_catmanage['text_items_per_row_note'], 1);
 			tr($lang_catmanage['row_padding_between_items']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"catpadding\" value=\"".$catpadding."\" style=\"width: 100px\" /> " . $lang_catmanage['text_padding_between_items_note'], 1);
+            $field = new \Nexus\Field\Field();
+            tr('启用自字义字段', $field->buildFieldCheckbox('custom_fields[]', $row['custom_fields'] ?? ''), 1);
+            tr('自定义字段显示名称', '<input type="text" name="custom_fields_display_name" style="width: 300px" value="' . ($row['custom_fields_display_name'] ?? '') . '" />', 1);
+            $helpText = '<br/>使用标签代表字段，如某字段其 Name 为 artist，则它的标签为：<%artist%>';
+            $helpText .= '<br/><font color="#a52a2a">仅针对非单独占一行的字段有效</font>';
+            tr('自定义字段显示顺序', '<textarea name="custom_fields_display_order" style="width: 300px" rows="8">' . ($row['custom_fields_display_order'] ?? '') . '</textarea>' . $helpText, 1);
 		}
 		elseif ($type=='caticon')
 		{
@@ -703,6 +707,8 @@ elseif($action == 'submit')
 		$updateset[] = "showteam=".sqlesc($showteam);
 		$updateset[] = "showaudiocodec=".sqlesc($showaudiocodec);
 		$updateset[] = "custom_fields=" . sqlesc(implode(',', $_POST['custom_fields'] ?? []));
+		$updateset[] = "custom_fields_display_name=" . sqlesc($_POST['custom_fields_display_name'] ?? '');
+		$updateset[] = "custom_fields_display_order=" . sqlesc($_POST['custom_fields_display_order'] ?? '');
 		if ($showsource || $showmedium || $showcodec || $showstandard || $showprocessing || $showteam || $showaudiocodec)
 			$updateset[] = "showsubcat=1";
 		else

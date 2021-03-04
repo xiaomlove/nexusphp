@@ -5,6 +5,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 $id = intval($_GET["id"] ?? 0);
+$customField = new \Nexus\Field\Field();
 
 int_check($id);
 if (!isset($id) || !$id)
@@ -152,6 +153,11 @@ else {
 		print("</tr></table>");
 		print("</td></tr>\n");
 		// ---------------- end subtitle block -------------------//
+
+        /**************start custom fields****************/
+        echo $customField->renderTorrentDetailPageMixed($id);
+
+        /**************end custom fields****************/
 
 		if ($CURUSER['showdescription'] != 'no' && !empty($row["descr"])){
 		$torrentdetailad=$Advertisement->get_ad('torrentdetail');
