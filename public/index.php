@@ -85,7 +85,7 @@ while($Cache->next_row()){
 echo $Cache->next_row();
 // ------------- end: recent news ------------------//
 // ------------- start: hot and classic movies ------------------//
-displayHotAndClassic();
+//displayHotAndClassic();
 // ------------- end: hot and classic movies ------------------//
 // ------------- start: funbox ------------------//
 if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes")){
