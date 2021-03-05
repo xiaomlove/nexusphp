@@ -11,8 +11,7 @@ if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
     if (file_exists($installScriptFile)) {
-        header('Location: ' . getBaseUrl() . '/' . $installScriptRelativePath);
-        exit(0);
+        redirect($installScriptRelativePath);
     }
 }
 ini_set('date.timezone', config('nexus.timezone'));

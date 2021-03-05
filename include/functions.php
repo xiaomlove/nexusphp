@@ -4534,7 +4534,10 @@ function getFullDirectory($dir)
     if (!is_dir($dir)) {
         $dir = ROOT_PATH . $dir;
     }
-    return realpath($dir);
+    if (is_dir($dir)) {
+        return realpath($dir);
+    }
+    return $dir;
 }
 
 function checkGuestVisit()

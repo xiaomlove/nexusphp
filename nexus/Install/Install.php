@@ -261,8 +261,7 @@ class Install
 
     public function gotoStep($step)
     {
-        header('Location: ' . getBaseUrl() . "?step=$step");
-        exit(0);
+        redirect(getBaseUrl() . "?step=$step");
     }
 
     public function maxStep()

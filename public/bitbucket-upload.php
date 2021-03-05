@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$pp=pathinfo($filename = $file["name"]);
 	if($pp['basename'] != $filename)
 	stderr($lang_bitbucketupload['std_upload_failed'], $lang_bitbucketupload['std_bad_file_name']);
-	$tgtfile = "$bitbucket/$filename";
+	$tgtfile = getFullDirectory("$bitbucket/$filename");
 	if (file_exists($tgtfile))
 	stderr($lang_bitbucketupload['std_upload_failed'], $lang_bitbucketupload['std_file_already_exists'].htmlspecialchars($filename).$lang_bitbucketupload['std_already_exists'],false);
 
