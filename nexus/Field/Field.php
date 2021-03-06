@@ -52,6 +52,8 @@ class Field
         ],
     ];
 
+    private $preparedTorrentCustomFieldValues = [];
+
     public function getTypeHuman($type)
     {
         global $lang_fields;
@@ -91,14 +93,14 @@ class Field
 
     function buildFieldForm(array $row = [])
     {
-        global $lang_fields;
-        $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;仅允许数字、字母、下划线', 1, '', true);
+        global $lang_fields, $lang_functions;
+        $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;' . $lang_fields['col_name_helptext'], 1, '', true);
         $trLabel = tr($lang_fields['col_label'] . '<font color="red">*</font>', '<input type="text" name="label" value="' . ($row['label'] ?? '') . '"  style="width: 300px" />', 1, '', true);
         $trType = tr($lang_fields['col_type'] . '<font color="red">*</font>', $this->radio('type', $this->getTypeRadioOptions(), $row['type'] ?? null), 1, '', true);
-        $trRequired = tr($lang_fields['col_required'] . '<font color="red">*</font>', $this->radio('required', ['0' => '否', '1' => '是'], $row['required'] ?? null), 1, '', true);
+        $trRequired = tr($lang_fields['col_required'] . '<font color="red">*</font>', $this->radio('required', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['required'] ?? null), 1, '', true);
         $trHelp = tr($lang_fields['col_help'], '<textarea name="help" rows="4" cols="80">' . ($row['help'] ?? '') . '</textarea>', 1, '', true);
-        $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>类型为单选、多选、下拉时必填，一行一个，格式：选项值|选项描述文本', 1, '', true);
-        $trIsSingleRow = tr($lang_fields['col_is_single_row'] . '<font color="red">*</font>', $this->radio('is_single_row', ['0' => '否', '1' => '是'], $row['is_single_row'] ?? null), 1, '', true);
+        $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>' . $lang_fields['col_options_helptext'], 1, '', true);
+        $trIsSingleRow = tr($lang_fields['col_is_single_row'] . '<font color="red">*</font>', $this->radio('is_single_row', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['is_single_row'] ?? null), 1, '', true);
         $id = $row['id'] ?? 0;
         $form = <<<HTML
 <div>
@@ -127,7 +129,7 @@ HTML;
 
     function buildFieldTable()
     {
-        global $lang_fields;
+        global $lang_fields, $lang_functions;
         $perPage = 10;
         $total = get_row_count('torrents_custom_fields');
         list($paginationTop, $paginationBottom, $limit) = pager($perPage, $total, "?");
@@ -144,8 +146,8 @@ HTML;
         ];
         $rows = [];
         while ($row = mysql_fetch_assoc($res)) {
-            $row['required_text'] = $row['required'] ? '是' : '否';
-            $row['is_single_row_text'] = $row['is_single_row'] ? '是' : '否';
+            $row['required_text'] = $row['required'] ? $lang_functions['text_yes'] : $lang_functions['text_no'];
+            $row['is_single_row_text'] = $row['is_single_row'] ? $lang_functions['text_yes'] : $lang_functions['text_no'];
             $row['type_text'] = sprintf('%s(%s)', $this->getTypeHuman($row['type']), $row['type']);
             $row['action'] = sprintf(
                 "<a href=\"javascript:confirm_delete('%s', '%s', '');\">%s</a> | <a href=\"?action=edit&type=&id=%s\">%s</a>",
@@ -175,41 +177,42 @@ HEAD;
 
     public function save($data)
     {
+        global $lang_functions, $lang_fields;
         $attributes = [];
         if (empty($data['name'])) {
-            throw new \InvalidArgumentException("Name 必须");
+            throw new \InvalidArgumentException("{$lang_fields['col_name']} {$lang_functions['text_required']}");
         }
         if (!preg_match('/^\w+$/', $data['name'])) {
-            throw new \InvalidArgumentException("Name 非法");
+            throw new \InvalidArgumentException("{$lang_fields['col_name']} {$lang_functions['text_invalid']}");
         }
         $attributes['name'] = $data['name'];
 
         if (empty($data['label'])) {
-            throw new \InvalidArgumentException("显示标签 必须");
+            throw new \InvalidArgumentException("{$lang_fields['col_label']} {$lang_functions['text_required']}");
         }
         $attributes['label'] = $data['label'];
 
         if (empty($data['type'])) {
-            throw new \InvalidArgumentException("类型 必须");
+            throw new \InvalidArgumentException("{$lang_fields['col_type']} {$lang_functions['text_required']}");
         }
         if (!isset(self::$types[$data['type']])) {
-            throw new \InvalidArgumentException("类型 非法");
+            throw new \InvalidArgumentException("{$lang_fields['col_type']} {$lang_functions['text_invalid']}");
         }
         $attributes['type'] = $data['type'];
 
         if (!isset($data['required'])) {
-            throw new \InvalidArgumentException("不能为空 必须");
+            throw new \InvalidArgumentException("{$lang_fields['col_required']} {$lang_functions['text_required']}");
         }
         if (!in_array($data['required'], ["0", "1"], true)) {
-            throw new \InvalidArgumentException("不能为空 非法");
+            throw new \InvalidArgumentException("{$lang_fields['col_name']} {$lang_functions['text_invalid']}");
         }
         $attributes['required'] = $data['required'];
 
         if (!isset($data['is_single_row'])) {
-            throw new \InvalidArgumentException("展示时单独一行 必须");
+            throw new \InvalidArgumentException("{$lang_fields['col_is_single_row']} {$lang_functions['text_required']}");
         }
         if (!in_array($data['is_single_row'], ["0", "1"], true)) {
-            throw new \InvalidArgumentException("展示时单独一行 非法");
+            throw new \InvalidArgumentException("{$lang_fields['col_is_single_row']} {$lang_functions['text_invalid']}");
         }
         $attributes['is_single_row'] = $data['is_single_row'];
 
@@ -371,16 +374,27 @@ JS;
         return $html;
     }
 
-    public function listTorrentCustomField($torrentId)
+    public function listTorrentCustomField($torrentId, $searchBoxId = 0)
     {
         global $browsecatmode;
-        $res = sql_query("select f.*, v.custom_field_value from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id inner join searchbox box on box.id = $browsecatmode and find_in_set(f.id, box.custom_fields) where torrent_id = $torrentId");
+        if ($searchBoxId <= 0) {
+            $searchBoxId = $browsecatmode;
+        }
+        //suppose torrentId is array
+        $isArray = true;
+        $torrentIdArr = $torrentId;
+        if (!is_array($torrentId)) {
+            $isArray = false;
+            $torrentIdArr = [$torrentId];
+        }
+        $torrentIdStr = implode(',', $torrentIdArr);
+        $res = sql_query("select f.*, v.custom_field_value, v.torrent_id from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id inner join searchbox box on box.id = $searchBoxId and find_in_set(f.id, box.custom_fields) where torrent_id in ($torrentIdStr)");
         $values = [];
         $result = [];
         while ($row = mysql_fetch_assoc($res)) {
             $typeInfo = self::$types[$row['type']];
             if ($typeInfo['has_option']) {
-                $options = preg_split('/[\r\n]+/', $row['options']);
+                $options = preg_split('/[\r\n]+/', trim($row['options']));
                 $optionsArr = [];
                 foreach ($options as $option) {
                     $pos = strpos($option, '|');
@@ -390,17 +404,19 @@ JS;
                 }
                 $row['options'] = $optionsArr;
             }
-            $result[$row['id']] = $row;
+            $result[$row['torrent_id']][$row['id']] = $row;
             if ($typeInfo['is_value_multiple']) {
-                $values[$row['id']][] = $row['custom_field_value'];
+                $values[$row['torrent_id']][$row['id']][] = $row['custom_field_value'];
             } else {
-                $values[$row['id']] = $row['custom_field_value'];
+                $values[$row['torrent_id']][$row['id']] = $row['custom_field_value'];
             }
         }
-        foreach ($result as &$value) {
-            $value['custom_field_value'] = $values[$value['id']];
+        foreach ($result as $tid => &$fields) {
+            foreach ($fields as &$field) {
+                $field['custom_field_value'] = $values[$tid][$field['id']];
+            }
         }
-        return $result;
+        return $isArray ? $result : $result[$torrentId];
     }
 
     public function renderOnTorrentDetailsPage($torrentId)
@@ -460,20 +476,31 @@ JS;
         return $result;
     }
 
-    public function getFieldValue($torrentId, $fieldName = null)
+    public function prepareTorrents(array $torrentIdArr)
     {
-        static $result;
-        if (is_null($result)) {
-            $customFields = $this->listTorrentCustomField($torrentId);
-            $result = [];
+        $customFieldValues = $this->listTorrentCustomField($torrentIdArr);
+        $result = [];
+        foreach ($customFieldValues as $tid => &$customFields) {
             foreach ($customFields as &$field) {
                 $field['custom_field_value_formatted'] = $this->formatCustomFieldValue($field);
-                $result[$field['name']] = $field;
+                $result[$tid][$field['name']] = $field;
             }
         }
-        return is_null($fieldName) ? $result : ($result[$fieldName] ?? '');
-
+        $this->preparedTorrentCustomFieldValues = $result;
     }
+
+    public function getPreparedTorrent($torrentId = null, $fieldName = null)
+    {
+        if (is_null($torrentId)) {
+            return $this->preparedTorrentCustomFieldValues;
+        }
+        if (is_null($fieldName)) {
+            return $this->preparedTorrentCustomFieldValues[$torrentId] ?? [];
+        }
+        return $this->preparedTorrentCustomFieldValues[$torrentId][$fieldName] ?? '';
+    }
+
+
 
 
 }

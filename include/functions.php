@@ -4642,7 +4642,7 @@ function displayHotAndClassic()
                 {
                     $Cache->add_whole_row();
 
-                    $res = sql_query("SELECT * FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND url != '' ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
+                    $res = sql_query("SELECT sp_state, url, id, name, small_descr FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND url != '' ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
                     if (mysql_num_rows($res) > 0)
                     {
                         $movies_list = "";

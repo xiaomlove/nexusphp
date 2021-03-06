@@ -313,6 +313,8 @@ $lang_functions = array
 	'text_tag_diy' => '自制',
 	'text_tag_mother_language' => '國語',
 	'text_tag_mother_language_subtitle' => '中字',
+	'text_required' => '不能為空',
+	'text_invalid' => '非法',
 );
 
 ?>
