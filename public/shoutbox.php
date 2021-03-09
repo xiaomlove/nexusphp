@@ -88,7 +88,20 @@ else
 	}
 	$date=sqlesc(time());
 	$text=trim($_GET["shbox_text"]);
-
+//logout fix
+if (stripos(htmlspecialchars($text), "logout.php")>0 )
+	{
+	$ip = getip();
+	$text ='我是IP为：'.$ip.'的渣渣，想入侵被发现了！I was trying to hack in and were catched by System.';
+	write_log("Someone is hacking shoutbox with logout.php.ID is ".$CURUSER[id].".Name is ".$CURUSER[username].".IP was banned - IP : ".getip(),'mod');
+	$firstlong_ban = ip2long(getip());
+	$lastlong_ban = ip2long(getip());
+	$comment_ban = sqlesc("Hacking with logout.php in shoutbox.ID is ".$CURUSER[id].".Name is ".$CURUSER[username]);
+	$added_ban = sqlesc(date("Y-m-d H:i:s"));
+	sql_query("INSERT INTO bans (added, addedby, first, last, comment) VALUES($added_ban, 0, $firstlong_ban, $lastlong_ban, $comment_ban)") or sqlerr(__FILE__, __LINE__);
+	}
+//	sql_query("INSERT INTO shoutbox (userid, date, text, type) VALUES (" . sqlesc($userid) . ", $date, " . sqlesc($text) . ", ".sqlesc($type).")") or sqlerr(__FILE__, __LINE__);
+$getip=getip(); //logout fix
 	sql_query("INSERT INTO shoutbox (userid, date, text, type) VALUES (" . sqlesc($userid) . ", $date, " . sqlesc($text) . ", ".sqlesc($type).")") or sqlerr(__FILE__, __LINE__);
 	print "<script type=\"text/javascript\">parent.document.forms['shbox'].shbox_text.value='';</script>";
 }
