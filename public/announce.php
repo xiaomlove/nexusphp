@@ -220,7 +220,7 @@ else // continue an existing session
 {
 	$upthis = $trueupthis = max(0, $uploaded - $self["uploaded"]);
 	$downthis = $truedownthis = max(0, $downloaded - $self["downloaded"]);
-	$announcetime = ($self["seeder"] == "yes" ? "seedtime = seedtime + $self[announcetime]" : "leechtime = leechtime + $self[announcetime]");
+	$announcetime = ($self["seeder"] == "yes" ? "seedtime = seedtime + {$self['announcetime']}" : "leechtime = leechtime + {$self['announcetime']}");
 	$is_cheater = false;
 	
 	if ($cheaterdet_security){
@@ -229,6 +229,7 @@ else // continue an existing session
 			$is_cheater = check_cheater($userid, $torrent['id'], $upthis, $downthis, $self['announcetime'], $torrent['seeders'], $torrent['leechers']);
 		}
 	}
+	do_log("upthis: $upthis, downthis: $downthis, announcetime: $announcetime, is_cheater: $is_cheater");
 
 	if (!$is_cheater && ($trueupthis > 0 || $truedownthis > 0))
 	{
