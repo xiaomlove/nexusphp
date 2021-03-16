@@ -1086,12 +1086,16 @@ elseif($inclbookmarked == 2)
 }
 
 if ($count) {
+    $rows = [];
+    while ($row = mysql_fetch_assoc($res)) {
+        $rows[] = $row;
+    }
 	print($pagertop);
 	if ($sectiontype == $browsecatmode)
-		torrenttable($res, "torrents");
+		torrenttable($rows, "torrents");
 	elseif ($sectiontype == $specialcatmode) 
-		torrenttable($res, "music");
-	else torrenttable($res, "bookmarks");
+		torrenttable($rows, "music");
+	else torrenttable($rows, "bookmarks");
 	print($pagerbottom);
 }
 else {

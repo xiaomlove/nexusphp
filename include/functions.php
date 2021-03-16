@@ -3021,7 +3021,7 @@ function get_torrent_bookmark_state($userid, $torrentid, $text = false)
 	return $act;
 }
 
-function torrenttable($res, $variant = "torrent") {
+function torrenttable($rows, $variant = "torrent") {
 	global $Cache;
 	global $lang_functions;
 	global $CURUSER, $waitsystem;
@@ -3037,6 +3037,8 @@ function torrenttable($res, $variant = "torrent") {
     } elseif ($enableImdb) {
 	    $imdb = new Nexus\Imdb\Imdb();
     }
+	$torrent = new Nexus\Torrent\Torrent();
+	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], array_column($rows, 'id'));
 
 	if ($variant == "torrent"){
 		$last_browse = $CURUSER['last_browse'];
@@ -3132,7 +3134,8 @@ $counter = 0;
 if ($smalldescription_main == 'no' || $CURUSER['showsmalldescr'] == 'no')
 	$displaysmalldescr = false;
 else $displaysmalldescr = true;
-while ($row = mysql_fetch_assoc($res))
+//while ($row = mysql_fetch_assoc($res))
+foreach ($rows as $row)
 {
 	$id = $row["id"];
 	$sphighlight = get_torrent_bg_color($row['sp_state']);
@@ -3234,6 +3237,9 @@ while ($row = mysql_fetch_assoc($res))
 		print($dissmall_descr == "" ? "" : "<br />".$tags.htmlspecialchars($dissmall_descr));
 	} else {
 	    print("<br />$tags");
+    }
+	if (isset($torrentSeedingLeechingStatus[$row['id']])) {
+        print('<div style="padding: 1px;margin-top: 2px;width: 100%;border: 1px solid #838383" title="' . $torrentSeedingLeechingStatus[$row['id']]['progress'] . '"><div style="width: 50%;background-color: red;height: 2px"></div></div>');
     }
 	print("</td>");
     if ($enablePtGen && !empty($row['pt_gen'])) {

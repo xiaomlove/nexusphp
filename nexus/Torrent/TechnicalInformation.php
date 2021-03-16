@@ -8,10 +8,10 @@ class TechnicalInformation
 
     private $mediaInfoArr;
 
-    public function __construct(string $mediaInfo)
+    public function __construct($mediaInfo)
     {
-        $this->mediaInfo = $mediaInfo;
-        $this->mediaInfoArr = $this->getMediaInfoArr($mediaInfo);
+        $this->mediaInfo = (string)$mediaInfo;
+        $this->mediaInfoArr = $this->getMediaInfoArr((string)$mediaInfo);
     }
 
     public function getMediaInfoArr(string $mediaInfo)
