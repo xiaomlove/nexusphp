@@ -199,7 +199,7 @@ else {
 				case "1" :
 					{
 						reset_cachetimestamp($row['id']);
-                        if (($photo_url = $movie->photo_localurl() ) != FALSE)
+                        if (($photo_url = $movie->photo() ) != FALSE)
                             $smallth = "<img src=\"".$photo_url. "\" width=\"105\" onclick=\"Preview(this);\" alt=\"poster\" />";
                         else
                             $smallth = "<img src=\"pic/nophoto.gif\" alt=\"no poster\" />";

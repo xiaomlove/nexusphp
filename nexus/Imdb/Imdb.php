@@ -254,16 +254,18 @@ class Imdb
 
     }
 
-    public function renderTorrentsPageAverageRating(int $imdbId)
+    public function renderTorrentsPageAverageRating($imdbId)
     {
         $imdbId = parse_imdb_id($imdbId);
-        if ($this->getCacheStatus($imdbId) != 1) {
-            return '';
+        if ($imdbId && $this->getCacheStatus($imdbId) == 1) {
+            $movie = $this->getMovie($imdbId);
+            $rating = $movie->rating();
+        } else {
+            $rating = 'N/A';
         }
-        $movie = $this->getMovie($imdbId);
+
         $site = 'imdb';
-        $rating = $movie->rating();
-        $result = '<td class="embedded" style="text-align: right; width: 40px;padding-right: 5px"><div style="display: flex;flex-direction: column">';
+        $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
         $result .= sprintf(
             '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
             'pic/imdb2.png', $site, $site, $rating

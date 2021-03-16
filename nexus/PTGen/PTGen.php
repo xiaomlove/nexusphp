@@ -230,7 +230,7 @@ HTML;
 
     public function renderTorrentsPageAverageRating(array $ptGenData)
     {
-        $result = '<td class="embedded" style="text-align: right; width: 40px;padding-right: 5px"><div style="display: flex;flex-direction: column">';
+        $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
         $count = 1;
         foreach (self::$validSites as $site => $info) {
             $rating = $ptGenData[$site]['data']["{$site}_rating_average"] ?? '';

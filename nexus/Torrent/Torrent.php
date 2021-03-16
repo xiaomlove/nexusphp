@@ -7,7 +7,7 @@ use Nexus\Database\DB;
 class Torrent
 {
     /**
-     * get torrent seeching or downloading status, download progress for someone
+     * get torrent seeding or leeching status, download progress of someone
      *
      * @param int $uid
      * @param array $torrentIdArr
@@ -23,14 +23,14 @@ class Torrent
         $peerList = array_column($peerList,'to_go', 'torrent');
         //download progress, from snatched
         $sql = sprintf(
-            "select snatched.finished, snatched.to_go, snatched.torrentid, torrents.size from snatched inner join torrents on snatched.torrentid = torrents.id where snatched.userid = %s and snatched.torrentid in (%s)",
+            "select snatched.to_go, snatched.torrentid, torrents.size from snatched inner join torrents on snatched.torrentid = torrents.id where snatched.userid = %s and snatched.torrentid in (%s)",
             sqlesc($uid), $torrentIdStr
         );
         $snatchedList = [];
         $res = sql_query($sql);
         while ($row = mysql_fetch_assoc($res)) {
             $id = $row['torrentid'];
-            $activeStatus = 'none';
+            $activeStatus = 'inactivity';
             if (isset($peerList[$id])) {
                 if ($peerList[$id]['to_go'] == 0) {
                     $activeStatus = 'seeding';
@@ -47,5 +47,22 @@ class Torrent
             ];
         }
         return $snatchedList;
+    }
+
+    public function renderProgressBar($activeStatus, $progress)
+    {
+        $color = '#aaa';
+        $title = $activeStatus;
+        if ($activeStatus == 'seeding') {
+            $color = 'green';
+        } elseif ($activeStatus == 'leeching') {
+            $color = 'red';
+        }
+        $progress = ($progress * 100) . '%';
+        $result = sprintf(
+            '<div style="padding: 1px;margin-top: 2px;border: 1px solid #838383" title="%s"><div style="width: %s;background-color: %s;height: 2px"></div></div>',
+            $title . " $progress", $progress, $color
+        );
+        return $result;
     }
 }

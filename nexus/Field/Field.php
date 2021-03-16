@@ -12,7 +12,6 @@ class Field
     const TYPE_CHECKBOX = 'checkbox';
     const TYPE_SELECT = 'select';
     const TYPE_IMAGE = 'image';
-    const TYPE_FILE = 'file';
 
     public static $types = [
         self::TYPE_TEXT => [
@@ -45,11 +44,6 @@ class Field
             'has_option' => false,
             'is_value_multiple' => false,
         ],
-        self::TYPE_FILE => [
-            'text' => 'file',
-            'has_option' => false,
-            'is_value_multiple' => false,
-        ],
     ];
 
     private $preparedTorrentCustomFieldValues = [];
@@ -64,7 +58,6 @@ class Field
             self::TYPE_CHECKBOX => $lang_fields['field_type_checkbox'],
             self::TYPE_SELECT => $lang_fields['field_type_select'],
             self::TYPE_IMAGE => $lang_fields['field_type_image'],
-            self::TYPE_FILE => $lang_fields['field_type_file'],
         ];
         return $map[$type] ?? '';
     }
@@ -367,8 +360,6 @@ HEAD;
 </script>
 JS;
                 $html .= tr($row['label'], $y, 1);
-            } elseif ($row['type'] == self::TYPE_FILE) {
-                $html .= tr($row['label'], sprintf('<input type="file" name="%s" />', $name), 1);
             }
         }
         return $html;
@@ -451,7 +442,6 @@ JS;
         switch ($customFieldWithValue['type']) {
             case self::TYPE_TEXT:
             case self::TYPE_TEXTAREA:
-            case self::TYPE_FILE:
                 $result .= format_comment($fieldValue);
                 break;
             case self::TYPE_IMAGE:
