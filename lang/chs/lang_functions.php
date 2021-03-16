@@ -314,6 +314,7 @@ $lang_functions = array
 	'text_tag_mother_language_subtitle' => '中字',
 	'text_required' => '不能为空',
 	'text_invalid' => '非法',
+	'text_technical_info' => '技术信息',
 );
 
 ?>

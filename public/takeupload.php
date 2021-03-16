@@ -342,8 +342,8 @@ if (empty($url) && !empty($ptGenImdbLink)) {
 	$url = str_replace('tt', '', $ptGenImdbInfo['id']);
 }
 
-$ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, tags) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
-", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc(json_encode($postPtGen)) . ", " . array_sum($_POST['tags'] ?? []) . ")");
+$ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, tags, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
+", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc(json_encode($postPtGen)) . ", " . array_sum($_POST['tags'] ?? []) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
 if (!$ret) {
 	if (mysql_errno() == 1062)
 	bark($lang_takeupload['std_torrent_existed']);
@@ -372,18 +372,18 @@ if (!empty($_POST['custom_fields'])) {
 		}
 	}
 }
-if (!empty($_FILES['custom_fields'])) {
-	foreach ($_FILES['custom_fields'] as $customField => $customValue) {
-		$customData = [
-			'torrent_id' => $id,
-			'custom_field_id' => $customField,
-			'custom_field_value' => $value,
-			'created_at' => $now,
-			'updated_at' => $now,
-		];
-		\Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
-	}
-}
+//if (!empty($_FILES['custom_fields'])) {
+//	foreach ($_FILES['custom_fields'] as $customField => $customValue) {
+//		$customData = [
+//			'torrent_id' => $id,
+//			'custom_field_id' => $customField,
+//			'custom_field_value' => $value,
+//			'created_at' => $now,
+//			'updated_at' => $now,
+//		];
+//		\Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+//	}
+//}
 
 @sql_query("DELETE FROM files WHERE torrent = $id");
 foreach ($filelist as $file) {

@@ -73,6 +73,10 @@ stdhead($lang_upload['head_upload']);
 				textbbcode("upload","descr","",false);
 				print("</td></tr>\n");
 
+                if ($settingMain['enable_technical_info'] == 'yes') {
+                    tr($lang_upload['row_technical_info'], '<textarea name="technical_info" rows="8" style="width: 650px;"></textarea><br/>' . $lang_upload['row_technical_info_help_text'], 1);
+                }
+
 				if ($allowtorrents){
 					$disablespecial = " onchange=\"disableother('browsecat','specialcat')\"";
 					$s = "<select name=\"type\" id=\"browsecat\" ".($allowtwosec ? $disablespecial : "").">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";

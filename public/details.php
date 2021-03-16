@@ -18,6 +18,8 @@ if (get_user_class() >= $torrentmanage_class || $CURUSER["id"] == $row["owner"])
 $owned = 1;
 else $owned = 0;
 
+$settingMain = get_setting('main');
+
 if (!$row)
 	stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
 elseif ($row['banned'] == 'yes' && get_user_class() < $seebanned_class)
@@ -160,9 +162,15 @@ else {
         /**************end custom fields****************/
 
 		if ($CURUSER['showdescription'] != 'no' && !empty($row["descr"])){
-		$torrentdetailad=$Advertisement->get_ad('torrentdetail');
-		tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"ad_torrentdetail\">".$torrentdetailad[0]."</div>" : "").format_comment($row["descr"])."</div>", 1);
+            $torrentdetailad=$Advertisement->get_ad('torrentdetail');
+            tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"ad_torrentdetail\">".$torrentdetailad[0]."</div>" : "").format_comment($row["descr"])."</div>", 1);
 		}
+
+		//technical info
+        if ($settingMain['enable_technical_info'] == 'yes') {
+            $technicalInfo = new \Nexus\Torrent\TechnicalInformation($row['technical_info']);
+
+        }
 
 		if (get_user_class() >= $viewnfo_class && $CURUSER['shownfo'] != 'no' && $row["nfosz"] > 0){
 			if (!$nfo = $Cache->get_value('nfo_block_torrent_id_'.$id)){
