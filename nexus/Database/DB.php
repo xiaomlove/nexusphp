@@ -187,4 +187,24 @@ class DB
         return mysql_fetch_assoc($res);
     }
 
+    public static function getAll($table, $whereStr, $fields = '*')
+    {
+        if ($fields != '*') {
+            if (is_array($fields)) {
+                $fields = implode(', ', $fields);
+            }
+        }
+        if (empty($fields)) {
+            do_log("args: " . json_encode(func_get_args()));
+            throw new DatabaseException("empty fields.");
+        }
+        $sql = "select $fields from $table where $whereStr";
+        $res = sql_query($sql);
+        $result = [];
+        while ($row = mysql_fetch_assoc($res)) {
+            $result[] = $row;
+        }
+        return $result;
+    }
+
 }
