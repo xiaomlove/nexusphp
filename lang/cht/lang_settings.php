@@ -397,7 +397,7 @@ $lang_settings = array
 	'row_enable_pt_gen_system' => '開啟 PT-Gen 系統',
 	'text_enable_pt_gen_note' => "默認'是'。全局 PT-Gen 系統設定。",
 	'row_pt_gen_api_point' => "PT-Gen 接口地址",
-	'text_pt_gen_api_point_note' => "默認 'https://ptgen.rhilip.info'，不可用時<b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">參考文檔</a></b>自行搭建。",
+	'text_pt_gen_api_point_note' => "默認 ''，需要時<b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">參考文檔</a></b>自行搭建。",
 	'row_enable_school_system' => "開啟學校系統",
 	'text_school_system_note' => "預設'否'。如果對這項功能不清楚，<font class=striking><b>不要</b></font>開啟它。",
 	'row_restrict_email_domain' => "限制郵箱域",
@@ -456,7 +456,7 @@ $lang_settings = array
 	'text_priority_four' => "優先級4：",
 	'text_priority_four_note' => "移除未通過驗證的賬號，過期的登入嘗試記錄，過期的邀請碼和圖片驗證碼；清理用戶賬號（移除不活躍賬號，賬號升級、降級、禁用）；傳送上傳的圖片；更新用戶總做種和下載時間。預設'43200'，即24小時。",
 	'text_priority_five' => "優先級5：",
-	'text_priority_five_note' => "移除種子檔案不存在的種子；鎖定論壇的古老主題；移除古老的舉報資訊。預設'648000'，即15天。",
+	'text_priority_five_note' => "移除種子檔案不存在的種子；鎖定論壇的古老主題；移除古老的舉報資訊。預設'1296000'，即15天。",
 	'text_cleanup_interval_note_two' => "<b>注意</b>：<font class=striking><b>不要</b></font>改變時間遞增的排序。",
 	'row_signup_timeout' => "註冊逾時",
 	'text_signup_timeout_note' => "單位為秒。如用戶在提交註冊資訊XXX秒后未通過驗證，其賬號將被移除。預設'259200'，即3天。",
@@ -702,6 +702,8 @@ $lang_settings = array
 	'text_login_secret_lifetime_unit' => '分鐘',
 	'row_login_secret_lifetime' => '登錄密鑰有效期',
 	'text_login_secret_lifetime_deadline' => '當前密鑰有效期至',
+	'row_enable_technical_info' => '啟用技術信息',
+	'text_enable_technical_info' => "默認'否'。文件技術信息來自軟件 <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text 視圖的結果",
 );
 
 ?>

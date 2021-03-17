@@ -74,7 +74,7 @@ stdhead($lang_upload['head_upload']);
 				print("</td></tr>\n");
 
                 if ($settingMain['enable_technical_info'] == 'yes') {
-                    tr($lang_upload['row_technical_info'], '<textarea name="technical_info" rows="8" style="width: 650px;"></textarea><br/>' . $lang_upload['row_technical_info_help_text'], 1);
+                    tr($lang_functions['text_technical_info'], '<textarea name="technical_info" rows="8" style="width: 650px;"></textarea><br/>' . $lang_functions['text_technical_info_help_text'], 1);
                 }
 
 				if ($allowtorrents){

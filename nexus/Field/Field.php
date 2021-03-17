@@ -268,7 +268,7 @@ HEAD;
             throw new \RuntimeException("Invalid search box: $browsecatmode");
         }
         $customValues = $this->listTorrentCustomField($torrentId);
-        $sql = sprintf('select * from torrents_custom_fields where id in (%s)', $searchBox['custom_fields']);
+        $sql = sprintf('select * from torrents_custom_fields where id in (%s)', $searchBox['custom_fields'] ?: 0);
         $res = sql_query($sql);
         $html = '';
         while ($row = mysql_fetch_assoc($res)) {

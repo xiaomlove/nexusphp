@@ -394,9 +394,9 @@ $lang_settings = array
 	'row_enable_imdb_system' => "开启IMDb系统",
 	'text_imdb_system_note' => "默认'是'。全局IMDb系统设定。",
 	'row_enable_pt_gen_system' => '开启 PT-Gen 系统',
-	'text_enable_pt_gen_system_note' => "默认'是'。全局 PT-Gen 系统设定。",
+	'text_enable_pt_gen_system_note' => "默认'否'。全局 PT-Gen 系统设定。",
 	'row_pt_gen_api_point' => "PT-Gen 接口地址",
-	'text_pt_gen_api_point_note' => "默认 'https://ptgen.rhilip.info'，不可用时<b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">参考文档</a></b>自行搭建。",
+	'text_pt_gen_api_point_note' => "默认 ''，需要时<b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">参考文档</a></b>自行搭建。",
 	'row_enable_school_system' => "开启学校系统",
 	'text_school_system_note' => "默认'否'。如果对这项功能不清楚，<font class=striking><b>不要</b></font>开启它。",
 	'row_restrict_email_domain' => "限制邮箱域",
@@ -455,7 +455,7 @@ $lang_settings = array
 	'text_priority_four' => "优先级4：",
 	'text_priority_four_note' => "删除未通过验证的账号，过期的登录尝试记录，过期的邀请码和图片验证码；清理用户账号（删除不活跃账号，账号升级、降级、禁用）；发送上传的图片；更新用户总做种和下载时间。默认'43200'，即24小时。",
 	'text_priority_five' => "优先级5：",
-	'text_priority_five_note' => "删除种子文件不存在的种子；锁定论坛的古老主题；删除古老的举报信息。默认'648000'，即15天。",
+	'text_priority_five_note' => "删除种子文件不存在的种子；锁定论坛的古老主题；删除古老的举报信息。默认'1296000'，即15天。",
 	'text_cleanup_interval_note_two' => "<b>注意</b>：<font class=striking><b>不要</b></font>改变时间递增的排序。",
 	'row_signup_timeout' => "注册超时",
 	'text_signup_timeout_note' => "单位为秒。如用户在提交注册信息XXX秒后未通过验证，其账号将被删除。默认'259200'，即3天。",
@@ -703,7 +703,7 @@ $lang_settings = array
 	'row_login_secret_lifetime' => '登录密钥有效期',
 	'text_login_secret_lifetime_deadline' => '当前密钥有效期至',
 	'row_enable_technical_info' => '启用技术信息',
-	'text_enable_technical_info' => "默认'是'。文件技术信息来自软件 <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text 视图的结果",
+	'text_enable_technical_info' => "默认'否'。文件技术信息来自软件 <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text 视图的结果",
 );
 
 ?>

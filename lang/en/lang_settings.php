@@ -394,9 +394,9 @@ $lang_settings = array
 	'row_enable_imdb_system' => "Enable IMDb system",
 	'text_imdb_system_note' => "Default 'yes'. System-wide IMDb info setting.",
 	'row_enable_pt_gen_system' => 'Enable PT-Gen system',
-	'text_enable_pt_gen_system_note' => "Default 'yes'. System-wide PT-Gen info setting.",
+	'text_enable_pt_gen_system_note' => "Default 'no'. System-wide PT-Gen info setting.",
 	'row_pt_gen_api_point' => "PT-Gen api point",
-	'text_pt_gen_api_point_note' => "Default 'https://ptgen.rhilip.info', when broken, reference to <b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">Documatation</a></b> to build yourself",
+	'text_pt_gen_api_point_note' => "Default '', when required, reference to <b><a href=\"https://github.com/Rhilip/pt-gen-cfworker\">Documatation</a></b> to build yourself",
 	'row_enable_school_system' => "Enable school system",
 	'text_school_system_note' => "Default 'no'. <font class=striking><b>DO NOT</b></font> enable this unless you know what you are doing!",
 	'row_restrict_email_domain' => "Restrict Email Domain",
@@ -455,7 +455,7 @@ $lang_settings = array
 	'text_priority_four' => "Priority 4: ",
 	'text_priority_four_note' => "Delete unconfirmed accounts, old login attempts, invite codes and regimage codes; Clean up user accounts (delete inactive ones, do account promotion and demotion, banning, etc.); Post uploaded image; Update total seeding and leeching time of users. Default '43200', i.e. 24 hours.",
 	'text_priority_five' => "Priority 5: ",
-	'text_priority_five_note' => "Delete torrents that doesn't exist any more; Lock very old forum topics; Delete very old report items. Default '648000', i.e. 15 days.",
+	'text_priority_five_note' => "Delete torrents that doesn't exist any more; Lock very old forum topics; Delete very old report items. Default '1296000', i.e. 15 days.",
 	'text_cleanup_interval_note_two' => "<b>NOTE</b>: Do <b>NOT</b> change the ascendant order of the times!",
 	'row_signup_timeout' => "Signup Timeout",
 	'text_signup_timeout_note' => "In seconds. Delete unconfirmed users after XXX seconds. Default '259200', i.e. 3 days.",
@@ -702,6 +702,8 @@ $lang_settings = array
 	'text_login_secret_lifetime_unit' => 'minute',
 	'row_login_secret_lifetime' => 'Login secret lifetime',
 	'text_login_secret_lifetime_deadline' => 'Current login secret deadline',
+	'row_enable_technical_info' => 'Enable Technical Information',
+	'text_enable_technical_info' => "Default 'No'. Technical Information comes from software <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text view",
 );
 
 ?>

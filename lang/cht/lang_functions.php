@@ -315,6 +315,8 @@ $lang_functions = array
 	'text_tag_mother_language_subtitle' => '中字',
 	'text_required' => '不能為空',
 	'text_invalid' => '非法',
+	'text_technical_info' => '技術信息',
+	'text_technical_info_help_text' => '文件技術信息來自軟件 <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，用該軟件打開文件，點擊菜單視圖(View)->文件(Text)，在框中右鍵->全選，再右鍵->復制，粘貼到這裏來。'
 );
 
 ?>
