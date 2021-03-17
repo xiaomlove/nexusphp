@@ -9,7 +9,7 @@ class Imdb
 {
     private $config;
 
-    private $movie;
+    private $movies = [];
 
     private $pages = array('Title', 'Credits', 'ReleaseInfo', );
 
@@ -98,10 +98,10 @@ class Imdb
 
     public function getMovie($id)
     {
-        if (!$this->movie) {
-            $this->movie = new Title($id, $this->config);
+        if (!isset($this->movies[$id])) {
+            $this->movies[$id] = new Title($id, $this->config);
         }
-        return $this->movie;
+        return $this->movies[$id];
     }
 
     private function getCacheFilePath($id, $suffix = '')
