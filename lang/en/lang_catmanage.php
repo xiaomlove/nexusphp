@@ -75,7 +75,11 @@ $lang_catmanage = array
 	'std_missing_form_data' => "Missing form data.",
 	'std_invalid_character_in_filename' => "Invalid character in filename ",
 	'std_must_define_one_selection' => "You must define at least one selection!",
-	'std_invalid_mode_id' => "Invalid mode id."
+	'std_invalid_mode_id' => "Invalid mode id.",
+	'row_enable_custom_field' => 'Enable custom field',
+	'row_custom_field_display_name' => 'Custom field display name',
+	'row_custom_field_display' => 'Custom field display',
+	'row_custom_field_display_help' => "Use 'specific label' to represent custom field's label and value，such as one custom field's name is 'artist'，<br/>then it's label：<%artist.label%>，it's value：<%artist.value%>",
 );
 
 ?>

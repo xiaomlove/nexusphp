@@ -23,20 +23,20 @@ if ($action == 'view') {
 } elseif ($action == 'submit') {
     try {
         $result = $field->save($_REQUEST);
-        redirect('fields.php?action=view&type=');
+        redirect('fields.php?action=view');
     } catch (\Exception $e) {
         stderr($lang_fields['field_management']." - ".$lang_fields['text_field'], $e->getMessage());
     }
 } elseif ($action == 'edit') {
     $id = intval($_GET['id'] ?? 0);
     if ($id == 0) {
-        stderr($lang_fields['field_management'], "invalid id");
+        stderr($lang_fields['field_management'], "Invalid id");
     }
     $sql = "select * from torrents_custom_fields where id = $id";
     $res = sql_query($sql);
     $row = mysql_fetch_assoc($res);
     if (empty($row)) {
-        stderr('', 'invlaid id');
+        stderr('', 'Invalid id');
     }
     stdhead($lang_fields['field_management']." - ".$lang_fields['text_edit']);
     begin_main_frame();
@@ -44,11 +44,11 @@ if ($action == 'view') {
 } elseif ($action == 'del') {
     $id = intval($_GET['id'] ?? 0);
     if ($id == 0) {
-        stderr($lang_fields['field_management'], "invalid id");
+        stderr($lang_fields['field_management'], "Invalid id");
     }
     $sql = "delete from torrents_custom_fields where id = $id";
     $res = sql_query($sql);
-    redirect('fields.php?action=view&type=');
+    redirect('fields.php?action=view');
 }
 
 

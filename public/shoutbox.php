@@ -131,7 +131,7 @@ else
 			$time = strftime("%m.%d %H:%M",$arr["date"]);
 		else $time = get_elapsed_time($arr["date"]).$lang_shoutbox['text_ago'];
 		print("<tr><td class=\"shoutrow\"><span class='date'>[".$time."]</span> ".
-$del ." ". $username." " . format_comment($arr["text"],true,false,true,true,600,true,false)."
+$del ." ". $username." " . format_comment($arr["text"],true,false,true,true,600,false,false)."
 </td></tr>\n");
 	}
 	print("</table>");

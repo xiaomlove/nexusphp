@@ -316,7 +316,7 @@ $lang_functions = array
 	'text_tag_mother_language_subtitle' => 'Mother language subtitle',
 	'text_required' => 'Required',
 	'text_invalid' => 'Invalid',
-	'text_technical_info' => 'Technical Information',
+	'text_technical_info' => 'Technical Info',
 	'text_technical_info_help_text' => 'Technical Information comes from software <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，open file, click the view menu > text > right click in the box > select all > copy > past into this box.'
 );
 

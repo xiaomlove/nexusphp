@@ -75,7 +75,11 @@ $lang_catmanage = array
 	'std_missing_form_data' => "有必填项目未填写。",
 	'std_invalid_character_in_filename' => "此文件名包含不合法字符：",
 	'std_must_define_one_selection' => "你必须至少指定一个选择！",
-	'std_invalid_mode_id' => "无效的模式id。"
+	'std_invalid_mode_id' => "无效的模式id。",
+	'row_enable_custom_field' => '启用自字义字段',
+	'row_custom_field_display_name' => '自定义字段展示名称',
+	'row_custom_field_display' => '自定义字段展示',
+	'row_custom_field_display_help' => '使用特殊的标签代表字段的名称和值，如某字段其 Name 为 artist，则它的名称为：<%artist.label%>，它的值为：<%artist.value%>',
 );
 
 ?>

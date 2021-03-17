@@ -703,7 +703,7 @@ $lang_settings = array
 	'row_login_secret_lifetime' => '登錄密鑰有效期',
 	'text_login_secret_lifetime_deadline' => '當前密鑰有效期至',
 	'row_enable_technical_info' => '啟用技術信息',
-	'text_enable_technical_info' => "默認'否'。文件技術信息來自軟件 <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text 視圖的結果",
+	'text_enable_technical_info' => "默認'否'。技術信息來自軟件 <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text 視圖的結果",
 );
 
 ?>

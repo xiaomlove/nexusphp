@@ -66,7 +66,7 @@ class Field
     {
         $out = [];
         foreach (self::$types as $key => $value) {
-            $out[$key] = sprintf('%s(%s)', $this->getTypeHuman($key), $value['text']);
+            $out[$key] = sprintf('%s(%s)', $value['text'], $this->getTypeHuman($key));
         }
         return $out;
     }
@@ -87,18 +87,18 @@ class Field
     function buildFieldForm(array $row = [])
     {
         global $lang_fields, $lang_functions;
-        $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;' . $lang_fields['col_name_helptext'], 1, '', true);
+        $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;' . $lang_fields['col_name_help'], 1, '', true);
         $trLabel = tr($lang_fields['col_label'] . '<font color="red">*</font>', '<input type="text" name="label" value="' . ($row['label'] ?? '') . '"  style="width: 300px" />', 1, '', true);
         $trType = tr($lang_fields['col_type'] . '<font color="red">*</font>', $this->radio('type', $this->getTypeRadioOptions(), $row['type'] ?? null), 1, '', true);
         $trRequired = tr($lang_fields['col_required'] . '<font color="red">*</font>', $this->radio('required', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['required'] ?? null), 1, '', true);
         $trHelp = tr($lang_fields['col_help'], '<textarea name="help" rows="4" cols="80">' . ($row['help'] ?? '') . '</textarea>', 1, '', true);
-        $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>' . $lang_fields['col_options_helptext'], 1, '', true);
+        $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>' . $lang_fields['col_options_help'], 1, '', true);
         $trIsSingleRow = tr($lang_fields['col_is_single_row'] . '<font color="red">*</font>', $this->radio('is_single_row', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['is_single_row'] ?? null), 1, '', true);
         $id = $row['id'] ?? 0;
         $form = <<<HTML
 <div>
-<h1 align="center"><a class="faqlink" href="?action=view&type=">{$lang_fields['text_field']}</a></h1>
-<form method="post" action="fields.php?action=submit&type=">
+<h1 align="center"><a class="faqlink" href="?action=view">{$lang_fields['text_field']}</a></h1>
+<form method="post" action="fields.php?action=submit">
 <div>
     <table border="1" cellspacing="0" cellpadding="10" width="100%">
             <input type="hidden" name="id" value="{$id}"/>
@@ -143,24 +143,16 @@ HTML;
             $row['is_single_row_text'] = $row['is_single_row'] ? $lang_functions['text_yes'] : $lang_functions['text_no'];
             $row['type_text'] = sprintf('%s(%s)', $this->getTypeHuman($row['type']), $row['type']);
             $row['action'] = sprintf(
-                "<a href=\"javascript:confirm_delete('%s', '%s', '');\">%s</a> | <a href=\"?action=edit&type=&id=%s\">%s</a>",
+                "<a href=\"javascript:confirm_delete('%s', '%s', '');\">%s</a> | <a href=\"?action=edit&id=%s\">%s</a>",
                 $row['id'], $lang_fields['js_sure_to_delete_this'], $lang_fields['text_delete'], $row['id'], $lang_fields['text_edit']
             );
             $rows[] = $row;
         }
         $head = <<<HEAD
-<h1 align="center">{$lang_fields['field_management']} - </h1>
+<h1 align="center">{$lang_fields['field_management']}</h1>
 <div style="margin-bottom: 8px;">
-    <span id="item" onclick="dropmenu(this);">
-        <span style="cursor: pointer;" class="big"><b>{$lang_fields['text_manage']}</b></span>
-        <div id="itemlist" class="dropmenu" style="display: none">
-            <ul>
-                <li><a href="?action=view&type=field">{$lang_fields['text_field']}</a></li>
-            </ul>
-        </div>
-    </span>
     <span id="add">
-        <a href="?action=add&type=" class="big"><b>{$lang_fields['text_add']}</b></a>
+        <a href="?action=add" class="big"><b>{$lang_fields['text_add']}</b></a>
     </span>
 </div>
 HEAD;
@@ -252,7 +244,7 @@ HEAD;
         while ($row = mysql_fetch_assoc($res)) {
             $checkbox .= sprintf(
                 '<label style="margin-right: 4px;"><input type="checkbox" name="%s" value="%s"%s>%s</label>',
-                $name, $row['id'], in_array($row['id'], $current) ? ' checked' : '', "{$row['label']}[{$row['id']}]"
+                $name, $row['id'], in_array($row['id'], $current) ? ' checked' : '', "{$row['name']}[{$row['label']}]"
             );
         }
         $checkbox .= '';
@@ -414,9 +406,9 @@ JS;
     {
         global $browsecatmode;
         $displayName = get_searchbox_value($browsecatmode, 'custom_fields_display_name');
-        $displayOrder = get_searchbox_value($browsecatmode, 'custom_fields_display_order');
+        $display = get_searchbox_value($browsecatmode, 'custom_fields_display');
         $customFields = $this->listTorrentCustomField($torrentId);
-        $mixedRowContent = nl2br($displayOrder);
+        $mixedRowContent = nl2br($display);
         $rowByRowHtml = '';
         foreach ($customFields as $field) {
             $content = $this->formatCustomFieldValue($field);

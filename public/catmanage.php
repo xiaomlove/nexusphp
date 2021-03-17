@@ -236,11 +236,10 @@ function print_category_editor($type, $row='')
 			tr($lang_catmanage['row_items_per_row']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"catsperrow\" value=\"".$catsperrow."\" style=\"width: 100px\" /> " . $lang_catmanage['text_items_per_row_note'], 1);
 			tr($lang_catmanage['row_padding_between_items']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"catpadding\" value=\"".$catpadding."\" style=\"width: 100px\" /> " . $lang_catmanage['text_padding_between_items_note'], 1);
             $field = new \Nexus\Field\Field();
-            tr('启用自字义字段', $field->buildFieldCheckbox('custom_fields[]', $row['custom_fields'] ?? ''), 1);
-            tr('自定义字段显示名称', '<input type="text" name="custom_fields_display_name" style="width: 300px" value="' . ($row['custom_fields_display_name'] ?? '') . '" />', 1);
-            $helpText = '<br/>使用标签代表字段，如某字段其 Name 为 artist，则它的标签为：<%artist%>';
-            $helpText .= '<br/><font color="#a52a2a">仅针对非单独占一行的字段有效</font>';
-            tr('自定义字段显示顺序', '<textarea name="custom_fields_display_order" style="width: 300px" rows="8">' . ($row['custom_fields_display_order'] ?? '') . '</textarea>' . $helpText, 1);
+            tr($lang_catmanage['row_enable_custom_field'], $field->buildFieldCheckbox('custom_fields[]', $row['custom_fields'] ?? ''), 1);
+            tr($lang_catmanage['row_custom_field_display_name'], '<input type="text" name="custom_fields_display_name" style="width: 300px" value="' . ($row['custom_fields_display_name'] ?? '') . '" />', 1);
+            $helpText = '<br/>' . $lang_catmanage['row_custom_field_display_help'];
+            tr($lang_catmanage['row_custom_field_display'], '<textarea name="custom_fields_display" style="width: 300px" rows="8">' . ($row['custom_fields_display'] ?? '') . '</textarea>' . $helpText, 1);
 		}
 		elseif ($type=='caticon')
 		{
@@ -708,7 +707,7 @@ elseif($action == 'submit')
 		$updateset[] = "showaudiocodec=".sqlesc($showaudiocodec);
 		$updateset[] = "custom_fields=" . sqlesc(implode(',', $_POST['custom_fields'] ?? []));
 		$updateset[] = "custom_fields_display_name=" . sqlesc($_POST['custom_fields_display_name'] ?? '');
-		$updateset[] = "custom_fields_display_order=" . sqlesc($_POST['custom_fields_display_order'] ?? '');
+		$updateset[] = "custom_fields_display=" . sqlesc($_POST['custom_fields_display'] ?? '');
 		if ($showsource || $showmedium || $showcodec || $showstandard || $showprocessing || $showteam || $showaudiocodec)
 			$updateset[] = "showsubcat=1";
 		else

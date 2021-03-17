@@ -1705,7 +1705,7 @@ CREATE TABLE `searchbox` (
   `catpadding` smallint(5) unsigned NOT NULL DEFAULT '25',
   `custom_fields` text,
   `custom_fields_display_name` varchar(255) NOT NULL DEFAULT '',
-  `custom_fields_display_order` text,
+  `custom_fields_display` text,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
