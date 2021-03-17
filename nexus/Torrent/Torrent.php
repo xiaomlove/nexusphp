@@ -52,16 +52,15 @@ class Torrent
     public function renderProgressBar($activeStatus, $progress)
     {
         $color = '#aaa';
-        $title = $activeStatus;
         if ($activeStatus == 'seeding') {
             $color = 'green';
         } elseif ($activeStatus == 'leeching') {
-            $color = 'red';
+            $color = 'blue';
         }
         $progress = ($progress * 100) . '%';
         $result = sprintf(
             '<div style="padding: 1px;margin-top: 2px;border: 1px solid #838383" title="%s"><div style="width: %s;background-color: %s;height: 2px"></div></div>',
-            $title . " $progress", $progress, $color
+            $activeStatus . " $progress", $progress, $color
         );
         return $result;
     }

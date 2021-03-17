@@ -163,7 +163,7 @@ CREATE TABLE `agent_allowed_family` (
 
 LOCK TABLES `agent_allowed_family` WRITE;
 /*!40000 ALTER TABLE `agent_allowed_family` DISABLE KEYS */;
-INSERT INTO `agent_allowed_family` VALUES (1,'Azureus 2.5.0.4','Azureus 2.5.0.4','/^-AZ2504-/',0,'dec','-AZ2504-','/^Azureus 2.5.0.4/',0,'dec','Azureus 2.5.0.4','no','yes','',0),(2,'uTorrent 1.6.1','uTorrent 1.6.1','/^-UT1610-/',0,'dec','-UT1610-','/^uTorrent\\/1610/',0,'dec','uTorrent/1610','no','no','',0),(3,'Bittorrent 6.x','Bittorrent 6.0.1','/^M6-([0-9])-([0-9])--/',2,'dec','M6-0-1--','/^BitTorrent\\/6([0-9])([0-9])([0-9])/',3,'dec','BitTorrent/6010','no','yes','',0),(4,'Deluge 0.x','Deluge 0.5.8.9','/^-DE0([0-9])([0-9])([0-9])-/',3,'dec','-DE0589-','/^Deluge 0\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Deluge 0.5.8.9','no','yes','',0),(5,'Transmission1.x','Transmission 1.06 (build 5136)','/^-TR1([0-9])([0-9])([0-9])-/',3,'dec','-TR1060-','/^Transmission\\/1\\.([0-9])([0-9])/',3,'dec','Transmission/1.06','no','yes','',0),(6,'RTorrent 0.x(with libtorrent 0.x)','rTorrent 0.8.0 (with libtorrent 0.12.0)','/^-lt([0-9A-E])([0-9A-E])([0-9A-E])([0-9A-E])-/',4,'hex','-lt0C00-','/^rtorrent\\/0\\.([0-9])\\.([0-9])\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)/',4,'dec','rtorrent/0.8.0/0.12.0','no','no','',0),(7,'Rufus 0.x','Rufus 0.6.9','',0,'dec','','/^Rufus\\/0\\.([0-9])\\.([0-9])/',2,'dec','Rufus/0.6.9','no','no','',0),(8,'Azureus 3.x','Azureus 3.0.5.0','/^-AZ3([0-9])([0-9])([0-9])-/',3,'dec','-AZ3050-','/^Azureus 3\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 3.0.5.0','no','yes','',0),(9,'uTorrent 1.7.x','uTorrent 1.7.5','/^-UT17([0-9])([0-9])-/',2,'dec','-UT1750-','/^uTorrent\\/17([0-9])([0-9])/',2,'dec','uTorrent/1750','no','yes','',0),(10,'BitRocket 0.x','BitRocket 0.3.3(32)','/^-BR0([0-9])([1-9][0-9]*)-/',2,'dec','-BR0332-','/^BitRocket\\/0\\.([0-9])\\.([0-9])\\(([1-9][0-9]*)\\) libtorrent\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)/',6,'dec','BitRocket/0.3.3(32) libtorrent/0.13.0.0','no','yes','',0),(11,'MLDonkey 2.9.x','MLDonkey 2.9.2','/^-ML2\\.9\\.([0-9])-/',1,'dec','-ML2.9.2-','/^MLDonkey\\/2\\.9\\.([0-9])/',1,'dec','MLDonkey/2.9.2','no','yes','',0),(12,'uTorrent 1.8.x','uTorrent 1.8.0','/^-UT18([0-9])([0-9])-/',2,'dec','-UT1800-','/^uTorrent\\/18([0-9])([0-9])/',2,'dec','uTorrent/1800','no','yes','',0),(13,'Azureus 4.x','Vuze 4.0.0.2','/^-AZ4([0-9])([0-9])([0-9])-/',3,'dec','-AZ4002-','/^Azureus 4\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 4.0.0.2','no','yes','',0),(14,'SymTorrent','','',0,'dec','','/^SymTorrent/',0,'dec','SymTorrent','no','no','',0),(15,'Deluge 1.x','Deluge 1.1.6','/^-DE1([0-9])([0-9])([0-9])-/',3,'dec','-DE1160-','/^Deluge 1\\.([0-9])\\.([0-9])/',2,'dec','Deluge 1.1.6','no','yes','',0),(16,'uTorrent 1.8xB','uTorrent 1.80 Beta (build 9137)','/^-UT18([0-9])B-/',1,'dec','-UT180B-','/^uTorrent\\/18([0-9])B\\(([1-9][0-9]*)\\)/',2,'dec','uTorrent/180B(9137)','no','yes','',0),(17,'uTorrent 2.x.x','uTorrent 2.0(build 17624)','/^-UT2([0-9])([0-9])([0-9])-/',3,'dec','-UT2000-','/^uTorrent\\/2([0-9])([0-9])([0-9])/',3,'dec','uTorrent/2000','no','yes','',0),(18,'Transmission2.x','Transmission 2.0','/^-TR2([0-9])([0-9])([0-9])-/',3,'dec','-TR2000-','/^Transmission\\/2\\.([0-9])([0-9])/',3,'dec','Transmission/2.00','no','yes','',0),(19,'uTorrent 3.x','uTorrent/3000','/^-UT3([0-9])([0-9])([0-9])-/',3,'dec','-UT3000-','/^uTorrent\\/3([0-9])([0-9])([0-9])/',3,'dec','uTorrent/3000','no','yes','',0),(20,'uTorrent 3.x','uTorrent','',0,'dec','-UT355W-','/^uTorrent/',0,'dec','uTorrent','no','yes','',1);
+INSERT INTO `agent_allowed_family` VALUES (1,'Azureus 2.5.0.4','Azureus 2.5.0.4','/^-AZ2504-/',0,'dec','-AZ2504-','/^Azureus 2.5.0.4/',0,'dec','Azureus 2.5.0.4','no','yes','',0),(2,'uTorrent 1.6.1','uTorrent 1.6.1','/^-UT1610-/',0,'dec','-UT1610-','/^uTorrent\\/1610/',0,'dec','uTorrent/1610','no','no','',0),(3,'Bittorrent 6.x','Bittorrent 6.0.1','/^M6-([0-9])-([0-9])--/',2,'dec','M6-0-1--','/^BitTorrent\\/6([0-9])([0-9])([0-9])/',3,'dec','BitTorrent/6010','no','yes','',0),(4,'Deluge 0.x','Deluge 0.5.8.9','/^-DE0([0-9])([0-9])([0-9])-/',3,'dec','-DE0589-','/^Deluge 0\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Deluge 0.5.8.9','no','yes','',0),(5,'Transmission1.x','Transmission 1.06 (build 5136)','/^-TR1([0-9])([0-9])([0-9])-/',3,'dec','-TR1060-','/^Transmission\\/1\\.([0-9])([0-9])/',3,'dec','Transmission/1.06','no','yes','',0),(6,'RTorrent 0.x(with libtorrent 0.x)','rTorrent 0.8.0 (with libtorrent 0.12.0)','/^-lt([0-9A-E])([0-9A-E])([0-9A-E])([0-9A-E])-/',4,'hex','-lt0C00-','/^rtorrent\\/0\\.([0-9])\\.([0-9])\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)/',4,'dec','rtorrent/0.8.0/0.12.0','no','yes','',0),(7,'Rufus 0.x','Rufus 0.6.9','',0,'dec','','/^Rufus\\/0\\.([0-9])\\.([0-9])/',2,'dec','Rufus/0.6.9','no','no','',0),(8,'Azureus 3.x','Azureus 3.0.5.0','/^-AZ3([0-9])([0-9])([0-9])-/',3,'dec','-AZ3050-','/^Azureus 3\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 3.0.5.0','no','yes','',0),(9,'uTorrent 1.7.x','uTorrent 1.7.5','/^-UT17([0-9])([0-9])-/',2,'dec','-UT1750-','/^uTorrent\\/17([0-9])([0-9])/',2,'dec','uTorrent/1750','no','yes','',0),(10,'BitRocket 0.x','BitRocket 0.3.3(32)','/^-BR0([0-9])([1-9][0-9]*)-/',2,'dec','-BR0332-','/^BitRocket\\/0\\.([0-9])\\.([0-9])\\(([1-9][0-9]*)\\) libtorrent\\/0\\.([1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)/',6,'dec','BitRocket/0.3.3(32) libtorrent/0.13.0.0','no','yes','',0),(11,'MLDonkey 2.9.x','MLDonkey 2.9.2','/^-ML2\\.9\\.([0-9])-/',1,'dec','-ML2.9.2-','/^MLDonkey\\/2\\.9\\.([0-9])/',1,'dec','MLDonkey/2.9.2','no','yes','',0),(12,'uTorrent 1.8.x','uTorrent 1.8.0','/^-UT18([0-9])([0-9])-/',2,'dec','-UT1800-','/^uTorrent\\/18([0-9])([0-9])/',2,'dec','uTorrent/1800','no','yes','',0),(13,'Azureus 4.x','Vuze 4.0.0.2','/^-AZ4([0-9])([0-9])([0-9])-/',3,'dec','-AZ4002-','/^Azureus 4\\.([0-9])\\.([0-9])\\.([0-9])/',3,'dec','Azureus 4.0.0.2','no','yes','',0),(14,'SymTorrent','','',0,'dec','','/^SymTorrent/',0,'dec','SymTorrent','no','no','',0),(15,'Deluge 1.x','Deluge 1.1.6','/^-DE1([0-9])([0-9])([0-9])-/',3,'dec','-DE1160-','/^Deluge 1\\.([0-9])\\.([0-9])/',2,'dec','Deluge 1.1.6','no','yes','',0),(16,'uTorrent 1.8xB','uTorrent 1.80 Beta (build 9137)','/^-UT18([0-9])B-/',1,'dec','-UT180B-','/^uTorrent\\/18([0-9])B\\(([1-9][0-9]*)\\)/',2,'dec','uTorrent/180B(9137)','no','yes','',0),(17,'uTorrent 2.x.x','uTorrent 2.0(build 17624)','/^-UT2([0-9])([0-9])([0-9])-/',3,'dec','-UT2000-','/^uTorrent\\/2([0-9])([0-9])([0-9])/',3,'dec','uTorrent/2000','no','yes','',0),(18,'Transmission2.x','Transmission 2.0','/^-TR2([0-9])([0-9])([0-9])-/',3,'dec','-TR2000-','/^Transmission\\/2\\.([0-9])([0-9])/',3,'dec','Transmission/2.00','no','yes','',0),(19,'uTorrent 3.x','uTorrent/3000','/^-UT3([0-9])([0-9])([0-9])-/',3,'dec','-UT3000-','/^uTorrent\\/3([0-9])([0-9])([0-9])/',3,'dec','uTorrent/3000','no','yes','',0),(20,'uTorrent 3.x','uTorrent','',0,'dec','-UT355W-','/^uTorrent/',0,'dec','uTorrent','no','yes','',0),(21,'Transmission3.x','Transmission 3.0','/^-TR3([0-9])([0-9])([0-9])-/',3,'dec','-TR3000-','/^Transmission\\/3\\.([0-9])([0-9])/',3,'dec','Transmission/3.00','no','yes','',0),(22,'Deluge 2.x','Deluge 2.0.0','/^-DE2([0-9])([0-9])/',2,'dec','-DE200','/^Deluge\\/2\\.([0-9])\\.([0-9])/',2,'dec','Deluge/2.0.0','no','yes','',0),(23,'qBittorrent 4.x','qBittorrent 4.0.0','/^-qB4([0-9])([0-9])/',2,'dec','-qB400','/^qBittorrent\\/4\\.([0-9])\\.([0-9])/',2,'dec','qBittorrent/4.0.0','no','yes','',0),(24,'Deluge 1.x','Deluge 1.0.0','/^-DE1([0-9])/',1,'dec','-DE10','/^Deluge 1\\.([0-9])\\.([0-9])/',2,'dec','Deluge 1.0.0','no','yes','',0);
 /*!40000 ALTER TABLE `agent_allowed_family` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -213,7 +213,8 @@ CREATE TABLE `attachments` (
   `thumb` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `pid` (`userid`,`id`),
-  KEY `dateline` (`added`,`isimage`,`downloads`)
+  KEY `dateline` (`added`,`isimage`,`downloads`),
+  KEY `idx_delkey` (`dlkey`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1702,6 +1703,9 @@ CREATE TABLE `searchbox` (
   `showaudiocodec` tinyint(1) NOT NULL DEFAULT '0',
   `catsperrow` smallint(5) unsigned NOT NULL DEFAULT '7',
   `catpadding` smallint(5) unsigned NOT NULL DEFAULT '25',
+  `custom_fields` text,
+  `custom_fields_display_name` varchar(255) NOT NULL DEFAULT '',
+  `custom_fields_display_order` text,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1712,7 +1716,7 @@ CREATE TABLE `searchbox` (
 
 LOCK TABLES `searchbox` WRITE;
 /*!40000 ALTER TABLE `searchbox` DISABLE KEYS */;
-INSERT INTO `searchbox` VALUES (4,'chd',1,0,1,1,1,0,1,0,10,7);
+INSERT INTO `searchbox` VALUES (4,'chd',1,0,1,1,1,0,1,0,10,7,'','','0');
 /*!40000 ALTER TABLE `searchbox` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1968,7 +1972,7 @@ CREATE TABLE `stylesheets` (
 
 LOCK TABLES `stylesheets` WRITE;
 /*!40000 ALTER TABLE `stylesheets` DISABLE KEYS */;
-INSERT INTO `stylesheets` VALUES (2,'styles/BlueGene/','Blue Gene','','Zantetsu','HDBits clone'),(3,'styles/BlasphemyOrange/','Blasphemy Orange','','Zantetsu','Bit-HDTV clone'),(4,'styles/Classic/','Classic','','Zantetsu','TBSource original mod'),(6,'styles/DarkPassion/','Dark Passion','','Zantetsu',''),(7,'styles/BambooGreen/','Bamboo Green','','Xia Zuojie','Baidu Hi clone');
+INSERT INTO `stylesheets` VALUES (2,'styles/BlueGene/','Blue Gene','','Zantetsu','HDBits clone'),(3,'styles/BlasphemyOrange/','Blasphemy Orange','','Zantetsu','Bit-HDTV clone'),(4,'styles/Classic/','Classic','','Zantetsu','TBSource original mod'),(6,'styles/DarkPassion/','Dark Passion','','Zantetsu',''),(7,'styles/BambooGreen/','Bamboo Green','','Xia Zuojie','Baidu Hi clone'),(8,'ultrahd-styles/Blue/','Blue',NULL,'',''),(9,'ultrahd-styles/Dark/','Dark',NULL,'',''),(10,'ultrahd-styles/Green/','Green',NULL,'',''),(11,'ultrahd-styles/White/','White',NULL,'','');
 /*!40000 ALTER TABLE `stylesheets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2195,6 +2199,7 @@ CREATE TABLE `torrents` (
   `last_reseed` datetime DEFAULT NULL,
   `pt_gen` mediumtext,
   `tags` int(11) NOT NULL DEFAULT '0',
+  `technical_info` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `info_hash` (`info_hash`),
   KEY `owner` (`owner`),
@@ -2213,6 +2218,67 @@ CREATE TABLE `torrents` (
 LOCK TABLES `torrents` WRITE;
 /*!40000 ALTER TABLE `torrents` DISABLE KEYS */;
 /*!40000 ALTER TABLE `torrents` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `torrents_custom_field_values`
+--
+
+DROP TABLE IF EXISTS `torrents_custom_field_values`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `torrents_custom_field_values` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `torrent_id` int(11) NOT NULL DEFAULT '0',
+  `custom_field_id` int(11) NOT NULL DEFAULT '0',
+  `custom_field_value` mediumtext,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_torrent_id` (`torrent_id`),
+  KEY `idx_field_id` (`custom_field_id`),
+  KEY `idx_field_value` (`custom_field_value`(768))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `torrents_custom_field_values`
+--
+
+LOCK TABLES `torrents_custom_field_values` WRITE;
+/*!40000 ALTER TABLE `torrents_custom_field_values` DISABLE KEYS */;
+/*!40000 ALTER TABLE `torrents_custom_field_values` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `torrents_custom_fields`
+--
+
+DROP TABLE IF EXISTS `torrents_custom_fields`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `torrents_custom_fields` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `label` varchar(255) NOT NULL DEFAULT '',
+  `type` enum('text','textarea','select','radio','checkbox','image') NOT NULL,
+  `required` tinyint(4) NOT NULL DEFAULT '0',
+  `is_single_row` int(11) NOT NULL DEFAULT '0',
+  `options` text,
+  `help` text,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `torrents_custom_fields`
+--
+
+LOCK TABLES `torrents_custom_fields` WRITE;
+/*!40000 ALTER TABLE `torrents_custom_fields` DISABLE KEYS */;
+/*!40000 ALTER TABLE `torrents_custom_fields` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -2418,4 +2484,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-02-26 14:07:05
+-- Dump completed on 2021-03-17 18:23:28

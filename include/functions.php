@@ -1070,13 +1070,13 @@ function get_torrent_extinfo_identifier($torrentid)
 
 function parse_imdb_id($url)
 {
-	if ($url != "" && preg_match("/[0-9]{7}/i", $url, $matches)) {
+    if ($url && is_numeric($url) && strlen($url) < 7) {
+        $url = str_pad($url, 7, '0', STR_PAD_LEFT);
+    }
+	if ($url != "" && preg_match("/[0-9]+/i", $url, $matches)) {
 		return $matches[0];
-	} elseif ($url && is_numeric($url) && strlen($url) < 7) {
-		return str_pad($url, 7, '0', STR_PAD_LEFT);
-	} else {
-		return false;
 	}
+	return false;
 }
 
 function build_imdb_url($imdb_id)
@@ -4664,11 +4664,19 @@ function displayHotAndClassic()
                                     continue;
                                 }
                                 $allImdb[]=$imdb_id;
-                                $photo_url = $imdb->getMovie($imdb_id)->photo(true);
-                                $thumbnail = "<img width=\"101\" height=\"140\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
+                                try {
+                                    $photo_url = $imdb->getMovie($imdb_id)->photo(true);
+                                    if (empty($photo_url)) {
+                                        do_log("torrent: {$array['id']}, url: {$array['url']}, imdb_id: $imdb_id can not get photo", 'error');
+                                    }
+                                    $thumbnail = "<img width=\"101\" height=\"140\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
+                                } catch (\Exception $exception) {
+                                    do_log($exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
+                                    continue;
+                                }
                             }
                             else continue;
-                            $thumbnail = "<a href=\"details.php?id=" . $array['id'] . "&amp;hit=1\" onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class=\'big\'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class=\'medium\'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">" . $thumbnail . "</a>";
+                            $thumbnail = "<a style=\"margin-right: 2px\" href=\"details.php?id=" . $array['id'] . "&amp;hit=1\" onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class=\'big\'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class=\'medium\'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">" . $thumbnail . "</a>";
                             $movies_list .= $thumbnail;
                             $count++;
                             if ($count >= 9)

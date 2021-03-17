@@ -875,7 +875,6 @@ print("<table width=\"940\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpa
 
 displayHotAndClassic();
 
-
 if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showing bookmarked torrents from all sections;
 ?>
 <form method="get" name="searchbox" action="?">

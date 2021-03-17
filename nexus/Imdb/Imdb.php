@@ -257,13 +257,14 @@ class Imdb
     public function renderTorrentsPageAverageRating($imdbId)
     {
         $imdbId = parse_imdb_id($imdbId);
+        $defaultRating = $rating = 'N/A';
         if ($imdbId && $this->getCacheStatus($imdbId) == 1) {
             $movie = $this->getMovie($imdbId);
             $rating = $movie->rating();
-        } else {
-            $rating = 'N/A';
         }
-
+        if (!is_numeric($rating)) {
+            $rating = $defaultRating;
+        }
         $site = 'imdb';
         $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
         $result .= sprintf(
