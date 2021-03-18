@@ -408,13 +408,20 @@ class Install
         if (file_exists($envFile) && is_readable($envFile)) {
             //already exists, read it ,and merge post data
             $newData = readEnvFile($envFile);
+            $this->doLog("[CREATE ENV] .env exists, data: " . json_encode($newData));
         }
+        $this->doLog("[CREATE ENV] newData: " . json_encode($newData));
         foreach ($envExampleData as $key => $value) {
             if (isset($data[$key])) {
                 $value = trim($data[$key]);
+                $this->doLog("[CREATE ENV] key: $key, new value: $value from post.");
+                $newData[$key] = $value;
+            } elseif (!isset($newData[$key])) {
+                $this->doLog("[CREATE ENV] key: $key, new value: $value from example.");
+                $newData[$key] = $value;
             }
-            $newData[$key] = $value;
         }
+        $this->doLog("[CREATE ENV] final newData: " . json_encode($newData));
         unset($key, $value);
         mysql_connect($newData['MYSQL_HOST'], $newData['MYSQL_USERNAME'], $newData['MYSQL_PASSWORD'], $newData['MYSQL_DATABASE'], $newData['MYSQL_PORT']);
         if (extension_loaded('redis') && !empty($newData['REDIS_HOST'])) {
