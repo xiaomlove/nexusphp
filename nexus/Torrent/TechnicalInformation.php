@@ -8,10 +8,10 @@ class TechnicalInformation
 
     private $mediaInfoArr;
 
-    public function __construct($mediaInfo)
+    public function __construct(string $mediaInfo)
     {
-        $this->mediaInfo = (string)$mediaInfo;
-        $this->mediaInfoArr = $this->getMediaInfoArr((string)$mediaInfo);
+        $this->mediaInfo = $mediaInfo;
+        $this->mediaInfoArr = $this->getMediaInfoArr($mediaInfo);
     }
 
     public function getMediaInfoArr(string $mediaInfo)
@@ -49,7 +49,10 @@ class TechnicalInformation
         $width = $this->mediaInfoArr['Video']['Width'] ?? '';
         $height = $this->mediaInfoArr['Video']['Height'] ?? '';
         $ratio = $this->mediaInfoArr['Video']['Display aspect ratio'] ?? '';
-        $result = $width . 'x' . $height;
+        $result = '';
+        if ($width && $height) {
+            $result .= $width . ' x ' . $height;
+        }
         if ($ratio) {
             $result .= "($ratio)";
         }
@@ -88,7 +91,7 @@ class TechnicalInformation
     {
         $result = [];
         foreach ($this->mediaInfoArr as $parentKey => $values) {
-            if (strpos($parentKey, 'Audio') == false) {
+            if (strpos($parentKey, 'Audio') === false) {
                 continue;
             }
             $audioInfoArr = [];
@@ -115,7 +118,7 @@ class TechnicalInformation
     {
         $result = [];
         foreach ($this->mediaInfoArr as $parentKey => $values) {
-            if (strpos($parentKey, 'Text') == false) {
+            if (strpos($parentKey, 'Text') === false) {
                 continue;
             }
             $audioInfoArr = [];
@@ -135,18 +138,59 @@ class TechnicalInformation
     public function renderOnDetailsPage()
     {
         global $lang_functions;
-        $runtime = $this->getRuntime();
-        $resolution = $this->getResolution();
-        $bitrate = $this->getBitrate();
-        $profile = $this->getProfile();
-        $framerate = $this->getFramerate();
-        $refFrame = $this->getRefFrame();
+        $videos = [
+            'Runtime' => $this->getRuntime(),
+            'Resolution' => $this->getResolution(),
+            'Bitrate' => $this->getBitrate(),
+            'Framerate' => $this->getFramerate(),
+            'Profile' => $this->getProfile(),
+            'Ref.Frames' => $this->getRefFrame(),
+        ];
+        $videos = array_filter($videos);
         $audios = $this->getAudios();
         $subtitles = $this->getSubtitles();
-        $html = '<table>';
-        if (!empty($runtime)) {
-
+//        dd($this->mediaInfoArr, $videos, $audios, $subtitles);
+        //video part
+        $videoTable = '<table style="border: none"><tbody>';
+        foreach (array_chunk($videos, 2, true) as $row) {
+            $videoTable .= '<tr>';
+            foreach ($row as $key => $value) {
+                $videoTable .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px"><b>%s: </b>%s</td>', $key, $value);
+            }
+            $videoTable .= '</tr>';
         }
+        $videoTable .= '</tbody></table>';
 
+        $audioTable = '<table style="border: none"><tbody>';
+        $audioTable .= '<tr>';
+        foreach ($audios as $key => $value) {
+            $audioTable .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px"><b>%s: </b>%s</td>', $key, $value);
+        }
+        $audioTable .= '</tr>';
+        $audioTable .= '</tbody></table>';
+
+        $subtitleTable = '<table style="border: none"><tbody>';
+        $subtitleTable .= '<tr>';
+        foreach ($subtitles as $key => $value) {
+            $subtitleTable .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px"><b>%s: </b>%s</td>', $key, $value);
+        }
+        $subtitleTable .= '</tr>';
+        $subtitleTable .= '</tbody></table>';
+
+        if (empty($videos) && empty($audios) && empty($subtitles)) {
+            return '';
+        }
+        $result = '<table style="border: none"><tbody><tr>';
+        if (!empty($videos)) {
+            $result .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $videoTable);
+        }
+        if (!empty($audios)) {
+            $result .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $audioTable);
+        }
+        if (!empty($subtitles)) {
+            $result .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $subtitleTable);
+        }
+        $result .= '</tr></tbody></table>';
+        return $result;
     }
 }

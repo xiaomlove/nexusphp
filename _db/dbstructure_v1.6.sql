@@ -68,7 +68,7 @@ CREATE TABLE `adminpanel` (
 
 LOCK TABLES `adminpanel` WRITE;
 /*!40000 ALTER TABLE `adminpanel` DISABLE KEYS */;
-INSERT INTO `adminpanel` VALUES (1,'Add user','adduser.php','Create new user account'),(3,'Reset Users Password','reset.php','Rest lost Passwords'),(4,'Mass PM','staffmess.php','Send PM to all users'),(6,'Poll overview','polloverview.php','View poll votes'),(7,'Warned users','warned.php','See all warned users on tracker'),(8,'FreeLeech','freeleech.php','Set ALL Torrents At Special State.'),(9,'FAQ Management','faqmanage.php','Edit/Add/Delete FAQ Page'),(10,'Rules Management','modrules.php','Edit/Add/Delete RULES Page'),(11,'Category Manage','catmanage.php','Manage torrents categories at your site');
+INSERT INTO `adminpanel` VALUES (1,'Add user','adduser.php','Create new user account'),(3,'Reset Users Password','reset.php','Rest lost Passwords'),(4,'Mass PM','staffmess.php','Send PM to all users'),(6,'Poll overview','polloverview.php','View poll votes'),(7,'Warned users','warned.php','See all warned users on tracker'),(8,'FreeLeech','freeleech.php','Set ALL Torrents At Special State.'),(9,'FAQ Management','faqmanage.php','Edit/Add/Delete FAQ Page'),(10,'Rules Management','modrules.php','Edit/Add/Delete RULES Page'),(11,'Category Manage','catmanage.php','Manage torrents categories at your site'),(12,'Custom Field Manage','fields.php','Manage custom fields');
 /*!40000 ALTER TABLE `adminpanel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -236,9 +236,9 @@ DROP TABLE IF EXISTS `attendance`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `attendance` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` int(10) unsigned NOT NULL,
+  `uid` int(10) unsigned NOT NULL DEFAULT '0',
   `added` datetime NOT NULL,
-  `points` int(10) unsigned NOT NULL,
+  `points` int(10) unsigned NOT NULL DEFAULT '0',
   `days` int(10) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `idx_uid` (`uid`)
@@ -1589,8 +1589,8 @@ CREATE TABLE `requests` (
   `torrentid` int(10) unsigned NOT NULL DEFAULT '0',
   `finish` enum('yes','no') CHARACTER SET gbk NOT NULL DEFAULT 'no',
   `amount` int(10) NOT NULL DEFAULT '0',
-  `ori_descr` varchar(255) CHARACTER SET gbk NOT NULL,
-  `ori_amount` int(10) NOT NULL,
+  `ori_descr` varchar(255) NOT NULL DEFAULT '',
+  `ori_amount` int(10) NOT NULL DEFAULT '0',
   `added` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userid` (`userid`),
@@ -1616,8 +1616,8 @@ DROP TABLE IF EXISTS `resreq`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `resreq` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
-  `reqid` int(10) NOT NULL,
-  `torrentid` int(10) NOT NULL,
+  `reqid` int(10) NOT NULL DEFAULT '0',
+  `torrentid` int(10) NOT NULL DEFAULT '0',
   `chosen` enum('yes','no') NOT NULL DEFAULT 'no',
   PRIMARY KEY (`id`),
   KEY `reqid` (`reqid`)
@@ -1716,7 +1716,7 @@ CREATE TABLE `searchbox` (
 
 LOCK TABLES `searchbox` WRITE;
 /*!40000 ALTER TABLE `searchbox` DISABLE KEYS */;
-INSERT INTO `searchbox` VALUES (4,'chd',1,0,1,1,1,0,1,0,10,7,'','','0');
+INSERT INTO `searchbox` VALUES (4,'chd',1,0,1,1,1,0,1,0,10,7,'','','');
 /*!40000 ALTER TABLE `searchbox` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1972,7 +1972,7 @@ CREATE TABLE `stylesheets` (
 
 LOCK TABLES `stylesheets` WRITE;
 /*!40000 ALTER TABLE `stylesheets` DISABLE KEYS */;
-INSERT INTO `stylesheets` VALUES (2,'styles/BlueGene/','Blue Gene','','Zantetsu','HDBits clone'),(3,'styles/BlasphemyOrange/','Blasphemy Orange','','Zantetsu','Bit-HDTV clone'),(4,'styles/Classic/','Classic','','Zantetsu','TBSource original mod'),(6,'styles/DarkPassion/','Dark Passion','','Zantetsu',''),(7,'styles/BambooGreen/','Bamboo Green','','Xia Zuojie','Baidu Hi clone'),(8,'ultrahd-styles/Blue/','Blue',NULL,'',''),(9,'ultrahd-styles/Dark/','Dark',NULL,'',''),(10,'ultrahd-styles/Green/','Green',NULL,'',''),(11,'ultrahd-styles/White/','White',NULL,'','');
+INSERT INTO `stylesheets` VALUES (2,'styles/BlueGene/','Blue Gene','','Zantetsu','HDBits clone'),(3,'styles/BlasphemyOrange/','Blasphemy Orange','','Zantetsu','Bit-HDTV clone'),(4,'styles/Classic/','Classic','','Zantetsu','TBSource original mod'),(6,'styles/DarkPassion/','Dark Passion','','Zantetsu',''),(7,'styles/BambooGreen/','Bamboo Green','','Xia Zuojie','Baidu Hi clone');
 /*!40000 ALTER TABLE `stylesheets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2484,4 +2484,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-17 18:23:28
+-- Dump completed on 2021-03-18 20:25:39

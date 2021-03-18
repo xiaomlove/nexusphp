@@ -74,6 +74,11 @@ else {
 	print("<tr><td class=\"rowhead\">".$lang_edit['row_description']."<font color=\"red\">*</font></td><td class=\"rowfollow\">");
 	textbbcode("edittorrent","descr",($row["descr"]), false);
 	print("</td></tr>");
+
+    if ($settingMain['enable_technical_info'] == 'yes') {
+        tr($lang_functions['text_technical_info'], '<textarea name="technical_info" rows="8" style="width: 650px;">' . $row['technical_info'] . '</textarea><br/>' . $lang_functions['text_technical_info_help_text'], 1);
+    }
+
 	$s = "<select name=\"type\" id=\"oricat\">";
 
 	$cats = genrelist($sectionmode);

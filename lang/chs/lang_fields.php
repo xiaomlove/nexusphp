@@ -1,7 +1,7 @@
 <?php
 
 $lang_fields = [
-    'field_management' => '字段管理',
+    'field_management' => '自定义字段管理',
     'text_manage' => '管理',
     'text_add' => '添加',
     'text_field' => '字段',

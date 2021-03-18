@@ -10,7 +10,8 @@ preg_match_all('/info_hash=([^&]*)/i', $_SERVER["QUERY_STRING"], $info_hash_arra
 $fields = "info_hash, times_completed, seeders, leechers";
 
 if (count($info_hash_array[1]) < 1) {
-	$query = "SELECT $fields FROM torrents ORDER BY id";
+    err("Require info_hash.");
+//	$query = "SELECT $fields FROM torrents ORDER BY id";
 }
 else {
 	$query = "SELECT $fields FROM torrents WHERE " . hash_where_arr('info_hash', $info_hash_array[1]);

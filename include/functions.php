@@ -3032,11 +3032,8 @@ function torrenttable($rows, $variant = "torrent") {
 	$setting = get_setting('main');
 	$enablePtGen = $setting['enable_pt_gen_system'] == 'yes';
 	$enableImdb = $setting['showimdbinfo'] == 'yes';
-	if ($enablePtGen) {
-	    $ptGen = new Nexus\PTGen\PTGen();
-    } elseif ($enableImdb) {
-	    $imdb = new Nexus\Imdb\Imdb();
-    }
+    $ptGen = new Nexus\PTGen\PTGen();
+    $imdb = new Nexus\Imdb\Imdb();
 	$torrent = new Nexus\Torrent\Torrent();
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], array_column($rows, 'id'));
 
@@ -3234,9 +3231,10 @@ foreach ($rows as $row)
 		{
 			$dissmall_descr=mb_substr($dissmall_descr, 0, $max_lenght_of_small_descr-2,"UTF-8") . "..";
 		}
-		print($dissmall_descr == "" ? "" : "<br />".$tags.htmlspecialchars($dissmall_descr));
+		$dissmall_descr = $tags . htmlspecialchars($dissmall_descr);
+		print($dissmall_descr == "" ? "" : "<br />".$dissmall_descr);
 	} else {
-	    print("<br />$tags");
+	    print($tags ? "<br />$tags" : "");
     }
 	//progress bar
 	if (isset($torrentSeedingLeechingStatus[$row['id']])) {

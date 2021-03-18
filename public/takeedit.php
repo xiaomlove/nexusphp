@@ -56,6 +56,8 @@ if (!empty($_POST['pt_gen'])) {
 }
 
 $updateset[] = "tags = " . array_sum($_POST['tags'] ?? []);
+$updateset[] = "technical_info = " . sqlesc($_POST['technical_info'] ?? '');
+
 
 if ($enablenfo_main=='yes'){
 $nfoaction = $_POST['nfoaction'];
@@ -131,17 +133,17 @@ if(get_user_class()>=$torrentonpromotion_class)
 	//promotion expiration type
 	if(!isset($_POST["promotion_time_type"]) || $_POST["promotion_time_type"] == 0) {
 		$updateset[] = "promotion_time_type = 0";
-		$updateset[] = "promotion_until = '0000-00-00 00:00:00'";
+		$updateset[] = "promotion_until = null";
 	} elseif ($_POST["promotion_time_type"] == 1) {
 		$updateset[] = "promotion_time_type = 1";
-		$updateset[] = "promotion_until = '0000-00-00 00:00:00'";
+		$updateset[] = "promotion_until = null";
 	} elseif ($_POST["promotion_time_type"] == 2) {
 		if ($_POST["promotionuntil"] && strtotime($torrentAddedTimeString) <= strtotime($_POST["promotionuntil"])) {
 			$updateset[] = "promotion_time_type = 2";
 			$updateset[] = "promotion_until = ".sqlesc($_POST["promotionuntil"]);
 		} else {
 			$updateset[] = "promotion_time_type = 0";
-			$updateset[] = "promotion_until = '0000-00-00 00:00:00'";
+			$updateset[] = "promotion_until = null";
 		}
 	}
 }
@@ -162,7 +164,7 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 		if($row["picktype"] != 'normal')
 			$pick_info = ", recomendation canceled!";
 		$updateset[] = "picktype = 'normal'";
-		$updateset[] = "picktime = '0000-00-00 00:00:00'";
+		$updateset[] = "picktime = null";
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 1)
 	{

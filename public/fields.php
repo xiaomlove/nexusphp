@@ -25,7 +25,7 @@ if ($action == 'view') {
         $result = $field->save($_REQUEST);
         redirect('fields.php?action=view');
     } catch (\Exception $e) {
-        stderr($lang_fields['field_management']." - ".$lang_fields['text_field'], $e->getMessage());
+        stderr($lang_fields['field_management'], $e->getMessage());
     }
 } elseif ($action == 'edit') {
     $id = intval($_GET['id'] ?? 0);

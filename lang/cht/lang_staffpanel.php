@@ -68,5 +68,7 @@ $lang_staffpanel = [
     'Add Bonus Points' => '增加魔力',
     'Add Bonus Points to one or All Users.' => '為某個或全部用戶增加魔力',
     'Clear cache' => '清除緩存',
-    'Clear cache of memcached' => '清除緩存的數據'
+    'Clear cache of memcached' => '清除緩存的數據',
+    'Custom Field Manage' => '自定義字段管理',
+    'Manage custom fields' => '管理自定義的字段',
 ];

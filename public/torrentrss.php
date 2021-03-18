@@ -5,7 +5,10 @@ function hex_esc($matches) {
 	return sprintf("%02x", ord($matches[0]));
 }
 $dllink = false;
-$passkey = $_GET['passkey'];
+$passkey = $_GET['passkey'] ?? $CURUSER['passkey'] ?? '';
+if (!$passkey) {
+	die("require passkey");
+}
 $where = "";
 if ($passkey){
 	$res = sql_query("SELECT id, enabled, parked FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
