@@ -36,13 +36,13 @@
     'autoclean_interval_two' => '1800',
     'autoclean_interval_three' => '3600',
     'autoclean_interval_four' => '43200',
-    'autoclean_interval_five' => '648000',
+    'autoclean_interval_five' => '1296000',
     'reportemail' => 'nobody@gmail.com',
     'invitesystem' => 'no',
     'registration' => 'yes',
     'showhotmovies' => 'no',
     'showclassicmovies' => 'no',
-    'showimdbinfo' => 'no',
+    'showimdbinfo' => 'yes',
     'enablenfo' => 'yes',
     'enableschool' => 'no',
     'restrictemail' => 'no',
@@ -78,8 +78,9 @@
     'startsubid' => NULL,
     'logo' => '',
     'showlastxforumposts' => 'no',
-    'pt_gen_api_point' => 'https://ptgen.rhilip.info',
-    'enable_pt_gen_system' => 'yes',
+    'pt_gen_api_point' => '',
+    'enable_pt_gen_system' => 'no',
+    'enable_technical_info' => 'no',
   ),
   'smtp' => 
   array (
@@ -354,7 +355,7 @@
   array (
     'mainversion' => 'NexusPHP',
     'subversion' => 'v1.6.0-beta4',
-    'releasedate' => '2021-03-17',
+    'releasedate' => '2021-03-19',
     'website' => '<a href="https://nexusphp.org" target="_blank">https://nexusphp.org</a>',
   ),
 );
