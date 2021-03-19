@@ -147,6 +147,8 @@ if ($currentStep == 3) {
                 }
             }
 
+            $update->runExtraQueries();
+
             $update->nextStep();
         } catch (\Exception $exception) {
             $error = $exception->getMessage();

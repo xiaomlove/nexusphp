@@ -2,6 +2,8 @@
 
 namespace Nexus\Install;
 
+use Nexus\Database\DB;
+
 class Update extends Install
 {
 
@@ -43,6 +45,23 @@ class Update extends Install
             $data[$row['Field']] = $row;
         }
         return $data;
+    }
+
+    public function runExtraQueries()
+    {
+        //custom field menu
+        $url = 'fields.php';
+        $table = 'adminpanel';
+        $count = get_row_count($table, "where url = " . sqlesc($url));
+        if ($count == 0) {
+            $insert = [
+                'name' => 'Custom Field Manage',
+                'url' => $url,
+                'info' => 'Manage custom fields',
+            ];
+            $id = DB::insert($table, $insert);
+            $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
+        }
     }
 
 }
