@@ -32,7 +32,7 @@ class Torrent
             $id = $row['torrentid'];
             $activeStatus = 'inactivity';
             if (isset($peerList[$id])) {
-                if ($peerList[$id]['to_go'] == 0) {
+                if ($peerList[$id] == 0) {
                     $activeStatus = 'seeding';
                 } else {
                     $activeStatus = 'leeching';
