@@ -4,6 +4,7 @@ namespace Nexus\Imdb;
 
 use Imdb\Config;
 use Imdb\Title;
+use Nexus\PTGen\PTGen;
 
 class Imdb
 {
@@ -12,6 +13,8 @@ class Imdb
     private $movies = [];
 
     private $pages = array('Title', 'Credits', 'ReleaseInfo', );
+
+    private $ptGen;
 
     public function __construct()
     {
@@ -265,25 +268,14 @@ class Imdb
         if (!is_numeric($rating)) {
             $rating = $defaultRating;
         }
-        $site = 'imdb';
-        $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
-        $result .= sprintf(
-            '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
-            'pic/imdb2.png', $site, $site, $rating
-        );
-        $result .= '</div></td>';
-        return $result;
+        return $this->getPtGen()->buildRatingSpan([PTGen::SITE_IMDB => $rating]);
     }
 
-    public function renderHotAndClassic()
+    public function getPtGen()
     {
-        global $showextinfo, $showmovies;
-
-        $shouldDisplay = ($showextinfo['imdb'] == 'yes' || get_setting('main.enable_pt_gen_system')) && ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes");
-        if (!$shouldDisplay) {
-            return '';
+        if (empty($this->ptGen)) {
+            $this->ptGen = new PTGen();
         }
-
-
+        return $this->ptGen;
     }
 }

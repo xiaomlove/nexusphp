@@ -40,11 +40,7 @@ class PTGen
     public function __construct()
     {
         $setting = get_setting('main');
-        if (empty($setting['pt_gen_api_point'])) {
-            do_log("empty PT-Gen api point", 'warning');
-        } else {
-            $this->setApiPoint($setting['pt_gen_api_point']);
-        }
+        $this->setApiPoint($setting['pt_gen_api_point'] ?? '');
     }
 
     public function getApiPoint(): string
@@ -230,10 +226,27 @@ HTML;
 
     public function renderTorrentsPageAverageRating(array $ptGenData)
     {
-        $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
-        $count = 1;
+        $siteIdAndRating = [];
         foreach (self::$validSites as $site => $info) {
             $rating = $ptGenData[$site]['data']["{$site}_rating_average"] ?? '';
+            if (empty($rating)) {
+                continue;
+            }
+            $siteIdAndRating[$site] = $rating;
+        }
+        return $this->buildRatingSpan($siteIdAndRating);
+    }
+
+    public function buildRatingSpan(array $siteIdAndRating)
+    {
+        $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
+        $count = 1;
+        $ratingIcons = [];
+        foreach (self::$validSites as $site => $info) {
+            if (!isset($siteIdAndRating[$site])) {
+                continue;
+            }
+            $rating = $siteIdAndRating[$site];
             if (empty($rating)) {
                 continue;
             }
@@ -241,13 +254,23 @@ HTML;
                 //only show the first two
                 break;
             }
-            $result .= sprintf(
-                '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
-                $info['rating_average_img'], $site, $site, $rating
-            );
+            $ratingIcons[] = $this->getRatingIcon($site, $rating);
             $count++;
         }
-        $result .= '</div></td>';
+        if (empty($ratingIcons)) {
+            $ratingIcons[] = $this->getRatingIcon(self::SITE_IMDB, 'N/A');
+            $ratingIcons[] = $this->getRatingIcon(self::SITE_DOUBAN, 'N/A');
+        }
+        $result .= implode("", $ratingIcons)  . '</div></td>';
+        return $result;
+    }
+
+    public function getRatingIcon($siteId, $rating)
+    {
+        $result = sprintf(
+            '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
+            self::$validSites[$siteId]['rating_average_img'], $siteId, $siteId, $rating
+        );
         return $result;
     }
 }
