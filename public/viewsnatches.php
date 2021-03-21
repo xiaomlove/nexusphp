@@ -49,11 +49,11 @@ if ($count){
 		if ($userrow['privacy'] == 'strong'){
 			$username = $lang_viewsnatches['text_anonymous'];
 			if (get_user_class() >= $viewanonymous_class || $arr["id"] == $CURUSER['id'])
-				$username .= "<br />(".get_username($arr[userid]).")";
+				$username .= "<br />(".get_username($arr['userid']).")";
 		}
-		else $username = get_username($arr[userid]);
+		else $username = get_username($arr['userid']);
 		$reportImage = "<img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_viewsnatches['title_report']."\" />";
-		print("<tr$highlight><td class=rowfollow align=center>" . $username ."</td>".(get_user_class() >= $userprofile_class ? "<td class=rowfollow align=center>".$arr[ip]."</td>" : "")."<td class=rowfollow align=center>".$uploaded."@".$uprate.$lang_viewsnatches['text_per_second']."<br />".$downloaded."@".$downrate.$lang_viewsnatches['text_per_second']."</td><td class=rowfollow align=center>$ratio</td><td class=rowfollow align=center>$seedtime</td><td class=rowfollow align=center>$leechtime</td><td class=rowfollow align=center>".gettime($arr[completedat],true,false)."</td><td class=rowfollow align=center>".gettime($arr[last_action],true,false)."</td><td class=rowfollow align=center style='padding: 0px'>".($userrow['privacy'] != 'strong' || get_user_class() >= $viewanonymous_class ? "<a href=report.php?user=$arr[userid]>$reportImage</a>" : $reportImage)."</td></tr>\n");
+		print("<tr$highlight><td class=rowfollow align=center>" . $username ."</td>".(get_user_class() >= $userprofile_class ? "<td class=rowfollow align=center>".$arr['ip']."</td>" : "")."<td class=rowfollow align=center>".$uploaded."@".$uprate.$lang_viewsnatches['text_per_second']."<br />".$downloaded."@".$downrate.$lang_viewsnatches['text_per_second']."</td><td class=rowfollow align=center>$ratio</td><td class=rowfollow align=center>$seedtime</td><td class=rowfollow align=center>$leechtime</td><td class=rowfollow align=center>".gettime($arr['completedat'],true,false)."</td><td class=rowfollow align=center>".gettime($arr['last_action'],true,false)."</td><td class=rowfollow align=center style='padding: 0px'>".($userrow['privacy'] != 'strong' || get_user_class() >= $viewanonymous_class ? "<a href=report.php?user={$arr['userid']}>$reportImage</a>" : $reportImage)."</td></tr>\n");
 	}
 		print("</table>\n");
 		print($pagerbottom);
