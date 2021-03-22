@@ -68,8 +68,10 @@ function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $s
 
 	$time = date("Y-m-d H:i:s");
 	$upspeed = ($uploaded > 0 ? $uploaded / $anctime : 0);
+	$mustBeCheaterSpeed = 1024 * 1024 * 100; //100 MB/s
+	$mayBeCheaterSpeed = 1024 * 1024 * 25; //25 MB/s
 
-	if ($uploaded > 1073741824 && $upspeed > (104857600/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is no doubt cheating.
+	if ($uploaded > 1073741824 && $upspeed > ($mustBeCheaterSpeed/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is no doubt cheating.
 	{
 		$comment = "User account was automatically disabled by system";
 		mysql_query("INSERT INTO cheaters (added, userid, torrentid, uploaded, downloaded, anctime, seeders, leechers, comment) VALUES (".sqlesc($time).", $userid, $torrentid, $uploaded, $downloaded, $anctime, $seeders, $leechers, ".sqlesc($comment).")") or err("Tracker error 51");
@@ -77,7 +79,7 @@ function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $s
 		err("We believe you're trying to cheat. And your account is disabled.");
 		return true;
 	}
-	if ($uploaded > 1073741824 && $upspeed > (10485760/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 10 MByte/S (For Consertive level). This is likely cheating.
+	if ($uploaded > 1073741824 && $upspeed > ($mayBeCheaterSpeed/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 25 MByte/S (For Consertive level). This is likely cheating.
 	{
 		$secs = 24*60*60; //24 hours
 		$dt = sqlesc(date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) - $secs))); // calculate date.
