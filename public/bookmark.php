@@ -12,7 +12,7 @@ header("Content-Type: text/xml; charset=utf-8");
 $torrentid = intval($_GET['torrentid'] ?? 0);
 if(isset($CURUSER))
 {
-	$res_bookmark = sql_query("SELECT * FROM bookmarks WHERE torrentid=" . sqlesc($torrentid) . " AND userid=" . sqlesc($CURUSER[id]));
+	$res_bookmark = sql_query("SELECT * FROM bookmarks WHERE torrentid=" . sqlesc($torrentid) . " AND userid=" . sqlesc($CURUSER['id']));
 	if (mysql_num_rows($res_bookmark) == 1){
 		sql_query("DELETE FROM bookmarks WHERE torrentid=" . sqlesc($torrentid) . " AND userid=" . sqlesc($CURUSER['id'])) or sqlerr(__FILE__,__LINE__);
 		$Cache->delete_value('user_'.$CURUSER['id'].'_bookmark_array');
