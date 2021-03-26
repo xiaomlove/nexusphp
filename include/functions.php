@@ -3002,6 +3002,7 @@ function return_torrent_bookmark_array($userid)
 				$Cache->cache_value('user_'.$userid.'_bookmark_array', $ret, 132800);
 			} else {
 				$Cache->cache_value('user_'.$userid.'_bookmark_array', array(0), 132800);
+                $ret[] = 0;
 			}
 		}
 	}
