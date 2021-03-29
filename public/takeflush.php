@@ -14,7 +14,7 @@ function bark($msg)
 $id = intval($_GET['id'] ?? 0);
 int_check($id,true);
 
-if (get_user_class() >= UC_MODERATOR || $CURUSER[id] == "$id")
+if (get_user_class() >= UC_MODERATOR || $CURUSER['id'] == "$id")
 {  
    $deadtime = deadtime();
    sql_query("DELETE FROM peers WHERE last_action < FROM_UNIXTIME($deadtime) AND userid=" . sqlesc($id));

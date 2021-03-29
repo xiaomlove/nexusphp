@@ -61,7 +61,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "edit" && isset($_GET['id']
 			print("<tr><td>Category:</td><td><select style=\"width: 400px;\" name=\"categ\" />");
 			$res2 = sql_query("SELECT `id`, `question`, `link_id` FROM `faq` WHERE `type`='categ' AND `lang_id` = ".sqlesc($lang_id)." ORDER BY `order` ASC");
 			while ($arr2 = mysql_fetch_array($res2, MYSQLI_BOTH)) {
-				$selected = ($arr2['link_id'] == $arr[categ]) ? " selected=\"selected\"" : "";
+				$selected = ($arr2['link_id'] == $arr['categ']) ? " selected=\"selected\"" : "";
 				print("<option value=\"{$arr2['link_id']}\"". $selected .">{$arr2['question']}</option>");
 			}
 			print("</td></tr>\n");
