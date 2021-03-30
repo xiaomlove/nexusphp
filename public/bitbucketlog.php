@@ -15,8 +15,8 @@ if (get_user_class() >= UC_MODERATOR)
 			 $a = mysql_fetch_assoc($r);				
 			 if (get_user_class() >= UC_MODERATOR || $a["owner"] == $CURUSER["id"]) {					
 				 sql_query("DELETE FROM bitbucket WHERE id=".mysql_real_escape_string($delete)) or sqlerr(__FILE__, __LINE__);			
-				 if (!unlink("$bucketpath/$a[name]"))						
-				 stderr("Warning", "Unable to unlink file: <b>$a[name]</b>. You should contact an administrator about this error.",false);
+				 if (!unlink("$bucketpath/{$a['name']}"))
+				 stderr("Warning", "Unable to unlink file: <b>{$a['name']}</b>. You should contact an administrator about this error.",false);
 				 				}			}		}	}	
 				 				stdhead("BitBucket Log");	
 				 				$res = sql_query("SELECT count(*) FROM bitbucket") or die(mysql_error());	$row = mysql_fetch_array($res);	$count = $row[0];	
@@ -41,7 +41,7 @@ if (get_user_class() >= UC_MODERATOR)
 						 				print("Uploaded by:  " . get_username($arr['owner']). "<br />");
 						 				print("(#{$arr['id']}) Filename: $name ($width&nbsp;x&nbsp;$height)");
 						 				if (get_user_class() >= UC_MODERATOR)				
-						 				print(" <b><a href=?delete=$arr[id]>[Delete]</a></b><br />");			
+						 				print(" <b><a href=?delete={$arr['id']}>[Delete]</a></b><br />");
 						 				print("Added: $date $time");			
 						 				print("</tr>");		
 						 				}		

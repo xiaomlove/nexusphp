@@ -89,10 +89,10 @@ elseif (isset($_GET['action']) && $_GET['action'] == "edit" && isset($_GET['id']
 }
 
 // subACTION: edititem - edit an item
-elseif (isset($_GET['action']) && $_GET['action'] == "edititem" && $_POST['id'] != NULL && $_POST['question'] != NULL && $_POST['answer'] != NULL && $_POST['flag'] != NULL && $_POST[categ] != NULL) {
+elseif (isset($_GET['action']) && $_GET['action'] == "edititem" && $_POST['id'] != NULL && $_POST['question'] != NULL && $_POST['answer'] != NULL && $_POST['flag'] != NULL && $_POST['categ'] != NULL) {
 	$question = $_POST['question'];
 	$answer = $_POST['answer'];
-	sql_query("UPDATE `faq` SET `question`=".sqlesc($question).", `answer`=".sqlesc($answer).", `flag`=".sqlesc($_POST['flag']).", `categ`=".sqlesc($_POST[categ])." WHERE id=".sqlesc($_POST['id'])) or sqlerr();
+	sql_query("UPDATE `faq` SET `question`=".sqlesc($question).", `answer`=".sqlesc($answer).", `flag`=".sqlesc($_POST['flag']).", `categ`=".sqlesc($_POST['categ'])." WHERE id=".sqlesc($_POST['id'])) or sqlerr();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 }
@@ -168,7 +168,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "addsection") {
 elseif (isset($_GET['action']) && $_GET['action'] == "addnewitem" && $_POST['question'] != NULL && $_POST['answer'] != NULL) {
 	$question = $_POST['question'];
 	$answer = $_POST['answer'];
-	$categ = intval($_POST[categ] ?? 0);
+	$categ = intval($_POST['categ'] ?? 0);
 	$langid = intval($_POST['langid'] ?? 0);
 	$res = sql_query("SELECT MAX(`order`) AS maxorder, MAX(`link_id`) AS maxlinkid FROM `faq` WHERE `type`='item' AND `categ`=".sqlesc($categ)." AND lang_id=".sqlesc($langid));
 	while ($arr = mysql_fetch_array($res, MYSQLI_BOTH)) 

@@ -184,12 +184,12 @@ if ($action == 'ban')
 		$Cache->delete_value('current_fun_vote_count');
 		$Cache->delete_value('current_fun_vote_funny_count');
 
-		$subject = $lang_fun_target[get_user_lang($arr[userid])]['msg_fun_item_banned'];
-		$msg = $lang_fun_target[get_user_lang($arr[userid])]['msg_your_fun_item'].$title.$lang_fun_target[get_user_lang($arr[userid])]['msg_is_ban_by'].$CURUSER['username'].$lang_fun_target[get_user_lang($arr[userid])]['msg_reason'].$banreason;
+		$subject = $lang_fun_target[get_user_lang($arr['userid'])]['msg_fun_item_banned'];
+		$msg = $lang_fun_target[get_user_lang($arr['userid'])]['msg_your_fun_item'].$title.$lang_fun_target[get_user_lang($arr['userid'])]['msg_is_ban_by'].$CURUSER['username'].$lang_fun_target[get_user_lang($arr['userid'])]['msg_reason'].$banreason;
 		sql_query("INSERT INTO messages (sender, subject, receiver, added, msg) VALUES(0, ".sqlesc($subject).", ".$arr['userid'].", '" . date("Y-m-d H:i:s") . "', " . sqlesc($msg) . ")") or sqlerr(__FILE__, __LINE__);
 		$Cache->delete_value('user_'.$arr['userid'].'_unread_message_count');
 		$Cache->delete_value('user_'.$arr['userid'].'_inbox_count');
-		write_log("Fun item $id ($title) was banned by $CURUSER[username]. Reason: $banreason", 'normal');
+		write_log("Fun item $id ($title) was banned by {$CURUSER['username']}. Reason: $banreason", 'normal');
 		stderr($lang_fun['std_success'], $lang_fun['std_fun_item_banned']);
 	}
 	else {
@@ -198,7 +198,7 @@ if ($action == 'ban')
 }
 function funreward($funvote, $totalvote, $title, $posterid, $bonus)
 {
-	global $lang_fun_target, $lang_fun;
+	global $lang_fun_target, $lang_fun, $Cache;
 	KPS("+",$bonus,$posterid);
 	$subject = $lang_fun_target[get_user_lang($posterid)]['msg_fun_item_reward'];
 	$msg = $funvote.$lang_fun_target[get_user_lang($posterid)]['msg_out_of'].$totalvote.$lang_fun_target[get_user_lang($posterid)]['msg_people_think'].$title.$lang_fun_target[get_user_lang($posterid)]['msg_is_fun'].$bonus.$lang_fun_target[get_user_lang($posterid)]['msg_bonus_as_reward'];
@@ -217,7 +217,7 @@ if ($action == 'vote')
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
 	else {
-		$res = sql_query("SELECT * FROM funvotes WHERE funid=$id AND userid = $CURUSER[id]") or sqlerr(__FILE__,__LINE__);
+		$res = sql_query("SELECT * FROM funvotes WHERE funid=$id AND userid = {$CURUSER['id']}") or sqlerr(__FILE__,__LINE__);
 		$checkvote = mysql_fetch_array($res);
 		if ($checkvote)
 			stderr($lang_fun['std_error'], $lang_fun['std_already_vote']);

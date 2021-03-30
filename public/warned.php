@@ -53,9 +53,9 @@ print("<tr><td align=left>" . get_username($arr['id']) ."</td>
   <td align=center>$downloaded</td>
   <td align=center>$uploaded</td>
   <td align=center>$ratio</td>
-  <td align=center>$arr[warneduntil]</td>
-  <td bgcolor=\"#008000\" align=center><input type=\"checkbox\" name=\"usernw[]\" value=\"$arr[id]\"></td>
-  <td bgcolor=\"#FF000\" align=center><input type=\"checkbox\" name=\"desact[]\" value=\"$arr[id]\"></td></tr>\n");
+  <td align=center>{$arr['warneduntil']}</td>
+  <td bgcolor=\"#008000\" align=center><input type=\"checkbox\" name=\"usernw[]\" value=\"{$arr['id']}\"></td>
+  <td bgcolor=\"#FF000\" align=center><input type=\"checkbox\" name=\"desact[]\" value=\"{$arr['id']}\"></td></tr>\n");
 }
 if (get_user_class() >= UC_ADMINISTRATOR) {
 print("<tr><td colspan=10 align=right><input type=\"submit\" name=\"submit\" value=\"Apply Changes\"></td></tr>\n");

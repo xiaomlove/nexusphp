@@ -10,7 +10,7 @@ print("<table align=center border=3 cellspacing=0 cellpadding=5>\n");
 print("<tr><td class=colhead>Client</td><td class=colhead>Peer ID</td></tr>\n");
 while($arr2 = mysql_fetch_assoc($res2))
 {
-	print("</a></td><td align=left>$arr2[agent]</td><td align=left>$arr2[peer_id]</td></tr>\n");
+	print("</a></td><td align=left>{$arr2['agent']}</td><td align=left>{$arr2['peer_id']}</td></tr>\n");
 }
 print("</table>\n");
 stdfoot();

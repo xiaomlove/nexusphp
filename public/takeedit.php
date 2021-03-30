@@ -220,12 +220,12 @@ if($CURUSER["id"] == $row["owner"])
 	}
 	else
 	{
-		write_log("Torrent $id ($name) was edited by $CURUSER[username]" . $pick_info . $place_info);
+		write_log("Torrent $id ($name) was edited by {$CURUSER['username']}" . $pick_info . $place_info);
 	}
 }
 else
 {
-	write_log("Torrent $id ($name) was edited by $CURUSER[username], Mod Edit" . $pick_info . $place_info);
+	write_log("Torrent $id ($name) was edited by {$CURUSER['username']}, Mod Edit" . $pick_info . $place_info);
 }
 $returl = "details.php?id=$id&edited=1";
 if (isset($_POST["returnto"]))

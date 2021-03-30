@@ -25,7 +25,7 @@ if (get_user_class() > UC_MODERATOR) {
 $res=sql_query("SELECT id,username,email,added,donated FROM users WHERE donor='yes' ORDER BY id DESC $limit") or print(mysql_error());
 // ------------------
 while ($arr = @mysql_fetch_assoc($res)) {
-	echo "<tr><td>" . $arr[id] . "</td><td align=\"left\">" . get_username($arr[id]) . "</td><td align=\"left\"><a href=mailto:" . $arr[email] . ">" . $arr[email] . "</a></td><td align=\"left\">" . $arr[added] . "</a></td><td align=\"left\">$" . $arr[donated] . "</td></tr>";
+	echo "<tr><td>" . $arr['id'] . "</td><td align=\"left\">" . get_username($arr['id']) . "</td><td align=\"left\"><a href=mailto:" . $arr['email'] . ">" . $arr['email'] . "</a></td><td align=\"left\">" . $arr['added'] . "</a></td><td align=\"left\">$" . $arr['donated'] . "</td></tr>";
 }
 ?>
 

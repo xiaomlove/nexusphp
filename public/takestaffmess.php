@@ -27,7 +27,7 @@ $subject = trim($_POST['subject']);
 $query = sql_query("SELECT id FROM users WHERE class IN (".implode(",", $updateset).")");
 while($dat=mysql_fetch_assoc($query))
 {
-	sql_query("INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES ($sender_id, $dat[id], $dt, " . sqlesc($subject) .", " . sqlesc($msg) .")") or sqlerr(__FILE__,__LINE__);
+	sql_query("INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES ($sender_id, {$dat['id']}, $dt, " . sqlesc($subject) .", " . sqlesc($msg) .")") or sqlerr(__FILE__,__LINE__);
 }
 
 header("Refresh: 0; url=staffmess.php?sent=1");

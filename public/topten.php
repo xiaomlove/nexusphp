@@ -122,7 +122,7 @@ while ($a = mysql_fetch_assoc($res))
 	elseif ($what == $lang_topten['col_ratio'])
 	$value = number_format($a["r"],2);
 	print("<tr><td class=\"rowfollow\" align=\"center\">$num</td><td class=\"rowfollow\" align=\"left\"><table border=\"0\" class=\"main\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">".
-	"<img align=\"center\" src=\"pic/flag/$a[flagpic]\" alt=\"\" /></td><td class=\"embedded\" style='padding-left: 5px'><b>$a[name]</b></td>".
+	"<img align=\"center\" src=\"pic/flag/{$a['flagpic']}\" alt=\"\" /></td><td class=\"embedded\" style='padding-left: 5px'><b>{$a['name']}</b></td>".
 	"</tr></table></td><td class=\"rowfollow\" align=\"right\">$value</td></tr>\n");
 }
 end_table();

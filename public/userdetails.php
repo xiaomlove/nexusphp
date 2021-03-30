@@ -186,7 +186,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 	tr_small($lang_userdetails['row_join_date'], $joindate, 1);
 	tr_small($lang_userdetails['row_last_seen'], $lastseen, 1);
 if ($where_tweak == "yes") {
-	tr_small($lang_userdetails['row_last_seen_location'], $user[page], 1);
+	tr_small($lang_userdetails['row_last_seen_location'], $user['page'], 1);
 }
 if (get_user_class() >= $userprofile_class OR $user["privacy"] == "low") {
 	tr_small($lang_userdetails['row_email'], "<a href=\"mailto:".$user['email']."\">".$user['email']."</a>", 1);
@@ -407,9 +407,9 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 			$warnedby = "<br />[".$lang_userdetails['text_by']."<u>" . get_username($arr['id']) . "</u></a>]";
 		}else{
 			$warnedby = "<br />[".$lang_userdetails['text_by_system']."]";
-			print("<tr><td class=\"rowfollow\">".$lang_userdetails['text_last_warning']."</td><td align=\"left\" class=\"rowfollow\"> $user[lastwarned] .(".$lang_userdetails['text_until'] ."$elapsedlw)   $warnedby</td></tr>\n");
+			print("<tr><td class=\"rowfollow\">".$lang_userdetails['text_last_warning']."</td><td align=\"left\" class=\"rowfollow\"> {$user['lastwarned']} .(".$lang_userdetails['text_until'] ."$elapsedlw)   $warnedby</td></tr>\n");
 		}
-		print("<tr><td class=\"rowfollow\">".$lang_userdetails['text_last_warning']."</td><td align=\"left\" class=\"rowfollow\"> $user[lastwarned] ($elapsedlw".$lang_userdetails['text_ago'].")   ".$warnedby."</td></tr>\n");
+		print("<tr><td class=\"rowfollow\">".$lang_userdetails['text_last_warning']."</td><td align=\"left\" class=\"rowfollow\"> {$user['lastwarned']} ($elapsedlw".$lang_userdetails['text_ago'].")   ".$warnedby."</td></tr>\n");
 	}
 
 	$leechwarn = $user["leechwarn"] == "yes";

@@ -40,7 +40,7 @@ if (!$action) {
 
 	while ($arr = mysql_fetch_assoc($res))
 	{
-    		if ($arr[answered])
+    		if ($arr['answered'])
     		{
        			$answered = "<nobr><font color=green>".$lang_staffbox['text_yes']."</font> - " . get_username($arr['answeredby']) . "</nobr>";
     		}
@@ -48,7 +48,7 @@ if (!$action) {
 			$answered = "<font color=red>".$lang_staffbox['text_no']."</font>";
 
     		$pmid = $arr["id"];
-		print("<tr><td width=100% class=rowfollow align=left><a href=staffbox.php?action=viewpm&pmid=$pmid>".htmlspecialchars($arr[subject])."</td><td class=rowfollow align=center>" . get_username($arr['sender']) . "</td><td class=rowfollow align=center><nobr>".gettime($arr[added], true, false)."</nobr></td><td class=rowfollow align=center>$answered</td><td class=rowfollow align=center><input type=\"checkbox\" name=\"setanswered[]\" value=\"" . $arr[id] . "\" /></td></tr>\n");
+		print("<tr><td width=100% class=rowfollow align=left><a href=staffbox.php?action=viewpm&pmid=$pmid>".htmlspecialchars($arr['subject'])."</td><td class=rowfollow align=center>" . get_username($arr['sender']) . "</td><td class=rowfollow align=center><nobr>".gettime($arr['added'], true, false)."</nobr></td><td class=rowfollow align=center>$answered</td><td class=rowfollow align=center><input type=\"checkbox\" name=\"setanswered[]\" value=\"" . $arr['id'] . "\" /></td></tr>\n");
 	}
 	print("<tr><td class=rowfollow align=right colspan=5><input type=\"submit\" name=\"setdealt\" value=\"".$lang_staffbox['submit_set_answered']."\" /><input type=\"submit\" name=\"delete\" value=\"".$lang_staffbox['submit_delete']."\" /></td></tr>");
 	print("</table>\n");
@@ -220,7 +220,7 @@ if ($action == "setanswered") {
 
 $id = intval($_GET["id"] ?? 0);
 
-sql_query ("UPDATE staffmessages SET answered=1, answeredby = $CURUSER[id] WHERE id = $id") or sqlerr();
+sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = $id") or sqlerr();
 $Cache->delete_value('staff_new_message_count');
 header("Refresh: 0; url=staffbox.php?action=viewpm&pmid=$id");
 }
@@ -234,14 +234,14 @@ if ($action == "takecontactanswered") {
 		permissiondenied();
 
 if ($_POST['setdealt']){
-	$res = sql_query ("SELECT id FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST[setanswered]) . ")");
+	$res = sql_query ("SELECT id FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST['setanswered']) . ")");
 	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("UPDATE staffmessages SET answered=1, answeredby = $CURUSER[id] WHERE id = $arr[id]") or sqlerr();
+		sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
 }
 elseif ($_POST['delete']){
-	$res = sql_query ("SELECT id FROM staffmessages WHERE id IN (" . implode(", ", $_POST[setanswered]) . ")");
+	$res = sql_query ("SELECT id FROM staffmessages WHERE id IN (" . implode(", ", $_POST['setanswered']) . ")");
 	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("DELETE FROM staffmessages WHERE id = $arr[id]") or sqlerr();
+		sql_query ("DELETE FROM staffmessages WHERE id = {$arr['id']}") or sqlerr();
 }
 $Cache->delete_value('staff_new_message_count');
 header("Refresh: 0; url=staffbox.php");

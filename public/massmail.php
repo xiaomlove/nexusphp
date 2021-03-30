@@ -55,7 +55,7 @@ stdhead("Mass E-mail Gateway");
 
 <?php
 if (get_user_class() == UC_MODERATOR && $CURUSER["class"] > UC_POWER_USER)
-printf("<input type=hidden name=class value=$CURUSER[class]\n");
+printf("<input type=hidden name=class value={$CURUSER['class']}\n");
 else
 {
     $prefix = '';

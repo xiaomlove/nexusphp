@@ -111,7 +111,7 @@ begin_main_frame();
 
 
 // Heading
-print("<div align=center><h1>$row[name]</h1>");
+print("<div align=center><h1>{$row['name']}</h1>");
 
 $dict = bdec_file($fn, (1024*1024));
 

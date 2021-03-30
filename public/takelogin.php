@@ -71,7 +71,7 @@ else
 }
 
 if (!empty($_POST["returnto"]))
-	header("Location: " . $pprefix . "$BASEURL/$_POST[returnto]");
+	header("Location: " . $pprefix . "$BASEURL/{$_POST['returnto']}");
 else
 	header("Location: " . $pprefix . "$BASEURL/index.php");
 ?>
