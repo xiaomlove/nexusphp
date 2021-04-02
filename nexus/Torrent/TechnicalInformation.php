@@ -149,7 +149,6 @@ class TechnicalInformation
         $videos = array_filter($videos);
         $audios = $this->getAudios();
         $subtitles = $this->getSubtitles();
-//        dd($this->mediaInfoArr, $videos, $audios, $subtitles);
         //video part
         $videoTable = '<table style="border: none"><tbody>';
         foreach (array_chunk($videos, 2, true) as $row) {

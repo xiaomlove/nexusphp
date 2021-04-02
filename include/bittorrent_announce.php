@@ -4,5 +4,4 @@ define('NEXUS_START', microtime(true));
 define('IN_TRACKER', true);
 $rootpath= dirname(__DIR__) . '/';
 require $rootpath . 'include/functions_announce.php';
-require $rootpath . 'include/globalfunctions.php';
 require $rootpath . 'include/core.php';

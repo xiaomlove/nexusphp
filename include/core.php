@@ -14,14 +14,15 @@ if (!file_exists($rootpath . '.env')) {
         redirect($installScriptRelativePath);
     }
 }
-ini_set('date.timezone', config('nexus.timezone'));
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 0);
-
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/config.php';
+
+ini_set('date.timezone', nexus_config('nexus.timezone'));
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 0);
+
 if (!in_array(CURRENT_SCRIPT, ['announce', 'scrape'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();

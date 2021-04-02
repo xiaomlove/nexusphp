@@ -8,7 +8,7 @@ class Install
 {
     protected $currentStep;
 
-    protected $minimumPhpVersion = '7.2.0';
+    protected $minimumPhpVersion = '7.3.0';
 
     protected $progressKeyPrefix = '__step';
 

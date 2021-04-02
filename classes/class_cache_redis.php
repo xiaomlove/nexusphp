@@ -29,7 +29,7 @@ class class_cache_redis {
 
     private function connect()
     {
-        $config = config('database.redis');
+        $config = nexus_config('nexus.redis');
         if (empty($config['host'])) {
             return false;
         }

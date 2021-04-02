@@ -61,7 +61,7 @@ class DB
         if ($this->isConnected()) {
             return null;
         }
-        $config = config('database.mysql');
+        $config = nexus_config('nexus.mysql');
         return $this->connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']);
     }
 

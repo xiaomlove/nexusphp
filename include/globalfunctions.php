@@ -135,15 +135,16 @@ function printLine($line, $exist = false)
 	}
 }
 
-function dd($vars)
+function nexus_dd($vars)
 {
-	echo '<pre>';
-	array_map(function ($var) {
-		var_dump($var);
-	}, func_get_args());
-	echo '</pre>';
-	exit(0);
+    echo '<pre>';
+    array_map(function ($var) {
+        var_dump($var);
+    }, func_get_args());
+    echo '</pre>';
+    exit(0);
 }
+
 
 function do_log($log, $level = 'info')
 {
@@ -177,7 +178,7 @@ function getLogFile()
     if (!is_null($logFile)) {
         return $logFile;
     }
-    $config = config('nexus');
+    $config = nexus_config('nexus');
     $logFile = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
     if (!empty($config['log_file'])) {
         $logFile = $config['log_file'];
@@ -208,25 +209,29 @@ function getLogFile()
 
 }
 
-function config($key, $default = null)
+function nexus_config($key, $default = null)
 {
-	static $configs;
-	if (is_null($configs)) {
-		//get all configuration from config file
-		$files = glob(ROOT_PATH . 'config/*.php');
-		foreach ($files as $file) {
-			$basename = basename($file);
-			if ($basename == 'allconfig.php') {
-				//exclude the NexusPHP default config file
-				continue;
-			}
-			$values = require $file;
-			$configPrefix = strstr($basename, '.php', true);
-			$configs[$configPrefix] = $values;
-		}
-	}
-	return arr_get($configs, $key, $default);
+    static $configs;
+    if (is_null($configs)) {
+        //get all configuration from config file
+//		$files = glob(ROOT_PATH . 'config/*.php');
+        $files = [
+            ROOT_PATH . 'config/nexus.php',
+        ];
+        foreach ($files as $file) {
+            $basename = basename($file);
+            if ($basename == 'allconfig.php') {
+                //exclude the NexusPHP default config file
+                continue;
+            }
+            $values = require $file;
+            $configPrefix = strstr($basename, '.php', true);
+            $configs[$configPrefix] = $values;
+        }
+    }
+    return arr_get($configs, $key, $default);
 }
+
 
 /**
  * get setting for given name and prefix
@@ -257,24 +262,23 @@ function get_setting($name = null)
     return arr_get($settings, $name);
 }
 
-function env($key = null, $default = null)
+function nexus_env($key = null, $default = null)
 {
-	static $env;
-	if (is_null($env)) {
-		$envFile = ROOT_PATH . '.env';
-		$env = readEnvFile($envFile);
-	}
-	if (is_null($key)) {
-	    return $env;
+    static $env;
+    if (is_null($env)) {
+        $envFile = defined('ROOT_PATH') ? ROOT_PATH . '.env' : base_path('.env');
+        $env = readEnvFile($envFile);
     }
-	return $env[$key] ?? $default;
-
+    if (is_null($key)) {
+        return $env;
+    }
+    return $env[$key] ?? $default;
 }
 
 function readEnvFile($envFile)
 {
     if (!file_exists($envFile)) {
-        throw new \RuntimeException("env file is not exists in the root path.");
+        throw new \RuntimeException("env file : $envFile is not exists in the root path.");
     }
     $env = [];
     $fp = fopen($envFile, 'r');
@@ -422,4 +426,69 @@ function getBaseUrl()
         $url .= $requestUri;
     }
     return trim($url, '/');
+}
+
+function api(...$args)
+{
+    if (!isset($args[2])) {
+        //参数少于3个时，默认为错误状态。
+        $ret = -1;
+        $msg = isset($args[0]) ? $args[0] : 'ERROR';
+        $data = isset($args[1]) ? $args[1] : [];
+    } else {
+        $ret = $args[0];
+        $msg = $args[1];
+        $data = $args[2];
+    }
+
+    if (defined('LARAVEL_START')) {
+        $start = LARAVEL_START;
+        if ($data instanceof \Illuminate\Http\Resources\Json\ResourceCollection || $data instanceof \Illuminate\Http\Resources\Json\JsonResource) {
+            $data = $data->response()->getData(true);
+            if (isset($data['data']) && count($data) == 1) {
+                //单纯的集合，无分页等其数据
+                $data = $data['data'];
+            }
+        }
+    } elseif (defined('NEXUS_START')) {
+        $start = NEXUS_START;
+    } else {
+        throw new \RuntimeException("no constant START is defined.");
+    }
+    return [
+        'ret' => (int)$ret,
+        'msg' => (string)$msg,
+        'data' => $data,
+        'timeuse' => (float)number_format(microtime(true) - $start, 3),
+    ];
+}
+
+function success(...$args)
+{
+    $ret = 0;
+    $msg = 'OK';
+    $data = [];
+    $argumentCount = func_num_args();
+    if ($argumentCount == 1) {
+        $data = $args[0];
+    } elseif ($argumentCount == 2) {
+        $msg = $args[0];
+        $data = $args[1];
+    }
+    return api($ret, $msg, $data);
+}
+
+function fail(...$args)
+{
+    $ret = -1;
+    $msg = 'ERROR';
+    $data = [];
+    $argumentCount = func_num_args();
+    if ($argumentCount == 1) {
+        $data = $args[0];
+    } elseif ($argumentCount == 2) {
+        $msg = $args[0];
+        $data = $args[1];
+    }
+    return api($ret, $msg, $data);
 }

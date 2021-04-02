@@ -408,7 +408,6 @@ JS;
         $displayName = get_searchbox_value($browsecatmode, 'custom_fields_display_name');
         $display = get_searchbox_value($browsecatmode, 'custom_fields_display');
         $customFields = $this->listTorrentCustomField($torrentId);
-//        dd($displayName, $display, $customFields);
         $mixedRowContent = nl2br($display);
         $rowByRowHtml = '';
         foreach ($customFields as $field) {
