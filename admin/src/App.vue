@@ -114,12 +114,15 @@ export default {
   methods: {
     handleSelect(key, keyPath) {
       console.log(key, keyPath);
+      console.log("select", this)
     },
     handleOpen(key, keyPath) {
       console.log(key, keyPath);
+      console.log("open", this)
     },
     handleClose(key, keyPath) {
       console.log(key, keyPath);
+      console.log("close", this)
     }
   }
 }
