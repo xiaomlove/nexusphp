@@ -88,7 +88,12 @@ const router = createRouter({
       path: '/account',
       name: 'account',
       component: () => import(/* webpackChunkName: "account" */ '../views/Account.vue')
-    }
+    },
+      {
+          path: '/agent-allow',
+          name: 'agent-allow',
+          component: () => import(/* webpackChunkName: "account" */ '../views/AgentAllow/index.vue')
+      }
   ]
 })
 

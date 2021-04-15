@@ -9,6 +9,7 @@ const baseUrl = {
   release: './'
 }
 
+
 // https://vitejs.dev/config/
 export default ({ mode }) =>  defineConfig({
   plugins: [
