@@ -22,6 +22,10 @@ axios.interceptors.response.use(res => {
     ElMessage.error('服务端异常！')
     return Promise.reject(res)
   }
+  if (res.data.data.ret && res.data.data.ret != 0) {
+      ElMessage.error(res.data.data.msg)
+      return Promise.reject(res)
+  }
   if (res.data.resultCode && res.data.resultCode != 200) {
     if (res.data.message) ElMessage.error(res.data.message)
     if (res.data.resultCode == 419) {
@@ -29,7 +33,6 @@ axios.interceptors.response.use(res => {
     }
     return Promise.reject(res.data)
   }
-
   return res.data.data
 })
 

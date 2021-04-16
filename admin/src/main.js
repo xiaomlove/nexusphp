@@ -2,6 +2,8 @@ import { createApp } from 'vue'
 import { ElButton, ElContainer, ElAside, ElHeader, ElMain, ElFooter, ElMenu, ElSubmenu, ElMenuItemGroup, ElMenuItem, ElForm, ElFormItem, ElInput, ElPopover, ElTag, ElCard, ElTable, ElTableColumn, ElPagination, ElDialog, ElPopconfirm, ElUpload, ElLoading, ElSelect, ElOption, ElRadioGroup, ElRadio, ElCascader, ElCheckbox, ElInputNumber } from 'element-plus'
 import App from './App.vue'
 import router from './router/index'
+import 'dayjs/locale/zh-cn'
+import locale from 'element-plus/lib/locale/lang/zh-cn'
 
 // import 'element-plus/lib/theme-chalk/index.css'
 
@@ -60,8 +62,8 @@ app.use(ElButton)
     .use(ElSubmenu)
     .use(ElMenuItemGroup)
     .use(ElMenuItem)
-    .use(ElForm)
-    .use(ElFormItem)
+    .use(ElForm, { locale })
+    .use(ElFormItem, { locale })
     .use(ElInput)
     .use(ElPopover)
     .use(ElTag)

@@ -31,8 +31,8 @@
             >
             </el-table-column>
             <el-table-column
-                label="起始名称"
-                prop="start_name"
+                label="系列"
+                prop="family"
             >
             </el-table-column>
             <el-table-column
@@ -43,8 +43,13 @@
             <el-table-column
                 label="Agent 模式串"
                 prop="agent_pattern"
-            >
-            </el-table-column>
+            ></el-table-column>
+            <el-table-column
+                label="Agent 匹配次数"
+                prop="agent_match_num"
+                width="80px"
+            ></el-table-column>
+
             <el-table-column
                 prop="peer_id_start"
                 label="Peer ID 起始"
@@ -56,14 +61,19 @@
             >
             </el-table-column>
             <el-table-column
+                label="Peer ID 匹配次数"
+                prop="peer_id_match_num"
+                width="80px"
+            ></el-table-column>
+            <el-table-column
                 label="操作"
                 width="100"
             >
                 <template #default="scope">
-                    <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.carouselId)">修改</a>
+                    <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">修改</a>
                     <el-popconfirm
                         title="确定删除吗？"
-                        @confirm="handleDeleteOne(scope.row.carouselId)"
+                        @confirm="handleDeleteOne(scope.row.id)"
                     >
                         <template #reference>
                             <a style="cursor: pointer">删除</a>
@@ -82,13 +92,12 @@
             @current-change="changePage"
         />
     </el-card>
-    <DialogAddSwiper ref='addGood' :reload="getCarousels" :type="type" />
 </template>
 
 <script>
 import { onMounted, reactive, ref, toRefs } from 'vue'
 import { ElMessage } from 'element-plus'
-import DialogAddSwiper from '@/components/DialogAddSwiper.vue'
+import { useRouter } from 'vue-router'
 import AgentAllowForm from './form.vue'
 import axios from '@/utils/axios'
 import api from '@/utils/api'
@@ -96,9 +105,10 @@ import api from '@/utils/api'
 export default {
     name: 'Swiper',
     components: {
-        DialogAddSwiper
+
     },
     setup() {
+        const router = useRouter()
         const multipleTable = ref(null)
         const addGood = ref(null)
         const state = reactive({
@@ -143,12 +153,18 @@ export default {
         // 添加轮播项
         const handleAdd = () => {
             state.type = 'add'
-            addGood.value.open()
+            // addGood.value.open()
+            router.push({
+                name: "agent-allow-form"
+            })
         }
         // 修改轮播图
         const handleEdit = (id) => {
-            state.type = 'edit'
-            addGood.value.open(id)
+            console.log("id", id)
+            router.push({
+                name: "agent-allow-form",
+                query: {id: id}
+            })
         }
         // 选择项
         const handleSelectionChange = (val) => {
@@ -171,13 +187,9 @@ export default {
         }
         // 单个删除
         const handleDeleteOne = (id) => {
-            axios.delete('/carousels', {
-                data: {
-                    ids: [id]
-                }
-            }).then(() => {
+            api.deleteAllowAgent(id).then(() => {
                 ElMessage.success('删除成功')
-                getCarousels()
+                listAgentAllow()
             })
         }
         const changePage = (val) => {
