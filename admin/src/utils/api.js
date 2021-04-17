@@ -19,6 +19,13 @@ const api = {
     deleteAllowAgent: (id) => {
         return axios.delete(baseUrl + 'agent-allow/' + id);
     },
+
+    listUser: (params = {}) => {
+        return axios.get(baseUrl + 'user', {params: params});
+    },
+    storeUser: (params = {}) => {
+        return axios.post(baseUrl + 'user', params);
+    },
 }
 
 export default api

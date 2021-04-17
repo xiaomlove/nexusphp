@@ -43,5 +43,8 @@ export const pathMap = {
   order: '订单管理',
   order_detail: '订单详情',
   account: '修改账户',
-    "agent-allow": "允许客户端"
+    "agent-allow": "允许客户端",
+    "agent-allow-form": "允许客户端表单",
+    "user": "用户",
+    "user-form": "用户表单"
 }

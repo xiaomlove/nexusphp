@@ -3,14 +3,14 @@
         <template #header>
             <div class="header">
                 <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">增加</el-button>
-                <el-popconfirm
-                    title="确定删除吗？"
-                    @confirm="handleDelete"
-                >
-                    <template #reference>
-                        <el-button type="danger" size="small" icon="el-icon-delete">批量删除</el-button>
-                    </template>
-                </el-popconfirm>
+<!--                <el-popconfirm-->
+<!--                    title="确定删除吗？"-->
+<!--                    @confirm="handleDelete"-->
+<!--                >-->
+<!--                    <template #reference>-->
+<!--                        <el-button type="danger" size="small" icon="el-icon-delete">批量删除</el-button>-->
+<!--                    </template>-->
+<!--                </el-popconfirm>-->
             </div>
         </template>
         <el-table

@@ -92,13 +92,25 @@ const router = createRouter({
       {
           path: '/agent-allow',
           name: 'agent-allow',
-          component: () => import(/* webpackChunkName: "account" */ '../views/AgentAllow/index.vue'),
+          component: () => import(/* webpackChunkName: "account" */ '../views/agent-allow/index.vue'),
       },
       {
           path: '/agent-allow-form',
           name: 'agent-allow-form',
-          component: () => import(/* webpackChunkName: "account" */ '../views/AgentAllow/form.vue'),
+          component: () => import(/* webpackChunkName: "account" */ '../views/agent-allow/form.vue'),
+      },
+      {
+          path: '/user',
+          name: 'user',
+          component: () => import(/* webpackChunkName: "account" */ '../views/user/index.vue'),
+      },
+      {
+          path: '/user-form',
+          name: 'user-form',
+          component: () => import(/* webpackChunkName: "account" */ '../views/user/form.vue'),
       }
+
+
   ]
 })
 

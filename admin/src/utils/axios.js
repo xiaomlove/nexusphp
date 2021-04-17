@@ -22,8 +22,8 @@ axios.interceptors.response.use(res => {
     ElMessage.error('服务端异常！')
     return Promise.reject(res)
   }
-  if (res.data.data.ret && res.data.data.ret != 0) {
-      ElMessage.error(res.data.data.msg)
+  if (res.data.ret && res.data.ret != 0) {
+      ElMessage.error(res.data.msg)
       return Promise.reject(res)
   }
   if (res.data.resultCode && res.data.resultCode != 200) {
@@ -34,6 +34,10 @@ axios.interceptors.response.use(res => {
     return Promise.reject(res.data)
   }
   return res.data.data
+}, (error) => {
+    console.log(error.response)
+    ElMessage.error(error.response.data.msg || '500 Server Error')
+    return Promise.reject(error)
 })
 
 export default axios
