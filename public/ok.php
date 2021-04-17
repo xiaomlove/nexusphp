@@ -17,7 +17,7 @@ elseif ($type == "inviter")
 	stdmsg($lang_ok['std_account_activated'],
 	$lang_ok['account_activated_note_two']);
 }
-elseif ($type == "signup" && mkglobal("email")) 
+elseif ($type == "signup" && $email = filter_input(INPUT_GET, 'email', FILTER_VALIDATE_EMAIL)) 
 {
 	stdhead($lang_ok['head_user_signup']);
         stdmsg($lang_ok['std_signup_successful'],
