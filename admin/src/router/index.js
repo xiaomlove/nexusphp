@@ -108,8 +108,22 @@ const router = createRouter({
           path: '/user-form',
           name: 'user-form',
           component: () => import(/* webpackChunkName: "account" */ '../views/user/form.vue'),
-      }
-
+      },
+      {
+          path: '/user-detail',
+          name: 'user-detail',
+          component: () => import(/* webpackChunkName: "account" */ '../views/user/detail.vue'),
+      },
+      {
+          path: '/exam',
+          name: 'exam',
+          component: () => import(/* webpackChunkName: "account" */ '../views/exam/index.vue'),
+      },
+      {
+          path: '/exam-form',
+          name: 'exam-form',
+          component: () => import(/* webpackChunkName: "account" */ '../views/exam/form.vue'),
+      },
 
   ]
 })

@@ -46,5 +46,7 @@ export const pathMap = {
     "agent-allow": "允许客户端",
     "agent-allow-form": "允许客户端表单",
     "user": "用户",
-    "user-form": "用户表单"
+    "user-form": "用户表单",
+    "exam": "考核",
+    "exam-form": "考核表单",
 }

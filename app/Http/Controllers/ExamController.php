@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ExamResource;
 use App\Http\Resources\UserResource;
+use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 
-class UserController extends Controller
+class ExamController extends Controller
 {
     private $repository;
 
-    public function __construct(UserRepository $repository)
+    public function __construct(ExamRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -24,7 +26,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $result = $this->repository->getList($request->all());
-        $resource = UserResource::collection($result);
+        $resource = ExamResource::collection($result);
         return $this->success($resource);
     }
 
@@ -37,14 +39,15 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'username' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:6|max:40',
-            'password_confirmation' => 'required|string|same:password'
+            'name' => 'required|string',
+            'begin' => 'required|date_format:Y-m-d H:i:s',
+            'end' => 'required|date_format:Y-m-d H:i:s',
+            'requires' => 'required|array|min:1',
+            'filters' => 'required|array|min:1',
         ];
         $request->validate($rules);
         $result = $this->repository->store($request->all());
-        $resource = new UserResource($result);
+        $resource = new ExamResource($result);
         return $this->success($resource);
     }
 
@@ -64,11 +67,21 @@ class UserController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function update(Request $request, $id)
     {
-        //
+        $rules = [
+            'name' => 'required|string',
+            'begin' => 'required|date_format:Y-m-d H:i:s',
+            'end' => 'required|date_format:Y-m-d H:i:s',
+            'requires' => 'required|array|min:1',
+            'filters' => 'required|array|min:1',
+        ];
+        $request->validate($rules);
+        $result = $this->repository->update($request->all(), $id);
+        $resource = new ExamResource($result);
+        return $this->success($resource);
     }
 
     /**
@@ -82,22 +95,4 @@ class UserController extends Controller
         //
     }
 
-    public function resetPassword(Request $request)
-    {
-        $rules = [
-            'username' => 'required|string|exists:users',
-            'password' => 'required|string|min:6|max:40',
-            'password_confirmation' => 'required|same:password',
-        ];
-        $request->validate($rules);
-        $result = $this->repository->resetPassword($request->repositoryname, $request->password, $request->password_confirmation);
-        $resource = new UserResource($result);
-        return $this->success($resource);
-    }
-
-    public function classes()
-    {
-        $result = $this->repository->listClass();
-        return $this->success($result);
-    }
 }

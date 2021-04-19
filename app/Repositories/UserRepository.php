@@ -53,4 +53,13 @@ class UserRepository extends BaseRepository
         $user->update($update);
         return $user;
     }
+
+    public function listClass()
+    {
+        $out = [];
+        foreach(User::$classes as $key => $value) {
+            $out[(string)$key] = $value['text'];
+        }
+        return $out;
+    }
 }

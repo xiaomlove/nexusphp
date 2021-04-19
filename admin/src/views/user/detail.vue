@@ -1,111 +1,32 @@
 <template>
-    <el-card class="swiper-container">
-        <template #header>
-            <div class="header">
-                <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">增加</el-button>
-                <!--                <el-popconfirm-->
-                <!--                    title="确定删除吗？"-->
-                <!--                    @confirm="handleDelete"-->
-                <!--                >-->
-                <!--                    <template #reference>-->
-                <!--                        <el-button type="danger" size="small" icon="el-icon-delete">批量删除</el-button>-->
-                <!--                    </template>-->
-                <!--                </el-popconfirm>-->
-            </div>
-        </template>
-        <el-table
-            v-loading="loading"
-            ref="multipleTable"
-            :data="tableData"
-            tooltip-effect="dark"
-            style="width: 100%"
-            @selection-change="handleSelectionChange"
-            @sort-change="handleSortChange"
-        >
-            <el-table-column
-                type="selection"
-            >
-            </el-table-column>
-            <el-table-column
-                label="ID"
-                prop="id"
-                width="60"
-                sortable="custom"
-            >
-            </el-table-column>
-            <el-table-column
-                label="用户名"
-                prop="username"
-            >
-            </el-table-column>
-            <el-table-column
-                label="邮箱"
-                prop="email"
-            >
-            </el-table-column>
-            <el-table-column
-                label="等级"
-                prop="class"
-                sortable="custom"
-            ></el-table-column>
-            <el-table-column
-                label="上传量"
-                prop="uploaded"
-                sortable="custom"
-            ></el-table-column>
-
-            <el-table-column
-                prop="downloaded"
-                label="下载量"
-                sortable="custom"
-            >
-            </el-table-column>
-            <el-table-column
-                prop="seedtime"
-                label="做种时间"
-                sortable="custom"
-            >
-            </el-table-column>
-            <el-table-column
-                label="下载时间"
-                prop="leechtime"
-                sortable="custom"
-            ></el-table-column>
-            <el-table-column
-                label="状态"
-                prop="status"
-            ></el-table-column>
-            <el-table-column
-                label="添加时间"
-                prop="added"
-            ></el-table-column>
-            <el-table-column
-                label="操作"
-                width="100"
-            >
-                <template #default="scope">
-                    <a style="cursor: pointer; margin-right: 10px" @click="handleDetail(scope.row.id)">详情</a>
-<!--                    <el-popconfirm-->
-<!--                        title="确定删除吗？"-->
-<!--                        @confirm="handleDeleteOne(scope.row.id)"-->
-<!--                    >-->
-<!--                        <template #reference>-->
-<!--                            <a style="cursor: pointer">删除</a>-->
-<!--                        </template>-->
-<!--                    </el-popconfirm>-->
+    <el-row :gutter="10" type="flex" start="start">
+        <el-col :span="12">
+            <el-card class="box-card">
+                <template #header>
+                    <div class="card-header">
+                        <span>卡片名称</span>
+                        <el-button class="button" type="text">操作按钮</el-button>
+                    </div>
                 </template>
-            </el-table-column>
-        </el-table>
-        <!--总数超过一页，再展示分页器-->
-        <el-pagination
-            background
-            layout="prev, pager, next"
-            :total="total"
-            :page-size="pageSize"
-            :current-page="currentPage"
-            @current-change="changePage"
-        />
-    </el-card>
+                <div v-for="o in 4" :key="o" class="text item">
+                    {{'列表内容 ' + o }}
+                </div>
+            </el-card>
+        </el-col>
+        <el-col :span="12">
+            <el-card class="box-card">
+                <template #header>
+                    <div class="card-header">
+                        <span>卡片名称</span>
+                        <el-button class="button" type="text">操作按钮</el-button>
+                    </div>
+                </template>
+                <div v-for="o in 4" :key="o" class="text item">
+                    {{'列表内容 ' + o }}
+                </div>
+            </el-card>
+        </el-col>
+    </el-row>
 </template>
 
 <script>
@@ -193,14 +114,6 @@ export default {
                 query: {id: id}
             })
         }
-        // 修改轮播图
-        const handleDetail = (id) => {
-            console.log("id", id)
-            router.push({
-                name: "user-detail",
-                query: {id: id}
-            })
-        }
         // 选择项
         const handleSelectionChange = (val) => {
             state.multipleSelection = val
@@ -239,7 +152,6 @@ export default {
             addGood,
             handleAdd,
             handleEdit,
-            handleDetail,
             handleDelete,
             handleDeleteOne,
             getCarousels,

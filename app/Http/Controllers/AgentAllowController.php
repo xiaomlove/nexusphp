@@ -17,7 +17,7 @@ class AgentAllowController extends Controller
     {
         $result = AgentAllow::query()->orderBy('id', 'desc')->paginate();
         $resource = AgentAllowResource::collection($result);
-        return success('agent allow list', $resource);
+        return $this->success($resource);
     }
 
     /**
@@ -41,7 +41,7 @@ class AgentAllowController extends Controller
     {
         $result = AgentAllow::query()->findOrFail($id);
         $resource = new AgentAllowResource($result);
-        return success('agent allow detail', $resource);
+        return $this->success($resource);
     }
 
     /**
@@ -56,7 +56,7 @@ class AgentAllowController extends Controller
         $result = AgentAllow::query()->findOrFail($id);
         $result->update($request->all());
         $resource = new AgentAllowResource($result);
-        return success('agent allow update', $resource);
+        return $this->success($resource);
     }
 
     /**
@@ -69,6 +69,6 @@ class AgentAllowController extends Controller
     {
         $result = AgentAllow::query()->findOrFail($id);
         $deleted = $result->delete();
-        return success('agent allow delete', [$deleted]);
+        return $this->success([$deleted]);
     }
 }

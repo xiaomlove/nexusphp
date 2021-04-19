@@ -34,65 +34,51 @@
             >
             </el-table-column>
             <el-table-column
-                label="用户名"
-                prop="username"
+                label="名称"
+                prop="name"
             >
             </el-table-column>
             <el-table-column
-                label="邮箱"
-                prop="email"
+                label="开始时间"
+                prop="begin"
+                sortable="custom"
             >
             </el-table-column>
             <el-table-column
-                label="等级"
-                prop="class"
+                label="结束时间"
+                prop="end"
                 sortable="custom"
             ></el-table-column>
             <el-table-column
-                label="上传量"
-                prop="uploaded"
+                prop="filters"
+                label="适用用户"
+            >
+            </el-table-column>
+            <el-table-column
+                prop="requires"
+                label="考核标准"
+            >
+            </el-table-column>
+            <el-table-column
+                label="状态"
+                prop="status_text"
                 sortable="custom"
             ></el-table-column>
 
-            <el-table-column
-                prop="downloaded"
-                label="下载量"
-                sortable="custom"
-            >
-            </el-table-column>
-            <el-table-column
-                prop="seedtime"
-                label="做种时间"
-                sortable="custom"
-            >
-            </el-table-column>
-            <el-table-column
-                label="下载时间"
-                prop="leechtime"
-                sortable="custom"
-            ></el-table-column>
-            <el-table-column
-                label="状态"
-                prop="status"
-            ></el-table-column>
-            <el-table-column
-                label="添加时间"
-                prop="added"
-            ></el-table-column>
             <el-table-column
                 label="操作"
                 width="100"
             >
                 <template #default="scope">
                     <a style="cursor: pointer; margin-right: 10px" @click="handleDetail(scope.row.id)">详情</a>
-<!--                    <el-popconfirm-->
-<!--                        title="确定删除吗？"-->
-<!--                        @confirm="handleDeleteOne(scope.row.id)"-->
-<!--                    >-->
-<!--                        <template #reference>-->
-<!--                            <a style="cursor: pointer">删除</a>-->
-<!--                        </template>-->
-<!--                    </el-popconfirm>-->
+                    <!--                    <el-popconfirm-->
+                    <!--                        title="确定删除吗？"-->
+                    <!--                        @confirm="handleDeleteOne(scope.row.id)"-->
+                    <!--                    >-->
+                    <!--                        <template #reference>-->
+                    <!--                            <a style="cursor: pointer">删除</a>-->
+                    <!--                        </template>-->
+                    <!--                    </el-popconfirm>-->
                 </template>
             </el-table-column>
         </el-table>
@@ -138,7 +124,7 @@ export default {
         })
         onMounted(() => {
             // getCarousels()
-            listUser()
+            getList()
         })
         // 获取轮播图列表
         const getCarousels = () => {
@@ -156,14 +142,14 @@ export default {
             // })
         }
 
-        const listUser = () => {
+        const getList = () => {
             state.loading = true
             let params = {
                 page: state.currentPage,
                 sort_field: state.sortField,
                 sort_type: state.sortType
             }
-            api.listUser(params).then(res => {
+            api.listExam(params).then(res => {
                 state.tableData = res.data
                 state.total = res.meta.total
                 state.currentPage = res.meta.current_page
@@ -175,14 +161,14 @@ export default {
             console.log(sort)
             state.sortField = sort.prop
             state.sortType = sort.order
-            listUser()
+            getList()
         }
         // 添加轮播项
         const handleAdd = () => {
             state.type = 'add'
             // addGood.value.open()
             router.push({
-                name: "user-form"
+                name: "exam-form"
             })
         }
         // 修改轮播图
@@ -224,12 +210,12 @@ export default {
         const handleDeleteOne = (id) => {
             api.deleteAllowAgent(id).then(() => {
                 ElMessage.success('删除成功')
-                listUser()
+                getList()
             })
         }
         const changePage = (val) => {
             state.currentPage = val
-            listUser()
+            getList()
         }
         return {
             ...toRefs(state),

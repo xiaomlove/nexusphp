@@ -26,6 +26,25 @@ const api = {
     storeUser: (params = {}) => {
         return axios.post(baseUrl + 'user', params);
     },
+
+    listExam: (params = {}) => {
+        return axios.get(baseUrl + 'exam', {params: params});
+    },
+    storeExam: (params = {}) => {
+        return axios.post(baseUrl + 'exam', params);
+    },
+    updateExam: (id, params = {}) => {
+        return axios.put(baseUrl + 'exam/' + id, params);
+    },
+    getExam: (id) => {
+        return axios.get(baseUrl + 'exam/' + id);
+    },
+    deleteExam: (id) => {
+        return axios.delete(baseUrl + 'exam/' + id);
+    },
+    listClass: (params = {}) => {
+        return axios.get(baseUrl + 'class', {params: params});
+    },
 }
 
 export default api
