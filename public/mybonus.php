@@ -333,7 +333,7 @@ if ($action == "exchange") {
 			$up = $upload + $bonusarray['menge'];
 			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for upload bonus.\n " .$bonuscomment;
 			sql_query("UPDATE users SET uploaded = ".sqlesc($up).", seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-			redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=upload");
+			nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=upload");
 			}
 		}
 		//=== trade for one month VIP status ***note "SET class = '10'" change "10" to whatever your VIP class number is
@@ -346,7 +346,7 @@ if ($action == "exchange") {
 			$vip_until = date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + 28*86400));
 			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for 1 month VIP Status.\n " .htmlspecialchars($bonuscomment);
 			sql_query("UPDATE users SET class = '".UC_VIP."', vip_added = 'yes', vip_until = ".sqlesc($vip_until).", seedbonus = seedbonus - $points WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-			redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=vip");
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=vip");
 		}
 		//=== trade for invites
 		elseif($art == "invite") {
@@ -356,7 +356,7 @@ if ($action == "exchange") {
 			$inv = $invites+$bonusarray['menge'];
 			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
 			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-			redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=invite");
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=invite");
 		}
 		//=== trade for special title
 		/**** the $words array are words that you DO NOT want the user to have... use to filter "bad words" & user class...
@@ -370,7 +370,7 @@ if ($action == "exchange") {
 			$title = str_replace($words, $lang_mybonus['text_wasted_karma'], $title);
 			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for custom title. Old title is ".htmlspecialchars(trim($CURUSER["title"]))." and new title is $title\n " .htmlspecialchars($bonuscomment);
 			sql_query("UPDATE users SET title = $title, seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-			redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=title");
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=title");
 		}
 		elseif($art == "noad" && $enablead_advertisement == 'yes' && $enablebonusnoad_advertisement == 'yes') {
 			if (($enablenoad_advertisement == 'yes' && get_user_class() >= $noad_advertisement) || strtotime($CURUSER['noaduntil']) >= TIMENOW || get_user_class() < $bonusnoad_advertisement)
@@ -379,7 +379,7 @@ if ($action == "exchange") {
 				$noaduntil = date("Y-m-d H:i:s",(TIMENOW + $bonusarray['menge']));
 				$bonuscomment = date("Y-m-d") . " - " .$points. " Points for ".$bonusnoadtime_advertisement." days without ads.\n " .htmlspecialchars($bonuscomment);
 				sql_query("UPDATE users SET noad='yes', noaduntil='".$noaduntil."', seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id=".sqlesc($userid));
-				redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=noad");
+                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=noad");
 			}
 		}
 		elseif($art == 'gift_2') // charity giving
@@ -404,7 +404,7 @@ if ($action == "exchange") {
 					sql_query("UPDATE users SET seedbonus = seedbonus - $points, charity = charity + $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
 					$charityPerUser = $points/$charityReceiverCount;
 					sql_query("UPDATE users SET seedbonus = seedbonus + $charityPerUser WHERE enabled='yes' AND 10737418240 < downloaded AND $ratiocharity > uploaded/downloaded") or sqlerr(__FILE__, __LINE__);
-					redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=charity");
+                    nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=charity");
 				}
 				else
 				{
@@ -466,7 +466,7 @@ if ($action == "exchange") {
 				$msg = sqlesc($msg);
 				sql_query("INSERT INTO messages (sender, subject, receiver, msg, added) VALUES(0, $subject, $useridgift, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 				$usernamegift = unesc($_POST["username"]);
-				redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=transfer");
+                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=transfer");
 			}
 			else{
 				print("<table width=\"940\"><tr><td class=\"colhead\" align=\"left\" colspan=\"2\"><h1>".$lang_mybonus['text_oups']."</h1></td></tr>");

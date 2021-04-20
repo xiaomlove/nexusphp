@@ -261,7 +261,7 @@ class Install
 
     public function gotoStep($step)
     {
-        redirect(getBaseUrl() . "?step=$step");
+        nexus_redirect(getBaseUrl() . "?step=$step");
     }
 
     public function maxStep()

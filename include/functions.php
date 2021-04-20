@@ -1251,7 +1251,7 @@ function allowedemails()
 	return $list['value'];
 }
 
-function redirect($url)
+function nexus_redirect($url)
 {
     if (substr($url, 0, 4) != 'http') {
         $url = getSchemeAndHttpHost() . '/' . trim($url, '/');

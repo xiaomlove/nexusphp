@@ -428,6 +428,12 @@ function getBaseUrl()
     return trim($url, '/');
 }
 
+
+function nexus_json_encode($data)
+{
+    return json_encode($data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+}
+
 function api(...$args)
 {
     if (!isset($args[2])) {
@@ -459,7 +465,7 @@ function api(...$args)
         'ret' => (int)$ret,
         'msg' => (string)$msg,
         'data' => $data,
-        'timeuse' => (float)number_format(microtime(true) - $start, 3),
+        'time' => (float)number_format(microtime(true) - $start, 3),
     ];
 }
 

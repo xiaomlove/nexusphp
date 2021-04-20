@@ -11,7 +11,7 @@ if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
     if (file_exists($installScriptFile)) {
-        redirect($installScriptRelativePath);
+        nexus_redirect($installScriptRelativePath);
     }
 }
 require $rootpath . 'vendor/autoload.php';

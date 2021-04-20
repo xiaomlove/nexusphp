@@ -3,34 +3,37 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
-if (get_user_class() < UC_ADMINISTRATOR) {
+if (get_user_class() < UC_SYSOP) {
     permissiondenied();
 }
-$field = new \Nexus\Field\Field();
+
+$type = $_GET['type'] ?? 'allow';
+
+$client = new \Nexus\Client\Client($type);
 
 
 $action = $_GET['action'] ?? 'view';
 if ($action == 'view') {
-    stdhead($lang_fields['field_management']." - ".$lang_fields['text_field']);
+    stdhead($lang_clients['client_management']." - ".$lang_clients['text_field']);
     begin_main_frame();
-    $r =  $field->buildFieldTable();
+    $r =  $client->buildClientTable();
     echo $r;
     stdfoot();
 } elseif ($action == 'add') {
-    stdhead($lang_fields['field_management']." - ".$lang_fields['text_add']);
+    stdhead($lang_clients['field_management']." - ".$lang_clients['text_add']);
     begin_main_frame();
-    echo $field->buildFieldForm();
+    echo $client->buildFieldForm();
 } elseif ($action == 'submit') {
     try {
-        $result = $field->save($_REQUEST);
-        nexus_redirect('fields.php?action=view');
+        $result = $client->save($_REQUEST);
+        nexus_redirect('clients.php?action=view');
     } catch (\Exception $e) {
-        stderr($lang_fields['field_management'], $e->getMessage());
+        stderr($lang_clients['field_management'], $e->getMessage());
     }
 } elseif ($action == 'edit') {
     $id = intval($_GET['id'] ?? 0);
     if ($id == 0) {
-        stderr($lang_fields['field_management'], "Invalid id");
+        stderr($lang_clients['field_management'], "Invalid id");
     }
     $sql = "select * from torrents_custom_fields where id = $id";
     $res = sql_query($sql);
@@ -38,17 +41,17 @@ if ($action == 'view') {
     if (empty($row)) {
         stderr('', 'Invalid id');
     }
-    stdhead($lang_fields['field_management']." - ".$lang_fields['text_edit']);
+    stdhead($lang_clients['field_management']." - ".$lang_clients['text_edit']);
     begin_main_frame();
-    echo $field->buildFieldForm($row);
+    echo $client->buildFieldForm($row);
 } elseif ($action == 'del') {
     $id = intval($_GET['id'] ?? 0);
     if ($id == 0) {
-        stderr($lang_fields['field_management'], "Invalid id");
+        stderr($lang_clients['field_management'], "Invalid id");
     }
     $sql = "delete from torrents_custom_fields where id = $id";
     $res = sql_query($sql);
-    nexus_redirect('fields.php?action=view');
+    nexus_redirect('clients.php?action=view');
 }
 
 

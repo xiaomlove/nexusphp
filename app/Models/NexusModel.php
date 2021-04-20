@@ -11,5 +11,7 @@ class NexusModel extends Model
 
     public $timestamps = false;
 
-
+    protected $casts = [
+        'added' => 'datetime'
+    ];
 }

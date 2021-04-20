@@ -21,7 +21,7 @@ function safe_query ($query,$id,$where = '') {
 	$result = sql_query($query);
 	if (!$result)
 		return sqlerr(__FILE__,__LINE__);
-	redirect("maxlogin.php?update=".htmlspecialchars($where));
+    nexus_redirect("maxlogin.php?update=".htmlspecialchars($where));
 }
 function searchform () {
 ?>
