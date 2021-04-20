@@ -95,4 +95,10 @@ class ExamController extends Controller
         //
     }
 
+    public function indexes()
+    {
+        $result = $this->repository->listIndexes();
+        return $this->success($result);
+    }
+
 }
