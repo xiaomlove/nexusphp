@@ -10,7 +10,17 @@
                         <el-checkbox v-for="(value, key) in classes" :label="key" :key="key">{{value}}</el-checkbox>
                     </el-checkbox-group>
                 </el-form-item>
-
+                <el-form-item label="测试" prop="test">
+                    <el-checkbox label="复选框 A" :checked="true"></el-checkbox>
+                    <el-checkbox label="复选框 B"></el-checkbox>
+                    <el-checkbox label="复选框 C"></el-checkbox>
+                </el-form-item>
+                <el-form-item label="上架状态" prop="goodsSellStatus">
+                    <el-radio-group v-model="goodForm.goodsSellStatus">
+                        <el-radio label="0">上架</el-radio>
+                        <el-radio label="1">下架</el-radio>
+                    </el-radio-group>
+                </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="submitAdd()">{{ id ? '立即修改' : '立即创建' }}</el-button>
                 </el-form-item>
@@ -25,7 +35,6 @@ import api from '@/utils/api'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { localGet, hasEmoji } from '@/utils'
-
 export default {
     setup() {
         const { proxy } = getCurrentInstance()
@@ -39,12 +48,15 @@ export default {
             id: id,
             defaultCate: '',
             classes: [],
+            checkList: ['复选框 A'],
+            goodsSellStatus: '',
             goodForm: {
                 name: '',
                 description: '',
                 begin: '',
                 end: '',
                 classes: [],
+                test: '',
                 filters: {
                     classes: [],
                     register_time_begin: '',
@@ -121,7 +133,7 @@ export default {
             submitAdd,
             handleBeforeUpload,
             handleUrlSuccess,
-            handleChangeCate
+            handleChangeCate,
         }
     }
 }

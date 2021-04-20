@@ -39,7 +39,13 @@ class ExamRepository extends BaseRepository
         return $out;
     }
 
-    public function listMatchExam($uid)
+    /**
+     * list user match exams
+     *
+     * @param $uid
+     * @return array
+     */
+    public function listMatchExam($uid): array
     {
         $now = Carbon::now();
         $user = User::query()->findOrFail($uid, ['id', 'username', 'added', 'class']);
