@@ -16,6 +16,7 @@ class AgentAllowResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'family' => $this->family,
             'start_name' => $this->start_name,
             'peer_id_pattern' => $this->peer_id_pattern,
             'peer_id_match_num' => $this->peer_id_match_num,
@@ -27,6 +28,7 @@ class AgentAllowResource extends JsonResource
             'agent_start' => $this->agent_start,
             'exception' => $this->exception,
             'comment' => $this->comment,
+            'allowhttps' => $this->allowhttps,
             'hits' => $this->hits,
         ];
     }

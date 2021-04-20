@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\AgentAllowRequest;
 use App\Http\Resources\AgentAllowResource;
 use App\Models\AgentAllow;
 use Illuminate\Http\Request;
@@ -16,33 +15,33 @@ class AgentAllowController extends Controller
      */
     public function index()
     {
-        $result = AgentAllow::query()->paginate();
+        $result = AgentAllow::query()->orderBy('id', 'desc')->paginate();
         $resource = AgentAllowResource::collection($result);
-        return success('agent allow list', $resource);
+        return $this->success($resource);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return \Illuminate\Http\Response
      */
-    public function store(AgentAllowRequest $request)
+    public function store(Request $request)
     {
-        $result = AgentAllow::query()->create($request->all());
-        $resource = new AgentAllowResource($result);
-        return success('agent allow store', $resource);
+        //
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function show($id)
     {
-        //
+        $result = AgentAllow::query()->findOrFail($id);
+        $resource = new AgentAllowResource($result);
+        return $this->success($resource);
     }
 
     /**
@@ -57,7 +56,7 @@ class AgentAllowController extends Controller
         $result = AgentAllow::query()->findOrFail($id);
         $result->update($request->all());
         $resource = new AgentAllowResource($result);
-        return success('agent allow update', $resource);
+        return $this->success($resource);
     }
 
     /**
@@ -69,7 +68,7 @@ class AgentAllowController extends Controller
     public function destroy($id)
     {
         $result = AgentAllow::query()->findOrFail($id);
-        $success = $result->delete();
-        return success('agent allow delete', $success);
+        $deleted = $result->delete();
+        return $this->success([$deleted]);
     }
 }

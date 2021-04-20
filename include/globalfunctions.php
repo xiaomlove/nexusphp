@@ -446,7 +446,6 @@ function api(...$args)
         $msg = $args[1];
         $data = $args[2];
     }
-
     if (defined('LARAVEL_START')) {
         $start = LARAVEL_START;
         if ($data instanceof \Illuminate\Http\Resources\Json\ResourceCollection || $data instanceof \Illuminate\Http\Resources\Json\JsonResource) {

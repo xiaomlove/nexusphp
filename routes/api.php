@@ -17,4 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::group([], function () {
     Route::resource('agent-allow', \App\Http\Controllers\AgentAllowController::class);
     Route::resource('user', \App\Http\Controllers\UserController::class);
+    Route::resource('exam', \App\Http\Controllers\ExamController::class);
+    Route::get('exam-index', [\App\Http\Controllers\ExamController::class, 'indexes']);
+    Route::get('class', [\App\Http\Controllers\UserController::class, 'classes']);
 });
