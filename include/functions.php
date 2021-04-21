@@ -4476,7 +4476,7 @@ function torrentTags($tags = 0, $type = 'checkbox')
     $tagsOptions = [
         [
             'text' => $lang_functions['text_tag_no_release_to_any_other'],
-            'color' => '#D74D4D',
+            'color' => '#ff0000',
         ],
         [
             'text' => $lang_functions['text_tag_first_release'],
