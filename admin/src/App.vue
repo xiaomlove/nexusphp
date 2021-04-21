@@ -1,56 +1,188 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + Vite" />
-    <el-button type="primary"> Element UI </el-button>
-    <div>
-        <el-row>
-            <el-col :span="12">Left</el-col>
-            <el-col :span="12">Right</el-col>
-        </el-row>
-        <el-row>
-            <el-form>
-                <el-form-item label="测试" label-width="120px">
-                    <el-checkbox-group v-model="checkList">
-                        <el-checkbox label="复选框 A"></el-checkbox>
-                        <el-checkbox label="复选框 B"></el-checkbox>
-                        <el-checkbox label="复选框 C"></el-checkbox>
-                        <el-checkbox label="禁用" disabled></el-checkbox>
-                        <el-checkbox label="选中且禁用" disabled></el-checkbox>
-                    </el-checkbox-group>
-                </el-form-item>
-            </el-form>
-        </el-row>
+    <div class="layout">
+        <el-container v-if="state.showMenu" class="container">
+            <el-aside class="aside">
+                <div class="head">
+                    <div>
+<!--                        <img src="http://demo.nexusphp.org/favicon.ico" alt="logo">-->
+                        <span>NexusPHP</span>
+                    </div>
+                </div>
+                <div class="line" />
+                <el-menu
+                    :default-openeds="state.defaultOpen"
+                    background-color="#222832"
+                    text-color="#fff"
+                    :router="true"
+                    :default-active='state.currentPath'
+                >
+                    <el-menu-item index="/"><i class="el-icon-odometer" />Dashboard</el-menu-item>
+                    <el-submenu index="2">
+                        <template #title>
+                            <span>User</span>
+                        </template>
+                        <el-menu-item-group>
+                            <el-menu-item index="/user"><i class="el-icon-user" />User list</el-menu-item>
+                        </el-menu-item-group>
+                    </el-submenu>
+                    <el-submenu index="3">
+                        <template #title>
+                            <span>System</span>
+                        </template>
+                        <el-menu-item-group>
+                            <el-menu-item index="/agent-allow"><i class="el-icon-menu" />Agent allow</el-menu-item>
+                        </el-menu-item-group>
+                        <el-menu-item-group>
+                            <el-menu-item index="/exam"><i class="el-icon-menu" />Exam</el-menu-item>
+                        </el-menu-item-group>
+                    </el-submenu>
+                </el-menu>
+            </el-aside>
+            <el-container class="content">
+                <Header />
+                <div class="main">
+                    <router-view />
+                </div>
+                <Footer />
+            </el-container>
+        </el-container>
+        <el-container v-else class="container">
+            <router-view />
+        </el-container>
     </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import { reactive } from 'vue'
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
+import { useRouter } from 'vue-router'
+import { pathMap, localGet } from './utils'
 export default {
+    name: 'App',
     components: {
-        HelloWorld
+        Header,
+        Footer
     },
-    setup(props, context) {
-        console.log(props, context)
-        const checkList = [];
+    setup() {
+        const noMenu = ['/login']
+        const router = useRouter()
+        const state = reactive({
+            defaultOpen: ['1', '2', '3', '4'],
+            showMenu: true,
+            currentPath: '/dashboard',
+            count: {
+                number: 1
+            }
+        })
+        router.beforeEach((to, from, next) => {
+            if (to.path == '/login') {
+                // 如果路径是 /login 则正常执行
+                next()
+            } else {
+                // 如果不是 /login，判断是否有 token
+                if (!localGet('token')) {
+                    // 如果没有，则跳至登录页面
+                    next({ path: '/login' })
+                } else {
+                    // 否则继续执行
+                    next()
+                }
+            }
+            state.showMenu = !noMenu.includes(to.path)
+            state.currentPath = to.path
+            document.title = pathMap[to.name]
+        })
         return {
-            checkList
+            state
         }
     }
 }
-
-
-// This starter template is using Vue 3 experimental <script setup> SFCs
-// Check out https://github.com/vuejs/rfcs/blob/script-setup-2/active-rfcs/0000-script-setup.md
 </script>
 
+<style scoped>
+.layout {
+    min-height: 100vh;
+    background-color: #ffffff;
+}
+.container {
+    height: 100vh;
+}
+.aside {
+    width: 200px!important;
+    background-color: #222832;
+    overflow: hidden;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+}
+.aside::-webkit-scrollbar {
+    display: none;
+}
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+}
+.head > div {
+    display: flex;
+    align-items: center;
+}
+
+.head img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+.head span {
+    font-size: 20px;
+    color: #ffffff;
+}
+.line {
+    border-top: 1px solid hsla(0,0%,100%,.05);
+    border-bottom: 1px solid rgba(0,0,0,.2);
+}
+.content {
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    overflow: hidden;
+}
+.main {
+    height: calc(100vh - 100px);
+    overflow: auto;
+    padding: 10px;
+}
+</style>
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+body {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.el-menu {
+    border-right: none!important;
+}
+.el-submenu {
+    border-top: 1px solid hsla(0, 0%, 100%, .05);
+    border-bottom: 1px solid rgba(0, 0, 0, .2);
+}
+.el-submenu:first-child {
+    border-top: none;
+}
+.el-submenu [class^="el-icon-"] {
+    vertical-align: -1px!important;
+}
+a {
+    color: #409eff;
+    text-decoration: none;
+}
+.el-pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+.el-popper__arrow {
+    display: none;
 }
 </style>

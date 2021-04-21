@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     public $timestamps = false;
 
@@ -31,7 +32,7 @@ class User extends Authenticatable
     const CLASS_MODERATOR = "13";
     const CLASS_ADMINISTRATOR = "14";
     const CLASS_SYSOP = "15";
-    const CLASS_STAFFLEADER = "16";
+    const CLASS_STAFF_LEADER = "16";
 
     public static $classes = [
         self::CLASS_PEASANT => ['text' => 'Peasant'],
@@ -42,7 +43,7 @@ class User extends Authenticatable
         self::CLASS_INSANE_USER => ['text' => 'Insane User'],
         self::CLASS_VETERAN_USER => ['text' => 'Veteran User'],
         self::CLASS_EXTREME_USER => ['text' => 'Extreme User'],
-        self::CLASS_ULTIMATE_USER => ['text' => 'Eltimate User'],
+        self::CLASS_ULTIMATE_USER => ['text' => 'Ultimate User'],
         self::CLASS_NEXUS_MASTER => ['text' => 'Nexus Master'],
         self::CLASS_VIP => ['text' => 'Vip'],
         self::CLASS_RETIREE => ['text' => 'Retiree'],
@@ -50,10 +51,10 @@ class User extends Authenticatable
         self::CLASS_MODERATOR => ['text' => 'Moderator'],
         self::CLASS_ADMINISTRATOR => ['text' => 'Administrator'],
         self::CLASS_SYSOP => ['text' => 'Sysop'],
-        self::CLASS_STAFFLEADER => ['text' => 'Staff Leader'],
+        self::CLASS_STAFF_LEADER => ['text' => 'Staff Leader'],
     ];
 
-    public function getClassTextAttribute()
+    public function getClassTextAttribute(): string
     {
         return self::$classes[$this->class]['text'] ?? '';
     }
@@ -66,7 +67,7 @@ class User extends Authenticatable
      * @param  \DateTimeInterface  $date
      * @return string
      */
-    protected function serializeDate(\DateTimeInterface $date)
+    protected function serializeDate(\DateTimeInterface $date): string
     {
         return $date->format($this->dateFormat ?: 'Y-m-d H:i:s');
     }

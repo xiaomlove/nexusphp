@@ -23,17 +23,18 @@
     },
     "require": {
         "php": "^7.3|^8.0",
-        "fideloper/proxy": "^4.4",
-        "fruitcake/laravel-cors": "^2.0",
-        "laravel/framework": "^8.12",
-        "laravel/tinker": "^2.5",
         "ext-gd": "*",
+        "ext-json": "*",
         "ext-mbstring": "*",
         "ext-mysqli": "*",
-        "ext-json": "*",
-        "swiftmailer/swiftmailer": "^6.2",
+        "fideloper/proxy": "^4.4",
+        "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "~6.0",
-        "imdbphp/imdbphp": "^6.4"
+        "imdbphp/imdbphp": "^6.4",
+        "laravel/framework": "^8.12",
+        "laravel/sanctum": "^2.10",
+        "laravel/tinker": "^2.5",
+        "swiftmailer/swiftmailer": "^6.2"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

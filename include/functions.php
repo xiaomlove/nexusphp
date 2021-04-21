@@ -369,7 +369,7 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	return $s;
 }
 
-function highlight($search,$subject,$hlstart='<b><font class="striking">',$hlend="</font></b>") 
+function highlight($search,$subject,$hlstart='<b><font class="striking">',$hlend="</font></b>")
 {
 
 	$srchlen=strlen($search);    // lenght of searched string
@@ -408,7 +408,7 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		}
 		$this_lang_functions = $current_user_lang_functions;
 	}
-	
+
 	$class_name = "";
 	switch ($class)
 	{
@@ -431,7 +431,7 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_SYSOP: {$class_name = $this_lang_functions['text_sysops']; break;}
 		case UC_STAFFLEADER: {$class_name = $this_lang_functions['text_staff_leader']; break;}
 	}
-	
+
 	switch ($class)
 	{
 		case UC_PEASANT: {$class_name_color = $en_lang_functions['text_peasant']; break;}
@@ -453,7 +453,7 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_SYSOP: {$class_name_color = $en_lang_functions['text_sysops']; break;}
 		case UC_STAFFLEADER: {$class_name_color = $en_lang_functions['text_staff_leader']; break;}
 	}
-	
+
 	$class_name = ( $compact == true ? str_replace(" ", "",$class_name) : $class_name);
 	if ($class_name) return ($b_colored == true ? "<b class='" . str_replace(" ", "",$class_name_color) . "_Name'>" . $class_name . "</b>" : $class_name);
 }
@@ -981,12 +981,12 @@ function begin_compose($title = "",$type="new", $body="", $hassubject=true, $sub
 	if ($title)
 		print("<h1 align=\"center\">".$title."</h1>");
 	switch ($type){
-		case 'new': 
+		case 'new':
 		{
 			$framename = $lang_functions['text_new'];
 			break;
 		}
-		case 'reply': 
+		case 'reply':
 		{
 			$framename = $lang_functions['text_reply'];
 			break;
@@ -1117,7 +1117,7 @@ function get_torrent_2_user_value($user_snatched_arr)
 	}
 	else	// torrent already deleted, half blind guess, be conservative
 	{
-		
+
 		if($user_snatched_arr['finished'] == 'no' && $user_snatched_arr['uploaded'] > 0 && $user_snatched_arr['downloaded'] == 0)	// possibly owner
 		{
 			$torrent_2_user_value *= 0.55;	//conservative
@@ -2095,7 +2095,7 @@ function validlang($langid) {
 
 function get_if_restricted_is_open()
 {
-	global $sptime; 
+	global $sptime;
 	// it's sunday
 	if($sptime == 'yes' && (date("w",time()) == '0' || (date("w",time()) == 6) && (date("G",time()) >=12 && date("G",time()) <=23)))
 	{
@@ -2256,7 +2256,7 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	global $Advertisement;
 
 	$Cache->setLanguage($CURLANGDIR);
-	
+
 	$Advertisement = new ADVERTISEMENT($CURUSER['id']);
 	$cssupdatedate = $cssdate_tweak;
 	// Variable for Start Time
@@ -2379,7 +2379,7 @@ if ($enabledonation == 'yes'){?>
 	<tr><td id="nav_block" class="text" align="center">
 <?php if (!$CURUSER) { ?>
 			<a href="login.php"><font class="big"><b><?php echo $lang_functions['text_login'] ?></b></font></a> / <a href="signup.php"><font class="big"><b><?php echo $lang_functions['text_signup'] ?></b></font></a>
-<?php } 
+<?php }
 else {
 	begin_main_frame();
 	menu ();
@@ -2432,7 +2432,7 @@ else {
 		$unread = get_row_count("messages","WHERE receiver=" . sqlesc($CURUSER["id"]) . " AND unread='yes'");
 		$Cache->cache_value('user_'.$CURUSER["id"].'_unread_message_count', $unread, 60);
 	}
-	
+
 	$inboxpic = "<img class=\"".($unread ? "inboxnew" : "inbox")."\" src=\"pic/trans.gif\" alt=\"inbox\" title=\"".($unread ? $lang_functions['title_inbox_new_messages'] : $lang_functions['title_inbox_no_new_messages'])."\" />";
     $attend_desk = new Attendance($CURUSER['id']);
     $attendance = $attend_desk->check();
@@ -3269,7 +3269,7 @@ foreach ($rows as $row)
 		else
 		print("<td class=\"rowfollow nowrap\">".$lang_functions['text_none']."</td>\n");
 	}
-	
+
 	if ($CURUSER['showcomnum'] != 'no')
 	{
 	print("<td class=\"rowfollow\">");
@@ -3675,7 +3675,7 @@ function getimdb($imdb_id, $cache_stamp, $mode = 'minor')
 				$tagline = $movie->tagline ();
 				switch ($mode)
 				{
-				case 'minor' : 
+				case 'minor' :
 					{
 					$autodata = "<font class=\"big\"><b>".$title."</b></font> (".$year.") <br /><strong><font color=\"DarkRed\">".$lang_functions['text_imdb'].": </font></strong>".$imdbrating." <strong><font color=\"DarkRed\">".$lang_functions['text_country'].": </font></strong>".$countries." <strong><font color=\"DarkRed\">".$lang_functions['text_genres'].": </font></strong>".$genres."<br />".$director_or_creator."<strong><font color=\"DarkRed\"> ".$lang_functions['text_starring'].": </font></strong>".$casts."<br /><p><strong>".$tagline."</strong></p>";
 					break;
@@ -3724,7 +3724,7 @@ $smallth
 				}
 				return $autodata;
 			}
-			case "2" : 
+			case "2" :
 			{
 				return false;
 				break;
@@ -4118,7 +4118,7 @@ function set_forum_moderators($name, $forumid, $limit=3){
 }
 
 function get_plain_username($id){
-	$row = get_user_row($id);	
+	$row = get_user_row($id);
 	if ($row)
 		$username = $row['username'];
 	else $username = "";
