@@ -28,7 +28,6 @@ class User extends Authenticatable
     const CLASS_VIP = "10";
     const CLASS_RETIREE = "11";
     const CLASS_UPLOADER = "12";
-    const CLASS_FORUM_MODERATOR = "12.1";
     const CLASS_MODERATOR = "13";
     const CLASS_ADMINISTRATOR = "14";
     const CLASS_SYSOP = "15";
@@ -48,7 +47,6 @@ class User extends Authenticatable
         self::CLASS_VIP => ['text' => 'Vip'],
         self::CLASS_RETIREE => ['text' => 'Retiree'],
         self::CLASS_UPLOADER => ['text' => 'Uploader'],
-        self::CLASS_FORUM_MODERATOR => ['text' => 'Forum Moderator'],
         self::CLASS_MODERATOR => ['text' => 'Moderator'],
         self::CLASS_ADMINISTRATOR => ['text' => 'Administrator'],
         self::CLASS_SYSOP => ['text' => 'Sysop'],

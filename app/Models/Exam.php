@@ -2,12 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 class Exam extends NexusModel
 {
-    use HasFactory;
-
     protected $fillable = ['name', 'description', 'begin', 'end', 'status'];
 
     const STATUS_ENABLED = 0;

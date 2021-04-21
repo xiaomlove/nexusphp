@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Arr;
 
 class Setting extends NexusModel
 {
-    use HasFactory;
-
     protected $fillable = ['name', 'value'];
 
     public static function get($name = null)

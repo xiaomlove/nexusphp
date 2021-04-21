@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$url = str_replace(" ", "%20", htmlspecialchars(get_protocol_prefix()."$BASEURL/bitbucket/$filename"));
 	$name = sqlesc($filename);
 	$added = sqlesc(date("Y-m-d H:i:s"));
-	if ($_POST['public'] != 'yes' )
+	if (!isset($_POST['public']) || $_POST['public'] != 'yes' )
 	$public='"0"';
 	else
 	$public='"1"';
