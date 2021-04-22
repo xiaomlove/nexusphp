@@ -1,6 +1,12 @@
 import axios from "./axios";
 
 const api = {
+    login: (params = {}) => {
+        return axios.post('login', params);
+    },
+    logout: (params = {}) => {
+        return axios.post('logout');
+    },
     listAllowAgent: (params = {}) => {
         return axios.get('agent-allow', {params: params});
     },
@@ -19,6 +25,9 @@ const api = {
 
     listUser: (params = {}) => {
         return axios.get('user', {params: params});
+    },
+    getUserBase: (params = {}) => {
+        return axios.get('user-base', {params: params});
     },
     storeUser: (params = {}) => {
         return axios.post('user', params);

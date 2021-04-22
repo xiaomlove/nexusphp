@@ -29,10 +29,14 @@
 import axios from '../utils/axios'
 import { reactive, ref, toRefs } from 'vue'
 import { localSet } from '../utils'
+import api from '../utils/api'
+import { useRouter, useRoute } from 'vue-router'
+
 export default {
     name: 'Login',
     setup() {
         const loginForm = ref(null)
+        const router = useRouter()
         const state = reactive({
             ruleForm: {
                 username: '',
@@ -51,12 +55,9 @@ export default {
         const submitForm = async () => {
             loginForm.value.validate((valid) => {
                 if (valid) {
-                    axios.post('/adminUser/login', {
-                        userName: state.ruleForm.username || '',
-                        passwordMd5: md5(state.ruleForm.password)
-                    }).then(res => {
-                        localSet('token', res)
-                        window.location.href = '/'
+                   api.login(state.ruleForm).then(res => {
+                        localSet('token', res.data.token)
+                        router.push({name: 'dashboard'})
                     })
                 } else {
                     console.log('error submit!!')

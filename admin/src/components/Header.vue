@@ -14,14 +14,14 @@
                 <template #reference>
                     <div class="author">
                         <i class="icon el-icon-s-custom" />
-                        {{ userInfo && userInfo.nickName || '' }}
+                        {{ userInfo && userInfo.username || '' }}
                         <i class="el-icon-caret-bottom" />
                     </div>
                 </template>
                 <div class="nickname">
-                    <p>登录名：{{ userInfo && userInfo.loginUserName || '' }}</p>
-                    <p>昵称：{{ userInfo && userInfo.nickName || '' }}</p>
-                    <el-tag size="small" effect="dark" class="logout" @click="logout">退出</el-tag>
+                    <p>Username：{{ userInfo && userInfo.username || '' }}</p>
+                    <p>Email：{{ userInfo && userInfo.email || '' }}</p>
+                    <el-tag size="small" effect="dark" class="logout" @click="logout">Logout</el-tag>
                 </div>
             </el-popover>
         </div>
@@ -33,6 +33,8 @@ import { onMounted, reactive, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '../utils/axios'
 import { localRemove, pathMap } from '../utils'
+import api from "../utils/api";
+
 export default {
     name: 'Header',
     setup() {
@@ -44,18 +46,18 @@ export default {
         })
         onMounted(() => {
             const pathname = window.location.hash.split('/')[1] || ''
-            if (!['login'].includes(pathname)) {
-                // getUserInfo()
-            }
+            console.log("pathname: ", pathname)
+            getUserInfo()
         })
         const getUserInfo = async () => {
-            const userInfo = await axios.get('/adminUser/profile')
-            state.userInfo = userInfo
+            const userInfo = await api.getUserBase()
+            console.log(userInfo)
+            state.userInfo = userInfo.data
         }
         const logout = () => {
-            axios.delete('/logout').then(() => {
+            api.logout().then(() => {
                 localRemove('token')
-                router.push({ path: '/login' })
+                router.push({ name: 'login' })
             })
         }
         const back = () => {

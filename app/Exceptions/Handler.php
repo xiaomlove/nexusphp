@@ -7,6 +7,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -51,6 +52,10 @@ class Handler extends ExceptionHandler
             $msg = Arr::first(Arr::first($errors));
             return response()->json(fail($msg, $errors));
         });
+
+        $this->renderable(function (NotFoundHttpException $e) {
+            return response()->json(fail('No query result.', request()->all()), 404);
+        });
     }
 
     /**
@@ -62,8 +67,15 @@ class Handler extends ExceptionHandler
      */
     protected function prepareJsonResponse($request, Throwable $e)
     {
+        $data = $request->all();
+        if (config('app.debug')) {
+            $msg = $e->getMessage() ?: get_class($e);
+            $data['trace'] = $e->getTraceAsString();
+        } else {
+            $msg = 'Server Error';
+        }
         return new JsonResponse(
-            fail(config('app.debug') ? ($e->getMessage() ?: get_class($e)) : 'Server Error', []),
+            fail($msg, $data),
             $this->isHttpException($e) ? $e->getStatusCode() : 500,
             $this->isHttpException($e) ? $e->getHeaders() : [],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES

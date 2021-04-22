@@ -14,6 +14,12 @@ class UserRepository extends BaseRepository
         return $query->paginate();
     }
 
+    public function getBase($id)
+    {
+        $user = User::query()->findOrFail($id, ['id', 'username', 'email', 'avatar']);
+        return $user;
+    }
+
     public function store(array $params)
     {
         $password = $params['password'];

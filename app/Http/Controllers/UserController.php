@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -99,5 +100,13 @@ class UserController extends Controller
     {
         $result = $this->repository->listClass();
         return $this->success($result);
+    }
+
+    public function base()
+    {
+        $id = Auth::id();
+        $result = $this->repository->getBase($id);
+        $resource = new UserResource($result);
+        return $this->success($resource);
     }
 }
