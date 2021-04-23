@@ -2,7 +2,7 @@
     <el-card class="swiper-container">
         <template #header>
             <div class="header">
-                <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">新增商品</el-button>
+                <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">Add</el-button>
             </div>
         </template>
         <el-table
@@ -17,53 +17,55 @@
                 width="55">
             </el-table-column>
             <el-table-column
-                prop="goodsId"
-                label="商品编号"
+                prop="id"
+                label="Id"
+                width="50"
             >
             </el-table-column>
             <el-table-column
-                prop="goodsName"
-                label="商品名"
+                prop="name"
+                label="Name"
             >
             </el-table-column>
             <el-table-column
-                prop="goodsIntro"
-                label="商品简介"
+                label="Index"
+                width="250px"
             >
-            </el-table-column>
-            <el-table-column
-                label="商品图片"
-                width="150px"
-            >
-                <template #default="scope">
-                    <img style="width: 100px; height: 100px;" :key="scope.row.goodsId" :src="$filters.prefix(scope.row.goodsCoverImg)" alt="商品主图">
+                <template #default="scope" >
+                    <p style="white-space: pre-line" v-html="scope.row.indexes_formatted"></p>
                 </template>
             </el-table-column>
             <el-table-column
-                prop="stockNum"
-                label="商品库存"
+                prop="begin"
+                label="Begin"
             >
             </el-table-column>
             <el-table-column
-                prop="sellingPrice"
-                label="商品售价"
+                prop="end"
+                label="End"
             >
-            </el-table-column>
-            <el-table-column
-                label="上架状态"
-            >
-                <template #default="scope">
-                    <span style="color: green;" v-if="scope.row.goodsSellStatus == 0">销售中</span>
-                    <span style="color: red;" v-else>已下架</span>
-                </template>
             </el-table-column>
 
             <el-table-column
-                label="操作"
+                label="Target User"
+                width="400px"
+            >
+                <template #default="scope" >
+                    <p style="white-space: pre-line" v-html="scope.row.filters_formatted"></p>
+                </template>
+            </el-table-column>
+            <el-table-column
+                prop="status_text"
+                label="Status"
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="Action"
                 width="100"
             >
                 <template #default="scope">
-                    <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.goodsId)">修改</a>
+                    <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>
                     <a style="cursor: pointer; margin-right: 10px" v-if="scope.row.goodsSellStatus == 0" @click="handleStatus(scope.row.goodsId, 1)">下架</a>
                     <a style="cursor: pointer; margin-right: 10px" v-else @click="handleStatus(scope.row.goodsId, 0)">上架</a>
                 </template>
@@ -85,13 +87,19 @@
 import { onMounted, reactive, ref, toRefs } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import api from '../../utils/api'
 export default {
-    name: 'Good',
+    name: 'ExamTable',
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
         const state = reactive({
             loading: false,
+            query: {
+                page: 1,
+                sort_field: 'id',
+                sort_type: 'desc'
+            },
             tableData: [], // 数据列表
             multipleSelection: [], // 选中项
             total: 0, // 总条数
@@ -99,28 +107,27 @@ export default {
             pageSize: 10 // 分页大小
         })
         onMounted(() => {
-            getGoodList()
+            fetchTableData()
         })
         // 获取轮播图列表
-        const getGoodList = () => {
+        const fetchTableData = async () => {
             state.loading = true
-            axios.get('/goods/list', {
-                params: {
-                    pageNumber: state.currentPage,
-                    pageSize: state.pageSize
-                }
-            }).then(res => {
-                state.tableData = res.list
-                state.total = res.totalCount
-                state.currentPage = res.currPage
-                state.loading = false
-            })
+            let res = await api.listExam(state.query)
+            renderTableData(res)
+        }
+        const renderTableData = (res) => {
+            state.tableData = res.data.data
+            state.page = res.data.meta.current_page
+            state.total = res.data.meta.total
+            state.currentPage = res.data.meta.current_page
+            state.pageSize = res.data.meta.per_page
+            state.loading = false
         }
         const handleAdd = () => {
             router.push({ name: 'exam-form' })
         }
         const handleEdit = (id) => {
-            router.push({ path: '/add', query: { id } })
+            router.push({ path: '/exam-form', query: { id } })
         }
         // 选择项
         const handleSelectionChange = (val) => {
@@ -128,14 +135,14 @@ export default {
         }
         const changePage = (val) => {
             state.currentPage = val
-            getGoodList()
+            fetchTableData()
         }
         const handleStatus = (id, status) => {
             axios.put(`/goods/status/${status}`, {
                 ids: id ? [id] : []
             }).then(() => {
                 ElMessage.success('修改成功')
-                getGoodList()
+                fetchTableData()
             })
         }
         return {
@@ -144,7 +151,7 @@ export default {
             handleSelectionChange,
             handleAdd,
             handleEdit,
-            getGoodList,
+            fetchTableData,
             changePage,
             handleStatus
         }

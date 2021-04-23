@@ -5,6 +5,7 @@ use App\Models\Exam;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
 class ExamRepository extends BaseRepository
@@ -19,6 +20,10 @@ class ExamRepository extends BaseRepository
 
     public function store(array $params)
     {
+        $data = Arr::only($params, ['name', 'description', 'status', 'filters']);
+        if (!empty($params['begin'])) {
+
+        }
         $exam = Exam::query()->create($params);
         return $exam;
     }
@@ -30,11 +35,28 @@ class ExamRepository extends BaseRepository
         return $exam;
     }
 
+    public function getDetail($id)
+    {
+        $exam = Exam::query()->findOrFail($id);
+        return $exam;
+    }
+
     public function listIndexes()
     {
         $out = [];
         foreach(Exam::$indexes as $key => $value) {
-            $out[$key] = $value['text'];
+            $value['index'] = $key;
+            $out[] = $value;
+        }
+        return $out;
+    }
+
+    public function listFilters()
+    {
+        $out = [];
+        foreach(Exam::$filters as $key => $value) {
+            $value['filter'] = $key;
+            $out[] = $value;
         }
         return $out;
     }

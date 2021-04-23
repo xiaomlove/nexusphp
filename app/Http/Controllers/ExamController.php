@@ -40,10 +40,10 @@ class ExamController extends Controller
     {
         $rules = [
             'name' => 'required|string',
-            'begin' => 'required|date_format:Y-m-d H:i:s',
-            'end' => 'required|date_format:Y-m-d H:i:s',
-            'requires' => 'required|array|min:1',
-            'filters' => 'required|array|min:1',
+            'indexes' => 'required|array|min:1',
+            'status' => 'required|in:0,1',
+//            'begin' => 'nullable|date',
+//            'end' => 'nullable|date',
         ];
         $request->validate($rules);
         $result = $this->repository->store($request->all());
@@ -55,11 +55,13 @@ class ExamController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function show($id)
     {
-        //
+        $result = $this->repository->getDetail($id);
+        $resource = new ExamResource($result);
+        return $this->success($resource);
     }
 
     /**
@@ -73,10 +75,8 @@ class ExamController extends Controller
     {
         $rules = [
             'name' => 'required|string',
-            'begin' => 'required|date_format:Y-m-d H:i:s',
-            'end' => 'required|date_format:Y-m-d H:i:s',
-            'requires' => 'required|array|min:1',
-            'filters' => 'required|array|min:1',
+            'indexes' => 'required|array|min:1',
+            'status' => 'required|in:0,1',
         ];
         $request->validate($rules);
         $result = $this->repository->update($request->all(), $id);

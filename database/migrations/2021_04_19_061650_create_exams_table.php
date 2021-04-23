@@ -17,10 +17,10 @@ class CreateExamsTable extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->dateTime('begin');
-            $table->dateTime('end');
-            $table->text('filters');
-            $table->text('requires');
+            $table->dateTime('begin')->nullable();
+            $table->dateTime('end')->nullable();
+            $table->text('filters')->nullable();
+            $table->text('indexes');
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
         });

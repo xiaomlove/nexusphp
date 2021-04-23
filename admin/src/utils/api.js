@@ -36,6 +36,9 @@ const api = {
     listExam: (params = {}) => {
         return axios.get('exam', {params: params});
     },
+    listExamIndex: (params = {}) => {
+        return axios.get('exam-index', {params: params});
+    },
     storeExam: (params = {}) => {
         return axios.post('exam', params);
     },
