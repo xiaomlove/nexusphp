@@ -54,6 +54,9 @@ const api = {
     listClass: (params = {}) => {
         return axios.get('class', {params: params});
     },
+    listExamUser: (params = {}) => {
+        return axios.get('exam-users', {params: params});
+    },
 }
 
 export default api

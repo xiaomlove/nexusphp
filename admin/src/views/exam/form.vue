@@ -26,8 +26,8 @@
 
                     <el-form-item label="Status" prop="status">
                         <el-radio-group v-model="formData.status">
-                            <el-radio label="0">Enabled</el-radio>
-                            <el-radio label="1">Disabled</el-radio>
+                            <el-radio :label="0">Enabled</el-radio>
+                            <el-radio :label="1">Disabled</el-radio>
                         </el-radio-group>
                     </el-form-item>
 
@@ -121,12 +121,19 @@ export default {
                 ],
             },
         })
-        onMounted(() => {
+        onMounted( () => {
             listAllClass()
             listAllIndex()
             if (id) {
-                let res = api.getExam(id)
-                // state.formData = res.data
+                api.getExam(id).then(res => {
+                    state.formData.name = res.data.name
+                    state.formData.description = res.data.description
+                    state.formData.begin = res.data.begin
+                    state.formData.end = res.data.end
+                    state.formData.indexes = res.data.indexes
+                    state.formData.filters = res.data.filters
+                    state.formData.status = res.data.status
+                })
             } else {
                 let res = api.listExamIndex()
                 state.formData.indexes = res.data
@@ -146,8 +153,12 @@ export default {
                         params.end = dayjs(params.end).format('YYYY-MM-DD HH:mm:ss')
                     }
                     console.log(params)
-                    let res = await api.storeExam(params)
-                    console.log(res)
+                    if (id) {
+                        await api.updateExam(id, params)
+                    } else {
+                        await api.storeExam(params)
+                    }
+                    await router.push({name: 'exam'})
                 }
             })
         }

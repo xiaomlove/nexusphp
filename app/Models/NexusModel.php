@@ -11,6 +11,8 @@ class NexusModel extends Model
 
     public $timestamps = false;
 
+    protected $perPage = 2;
+
     /**
      * 为数组 / JSON 序列化准备日期。
      *

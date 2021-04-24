@@ -1,5 +1,5 @@
 <template>
-    <el-card class="swiper-container">
+    <el-card class="">
         <template #header>
             <div class="header">
                 <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">Add</el-button>
@@ -10,7 +10,6 @@
             ref="multipleTable"
             :data="tableData"
             tooltip-effect="dark"
-            style="width: 100%"
             @selection-change="handleSelectionChange">
             <el-table-column
                 type="selection"
@@ -66,8 +65,14 @@
             >
                 <template #default="scope">
                     <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>
-                    <a style="cursor: pointer; margin-right: 10px" v-if="scope.row.goodsSellStatus == 0" @click="handleStatus(scope.row.goodsId, 1)">下架</a>
-                    <a style="cursor: pointer; margin-right: 10px" v-else @click="handleStatus(scope.row.goodsId, 0)">上架</a>
+                    <el-popconfirm
+                        title="Confirm Delete ?"
+                        @confirm="handleDelete(scope.row.id)"
+                    >
+                        <template #reference>
+                            <a style="cursor: pointer">Delete</a>
+                        </template>
+                    </el-popconfirm>
                 </template>
             </el-table-column>
         </el-table>
@@ -76,7 +81,7 @@
             background
             layout="prev, pager, next"
             :total="total"
-            :page-size="pageSize"
+            :page-size="perPage"
             :current-page="currentPage"
             @current-change="changePage"
         />
@@ -88,24 +93,29 @@ import { onMounted, reactive, ref, toRefs } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import api from '../../utils/api'
+import { useTable, renderTableData } from '../../utils/table'
+
 export default {
     name: 'ExamTable',
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
-        const state = reactive({
-            loading: false,
-            query: {
-                page: 1,
-                sort_field: 'id',
-                sort_type: 'desc'
-            },
-            tableData: [], // 数据列表
-            multipleSelection: [], // 选中项
-            total: 0, // 总条数
-            currentPage: 1, // 当前页
-            pageSize: 10 // 分页大小
-        })
+        // const state = reactive({
+        //     loading: false,
+        //     query: {
+        //         page: 1,
+        //         sort_field: 'id',
+        //         sort_type: 'desc'
+        //     },
+        //     tableData: [], // 数据列表
+        //     multipleSelection: [], // 选中项
+        //     total: 0, // 总条数
+        //     currentPage: 1, // 当前页
+        //     pageSize: 10 // 分页大小
+        // })
+
+        const state = useTable()
+
         onMounted(() => {
             fetchTableData()
         })
@@ -113,28 +123,35 @@ export default {
         const fetchTableData = async () => {
             state.loading = true
             let res = await api.listExam(state.query)
-            renderTableData(res)
-        }
-        const renderTableData = (res) => {
-            state.tableData = res.data.data
-            state.page = res.data.meta.current_page
-            state.total = res.data.meta.total
-            state.currentPage = res.data.meta.current_page
-            state.pageSize = res.data.meta.per_page
+            renderTableData(res, state)
             state.loading = false
         }
+        // const renderTableData = (res) => {
+        //     state.tableData = res.data.data
+        //     state.page = res.data.meta.current_page
+        //     state.total = res.data.meta.total
+        //     state.currentPage = res.data.meta.current_page
+        //     state.pageSize = res.data.meta.per_page
+        //     state.loading = false
+        // }
         const handleAdd = () => {
             router.push({ name: 'exam-form' })
         }
         const handleEdit = (id) => {
             router.push({ path: '/exam-form', query: { id } })
         }
+        const handleDelete = async (id) => {
+            let res = await api.deleteExam(id)
+            ElMessage.success(res.msg)
+            state.query.page = 1;
+            await fetchTableData()
+        }
         // 选择项
         const handleSelectionChange = (val) => {
             state.multipleSelection = val
         }
         const changePage = (val) => {
-            state.currentPage = val
+            state.query.page = val
             fetchTableData()
         }
         const handleStatus = (id, status) => {
@@ -151,6 +168,7 @@ export default {
             handleSelectionChange,
             handleAdd,
             handleEdit,
+            handleDelete,
             fetchTableData,
             changePage,
             handleStatus

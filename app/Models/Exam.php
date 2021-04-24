@@ -6,6 +6,8 @@ class Exam extends NexusModel
 {
     protected $fillable = ['name', 'description', 'begin', 'end', 'status', 'filters', 'indexes'];
 
+    public $timestamps = true;
+
     protected $casts = [
         'filters' => 'object',
         'indexes' => 'array',

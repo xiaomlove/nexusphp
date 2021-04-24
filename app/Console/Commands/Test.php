@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
+use App\Repositories\ExamRepository;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
@@ -38,6 +40,9 @@ class Test extends Command
      */
     public function handle()
     {
-        dd(strlen(Hash::make('123456')));
+        $examRep = new ExamRepository();
+        $user = User::query()->find(1);
+        $r = $examRep->assignToUser($user->id);
+        dd($r);
     }
 }

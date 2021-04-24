@@ -11,7 +11,6 @@ axios.defaults.headers['Authorization'] = 'Bearer ' + localGet('token')
 
 // 请求拦截器，内部根据返回值，重新组装，统一管理。
 axios.interceptors.response.use(res => {
-    console.log(res)
     if (typeof res.data !== 'object') {
         ElMessage.error('Server Error 1')
         return Promise.reject(res)
@@ -22,7 +21,6 @@ axios.interceptors.response.use(res => {
     }
     return res.data
 }, error => {
-    console.log(error.response)
     ElMessage.error(error.response.data.msg || 'Server Error 2')
     return Promise.reject(error)
 })

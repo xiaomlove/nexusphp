@@ -21,13 +21,8 @@ export function hasEmoji (str = '') {
     return str.match(reg) && str.match(reg).length
 }
 
-// 单张图片上传
-export const uploadImgServer = 'http://backend-api-02.newbee.ltd/manage-api/v1/upload/file'
-// 多张图片上传
-export const uploadImgsServer = 'http://backend-api-02.newbee.ltd/manage-api/v1/upload/files'
-
 export const pathMap = {
-    login: '登录',
+    login: 'Login',
     introduce: '系统介绍',
     dashboard: 'Dashboard',
     add: '添加商品',
@@ -49,4 +44,5 @@ export const pathMap = {
     'user-form': 'User form',
     'exam': 'Exam',
     'exam-form': 'Exam form',
+    'exam-user': 'Exam user',
 }

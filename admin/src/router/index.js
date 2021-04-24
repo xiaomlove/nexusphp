@@ -34,6 +34,11 @@ const router = createRouter({
             component: () => import('../views/exam/form.vue')
         },
         {
+            path: '/exam-user',
+            name: 'exam-user',
+            component: () => import('../views/exam/user.vue')
+        },
+        {
             path: '/agent-allow',
             name: 'agent-allow',
             component: () => import('../views/agent-allow/index.vue')

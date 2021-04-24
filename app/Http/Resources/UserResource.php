@@ -21,9 +21,13 @@ class UserResource extends JsonResource
             'status' => $this->status,
             'added' => $this->added,
             'class' => $this->class,
+            'class_text' => $this->class_text,
             'avatar' => $this->avatar,
             'uploaded' => $this->uploaded,
+            'uploaded_text' => mksize($this->uploaded),
             'downloaded' => $this->downloaded,
+            'downloaded_text' => mksize($this->downloaded),
+            'bonus' => $this->seedbonus,
             'seedtime' => $this->seedtime,
             'leechtime' => $this->leechtime,
         ];

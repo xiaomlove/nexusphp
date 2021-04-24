@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ExamResource;
 use App\Http\Resources\UserResource;
+use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
@@ -107,6 +110,15 @@ class UserController extends Controller
         $id = Auth::id();
         $result = $this->repository->getBase($id);
         $resource = new UserResource($result);
+        return $this->success($resource);
+    }
+
+    public function exams()
+    {
+        $id = Auth::id();
+        $examRepository = new ExamRepository();
+        $result = $examRepository->listMatchExam($id);
+        $resource = ExamResource::collection($result);
         return $this->success($resource);
     }
 }

@@ -19,7 +19,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::resource('agent-allow', \App\Http\Controllers\AgentAllowController::class);
     Route::resource('user', \App\Http\Controllers\UserController::class);
     Route::get('user-base', [\App\Http\Controllers\UserController::class, 'base']);
+    Route::get('user-exams', [\App\Http\Controllers\UserController::class, 'exams']);
     Route::resource('exam', \App\Http\Controllers\ExamController::class);
+    Route::get('exam-users', [\App\Http\Controllers\ExamController::class, 'users']);
     Route::get('exam-index', [\App\Http\Controllers\ExamController::class, 'indexes']);
     Route::get('class', [\App\Http\Controllers\UserController::class, 'classes']);
 });

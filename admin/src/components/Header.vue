@@ -29,26 +29,32 @@
 </template>
 
 <script>
-import { onMounted, reactive, toRefs } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from '../utils/axios'
+import {computed, onMounted, reactive, toRefs, watch} from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { localRemove, pathMap } from '../utils'
 import api from "../utils/api";
 
 export default {
     name: 'Header',
-    setup() {
+    setup(props, context) {
         const router = useRouter()
+        const route = useRoute()
         const state = reactive({
             name: 'dashboard',
             userInfo: null,
             hasBack: false
         })
         onMounted(() => {
-            const pathname = window.location.hash.split('/')[1] || ''
-            console.log("pathname: ", pathname)
-            getUserInfo()
+            console.log("Head onMounted!")
+            // console.log(props, context)
         })
+        watch(
+            () => route,
+            (newValue, oldValue) => {
+                console.log(newValue, 'new')
+                console.log(oldValue, 'old')
+            }
+        )
         const getUserInfo = async () => {
             const userInfo = await api.getUserBase()
             console.log(userInfo)
@@ -64,7 +70,7 @@ export default {
             router.back()
         }
         router.afterEach((to) => {
-            console.log('to', to)
+            console.log("Head afterEach to", to)
             const { id } = to.query
             state.name = pathMap[to.name]
             if (id && to.name == 'add') {

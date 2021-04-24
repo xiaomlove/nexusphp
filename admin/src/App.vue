@@ -35,6 +35,9 @@
                         <el-menu-item-group>
                             <el-menu-item index="/exam"><i class="el-icon-menu" />Exam</el-menu-item>
                         </el-menu-item-group>
+                        <el-menu-item-group>
+                            <el-menu-item index="/exam-user"><i class="el-icon-menu" />Exam user</el-menu-item>
+                        </el-menu-item-group>
                     </el-submenu>
                 </el-menu>
             </el-aside>
@@ -76,6 +79,7 @@ export default {
             }
         })
         router.beforeEach((to, from, next) => {
+            console.log("App beforeEach to", to)
             if (to.path == '/login') {
                 // 如果路径是 /login 则正常执行
                 next()

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ExamResource;
+use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
 use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
@@ -88,17 +89,25 @@ class ExamController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function destroy($id)
     {
-        //
+        $result = $this->repository->delete($id);
+        return $this->success($result, 'Delete exam success!');
     }
 
     public function indexes()
     {
         $result = $this->repository->listIndexes();
         return $this->success($result);
+    }
+
+    public function users(Request $request)
+    {
+        $result = $this->repository->listUser($request->all());
+        $resource = ExamUserResource::collection($result);
+        return $this->success($resource);
     }
 
 }
