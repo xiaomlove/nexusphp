@@ -2596,6 +2596,14 @@ if ($msgalert)
 			msgalert("cheaterbox.php",$text, "blue");
 		}
 	}
+
+	//show the exam info
+    $examRepository = new \App\Repositories\ExamRepository();
+	$matchExams = $examRepository->listMatchExam($CURUSER['id']);
+//	if ($matchExams->isNotEmpty()) {
+//	    dd($matchExams);
+//    }
+
 }
 		if ($offlinemsg)
 		{
