@@ -2,9 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Exam;
+use App\Models\ExamProgress;
+use App\Models\ExamUser;
 use App\Models\User;
 use App\Repositories\ExamRepository;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class Test extends Command
@@ -40,9 +44,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $examRep = new ExamRepository();
-        $user = User::query()->find(1);
-        $r = $examRep->assignToUser($user->id);
+        $rep = new ExamRepository();
+        $r = $rep->listUserExamProgress(1);
         dd($r);
     }
 }

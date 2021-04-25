@@ -2598,12 +2598,11 @@ if ($msgalert)
 	}
 
 	//show the exam info
-    $examRepository = new \App\Repositories\ExamRepository();
-	$matchExams = $examRepository->listMatchExam($CURUSER['id']);
-//	if ($matchExams->isNotEmpty()) {
-//	    dd($matchExams);
-//    }
-
+    $exam = new \Nexus\Exam\Exam();
+    $examHtml = $exam->render($CURUSER['id']);
+    if (!empty($examHtml)) {
+        msgalert("messages.php", $examHtml, "green");
+    }
 }
 		if ($offlinemsg)
 		{

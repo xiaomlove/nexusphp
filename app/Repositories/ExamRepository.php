@@ -2,8 +2,10 @@
 namespace App\Repositories;
 
 use App\Models\Exam;
+use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\Setting;
+use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -141,6 +143,7 @@ class ExamRepository extends BaseRepository
         return $filtered;
     }
 
+
     /**
      * assign exam to user
      *
@@ -183,6 +186,70 @@ class ExamRepository extends BaseRepository
         list($sortField, $sortType) = $this->getSortFieldAndType($params);
         $query->orderBy($sortField, $sortType);
         $result = $query->with(['user', 'exam'])->paginate();
+        return $result;
+
+    }
+
+    public function addProgress(int $examUserId, int $indexId, int $value, int $torrentId)
+    {
+        $examUser = ExamUser::query()->with(['exam', 'user'])->findOrFail($examUserId);
+        if ($examUser->status != ExamUser::STATUS_NORMAL) {
+            throw new \InvalidArgumentException("ExamUser: $examUserId is not normal.");
+        }
+        if (!isset(Exam::$indexes[$indexId])) {
+            throw new \InvalidArgumentException("Invalid index id: $indexId.");
+        }
+        $exam = $examUser->exam;
+        $indexes = collect($exam->indexes)->keyBy('index');
+        if (!$indexes->has($indexId)) {
+            throw new \InvalidArgumentException(sprintf('Exam: %s does not has index: %s', $exam->id, $indexId));
+        }
+        $index = $indexes->get($indexId);
+        if (!isset($index['checked']) || !$index['checked']) {
+            throw new \InvalidArgumentException(sprintf('Exam: %s index: %s is not checked', $exam->id, $indexId));
+        }
+        $torrentFields = ['id', 'visible', 'banned'];
+        $torrent = Torrent::query()->findOrFail($torrentId, $torrentFields);
+        $torrent->checkIsNormal(true, $torrentFields);
+
+        $user = $examUser->user;
+        $user->checkIsNormal();
+
+        $data = [
+            'uid' => $user->id,
+            'exam_id' => $exam->id,
+            'torrent_id' => $torrentId,
+            'index' => $indexId,
+            'value' => $value,
+        ];
+        Log::info('[addProgress]', $data);
+        return $examUser->progresses()->create($data);
+    }
+
+    public function listUserExamProgress($uid, $status = null)
+    {
+        $logPrefix = "uid: $uid";
+        $query = ExamUser::query()->with(['exam', 'user'])->where('uid', $uid)->orderBy('exam_id', 'desc');
+        if ($status) {
+            $query->where('status', $status);
+        }
+        $result = $query->paginate();
+        $idArr = array_column($result->items(), 'id');
+        $progressSum = ExamProgress::query()
+            ->whereIn('exam_user_id', $idArr)
+            ->groupBy(['exam_user_id', 'index'])
+            ->selectRaw('`exam_user_id`, `index`, sum(`value`) as `index_sum`')
+            ->get();
+
+        $map = [];
+        foreach ($progressSum as $value) {
+            $map[$value->exam_user_id][$value->index] = $value->index_sum;
+        }
+
+        foreach ($result as &$item) {
+            $item->progress_value = $map[$item->id] ?? [];
+        }
+
         return $result;
 
     }

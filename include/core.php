@@ -17,6 +17,7 @@ if (!file_exists($rootpath . '.env')) {
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
+require $rootpath . 'include/eloquent.php';
 require $rootpath . 'include/config.php';
 
 ini_set('date.timezone', nexus_config('nexus.timezone'));

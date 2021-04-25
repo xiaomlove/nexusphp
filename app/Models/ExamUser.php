@@ -35,5 +35,10 @@ class ExamUser extends NexusModel
         return $this->belongsTo(User::class, 'uid');
     }
 
+    public function progresses()
+    {
+        return $this->hasMany(ExamProgress::class, 'exam_user_id');
+    }
+
 
 }

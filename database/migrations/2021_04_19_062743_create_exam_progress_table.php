@@ -15,9 +15,11 @@ class CreateExamProgressTable extends Migration
     {
         Schema::create('exam_progress', function (Blueprint $table) {
             $table->id();
+            $table->integer('exam_user_id')->index();
             $table->integer('exam_id')->index();
             $table->integer('uid')->index();
-            $table->integer('type_id');
+            $table->integer('torrent_id');
+            $table->integer('index');
             $table->integer('value');
             $table->timestamps();
             $table->index('created_at');

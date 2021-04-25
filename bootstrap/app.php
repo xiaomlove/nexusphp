@@ -1,5 +1,11 @@
 <?php
 
+if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
+    define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
+} else {
+    define('REQUEST_ID', intval(LARAVEL_START * 10000));
+}
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application

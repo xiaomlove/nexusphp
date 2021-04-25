@@ -16,6 +16,9 @@ class User extends Authenticatable
     const STATUS_CONFIRMED = 'confirmed';
     const STATUS_PENDING = 'pending';
 
+    const ENABLED_YES = 'yes';
+    const ENABLED_NO = 'no';
+
     const CLASS_PEASANT = "0";
     const CLASS_USER = "1";
     const CLASS_POWER_USER = "2";
@@ -96,12 +99,20 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
-
+        'added' => 'datetime',
     ];
 
-    protected $dates = [
-        'added'
-    ];
+    public function checkIsNormal(array $fields = ['status', 'enabled'])
+    {
+        if (in_array('visible', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {
+            throw new \InvalidArgumentException(sprintf('User: %s is not confirmed.', $this->id));
+        }
+        if (in_array('enabled', $fields) && $this->getAttribute('enabled') != self::ENABLED_YES) {
+            throw new \InvalidArgumentException(sprintf('User: %s is not enabled.', $this->id));
+        }
+
+        return true;
+    }
 
 
     public function exams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -111,7 +122,7 @@ class User extends Authenticatable
 
     public function examDetails(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(ExamUser::class. 'uid');
+        return $this->hasMany(ExamUser::class, 'uid');
     }
 
 
