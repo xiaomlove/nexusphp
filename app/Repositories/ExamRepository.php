@@ -9,7 +9,9 @@ use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ExamRepository extends BaseRepository
 {
@@ -235,10 +237,14 @@ class ExamRepository extends BaseRepository
         }
         $result = $query->paginate();
         $idArr = array_column($result->items(), 'id');
-        $progressSum = ExamProgress::query()
-            ->whereIn('exam_user_id', $idArr)
-            ->groupBy(['exam_user_id', 'index'])
-            ->selectRaw('`exam_user_id`, `index`, sum(`value`) as `index_sum`')
+        $examTable = (new Exam())->getTable();
+        $progressTable = (new ExamProgress())->getTable();
+        $progressSum = Capsule::table($progressTable)
+            ->join($examTable, "$progressTable.exam_id", '=', "$examTable.id")
+            ->whereIn("$progressTable.exam_user_id", $idArr)
+            ->whereRaw("$progressTable.created_at >= $examTable.begin and $progressTable.created_at <= $examTable.end")
+            ->groupByRaw("$progressTable.exam_user_id, $progressTable.`index`")
+            ->selectRaw("$progressTable.exam_user_id, $progressTable.`index`, sum($progressTable.`value`) as `index_sum`")
             ->get();
 
         $map = [];
