@@ -324,6 +324,10 @@ $lang_functions = array
     'exam_progress_result' => '结果',
     'exam_progress_result_pass_yes' => '通过！',
     'exam_progress_result_pass_no' => '<bold style="color: red">未通过！</bold>',
+    'exam_index_' . \App\Models\Exam::INDEX_UPLOADED => '上传量',
+    'exam_index_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => '平均做种时间',
+    'exam_index_' . \App\Models\Exam::INDEX_DOWNLOADED => '下载量',
+    'exam_index_' . \App\Models\Exam::INDEX_BONUS => '魔力值',
 );
 
 ?>

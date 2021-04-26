@@ -2601,7 +2601,7 @@ if ($msgalert)
     $exam = new \Nexus\Exam\Exam();
     $examHtml = $exam->render($CURUSER['id']);
     if (!empty($examHtml)) {
-        msgalert("messages.php", $examHtml, "green");
+        msgalert("messages.php", $examHtml, "blue");
     }
 }
 		if ($offlinemsg)

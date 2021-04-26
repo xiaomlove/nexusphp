@@ -57,8 +57,6 @@ class User extends Authenticatable
         self::CLASS_STAFF_LEADER => ['text' => 'Staff Leader'],
     ];
 
-    protected $perPage = 2;
-
     public function getClassTextAttribute(): string
     {
         return self::$classes[$this->class]['text'] ?? '';

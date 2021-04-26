@@ -25,15 +25,27 @@ class Exam
                 $currentValue =  $userExam->progress[$index['index']] ?? 0;
                 $unit = ExamModel::$indexes[$index['index']]['unit'] ?? '';
                 $row[] = sprintf(
-                    '%s：%s, %s：%s %s, %s：%s %s, %s：%s',
-                    $lang_functions['exam_index'] . ($key + 1), ExamModel::$indexes[$index['index']]['name'] ?? '',
+                    '%s：%s, %s：%s %s, %s：%s, %s：%s',
+                    $lang_functions['exam_index'] . ($key + 1), $lang_functions['exam_index_' . $index['index']] ?? '',
                     $lang_functions['exam_require'], $requireValue, $unit,
-                    $lang_functions['exam_progress_current'], $currentValue, $unit,
+                    $lang_functions['exam_progress_current'], $this->formatCurrentValue($index['index'], $currentValue),
                     $lang_functions['exam_progress_result'],
                     $currentValue >= $requireValue ? $lang_functions['exam_progress_result_pass_yes'] : $lang_functions['exam_progress_result_pass_no']
                 );
             }
         }
         return  nl2br(implode("\n", $row));
+    }
+
+    private function formatCurrentValue($indexId, $value)
+    {
+        if ($indexId == ExamModel::INDEX_DOWNLOADED || $indexId == ExamModel::INDEX_UPLOADED) {
+            return mksize($value);
+        }
+        if ($indexId == ExamModel::INDEX_SEED_TIME_AVERAGE) {
+            return mkprettytime($value);
+        }
+        return $value;
+
     }
 }

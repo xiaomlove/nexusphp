@@ -3,7 +3,8 @@
 if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
     define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
 } else {
-    define('REQUEST_ID', intval(LARAVEL_START * 10000));
+    $requestId = str_replace('.', '', LARAVEL_START);
+    define('REQUEST_ID', str_pad($requestId, 14, "0", STR_PAD_RIGHT));
 }
 define('IN_NEXUS', false);
 

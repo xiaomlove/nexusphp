@@ -20,7 +20,7 @@ class CreateExamUsersTable extends Migration
             $table->integer('status')->default(0);
             $table->dateTime('begin')->nullable();
             $table->dateTime('end')->nullable();
-            $table->text('result')->nullable();
+            $table->text('progress')->nullable();
             $table->timestamps();
         });
     }

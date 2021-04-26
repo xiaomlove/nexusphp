@@ -533,3 +533,10 @@ function formatDatetime($datetime, $format = 'Y-m-d H:i:s')
     }
     return $datetime;
 }
+
+function formatTtl($seconds)
+{
+    if ($seconds < 60) {
+        return $seconds . "seconds";
+    }
+}

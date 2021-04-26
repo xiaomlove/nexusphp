@@ -208,6 +208,7 @@ class ExamRepository extends BaseRepository
 
     public function addProgress(int $examUserId, int $indexId, int $value, int $torrentId)
     {
+        $logPrefix = "examUserId: $examUserId, indexId: $indexId, value: $value, torrentId: $torrentId";
         $examUser = ExamUser::query()->with(['exam', 'user'])->findOrFail($examUserId);
         if ($examUser->status != ExamUser::STATUS_NORMAL) {
             throw new \InvalidArgumentException("ExamUser: $examUserId is not normal.");
@@ -226,7 +227,7 @@ class ExamRepository extends BaseRepository
         }
         $torrentFields = ['id', 'visible', 'banned'];
         $torrent = Torrent::query()->findOrFail($torrentId, $torrentFields);
-        $torrent->checkIsNormal(true, $torrentFields);
+        $torrent->checkIsNormal($torrentFields);
 
         $user = $examUser->user;
         $user->checkIsNormal();
@@ -238,8 +239,12 @@ class ExamRepository extends BaseRepository
             'index' => $indexId,
             'value' => $value,
         ];
-        do_log('[addProgress] ' . nexus_json_encode($data));
-        return $examUser->progresses()->create($data);
+        do_log("$logPrefix [addProgress] " . nexus_json_encode($data));
+        $newProgress = $examUser->progresses()->create($data);
+        $examProgress = $this->calculateProgress($examUser);
+        do_log("$logPrefix [updateProgress] " . nexus_json_encode($examProgress));
+        $examUser->update(['progress' => $examProgress]);
+        return $newProgress;
     }
 
     public function getUserExamProgress($uid, $status = null)
@@ -256,11 +261,17 @@ class ExamRepository extends BaseRepository
         if ($examUsers->count() > 1) {
             do_log("$logPrefix, user exam more than 1.", 'warning');
         }
-        /** @var ExamUser $examUser */
         $examUser = $examUsers->first();
-        /** @var Exam $exam */
+        $progress = $this->calculateProgress($examUser);
+        do_log("$logPrefix, progress: " . nexus_json_encode($progress));
+        $examUser->progress = $progress;
+        return $examUser;
+    }
+
+    private function calculateProgress(ExamUser $examUser)
+    {
         $exam = $examUser->exam;
-        $logPrefix .= ", exam: " . $exam->id;
+        $logPrefix = ", examUser: " . $examUser->id;
         if ($examUser->begin) {
             $logPrefix .= ", begin from examUser: " . $examUser->id;
             $begin = $examUser->begin;
@@ -289,8 +300,9 @@ class ExamRepository extends BaseRepository
             ->get();
 
         do_log("$logPrefix, query: " . last_query() . ", progressSum: " . $progressSum->toJson());
-        $examUser->progress = $progressSum->pluck('sum', 'index')->toArray();
-        return $examUser;
+
+        return $progressSum->pluck('sum', 'index')->toArray();
+
     }
 
 

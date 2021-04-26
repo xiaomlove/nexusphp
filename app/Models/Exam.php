@@ -22,13 +22,13 @@ class Exam extends NexusModel
     ];
 
     const INDEX_UPLOADED = 1;
-    const INDEX_SEED_TIME_AVERGAGE = 2;
+    const INDEX_SEED_TIME_AVERAGE = 2;
     const INDEX_DOWNLOADED = 3;
     const INDEX_BONUS = 4;
 
     public static $indexes = [
         self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB'],
-        self::INDEX_SEED_TIME_AVERGAGE => ['name' => 'Seed Time Average', 'unit' => 'Hour'],
+        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed Time Average', 'unit' => 'Hour'],
         self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB'],
         self::INDEX_BONUS => ['name' => 'Bonus', 'unit' => ''],
     ];
@@ -41,7 +41,7 @@ class Exam extends NexusModel
         self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User Register Time Range'],
     ];
 
-    public function getStatusTextAttribute()
+    public function getStatusTextAttribute(): string
     {
         return self::$status[$this->status]['text'] ?? '';
     }

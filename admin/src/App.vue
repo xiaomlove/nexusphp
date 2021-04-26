@@ -29,9 +29,9 @@
                         <template #title>
                             <span>System</span>
                         </template>
-                        <el-menu-item-group>
-                            <el-menu-item index="/agent-allow"><i class="el-icon-menu" />Agent allow</el-menu-item>
-                        </el-menu-item-group>
+<!--                        <el-menu-item-group>-->
+<!--                            <el-menu-item index="/agent-allow"><i class="el-icon-menu" />Agent allow</el-menu-item>-->
+<!--                        </el-menu-item-group>-->
                         <el-menu-item-group>
                             <el-menu-item index="/exam"><i class="el-icon-menu" />Exam</el-menu-item>
                         </el-menu-item-group>

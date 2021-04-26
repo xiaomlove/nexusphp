@@ -317,7 +317,19 @@ $lang_functions = array
 	'text_required' => 'Required',
 	'text_invalid' => 'Invalid',
 	'text_technical_info' => 'Technical Info',
-	'text_technical_info_help_text' => 'Technical Information comes from software <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，open file, click the view menu > text > right click in the box > select all > copy > past into this box.'
+	'text_technical_info_help_text' => 'Technical Information comes from software <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，open file, click the view menu > text > right click in the box > select all > copy > past into this box.',
+    'exam_name' => 'Exam Name',
+    'exam_time_range' => 'Exam Time',
+    'exam_index' => 'Exam Index',
+    'exam_require' => 'Require',
+    'exam_progress_current' => 'Current',
+    'exam_progress_result' => 'Result',
+    'exam_progress_result_pass_yes' => 'Pass!',
+    'exam_progress_result_pass_no' => '<bold style="color: red">Not Pass!</bold>',
+    'exam_index_' . \App\Models\Exam::INDEX_UPLOADED => 'Uploaded',
+    'exam_index_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => 'Seed Time Average',
+    'exam_index_' . \App\Models\Exam::INDEX_DOWNLOADED => 'Downloaded',
+    'exam_index_' . \App\Models\Exam::INDEX_BONUS => 'Bonus',
 );
 
 ?>

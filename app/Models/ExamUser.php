@@ -4,7 +4,7 @@ namespace App\Models;
 
 class ExamUser extends NexusModel
 {
-    protected $fillable = ['exam_id', 'uid', 'status', 'result'];
+    protected $fillable = ['exam_id', 'uid', 'status', 'progress'];
 
     public $timestamps = true;
 
@@ -17,7 +17,7 @@ class ExamUser extends NexusModel
     ];
 
     protected $casts = [
-        'result' => 'json'
+        'progress' => 'json'
     ];
 
     public function getStatusTextAttribute()

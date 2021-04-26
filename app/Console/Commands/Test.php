@@ -45,8 +45,7 @@ class Test extends Command
     public function handle()
     {
         $rep = new ExamRepository();
-//        $r = $rep->assignToUser(3);
-        echo new A;
+        $r = $rep->addProgress(1, 1, 250, 1);
         dd($r);
     }
 }
