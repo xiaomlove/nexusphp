@@ -2,6 +2,7 @@
 if(!defined('IN_TRACKER')) {
     die('Hacking attempt!');
 }
+define('IN_NEXUS', true);
 define('ROOT_PATH', $rootpath);
 define('VERSION_NUMBER', '1.6.0');
 define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));

@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', 'daily'),
 
     /*
     |--------------------------------------------------------------------------
@@ -37,6 +37,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
+            'tab' => [\App\Logging\NexusFormatter::class],
             'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
@@ -49,8 +50,9 @@ return [
 
         'daily' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/laravel.log'),
+            'path' => env('LOG_FILE', '/tmp/nexus.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'tab' => [\App\Logging\NexusFormatter::class],
             'days' => 14,
         ],
 

@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
 {
@@ -107,6 +108,15 @@ class ExamController extends Controller
     {
         $result = $this->repository->listUser($request->all());
         $resource = ExamUserResource::collection($result);
+        return $this->success($resource);
+    }
+
+    public function progress(Request $request)
+    {
+        $result = $this->repository->getUserExamProgress(Auth::id());
+        $resource = new ExamUserResource($result);
+        return $resource;
+//        dd($resource->response()->getData(true));
         return $this->success($resource);
     }
 

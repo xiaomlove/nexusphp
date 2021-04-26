@@ -5,6 +5,7 @@ if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
 } else {
     define('REQUEST_ID', intval(LARAVEL_START * 10000));
 }
+define('IN_NEXUS', false);
 
 /*
 |--------------------------------------------------------------------------

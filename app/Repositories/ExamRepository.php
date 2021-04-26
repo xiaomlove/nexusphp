@@ -9,9 +9,6 @@ use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ExamRepository extends BaseRepository
 {
@@ -102,7 +99,7 @@ class ExamRepository extends BaseRepository
         $logPrefix = "uid: $uid";
         $exams = $this->listValid();
         if ($exams->isEmpty()) {
-            Log::info("$logPrefix, no valid exam.");
+            do_log("$logPrefix, no valid exam.");
             return $exams;
         }
         $user = User::query()->findOrFail($uid, ['id', 'username', 'added', 'class']);
@@ -110,11 +107,15 @@ class ExamRepository extends BaseRepository
         $filtered = $exams->filter(function (Exam $exam) use ($user, $logPrefix) {
             $filters = $exam->filters;
             if (empty($filters->classes)) {
-                Log::info("$logPrefix, exam: {$exam->id} no class");
+                do_log("$logPrefix, exam: {$exam->id} no class");
                 return false;
             }
             if (!in_array($user->class, $filters->classes)) {
-                Log::info("$logPrefix, user class: {$user->class} not in: " . json_encode($filters));
+                do_log("$logPrefix, user class: {$user->class} not in: " . json_encode($filters));
+                return false;
+            }
+            if (!$user->added) {
+                do_log("$logPrefix, user no added time", 'warning');
                 return false;
             }
 
@@ -122,20 +123,20 @@ class ExamRepository extends BaseRepository
             $registerTimeBegin = $filters->register_time_range[0] ? Carbon::parse($filters->register_time_range[0])->toDateString() : '';
             $registerTimeEnd = $filters->register_time_range[1] ? Carbon::parse($filters->register_time_range[1])->toDateString() : '';
             if (empty($registerTimeBegin)) {
-                Log::info("$logPrefix, exam: {$exam->id} no register_time_begin");
+                do_log("$logPrefix, exam: {$exam->id} no register_time_begin");
                 return false;
             }
             if ($added < $registerTimeBegin) {
-                Log::info("$logPrefix, added: $added not after: " . $registerTimeBegin);
+                do_log("$logPrefix, added: $added not after: " . $registerTimeBegin);
                 return false;
             }
 
             if (empty($registerTimeEnd)) {
-                Log::info("$logPrefix, exam: {$exam->id} no register_time_end");
+                do_log("$logPrefix, exam: {$exam->id} no register_time_end");
                 return false;
             }
             if ($added > $registerTimeEnd) {
-                Log::info("$logPrefix, added: $added not before: " . $registerTimeEnd);
+                do_log("$logPrefix, added: $added not before: " . $registerTimeEnd);
                 return false;
             }
 
@@ -151,15 +152,19 @@ class ExamRepository extends BaseRepository
      *
      * @param $uid
      * @param int $examId
+     * @param null $begin
+     * @param null $end
      * @return mixed
      */
-    public function assignToUser($uid, $examId = 0)
+    public function assignToUser($uid, $examId = 0, $begin = null, $end = null)
     {
+        $logPrefix = "uid: $uid, examId: $examId, begin: $begin, end: $end";
         if ($examId > 0) {
             $exam = Exam::query()->find($examId);
         } else {
             $exams = $this->listMatchExam($uid);
             if ($exams->count() > 1) {
+                do_log(last_query());
                 throw new \LogicException("Match exam more than 1.");
             }
             $exam = $exams->first();
@@ -170,9 +175,18 @@ class ExamRepository extends BaseRepository
         $user = User::query()->findOrFail($uid);
         $exists = $user->exams()->where('exam_id', $exam->id)->exists();
         if ($exists) {
-            throw new \LogicException("exam: {$exam->id} already assign to user: {$user->id}");
+            throw new \LogicException("Exam: {$exam->id} already assign to user: {$user->id}");
         }
-        $result = $user->exams()->save($exam);
+        $data = [
+            'exam_id' => $exam->id,
+        ];
+        if ($begin && $end) {
+            $logPrefix .= ", specific begin and end";
+            $data['begin'] = $begin;
+            $data['end'] = $end;
+        }
+        do_log("$logPrefix, data: " . nexus_json_encode($data));
+        $result = $user->exams()->create($data);
         return $result;
     }
 
@@ -224,40 +238,59 @@ class ExamRepository extends BaseRepository
             'index' => $indexId,
             'value' => $value,
         ];
-        Log::info('[addProgress]', $data);
+        do_log('[addProgress] ' . nexus_json_encode($data));
         return $examUser->progresses()->create($data);
     }
 
-    public function listUserExamProgress($uid, $status = null)
+    public function getUserExamProgress($uid, $status = null)
     {
         $logPrefix = "uid: $uid";
         $query = ExamUser::query()->with(['exam', 'user'])->where('uid', $uid)->orderBy('exam_id', 'desc');
         if ($status) {
             $query->where('status', $status);
         }
-        $result = $query->paginate();
-        $idArr = array_column($result->items(), 'id');
-        $examTable = (new Exam())->getTable();
-        $progressTable = (new ExamProgress())->getTable();
-        $progressSum = Capsule::table($progressTable)
-            ->join($examTable, "$progressTable.exam_id", '=', "$examTable.id")
-            ->whereIn("$progressTable.exam_user_id", $idArr)
-            ->whereRaw("$progressTable.created_at >= $examTable.begin and $progressTable.created_at <= $examTable.end")
-            ->groupByRaw("$progressTable.exam_user_id, $progressTable.`index`")
-            ->selectRaw("$progressTable.exam_user_id, $progressTable.`index`, sum($progressTable.`value`) as `index_sum`")
+        $examUsers = $query->get();
+        if ($examUsers->isEmpty()) {
+            return null;
+        }
+        if ($examUsers->count() > 1) {
+            do_log("$logPrefix, user exam more than 1.", 'warning');
+        }
+        /** @var ExamUser $examUser */
+        $examUser = $examUsers->first();
+        /** @var Exam $exam */
+        $exam = $examUser->exam;
+        $logPrefix .= ", exam: " . $exam->id;
+        if ($examUser->begin) {
+            $logPrefix .= ", begin from examUser: " . $examUser->id;
+            $begin = $examUser->begin;
+        } elseif ($exam->begin) {
+            $logPrefix .= ", begin from exam: " . $exam->id;
+            $begin = $exam->begin;
+        } else {
+            do_log("$logPrefix, no begin");
+            return null;
+        }
+        if ($examUser->end) {
+            $logPrefix .= ", end from examUser: " . $examUser->id;
+            $end = $examUser->end;
+        } elseif ($exam->end) {
+            $logPrefix .= ", end from exam: " . $exam->id;
+            $end = $exam->end;
+        } else {
+            do_log("$logPrefix, no end");
+            return null;
+        }
+        $progressSum = $examUser->progresses()
+            ->where('created_at', '>=', $begin)
+            ->where('created_at', '<=', $end)
+            ->selectRaw("`index`, sum(`value`) as sum")
+            ->groupBy(['index'])
             ->get();
 
-        $map = [];
-        foreach ($progressSum as $value) {
-            $map[$value->exam_user_id][$value->index] = $value->index_sum;
-        }
-
-        foreach ($result as &$item) {
-            $item->progress_value = $map[$item->id] ?? [];
-        }
-
-        return $result;
-
+        do_log("$logPrefix, query: " . last_query() . ", progressSum: " . $progressSum->toJson());
+        $examUser->progress = $progressSum->pluck('sum', 'index')->toArray();
+        return $examUser;
     }
 
 

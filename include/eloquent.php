@@ -8,8 +8,10 @@ $connectionMysql['driver'] = 'mysql';
 $connectionMysql['charset'] = 'utf8mb4';
 $connectionMysql['collation'] = 'utf8mb4_unicode_ci';
 $capsule = new Capsule;
-$capsule->addConnection($connectionMysql, 'default');
+$connectionName = \Nexus\Database\DB::ELOQUENT_CONNECTION_NAME;
+$capsule->addConnection($connectionMysql, $connectionName);
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
+$capsule->getConnection($connectionName)->enableQueryLog();
 
 

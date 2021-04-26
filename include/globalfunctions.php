@@ -145,31 +145,51 @@ function nexus_dd($vars)
     exit(0);
 }
 
-
+/**
+ * write log, use in both pure nexus and inside laravel
+ *
+ * @param $log
+ * @param string $level
+ */
 function do_log($log, $level = 'info')
 {
-    global $CURUSER;
     $logFile = getLogFile();
-	if (($fd = fopen($logFile, 'a')) !== false) {
-		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-		$content = sprintf(
-			"[%s] [%s] [%s] [%s] [%s] %s:%s %s%s%s %s%s",
-			date('Y-m-d H:i:s'),
-			$level,
-            defined('REQUEST_ID') ? REQUEST_ID : '',
-            $CURUSER['id'] ?? 0,
-            $CURUSER['passkey'] ?? $_REQUEST['passkey'] ?? '',
-			$backtrace[0]['file'] ?? '',
-			$backtrace[0]['line'] ?? '',
-			$backtrace[1]['class'] ?? '',
-			$backtrace[1]['type'] ?? '',
-			$backtrace[1]['function'] ?? '',
-			$log,
-			PHP_EOL
-		);
-		fwrite($fd, $content);
-		fclose($fd);
+	if (($fd = fopen($logFile, 'a')) === false) {
+       $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
 	}
+	static $uid, $passkey, $env;
+	if (is_null($uid)) {
+        if (IN_NEXUS) {
+            global $CURUSER;
+            $user = $CURUSER;
+            $uid = $user['id'] ?? 0;
+            $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? '';
+            $env = nexus_env('APP_ENV');
+        } else {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $uid = $user->id ?? 0;
+            $passkey = $user->passkey ?? $_REQUEST['passkey'] ?? '';
+            $env = env('APP_ENV');
+        }
+    }
+    $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+    $content = sprintf(
+        "[%s] [%s] [%s] [%s] %s.%s %s:%s %s%s%s %s%s",
+        date('Y-m-d H:i:s'),
+        defined('REQUEST_ID') ? REQUEST_ID : '',
+        $uid,
+        $passkey,
+        $env, $level,
+        $backtrace[0]['file'] ?? '',
+        $backtrace[0]['line'] ?? '',
+        $backtrace[1]['class'] ?? '',
+        $backtrace[1]['type'] ?? '',
+        $backtrace[1]['function'] ?? '',
+        $log,
+        PHP_EOL
+    );
+    fwrite($fd, $content);
+    fclose($fd);
 }
 
 function getLogFile()
@@ -178,14 +198,14 @@ function getLogFile()
     if (!is_null($logFile)) {
         return $logFile;
     }
-    $config = nexus_config('nexus');
+    if (IN_NEXUS) {
+        $config = nexus_config('nexus');
+    } else {
+        $config = config('nexus');
+    }
     $logFile = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
     if (!empty($config['log_file'])) {
         $logFile = $config['log_file'];
-    }
-    $validSplit = ['daily', 'monthly'];
-    if (empty($config['log_split']) || !in_array($config['log_split'], $validSplit)) {
-        return $logFile;
     }
     $lastDotPos = strrpos($logFile, '.');
     if ($lastDotPos !== false) {
@@ -195,16 +215,7 @@ function getLogFile()
         $prefix = $logFile;
         $suffix = '';
     }
-    switch ($config['log_split']) {
-        case 'daily':
-            $logFile = sprintf('%s-%s%s', $prefix, date('Y-m-d'), $suffix);
-            break;
-        case 'monthly':
-            $logFile = sprintf('%s-%s%s', $prefix, date('Ym'), $suffix);
-            break;
-        default:
-            break;
-    }
+    $logFile = sprintf('%s-%s%s', $prefix, date('Y-m-d'), $suffix);
     return $logFile;
 
 }
@@ -496,4 +507,29 @@ function fail(...$args)
         $data = $args[1];
     }
     return api($ret, $msg, $data);
+}
+
+function last_query($all = false)
+{
+    if (IN_NEXUS) {
+        $queries = \Illuminate\Database\Capsule\Manager::connection(\Nexus\Database\DB::ELOQUENT_CONNECTION_NAME)->getQueryLog();
+    } else {
+        $queries = \Illuminate\Support\Facades\DB::connection(config('database.default'))->getQueryLog();
+    }
+    if ($all) {
+        return nexus_json_encode($queries);
+    }
+    $query = last($queries);
+    return nexus_json_encode($query);
+}
+
+function formatDatetime($datetime, $format = 'Y-m-d H:i:s')
+{
+    if ($datetime instanceof \Carbon\Carbon) {
+        return $datetime->format($format);
+    }
+    if (is_numeric($datetime) && $datetime > strtotime('1970')) {
+        return date($format, $datetime);
+    }
+    return $datetime;
 }

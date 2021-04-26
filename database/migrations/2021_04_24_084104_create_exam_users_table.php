@@ -18,6 +18,8 @@ class CreateExamUsersTable extends Migration
             $table->integer('uid')->index();
             $table->integer('exam_id')->index();
             $table->integer('status')->default(0);
+            $table->dateTime('begin')->nullable();
+            $table->dateTime('end')->nullable();
             $table->text('result')->nullable();
             $table->timestamps();
         });

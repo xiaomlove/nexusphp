@@ -319,6 +319,11 @@ $lang_functions = array
     'exam_name' => '考核名称',
     'exam_time_range' => '考核时间',
     'exam_index' => '考核指标',
+    'exam_require' => '要求',
+    'exam_progress_current' => '当前',
+    'exam_progress_result' => '结果',
+    'exam_progress_result_pass_yes' => '通过！',
+    'exam_progress_result_pass_no' => '<bold style="color: red">未通过！</bold>',
 );
 
 ?>

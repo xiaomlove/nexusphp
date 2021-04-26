@@ -23,6 +23,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::resource('exam', \App\Http\Controllers\ExamController::class);
     Route::get('exam-users', [\App\Http\Controllers\ExamController::class, 'users']);
     Route::get('exam-index', [\App\Http\Controllers\ExamController::class, 'indexes']);
+    Route::get('exam-progress', [\App\Http\Controllers\ExamController::class, 'progress']);
     Route::get('class', [\App\Http\Controllers\UserController::class, 'classes']);
 });
 

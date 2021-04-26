@@ -115,15 +115,9 @@ class User extends Authenticatable
     }
 
 
-    public function exams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(Exam::class, 'exam_users', 'uid', 'exam_id')->withTimestamps();
-    }
-
-    public function examDetails(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function exams()
     {
         return $this->hasMany(ExamUser::class, 'uid');
     }
-
 
 }

@@ -20,6 +20,8 @@ class DB
 
     }
 
+    const ELOQUENT_CONNECTION_NAME = 'default';
+
     public function setDriver(DBInterface $driver)
     {
         $this->driver = $driver;

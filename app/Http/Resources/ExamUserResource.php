@@ -9,6 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ExamUserResource extends JsonResource
 {
+    public $preserveKeys = true;
+
     /**
      * Transform the resource into an array.
      *
@@ -21,10 +23,14 @@ class ExamUserResource extends JsonResource
             'id' => $this->id,
             'status' => $this->status,
             'status_text' => $this->statusText,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'created_at' => formatDatetime($this->created_at),
+            'progress' => $this->when($this->progress, $this->progress),
+            'begin' => formatDatetime($this->begin),
+            'end' => formatDatetime($this->end),
             'user' => new UserResource($this->whenLoaded('user')),
             'exam' => new ExamResource($this->whenLoaded('exam')),
         ];
     }
+
 
 }
