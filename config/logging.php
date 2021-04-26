@@ -37,7 +37,6 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'tab' => [\App\Logging\NexusFormatter::class],
             'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
@@ -52,7 +51,7 @@ return [
             'driver' => 'daily',
             'path' => env('LOG_FILE', '/tmp/nexus.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'tab' => [\App\Logging\NexusFormatter::class],
+            'tap' => [\App\Logging\NexusFormatter::class],
             'days' => 14,
         ],
 
