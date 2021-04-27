@@ -7,6 +7,7 @@ use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
 use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,9 +45,13 @@ class ExamUserController extends Controller
             'uid' => 'required',
         ];
         $request->validate($rules);
-        $result = $this->repository->assignToUser($request->uid, $request->exam_id, $request->begin, $request->end);
-        $resource = new ExamResource($result);
-        return $this->success($resource);
+        $timeRange = $request->get('time_range', []);
+        $begin = isset($timeRange[0]) ? Carbon::parse($timeRange[0])->toDateTimeString() : null;
+        $end = isset($timeRange[1])? Carbon::parse($timeRange[1])->toDateTimeString() : null;
+
+        $result = $this->repository->assignToUser($request->uid, $request->exam_id, $begin, $end);
+        $resource = new ExamUserResource($result);
+        return $this->success($resource, 'Assign exam success!');
     }
 
     /**

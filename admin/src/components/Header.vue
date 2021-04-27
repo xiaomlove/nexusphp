@@ -46,7 +46,7 @@ export default {
         })
         onMounted(() => {
             console.log("Head onMounted!")
-            // console.log(props, context)
+            console.log(props, context)
         })
         watch(
             () => route,

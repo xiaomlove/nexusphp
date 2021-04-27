@@ -4,7 +4,7 @@ namespace App\Models;
 
 class ExamUser extends NexusModel
 {
-    protected $fillable = ['exam_id', 'uid', 'status', 'progress'];
+    protected $fillable = ['exam_id', 'uid', 'status', 'progress', 'begin', 'end'];
 
     public $timestamps = true;
 

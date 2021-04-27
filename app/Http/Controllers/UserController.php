@@ -114,11 +114,13 @@ class UserController extends Controller
         return $this->success($resource);
     }
 
-    public function matchExams()
+    public function matchExams(Request $request)
     {
-        $id = Auth::id();
+        $request->validate([
+            'uid' => 'required',
+        ]);
         $examRepository = new ExamRepository();
-        $result = $examRepository->listMatchExam($id);
+        $result = $examRepository->listMatchExam($request->uid);
         $resource = ExamResource::collection($result);
         return $this->success($resource);
     }

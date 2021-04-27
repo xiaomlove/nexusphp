@@ -35,6 +35,9 @@ const api = {
     storeUser: (params = {}) => {
         return axios.post('user', params);
     },
+    listUserMatchExams: (params = {}) => {
+        return axios.get('user-match-exams', {params: params});
+    },
 
     listExam: (params = {}) => {
         return axios.get('exam', {params: params});
@@ -62,6 +65,9 @@ const api = {
     },
     deleteExamUser: (id) => {
         return axios.delete('exam-users/' + id);
+    },
+    storeExamUser: (params) => {
+        return axios.post('exam-users', params);
     },
 }
 

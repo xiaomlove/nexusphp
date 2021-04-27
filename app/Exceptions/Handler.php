@@ -3,9 +3,11 @@
 namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -47,6 +49,10 @@ class Handler extends ExceptionHandler
             return response()->json(fail($e->getMessage(), $e->guards()), 401);
         });
 
+        $this->renderable(function (UnauthorizedException $e) {
+            return response()->json(fail($e->getMessage(), request()->all()), 403);
+        });
+
         $this->renderable(function (ValidationException $exception) {
             $errors = $exception->errors();
             $msg = Arr::first(Arr::first($errors));
@@ -54,7 +60,9 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (NotFoundHttpException $e) {
-            return response()->json(fail('No query result.', request()->all()), 404);
+            if ($e->getPrevious() && $e->getPrevious() instanceof ModelNotFoundException) {
+                return response()->json(fail('No query result.', request()->all()), 404);
+            }
         });
     }
 
@@ -76,10 +84,22 @@ class Handler extends ExceptionHandler
         }
         return new JsonResponse(
             fail($msg, $data),
-            $this->isHttpException($e) ? $e->getStatusCode() : 500,
+            $this->getHttpStatusCode($e),
             $this->isHttpException($e) ? $e->getHeaders() : [],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
         );
+    }
+
+    protected function getHttpStatusCode(Throwable $e)
+    {
+        if ($e instanceof \InvalidArgumentException || $e instanceof NexusException) {
+            return 200;
+        }
+        if ($this->isHttpException($e)) {
+            return $e->getStatusCode();
+        }
+        return 500;
+
     }
 
 

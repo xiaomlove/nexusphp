@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Exceptions\NexusException;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
@@ -166,17 +167,17 @@ class ExamRepository extends BaseRepository
             $exams = $this->listMatchExam($uid);
             if ($exams->count() > 1) {
                 do_log(last_query());
-                throw new \LogicException("Match exam more than 1.");
+                throw new NexusException("Match exam more than 1.");
             }
             $exam = $exams->first();
         }
         if (!$exam) {
-            throw new \LogicException("No valid exam.");
+            throw new NexusException("No valid exam.");
         }
         $user = User::query()->findOrFail($uid);
         $exists = $user->exams()->where('exam_id', $exam->id)->exists();
         if ($exists) {
-            throw new \LogicException("Exam: {$exam->id} already assign to user: {$user->id}");
+            throw new NexusException("Exam: {$exam->id} already assign to user: {$user->id}");
         }
         $data = [
             'exam_id' => $exam->id,

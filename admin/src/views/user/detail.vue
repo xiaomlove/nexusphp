@@ -112,6 +112,7 @@
             </el-row>
         </el-card>
     </div>
+    <DialogAssignExam ref="assignExam" :reload="fetchPageData"/>
 </template>
 
 <script>
@@ -119,23 +120,22 @@ import { onMounted, reactive, ref, toRefs } from 'vue'
 import { ElMessage } from 'element-plus'
 import {useRoute, useRouter} from 'vue-router'
 import api from '../../utils/api'
+import DialogAssignExam from './dialog-assign-exam.vue'
 
 export default {
     name: "UserDetail",
+    components: {
+        DialogAssignExam
+    },
     setup() {
         const route = useRoute()
         const router = useRouter()
         const { id } = route.query
+        const assignExam = ref(null)
         const state = reactive({
             loading: false,
             baseInfo: {},
             examInfo: {},
-            matchExams: [],
-            dialogAssignExamFormVisible: false,
-            assignExamFormData: {
-                exam_id: '',
-                timeRange: []
-            }
         })
         onMounted(() => {
             fetchPageData()
@@ -153,12 +153,14 @@ export default {
             await fetchPageData()
         }
         const handleAssignExam = async () => {
-            state.dialogAssignExamFormVisible = true;
+            assignExam.value.open(id)
         }
         return {
             ...toRefs(state),
             handleRemoveExam,
-            handleAssignExam
+            handleAssignExam,
+            assignExam,
+            fetchPageData
         }
     }
 }
