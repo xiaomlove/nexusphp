@@ -24,6 +24,11 @@ const router = createRouter({
             component: () => import('../views/user/form.vue')
         },
         {
+            path: '/user-detail',
+            name: 'user-detail',
+            component: () => import('../views/user/detail.vue')
+        },
+        {
             path: '/exam',
             name: 'exam',
             component: () => import('../views/exam/index.vue')

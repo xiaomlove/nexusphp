@@ -9,6 +9,7 @@ use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class ExamRepository extends BaseRepository
 {
@@ -150,13 +151,13 @@ class ExamRepository extends BaseRepository
     /**
      * assign exam to user
      *
-     * @param $uid
-     * @param int $examId
+     * @param int $uid
+     * @param null $examId
      * @param null $begin
      * @param null $end
      * @return mixed
      */
-    public function assignToUser($uid, $examId = 0, $begin = null, $end = null)
+    public function assignToUser(int $uid, $examId = null, $begin = null, $end = null)
     {
         $logPrefix = "uid: $uid, examId: $examId, begin: $begin, end: $end";
         if ($examId > 0) {
@@ -247,12 +248,15 @@ class ExamRepository extends BaseRepository
         return $newProgress;
     }
 
-    public function getUserExamProgress($uid, $status = null)
+    public function getUserExamProgress($uid, $status = null, $with = ['exam', 'user'])
     {
         $logPrefix = "uid: $uid";
-        $query = ExamUser::query()->with(['exam', 'user'])->where('uid', $uid)->orderBy('exam_id', 'desc');
+        $query = ExamUser::query()->where('uid', $uid)->orderBy('exam_id', 'desc');
         if ($status) {
             $query->where('status', $status);
+        }
+        if (!empty($with)) {
+            $query->with($with);
         }
         $examUsers = $query->get();
         if ($examUsers->isEmpty()) {
@@ -262,9 +266,15 @@ class ExamRepository extends BaseRepository
             do_log("$logPrefix, user exam more than 1.", 'warning');
         }
         $examUser = $examUsers->first();
+        $exam = $examUser->exam;
+        if (empty($examUser->begin) || empty($examUser->end)) {
+            $examUser->begin = $exam->begin;
+            $examUser->end = $exam->end;
+        }
         $progress = $this->calculateProgress($examUser);
         do_log("$logPrefix, progress: " . nexus_json_encode($progress));
         $examUser->progress = $progress;
+        $examUser->progress_formatted = $this->getProgressFormatted($exam, $progress);
         return $examUser;
     }
 
@@ -303,6 +313,49 @@ class ExamRepository extends BaseRepository
 
         return $progressSum->pluck('sum', 'index')->toArray();
 
+    }
+
+    private function getProgressFormatted(Exam $exam, array $progress, $locale = null)
+    {
+        $result = [];
+        foreach ($exam->indexes as $key => $index) {
+            if (!isset($index['checked']) || !$index['checked']) {
+                continue;
+            }
+            $currentValue = $progress[$index['index']] ?? 0;
+            $requireValue = $index['require_value'];
+            switch ($index['index']) {
+                case Exam::INDEX_UPLOADED:
+                case Exam::INDEX_DOWNLOADED:
+                    $currentValueFormatted = mksize($currentValue);
+                    $requireValueAtomic = $requireValue * 1024 * 1024 * 1024;
+                    break;
+                case Exam::INDEX_SEED_TIME_AVERAGE:
+                    $currentValueFormatted = mkprettytime($currentValue);
+                    $requireValueAtomic = $requireValue * 3600;
+                    break;
+                default:
+                    $currentValueFormatted = $currentValue;
+                    $requireValueAtomic = $requireValue;
+            }
+            $index['require_value_formatted'] = "$requireValue {$index['unit']}";
+            $index['current_value'] = $currentValue;
+            $index['current_value_formatted'] = $currentValueFormatted;
+            $index['passed'] = $currentValue >= $requireValueAtomic;
+            $result[] = $index;
+        }
+        return $result;
+    }
+
+
+    public function removeExamUser(int $examUserId)
+    {
+        $examUser = ExamUser::query()->findOrFail($examUserId);
+        $result = DB::transaction(function () use ($examUser) {
+            $examUser->progresses()->delete();
+            return $examUser->delete();
+        });
+        return $result;
     }
 
 

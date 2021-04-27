@@ -56,11 +56,12 @@ class UserController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function show($id)
     {
-        //
+        $result = $this->repository->getDetail($id);
+        return $this->success($result);
     }
 
     /**
@@ -113,7 +114,7 @@ class UserController extends Controller
         return $this->success($resource);
     }
 
-    public function exams()
+    public function matchExams()
     {
         $id = Auth::id();
         $examRepository = new ExamRepository();

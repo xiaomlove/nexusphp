@@ -57,17 +57,17 @@
                 label="Action"
                 width="100"
             >
-                <!--                <template #default="scope">-->
-                <!--                    <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>-->
-                <!--                    <el-popconfirm-->
-                <!--                        title="Confirm Delete ?"-->
-                <!--                        @confirm="handleDelete(scope.row.id)"-->
-                <!--                    >-->
-                <!--                        <template #reference>-->
-                <!--                            <a style="cursor: pointer">Delete</a>-->
-                <!--                        </template>-->
-                <!--                    </el-popconfirm>-->
-                <!--                </template>-->
+                <template #default="scope">
+                    <a style="cursor: pointer; margin-right: 10px" @click="handleDetail(scope.row.uid)">Detail</a>
+<!--                    <el-popconfirm-->
+<!--                        title="Confirm Delete ?"-->
+<!--                        @confirm="handleDelete(scope.row.id)"-->
+<!--                    >-->
+<!--                        <template #reference>-->
+<!--                            <a style="cursor: pointer">Delete</a>-->
+<!--                        </template>-->
+<!--                    </el-popconfirm>-->
+                </template>
             </el-table-column>
         </el-table>
         <!--总数超过一页，再展示分页器-->
@@ -130,6 +130,12 @@ export default {
             resetTableSort(val, state)
             fetchTableData()
         }
+        const handleDetail = (id) => {
+            router.push({
+                name: 'user-detail',
+                query: {id: id}
+            })
+        }
 
         const formatColumnUser = (row, column) => {
             return row.user.username
@@ -148,6 +154,7 @@ export default {
             handleAdd,
             handleEdit,
             handleDelete,
+            handleDetail,
             fetchTableData,
             changePage,
             handleSortChange,

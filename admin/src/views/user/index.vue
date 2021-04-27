@@ -77,8 +77,8 @@
                 label="Action"
                 width="100"
             >
-<!--                <template #default="scope">-->
-<!--                    <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>-->
+                <template #default="scope">
+                    <a style="cursor: pointer; margin-right: 10px" @click="handleDetail(scope.row.id)">Detail</a>
 <!--                    <el-popconfirm-->
 <!--                        title="Confirm Delete ?"-->
 <!--                        @confirm="handleDelete(scope.row.id)"-->
@@ -87,7 +87,7 @@
 <!--                            <a style="cursor: pointer">Delete</a>-->
 <!--                        </template>-->
 <!--                    </el-popconfirm>-->
-<!--                </template>-->
+                </template>
             </el-table-column>
         </el-table>
         <!--总数超过一页，再展示分页器-->
@@ -151,6 +151,13 @@ export default {
             fetchTableData()
         }
 
+        const handleDetail = (id) => {
+            router.push({
+                name: 'user-detail',
+                query: {id: id}
+            })
+        }
+
         const formatColumnClass = (row, column) => {
             return row.class_text
         }
@@ -168,6 +175,7 @@ export default {
             handleAdd,
             handleEdit,
             handleDelete,
+            handleDetail,
             fetchTableData,
             changePage,
             handleSortChange,

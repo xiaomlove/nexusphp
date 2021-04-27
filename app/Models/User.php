@@ -100,6 +100,11 @@ class User extends Authenticatable
         'added' => 'datetime',
     ];
 
+    public static $commonFields = [
+        'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
+        'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime'
+    ];
+
     public function checkIsNormal(array $fields = ['status', 'enabled'])
     {
         if (in_array('visible', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {

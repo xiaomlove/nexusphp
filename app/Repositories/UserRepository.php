@@ -1,6 +1,9 @@
 <?php
 namespace App\Repositories;
 
+use App\Http\Resources\ExamUserResource;
+use App\Http\Resources\UserResource;
+use App\Models\ExamUser;
 use App\Models\Setting;
 use App\Models\User;
 
@@ -18,6 +21,27 @@ class UserRepository extends BaseRepository
     {
         $user = User::query()->findOrFail($id, ['id', 'username', 'email', 'avatar']);
         return $user;
+    }
+
+    public function getDetail($id)
+    {
+        $user = User::query()->findOrFail($id, User::$commonFields);
+        $userResource = new UserResource($user);
+        $baseInfo = $userResource->response()->getData(true)['data'];
+
+        $examRep = new ExamRepository();
+        $examProgress = $examRep->getUserExamProgress($id, ExamUser::STATUS_NORMAL, ['exam']);
+        if ($examProgress) {
+            $examResource = new ExamUserResource($examProgress);
+            $examInfo = $examResource->response()->getData(true)['data'];
+        } else {
+            $examInfo = null;
+        }
+
+        return [
+            'base_info' => $baseInfo,
+            'exam_info' => $examInfo,
+        ];
     }
 
     public function store(array $params)

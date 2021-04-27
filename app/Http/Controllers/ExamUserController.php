@@ -10,7 +10,7 @@ use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ExamController extends Controller
+class ExamUserController extends Controller
 {
     private $repository;
 
@@ -27,8 +27,8 @@ class ExamController extends Controller
      */
     public function index(Request $request)
     {
-        $result = $this->repository->getList($request->all());
-        $resource = ExamResource::collection($result);
+        $result = $this->repository->listUser($request->all());
+        $resource = ExamUserResource::collection($result);
         return $this->success($resource);
     }
 
@@ -41,12 +41,10 @@ class ExamController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string',
-            'indexes' => 'required|array|min:1',
-            'status' => 'required|in:0,1',
+            'uid' => 'required',
         ];
         $request->validate($rules);
-        $result = $this->repository->store($request->all());
+        $result = $this->repository->assignToUser($request->uid, $request->exam_id, $request->begin, $request->end);
         $resource = new ExamResource($result);
         return $this->success($resource);
     }
@@ -59,9 +57,7 @@ class ExamController extends Controller
      */
     public function show($id)
     {
-        $result = $this->repository->getDetail($id);
-        $resource = new ExamResource($result);
-        return $this->success($resource);
+
     }
 
     /**
@@ -73,15 +69,7 @@ class ExamController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $rules = [
-            'name' => 'required|string',
-            'indexes' => 'required|array|min:1',
-            'status' => 'required|in:0,1',
-        ];
-        $request->validate($rules);
-        $result = $this->repository->update($request->all(), $id);
-        $resource = new ExamResource($result);
-        return $this->success($resource);
+
     }
 
     /**
@@ -92,14 +80,8 @@ class ExamController extends Controller
      */
     public function destroy($id)
     {
-        $result = $this->repository->delete($id);
-        return $this->success($result, 'Delete exam success!');
-    }
-
-    public function indexes()
-    {
-        $result = $this->repository->listIndexes();
-        return $this->success($result);
+        $result = $this->repository->removeExamUser($id);
+        return $this->success($result, 'Remove user exam success!');
     }
 
 }

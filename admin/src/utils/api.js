@@ -26,6 +26,9 @@ const api = {
     listUser: (params = {}) => {
         return axios.get('user', {params: params});
     },
+    getUser: (id, params = {}) => {
+        return axios.get('user/' + id, {params: params});
+    },
     getUserBase: (params = {}) => {
         return axios.get('user-base', {params: params});
     },
@@ -37,7 +40,7 @@ const api = {
         return axios.get('exam', {params: params});
     },
     listExamIndex: (params = {}) => {
-        return axios.get('exam-index', {params: params});
+        return axios.get('exam-indexes', {params: params});
     },
     storeExam: (params = {}) => {
         return axios.post('exam', params);
@@ -52,10 +55,13 @@ const api = {
         return axios.delete('exam/' + id);
     },
     listClass: (params = {}) => {
-        return axios.get('class', {params: params});
+        return axios.get('user-classes', {params: params});
     },
     listExamUser: (params = {}) => {
         return axios.get('exam-users', {params: params});
+    },
+    deleteExamUser: (id) => {
+        return axios.delete('exam-users/' + id);
     },
 }
 

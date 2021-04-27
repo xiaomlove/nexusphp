@@ -42,6 +42,7 @@ export const pathMap = {
     'agent-allow-form': 'Agent allow form',
     'user': 'User',
     'user-form': 'User form',
+    'user-detail': 'User detail',
     'exam': 'Exam',
     'exam-form': 'Exam form',
     'exam-user': 'Exam user',

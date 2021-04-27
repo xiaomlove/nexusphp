@@ -16,15 +16,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logout', [\App\Http\Controllers\AuthenticateController::class, 'logout']);
+
     Route::resource('agent-allow', \App\Http\Controllers\AgentAllowController::class);
+
     Route::resource('user', \App\Http\Controllers\UserController::class);
     Route::get('user-base', [\App\Http\Controllers\UserController::class, 'base']);
-    Route::get('user-exams', [\App\Http\Controllers\UserController::class, 'exams']);
+    Route::get('user-classes', [\App\Http\Controllers\UserController::class, 'classes']);
+    Route::get('user-match-exams', [\App\Http\Controllers\UserController::class, 'matchExams']);
+
     Route::resource('exam', \App\Http\Controllers\ExamController::class);
-    Route::get('exam-users', [\App\Http\Controllers\ExamController::class, 'users']);
-    Route::get('exam-index', [\App\Http\Controllers\ExamController::class, 'indexes']);
-    Route::get('exam-progress', [\App\Http\Controllers\ExamController::class, 'progress']);
-    Route::get('class', [\App\Http\Controllers\UserController::class, 'classes']);
+    Route::get('exam-indexes', [\App\Http\Controllers\ExamController::class, 'indexes']);
+
+    Route::resource('exam-users', \App\Http\Controllers\ExamUserController::class);
+
 });
 
 Route::post('login', [\App\Http\Controllers\AuthenticateController::class, 'login']);

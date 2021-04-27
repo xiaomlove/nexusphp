@@ -1,8 +1,13 @@
 <template>
     <el-card class="">
         <template #header>
-            <div class="header">
-                <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">Add</el-button>
+            <div class="nexus-table-header">
+                <div class="left">
+
+                </div>
+                <div class="right">
+                    <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">Add</el-button>
+                </div>
             </div>
         </template>
         <el-table
