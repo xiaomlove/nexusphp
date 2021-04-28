@@ -28,7 +28,7 @@ class ExamRepository extends BaseRepository
     {
         $this->checkIndexes($params);
         $valid = $this->listValid();
-        if ($valid->isNotEmpty()) {
+        if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
             throw new NexusException("Valid exam already exists.");
         }
         $exam = Exam::query()->create($params);
@@ -39,7 +39,7 @@ class ExamRepository extends BaseRepository
     {
         $this->checkIndexes($params);
         $valid = $this->listValid($id);
-        if ($valid->isNotEmpty()) {
+        if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
             throw new NexusException("Valid exam already exists.");
         }
         $exam = Exam::query()->findOrFail($id);
@@ -197,9 +197,12 @@ class ExamRepository extends BaseRepository
             throw new NexusException("No valid exam.");
         }
         $user = User::query()->findOrFail($uid);
+        if ($user->exams()->where('status', ExamUser::STATUS_NORMAL)->exists()) {
+            throw new NexusException("User: $uid already has exam on the way.");
+        }
         $exists = $user->exams()->where('exam_id', $exam->id)->exists();
         if ($exists) {
-            throw new NexusException("Exam: {$exam->id} already assign to user: {$user->id}");
+            throw new NexusException("Exam: {$exam->id} already assign to user: {$user->id}.");
         }
         $data = [
             'exam_id' => $exam->id,
@@ -230,41 +233,66 @@ class ExamRepository extends BaseRepository
 
     }
 
-    public function addProgress(int $examUserId, int $indexId, int $value, int $torrentId)
+    public function addProgress(int $uid, int $torrentId, array $indexAndValue)
     {
-        $logPrefix = "examUserId: $examUserId, indexId: $indexId, value: $value, torrentId: $torrentId";
-        $examUser = ExamUser::query()->with(['exam', 'user'])->findOrFail($examUserId);
-        if ($examUser->status != ExamUser::STATUS_NORMAL) {
-            throw new \InvalidArgumentException("ExamUser: $examUserId is not normal.");
-        }
-        if (!isset(Exam::$indexes[$indexId])) {
-            throw new \InvalidArgumentException("Invalid index id: $indexId.");
+        $logPrefix = "uid: $uid, torrentId: $torrentId, indexAndValue: " . json_encode($indexAndValue);
+        do_log($logPrefix);
+
+        $user = User::query()->findOrFail($uid);
+        $user->checkIsNormal();
+
+        $now = Carbon::now()->toDateTimeString();
+        $examUser = $user->exams()->where('status', ExamUser::STATUS_NORMAL)->orderBy('id', 'desc')->first();
+        if (!$examUser) {
+            do_log("no exam is on the way, " . last_query());
+            return false;
         }
         $exam = $examUser->exam;
+        if (!$exam) {
+            throw new NexusException("exam: {$examUser->exam_id} not exists.");
+        }
+        $begin = $examUser->begin ?? $exam->begin;
+        $end = $examUser->end ?? $exam->end;
+        if ($now < $begin || $now > $end) {
+            do_log(sprintf("now: %s, not in exam time range: %s ~ %s", $now, $begin, $end));
+            return false;
+        }
         $indexes = collect($exam->indexes)->keyBy('index');
-        if (!$indexes->has($indexId)) {
-            throw new \InvalidArgumentException(sprintf('Exam: %s does not has index: %s', $exam->id, $indexId));
-        }
-        $index = $indexes->get($indexId);
-        if (!isset($index['checked']) || !$index['checked']) {
-            throw new \InvalidArgumentException(sprintf('Exam: %s index: %s is not checked', $exam->id, $indexId));
-        }
+        do_log("examUser: " . $examUser->toJson() . ", indexes: " . $indexes->toJson());
+
         $torrentFields = ['id', 'visible', 'banned'];
         $torrent = Torrent::query()->findOrFail($torrentId, $torrentFields);
         $torrent->checkIsNormal($torrentFields);
 
-        $user = $examUser->user;
-        $user->checkIsNormal();
+        $insert = [];
+        foreach ($indexAndValue as $indexId => $value) {
+            if (!$indexes->has($indexId)) {
+                do_log(sprintf('Exam: %s does not has index: %s.', $exam->id, $indexId));
+                continue;
+            }
+            $indexInfo = $indexes->get($indexId);
+            if (!isset($indexInfo['checked']) || !$indexInfo['checked']) {
+                do_log(sprintf('Exam: %s index: %s is not checked.', $exam->id, $indexId));
+                continue;
+            }
+            $insert[] = [
+                'exam_user_id' => $examUser->id,
+                'uid' => $user->id,
+                'exam_id' => $exam->id,
+                'torrent_id' => $torrentId,
+                'index' => $indexId,
+                'value' => $value,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+        if (empty($insert)) {
+            do_log("no progress to insert.");
+            return false;
+        }
+        ExamProgress::query()->insert($insert);
+        do_log("[addProgress] " . nexus_json_encode($insert));
 
-        $data = [
-            'uid' => $user->id,
-            'exam_id' => $exam->id,
-            'torrent_id' => $torrentId,
-            'index' => $indexId,
-            'value' => $value,
-        ];
-        do_log("$logPrefix [addProgress] " . nexus_json_encode($data));
-        $newProgress = $examUser->progresses()->create($data);
         $examProgress = $this->calculateProgress($examUser);
         $examProgressFormatted = $this->getProgressFormatted($exam, $examProgress);
         $examNotPassed = array_filter($examProgressFormatted, function ($item) {
@@ -274,9 +302,9 @@ class ExamRepository extends BaseRepository
             'progress' => $examProgress,
             'is_done' => count($examNotPassed) ? ExamUser::IS_DONE_NO : ExamUser::IS_DONE_YES,
         ];
-        do_log("$logPrefix [updateProgress] " . nexus_json_encode($update));
+        do_log("[updateProgress] " . nexus_json_encode($update));
         $examUser->update($update);
-        return $newProgress;
+        return true;
     }
 
     public function getUserExamProgress($uid, $status = null, $with = ['exam', 'user'])
@@ -312,7 +340,7 @@ class ExamRepository extends BaseRepository
     private function calculateProgress(ExamUser $examUser)
     {
         $exam = $examUser->exam;
-        $logPrefix = ", examUser: " . $examUser->id;
+        $logPrefix = "examUser: " . $examUser->id;
         if ($examUser->begin) {
             $logPrefix .= ", begin from examUser: " . $examUser->id;
             $begin = $examUser->begin;
@@ -338,11 +366,25 @@ class ExamRepository extends BaseRepository
             ->where('created_at', '<=', $end)
             ->selectRaw("`index`, sum(`value`) as sum")
             ->groupBy(['index'])
-            ->get();
+            ->get()
+            ->pluck('sum', 'index')
+            ->toArray();
+        $logPrefix .= ", progressSum raw: " . json_encode($progressSum) . ", query: " . last_query();
 
-        do_log("$logPrefix, " . last_query() . ", progressSum: " . $progressSum->toJson());
+        $index = Exam::INDEX_SEED_TIME_AVERAGE;
+        if (isset($progressSum[$index])) {
+            $torrentCount = $examUser->progresses()
+                ->where('index', $index)
+                ->selectRaw('count(distinct(torrent_id)) as torrent_count')
+                ->first()
+                ->torrent_count;
+            $progressSum[$index] = intval($progressSum[$index] / $torrentCount);
+            $logPrefix .= ", get torrent count: $torrentCount, from query: " . last_query();
+        }
 
-        return $progressSum->pluck('sum', 'index')->toArray();
+        do_log("$logPrefix, final progressSum: " . json_encode($progressSum));
+
+        return $progressSum;
 
     }
 

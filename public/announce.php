@@ -2,7 +2,7 @@
 require_once('../include/bittorrent_announce.php');
 require_once('../include/benc.php');
 dbconn_announce();
-do_log(json_encode($_SERVER));
+do_log(nexus_json_encode($_SERVER));
 $log = "";
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"];
@@ -166,6 +166,7 @@ if (!isset($self))
 if(isset($self) && $self['prevts'] > (TIMENOW - $announce_wait))
 	err('There is a minimum announce time of ' . $announce_wait . ' seconds');
 
+$examIndexData = [];
 // current peer_id, or you could say session with tracker not found in table peers
 if (!isset($self))
 {
@@ -222,15 +223,19 @@ else // continue an existing session
 	$downthis = $truedownthis = max(0, $downloaded - $self["downloaded"]);
 	$announcetime = ($self["seeder"] == "yes" ? "seedtime = seedtime + {$self['announcetime']}" : "leechtime = leechtime + {$self['announcetime']}");
 	$is_cheater = false;
-	
+
 	if ($cheaterdet_security){
 		if ($az['class'] < $nodetect_security && $self['announcetime'] > 10)
 		{
 			$is_cheater = check_cheater($userid, $torrent['id'], $upthis, $downthis, $self['announcetime'], $torrent['seeders'], $torrent['leechers']);
 		}
 	}
+
 	do_log("upthis: $upthis, downthis: $downthis, announcetime: $announcetime, is_cheater: $is_cheater");
 
+	if (!$is_cheater) {
+	    $examIndexData[\App\Models\Exam::INDEX_SEED_TIME_AVERAGE] = $self['announcetime'];
+    }
 	if (!$is_cheater && ($trueupthis > 0 || $truedownthis > 0))
 	{
 		$global_promotion_state = get_global_sp_state();
@@ -240,15 +245,20 @@ else // continue an existing session
 			{
 				$USERUPDATESET[] = "uploaded = uploaded + 2*$trueupthis";
 				$USERUPDATESET[] = "downloaded = downloaded + $truedownthis";
+				$examIndexData[\App\Models\Exam::INDEX_UPLOADED] = 2 * $trueupthis;
+				$examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis;
 			}
 			elseif($torrent['sp_state']==4) //2X Free
 			{
 				$USERUPDATESET[] = "uploaded = uploaded + 2*$trueupthis";
+                $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = 2 * $trueupthis;
 			}
 			elseif($torrent['sp_state']==6) //2X 50%
 			{
 				$USERUPDATESET[] = "uploaded = uploaded + 2*$trueupthis";
 				$USERUPDATESET[] = "downloaded = downloaded + $truedownthis/2";
+                $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = 2 * $trueupthis;
+                $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis / 2;
 			}
 			else{
 				if ($torrent['owner'] == $userid && $uploaderdouble_torrent > 0)
@@ -257,21 +267,28 @@ else // continue an existing session
 				if($torrent['sp_state']==2) //Free
 				{
 					$USERUPDATESET[] = "uploaded = uploaded + $upthis";
+                    $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
 				}
 				elseif($torrent['sp_state']==5) //50%
 				{
 					$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 					$USERUPDATESET[] = "downloaded = downloaded + $truedownthis/2";
+                    $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+                    $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis / 2;
 				}
 				elseif($torrent['sp_state']==7) //30%
 				{
 					$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 					$USERUPDATESET[] = "downloaded = downloaded + $truedownthis*3/10";
+                    $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+                    $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis * 3 / 10;
 				}
 				elseif($torrent['sp_state']==1) //Normal
 				{
 					$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 					$USERUPDATESET[] = "downloaded = downloaded + $truedownthis";
+                    $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+                    $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis;
 				}
 			}
 		}
@@ -280,6 +297,7 @@ else // continue an existing session
 			if ($torrent['owner'] == $userid && $uploaderdouble_torrent > 0)
 				$upthis = $trueupthis * $uploaderdouble_torrent;
 			$USERUPDATESET[] = "uploaded = uploaded + $upthis";
+            $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
 		}
 		elseif($global_promotion_state == 3) //2X
 		{
@@ -288,6 +306,8 @@ else // continue an existing session
 			else $upthis = 2*$trueupthis;
 			$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 			$USERUPDATESET[] = "downloaded = downloaded + $truedownthis";
+            $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+            $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis;
 		}
 		elseif($global_promotion_state == 4) //2X Free
 		{
@@ -295,12 +315,15 @@ else // continue an existing session
 				$upthis = $trueupthis * $uploaderdouble_torrent;
 			else $upthis = 2*$trueupthis;
 			$USERUPDATESET[] = "uploaded = uploaded + $upthis";
+            $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
 		}
 		elseif($global_promotion_state == 5){ // 50%
 			if ($torrent['owner'] == $userid && $uploaderdouble_torrent > 0)
 				$upthis = $trueupthis * $uploaderdouble_torrent;
 			$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 			$USERUPDATESET[] = "downloaded = downloaded + $truedownthis/2";
+            $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+            $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis / 2;
 		}
 		elseif($global_promotion_state == 6){ //2X 50%
 			if ($uploaderdouble_torrent > 2 && $torrent['owner'] == $userid && $uploaderdouble_torrent > 0)
@@ -308,12 +331,16 @@ else // continue an existing session
 			else $upthis = 2*$trueupthis;
 			$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 			$USERUPDATESET[] = "downloaded = downloaded + $truedownthis/2";
+            $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+            $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis / 2;
 		}
 		elseif($global_promotion_state == 7){ //30%
 			if ($torrent['owner'] == $userid && $uploaderdouble_torrent > 0)
 				$upthis = $trueupthis * $uploaderdouble_torrent;
 			$USERUPDATESET[] = "uploaded = uploaded + $upthis";
 			$USERUPDATESET[] = "downloaded = downloaded + $truedownthis*3/10";
+            $examIndexData[\App\Models\Exam::INDEX_UPLOADED] = $upthis;
+            $examIndexData[\App\Models\Exam::INDEX_DOWNLOADED] = $truedownthis * 3 / 10;
 		}
 	}
 }
@@ -369,7 +396,7 @@ else
 	if (mysql_affected_rows())
 	{
 		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1" : "leechers = leechers + 1");
-		
+
 		$check = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM snatched WHERE torrentid = $torrentid AND userid = $userid"));
 		if (!$check['0'])
 			sql_query("INSERT INTO snatched (torrentid, userid, ip, port, uploaded, downloaded, to_go, startdat, last_action) VALUES ($torrentid, $userid, ".sqlesc($ip).", $port, $uploaded, $downloaded, $left, $dt, $dt)") or err("SL Err 4");
@@ -392,5 +419,13 @@ if(count($USERUPDATESET) && $userid)
 {
 	sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid);
 }
+
+$examRep = new \App\Repositories\ExamRepository();
+try {
+    $examRep->addProgress($userid, $torrentid, $examIndexData);
+} catch (\Exception $exception) {
+    do_log("add exam progress fail: " . $exception->getMessage());
+}
+
 benc_resp_raw($resp);
 ?>

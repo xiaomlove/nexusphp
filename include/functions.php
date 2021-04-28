@@ -2012,7 +2012,7 @@ function mkprettytime($s) {
 	}
 
 	if ($t["day"])
-	return $t["day"] . ($lang_functions['text_day'] ?? 'days') . sprintf("%02d:%02d:%02d", $t["hour"], $t["min"], $t["sec"]);
+	return $t["day"] . ($lang_functions['text_day'] ?? 'day(s)') . sprintf("%02d:%02d:%02d", $t["hour"], $t["min"], $t["sec"]);
 	if ($t["hour"])
 	return sprintf("%d:%02d:%02d", $t["hour"], $t["min"], $t["sec"]);
 	//    if ($t["min"])

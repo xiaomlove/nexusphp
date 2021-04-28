@@ -534,10 +534,10 @@ function format_datetime($datetime, $format = 'Y-m-d H:i:s')
     return $datetime;
 }
 
-function nexus_trans($key)
+function nexus_trans($key, $replace = [], $locale = null)
 {
     if (!IN_NEXUS) {
-        return trans($key);
+        return trans($key, $replace, $locale);
     }
     static $translations;
     if (is_null($translations)) {
