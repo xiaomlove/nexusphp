@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => ['auth:sanctum', 'permission']], function () {
+Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], function () {
     Route::post('logout', [\App\Http\Controllers\AuthenticateController::class, 'logout']);
 
     Route::resource('agent-allow', \App\Http\Controllers\AgentAllowController::class);

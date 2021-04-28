@@ -4,7 +4,7 @@ namespace App\Models;
 
 class ExamUser extends NexusModel
 {
-    protected $fillable = ['exam_id', 'uid', 'status', 'progress', 'begin', 'end'];
+    protected $fillable = ['exam_id', 'uid', 'status', 'progress', 'begin', 'end', 'is_done'];
 
     public $timestamps = true;
 
@@ -15,6 +15,10 @@ class ExamUser extends NexusModel
         self::STATUS_NORMAL => ['text' => 'Normal'],
         self::STATUS_FINISHED => ['text' => 'Finished'],
     ];
+
+    const IS_DONE_YES = 1;
+    const IS_DONE_NO = 0;
+
 
     protected $casts = [
         'progress' => 'json'

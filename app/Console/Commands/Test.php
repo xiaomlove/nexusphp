@@ -45,7 +45,11 @@ class Test extends Command
     public function handle()
     {
         $rep = new ExamRepository();
-        $r = $rep->addProgress(15, 1, 250, 1);
-        dd($r);
+//        $r = $rep->assignToUser(1, 1);
+//        $r = $rep->addProgress(27, 4, 1025, 1);
+//        dd($r);
+//        $rep->assignCronjob();
+        $rep->cronjobCheckout();
     }
+
 }

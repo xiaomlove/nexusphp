@@ -523,7 +523,7 @@ function last_query($all = false)
     return nexus_json_encode($query);
 }
 
-function formatDatetime($datetime, $format = 'Y-m-d H:i:s')
+function format_datetime($datetime, $format = 'Y-m-d H:i:s')
 {
     if ($datetime instanceof \Carbon\Carbon) {
         return $datetime->format($format);
@@ -534,9 +534,23 @@ function formatDatetime($datetime, $format = 'Y-m-d H:i:s')
     return $datetime;
 }
 
-function formatTtl($seconds)
+function nexus_trans($key)
 {
-    if ($seconds < 60) {
-        return $seconds . "seconds";
+    if (!IN_NEXUS) {
+        return trans($key);
     }
+    static $translations;
+    if (is_null($translations)) {
+        $lang = get_langfolder_cookie();
+        $lang = \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
+        $dir = ROOT_PATH . 'resources/lang/' . $lang;
+        $files = glob($dir . '/*.php');
+        foreach ($files as $file) {
+            $basename = basename($file);
+            $values = require $file;
+            $key = strstr($basename, '.php', true);
+            arr_set($translations, $key, $values);
+        }
+    }
+    return arr_get($translations, $key);
 }

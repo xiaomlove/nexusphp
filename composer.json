@@ -31,6 +31,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "~6.0",
         "imdbphp/imdbphp": "^6.4",
+        "laravel-lang/lang": "~7.0",
         "laravel/framework": "^8.12",
         "laravel/sanctum": "^2.10",
         "laravel/tinker": "^2.5",

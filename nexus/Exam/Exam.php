@@ -2,50 +2,34 @@
 
 namespace Nexus\Exam;
 
+use App\Models\ExamUser;
 use App\Repositories\ExamRepository;
-use App\Models\Exam as ExamModel;
 
 class Exam
 {
     public function render($uid)
     {
-        global $lang_functions;
         $examRep = new ExamRepository();
-        $userExam = $examRep->getUserExamProgress($uid);
+        $userExam = $examRep->getUserExamProgress($uid, ExamUser::STATUS_NORMAL, ['exam']);
         if (empty($userExam)) {
             return '';
         }
         $exam = $userExam->exam;
         $row = [];
-        $row[] = sprintf('%s：%s', $lang_functions['exam_name'], $exam->name);
-        $row[] = sprintf('%s：%s ~ %s', $lang_functions['exam_time_range'], $exam->begin, $exam->end);
-        foreach ($exam->indexes as $key => $index) {
+        $row[] = sprintf('%s：%s', nexus_trans('exam.name'), $exam->name);
+        $row[] = sprintf('%s：%s ~ %s', nexus_trans('exam.time_range'), $userExam->begin, $userExam->end);
+        foreach ($userExam->progress_formatted as $key => $index) {
             if (isset($index['checked']) && $index['checked']) {
-                $requireValue = $index['require_value'];
-                $currentValue =  $userExam->progress[$index['index']] ?? 0;
-                $unit = ExamModel::$indexes[$index['index']]['unit'] ?? '';
                 $row[] = sprintf(
-                    '%s：%s, %s：%s %s, %s：%s, %s：%s',
-                    $lang_functions['exam_index'] . ($key + 1), $lang_functions['exam_index_' . $index['index']] ?? '',
-                    $lang_functions['exam_require'], $requireValue, $unit,
-                    $lang_functions['exam_progress_current'], $this->formatCurrentValue($index['index'], $currentValue),
-                    $lang_functions['exam_progress_result'],
-                    $currentValue >= $requireValue ? $lang_functions['exam_progress_result_pass_yes'] : $lang_functions['exam_progress_result_pass_no']
+                    '%s：%s, %s：%s, %s：%s, %s：%s',
+                    nexus_trans('exam.index') . ($key + 1), nexus_trans('exam.index_text_' . $index['index']),
+                    nexus_trans('exam.require_value'), $index['require_value_formatted'],
+                    nexus_trans('exam.current_value'), $index['current_value_formatted'],
+                    nexus_trans('exam.result'),
+                    $index['passed'] ? nexus_trans('exam.result_pass') : nexus_trans('exam.result_not_pass')
                 );
             }
         }
         return  nl2br(implode("\n", $row));
-    }
-
-    private function formatCurrentValue($indexId, $value)
-    {
-        if ($indexId == ExamModel::INDEX_DOWNLOADED || $indexId == ExamModel::INDEX_UPLOADED) {
-            return mksize($value);
-        }
-        if ($indexId == ExamModel::INDEX_SEED_TIME_AVERAGE) {
-            return mkprettytime($value);
-        }
-        return $value;
-
     }
 }

@@ -123,4 +123,9 @@ class User extends Authenticatable
         return $this->hasMany(ExamUser::class, 'uid');
     }
 
+    public function language()
+    {
+        return $this->belongsTo(Language::class, 'lang');
+    }
+
 }

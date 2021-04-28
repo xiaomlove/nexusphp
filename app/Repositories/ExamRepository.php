@@ -5,10 +5,12 @@ use App\Exceptions\NexusException;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
+use App\Models\Message;
 use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -25,6 +27,10 @@ class ExamRepository extends BaseRepository
     public function store(array $params)
     {
         $this->checkIndexes($params);
+        $valid = $this->listValid();
+        if ($valid->isNotEmpty()) {
+            throw new NexusException("Valid exam already exists.");
+        }
         $exam = Exam::query()->create($params);
         return $exam;
     }
@@ -32,6 +38,10 @@ class ExamRepository extends BaseRepository
     public function update(array $params, $id)
     {
         $this->checkIndexes($params);
+        $valid = $this->listValid($id);
+        if ($valid->isNotEmpty()) {
+            throw new NexusException("Valid exam already exists.");
+        }
         $exam = Exam::query()->findOrFail($id);
         $exam->update($params);
         return $exam;
@@ -78,16 +88,21 @@ class ExamRepository extends BaseRepository
     /**
      * list valid exams
      *
+     * @param null $excludeId
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function listValid()
+    public function listValid($excludeId = null)
     {
         $now = Carbon::now();
-        return Exam::query()
+        $query = Exam::query()
             ->where('begin', '<=', $now)
             ->where('end', '>=', $now)
             ->where('status', Exam::STATUS_ENABLED)
-            ->get();
+            ->orderBy('id', 'desc');
+        if ($excludeId) {
+            $query->whereNotIn('id', Arr::wrap($excludeId));
+        }
+        return $query->get();
     }
 
     /**
@@ -104,48 +119,55 @@ class ExamRepository extends BaseRepository
             do_log("$logPrefix, no valid exam.");
             return $exams;
         }
-        $user = User::query()->findOrFail($uid, ['id', 'username', 'added', 'class']);
 
-        $filtered = $exams->filter(function (Exam $exam) use ($user, $logPrefix) {
-            $filters = $exam->filters;
-            if (empty($filters->classes)) {
-                do_log("$logPrefix, exam: {$exam->id} no class");
-                return false;
-            }
-            if (!in_array($user->class, $filters->classes)) {
-                do_log("$logPrefix, user class: {$user->class} not in: " . json_encode($filters));
-                return false;
-            }
-            if (!$user->added) {
-                do_log("$logPrefix, user no added time", 'warning');
-                return false;
-            }
-
-            $added = $user->added->toDateTimeString();
-            $registerTimeBegin = $filters->register_time_range[0] ? Carbon::parse($filters->register_time_range[0])->toDateString() : '';
-            $registerTimeEnd = $filters->register_time_range[1] ? Carbon::parse($filters->register_time_range[1])->toDateString() : '';
-            if (empty($registerTimeBegin)) {
-                do_log("$logPrefix, exam: {$exam->id} no register_time_begin");
-                return false;
-            }
-            if ($added < $registerTimeBegin) {
-                do_log("$logPrefix, added: $added not after: " . $registerTimeBegin);
-                return false;
-            }
-
-            if (empty($registerTimeEnd)) {
-                do_log("$logPrefix, exam: {$exam->id} no register_time_end");
-                return false;
-            }
-            if ($added > $registerTimeEnd) {
-                do_log("$logPrefix, added: $added not before: " . $registerTimeEnd);
-                return false;
-            }
-
-            return true;
+        $matched = $exams->filter(function (Exam $exam) use ($uid, $logPrefix) {
+            return $this->isExamMatchUser($exam, $uid);
         });
 
-        return $filtered;
+        return $matched;
+    }
+
+    private function isExamMatchUser(Exam $exam, $user)
+    {
+        if (!$user instanceof User) {
+            $user = User::query()->findOrFail(intval($user), ['id', 'username', 'added', 'class']);
+        }
+        $logPrefix = sprintf('exam: %s, user: %s', $exam->id, $user->id);
+        $filters = $exam->filters;
+        if (empty($filters->classes)) {
+            do_log("$logPrefix, exam: {$exam->id} no class");
+            return false;
+        }
+        if (!in_array($user->class, $filters->classes)) {
+            do_log("$logPrefix, user class: {$user->class} not in: " . json_encode($filters));
+            return false;
+        }
+        if (!$user->added) {
+            do_log("$logPrefix, user no added time", 'warning');
+            return false;
+        }
+
+        $added = $user->added->toDateTimeString();
+        $registerTimeBegin = $filters->register_time_range[0] ? Carbon::parse($filters->register_time_range[0])->toDateString() : '';
+        $registerTimeEnd = $filters->register_time_range[1] ? Carbon::parse($filters->register_time_range[1])->toDateString() : '';
+        if (empty($registerTimeBegin)) {
+            do_log("$logPrefix, exam: {$exam->id} no register_time_begin");
+            return false;
+        }
+        if ($added < $registerTimeBegin) {
+            do_log("$logPrefix, added: $added not after: " . $registerTimeBegin);
+            return false;
+        }
+
+        if (empty($registerTimeEnd)) {
+            do_log("$logPrefix, exam: {$exam->id} no register_time_end");
+            return false;
+        }
+        if ($added > $registerTimeEnd) {
+            do_log("$logPrefix, added: $added not before: " . $registerTimeEnd);
+            return false;
+        }
+        return true;
     }
 
 
@@ -244,8 +266,16 @@ class ExamRepository extends BaseRepository
         do_log("$logPrefix [addProgress] " . nexus_json_encode($data));
         $newProgress = $examUser->progresses()->create($data);
         $examProgress = $this->calculateProgress($examUser);
-        do_log("$logPrefix [updateProgress] " . nexus_json_encode($examProgress));
-        $examUser->update(['progress' => $examProgress]);
+        $examProgressFormatted = $this->getProgressFormatted($exam, $examProgress);
+        $examNotPassed = array_filter($examProgressFormatted, function ($item) {
+            return !$item['passed'];
+        });
+        $update = [
+            'progress' => $examProgress,
+            'is_done' => count($examNotPassed) ? ExamUser::IS_DONE_NO : ExamUser::IS_DONE_YES,
+        ];
+        do_log("$logPrefix [updateProgress] " . nexus_json_encode($update));
+        $examUser->update($update);
         return $newProgress;
     }
 
@@ -253,7 +283,7 @@ class ExamRepository extends BaseRepository
     {
         $logPrefix = "uid: $uid";
         $query = ExamUser::query()->where('uid', $uid)->orderBy('exam_id', 'desc');
-        if ($status) {
+        if (!is_null($status)) {
             $query->where('status', $status);
         }
         if (!empty($with)) {
@@ -310,7 +340,7 @@ class ExamRepository extends BaseRepository
             ->groupBy(['index'])
             ->get();
 
-        do_log("$logPrefix, query: " . last_query() . ", progressSum: " . $progressSum->toJson());
+        do_log("$logPrefix, " . last_query() . ", progressSum: " . $progressSum->toJson());
 
         return $progressSum->pluck('sum', 'index')->toArray();
 
@@ -339,7 +369,8 @@ class ExamRepository extends BaseRepository
                     $currentValueFormatted = $currentValue;
                     $requireValueAtomic = $requireValue;
             }
-            $index['require_value_formatted'] = "$requireValue {$index['unit']}";
+            $index['index_formatted'] = nexus_trans('exam.index_text_' . $index['index']);
+            $index['require_value_formatted'] = "$requireValue " . ($index['unit'] ?? '');
             $index['current_value'] = $currentValue;
             $index['current_value_formatted'] = $currentValueFormatted;
             $index['passed'] = $currentValue >= $requireValueAtomic;
@@ -357,6 +388,119 @@ class ExamRepository extends BaseRepository
             return $examUser->delete();
         });
         return $result;
+    }
+
+    public function cronjonAssign()
+    {
+        $exams = $this->listValid();
+        if ($exams->isEmpty()) {
+            do_log("No valid exam.");
+            return true;
+        }
+        if ($exams->count() > 1) {
+            do_log("Valid exam more than 1.", "warning");
+        }
+        /** @var Exam $exam */
+        $exam = $exams->first();
+        $userTable = (new User())->getTable();
+        $examUserTable = (new ExamUser())->getTable();
+        User::query()
+            ->leftJoin($examUserTable, function (JoinClause $join) use ($examUserTable, $userTable) {
+                $join->on("$userTable.id", "=", "$examUserTable.uid")
+                    ->on("$examUserTable.status", "=", DB::raw(ExamUser::STATUS_NORMAL));
+            })
+            ->whereRaw("$examUserTable.id is null")
+            ->selectRaw("$userTable.*")
+            ->chunk(100, function ($users) use ($exam) {
+                do_log("user count: " . $users->count() . last_query());
+                $insert = [];
+                $now = Carbon::now()->toDateTimeString();
+                foreach ($users as $user) {
+                    $logPrefix = sprintf('[assignCronjob] user: %s, exam: %s', $user->id, $exam->id);
+                    if (!$this->isExamMatchUser($exam, $user)) {
+                        do_log("$logPrefix, exam not match user.");
+                        continue;
+                    }
+                    $insert[] = [
+                        'uid' => $user->id,
+                        'exam_id' => $exam->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    do_log("$logPrefix, exam assign to user.");
+                }
+                ExamUser::query()->insert($insert);
+            });
+        return true;
+    }
+
+    public function cronjobCheckout()
+    {
+        $now = Carbon::now()->toDateTimeString();
+        $examUserTable = (new ExamUser())->getTable();
+        $examTable = (new Exam())->getTable();
+        $perPage = 100;
+        $page = 1;
+        $query = ExamUser::query()
+            ->join($examTable, "$examUserTable.exam_id", "=", "$examTable.id")
+            ->where("$examUserTable.status", ExamUser::STATUS_NORMAL)
+            ->whereRaw("if($examUserTable.begin is not null, $examUserTable.begin <= '$now', $examTable.begin <= '$now')")
+            ->whereRaw("if($examUserTable.end is not null, $examUserTable.end >= '$now', $examTable.end >= '$now')")
+            ->selectRaw("$examUserTable.*")
+            ->with(['exam', 'user', 'user.language'])
+            ->orderBy("$examUserTable.id", "asc");
+
+        while (true) {
+            $logPrefix = sprintf('[%s], page: %s', __FUNCTION__, $page);
+            $examUsers = $query->forPage($page, $perPage)->get("$examUserTable.*");
+            if ($examUsers->isEmpty()) {
+                do_log("$logPrefix, no more data..." . last_query());
+                break;
+            } else {
+                do_log("$logPrefix, fetch exam users: {$examUsers->count()}, " . last_query());
+            }
+            $now = Carbon::now()->toDateTimeString();
+            $idArr = $uidToDisable = $messageToSend = [];
+            foreach ($examUsers as $examUser) {
+                $idArr[] = $examUser->id;
+                $uid = $examUser->uid;
+                $currentLogPrefix = sprintf("$logPrefix, user: %s, exam: %s, examUser: %s", $uid, $examUser->exam_id, $examUser->id);
+                if ($examUser->is_done) {
+                    do_log("$currentLogPrefix, [is_done]");
+                    $messageToSend[] = [
+                        'receiver' => $uid,
+                        'added' => $now,
+                        'subject' => 'Exam passed!',
+                        'msg' => sprintf(
+                            'Congratulations! You have complete the exam: %s in time(%s ~ %s)!',
+                            $examUser->exam->name, $examUser->begin ?? $examUser->exam->begin, $examUser->end ?? $examUser->exam->end
+                        ),
+                    ];
+                } else {
+                    do_log("$currentLogPrefix, [will be banned]");
+                    //ban user
+                    $uidToDisable[] = $uid;
+                    $messageToSend[] = [
+                        'receiver' => $uid,
+                        'added' => $now,
+                        'subject' => 'Exam not passed! And your account is banned!',
+                        'msg' => sprintf(
+                            'You did not complete the exam: %s in time(%s ~ %s), so your account has been banned!',
+                            $examUser->exam->name, $examUser->begin ?? $examUser->exam->begin, $examUser->end ?? $examUser->exam->end
+                        ),
+                    ];
+                }
+            }
+            DB::transaction(function () use ($uidToDisable, $messageToSend, $idArr) {
+                ExamUser::query()->whereIn('id', $idArr)->update(['status' => ExamUser::STATUS_FINISHED]);
+                Message::query()->insert($messageToSend);
+                if (!empty($uidToDisable)) {
+                    User::query()->whereIn('id', $uidToDisable)->update(['enabled' => User::ENABLED_NO]);
+                }
+            });
+            $page++;
+        }
+        return true;
     }
 
 

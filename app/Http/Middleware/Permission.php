@@ -25,7 +25,7 @@ class Permission
             do_log("$log, denied!");
             throw new UnauthorizedException('Unauthorized!');
         }
-        do_log("$log, pass!");
+        do_log("$log, allow!");
         return $next($request);
     }
 }

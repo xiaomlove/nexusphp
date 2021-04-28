@@ -20,7 +20,7 @@ class CreateExamProgressTable extends Migration
             $table->integer('uid')->index();
             $table->integer('torrent_id');
             $table->integer('index');
-            $table->integer('value');
+            $table->bigInteger('value');
             $table->timestamps();
             $table->index('created_at');
         });
