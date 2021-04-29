@@ -13,4 +13,8 @@ return [
     'result' => 'Result',
     'result_pass' => 'Pass!',
     'result_not_pass' => '<bold color="red">Not pass!</bold>',
+    'checkout_pass_message_subject' => 'Exam pass!',
+    'checkout_pass_message_content' => 'Congratulation! You have complete the exam: :exam_name in time(:begin ~ :end)',
+    'checkout_not_pass_message_subject' => 'Exam not pass, and account is banned!',
+    'checkout_not_pass_message_content' => 'You did not complete the exam: :exam_name in time(:begin ~ :end), and your account has be banned!',
 ];

@@ -42,7 +42,7 @@
                 </el-menu>
             </el-aside>
             <el-container class="content">
-                <Header />
+                <Header :router-name="state.routerName"/>
                 <div class="main">
                     <router-view />
                 </div>
@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import { useRouter } from 'vue-router'
@@ -76,7 +76,11 @@ export default {
             currentPath: '/dashboard',
             count: {
                 number: 1
-            }
+            },
+            routerName: router.name
+        })
+        onMounted(() => {
+            console.log(router)
         })
         router.beforeEach((to, from, next) => {
             console.log("App beforeEach to", to)

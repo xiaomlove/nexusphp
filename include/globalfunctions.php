@@ -540,17 +540,32 @@ function nexus_trans($key, $replace = [], $locale = null)
         return trans($key, $replace, $locale);
     }
     static $translations;
-    if (is_null($translations)) {
+    if (!$locale) {
         $lang = get_langfolder_cookie();
-        $lang = \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
-        $dir = ROOT_PATH . 'resources/lang/' . $lang;
-        $files = glob($dir . '/*.php');
+        $locale = \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
+    }
+    if (is_null($translations)) {
+        $langDir = ROOT_PATH . 'resources/lang/';
+        $files = glob($langDir . '*/*');
         foreach ($files as $file) {
-            $basename = basename($file);
             $values = require $file;
-            $key = strstr($basename, '.php', true);
-            arr_set($translations, $key, $values);
+            $setKey = substr($file, strlen($langDir));
+            if (substr($setKey, -4) == '.php') {
+                $setKey = substr($setKey, 0, -4);
+            }
+            $setKey = str_replace('/', '.', $setKey);
+            arr_set($translations, $setKey, $values);
         }
     }
-    return arr_get($translations, $key);
+    $getKey = $locale . "." . $key;
+    $result = arr_get($translations, $getKey);
+    if (empty($result) && $locale != 'en') {
+        $getKey = "en.$key";
+        $result = arr_get($translations, $getKey);
+    }
+    if (!empty($replace)) {
+        $search = array_map(function ($value) {return ":$value";}, array_keys($replace));
+        $result = str_replace($search, array_values($replace), $result);
+    }
+    return $result;
 }

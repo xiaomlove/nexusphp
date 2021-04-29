@@ -29,6 +29,17 @@ class ExamUser extends NexusModel
         return self::$status[$this->status]['text'] ?? '';
     }
 
+    public function getBeginAttribute()
+    {
+        return $this->begin ?? $this->exam->begin;
+    }
+
+    public function getEndAttribute()
+    {
+        return $this->end ?? $this->exam->end;
+    }
+
+
     public function exam(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id');

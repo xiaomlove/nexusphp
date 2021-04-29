@@ -44,12 +44,19 @@ class Test extends Command
      */
     public function handle()
     {
+        $user = User::query()->findOrFail(1);
+        dd(nexus_trans('exam.checkout_pass_message_content', ['exam_name' => '年中考核', 'begin' => 1, 'end' => 2]));
         $rep = new ExamRepository();
 //        $r = $rep->assignToUser(1, 1);
-//        $r = $rep->addProgress(27, 4, 1025, 1);
-//        dd($r);
+        $r = $rep->addProgress(3, 1, [
+            1 => 25*1024*1024*1024,
+            2 => 55*3600,
+            3 => 100*1024*1024*1024,
+            4 => 1252
+        ]);
+        dd($r);
 //        $rep->assignCronjob();
-        $rep->cronjobCheckout();
+//        $rep->cronjobCheckout();
     }
 
 }

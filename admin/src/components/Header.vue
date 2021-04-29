@@ -31,38 +31,42 @@
 <script>
 import {computed, onMounted, reactive, toRefs, watch} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { localRemove, pathMap } from '../utils'
+import {localGet, localSet, localRemove, pathMap} from '../utils'
 import api from "../utils/api";
+
 
 export default {
     name: 'Header',
+    props: {
+        userInfo: {
+            type: Object
+        }
+    },
     setup(props, context) {
         const router = useRouter()
         const route = useRoute()
+        const userInfoKey = 'userInfo'
         const state = reactive({
             name: 'dashboard',
             userInfo: null,
             hasBack: false
         })
-        onMounted(() => {
+        onMounted(async () => {
             console.log("Head onMounted!")
-            console.log(props, context)
+            console.log(props)
+            // let userInfo = localGet(userInfoKey);
+            // if (userInfo) {
+            //     state.userInfo = userInfo;
+            // } else {
+            //     let res = await api.getUserBase()
+            //     state.userInfo = res.data
+            //     localSet(userInfoKey, res.data)
+            // }
         })
-        watch(
-            () => route,
-            (newValue, oldValue) => {
-                console.log(newValue, 'new')
-                console.log(oldValue, 'old')
-            }
-        )
-        const getUserInfo = async () => {
-            const userInfo = await api.getUserBase()
-            console.log(userInfo)
-            state.userInfo = userInfo.data
-        }
         const logout = () => {
             api.logout().then(() => {
                 localRemove('token')
+                localRemove(userInfoKey)
                 router.push({ name: 'login' })
             })
         }

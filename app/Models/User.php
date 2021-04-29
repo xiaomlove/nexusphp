@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Middleware\Locale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -115,6 +116,11 @@ class User extends Authenticatable
         }
 
         return true;
+    }
+
+    public function getLocaleAttribute()
+    {
+        return Locale::$languageMaps[$this->language->site_lang_folder] ?? 'en';
     }
 
 
