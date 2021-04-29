@@ -38,9 +38,6 @@ import api from "../utils/api";
 export default {
     name: 'Header',
     props: {
-        userInfo: {
-            type: Object
-        }
     },
     setup(props, context) {
         const router = useRouter()
@@ -54,14 +51,10 @@ export default {
         onMounted(async () => {
             console.log("Head onMounted!")
             console.log(props)
-            // let userInfo = localGet(userInfoKey);
-            // if (userInfo) {
-            //     state.userInfo = userInfo;
-            // } else {
-            //     let res = await api.getUserBase()
-            //     state.userInfo = res.data
-            //     localSet(userInfoKey, res.data)
-            // }
+            let userInfo = localGet(userInfoKey);
+            if (userInfo) {
+                state.userInfo = userInfo;
+            }
         })
         const logout = () => {
             api.logout().then(() => {
@@ -74,13 +67,9 @@ export default {
             router.back()
         }
         router.afterEach((to) => {
-            console.log("Head afterEach to", to)
+            // console.log("Head afterEach to", to)
             const { id } = to.query
             state.name = pathMap[to.name]
-            if (id && to.name == 'add') {
-                state.name = '编辑商品'
-            }
-            state.hasBack = ['level2', 'level3', 'order_detail'].includes(to.name)
         })
         return {
             ...toRefs(state),

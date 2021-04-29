@@ -5,15 +5,15 @@
                 <img class="logo" src="http://demo.nexusphp.org/favicon.ico" />
                 <div class="name">
                     <div class="title">NexusPHP</div>
-                    <div class="tips">Management system - v1.6</div>
+                    <div class="tips">Management system</div>
                 </div>
             </div>
             <el-form label-position="top" :rules="rules" :model="ruleForm" ref="loginForm" class="login-form">
                 <el-form-item label="Username" prop="username">
-                    <el-input type="text" v-model.trim="ruleForm.username" autocomplete="off"></el-input>
+                    <el-input type="text" v-model.trim="ruleForm.username" autocomplete="off" @keyup.enter="submitForm"></el-input>
                 </el-form-item>
                 <el-form-item label="Password" prop="password">
-                    <el-input type="password" v-model.trim="ruleForm.password" autocomplete="off"></el-input>
+                    <el-input type="password" v-model.trim="ruleForm.password" autocomplete="off" @keyup.enter="submitForm"></el-input>
                 </el-form-item>
                 <el-form-item style="margin-top: 50px">
 <!--                    <div style="color: #333">登录表示您已同意<a>《服务条款》</a></div>-->
@@ -56,8 +56,12 @@ export default {
             loginForm.value.validate((valid) => {
                 if (valid) {
                    api.login(state.ruleForm).then(res => {
+                       console.log(res)
                         localSet('token', res.data.token)
                         router.push({name: 'dashboard'})
+                       // api.getUserBase().then(res => {
+                       //     localSet('userInfo', res.data)
+                       // })
                     })
                 } else {
                     console.log('error submit!!')

@@ -118,6 +118,7 @@ export default {
         const state = useTable()
 
         onMounted(() => {
+            console.log('UserTable onMounted');
             fetchTableData()
         })
         const fetchTableData = async () => {

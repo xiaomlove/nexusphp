@@ -148,8 +148,8 @@ class ExamRepository extends BaseRepository
         }
 
         $added = $user->added->toDateTimeString();
-        $registerTimeBegin = $filters->register_time_range[0] ? Carbon::parse($filters->register_time_range[0])->toDateString() : '';
-        $registerTimeEnd = $filters->register_time_range[1] ? Carbon::parse($filters->register_time_range[1])->toDateString() : '';
+        $registerTimeBegin = isset($filters->register_time_range[0]) ? Carbon::parse($filters->register_time_range[0])->toDateString() : '';
+        $registerTimeEnd = isset($filters->register_time_range[1]) ? Carbon::parse($filters->register_time_range[1])->toDateString() : '';
         if (empty($registerTimeBegin)) {
             do_log("$logPrefix, exam: {$exam->id} no register_time_begin");
             return false;

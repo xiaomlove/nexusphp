@@ -5,8 +5,6 @@ $rootpath = dirname(dirname(__DIR__)) . '/';
 define('ROOT_PATH', $rootpath);
 $isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
 require $rootpath . 'vendor/autoload.php';
-require $rootpath . 'include/globalfunctions.php';
-require $rootpath . 'include/functions.php';
 require $rootpath . 'nexus/Database/helpers.php';
 
 $install = new \Nexus\Install\Install();

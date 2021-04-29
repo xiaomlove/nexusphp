@@ -1,10 +1,10 @@
 <?php
  return array (
-  'basic' => 
+  'basic' =>
   array (
     'SITENAME' => 'NexusPHP',
   ),
-  'main' => 
+  'main' =>
   array (
     'site_online' => 'yes',
     'max_torrent_size' => '1048576',
@@ -82,7 +82,7 @@
     'enable_pt_gen_system' => 'no',
     'enable_technical_info' => 'no',
   ),
-  'smtp' => 
+  'smtp' =>
   array (
     'smtptype' => 'advanced',
     'emailnotify' => 'no',
@@ -94,7 +94,7 @@
     'accountname' => '',
     'accountpassword' => '',
   ),
-  'security' => 
+  'security' =>
   array (
     'securelogin' => 'no',
     'securetracker' => 'no',
@@ -114,7 +114,7 @@
     'login_secret_deadline' => '2021-02-03 18:55:46',
     'login_secret' => '8e19c6a796602bda113fb2f5bc9da2b0',
   ),
-  'authority' => 
+  'authority' =>
   array (
     'defaultclass' => '1',
     'staffmem' => '13',
@@ -162,7 +162,7 @@
     'againstoffer' => '1',
     'userbar' => '2',
   ),
-  'tweak' => 
+  'tweak' =>
   array (
     'where' => 'no',
     'iplog1' => 'yes',
@@ -179,7 +179,7 @@
     'prolinkimg' => 'pic/prolink.png',
     'analyticscode' => '',
   ),
-  'bonus' => 
+  'bonus' =>
   array (
     'donortimes' => '2',
     'perseeding' => '1',
@@ -213,7 +213,7 @@
     'prolinkpoint' => '1',
     'prolinktime' => '600',
   ),
-  'account' => 
+  'account' =>
   array (
     'neverdelete' => '6',
     'neverdeletepacked' => '3',
@@ -264,7 +264,7 @@
     'nmdl' => '3072',
     'nmprratio' => '4.55',
     'nmderatio' => '4.45',
-    'getInvitesByPromotion' => 
+    'getInvitesByPromotion' =>
     array (
       2 => '1',
       3 => '0',
@@ -276,7 +276,7 @@
       9 => '10',
     ),
   ),
-  'torrent' => 
+  'torrent' =>
   array (
     'prorules' => 'no',
     'randomhalfleech' => '5',
@@ -307,7 +307,7 @@
     'expirethirtypercentleech' => '0',
     'minvotes' => '10',
   ),
-  'attachment' => 
+  'attachment' =>
   array (
     'enableattach' => 'yes',
     'classone' => '1',
@@ -340,7 +340,7 @@
     'altthumbwidth' => '180',
     'altthumbheight' => '135',
   ),
-  'advertisement' => 
+  'advertisement' =>
   array (
     'enablead' => 'yes',
     'enablenoad' => 'yes',
@@ -351,7 +351,7 @@
     'bonusnoadtime' => '15',
     'adclickbonus' => '0',
   ),
-  'code' => 
+  'code' =>
   array (
     'mainversion' => 'NexusPHP',
     'subversion' => 'v1.6.0-beta4',

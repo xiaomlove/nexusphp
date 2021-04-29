@@ -122,6 +122,7 @@ export default {
         const state = useTable()
 
         onMounted(() => {
+            console.log('ExamTable onMounted')
             fetchTableData()
         })
         // 获取轮播图列表
