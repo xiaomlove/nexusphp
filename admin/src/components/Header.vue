@@ -20,7 +20,7 @@
                 </template>
                 <div class="nickname">
                     <p>Username：{{ userInfo && userInfo.username || '' }}</p>
-                    <p>Email：{{ userInfo && userInfo.email || '' }}</p>
+                    <p>Class：{{ userInfo && userInfo.class_text || '' }}</p>
                     <el-tag size="small" effect="dark" class="logout" @click="logout">Logout</el-tag>
                 </div>
             </el-popover>
@@ -67,7 +67,7 @@ export default {
             router.back()
         }
         router.afterEach((to) => {
-            // console.log("Head afterEach to", to)
+            console.log("Head afterEach to", to)
             const { id } = to.query
             state.name = pathMap[to.name]
         })

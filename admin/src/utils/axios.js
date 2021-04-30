@@ -8,13 +8,14 @@ axios.defaults.withCredentials = true
 axios.defaults.headers['X-Requested-With'] = 'XMLHttpRequest'
 axios.defaults.headers['Content-Type'] = 'application/json'
 axios.defaults.headers['Accept'] = 'application/json'
-axios.defaults.headers['Authorization'] = 'Bearer ' + localGet('token')
+// axios.defaults.headers['Authorization'] = 'Bearer ' + localGet('token')
 
-// axios.interceptors.request.use(config => {
-//     // console.log('before request', config)
-//     config.headers['Authorization'] = 'Bearer ' + localGet('token')
-//     return config
-// })
+axios.interceptors.request.use(config => {
+    config.headers['Authorization'] = 'Bearer ' + localGet('token')
+    return config
+}, error => {
+    return Promise.reject(error)
+})
 
 axios.interceptors.response.use(res => {
     console.log(res)

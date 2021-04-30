@@ -20,9 +20,7 @@ class Install
         'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed', 'agent_allowed_family',
     ];
 
-    protected $envNames = ['MYSQL_HOST', 'MYSQL_PORT', 'MYSQL_USERNAME', 'MYSQL_PASSWORD', 'MYSQL_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DATABASE'];
-
-
+    protected $envNames = ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB'];
 
     public function __construct()
     {
@@ -423,15 +421,15 @@ class Install
         }
         $this->doLog("[CREATE ENV] final newData: " . json_encode($newData));
         unset($key, $value);
-        mysql_connect($newData['MYSQL_HOST'], $newData['MYSQL_USERNAME'], $newData['MYSQL_PASSWORD'], $newData['MYSQL_DATABASE'], $newData['MYSQL_PORT']);
+        mysql_connect($newData['DB_HOST'], $newData['DB_USERNAME'], $newData['DB_PASSWORD'], $newData['DB_DATABASE'], $newData['DB_PORT']);
         if (extension_loaded('redis') && !empty($newData['REDIS_HOST'])) {
             $redis = new \Redis();
             $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
-            if (isset($newData['REDIS_DATABASE'])) {
-                if (!ctype_digit($newData['REDIS_DATABASE']) || $newData['REDIS_DATABASE'] < 0 || $newData['REDIS_DATABASE'] > 15) {
-                    throw new \InvalidArgumentException("invalid redis database: " . $newData['redis_database']);
+            if (isset($newData['REDIS_DB'])) {
+                if (!ctype_digit($newData['REDIS_DB']) || $newData['REDIS_DB'] < 0 || $newData['REDIS_DB'] > 15) {
+                    throw new \InvalidArgumentException("invalid redis database: " . $newData['REDIS_DB']);
                 }
-                $redis->select($newData['REDIS_DATABASE']);
+                $redis->select($newData['REDIS_DB']);
             }
         }
         $content = "";
@@ -502,8 +500,13 @@ class Install
             $sqlFile = ROOT_PATH . '_db/dbstructure_v1.6.sql';
         }
         $string = file_get_contents($sqlFile);
-        $pattern = "/INSERT INTO `(\w+)` VALUES \(.*\);\n/i";
+        if ($string === false) {
+            throw new \RuntimeException("can't not read dbstructure file: $sqlFile");
+        }
+        //@todo test in php 7.3
+        $pattern = "/INSERT INTO `(\w+)` VALUES \(.*\);/i";
         preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
+        $this->doLog("[IMPORT DATA] matches count: " . count($matches));
         foreach ($matches as $match) {
             $table = $match[1];
             $sql = trim($match[0]);

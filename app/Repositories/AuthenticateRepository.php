@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -10,16 +11,17 @@ class AuthenticateRepository extends BaseRepository
     {
         $user = User::query()
             ->where('username', $username)
-            ->firstOrFail(['id', 'secret', 'passhash']);
-        if (md5($user->secret . $password . $user->secret) != $user->passhash) {
-            throw new \InvalidArgumentException('username or password invalid');
+            ->first(array_merge(User::$commonFields, ['secret', 'passhash']));
+        if (!$user || md5($user->secret . $password . $user->secret) != $user->passhash) {
+            throw new \InvalidArgumentException('Username or password invalid.');
         }
-        $token = DB::transaction(function () use ($user) {
+        $tokenName = __METHOD__ . __LINE__;
+        $token = DB::transaction(function () use ($user, $tokenName) {
             $user->tokens()->delete();
-            $tokenResult = $user->createToken(__CLASS__ . __FUNCTION__ . __LINE__);
+            $tokenResult = $user->createToken($tokenName);
             return $tokenResult->plainTextToken;
         });
-        $result = $user->toArray();
+        $result = (new UserResource($user))->response()->getData(true)['data'];
         $result['token'] = $token;
         return $result;
     }

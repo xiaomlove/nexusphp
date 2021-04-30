@@ -57,11 +57,9 @@ export default {
                 if (valid) {
                    api.login(state.ruleForm).then(res => {
                        console.log(res)
-                        localSet('token', res.data.token)
-                        router.push({name: 'dashboard'})
-                       // api.getUserBase().then(res => {
-                       //     localSet('userInfo', res.data)
-                       // })
+                       localSet('token', res.data.token)
+                       localSet('userInfo', res.data)
+                       router.push({name: 'dashboard'})
                     })
                 } else {
                     console.log('error submit!!')

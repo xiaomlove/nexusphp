@@ -29,7 +29,9 @@ class UserResource extends JsonResource
             'downloaded_text' => mksize($this->downloaded),
             'bonus' => $this->seedbonus,
             'seedtime' => $this->seedtime,
+            'seedtime_text' => mkprettytime($this->seedtime),
             'leechtime' => $this->leechtime,
+            'leechtime_text' => mkprettytime($this->leechtime),
         ];
     }
 }

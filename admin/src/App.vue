@@ -97,6 +97,7 @@ export default {
                     next()
                 }
             }
+            console.log('showMenu: ', !noMenu.includes(to.path))
             state.showMenu = !noMenu.includes(to.path)
             state.currentPath = to.path
             document.title = pathMap[to.name]

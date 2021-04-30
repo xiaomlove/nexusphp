@@ -1,11 +1,7 @@
 <?php
 
-if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
-    define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID']);
-} else {
-    $requestId = str_replace('.', '', LARAVEL_START);
-    define('REQUEST_ID', str_pad($requestId, 14, "0", STR_PAD_RIGHT));
-}
+define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? str_pad(str_replace('.', '', LARAVEL_START), 14, "0", STR_PAD_RIGHT));
+
 define('IN_NEXUS', false);
 
 /*

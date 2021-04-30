@@ -354,8 +354,8 @@
   'code' =>
   array (
     'mainversion' => 'NexusPHP',
-    'subversion' => 'v1.6.0-beta4',
-    'releasedate' => '2021-03-19',
+    'subversion' => 'v1.6.0-beta5',
+    'releasedate' => '2021-04-30',
     'website' => '<a href="https://nexusphp.org" target="_blank">https://nexusphp.org</a>',
   ),
 );

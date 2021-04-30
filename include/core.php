@@ -7,7 +7,8 @@ define('ROOT_PATH', $rootpath);
 define('VERSION_NUMBER', '1.6.0');
 define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));
 define('IS_ANNOUNCE', CURRENT_SCRIPT == 'announce');
-define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? intval(NEXUS_START * 10000));
+define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? str_pad(str_replace('.', '', NEXUS_START), 14, "0", STR_PAD_RIGHT));;
+require $rootpath . 'vendor/autoload.php';
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
@@ -15,7 +16,6 @@ if (!file_exists($rootpath . '.env')) {
         nexus_redirect($installScriptRelativePath);
     }
 }
-require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/eloquent.php';

@@ -25,7 +25,8 @@ if ($currentStep == 1) {
 }
 
 if ($currentStep == 2) {
-    $envExampleFile = "$rootpath.env.example";
+    $envExampleFile = $rootpath . ".env.example";
+    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
     $envExampleData = readEnvFile($envExampleFile);
     $envFormControls = $install->listEnvFormControls();
     $newData = array_column($envFormControls, 'value', 'name');
@@ -41,10 +42,16 @@ if ($currentStep == 2) {
     }
     $tableRows = [
         [
-            'label' => '.env.example',
+            'label' => basename($envExampleFile),
             'required' => 'exists && readable',
             'current' => $envExampleFile,
             'result' =>  $install->yesOrNo(file_exists($envExampleFile) && is_readable($envExampleFile)),
+        ],
+        [
+            'label' => basename($dbstructureFile),
+            'required' => 'exists && readable',
+            'current' => $dbstructureFile,
+            'result' =>  $install->yesOrNo(file_exists($dbstructureFile) && is_readable($dbstructureFile)),
         ],
     ];
     $fails = array_filter($tableRows, function ($value) {return $value['result'] == 'NO';});
