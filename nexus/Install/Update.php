@@ -12,7 +12,7 @@ class Update extends Install
 
     public function getLogFile()
     {
-        return sprintf('%s/nexus_update_%s.log', sys_get_temp_dir(), date('Ymd'));
+        return sprintf('%s/nexus-update-%s.log', sys_get_temp_dir(), date('YmdHis'));
     }
 
     public function getUpdateDirectory()

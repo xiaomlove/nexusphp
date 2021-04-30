@@ -67,7 +67,7 @@ class Install
 
     public function getLogFile()
     {
-        return sprintf('%s/nexus_install_%s.log', sys_get_temp_dir(), date('Ymd'));
+        return sprintf('%s/nexus-install-%s.log', sys_get_temp_dir(), date('YmdHis'));
     }
 
     public function getInsallDirectory()
