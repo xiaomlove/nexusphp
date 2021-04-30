@@ -289,6 +289,9 @@ function nexus_env($key = null, $default = null)
 function readEnvFile($envFile)
 {
     if (!file_exists($envFile)) {
+        if (php_sapi_name() == 'cli') {
+            return []; 
+        }
         throw new \RuntimeException("env file : $envFile is not exists in the root path.");
     }
     $env = [];
