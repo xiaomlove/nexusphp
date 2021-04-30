@@ -4483,7 +4483,7 @@ function torrentTags($tags = 0, $type = 'checkbox')
     $tagsOptions = [
         [
             'text' => $lang_functions['text_tag_no_release_to_any_other'],
-            'color' => '#D74D4D',
+            'color' => '#ff0000',
         ],
         [
             'text' => $lang_functions['text_tag_first_release'],
@@ -4491,19 +4491,23 @@ function torrentTags($tags = 0, $type = 'checkbox')
         ],
         [
             'text' => $lang_functions['text_tag_official'],
-            'color' => '#2F7DB8',
+            'color' => '#0000ff',
         ],
         [
             'text' => $lang_functions['text_tag_diy'],
-            'color' => '#787878',
+            'color' => '#46d5ff',
         ],
         [
             'text' => $lang_functions['text_tag_mother_language'],
-            'color' => '#FFAA32',
+            'color' => '#6a3906',
         ],
         [
             'text' => $lang_functions['text_tag_mother_language_subtitle'],
-            'color' => '#91B493',
+            'color' => '#006400',
+        ],
+        [
+            'text' => $lang_functions['text_tag_hdr'],
+            'color' => '#38b03f',
         ],
     ];
     $html = '';
