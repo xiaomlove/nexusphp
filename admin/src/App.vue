@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, onUnmounted } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import { useRouter } from 'vue-router'
@@ -80,10 +80,12 @@ export default {
             routerName: router.name
         })
         onMounted(() => {
-            console.log(router)
+
         })
-        router.beforeEach((to, from, next) => {
-            console.log("App beforeEach to", to)
+        onUnmounted(() => {
+            unwatch()
+        })
+        const unwatch = router.beforeEach((to, from, next) => {
             if (to.path == '/login') {
                 // 如果路径是 /login 则正常执行
                 next()
@@ -97,7 +99,6 @@ export default {
                     next()
                 }
             }
-            console.log('showMenu: ', !noMenu.includes(to.path))
             state.showMenu = !noMenu.includes(to.path)
             state.currentPath = to.path
             document.title = pathMap[to.name]

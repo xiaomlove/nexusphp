@@ -135,7 +135,7 @@ export default {
         const state = reactive({
             loading: false,
             baseInfo: {},
-            examInfo: {},
+            examInfo: null,
         })
         onMounted(() => {
             fetchPageData()
