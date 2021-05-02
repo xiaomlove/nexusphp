@@ -17,17 +17,19 @@ use Illuminate\Support\Facades\Route;
 Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], function () {
     Route::post('logout', [\App\Http\Controllers\AuthenticateController::class, 'logout']);
 
-    Route::resource('agent-allow', \App\Http\Controllers\AgentAllowController::class);
+    Route::resource('agent-allows', \App\Http\Controllers\AgentAllowController::class);
 
-    Route::resource('user', \App\Http\Controllers\UserController::class);
+    Route::resource('users', \App\Http\Controllers\UserController::class);
     Route::get('user-base', [\App\Http\Controllers\UserController::class, 'base']);
     Route::get('user-classes', [\App\Http\Controllers\UserController::class, 'classes']);
     Route::get('user-match-exams', [\App\Http\Controllers\UserController::class, 'matchExams']);
 
-    Route::resource('exam', \App\Http\Controllers\ExamController::class);
+    Route::resource('exams', \App\Http\Controllers\ExamController::class);
     Route::get('exam-indexes', [\App\Http\Controllers\ExamController::class, 'indexes']);
 
     Route::resource('exam-users', \App\Http\Controllers\ExamUserController::class);
+
+    Route::get('system-info', [\App\Http\Controllers\ToolController::class, 'systemInfo']);
 
 });
 

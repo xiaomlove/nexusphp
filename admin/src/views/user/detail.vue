@@ -3,7 +3,7 @@
         <el-card>
             <template #header>
                 <div class="card-header">
-                    <span>Base Info</span>
+                    <span>Base info</span>
                 </div>
             </template>
             <table class="table-base-info">
@@ -59,7 +59,7 @@
         <el-card v-if="examInfo">
             <template #header>
                 <div class="card-header">
-                    <span>Exam</span>
+                    <span>Exam on the way</span>
                 </div>
             </template>
             <el-row>
@@ -70,11 +70,11 @@
                             <td>{{examInfo.exam && examInfo.exam.name}}</td>
                         </tr>
                         <tr>
-                            <td>Created At</td>
+                            <td>Created at</td>
                             <td>{{examInfo.created_at}}</td>
                         </tr>
                         <tr>
-                            <td>Exam Time</td>
+                            <td>Exam time</td>
                             <td>{{examInfo.begin}} ~ {{examInfo.end}}</td>
                         </tr>
                         <tr>

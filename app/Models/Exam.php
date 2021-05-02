@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Exam extends NexusModel
 {
-    protected $fillable = ['name', 'description', 'begin', 'end', 'status', 'filters', 'indexes'];
+    protected $fillable = ['name', 'description', 'begin', 'end', 'status', 'is_discovered', 'filters', 'indexes'];
 
     public $timestamps = true;
 
@@ -21,6 +21,14 @@ class Exam extends NexusModel
         self::STATUS_DISABLED => ['text' => 'Disabled'],
     ];
 
+    const DISCOVERED_YES = 1;
+    const DISCOVERED_NO = 0;
+
+    public static $discovers = [
+        self::DISCOVERED_NO => ['text' => 'No'],
+        self::DISCOVERED_YES => ['text' => 'Yes'],
+    ];
+
     const INDEX_UPLOADED = 1;
     const INDEX_SEED_TIME_AVERAGE = 2;
     const INDEX_DOWNLOADED = 3;
@@ -28,7 +36,7 @@ class Exam extends NexusModel
 
     public static $indexes = [
         self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB'],
-        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed Time Average', 'unit' => 'Hour'],
+        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour'],
         self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB'],
         self::INDEX_BONUS => ['name' => 'Bonus', 'unit' => ''],
     ];
@@ -37,13 +45,18 @@ class Exam extends NexusModel
     const FILTER_USER_REGISTER_TIME_RANGE = 'register_time_range';
 
     public static $filters = [
-        self::FILTER_USER_CLASS => ['name' => 'User Class'],
-        self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User Register Time Range'],
+        self::FILTER_USER_CLASS => ['name' => 'User class'],
+        self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User register time range'],
     ];
 
     public function getStatusTextAttribute(): string
     {
         return self::$status[$this->status]['text'] ?? '';
+    }
+
+    public function getIsDiscoveredTextAttribute(): string
+    {
+        return self::$discovers[$this->is_discovered]['text'] ?? '';
     }
 
 }

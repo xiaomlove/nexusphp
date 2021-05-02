@@ -29,6 +29,8 @@ class ExamResource extends JsonResource
             'indexes_formatted' => $this->formatIndexes($this->resource),
             'status' => $this->status,
             'status_text' => $this->statusText,
+            'is_discovered' => $this->is_discovered,
+            'is_discovered_text' => $this->is_discovered_text,
         ];
     }
 

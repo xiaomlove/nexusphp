@@ -32,7 +32,7 @@
             >
             </el-table-column>
             <el-table-column
-                label="Index"
+                label="Indexes"
                 width="250px"
             >
                 <template #default="scope" >
@@ -51,13 +51,20 @@
             </el-table-column>
 
             <el-table-column
-                label="Target User"
-                width="400px"
+                label="Target users"
+                width="350px"
             >
                 <template #default="scope" >
                     <p style="white-space: pre-line" v-html="scope.row.filters_formatted"></p>
                 </template>
             </el-table-column>
+
+            <el-table-column
+                prop="is_discovered_text"
+                label="Discovered"
+            >
+            </el-table-column>
+
             <el-table-column
                 prop="status_text"
                 label="Status"
@@ -105,19 +112,6 @@ export default {
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
-        // const state = reactive({
-        //     loading: false,
-        //     query: {
-        //         page: 1,
-        //         sort_field: 'id',
-        //         sort_type: 'desc'
-        //     },
-        //     tableData: [], // 数据列表
-        //     multipleSelection: [], // 选中项
-        //     total: 0, // 总条数
-        //     currentPage: 1, // 当前页
-        //     pageSize: 10 // 分页大小
-        // })
 
         const state = useTable()
 
@@ -125,21 +119,12 @@ export default {
             console.log('ExamTable onMounted')
             fetchTableData()
         })
-        // 获取轮播图列表
         const fetchTableData = async () => {
             state.loading = true
             let res = await api.listExam(state.query)
             renderTableData(res, state)
             state.loading = false
         }
-        // const renderTableData = (res) => {
-        //     state.tableData = res.data.data
-        //     state.page = res.data.meta.current_page
-        //     state.total = res.data.meta.total
-        //     state.currentPage = res.data.meta.current_page
-        //     state.pageSize = res.data.meta.per_page
-        //     state.loading = false
-        // }
         const handleAdd = () => {
             router.push({ name: 'exam-form' })
         }
@@ -152,21 +137,12 @@ export default {
             state.query.page = 1;
             await fetchTableData()
         }
-        // 选择项
         const handleSelectionChange = (val) => {
             state.multipleSelection = val
         }
         const changePage = (val) => {
             state.query.page = val
             fetchTableData()
-        }
-        const handleStatus = (id, status) => {
-            axios.put(`/goods/status/${status}`, {
-                ids: id ? [id] : []
-            }).then(() => {
-                ElMessage.success('修改成功')
-                fetchTableData()
-            })
         }
         return {
             ...toRefs(state),
@@ -177,7 +153,6 @@ export default {
             handleDelete,
             fetchTableData,
             changePage,
-            handleStatus
         }
     }
 }

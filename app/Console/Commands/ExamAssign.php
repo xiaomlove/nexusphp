@@ -45,7 +45,9 @@ class ExamAssign extends Command
         $end = $this->option('end');
         $this->info(sprintf('uid: %s, examId: %s, begin: %s, end: %s', $uid, $examId, $begin, $end));
         $result = $examRep->assignToUser($uid, $examId, $begin, $end);
-        $this->info(sprintf('%s, [assignToUser], result: %s, request_id: %s', __METHOD__, var_export($result, true), REQUEST_ID));
+        $log = sprintf('[%s], %s, result: %s', REQUEST_ID, __METHOD__, var_export($result, true));
+        $this->info($log);
+        do_log($log);
         return 0;
     }
 }

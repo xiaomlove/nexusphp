@@ -46,15 +46,17 @@ class Test extends Command
     {
         $rep = new ExamRepository();
 //        $r = $rep->assignToUser(1, 1);
-        $r = $rep->addProgress(1, 1, [
-            1 => 25*1024*1024*1024,
-            2 => 55*3600,
-            3 => 10*1024*1024*1024,
-            4 => 1252
-        ]);
-        dd($r);
+//        $r = $rep->addProgress(1, 1, [
+//            1 => 25*1024*1024*1024,
+//            2 => 55*3600,
+//            3 => 10*1024*1024*1024,
+//            4 => 1252
+//        ]);
+//        dd($r);
 //        $rep->assignCronjob();
 //        $rep->cronjobCheckout();
+        $r = DB::select(DB::raw('select version() as info'))[0]->info;
+        dd($r);
     }
 
 }

@@ -2,24 +2,24 @@
 
 namespace App\Console\Commands;
 
-use App\Repositories\ExamRepository;
+use App\Repositories\ToolRepository;
 use Illuminate\Console\Command;
 
-class ExamAssignCronjob extends Command
+class BackupWeb extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'exam:assign_cronjob';
+    protected $signature = 'backup:web';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Assign exam cronjob';
+    protected $description = 'BackupWeb webRoot data';
 
     /**
      * Create a new command instance.
@@ -38,11 +38,10 @@ class ExamAssignCronjob extends Command
      */
     public function handle()
     {
-        $examRep = new ExamRepository();
-        $result = $examRep->cronjonAssign();
+        $rep = new ToolRepository();
+        $result = $rep->backupWebRoot();
         $log = sprintf('[%s], %s, result: %s', REQUEST_ID, __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);
-        return 0;
     }
 }

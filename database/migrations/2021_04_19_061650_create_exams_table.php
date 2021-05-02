@@ -22,6 +22,7 @@ class CreateExamsTable extends Migration
             $table->text('filters')->nullable();
             $table->text('indexes');
             $table->tinyInteger('status')->default(0);
+            $table->tinyInteger('is_discovered')->default(0);
             $table->timestamps();
         });
     }

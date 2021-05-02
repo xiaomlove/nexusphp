@@ -3,7 +3,9 @@ import { ElMessage } from 'element-plus'
 import {localGet} from "./index"
 import router from '../router/index'
 
-axios.defaults.baseURL = 'http://nexus-php8.tinyhd.net/api'
+console.log(import.meta.env)
+
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL || '/api'
 axios.defaults.withCredentials = true
 axios.defaults.headers['X-Requested-With'] = 'XMLHttpRequest'
 axios.defaults.headers['Content-Type'] = 'application/json'

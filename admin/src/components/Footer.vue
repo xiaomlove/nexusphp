@@ -1,6 +1,6 @@
 <template>
     <div class="footer">
-        <div class="left">Designed By Xiaomlove</div>
+        <div class="left">NexusPHP v1.6.0-beta5</div>
         <div class="right">
             <a target="_blank" href="https://nexusphp.org/">nexusphp.org</a>
         </div>

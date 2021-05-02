@@ -2,9 +2,9 @@
   "name": "admin",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+    "dev": "vite --mode development",
+    "build": "vite build --mode production",
+    "serve": "vite preview --mode preview"
   },
   "dependencies": {
     "axios": "^0.21.1",

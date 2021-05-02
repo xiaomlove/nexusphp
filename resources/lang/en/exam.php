@@ -12,7 +12,7 @@ return [
     'current_value' => 'Current',
     'result' => 'Result',
     'result_pass' => 'Pass!',
-    'result_not_pass' => '<bold color="red">Not pass!</bold>',
+    'result_not_pass' => '<span style="color: red">Not pass!</span>',
     'checkout_pass_message_subject' => 'Exam pass!',
     'checkout_pass_message_content' => 'Congratulation! You have complete the exam: :exam_name in time(:begin ~ :end)',
     'checkout_not_pass_message_subject' => 'Exam not pass, and account is banned!',

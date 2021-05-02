@@ -27,9 +27,9 @@ class ExamRepository extends BaseRepository
     public function store(array $params)
     {
         $this->checkIndexes($params);
-        $valid = $this->listValid();
+        $valid = $this->listValid(null, Exam::DISCOVERED_YES);
         if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
-            throw new NexusException("Valid exam already exists.");
+            throw new NexusException("Enabled and discovered exam already exists.");
         }
         $exam = Exam::query()->create($params);
         return $exam;
@@ -38,9 +38,9 @@ class ExamRepository extends BaseRepository
     public function update(array $params, $id)
     {
         $this->checkIndexes($params);
-        $valid = $this->listValid($id);
+        $valid = $this->listValid($id, Exam::DISCOVERED_YES);
         if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
-            throw new NexusException("Valid exam already exists.");
+            throw new NexusException("Enabled and discovered exam already exists.");
         }
         $exam = Exam::query()->findOrFail($id);
         $exam->update($params);
@@ -52,10 +52,18 @@ class ExamRepository extends BaseRepository
         if (empty($params['indexes'])) {
             throw new \InvalidArgumentException("Require index.");
         }
-        $validIndex = array_filter($params['indexes'], function ($value) {
-            return isset($value['checked']) && $value['checked']
-                && isset($value['require_value']) && $value['require_value'] > 0;
-        });
+        $validIndex = [];
+        foreach ($params['indexes'] as $index) {
+            if (!isset($index['checked']) || !$index['checked']) {
+                continue;
+            }
+            if (!isset($index['require_value']) || !ctype_digit((string)$index['require_value'])) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Invalid require value for index: %s.', $index['name']
+                ));
+            }
+            $validIndex[] = $index;
+        }
         if (empty($validIndex)) {
             throw new \InvalidArgumentException("Require valid index.");
         }
@@ -91,7 +99,7 @@ class ExamRepository extends BaseRepository
      * @param null $excludeId
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function listValid($excludeId = null)
+    public function listValid($excludeId = null, $isDiscovered = null)
     {
         $now = Carbon::now();
         $query = Exam::query()
@@ -99,8 +107,11 @@ class ExamRepository extends BaseRepository
             ->where('end', '>=', $now)
             ->where('status', Exam::STATUS_ENABLED)
             ->orderBy('id', 'desc');
-        if ($excludeId) {
+        if (!is_null($excludeId)) {
             $query->whereNotIn('id', Arr::wrap($excludeId));
+        }
+        if (!is_null($isDiscovered)) {
+            $query->where('is_discovered', $isDiscovered);
         }
         return $query->get();
     }
@@ -175,27 +186,15 @@ class ExamRepository extends BaseRepository
      * assign exam to user
      *
      * @param int $uid
-     * @param null $examId
+     * @param int $examId
      * @param null $begin
      * @param null $end
      * @return mixed
      */
-    public function assignToUser(int $uid, $examId = null, $begin = null, $end = null)
+    public function assignToUser(int $uid, int $examId, $begin = null, $end = null)
     {
         $logPrefix = "uid: $uid, examId: $examId, begin: $begin, end: $end";
-        if ($examId > 0) {
-            $exam = Exam::query()->find($examId);
-        } else {
-            $exams = $this->listValid();
-            if ($exams->isEmpty()) {
-                throw new NexusException("No valid exam.");
-            }
-            if ($exams->count() > 1) {
-                do_log(last_query());
-                throw new NexusException("valid exam more than 1.");
-            }
-            $exam = $exams->first();
-        }
+        $exam = Exam::query()->find($examId);
         $user = User::query()->findOrFail($uid);
         if (!$this->isExamMatchUser($exam, $user)) {
             throw new NexusException("Exam: {$exam->id} no match this user.");
@@ -414,6 +413,7 @@ class ExamRepository extends BaseRepository
                     $currentValueFormatted = $currentValue;
                     $requireValueAtomic = $requireValue;
             }
+            $index['name'] = Exam::$indexes[$index['index']]['name'] ?? '';
             $index['index_formatted'] = nexus_trans('exam.index_text_' . $index['index']);
             $index['require_value_formatted'] = "$requireValue " . ($index['unit'] ?? '');
             $index['current_value'] = $currentValue;
@@ -437,13 +437,13 @@ class ExamRepository extends BaseRepository
 
     public function cronjonAssign()
     {
-        $exams = $this->listValid();
+        $exams = $this->listValid(null, Exam::DISCOVERED_YES);
         if ($exams->isEmpty()) {
-            do_log("No valid exam.");
+            do_log("No valid and discovered exam.");
             return false;
         }
         if ($exams->count() > 1) {
-            do_log("Valid exam more than 1.", "warning");
+            do_log("Valid and discovered exam more than 1.", "warning");
         }
         /** @var Exam $exam */
         $exam = $exams->first();

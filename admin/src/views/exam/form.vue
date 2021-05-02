@@ -31,6 +31,13 @@
                         </el-radio-group>
                     </el-form-item>
 
+                    <el-form-item label="Discovered" prop="is_discovered">
+                        <el-radio-group v-model="formData.is_discovered">
+                            <el-radio :label="0">No</el-radio>
+                            <el-radio :label="1">Yes</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+
                     <el-form-item label="Begin" prop="begin">
                         <el-date-picker
                             v-model="formData.begin"
@@ -108,6 +115,7 @@ export default {
                     register_time_range: []
                 },
                 status: '',
+                is_discovered: ''
             },
             rules: {
                 name: [
@@ -117,6 +125,9 @@ export default {
                     { required: 'true', }
                 ],
                 status: [
+                    { required: 'true',}
+                ],
+                is_discovered: [
                     { required: 'true',}
                 ],
             },
@@ -133,6 +144,7 @@ export default {
                     state.formData.indexes = res.data.indexes
                     state.formData.filters = res.data.filters
                     state.formData.status = res.data.status
+                    state.formData.is_discovered = res.data.is_discovered
                 })
             } else {
                 let res = api.listExamIndex()

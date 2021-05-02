@@ -12,7 +12,7 @@ return [
     'current_value' => '当前',
     'result' => '结果',
     'result_pass' => '通过！',
-    'result_not_pass' => '<bold color="red">未通过！</bold>',
+    'result_not_pass' => '<span style="color: red">未通过！</span>',
     'checkout_pass_message_subject' => '考核通过！',
     'checkout_pass_message_content' => '恭喜！你在规定时间内（:begin ~ :end）顺利完成了考核：:exam_name。',
     'checkout_not_pass_message_subject' => '考核未通过，账号被禁用！',

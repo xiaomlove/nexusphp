@@ -8,54 +8,54 @@ const api = {
         return axios.post('logout');
     },
     listAllowAgent: (params = {}) => {
-        return axios.get('agent-allow', {params: params});
+        return axios.get('agent-allows', {params: params});
     },
     storeAllowAgent: (params = {}) => {
-        return axios.post('agent-allow', params);
+        return axios.post('agent-allows', params);
     },
     updateAllowAgent: (id, params = {}) => {
-        return axios.put('agent-allow/' + id, params);
+        return axios.put('agent-allows/' + id, params);
     },
     getAllowAgent: (id) => {
-        return axios.get('agent-allow/' + id);
+        return axios.get('agent-allows/' + id);
     },
     deleteAllowAgent: (id) => {
-        return axios.delete('agent-allow/' + id);
+        return axios.delete('agent-allows/' + id);
     },
 
     listUser: (params = {}) => {
-        return axios.get('user', {params: params});
+        return axios.get('users', {params: params});
     },
     getUser: (id, params = {}) => {
-        return axios.get('user/' + id, {params: params});
+        return axios.get('users/' + id, {params: params});
     },
     getUserBase: (params = {}) => {
         return axios.get('user-base', {params: params});
     },
     storeUser: (params = {}) => {
-        return axios.post('user', params);
+        return axios.post('users', params);
     },
     listUserMatchExams: (params = {}) => {
         return axios.get('user-match-exams', {params: params});
     },
 
     listExam: (params = {}) => {
-        return axios.get('exam', {params: params});
+        return axios.get('exams', {params: params});
     },
     listExamIndex: (params = {}) => {
         return axios.get('exam-indexes', {params: params});
     },
     storeExam: (params = {}) => {
-        return axios.post('exam', params);
+        return axios.post('exams', params);
     },
     updateExam: (id, params = {}) => {
-        return axios.put('exam/' + id, params);
+        return axios.put('exams/' + id, params);
     },
     getExam: (id) => {
-        return axios.get('exam/' + id);
+        return axios.get('exams/' + id);
     },
     deleteExam: (id) => {
-        return axios.delete('exam/' + id);
+        return axios.delete('exams/' + id);
     },
     listClass: (params = {}) => {
         return axios.get('user-classes', {params: params});

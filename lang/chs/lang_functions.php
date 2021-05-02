@@ -317,18 +317,6 @@ $lang_functions = array
 	'text_invalid' => '非法',
 	'text_technical_info' => '技术信息',
 	'text_technical_info_help_text' => '文件技术信息来自软件 <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，用该软件打开文件，点击菜单视图(View)->文件(Text)，在框中右键->全选，再右键->复制，粘贴到这里来。',
-    'exam_name' => '考核名称',
-    'exam_time_range' => '考核时间',
-    'exam_index' => '考核指标',
-    'exam_require' => '要求',
-    'exam_progress_current' => '当前',
-    'exam_progress_result' => '结果',
-    'exam_progress_result_pass_yes' => '通过！',
-    'exam_progress_result_pass_no' => '<bold style="color: red">未通过！</bold>',
-    'exam_index_' . \App\Models\Exam::INDEX_UPLOADED => '上传量',
-    'exam_index_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => '平均做种时间',
-    'exam_index_' . \App\Models\Exam::INDEX_DOWNLOADED => '下载量',
-    'exam_index_' . \App\Models\Exam::INDEX_BONUS => '魔力值',
 );
 
 ?>

@@ -230,4 +230,6 @@ return [
 
     ],
 
+    'nexus_version' => '1.6.0-beta5',
+
 ];
