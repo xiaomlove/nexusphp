@@ -1,8 +1,8 @@
 <template>
     <div class="footer">
-        <div class="left">NexusPHP v1.6.0-beta5</div>
+        <div class="left">Powered by <a target="_blank" href="https://nexusphp.org/">NexusPHP</a></div>
         <div class="right">
-            <a target="_blank" href="https://nexusphp.org/">nexusphp.org</a>
+            Version: 1.6.0-beta5
         </div>
     </div>
 </template>

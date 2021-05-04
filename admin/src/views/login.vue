@@ -2,7 +2,7 @@
     <div class="login-body">
         <div class="login-container">
             <div class="head">
-                <img class="logo" src="http://demo.nexusphp.org/favicon.ico" />
+                <img class="logo" src="../assets/logo.png" />
                 <div class="name">
                     <div class="title">NexusPHP</div>
                     <div class="tips">Management system</div>

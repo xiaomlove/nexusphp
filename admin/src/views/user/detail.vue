@@ -40,12 +40,12 @@
                 </tr>
                 <tr>
                     <td>Uploaded</td>
-                    <td>{{baseInfo.uploaded}}</td>
+                    <td>{{baseInfo.uploaded_text}}</td>
                     <td><el-button size="mini">Add</el-button></td>
                 </tr>
                 <tr>
                     <td>Downloaded</td>
-                    <td>{{baseInfo.downloaded}}</td>
+                    <td>{{baseInfo.downloaded_text}}</td>
                     <td><el-button size="mini">Add</el-button></td>
                 </tr>
                 <tr>

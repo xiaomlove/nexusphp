@@ -19,7 +19,7 @@
                     </div>
                 </template>
                 <div class="nickname">
-                    <p>Username：{{ userInfo && userInfo.username || '' }}</p>
+                    <p>Email：{{ userInfo && userInfo.email || '' }}</p>
                     <p>Class：{{ userInfo && userInfo.class_text || '' }}</p>
                     <el-tag size="small" effect="dark" class="logout" @click="logout">Logout</el-tag>
                 </div>
