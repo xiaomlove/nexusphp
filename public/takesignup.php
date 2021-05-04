@@ -53,11 +53,16 @@ $inviter =  $_POST["inviter"];
 $code = unesc($_POST["hash"]);
 
 //check invite code
-	$sq = sprintf("SELECT inviter FROM invites WHERE hash ='%s'",mysql_real_escape_string($code));
+	$sq = sprintf("SELECT id, inviter FROM invites WHERE hash ='%s'",mysql_real_escape_string($code));
 	$res = sql_query($sq) or sqlerr(__FILE__, __LINE__);
 	$inv = mysql_fetch_assoc($res);
 	if (!$inv)
 		bark('invalid invite code');
+	if ($inv['inviter'] != $inviter) {
+        \App\Models\Invite::query()->where('id', $inv['id'])->delete();
+        stderr(nexus_trans('nexus.invalid_argument'), nexus_trans('invite.invalid_inviter'));
+        exit();
+    }
 
 $ip = getip();
 
@@ -74,7 +79,7 @@ $email = htmlspecialchars(trim($email));
 $email = safe_email($email);
 if (!check_email($email))
 	bark($lang_takesignup['std_invalid_email_address']);
-	
+
 if(EmailBanned($email))
     bark($lang_takesignup['std_email_address_banned']);
 
@@ -89,15 +94,15 @@ $school = $_POST["school"];
 int_check($school);
 }
 
-$gender =  htmlspecialchars(trim($_POST["gender"])); 
+$gender =  htmlspecialchars(trim($_POST["gender"]));
 $allowed_genders = array("Male","Female","male","female");
 if (!in_array($gender, $allowed_genders, true))
 	bark($lang_takesignup['std_invalid_gender']);
-	
+
 if (empty($wantusername) || empty($wantpassword) || empty($email) || empty($country) || empty($gender))
 	bark($lang_takesignup['std_blank_field']);
 
-	
+
 if (strlen($wantusername) > 12)
 	bark($lang_takesignup['std_username_too_long']);
 
@@ -118,7 +123,7 @@ if (!validemail($email))
 
 if (!validusername($wantusername))
 	bark($lang_takesignup['std_invalid_username']);
-	
+
 // make sure user agrees to everything...
 if ($_POST["rulesverify"] != "yes" || $_POST["faqverify"] != "yes" || $_POST["ageverify"] != "yes")
 	stderr($lang_takesignup['std_signup_failed'], $lang_takesignup['std_unqualified']);
@@ -127,7 +132,7 @@ if ($_POST["rulesverify"] != "yes" || $_POST["faqverify"] != "yes" || $_POST["ag
 $a = (@mysql_fetch_row(@sql_query("select count(*) from users where email='".mysql_real_escape_string($email)."'"))) or sqlerr(__FILE__, __LINE__);
 if ($a[0] != 0)
   bark($lang_takesignup['std_email_address'].$email.$lang_takesignup['std_in_use']);
-  
+
 /*
 // do simple proxy check
 if (isproxy())
