@@ -262,9 +262,12 @@ class ExamRepository extends BaseRepository
         $indexes = collect($exam->indexes)->keyBy('index');
         do_log("examUser: " . $examUser->toJson() . ", indexes: " . $indexes->toJson());
 
-        $torrentFields = ['id', 'visible', 'banned'];
-        $torrent = Torrent::query()->findOrFail($torrentId, $torrentFields);
-        $torrent->checkIsNormal($torrentFields);
+        if (!isset($indexAndValue[Exam::INDEX_SEED_BONUS])) {
+            //seed bonus is relative to user all torrents, not single one, torrentId = 0
+            $torrentFields = ['id', 'visible', 'banned'];
+            $torrent = Torrent::query()->findOrFail($torrentId, $torrentFields);
+            $torrent->checkIsNormal($torrentFields);
+        }
 
         $insert = [];
         foreach ($indexAndValue as $indexId => $value) {

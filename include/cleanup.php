@@ -194,6 +194,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$valuethree = $logofpointone / ($nzero_bonus - 1);
 		$timenow = TIMENOW;
 		$sectoweek = 7*24*60*60;
+		$examRep = new \App\Repositories\ExamRepository();
 		while ($arr = mysql_fetch_assoc($res))	//loop for different users
 		{
 			$A = 0;
@@ -215,6 +216,8 @@ function docleanup($forceAll = 0, $printProgress = false) {
 			if ($is_donor == 'yes' && $donortimes_bonus > 0)
 				$all_bonus = $all_bonus * $donortimes_bonus;
 			KPS("+",$all_bonus,$arr["userid"]);
+			//update exam progress
+            $examRep->addProgress($arr["userid"], 0, [\App\Models\Exam::INDEX_SEED_BONUS => $all_bonus]);
 		}
 	}
 	$log = 'calculate seeding bonus';
@@ -523,7 +526,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		while ($arr = mysql_fetch_assoc($res))
 		{
 			$dt = sqlesc(date("Y-m-d H:i:s"));
-			$subject = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_vip_status_removed']); 
+			$subject = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_vip_status_removed']);
 			$msg = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_vip_status_removed_body']);
 			///---AUTOSYSTEM MODCOMMENT---//
 			$modcomment = htmlspecialchars($arr["modcomment"]);
@@ -650,10 +653,10 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		//die("s" . $arr['id']);
 		$res2 = sql_query("SELECT SUM(seedtime) as st, SUM(leechtime) as lt FROM snatched where userid = " . $arr['id'] . " LIMIT 1") or sqlerr(__FILE__, __LINE__);
 		$arr2 = mysql_fetch_assoc($res2) or sqlerr(__FILE__, __LINE__);
-		
+
 		//die("ss" . $arr2['st']);
 		//die("sss" . "UPDATE users SET seedtime = " . $arr2['st'] . ", leechtime = " . $arr2['lt'] . " WHERE id = " . $arr['id']);
-		
+
 		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
 	}
 	$log = "update total seeding and leeching time of users";

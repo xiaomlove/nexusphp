@@ -39,6 +39,8 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 }
 stdhead($lang_getrss['head_rss_feeds']);
 
+$query = [];
+$query[] = "passkey=" . $CURUSER['passkey'];
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	$allowed_showrows=array('10','20','30','40','50');
 	$link = get_protocol_prefix(). $BASEURL ."/torrentrss.php";
@@ -322,7 +324,7 @@ print($categories);
 </select></td></tr>
 <tr><td class="rowhead"><?php echo $lang_getrss['row_keyword']?></td>
 <td class="rowfollow" align="left">
-<input type="text" name="search" style="width: 200px;" /> <?php echo $lang_getrss['text_with']?> 
+<input type="text" name="search" style="width: 200px;" /> <?php echo $lang_getrss['text_with']?>
 <select name="search_mode" style="width: 60px;">
 <option value="0"><?php echo $lang_getrss['select_and'] ?></option>
 <option value="1" selected="selected"><?php echo $lang_getrss['select_or'] ?></option>

@@ -29,12 +29,12 @@ class ToolRepository extends BaseRepository
             'tar --exclude=vendor --exclude=.git -czf %s -C %s %s',
             $filename, dirname($webRoot), $dirName
         );
-        $result = exec($command, $output, $resultCode);
+        $result = exec($command, $output, $result_code);
         do_log(sprintf(
-            "command: %s, output: %s, resultCode: %s, result: %s, filename: %s",
-            $command, json_encode($output), $resultCode, $result, $filename
+            "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
+            $command, json_encode($output), $result_code, $result, $filename
         ));
-        return compact('result', 'filename');
+        return compact('result_code', 'filename');
     }
 
     public function backupDatabase()
@@ -46,22 +46,22 @@ class ToolRepository extends BaseRepository
             'mysqldump --user=%s --password=%s --port=%s --single-transaction --databases %s >> %s',
             $config['username'], $config['password'], $config['port'], $config['database'], $filename,
         );
-        $result = exec($command, $output, $resultCode);
+        $result = exec($command, $output, $result_code);
         do_log(sprintf(
-            "command: %s, output: %s, resultCode: %s, result: %s, filename: %s",
-            $command, json_encode($output), $resultCode, $result, $filename
+            "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
+            $command, json_encode($output), $result_code, $result, $filename
         ));
-        return compact('result', 'filename');
+        return compact('result_code', 'filename');
     }
 
     public function backupAll()
     {
         $backupWeb = $this->backupWebRoot();
-        if ($backupWeb['result'] != 0) {
+        if ($backupWeb['result_code'] != 0) {
             throw new \RuntimeException("backup web fail: " . json_encode($backupWeb));
         }
         $backupDatabase = $this->backupDatabase();
-        if ($backupDatabase['result'] != 0) {
+        if ($backupDatabase['result_code'] != 0) {
             throw new \RuntimeException("backup database fail: " . json_encode($backupDatabase));
         }
         $filename = sprintf('%s/%s.%s.tar.gz', sys_get_temp_dir(), basename(base_path()), date('Ymd.His'));
@@ -71,12 +71,12 @@ class ToolRepository extends BaseRepository
             dirname($backupWeb['filename']), basename($backupWeb['filename']),
             dirname($backupDatabase['filename']), basename($backupDatabase['filename'])
         );
-        $result = exec($command, $output, $resultCode);
+        $result = exec($command, $output, $result_code);
         do_log(sprintf(
-            "command: %s, output: %s, resultCode: %s, result: %s, filename: %s",
-            $command, json_encode($output), $resultCode, $result, $filename
+            "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
+            $command, json_encode($output), $result_code, $result, $filename
         ));
-        return compact('result', 'filename');
+        return compact('result_code', 'filename');
 
     }
 }
