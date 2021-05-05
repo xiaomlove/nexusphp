@@ -54,6 +54,12 @@
                             placeholder="Select End Time">
                         </el-date-picker>
                     </el-form-item>
+
+                    <el-form-item label="Duration" prop="duration">
+                        <el-input v-model="formData.duration" type="number" placeholder=""></el-input>
+                        <div style="color: #aaa">Unit: days. When assign to user, begin and end are used if they are specified. Otherwise begin time is the time at assignment, and the end time is the time at assignment plus the duration.</div>
+                    </el-form-item>
+
                     <el-form-item label="Target User Class" prop="filters.classes">
                         <el-checkbox-group v-model="formData.filters.classes">
                             <el-checkbox v-for="(item, index) in allClasses" :label="index" :key="index">{{item}}</el-checkbox>
@@ -109,6 +115,7 @@ export default {
                 description: '',
                 begin: '',
                 end: '',
+                duration: '',
                 indexes: [],
                 filters: {
                     classes: [],
@@ -141,6 +148,7 @@ export default {
                     state.formData.description = res.data.description
                     state.formData.begin = res.data.begin
                     state.formData.end = res.data.end
+                    state.formData.duration = res.data.duration
                     state.formData.indexes = res.data.indexes
                     state.formData.filters = res.data.filters
                     state.formData.status = res.data.status

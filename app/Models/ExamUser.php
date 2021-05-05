@@ -24,19 +24,58 @@ class ExamUser extends NexusModel
         'progress' => 'json'
     ];
 
-    public function getStatusTextAttribute()
+    public function getStatusTextAttribute(): string
     {
         return self::$status[$this->status]['text'] ?? '';
     }
 
     public function getBeginAttribute()
     {
-        return $this->begin ?? $this->exam->begin;
+        $begin = $this->getRawOriginal('begin');
+        $end = $this->getRawOriginal('end');
+        if ($begin && $end) {
+            do_log(sprintf('examUser: %s, begin from self', $this->id));
+            return $begin;
+        }
+
+        $exam = $this->exam;
+        $begin = $exam->getRawOriginal('begin');
+        $end = $exam->getRawOriginal('end');
+        if ($begin && $end) {
+            do_log(sprintf('examUser: %s, begin from exam: %s', $this->id, $exam->id));
+            return $begin;
+        }
+
+        if ($exam->duration > 0) {
+            do_log(sprintf('examUser: %s, begin from self created_at', $this->id));
+            return $this->created_at->toDateTimeString();
+        }
+        return null;
     }
 
     public function getEndAttribute()
     {
-        return $this->end ?? $this->exam->end;
+        $begin = $this->getRawOriginal('begin');
+        $end = $this->getRawOriginal('end');
+        if ($begin && $end) {
+            do_log(sprintf('examUser: %s, end from self', $this->id));
+            return $end;
+        }
+
+        $exam = $this->exam;
+        $begin = $exam->getRawOriginal('begin');
+        $end = $exam->getRawOriginal('end');
+        if ($begin && $end) {
+            do_log(sprintf('examUser: %s, end from exam: %s', $this->id, $exam->id));
+            return $end;
+        }
+
+        $duration = $exam->duration;
+        if ($duration > 0) {
+            do_log(sprintf('examUser: %s, end from self created_at + exam: %s %s days', $this->id, $exam->id, $duration));
+            return $this->created_at->addDays($duration)->toDateTimeString();
+        }
+        return null;
     }
 
 

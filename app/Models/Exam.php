@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Exam extends NexusModel
 {
-    protected $fillable = ['name', 'description', 'begin', 'end', 'status', 'is_discovered', 'filters', 'indexes'];
+    protected $fillable = ['name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes'];
 
     public $timestamps = true;
 
@@ -57,6 +57,11 @@ class Exam extends NexusModel
     public function getIsDiscoveredTextAttribute(): string
     {
         return self::$discovers[$this->is_discovered]['text'] ?? '';
+    }
+
+    public function getDurationTextAttribute(): string
+    {
+        return $this->duration . ' Days';
     }
 
 }

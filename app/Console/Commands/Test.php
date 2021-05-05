@@ -7,6 +7,7 @@ use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\User;
 use App\Repositories\ExamRepository;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -57,6 +58,7 @@ class Test extends Command
 //        $rep->cronjobCheckout();
         $r = DB::select(DB::raw('select version() as info'))[0]->info;
         dd($r);
+        Carbon::now()->toDateTimeString();
     }
 
 }

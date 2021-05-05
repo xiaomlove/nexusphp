@@ -103,9 +103,8 @@ class ExamRepository extends BaseRepository
     {
         $now = Carbon::now();
         $query = Exam::query()
-            ->where('begin', '<=', $now)
-            ->where('end', '>=', $now)
             ->where('status', Exam::STATUS_ENABLED)
+            ->whereRaw("if(begin is not null and end is not null, begin <= '$now' and end >= '$now', duration > 0)")
             ->orderBy('id', 'desc');
         if (!is_null($excludeId)) {
             $query->whereNotIn('id', Arr::wrap($excludeId));
@@ -130,7 +129,6 @@ class ExamRepository extends BaseRepository
             do_log("$logPrefix, no valid exam.");
             return $exams;
         }
-
         $matched = $exams->filter(function (Exam $exam) use ($uid, $logPrefix) {
             return $this->isExamMatchUser($exam, $uid);
         });
@@ -253,8 +251,12 @@ class ExamRepository extends BaseRepository
         if (!$exam) {
             throw new NexusException("exam: {$examUser->exam_id} not exists.");
         }
-        $begin = $examUser->begin ?? $exam->begin;
-        $end = $examUser->end ?? $exam->end;
+        $begin = $examUser->begin;
+        $end = $examUser->end;
+        if (!$begin || !$end) {
+            do_log(sprintf("no begin or end, examUser: %s", $examUser->toJson()));
+            return false;
+        }
         if ($now < $begin || $now > $end) {
             do_log(sprintf("now: %s, not in exam time range: %s ~ %s", $now, $begin, $end));
             return false;
@@ -331,10 +333,6 @@ class ExamRepository extends BaseRepository
         }
         $examUser = $examUsers->first();
         $exam = $examUser->exam;
-        if (empty($examUser->begin) || empty($examUser->end)) {
-            $examUser->begin = $exam->begin;
-            $examUser->end = $exam->end;
-        }
         $progress = $this->calculateProgress($examUser);
         do_log("$logPrefix, progress: " . nexus_json_encode($progress));
         $examUser->progress = $progress;
@@ -344,25 +342,14 @@ class ExamRepository extends BaseRepository
 
     private function calculateProgress(ExamUser $examUser)
     {
-        $exam = $examUser->exam;
         $logPrefix = "examUser: " . $examUser->id;
-        if ($examUser->begin) {
-            $logPrefix .= ", begin from examUser: " . $examUser->id;
-            $begin = $examUser->begin;
-        } elseif ($exam->begin) {
-            $logPrefix .= ", begin from exam: " . $exam->id;
-            $begin = $exam->begin;
-        } else {
+        $begin = $examUser->begin;
+        $end = $examUser->end;
+        if (!$begin) {
             do_log("$logPrefix, no begin");
             return null;
         }
-        if ($examUser->end) {
-            $logPrefix .= ", end from examUser: " . $examUser->id;
-            $end = $examUser->end;
-        } elseif ($exam->end) {
-            $logPrefix .= ", end from exam: " . $exam->id;
-            $end = $exam->end;
-        } else {
+        if (!$end) {
             do_log("$logPrefix, no end");
             return null;
         }
@@ -507,7 +494,8 @@ class ExamRepository extends BaseRepository
             ->with(['exam', 'user', 'user.language'])
             ->orderBy("$examUserTable.id", "asc");
         if (!$ignoreTimeRange) {
-            $baseQuery->whereRaw("if($examUserTable.end is not null, $examUserTable.end < '$now', $examTable.end < '$now')");
+//            $baseQuery->whereRaw("if($examUserTable.end is not null, $examUserTable.end < '$now', $examTable.end < '$now')");
+            $baseQuery->whereRaw("case when $examUserTable.end is not null then $examUserTable.end < '$now' case when $examTable.end is not null then $examTable.end < '$now' case when $examTable.duration > 0 then date_add($examUserTable.created_at, interval $examTable.duration day) < '$now' else true end");
         }
 
         $size = 100;

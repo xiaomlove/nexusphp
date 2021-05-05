@@ -19,6 +19,7 @@ class CreateExamsTable extends Migration
             $table->text('description')->nullable();
             $table->dateTime('begin')->nullable();
             $table->dateTime('end')->nullable();
+            $table->integer('duration')->default(0);
             $table->text('filters')->nullable();
             $table->text('indexes');
             $table->tinyInteger('status')->default(0);

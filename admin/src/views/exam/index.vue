@@ -51,6 +51,11 @@
             </el-table-column>
 
             <el-table-column
+                prop="duration_text"
+                label="Duration"
+            ></el-table-column>
+
+            <el-table-column
                 label="Target users"
                 width="350px"
             >
