@@ -3,6 +3,7 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 $rootpath = dirname(dirname(__DIR__)) . '/';
 define('ROOT_PATH', $rootpath);
+define('IN_NEXUS', true);
 $isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
