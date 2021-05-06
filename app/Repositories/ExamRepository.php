@@ -494,8 +494,11 @@ class ExamRepository extends BaseRepository
             ->with(['exam', 'user', 'user.language'])
             ->orderBy("$examUserTable.id", "asc");
         if (!$ignoreTimeRange) {
-//            $baseQuery->whereRaw("if($examUserTable.end is not null, $examUserTable.end < '$now', $examTable.end < '$now')");
-            $baseQuery->whereRaw("case when $examUserTable.end is not null then $examUserTable.end < '$now' case when $examTable.end is not null then $examTable.end < '$now' case when $examTable.duration > 0 then date_add($examUserTable.created_at, interval $examTable.duration day) < '$now' else true end");
+            $whenThens = [];
+            $whenThens[] = "when $examUserTable.`end` is not null then $examUserTable.`end` < '$now'";
+            $whenThens[] = "when $examTable.`end` is not null then $examTable.`end` < '$now'";
+            $whenThens[] = "when $examTable.duration > 0 then date_add($examUserTable.created_at, interval $examTable.duration day) < '$now'";
+            $baseQuery->whereRaw(sprintf("case %s else false end", implode(" ", $whenThens)));
         }
 
         $size = 100;

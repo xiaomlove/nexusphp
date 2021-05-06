@@ -55,10 +55,8 @@ class Test extends Command
 //        ]);
 //        dd($r);
 //        $rep->assignCronjob();
-//        $rep->cronjobCheckout();
-        $r = DB::select(DB::raw('select version() as info'))[0]->info;
+        $r = $rep->cronjobCheckout();
         dd($r);
-        Carbon::now()->toDateTimeString();
     }
 
 }

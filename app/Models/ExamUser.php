@@ -34,7 +34,7 @@ class ExamUser extends NexusModel
         $begin = $this->getRawOriginal('begin');
         $end = $this->getRawOriginal('end');
         if ($begin && $end) {
-            do_log(sprintf('examUser: %s, begin from self', $this->id));
+            do_log(sprintf('examUser: %s, begin from self: %s', $this->id, $begin));
             return $begin;
         }
 
@@ -42,12 +42,12 @@ class ExamUser extends NexusModel
         $begin = $exam->getRawOriginal('begin');
         $end = $exam->getRawOriginal('end');
         if ($begin && $end) {
-            do_log(sprintf('examUser: %s, begin from exam: %s', $this->id, $exam->id));
+            do_log(sprintf('examUser: %s, begin from exam(%s): %s', $this->id, $exam->id, $begin));
             return $begin;
         }
 
         if ($exam->duration > 0) {
-            do_log(sprintf('examUser: %s, begin from self created_at', $this->id));
+            do_log(sprintf('examUser: %s, begin from self created_at(%s)', $this->id, $this->getRawOriginal('created_at')));
             return $this->created_at->toDateTimeString();
         }
         return null;
@@ -58,7 +58,7 @@ class ExamUser extends NexusModel
         $begin = $this->getRawOriginal('begin');
         $end = $this->getRawOriginal('end');
         if ($begin && $end) {
-            do_log(sprintf('examUser: %s, end from self', $this->id));
+            do_log(sprintf('examUser: %s, end from self: %s', $this->id, $end));
             return $end;
         }
 
@@ -66,13 +66,13 @@ class ExamUser extends NexusModel
         $begin = $exam->getRawOriginal('begin');
         $end = $exam->getRawOriginal('end');
         if ($begin && $end) {
-            do_log(sprintf('examUser: %s, end from exam: %s', $this->id, $exam->id));
+            do_log(sprintf('examUser: %s, end from exam(%s): %s', $this->id, $exam->id, $end));
             return $end;
         }
 
         $duration = $exam->duration;
         if ($duration > 0) {
-            do_log(sprintf('examUser: %s, end from self created_at + exam: %s %s days', $this->id, $exam->id, $duration));
+            do_log(sprintf('examUser: %s, end from self created_at + exam(%s) created_at: %s + %s days', $this->id, $exam->id, $this->getRawOriginal('created_at'), $duration));
             return $this->created_at->addDays($duration)->toDateTimeString();
         }
         return null;
