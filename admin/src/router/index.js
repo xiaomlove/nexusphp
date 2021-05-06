@@ -54,7 +54,11 @@ const router = createRouter({
             name: 'agent-allow-form',
             component: () => import('../views/agent-allow/form.vue')
         },
-
+        {
+            path: '/setting',
+            name: 'setting',
+            component: () => import('../views/setting/index.vue')
+        },
     ]
 })
 
