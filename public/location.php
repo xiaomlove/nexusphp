@@ -6,7 +6,7 @@ loggedinorreturn();
 if (get_user_class() < UC_SYSOP) {
 	die("access denied.");
 }
-$config = config('database.mysql');
+$config = nexus_config('nexus.mysql');
 mysql_connect($config['host'],$config['username'],$config['password'], $config['database'], $config['port']);
 stdhead("Manage Locations");
 begin_main_frame("",false,100);
@@ -43,14 +43,14 @@ if($edited == 1) {
 	$practical_upspeed = $_GET['practical_upspeed'];
 	$theory_downspeed = $_GET['theory_downspeed'];
 	$practical_downspeed = $_GET['practical_downspeed'];
-	
+
 	if(validip_format($start_ip) && validip_format($end_ip))
 	{
 		if(ip2long($end_ip) > ip2long($start_ip))
 		{
 			$query = "UPDATE locations SET name = " . sqlesc($name) .",flagpic = " . sqlesc($flagpic) . ",location_main = " . sqlesc($location_main). ",location_sub= " . sqlesc($location_sub) . ",start_ip = " . sqlesc($start_ip) .  ",end_ip = " . sqlesc($end_ip) . ",theory_upspeed = " . sqlesc($theory_upspeed) .  ",practical_upspeed = " . sqlesc($practical_upspeed) .  ",theory_downspeed = " . sqlesc($theory_downspeed) .  ",practical_downspeed = " . sqlesc($practical_downspeed). " WHERE id=".sqlesc($id);
 			$sql = sql_query($query) or sqlerr(__FILE__, __LINE__);
-			if($sql) 
+			if($sql)
 			{
 				stdmsg("Success!","Location has been edited, click <a class=altlink href=" . $_SERVER['REQUEST_URI'] .">here</a> to go back");
 				stdfoot();
@@ -60,18 +60,18 @@ if($edited == 1) {
 		else
 			echo("<p><strong>The end IP address should be larger than the start one, or equal for single IP check!</strong></p>");
 	}
-	else 
+	else
 		echo("<p><strong>Invalid IP Address Format !!! </strong></p>");
 
 }
 
 $editid = $_GET['editid'] ?? 0;
 if($editid > 0) {
-	
+
 	$query = "SELECT * FROM locations WHERE id=" . sqlesc($editid);
 	$sql = sql_query($query);
 	$row = mysql_fetch_array($sql);
-	
+
 	$name = $row['name'];
 	$flagpic = $row['flagpic'];
 	$location_main = $row['location_main'];
@@ -116,7 +116,7 @@ if($add == 'true') {
 	$practical_upspeed = $_GET['practical_upspeed'];
 	$theory_downspeed = $_GET['theory_downspeed'];
 	$practical_downspeed = $_GET['practical_downspeed'];
-	
+
 	if(validip_format($start_ip) && validip_format($end_ip))
 	{
 		if(ip2long($end_ip) > ip2long($start_ip))
@@ -132,7 +132,7 @@ if($add == 'true') {
 		else
 			echo("<p><strong>The end IP address should be larger than the start one, or equal for single IP check!</strong></p>");
 	}
-	else 
+	else
 		echo("<p><strong>Invalid IP Address Format !!! </strong></p>");
 
 }
@@ -186,7 +186,7 @@ if($check_range == 'true') {
 		else
 			echo("<p><strong>The end IP address should be larger than the start one, or equal for single IP check!</strong></p>");
 	}
-	else 
+	else
 		echo("<p><strong>Invalid IP Address Format !!! </strong></p>");
 }
 else
@@ -217,11 +217,11 @@ while ($row = mysql_fetch_array($sql)) {
 	$practical_upspeed = $row['practical_upspeed'];
 	$theory_downspeed = $row['theory_downspeed'];
 	$practical_downspeed = $row['practical_downspeed'];
-	
+
 	$count_location_sub=strlen($location_sub);
 	if($count_location_sub > $maxlen_sub_location)
 		$location_sub=substr($location_sub, 0, $maxlen_sub_location) . "..";
-	
+
 	echo("<tr><td class=rowfollow align=center><strong>$id</strong></td>" .
 	"<td class=rowfollow align=left><strong>$name</strong></td>" .
 	"<td class=rowfollow align=center>" . ($flagpic != "" ? "<img src='" . get_protocol_prefix() . "$BASEURL/pic/location/$flagpic' border='0' />" : "-") . "</td>" .
