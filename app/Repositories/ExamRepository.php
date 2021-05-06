@@ -27,6 +27,7 @@ class ExamRepository extends BaseRepository
     public function store(array $params)
     {
         $this->checkIndexes($params);
+        $this->checkBeginEnd($params);
         $valid = $this->listValid(null, Exam::DISCOVERED_YES);
         if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
             throw new NexusException("Enabled and discovered exam already exists.");
@@ -38,6 +39,7 @@ class ExamRepository extends BaseRepository
     public function update(array $params, $id)
     {
         $this->checkIndexes($params);
+        $this->checkBeginEnd($params);
         $valid = $this->listValid($id, Exam::DISCOVERED_YES);
         if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
             throw new NexusException("Enabled and discovered exam already exists.");
@@ -68,6 +70,18 @@ class ExamRepository extends BaseRepository
             throw new \InvalidArgumentException("Require valid index.");
         }
         return true;
+    }
+
+    private function checkBeginEnd(array $params)
+    {
+        if (!empty($params['begin']) && !empty($params['end']) && empty($params['duration'])) {
+            return true;
+        }
+        if (empty($params['begin']) && empty($params['end']) && ctype_digit((string)$params['duration']) && $params['duration'] > 0) {
+            return true;
+        }
+
+        throw new \InvalidArgumentException("Require begin and end or only duration.");
     }
 
     public function getDetail($id)

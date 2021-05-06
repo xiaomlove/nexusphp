@@ -742,6 +742,7 @@ CREATE TABLE `exams` (
   `description` text COLLATE utf8mb4_unicode_ci,
   `begin` datetime DEFAULT NULL,
   `end` datetime DEFAULT NULL,
+  `duration` int(11) NOT NULL DEFAULT '0',
   `filters` text COLLATE utf8mb4_unicode_ci,
   `indexes` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(4) NOT NULL DEFAULT '0',
@@ -2668,4 +2669,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-05-02 17:30:56
+-- Dump completed on 2021-05-06 12:57:45

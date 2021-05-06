@@ -44,7 +44,7 @@ class ExamController extends Controller
             'name' => 'required|string',
             'indexes' => 'required|array|min:1',
             'status' => 'required|in:0,1',
-            'duration' => 'numeric'
+            'duration' => 'nullable|numeric'
         ];
         $request->validate($rules);
         $result = $this->repository->store($request->all());
@@ -78,6 +78,7 @@ class ExamController extends Controller
             'name' => 'required|string',
             'indexes' => 'required|array|min:1',
             'status' => 'required|in:0,1',
+            'duration' => 'nullable|numeric'
         ];
         $request->validate($rules);
         $result = $this->repository->update($request->all(), $id);
