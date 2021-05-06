@@ -105,32 +105,32 @@ if ($currentStep == 3) {
                 continue;
             }
             //Field invalid
-            if ($fieldInfo['Null'] == 'NO' && $fieldInfo['Default'] === null && $fieldInfo['Key'] != 'PRI') {
-                $typePrefix = $fieldInfo['Type'];
-                if (($pos = strpos($typePrefix, '(')) !== false) {
-                    $typePrefix = substr($typePrefix, 0, $pos);
-                }
-                if (preg_match('/varchar/', $typePrefix)) {
-                    $tableRows[] = [
-                        'label' => "Field: $table.$field",
-                        'required' => "default ''",
-                        'current' => 'null',
-                        'result' => 'NO',
-                    ];
-                    $toAlterTable[$table][$field] = "modify $field {$fieldInfo['Type']} not null default ''";
-                    continue;
-                }
-                if (preg_match('/int/', $typePrefix)) {
-                    $tableRows[] = [
-                        'label' => "Field: $table.$field",
-                        'required' => "default 0",
-                        'current' => 'null',
-                        'result' => 'NO',
-                    ];
-                    $toAlterTable[$table][$field] = "modify $field {$fieldInfo['Type']} not null default 0";
-                    continue;
-                }
-            }
+//            if ($fieldInfo['Null'] == 'NO' && $fieldInfo['Default'] === null && $fieldInfo['Key'] != 'PRI') {
+//                $typePrefix = $fieldInfo['Type'];
+//                if (($pos = strpos($typePrefix, '(')) !== false) {
+//                    $typePrefix = substr($typePrefix, 0, $pos);
+//                }
+//                if (preg_match('/varchar/', $typePrefix)) {
+//                    $tableRows[] = [
+//                        'label' => "Field: $table.$field",
+//                        'required' => "default ''",
+//                        'current' => 'null',
+//                        'result' => 'NO',
+//                    ];
+//                    $toAlterTable[$table][$field] = "modify $field {$fieldInfo['Type']} not null default ''";
+//                    continue;
+//                }
+//                if (preg_match('/int/', $typePrefix)) {
+//                    $tableRows[] = [
+//                        'label' => "Field: $table.$field",
+//                        'required' => "default 0",
+//                        'current' => 'null',
+//                        'result' => 'NO',
+//                    ];
+//                    $toAlterTable[$table][$field] = "modify $field {$fieldInfo['Type']} not null default 0";
+//                    continue;
+//                }
+//            }
         }
     }
     while ($isPost) {
