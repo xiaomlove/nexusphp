@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ExamResource;
 use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
+use App\Models\Exam;
 use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ExamController extends Controller
 {
@@ -43,6 +45,8 @@ class ExamController extends Controller
         $rules = [
             'name' => 'required|string',
             'indexes' => 'required|array|min:1',
+            'indexes.*.index' => ['required', Rule::in(array_keys(Exam::$indexes))],
+            'indexes.*.require_value' => 'required|numeric',
             'status' => 'required|in:0,1',
             'duration' => 'nullable|numeric'
         ];
@@ -77,6 +81,7 @@ class ExamController extends Controller
         $rules = [
             'name' => 'required|string',
             'indexes' => 'required|array|min:1',
+            'indexes.*.name' => 'required',
             'status' => 'required|in:0,1',
             'duration' => 'nullable|numeric'
         ];

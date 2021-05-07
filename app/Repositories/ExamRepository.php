@@ -56,12 +56,12 @@ class ExamRepository extends BaseRepository
         }
         $validIndex = [];
         foreach ($params['indexes'] as $index) {
-            if (!isset($index['checked']) || !$index['checked']) {
+            if (isset($index['checked']) && !$index['checked']) {
                 continue;
             }
             if (!isset($index['require_value']) || !ctype_digit((string)$index['require_value'])) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Invalid require value for index: %s.', $index['name']
+                    'Invalid require value for index: %s.', $index['index']
                 ));
             }
             $validIndex[] = $index;
@@ -77,7 +77,7 @@ class ExamRepository extends BaseRepository
         if (!empty($params['begin']) && !empty($params['end']) && empty($params['duration'])) {
             return true;
         }
-        if (empty($params['begin']) && empty($params['end']) && ctype_digit((string)$params['duration']) && $params['duration'] > 0) {
+        if (empty($params['begin']) && empty($params['end']) && isset($params['duration']) && ctype_digit((string)$params['duration']) && $params['duration'] > 0) {
             return true;
         }
 
