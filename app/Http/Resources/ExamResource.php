@@ -23,7 +23,7 @@ class ExamResource extends JsonResource
             'description' => $this->description,
             'begin' => $this->begin,
             'end' => $this->end,
-            'duration' => $this->duration,
+            'duration' => $this->duration ?: '',
             'duration_text' => $this->duration_text,
             'filters' => $this->filters,
             'filters_formatted' => $this->formatFilters($this->resource),

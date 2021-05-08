@@ -59,7 +59,7 @@ class ExamRepository extends BaseRepository
             if (isset($index['checked']) && !$index['checked']) {
                 continue;
             }
-            if (!isset($index['require_value']) || !ctype_digit((string)$index['require_value'])) {
+            if (isset($index['require_value']) && !ctype_digit((string)$index['require_value'])) {
                 throw new \InvalidArgumentException(sprintf(
                     'Invalid require value for index: %s.', $index['index']
                 ));
@@ -171,8 +171,8 @@ class ExamRepository extends BaseRepository
         }
 
         $added = $user->added->toDateTimeString();
-        $registerTimeBegin = isset($filters->register_time_range[0]) ? Carbon::parse($filters->register_time_range[0])->toDateString() : '';
-        $registerTimeEnd = isset($filters->register_time_range[1]) ? Carbon::parse($filters->register_time_range[1])->toDateString() : '';
+        $registerTimeBegin = isset($filters->register_time_range[0]) ? Carbon::parse($filters->register_time_range[0])->toDateTimeString() : '';
+        $registerTimeEnd = isset($filters->register_time_range[1]) ? Carbon::parse($filters->register_time_range[1])->toDateTimeString() : '';
         if (empty($registerTimeBegin)) {
             do_log("$logPrefix, exam: {$exam->id} no register_time_begin");
             return false;
@@ -448,6 +448,7 @@ class ExamRepository extends BaseRepository
         }
         if ($exams->count() > 1) {
             do_log("Valid and discovered exam more than 1.", "warning");
+            return false;
         }
         /** @var Exam $exam */
         $exam = $exams->first();

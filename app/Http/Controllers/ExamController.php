@@ -46,7 +46,7 @@ class ExamController extends Controller
             'name' => 'required|string',
             'indexes' => 'required|array|min:1',
             'indexes.*.index' => ['required', Rule::in(array_keys(Exam::$indexes))],
-            'indexes.*.require_value' => 'required|numeric',
+            'indexes.*.require_value' => 'nullable|numeric',
             'status' => 'required|in:0,1',
             'duration' => 'nullable|numeric'
         ];
@@ -81,7 +81,8 @@ class ExamController extends Controller
         $rules = [
             'name' => 'required|string',
             'indexes' => 'required|array|min:1',
-            'indexes.*.name' => 'required',
+            'indexes.*.index' => ['required', Rule::in(array_keys(Exam::$indexes))],
+            'indexes.*.require_value' => 'nullable|numeric',
             'status' => 'required|in:0,1',
             'duration' => 'nullable|numeric'
         ];

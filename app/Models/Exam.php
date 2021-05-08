@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 class Exam extends NexusModel
 {
     protected $fillable = ['name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes'];
@@ -49,6 +51,13 @@ class Exam extends NexusModel
         self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User register time range'],
     ];
 
+    protected static function booted()
+    {
+        static::saving(function (Model $model) {
+            $model->duration = (int)$model->duration;
+        });
+    }
+
     public function getStatusTextAttribute(): string
     {
         return self::$status[$this->status]['text'] ?? '';
@@ -59,9 +68,12 @@ class Exam extends NexusModel
         return self::$discovers[$this->is_discovered]['text'] ?? '';
     }
 
-    public function getDurationTextAttribute(): string
+    public function getDurationTextAttribute($value): string
     {
-        return $this->duration . ' Days';
+        if ($value > 0) {
+            return $value . ' Days';
+        }
+        return '';
     }
 
 }

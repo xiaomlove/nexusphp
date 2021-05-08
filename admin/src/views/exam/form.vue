@@ -139,9 +139,9 @@ export default {
                 ],
             },
         })
-        onMounted( () => {
-            listAllClass()
-            listAllIndex()
+        onMounted( async () => {
+            await listAllClass()
+            await listAllIndex()
             if (id) {
                 api.getExam(id).then(res => {
                     state.formData.name = res.data.name
@@ -171,6 +171,12 @@ export default {
                     }
                     if (params.end) {
                         params.end = dayjs(params.end).format('YYYY-MM-DD HH:mm:ss')
+                    }
+                    if (params.filters.register_time_range[0]) {
+                        params.filters.register_time_range[0] = dayjs(params.filters.register_time_range[0]).format('YYYY-MM-DD HH:mm:ss')
+                    }
+                    if (params.filters.register_time_range[1]) {
+                        params.filters.register_time_range[1] = dayjs(params.filters.register_time_range[1]).format('YYYY-MM-DD HH:mm:ss')
                     }
                     console.log(params)
                     if (id) {

@@ -42,11 +42,13 @@
             <el-table-column
                 prop="begin"
                 label="Begin"
+                width="160"
             >
             </el-table-column>
             <el-table-column
                 prop="end"
                 label="End"
+                width="160"
             >
             </el-table-column>
 
