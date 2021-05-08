@@ -68,10 +68,10 @@ class Exam extends NexusModel
         return self::$discovers[$this->is_discovered]['text'] ?? '';
     }
 
-    public function getDurationTextAttribute($value): string
+    public function getDurationTextAttribute(): string
     {
-        if ($value > 0) {
-            return $value . ' Days';
+        if ($this->duration > 0) {
+            return $this->duration . ' Days';
         }
         return '';
     }
