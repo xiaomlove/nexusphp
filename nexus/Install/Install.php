@@ -112,56 +112,47 @@ class Install
     public function listRequirementTableRows()
     {
         $gdInfo = function_exists('gd_info') ? gd_info() : [];
-        $tableRows = [
-            [
-                'label' => 'PHP version',
-                'required' => '>= ' . $this->minimumPhpVersion,
-                'current' => PHP_VERSION,
-                'result' => $this->yesOrNo(version_compare(PHP_VERSION, $this->minimumPhpVersion, '>=')),
-            ],
-            [
-                'label' => 'PHP extension redis',
-                'required' => 'optional',
-                'current' => extension_loaded('redis'),
-                'result' => $this->yesOrNo(extension_loaded('redis')),
-            ],
-            [
-                'label' => 'PHP extension mysqli',
-                'required' => 'enabled',
-                'current' => extension_loaded('mysqli'),
-                'result' => $this->yesOrNo(extension_loaded('mysqli')),
-            ],
-            [
-                'label' => 'PHP extension mbstring',
-                'required' => 'enabled',
-                'current' => extension_loaded('mbstring'),
-                'result' => $this->yesOrNo(extension_loaded('mbstring')),
-            ],
-            [
-                'label' => 'PHP extension gd',
-                'required' => 'enabled',
-                'current' => extension_loaded('gd'),
-                'result' => $this->yesOrNo(extension_loaded('gd')),
-            ],
-            [
-                'label' => 'PHP extension gd JPEG Support',
-                'required' => 'true',
-                'current' => $gdInfo['JPEG Support'] ?? '',
-                'result' => $this->yesOrNo($gdInfo['JPEG Support'] ?? ''),
-            ],
-            [
-                'label' => 'PHP extension gd PNG Support',
-                'required' => 'true',
-                'current' => $gdInfo['PNG Support'] ?? '',
-                'result' => $this->yesOrNo($gdInfo['PNG Support'] ?? ''),
-            ],
-            [
-                'label' => 'PHP extension gd GIF Read Support',
-                'required' => 'true',
-                'current' => $gdInfo['GIF Read Support'] ?? '',
-                'result' => $this->yesOrNo($gdInfo['GIF Read Support'] ?? ''),
-            ],
+        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'gd'];
+        $tableRows = [];
+        $tableRows[] = [
+            'label' => 'PHP version',
+            'required' => '>= ' . $this->minimumPhpVersion,
+            'current' => PHP_VERSION,
+            'result' => $this->yesOrNo(version_compare(PHP_VERSION, $this->minimumPhpVersion, '>=')),
         ];
+        foreach ($extensions as $extension) {
+            $tableRows[] = [
+                'label' => "PHP extension $extension",
+                'required' => 'enabled',
+                'current' => extension_loaded($extension),
+                'result' => $this->yesOrNo(extension_loaded($extension)),
+            ];
+        }
+        $tableRows[] = [
+            'label' => 'PHP extension gd JPEG Support',
+            'required' => 'true',
+            'current' => $gdInfo['JPEG Support'] ?? '',
+            'result' => $this->yesOrNo($gdInfo['JPEG Support'] ?? ''),
+        ];
+        $tableRows[] = [
+            'label' => 'PHP extension gd PNG Support',
+            'required' => 'true',
+            'current' => $gdInfo['PNG Support'] ?? '',
+            'result' => $this->yesOrNo($gdInfo['PNG Support'] ?? ''),
+        ];
+        $tableRows[] = [
+            'label' => 'PHP extension gd GIF Read Support',
+            'required' => 'true',
+            'current' => $gdInfo['GIF Read Support'] ?? '',
+            'result' => $this->yesOrNo($gdInfo['GIF Read Support'] ?? ''),
+        ];
+        $tableRows[] = [
+            'label' => 'PHP extension redis',
+            'required' => 'optional',
+            'current' => extension_loaded('redis'),
+            'result' => $this->yesOrNo(extension_loaded('redis')),
+        ];
+
         $fails = array_filter($tableRows, function ($value) {return in_array($value['required'], ['true', 'enabled']) && $value['result'] == 'NO';});
         $pass = empty($fails);
 
