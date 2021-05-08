@@ -73,7 +73,7 @@ class UserRepository extends BaseRepository
         if ($password != $passwordConfirmation) {
             throw new \InvalidArgumentException("password confirmation != password");
         }
-        $user = User::query()->where('username', $username)->firstOrFail();
+        $user = User::query()->where('username', $username)->firstOrFail(['id', 'username']);
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
         $update = [
