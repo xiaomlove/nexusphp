@@ -154,9 +154,6 @@ export default {
                     state.formData.status = res.data.status
                     state.formData.is_discovered = res.data.is_discovered
                 })
-            } else {
-                let res = api.listExamIndex()
-                state.formData.indexes = res.data
             }
         })
         onBeforeUnmount(() => {
