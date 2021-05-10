@@ -53,13 +53,13 @@ $inviter =  $_POST["inviter"];
 $code = unesc($_POST["hash"]);
 
 //check invite code
-	$sq = sprintf("SELECT id, inviter FROM invites WHERE hash ='%s'",mysql_real_escape_string($code));
+	$sq = sprintf("SELECT id, inviter FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
 	$res = sql_query($sq) or sqlerr(__FILE__, __LINE__);
 	$inv = mysql_fetch_assoc($res);
 	if (!$inv)
 		bark('invalid invite code');
 	if ($inv['inviter'] != $inviter) {
-        \App\Models\Invite::query()->where('id', $inv['id'])->delete();
+        \App\Models\Invite::query()->where('id', $inv['id'])->update(['valid' => \App\Models\Invite::VALID_NO]);
         stderr(nexus_trans('nexus.invalid_argument'), nexus_trans('invite.invalid_inviter'));
         exit();
     }
@@ -192,15 +192,23 @@ EOD;
 
 if ($type == 'invite')
 {
-//don't forget to delete confirmed invitee's hash code from table invites
-sql_query("DELETE FROM invites WHERE hash = '".mysql_real_escape_string($code)."'");
-$dt = sqlesc(date("Y-m-d H:i:s"));
-$subject = sqlesc($lang_takesignup_target[get_user_lang($inviter)]['msg_invited_user_has_registered']);
-$msg = sqlesc($lang_takesignup_target[get_user_lang($inviter)]['msg_user_you_invited'].$usern.$lang_takesignup_target[get_user_lang($inviter)]['msg_has_registered']);
-//sql_query("UPDATE users SET uploaded = uploaded + 10737418240 WHERE id = $inviter"); //add 10GB to invitor's uploading credit
-sql_query("INSERT INTO messages (sender, receiver, subject, added, msg) VALUES(0, $inviter, $subject, $dt, $msg)") or sqlerr(__FILE__, __LINE__);
-$Cache->delete_value('user_'.$inviter.'_unread_message_count');
-$Cache->delete_value('user_'.$inviter.'_inbox_count');
+    //don't forget to delete confirmed invitee's hash code from table invites
+    //sql_query("DELETE FROM invites WHERE hash = '".mysql_real_escape_string($code)."'");
+    // set invalid
+    $update = [
+        'valid' => \App\Models\Invite::VALID_NO,
+        'invitee_register_uid' => $id,
+        'invitee_register_email' => $email,
+    ];
+    \App\Models\Invite::query()->where('id', $inv['id'])->update($update);
+
+    $dt = sqlesc(date("Y-m-d H:i:s"));
+    $subject = sqlesc($lang_takesignup_target[get_user_lang($inviter)]['msg_invited_user_has_registered']);
+    $msg = sqlesc($lang_takesignup_target[get_user_lang($inviter)]['msg_user_you_invited'].$usern.$lang_takesignup_target[get_user_lang($inviter)]['msg_has_registered']);
+    //sql_query("UPDATE users SET uploaded = uploaded + 10737418240 WHERE id = $inviter"); //add 10GB to invitor's uploading credit
+    sql_query("INSERT INTO messages (sender, receiver, subject, added, msg) VALUES(0, $inviter, $subject, $dt, $msg)") or sqlerr(__FILE__, __LINE__);
+    $Cache->delete_value('user_'.$inviter.'_unread_message_count');
+    $Cache->delete_value('user_'.$inviter.'_inbox_count');
 }
 
 if ($verification == 'admin'){

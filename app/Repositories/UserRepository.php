@@ -25,7 +25,7 @@ class UserRepository extends BaseRepository
 
     public function getDetail($id)
     {
-        $user = User::query()->findOrFail($id, User::$commonFields);
+        $user = User::query()->with(['invitee_code'])->findOrFail($id, User::$commonFields);
         $userResource = new UserResource($user);
         $baseInfo = $userResource->response()->getData(true)['data'];
 

@@ -134,4 +134,9 @@ class User extends Authenticatable
         return $this->belongsTo(Language::class, 'lang');
     }
 
+    public function invitee_code()
+    {
+        return $this->hasOne(Invite::class, 'invitee_register_uid');
+    }
+
 }

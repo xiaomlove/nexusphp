@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class Test extends Command
 {
@@ -55,7 +56,9 @@ class Test extends Command
 //        ]);
 //        dd($r);
 //        $rep->assignCronjob();
-        $r = $rep->cronjobCheckout();
+//        $r = $rep->cronjobCheckout();
+        $disk = Storage::disk('google_dirve');
+        $r = $disk->files();
         dd($r);
     }
 
