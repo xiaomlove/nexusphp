@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ToolRepository extends BaseRepository
 {
@@ -54,7 +55,7 @@ class ToolRepository extends BaseRepository
         return compact('result_code', 'filename');
     }
 
-    public function backupAll()
+    public function backupAll($uploadToGoogleDrive = false)
     {
         $backupWeb = $this->backupWebRoot();
         if ($backupWeb['result_code'] != 0) {
@@ -76,7 +77,12 @@ class ToolRepository extends BaseRepository
             "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
             $command, json_encode($output), $result_code, $result, $filename
         ));
-        return compact('result_code', 'filename');
+        $upload_result = '';
+        if ($uploadToGoogleDrive) {
+            $disk = Storage::disk('google_drive');
+            $upload_result = $disk->put(basename($filename), fopen($filename, 'r'));
+        }
+        return compact('result_code', 'filename', 'upload_result');
 
     }
 }

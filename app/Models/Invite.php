@@ -15,7 +15,8 @@ class Invite extends NexusModel
     ];
 
     protected $fillable = [
-        'inviter', 'invitee', 'hash', 'time_invited', 'valid', 'invitee_register_uid', 'invitee_register_email', 'invitee_register_username'
+        'inviter', 'invitee', 'hash', 'time_invited', 'valid',
+        'invitee_register_uid', 'invitee_register_email', 'invitee_register_username'
     ];
 
     public function getValidTextAttribute()

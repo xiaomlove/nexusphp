@@ -199,6 +199,7 @@ if ($type == 'invite')
         'valid' => \App\Models\Invite::VALID_NO,
         'invitee_register_uid' => $id,
         'invitee_register_email' => $email,
+        'invitee_register_username' => $wantusername,
     ];
     \App\Models\Invite::query()->where('id', $inv['id'])->update($update);
 

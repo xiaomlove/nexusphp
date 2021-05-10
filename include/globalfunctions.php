@@ -92,7 +92,8 @@ function hash_where($name, $hash) {
 	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
 }
 
-
+//no need any more...
+/*
 function strip_magic_quotes($arr)
 {
 	foreach ($arr as $k => $v)
@@ -119,7 +120,7 @@ if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 		$_COOKIE = strip_magic_quotes($_COOKIE);
 	}
 }
-
+*/
 
 function get_langfolder_list()
 {

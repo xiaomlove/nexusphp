@@ -58,7 +58,7 @@ class Test extends Command
 //        $rep->assignCronjob();
 //        $r = $rep->cronjobCheckout();
         $disk = Storage::disk('google_dirve');
-        $r = $disk->files();
+        $r = $disk->put('/', base_path('composer.json'));
         dd($r);
     }
 
