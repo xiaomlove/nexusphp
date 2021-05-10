@@ -33,11 +33,13 @@ $lang_invite = array
 	'text_no_invitation_sent' => "当前没有已发邀请",
 	'text_hash' => "Hash",
 	'text_send_date' => "发送日期",
+    'text_hash_status' => 'Hash 有效',
+    'text_invitee_user' => '被邀请者',
 	'text_invitation_body' => "
 你好,
 
-我邀请你加入 $SITENAME, 这是一个拥有丰富资源的非开放社区. 
-如果你有兴趣加入我们请阅读规则并确认邀请.最后,确保维持一个良好的分享率 
+我邀请你加入 $SITENAME, 这是一个拥有丰富资源的非开放社区.
+如果你有兴趣加入我们请阅读规则并确认邀请.最后,确保维持一个良好的分享率
 分享允许的资源.
 
 欢迎到来! :)

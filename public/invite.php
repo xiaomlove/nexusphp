@@ -126,7 +126,7 @@ if ($type == 'new'){
 	$number1 = $arre[0];
 
 
-	$rer = sql_query("SELECT invitee, hash, time_invited FROM invites WHERE inviter = ".mysql_real_escape_string($id)) or sqlerr();
+	$rer = sql_query("SELECT * FROM invites WHERE inviter = ".mysql_real_escape_string($id)) or sqlerr();
 	$num1 = mysql_num_rows($rer);
 
 
@@ -137,11 +137,22 @@ if ($type == 'new'){
 		print("<tr align=center><td colspan=6>".$lang_invite['text_no_invitation_sent']."</tr>");
 	} else {
 
-		print("<tr><td class=colhead>".$lang_invite['text_email']."</td><td class=colhead>".$lang_invite['text_hash']."</td><td class=colhead>".$lang_invite['text_send_date']."</td></tr>");
+		print("<tr><td class=colhead>".$lang_invite['text_email']."</td><td class=colhead>".$lang_invite['text_hash']."</td><td class=colhead>".$lang_invite['text_send_date']."</td><td class='colhead'>".$lang_invite['text_hash_status']."</td><td class='colhead'>".$lang_invite['text_invitee_user']."</td></tr>");
 		for ($i = 0; $i < $num1; ++$i)
 		{
 			$arr1 = mysql_fetch_assoc($rer);
-			print("<tr><td class=rowfollow>{$arr1['invitee']}<td class=rowfollow>{$arr1['hash']}</td><td class=rowfollow>{$arr1['time_invited']}</td></tr>");
+			$tr = "<tr>";
+			$tr .= "<td class=rowfollow>{$arr1['invitee']}</td>";
+			$tr .= "<td class=rowfollow>{$arr1['hash']}</td>";
+			$tr .= "<td class=rowfollow>{$arr1['time_invited']}</td>";
+			$tr .= "<td class=rowfollow>".\App\Models\Invite::$validInfo[$arr1['valid']]['text']."</td>";
+			if ($arr1['valid'] == \App\Models\Invite::VALID_NO) {
+			    $tr .= "<td class=rowfollow><a href=userdetails.php?id={$arr1['invitee_register_uid']}><font color=#1f7309>".$arr1['invitee_register_username']."</font></a></td>";
+            } else {
+			    $tr .= "<td class='rowfollow'></td>";
+            }
+			$tr .= "</tr>";
+			print($tr);
 		}
 	}
 	print("</table>");

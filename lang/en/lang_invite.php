@@ -33,13 +33,15 @@ $lang_invite = array
 	'text_no_invitation_sent' => "No invitations sent out at the moment.",
 	'text_hash' => "Hash",
 	'text_send_date' => "Send Date",
-	
+	'text_hash_status' => 'Hash valid',
+	'text_invitee_user' => 'Invitee user',
+
 	'text_invitation_body' => "
 Hi Buddy,
 
 I am inviting you to join $SITENAME which is a private community that have the finest
-and most abundant stuff. If you are interested in joining us please read over 
-the rules and confirm the invite. Finally, please make sure you keep a nice ratio and 
+and most abundant stuff. If you are interested in joining us please read over
+the rules and confirm the invite. Finally, please make sure you keep a nice ratio and
 only upload content that follows rules of the site.
 
 Welcome aboard! :)
