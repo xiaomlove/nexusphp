@@ -1021,6 +1021,10 @@ CREATE TABLE `invites` (
   `invitee` varchar(80) NOT NULL DEFAULT '',
   `hash` char(32) NOT NULL,
   `time_invited` datetime DEFAULT NULL,
+  `valid` tinyint(4) NOT NULL DEFAULT '1',
+  `invitee_register_uid` int(11) DEFAULT NULL,
+  `invitee_register_email` varchar(255) DEFAULT NULL,
+  `invitee_register_username` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `hash` (`hash`(3))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -2669,4 +2673,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-05-06 12:57:45
+-- Dump completed on 2021-05-11 11:16:24
