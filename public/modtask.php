@@ -29,7 +29,7 @@ if ($action == "edituser")
 	$class = intval($_POST["class"] ?? 0);
 	$vip_added = ($_POST["vip_added"] == 'yes' ? 'yes' : 'no');
 	$vip_until = ($_POST["vip_until"] ? $_POST["vip_until"] : null);
-	
+
 	$warned = $_POST["warned"] ?? '';
 	$warnlength = intval($_POST["warnlength"] ?? 0);
 	$warnpm = $_POST["warnpm"];
@@ -46,22 +46,23 @@ if ($action == "edituser")
 	$forumpost = $_POST["forumpost"];
 	$chpassword = $_POST["chpassword"];
 	$passagain = $_POST["passagain"];
-	
+
 	$supportlang = $_POST["supportlang"];
 	$support = $_POST["support"];
-	$supportfor = $_POST["supportfor"];	
-	
+	$supportfor = $_POST["supportfor"];
+
 	$moviepicker = $_POST["moviepicker"];
 	$pickfor = $_POST["pickfor"];
 	$stafffor = $_POST["staffduties"];
-	
+
 	if (!is_valid_id($userid) || !is_valid_user_class($class))
 		stderr("Error", "Bad user ID or class ID.");
 	if (get_user_class() <= $class)
 		stderr("Error", "You have no permission to change user's class to ".get_user_class_name($class,false,false,true).". BTW, how do you get here?");
 	$res = sql_query("SELECT * FROM users WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
 	$arr = mysql_fetch_assoc($res) or puke();
-	
+	$user = \App\Models\User::query()->findOrFail($userid);
+
 	$curenabled = $arr["enabled"];
 	$curparked = $arr["parked"];
 	$curuploadpos = $arr["uploadpos"];
@@ -69,7 +70,7 @@ if ($action == "edituser")
 	$curforumpost = $arr["forumpost"];
 	$curclass = $arr["class"];
 	$curwarned = $arr["warned"];
-	
+
 	$updateset[] = "stafffor = " . sqlesc($stafffor);
 	$updateset[] = "pickfor = " . sqlesc($pickfor);
 	$updateset[] = "picker = " . sqlesc($moviepicker);
@@ -83,7 +84,8 @@ if ($action == "edituser")
 	$updateset[] = "support = " . sqlesc($support);
 	$updateset[] = "supportfor = " . sqlesc($supportfor);
 	$updateset[] = "supportlang = ".sqlesc($supportlang);
-	
+    $banLog = [];
+
 	if(get_user_class()<=$cruprfmanage_class)
 	{
 		$modcomment = $arr["modcomment"];
@@ -152,7 +154,7 @@ if ($action == "edituser")
 		$this_donated_usd = $donated - $arr["donated"];
 		$this_donated_cny = $donated_cny - $arr["donated_cny"];
 		$memo = sqlesc(htmlspecialchars($_POST["donation_memo"]));
-		
+
 		if ($donated != $arr['donated'] || $donated_cny != $arr['donated_cny']) {
 			$added = sqlesc(date("Y-m-d H:i:s"));
 			sql_query("INSERT INTO funds (usd, cny, user, added, memo) VALUES ($this_donated_usd, $this_donated_cny, $userid, $added, $memo)") or sqlerr(__FILE__, __LINE__);
@@ -162,17 +164,17 @@ if ($action == "edituser")
 
 		$updateset[] = "donor = " . sqlesc($donor);
 	}
-	
+
 	if ($chpassword != "" AND $passagain != "") {
 		unset($passupdate);
 		$passupdate=false;
-		
+
 		if ($chpassword ==  $username OR strlen($chpassword) > 40 OR strlen($chpassword) < 6 OR $chpassword != $passagain)
 			$passupdate=false;
 		else
 			$passupdate=true;
 	}
-	
+
 	if (isset($passupdate) && $passupdate) {
 		$sec = mksecret();
 		$passhash = md5($sec . $chpassword . $sec);
@@ -205,7 +207,7 @@ if ($action == "edituser")
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		$modcomment = date("Y-m-d") . " - VIP status changed by {$CURUSER['username']}. VIP added: ".$vip_added.($vip_added == 'yes' ? "; VIP until: ".$vip_until : "").".\n". $modcomment;
 	}
-	
+
 	if ($warned && $curwarned != $warned)
 	{
 		$updateset[] = "warned = " . sqlesc($warned);
@@ -229,7 +231,7 @@ if ($action == "edituser")
 			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_are_warned_by'].$CURUSER['username']."." . ($warnpm ? $lang_modtask_target[get_user_lang($userid)]['msg_reason'].$warnpm : ""));
 			$updateset[] = "warneduntil = null";
 		}else{
-			$warneduntil = date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $warnlength * 604800)); 
+			$warneduntil = date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $warnlength * 604800));
 			$dur = $warnlength . $lang_modtask_target[get_user_lang($userid)]['msg_week'] . ($warnlength > 1 ? $lang_modtask_target[get_user_lang($userid)]['msg_s'] : "");
 			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_are_warned_for'].$dur.$lang_modtask_target[get_user_lang($userid)]['msg_by']  . $CURUSER['username'] . "." . ($warnpm ? $lang_modtask_target[get_user_lang($userid)]['msg_reason'].$warnpm : ""));
 			$modcomment = date("Y-m-d") . " - Warned for $dur by " . $CURUSER['username'] .  ".\nReason: $warnpm.\n". $modcomment;
@@ -253,7 +255,12 @@ if ($action == "edituser")
 				sql_query("UPDATE users SET enabled='yes', leechwarn='no' WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
 			}
 		} else {
-			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;		
+			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;
+			$banLog = [
+			    'uid' => $userid,
+                'username' => $user->username,
+                'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
+            ];
 		}
 	}
 	if ($arr['noad'] != $noad){
@@ -266,7 +273,7 @@ if ($action == "edituser")
 	}
 	if ($privacy == "low" OR $privacy == "normal" OR $privacy == "strong")
 		$updateset[] = "privacy = " . sqlesc($privacy);
-	
+
 	if (isset($_POST["resetkey"]) && $_POST["resetkey"] == "yes")
 	{
 		$newpasskey = md5($arr['username'].date("Y-m-d H:i:s").$arr['passhash']);
@@ -328,12 +335,14 @@ if ($action == "edituser")
 			$added = sqlesc(date("Y-m-d H:i:s"));
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		}
-	} 
-	
-	$updateset[] = "modcomment = " . sqlesc($modcomment);
-	
-	sql_query("UPDATE users SET  " . implode(", ", $updateset) . " WHERE id=$userid") or sqlerr(__FILE__, __LINE__);
+	}
 
+	$updateset[] = "modcomment = " . sqlesc($modcomment);
+
+	sql_query("UPDATE users SET  " . implode(", ", $updateset) . " WHERE id=$userid") or sqlerr(__FILE__, __LINE__);
+    if (!empty($banLog)) {
+        \App\Models\UserBanLog::query()->insert($banLog);
+    }
 	$returnto = htmlspecialchars($_POST["returnto"]);
 	header("Location: " . get_protocol_prefix() . "$BASEURL/$returnto");
 	die;

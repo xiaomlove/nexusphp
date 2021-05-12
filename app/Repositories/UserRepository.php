@@ -6,6 +6,7 @@ use App\Http\Resources\UserResource;
 use App\Models\ExamUser;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserRepository extends BaseRepository
 {
@@ -25,7 +26,10 @@ class UserRepository extends BaseRepository
 
     public function getDetail($id)
     {
-        $user = User::query()->with(['invitee_code'])->findOrFail($id, User::$commonFields);
+        $with = [
+            'inviter' => function (Builder $query) {return $query->select(User::$commonFields);}
+        ];
+        $user = User::query()->with($with)->findOrFail($id, User::$commonFields);
         $userResource = new UserResource($user);
         $baseInfo = $userResource->response()->getData(true)['data'];
 

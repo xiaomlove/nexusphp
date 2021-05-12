@@ -32,7 +32,7 @@ class UserResource extends JsonResource
             'seedtime_text' => mkprettytime($this->seedtime),
             'leechtime' => $this->leechtime,
             'leechtime_text' => mkprettytime($this->leechtime),
-            'invitee_code' => new InviteResource($this->whenLoaded('invitee_code')),
+            'inviter' => new UserResource($this->whenLoaded('inviter')),
         ];
     }
 }

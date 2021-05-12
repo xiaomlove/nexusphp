@@ -17,7 +17,7 @@ class InviteResource extends JsonResource
         return [
             'id' => $this->id,
             'inviter' => $this->inviter,
-            'invitee' => $this->inviter,
+            'invitee' => $this->invitee,
             'hash' => $this->hash,
             'time_invited' => $this->time_invited,
             'valid' => $this->valid,

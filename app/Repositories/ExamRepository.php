@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\User;
+use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
@@ -502,6 +503,7 @@ class ExamRepository extends BaseRepository
         $now = Carbon::now()->toDateTimeString();
         $examUserTable = (new ExamUser())->getTable();
         $examTable = (new Exam())->getTable();
+        $userTable = (new User())->getTable();
         $baseQuery = ExamUser::query()
             ->join($examTable, "$examUserTable.exam_id", "=", "$examTable.id")
             ->where("$examUserTable.status", ExamUser::STATUS_NORMAL)
@@ -519,6 +521,7 @@ class ExamRepository extends BaseRepository
         $size = 100;
         $minId = 0;
         $result = 0;
+
         while (true) {
             $logPrefix = sprintf('[%s], size: %s', __FUNCTION__, $size);
             $examUsers = (clone $baseQuery)->where("$examUserTable.id", ">", $minId)->limit($size)->get();
@@ -530,11 +533,12 @@ class ExamRepository extends BaseRepository
             }
             $result += $examUsers->count();
             $now = Carbon::now()->toDateTimeString();
-            $examUserIdArr = $uidToDisable = $messageToSend = [];
+            $examUserIdArr = $uidToDisable = $messageToSend = $userBanLog = $userModcommentUpdate = [];
             foreach ($examUsers as $examUser) {
                 $minId = $examUser->id;
                 $examUserIdArr[] = $examUser->id;
                 $uid = $examUser->uid;
+                $exam = $examUser->exam;
                 $currentLogPrefix = sprintf("$logPrefix, user: %s, exam: %s, examUser: %s", $uid, $examUser->exam_id, $examUser->id);
                 $locale = $examUser->user->locale;
                 if ($examUser->is_done) {
@@ -547,10 +551,26 @@ class ExamRepository extends BaseRepository
                     $msgTransKey = 'exam.checkout_not_pass_message_content';
                     //ban user
                     $uidToDisable[] = $uid;
+                    $userModcomment = nexus_trans('exam.ban_user_modcomment', [
+                        'exam_name' => $exam->name,
+                        'begin' => $examUser->begin,
+                        'end' => $examUser->end
+                    ], $locale);
+                    $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', modcomment, '%s')", $uid, $userModcomment);
+                    $banLogReason = nexus_trans('exam.ban_log_reason', [
+                        'exam_name' => $exam->name,
+                        'begin' => $exam->begin,
+                        'end' => $exam->end,
+                    ], $locale);
+                    $userBanLog[] = [
+                        'uid' => $uid,
+                        'username' => $examUser->user->username,
+                        'reason' => $banLogReason,
+                    ];
                 }
                 $subject =  nexus_trans($subjectTransKey, [], $locale);
                 $msg = nexus_trans($msgTransKey, [
-                    'exam_name' => $examUser->exam->name,
+                    'exam_name' => $exam->name,
                     'begin' => $examUser->begin,
                     'end' => $examUser->end
                 ], $locale);
@@ -561,11 +581,20 @@ class ExamRepository extends BaseRepository
                     'msg' => $msg
                 ];
             }
-            DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr) {
+            DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr, $userBanLog, $userModcommentUpdate, $userTable, $logPrefix) {
                 ExamUser::query()->whereIn('id', $examUserIdArr)->update(['status' => ExamUser::STATUS_FINISHED]);
                 Message::query()->insert($messageToSend);
                 if (!empty($uidToDisable)) {
-                    User::query()->whereIn('id', $uidToDisable)->update(['enabled' => User::ENABLED_NO]);
+                    $uidStr = implode(', ', $uidToDisable);
+                    $sql = sprintf(
+                        'update %s set enabled = %s, set modcomment = case when %s end where id in (%s)',
+                        $userTable, User::ENABLED_NO, implode(' ', $userModcommentUpdate), $uidStr
+                    );
+                    $updateResult = DB::update($sql);
+                    do_log(sprintf("$logPrefix, disable %s users: %s, sql: %s, updateResult: %s", count($uidToDisable), $uidStr, $sql, $updateResult));
+                }
+                if (!empty($userBanLog)) {
+                    UserBanLog::query()->insert($userBanLog);
                 }
             });
         }

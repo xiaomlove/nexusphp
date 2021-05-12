@@ -103,7 +103,8 @@ class User extends Authenticatable
 
     public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
-        'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime'
+        'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
+        'invited_by',
     ];
 
     public function checkIsNormal(array $fields = ['status', 'enabled'])
@@ -137,6 +138,11 @@ class User extends Authenticatable
     public function invitee_code()
     {
         return $this->hasOne(Invite::class, 'invitee_register_uid');
+    }
+
+    public function inviter()
+    {
+        return $this->belongsTo(User::class, 'invited_by');
     }
 
 }
