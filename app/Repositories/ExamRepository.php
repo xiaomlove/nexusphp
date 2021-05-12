@@ -556,7 +556,7 @@ class ExamRepository extends BaseRepository
                         'begin' => $examUser->begin,
                         'end' => $examUser->end
                     ], $locale);
-                    $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', modcomment, '%s')", $uid, $userModcomment);
+                    $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', modcomment)", $uid, $userModcomment);
                     $banLogReason = nexus_trans('exam.ban_log_reason', [
                         'exam_name' => $exam->name,
                         'begin' => $exam->begin,
