@@ -571,7 +571,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
                 $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
             });
-        delete_user($query, "cleanup.delete_user_no_transfer_alt_last_register_time");
+        delete_user($query, "cleanup.delete_user_no_transfer_alt_register_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 2: registering time";
 	do_log($log);
