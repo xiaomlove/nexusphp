@@ -1769,7 +1769,7 @@ function get_user_row($id)
 	global $Cache, $CURUSER;
 	static $curuserRowUpdated = false;
 	static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
-	if ($id == $CURUSER['id']) {
+	if ($CURUSER && $id == $CURUSER['id']) {
 		$row = array();
 		foreach($neededColumns as $column) {
 			$row[$column] = $CURUSER[$column];
@@ -2198,11 +2198,13 @@ function get_css_uri($file = "")
 
 function get_font_css_uri(){
 	global $CURUSER;
-	if ($CURUSER['fontsize'] == 'large')
-		$file = 'largefont.css';
-	elseif ($CURUSER['fontsize'] == 'small')
-		$file = 'smallfont.css';
-	else $file = 'mediumfont.css';
+    $file = 'mediumfont.css';
+    if ($CURUSER && isset($CURUSER['fontsize'])) {
+        if ($CURUSER['fontsize'] == 'large')
+            $file = 'largefont.css';
+        elseif ($CURUSER['fontsize'] == 'small')
+            $file = 'smallfont.css';
+    }
 	return "styles/".$file;
 }
 
@@ -2257,7 +2259,7 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 
 	$Cache->setLanguage($CURLANGDIR);
 
-	$Advertisement = new ADVERTISEMENT($CURUSER['id']);
+	$Advertisement = new ADVERTISEMENT($CURUSER['id'] ?? 0);
 	$cssupdatedate = $cssdate_tweak;
 	// Variable for Start Time
 	$tstart = getmicrotime(); // Start time

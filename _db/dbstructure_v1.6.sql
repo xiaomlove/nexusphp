@@ -2517,6 +2517,36 @@ INSERT INTO `uploadspeed` VALUES (1,'64kbps'),(2,'128kbps'),(3,'256kbps'),(4,'51
 UNLOCK TABLES;
 
 --
+-- Table structure for table `user_ban_logs`
+--
+
+DROP TABLE IF EXISTS `user_ban_logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_ban_logs` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) NOT NULL DEFAULT '0',
+  `username` varchar(255) NOT NULL DEFAULT '',
+  `operator` int(11) NOT NULL DEFAULT '0',
+  `reason` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_uid` (`uid`),
+  KEY `idx_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_ban_logs`
+--
+
+LOCK TABLES `user_ban_logs` WRITE;
+/*!40000 ALTER TABLE `user_ban_logs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_ban_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `users`
 --
 
@@ -2673,4 +2703,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-05-11 11:16:24
+-- Dump completed on 2021-05-14  0:29:10

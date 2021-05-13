@@ -24,7 +24,7 @@ $filterForm = <<<FORM
 <div>
     <h1 style="text-align: center">User ban log</h1>
     <form id="filterForm" action="{$_SERVER['REQUEST_URI']}" method="get">
-        <input id="q" type="text" name="q" value="{$q}">
+        <input id="q" type="text" name="q" value="{$q}" placeholder="username">
         <input type="submit">
         <input type="reset" onclick="document.getElementById('q').value='';document.getElementById('filterForm').submit();">
     </form>

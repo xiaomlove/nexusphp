@@ -33,7 +33,7 @@ class ADVERTISEMENT{
 			return false;
 		else
 		{
-			if ($this->userrow['noad'] == 'yes')
+			if ($this->userrow && $this->userrow['noad'] == 'yes')
 				return false;
 			else
 				return true;
