@@ -154,11 +154,11 @@ while ($row = mysql_fetch_array($res))
 	if ($dllink)
 		$itemdlurl = $url."/download.php?id=".$row['id']."&amp;passkey=".rawurlencode($passkey);
 	else $itemdlurl = $url."/download.php?id=".$row['id'];
-	if ($_GET['icat']) $title .= "[".$row['cat_name']."]";
+	if (!empty($_GET['icat'])) $title .= "[".$row['cat_name']."]";
 	$title .= $row['name'];
-	if ($_GET['ismalldescr'] && $row['small_descr']) $title .= "[".$row['small_descr']."]";
-	if ($_GET['isize']) $title .= "[".mksize($row['size'])."]";
-	if ($_GET['iuplder']) $title .= "[".$author."]";
+	if (!empty($_GET['ismalldescr']) && !empty($row['small_descr'])) $title .= "[".$row['small_descr']."]";
+	if (!empty($_GET['isize'])) $title .= "[".mksize($row['size'])."]";
+	if (!empty($_GET['iuplder'])) $title .= "[".$author."]";
 	$content = format_comment($row['descr'], true, false, false, false);
 	print('		<item>
 			<title><![CDATA['.$title.']]></title>
