@@ -9,7 +9,7 @@ function print_array($array, $offset_symbol = "|--", $offset = "", $parent = "")
     echo "[$array] is not an array!<br />";
     return;
   }
- 
+
   reset($array);
 
 	switch($array['type'] ?? '')
@@ -48,12 +48,12 @@ function print_array($array, $offset_symbol = "|--", $offset = "", $parent = "")
 			      //echo $offset;
 			      print_array($val, $offset_symbol, $offset, $key);
 			    }
-			  }			
+			  }
 			break;
-	
+
 	}
- 
-} 
+
+}
 
 dbconn();
 
@@ -72,7 +72,7 @@ if (!$id)
 $res = sql_query("SELECT name FROM torrents WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
 
-$fn = "$torrent_dir/$id.torrent";
+$fn = getFullDirectory("$torrent_dir/$id.torrent");
 
 if (!$row || !is_file($fn) || !is_readable($fn))
 	httperr();
