@@ -6,6 +6,7 @@ use App\Http\Middleware\Locale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -152,6 +153,15 @@ class User extends Authenticatable
     public function inviter()
     {
         return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    public function updateWithModComment(array $update, $modComment)
+    {
+        if (!$this->exists) {
+            throw new \RuntimeException('User not exists!');
+        }
+        $update['modcomment'] = DB::raw("concat_ws('\n', $modComment, modcomment)");
+        return $this->update($update);
     }
 
 }

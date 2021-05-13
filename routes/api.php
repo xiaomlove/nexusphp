@@ -23,6 +23,7 @@ Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], functio
     Route::get('user-base', [\App\Http\Controllers\UserController::class, 'base']);
     Route::get('user-classes', [\App\Http\Controllers\UserController::class, 'classes']);
     Route::get('user-match-exams', [\App\Http\Controllers\UserController::class, 'matchExams']);
+    Route::post('user-disable', [\App\Http\Controllers\UserController::class, 'disable']);
 
     Route::resource('exams', \App\Http\Controllers\ExamController::class);
     Route::get('exam-indexes', [\App\Http\Controllers\ExamController::class, 'indexes']);

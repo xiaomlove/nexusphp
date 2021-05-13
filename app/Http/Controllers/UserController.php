@@ -124,4 +124,14 @@ class UserController extends Controller
         $resource = ExamResource::collection($result);
         return $this->success($resource);
     }
+
+    public function disable(Request $request)
+    {
+        $request->validate([
+            'uid' => 'required',
+            'reason' => 'required',
+        ]);
+        $result = $this->repository->disableUser(Auth::user(), $request->uid, $request->reason);
+        return $this->success($result);
+    }
 }

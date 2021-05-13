@@ -6,7 +6,9 @@ use App\Http\Resources\UserResource;
 use App\Models\ExamUser;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\UserBanLog;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class UserRepository extends BaseRepository
 {
@@ -95,5 +97,22 @@ class UserRepository extends BaseRepository
             $out[(string)$key] = $value['text'];
         }
         return $out;
+    }
+
+    public function disableUser(User $operator, $uid, $reason)
+    {
+        $targetUser = User::query()->findOrFail(['id', 'username']);
+        $banLog = [
+            'uid' => $uid,
+            'username' => $targetUser->username,
+            'reason' => $reason,
+            'operator' => $operator->id,
+        ];
+        $modCommentText = sprintf("Disable by %s, reason: %s.", $operator->username, $reason);
+        DB::transaction(function () use ($targetUser, $banLog, $modCommentText) {
+            $targetUser->updateWithModComment(['enable' => User::ENABLED_NO], $modCommentText);
+            UserBanLog::query()->insert($banLog);
+        });
+        return true;
     }
 }
