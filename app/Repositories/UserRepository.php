@@ -27,7 +27,7 @@ class UserRepository extends BaseRepository
     public function getDetail($id)
     {
         $with = [
-            'inviter' => function (Builder $query) {return $query->select(User::$commonFields);}
+            'inviter' => function ($query) {return $query->select(User::$commonFields);}
         ];
         $user = User::query()->with($with)->findOrFail($id, User::$commonFields);
         $userResource = new UserResource($user);

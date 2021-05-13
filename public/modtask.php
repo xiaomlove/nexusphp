@@ -259,6 +259,7 @@ if ($action == "edituser")
 			$banLog = [
 			    'uid' => $userid,
                 'username' => $user->username,
+                'operator' => $CURUSER['id'],
                 'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
             ];
 		}

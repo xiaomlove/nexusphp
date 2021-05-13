@@ -11,6 +11,7 @@ $lang_login = array
 	'p_remaining_tries' => "remaining tries.",
 	'p_no_account_signup' => "Don't have an account? <a href=\"signup.php\"><b>Sign up</b></a> right now!",
 	'p_forget_pass_recover' => "Forget your password? Recover your password <a href=\"recover.php\"><b>via email</b></a>",
+    'p_account_banned' => "Account banned? view reason on<a href=\"user-ban-log.php\"><b>user ban log</b></a>",
 	'p_resend_confirm' => "Did not receive confirmation mail or confirmation link is broken? <a href=\"confirm_resend.php\"><b>Send confirmation mail again</b></a>",
 	'rowhead_username' => "Username:",
 	'rowhead_password' => "Password:",

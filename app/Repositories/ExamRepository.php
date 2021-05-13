@@ -559,8 +559,8 @@ class ExamRepository extends BaseRepository
                     $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', modcomment)", $uid, $userModcomment);
                     $banLogReason = nexus_trans('exam.ban_log_reason', [
                         'exam_name' => $exam->name,
-                        'begin' => $exam->begin,
-                        'end' => $exam->end,
+                        'begin' => $examUser->begin,
+                        'end' => $examUser->end,
                     ], $locale);
                     $userBanLog[] = [
                         'uid' => $uid,
@@ -587,7 +587,7 @@ class ExamRepository extends BaseRepository
                 if (!empty($uidToDisable)) {
                     $uidStr = implode(', ', $uidToDisable);
                     $sql = sprintf(
-                        'update %s set enabled = %s, set modcomment = case when %s end where id in (%s)',
+                        "update %s set enabled = '%s', modcomment = case %s end where id in (%s)",
                         $userTable, User::ENABLED_NO, implode(' ', $userModcommentUpdate), $uidStr
                     );
                     $updateResult = DB::update($sql);

@@ -154,6 +154,66 @@ function user_to_peasant($down_floor_gb, $minratio){
 	}
 }
 
+function ban_user_with_leech_warning_expired()
+{
+    $dt = date("Y-m-d H:i:s"); // take date time
+    $results = \App\Models\User::query()
+        ->where('enabled', \App\Models\User::ENABLED_YES)
+        ->where('leechwarn', 'yes')
+        ->where('leechwarnuntil', '<', $dt)
+        ->get(['id', 'username', 'modcomment']);
+    if ($results->isEmpty()) {
+        return [];
+    }
+    $results->load('language');
+    $uidArr = [];
+    $userBanLogData = [];
+    foreach ($results as $user) {
+        $uid = $user->id;
+        $uidArr[] = $uid;
+        $userBanLogData[] = [
+            'uid' => $uid,
+            'username' => $user->username,
+            'reason' => nexus_trans('cleanup.ban_user_with_leech_warning_expired', [], $user->locale),
+        ];
+        writecomment($uid,"Banned by System because of Leech Warning expired.", $user->modcomment);
+    }
+    $update = [
+        'enabled' => \App\Models\User::ENABLED_NO,
+        'leechwarnuntil' => null,
+    ];
+    \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
+    \App\Models\UserBanLog::query()->insert($userBanLogData);
+    do_log("ban user: " . implode(', ', $uidArr));
+    return $uidArr;
+}
+
+
+function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
+{
+    $results = $query->get(['id', 'username', 'modcomment']);
+    if ($results->isEmpty()) {
+        return [];
+    }
+    $results->load('language');
+    $uidArr = [];
+    $userBanLogData = [];
+    foreach ($results as $user) {
+        $uid = $user->id;
+        $uidArr[] = $uid;
+        $userBanLogData[] = [
+            'uid' => $uid,
+            'username' => $user->username,
+            'reason' => nexus_trans($reasonKey, [], $user->locale),
+        ];
+    }
+    \App\Models\User::query()->whereIn('id', $uidArr)->delete();
+    \App\Models\UserBanLog::query()->insert($userBanLogData);
+    do_log("delete user($reasonKey): " . implode(', ', $uidArr));
+    return $uidArr;
+}
+
+
 function docleanup($forceAll = 0, $printProgress = false) {
 	//require_once(get_langfile_path("cleanup.php",true));
 	global $lang_cleanup_target;
@@ -429,8 +489,14 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
 	//3.delete unconfirmed accounts
 	$deadtime = time() - $signup_timeout;
-	sql_query("DELETE FROM users WHERE status = 'pending' AND added < FROM_UNIXTIME($deadtime) AND last_login < FROM_UNIXTIME($deadtime) AND last_access < FROM_UNIXTIME($deadtime)") or sqlerr(__FILE__, __LINE__);
-	$log = "delete unconfirmed accounts";
+//	sql_query("DELETE FROM users WHERE status = 'pending' AND added < FROM_UNIXTIME($deadtime) AND last_login < FROM_UNIXTIME($deadtime) AND last_access < FROM_UNIXTIME($deadtime)") or sqlerr(__FILE__, __LINE__);
+	$query = \App\Models\User::query()
+        ->where('status', 'pending')
+        ->whereRaw("added < FROM_UNIXTIME($deadtime)")
+        ->whereRaw("last_login < FROM_UNIXTIME($deadtime)")
+        ->whereRaw("last_access < FROM_UNIXTIME($deadtime)");
+    delete_user($query, "cleanup.delete_user_unconfirmed");
+    $log = "delete unconfirmed accounts";
 	do_log($log);
 	if ($printProgress) {
 		printProgress($log);
@@ -470,9 +536,19 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	//delete inactive user accounts, no transfer. Alt. 1: last access time
 	if ($deletenotransfer_account){
 		$secs = $deletenotransfer_account*24*60*60;
-		$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs)));
+		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdelete_account;
-		sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND last_access < $dt AND (uploaded = 0 || uploaded = ".sqlesc($iniupload_main).") AND downloaded = 0") or sqlerr(__FILE__, __LINE__);
+//		sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND last_access < $dt AND (uploaded = 0 || uploaded = ".sqlesc($iniupload_main).") AND downloaded = 0") or sqlerr(__FILE__, __LINE__);
+        $query = \App\Models\User::query()
+            ->where('parked', 'no')
+            ->where('status', 'confirmed')
+            ->where("class","<", $maxclass)
+            ->where("last_access","<", $dt)
+            ->where("downloaded",0)
+            ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
+                $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
+            });
+        delete_user($query, "cleanup.delete_user_no_transfer_alt_last_access_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 1: last access time";
 	do_log($log);
@@ -483,9 +559,19 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	//delete inactive user accounts, no transfer. Alt. 2: registering time
 	if ($deletenotransfertwo_account){
 		$secs = $deletenotransfertwo_account*24*60*60;
-		$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs)));
+		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdelete_account;
-		sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND added < $dt AND (uploaded = 0 || uploaded = ".sqlesc($iniupload_main).") AND downloaded = 0") or sqlerr(__FILE__, __LINE__);
+//		sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND added < $dt AND (uploaded = 0 || uploaded = ".sqlesc($iniupload_main).") AND downloaded = 0") or sqlerr(__FILE__, __LINE__);
+        $query = \App\Models\User::query()
+            ->where('parked', 'no')
+            ->where('status', 'confirmed')
+            ->where("class","<", $maxclass)
+            ->where("added","<", $dt)
+            ->where("downloaded",0)
+            ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
+                $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
+            });
+        delete_user($query, "cleanup.delete_user_no_transfer_alt_last_register_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 2: registering time";
 	do_log($log);
@@ -496,9 +582,15 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	//delete inactive user accounts, not parked
 	if ($deleteunpacked_account){
 		$secs = $deleteunpacked_account*24*60*60;
-		$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs)));
+		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdelete_account;
-	sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND last_access < $dt") or sqlerr(__FILE__, __LINE__);
+//	    sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND last_access < $dt") or sqlerr(__FILE__, __LINE__);
+        $query = \App\Models\User::query()
+            ->where('parked', 'no')
+            ->where('status', 'confirmed')
+            ->where("class","<", $maxclass)
+            ->where("last_access","<", $dt);
+        delete_user($query, "cleanup.delete_user_not_parked");
 	}
 	$log = "delete inactive user accounts, not parked";
 	do_log($log);
@@ -509,9 +601,15 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	//delete parked user accounts, parked
 	if ($deletepacked_account){
 		$secs = $deletepacked_account*24*60*60;
-		$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs)));
+		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdeletepacked_account;
-		sql_query("DELETE FROM users WHERE parked='yes' AND status='confirmed' AND class < $maxclass AND last_access < $dt") or sqlerr(__FILE__, __LINE__);
+//		sql_query("DELETE FROM users WHERE parked='yes' AND status='confirmed' AND class < $maxclass AND last_access < $dt") or sqlerr(__FILE__, __LINE__);
+        $query = \App\Models\User::query()
+            ->where('parked', 'yes')
+            ->where('status', 'confirmed')
+            ->where("class","<", $maxclass)
+            ->where("last_access","<", $dt);
+        delete_user($query, "cleanup.delete_user_parked");
 	}
 	$log = "delete parked user accounts, parked";
 	do_log($log);
@@ -607,18 +705,21 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	// end Users to Peasant
 
 	//ban users with leechwarning expired
-	$dt = sqlesc(date("Y-m-d H:i:s")); // take date time
-	$res = sql_query("SELECT id FROM users WHERE enabled = 'yes' AND leechwarn = 'yes' AND leechwarnuntil < $dt") or sqlerr(__FILE__, __LINE__);
-
-	if (mysql_num_rows($res) > 0)
-	{
-		while ($arr = mysql_fetch_assoc($res))
-		{
-			writecomment($arr['id'],"Banned by System because of Leech Warning expired.");
-
-			sql_query("UPDATE users SET enabled = 'no', leechwarnuntil = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-		}
-	}
+//	$dt = sqlesc(date("Y-m-d H:i:s")); // take date time
+//	$res = sql_query("SELECT id FROM users WHERE enabled = 'yes' AND leechwarn = 'yes' AND leechwarnuntil < $dt") or sqlerr(__FILE__, __LINE__);
+//
+//	if (mysql_num_rows($res) > 0)
+//	{
+//		while ($arr = mysql_fetch_assoc($res))
+//		{
+//			writecomment($arr['id'],"Banned by System because of Leech Warning expired.");
+//
+//			sql_query("UPDATE users SET enabled = 'no', leechwarnuntil = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
+//
+//
+//		}
+//	}
+    ban_user_with_leech_warning_expired();
 	$log = "ban users with leechwarning expired";
 	do_log($log);
 	if ($printProgress) {

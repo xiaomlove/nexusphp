@@ -21,11 +21,11 @@ class ToolRepository extends BaseRepository
         return $systemInfo;
     }
 
-    public function backupWebRoot()
+    public function backupWeb()
     {
         $webRoot = base_path();
         $dirName = basename($webRoot);
-        $filename = sprintf('%s/%s.%s.tar.gz', sys_get_temp_dir(), $dirName, date('Ymd.His'));
+        $filename = sprintf('%s/%s.web.%s.tar.gz', sys_get_temp_dir(), $dirName, date('Ymd.His'));
         $command = sprintf(
             'tar --exclude=vendor --exclude=.git -czf %s -C %s %s',
             $filename, dirname($webRoot), $dirName
@@ -57,7 +57,7 @@ class ToolRepository extends BaseRepository
 
     public function backupAll($uploadToGoogleDrive = false)
     {
-        $backupWeb = $this->backupWebRoot();
+        $backupWeb = $this->backupWeb();
         if ($backupWeb['result_code'] != 0) {
             throw new \RuntimeException("backup web fail: " . json_encode($backupWeb));
         }

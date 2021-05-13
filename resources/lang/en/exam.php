@@ -18,5 +18,5 @@ return [
     'checkout_not_pass_message_subject' => 'Exam not pass, and account is banned!',
     'checkout_not_pass_message_content' => 'You did not complete the exam: :exam_name in time(:begin ~ :end), and your account has be banned!',
     'ban_log_reason' => 'Not complete exam: :exam_name in time(:begin ~ :end)',
-    'ban_user_modcomment' => 'Due to not complete exam: :exam_name(:begin ~ :end), ban by system',
+    'ban_user_modcomment' => 'Due to not complete exam: :exam_name(:begin ~ :end), ban by system.',
 ];

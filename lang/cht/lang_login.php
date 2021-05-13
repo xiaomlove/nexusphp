@@ -11,6 +11,7 @@ $lang_login = array
 	'p_remaining_tries' => "次嘗試機會",
 	'p_no_account_signup' => "還沒有帳號? 馬上<a href=\"signup.php\"><b>註冊</b></a>！",
 	'p_forget_pass_recover' => "忘記了密碼? 通過<a href=\"recover.php\"><b>郵件</b></a>來找回密碼",
+    'p_account_banned' => "賬號被禁用? 通過<a href=\"user-ban-log.php\"><b>封禁記錄</b></a>查看原因",
 	'p_resend_confirm' => "沒有收到驗證郵件或驗證鏈結無法打開? <a href=\"confirm_resend.php\"><b>重新發送驗證郵件</b></a>",
 	'rowhead_username' => "用戶名：",
 	'rowhead_password' => "密碼：",

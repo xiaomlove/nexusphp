@@ -55,14 +55,14 @@ if (!empty($_GET["returnto"])) {
 <tr><td class="rowhead"><?php echo $lang_login['rowhead_password']?></td><td class="rowfollow" align="left"><input type="password" name="password" style="width: 180px; border: 1px solid gray"/></td></tr>
 <?php
 show_image_code ();
-if ($securelogin == "yes") 
+if ($securelogin == "yes")
 	$sec = "checked=\"checked\" disabled=\"disabled\"";
 elseif ($securelogin == "no")
 	$sec = "disabled=\"disabled\"";
 elseif ($securelogin == "op")
 	$sec = "";
 
-if ($securetracker == "yes") 
+if ($securetracker == "yes")
 	$sectra = "checked=\"checked\" disabled=\"disabled\"";
 elseif ($securetracker == "no")
 	$sectra = "disabled=\"disabled\"";
@@ -87,6 +87,7 @@ if (isset($returnto))
 if ($smtptype != 'none'){
 ?>
 <p><?php echo $lang_login['p_forget_pass_recover']?></p>
+<p><?php echo $lang_login['p_account_banned']?></p>
 <p><?php echo $lang_login['p_resend_confirm']?></p>
 <?php
 }

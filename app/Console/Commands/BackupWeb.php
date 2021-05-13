@@ -19,7 +19,7 @@ class BackupWeb extends Command
      *
      * @var string
      */
-    protected $description = 'BackupWeb webRoot data';
+    protected $description = 'BackupWeb web data';
 
     /**
      * Create a new command instance.
@@ -39,7 +39,7 @@ class BackupWeb extends Command
     public function handle()
     {
         $rep = new ToolRepository();
-        $result = $rep->backupWebRoot();
+        $result = $rep->backupWeb();
         $log = sprintf('[%s], %s, result: %s', REQUEST_ID, __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);

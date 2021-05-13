@@ -124,6 +124,15 @@ class User extends Authenticatable
         return Locale::$languageMaps[$this->language->site_lang_folder] ?? 'en';
     }
 
+    public function getSiteLangFolderAttribute()
+    {
+        $result = optional($this->language)->site_lang_folder;
+        if ($result && in_array($result, ['en', 'chs', 'cht'])) {
+            return $result;
+        }
+        return 'en';
+    }
+
 
     public function exams()
     {

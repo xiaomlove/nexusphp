@@ -2986,13 +2986,16 @@ function linkcolor($num) {
 	return "green";
 }
 
-function writecomment($userid, $comment) {
-	$res = sql_query("SELECT modcomment FROM users WHERE id = '$userid'") or sqlerr(__FILE__, __LINE__);
-	$arr = mysql_fetch_assoc($res);
-
-	$modcomment = date("d-m-Y") . " - " . $comment . "" . ($arr[modcomment] != "" ? "\n\n" : "") . "$arr[modcomment]";
+function writecomment($userid, $comment, $oldModcomment = null) {
+    if (is_null($oldModcomment)) {
+        $res = sql_query("SELECT modcomment FROM users WHERE id = '$userid'") or sqlerr(__FILE__, __LINE__);
+        $arr = mysql_fetch_assoc($res);
+        $modcomment = date("d-m-Y") . " - " . $comment . "" . ($arr['modcomment'] != "" ? "\n" : "") . $arr['modcomment'];
+    } else {
+        $modcomment = date("d-m-Y") . " - " . $comment . "" . ($oldModcomment != "" ? "\n" : "") .$oldModcomment;
+    }
 	$modcom = sqlesc($modcomment);
-
+    do_log("update user: $userid prepend modcomment: $comment, with oldModcomment: $oldModcomment");
 	return sql_query("UPDATE users SET modcomment = $modcom WHERE id = '$userid'") or sqlerr(__FILE__, __LINE__);
 }
 
@@ -4707,6 +4710,28 @@ function displayHotAndClassic()
         }
     }
 
+}
+
+function build_table(array $header, array $rows, array $options = [])
+{
+    $table = '<table border="1" cellspacing="0" cellpadding="5" width="100%"><thead><tr>';
+    foreach ($header as $key => $value) {
+        $table .= sprintf('<td class="colhead">%s</td>', $value);
+    }
+    $table .= '</tr></thead><tbody>';
+    $tdClass = '';
+    if (isset($options['td-center']) && $options['td-center']) {
+        $tdClass = 'colfollow';
+    }
+    foreach ($rows as $row) {
+        $table .= '<tr>';
+        foreach ($header as $headerKey => $headerValue) {
+            $table .= sprintf('<td class="%s">%s</td>', $tdClass, $row[$headerKey] ?? '');
+        }
+        $table .= '</tr>';
+    }
+    $table .= '</tbody></table>';
+    return $table;
 }
 
 ?>
