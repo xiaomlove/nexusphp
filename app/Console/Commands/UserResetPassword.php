@@ -12,14 +12,14 @@ class UserResetPassword extends Command
      *
      * @var string
      */
-    protected $signature = 'user:reset_password {username} {password} {password_confirmation}';
+    protected $signature = 'user:reset_password {uid} {password} {password_confirmation}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Reset user password, arguments: username password password_comfirmation';
+    protected $description = 'Reset user password, arguments: uid password password_comfirmation';
 
     /**
      * Create a new command instance.
@@ -38,15 +38,15 @@ class UserResetPassword extends Command
      */
     public function handle()
     {
-        $username = $this->argument('username');
+        $uid = $this->argument('uid');
         $password = $this->argument('password');
         $passwordConfirmation = $this->argument('password_confirmation');
-        $log = "username: $username, password: $password, passwordConfirmation: $passwordConfirmation";
+        $log = "uid: $uid, password: $password, passwordConfirmation: $passwordConfirmation";
         $this->info($log);
         do_log($log);
 
         $rep = new UserRepository();
-        $result = $rep->resetPassword($username, $password, $passwordConfirmation);
+        $result = $rep->resetPassword($uid, $password, $passwordConfirmation);
         $log = sprintf('[%s], %s, result: %s', REQUEST_ID, __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);

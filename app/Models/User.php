@@ -65,7 +65,6 @@ class User extends Authenticatable
     }
 
 
-
     /**
      * 为数组 / JSON 序列化准备日期。
      *
@@ -82,7 +81,9 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $fillable = ['username', 'email', 'passhash', 'secret', 'editsecret', 'added'];
+    protected $fillable = [
+        'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status'
+    ];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -105,7 +106,7 @@ class User extends Authenticatable
     public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
-        'invited_by',
+        'invited_by', 'enabled',
     ];
 
     public function checkIsNormal(array $fields = ['status', 'enabled'])
@@ -160,7 +161,9 @@ class User extends Authenticatable
         if (!$this->exists) {
             throw new \RuntimeException('This mehtod only works when user exists!');
         }
-        $update['modcomment'] = DB::raw("concat_ws('\n', $modComment, modcomment)");
+        //@todo how to do prepare bindings here ?
+        $modComment = addslashes($modComment);
+        $update['modcomment'] = DB::raw("concat_ws('\n', '$modComment', modcomment)");
         return $this->update($update);
     }
 

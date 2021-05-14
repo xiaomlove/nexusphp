@@ -57,9 +57,9 @@ class Test extends Command
 //        dd($r);
 //        $rep->assignCronjob();
 //        $r = $rep->cronjobCheckout();
-        $disk = Storage::disk('google_dirve');
-        $r = $disk->put('/', base_path('composer.json'));
-        dd($r);
+//        $disk = Storage::disk('google_dirve');
+//        $r = $disk->put('/', base_path('composer.json'));
+//        $r = DB::table('users')->where('id', 1)->update(['modcomment' => DB::raw("concat_ws(',', 'ddddd', modcomment)")]);
     }
 
 }

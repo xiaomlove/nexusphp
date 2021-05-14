@@ -24,7 +24,6 @@ export default {
     name: 'SettingFormBasic',
     setup() {
         const { proxy } = getCurrentInstance()
-        console.log('proxy', proxy)
         const formRef = ref(null)
         const route = useRoute()
         const router = useRouter()
@@ -45,8 +44,6 @@ export default {
             },
         })
         onMounted( () => {
-            listAllClass()
-            listAllIndex()
             if (id) {
                 api.getExam(id).then(res => {
                     state.formData.name = res.data.name

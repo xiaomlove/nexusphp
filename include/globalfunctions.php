@@ -451,7 +451,7 @@ function nexus_json_encode($data)
 
 function api(...$args)
 {
-    if (!isset($args[2])) {
+    if (func_num_args() < 3) {
         //参数少于3个时，默认为错误状态。
         $ret = -1;
         $msg = isset($args[0]) ? $args[0] : 'ERROR';

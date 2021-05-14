@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Exceptions\NexusException;
 use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
 use App\Models\ExamUser;
@@ -74,12 +75,12 @@ class UserRepository extends BaseRepository
         return $user;
     }
 
-    public function resetPassword($username, $password, $passwordConfirmation)
+    public function resetPassword($id, $password, $passwordConfirmation)
     {
         if ($password != $passwordConfirmation) {
             throw new \InvalidArgumentException("password confirmation != password");
         }
-        $user = User::query()->where('username', $username)->firstOrFail(['id', 'username']);
+        $user = User::query()->findOrFail($id, ['id', 'username']);
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
         $update = [
@@ -87,7 +88,7 @@ class UserRepository extends BaseRepository
             'passhash' => $passhash,
         ];
         $user->update($update);
-        return $user;
+        return true;
     }
 
     public function listClass()
@@ -101,7 +102,10 @@ class UserRepository extends BaseRepository
 
     public function disableUser(User $operator, $uid, $reason)
     {
-        $targetUser = User::query()->findOrFail(['id', 'username']);
+        $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username']);
+        if ($targetUser->enabled == User::ENABLED_NO) {
+            throw new NexusException('Already disabled!');
+        }
         $banLog = [
             'uid' => $uid,
             'username' => $targetUser->username,
@@ -110,9 +114,34 @@ class UserRepository extends BaseRepository
         ];
         $modCommentText = sprintf("Disable by %s, reason: %s.", $operator->username, $reason);
         DB::transaction(function () use ($targetUser, $banLog, $modCommentText) {
-            $targetUser->updateWithModComment(['enable' => User::ENABLED_NO], $modCommentText);
+            $targetUser->updateWithModComment(['enabled' => User::ENABLED_NO], $modCommentText);
             UserBanLog::query()->insert($banLog);
         });
+        do_log("user: $uid, $modCommentText");
         return true;
+    }
+
+    public function enableUser(User $operator, $uid)
+    {
+        $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username']);
+        if ($targetUser->enabled == User::ENABLED_YES) {
+            throw new NexusException('Already enabled!');
+        }
+        $modCommentText = sprintf("Enable by %s.", $operator->username);
+        $targetUser->updateWithModComment(['enabled' => User::ENABLED_YES], $modCommentText);
+        do_log("user: $uid, $modCommentText");
+        return true;
+    }
+
+    public function getInviteInfo($id)
+    {
+        $user = User::query()->findOrFail($id, ['id']);
+        return $user->invitee_code()->with('inviter_user')->first();
+    }
+
+    public function getModComment($id)
+    {
+        $user = User::query()->findOrFail($id, ['modcomment']);
+        return $user->modcomment;
     }
 }

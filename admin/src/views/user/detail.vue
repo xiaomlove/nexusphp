@@ -19,8 +19,8 @@
                     <td></td>
                     <td colspan="7">
                         <div class="other-actions">
-                            <el-button type="primary" size="mini">Reset password</el-button>
-                            <el-button type="primary" size="mini">PM</el-button>
+                            <el-button type="primary" size="mini" @click="handleGetModComment">Mod comment</el-button>
+                            <el-button type="primary" size="mini" @click="handleResetPassword">Reset password</el-button>
                             <el-button type="primary" size="mini" @click="handleAssignExam">Assign exam</el-button>
                         </div>
                     </td>
@@ -31,12 +31,36 @@
                     <td><el-button size="mini">Change</el-button></td>
                 </tr>
                 <tr>
+                    <td>Enabled</td>
+                    <td>{{baseInfo.enabled}}</td>
+                    <td>
+                        <template v-if="baseInfo.enabled && baseInfo.enabled == 'yes'">
+                            <el-button size="mini" @click="handleDisableUser">Disable</el-button>
+                        </template>
+                        <template v-if="baseInfo.enabled && baseInfo.enabled == 'no'">
+                            <el-popconfirm
+                                title="Confirm Enable ?"
+                                @confirm="handleEnableUser"
+                            >
+                                <template #reference>
+                                    <el-button size="mini">Enable</el-button>
+                                </template>
+                            </el-popconfirm>
+                        </template>
+                    </td>
+                </tr>
+                <tr>
                     <td>Added</td>
                     <td>{{baseInfo.added}}</td>
                 </tr>
                 <tr>
                     <td>Class</td>
                     <td>{{baseInfo.class_text}}</td>
+                </tr>
+                <tr>
+                    <td>Invite by</td>
+                    <td>{{baseInfo.inviter && baseInfo.inviter.username}}</td>
+                    <td><el-button size="mini" @click="handleViewInviteInfo">View</el-button></td>
                 </tr>
                 <tr>
                     <td>Uploaded</td>
@@ -113,6 +137,11 @@
         </el-card>
     </div>
     <DialogAssignExam ref="assignExam" :reload="fetchPageData"/>
+    <DialogViewInviteInfo ref="viewInviteInfo" />
+    <DialogDisableUser ref="disableUser" :reload="fetchPageData" />
+    <DialogModComment ref="modComment" />
+    <DialogModComment ref="modComment" />
+    <DialogResetPassword ref="resetPassword" />
 </template>
 
 <script>
@@ -121,17 +150,25 @@ import { ElMessage } from 'element-plus'
 import {useRoute, useRouter} from 'vue-router'
 import api from '../../utils/api'
 import DialogAssignExam from './dialog-assign-exam.vue'
+import DialogViewInviteInfo from './dialog-invite-info.vue'
+import DialogDisableUser from './dialog-disable-user.vue'
+import DialogModComment from './dialog-mod-comment.vue'
+import DialogResetPassword from './dialog-reset-password.vue'
 
 export default {
     name: "UserDetail",
     components: {
-        DialogAssignExam
+        DialogAssignExam, DialogViewInviteInfo, DialogDisableUser, DialogModComment, DialogResetPassword
     },
     setup() {
         const route = useRoute()
         const router = useRouter()
         const { id } = route.query
         const assignExam = ref(null)
+        const viewInviteInfo = ref(null)
+        const disableUser = ref(null)
+        const modComment = ref(null)
+        const resetPassword = ref(null)
         const state = reactive({
             loading: false,
             baseInfo: {},
@@ -152,15 +189,43 @@ export default {
             ElMessage.success(res.msg)
             await fetchPageData()
         }
+
         const handleAssignExam = async () => {
             assignExam.value.open(id)
+        }
+        const handleViewInviteInfo = async () => {
+            viewInviteInfo.value.open(id)
+        }
+        const handleDisableUser = async () => {
+            disableUser.value.open(id)
+        }
+        const handleEnableUser = async () => {
+            let res = await api.enableUser({uid: id})
+            ElMessage.success(res.msg)
+            await fetchPageData()
+        }
+        const handleGetModComment = async () => {
+            modComment.value.open(id)
+        }
+        const handleResetPassword = async () => {
+            resetPassword.value.open(id)
         }
         return {
             ...toRefs(state),
             handleRemoveExam,
             handleAssignExam,
+            handleEnableUser,
+            handleViewInviteInfo,
+            handleDisableUser,
+            handleGetModComment,
+            handleResetPassword,
+            fetchPageData,
             assignExam,
-            fetchPageData
+            viewInviteInfo,
+            disableUser,
+            modComment,
+            resetPassword,
+
         }
     }
 }

@@ -32,8 +32,23 @@ const api = {
     getUserBase: (params = {}) => {
         return axios.get('user-base', {params: params});
     },
+    getInviteInfo: (params = {}) => {
+        return axios.get('user-invite-info', {params: params});
+    },
+    getUserModComment: (params = {}) => {
+        return axios.get('user-mod-comment', {params: params});
+    },
     storeUser: (params = {}) => {
         return axios.post('users', params);
+    },
+    disableUser: (params = {}) => {
+        return axios.post('user-disable', params);
+    },
+    enableUser: (params = {}) => {
+        return axios.post('user-enable', params);
+    },
+    resetPassword: (params = {}) => {
+        return axios.post('user-reset-password', params);
     },
     listUserMatchExams: (params = {}) => {
         return axios.get('user-match-exams', {params: params});
@@ -68,6 +83,12 @@ const api = {
     },
     storeExamUser: (params) => {
         return axios.post('exam-users', params);
+    },
+    storeSetting: (params) => {
+        return axios.post('settings', params);
+    },
+    listSetting: (params) => {
+        return axios.get('settings', {params});
     },
 }
 

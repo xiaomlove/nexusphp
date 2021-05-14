@@ -24,4 +24,14 @@ class Invite extends NexusModel
         return self::$validInfo[$this->valid]['text'] ?? '';
     }
 
+    public function inviter_user()
+    {
+        return $this->belongsTo(User::class, 'inviter');
+    }
+
+    public function invitee_user()
+    {
+        return $this->belongsTo(User::class, 'invitee_register_uid');
+    }
+
 }

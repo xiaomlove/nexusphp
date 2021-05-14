@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ExamResource;
+use App\Http\Resources\InviteResource;
 use App\Http\Resources\UserResource;
 use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
@@ -90,14 +91,13 @@ class UserController extends Controller
     public function resetPassword(Request $request)
     {
         $rules = [
-            'username' => 'required|string|exists:users',
+            'uid' => 'required',
             'password' => 'required|string|min:6|max:40',
             'password_confirmation' => 'required|same:password',
         ];
         $request->validate($rules);
-        $result = $this->repository->resetPassword($request->repositoryname, $request->password, $request->password_confirmation);
-        $resource = new UserResource($result);
-        return $this->success($resource);
+        $result = $this->repository->resetPassword($request->uid, $request->password, $request->password_confirmation);
+        return $this->success($result, 'Reset password success!');
     }
 
     public function classes()
@@ -132,6 +132,35 @@ class UserController extends Controller
             'reason' => 'required',
         ]);
         $result = $this->repository->disableUser(Auth::user(), $request->uid, $request->reason);
+        return $this->success($result, 'Disable user success!');
+    }
+
+    public function enable(Request $request)
+    {
+        $request->validate([
+            'uid' => 'required',
+        ]);
+        $result = $this->repository->enableUser(Auth::user(), $request->uid);
+        return $this->success($result, 'Enable user success!');
+    }
+
+    public function inviteInfo(Request $request)
+    {
+        $request->validate([
+            'uid' => 'required',
+        ]);
+        $result = $this->repository->getInviteInfo($request->uid);
+        $resource = $result ? (new InviteResource($result)) : null;
+        return $this->success($resource);
+    }
+
+    public function modComment(Request $request)
+    {
+        $request->validate([
+            'uid' => 'required',
+        ]);
+        $result = $this->repository->getModComment($request->uid);
         return $this->success($result);
     }
+
 }

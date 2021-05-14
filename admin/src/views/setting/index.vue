@@ -1,8 +1,7 @@
 <template>
-    <el-tabs type="border-card">
+    <el-tabs type="border-card" @tab-click="handleTabClick">
+        <el-tab-pane label="Backup"><FormBackup ref="backup" /></el-tab-pane>
         <el-tab-pane label="Basic"><FormBasic /></el-tab-pane>
-        <el-tab-pane label="Main"><FormMain /></el-tab-pane>
-        <el-tab-pane label="Smtp">Smtp</el-tab-pane>
     </el-tabs>
 </template>
 
@@ -14,21 +13,22 @@ import api from '../../utils/api'
 import { useTable, renderTableData } from '../../utils/table'
 import FormBasic from './form-basic.vue'
 import FormMain from './form-main.vue'
+import FormBackup from './form-backup.vue'
 
 export default {
     name: 'Setting',
     components: {
-        FormBasic, FormMain,
+        FormBasic, FormMain, FormBackup
     },
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
-
+        const backup = ref(null)
         const state = useTable()
 
         onMounted(() => {
-            console.log('ExamTable onMounted')
-            fetchTableData()
+            console.log('Setting onMounted')
+            backup.value.listSetting()
         })
         const fetchTableData = async () => {
             state.loading = true
@@ -55,6 +55,9 @@ export default {
             state.query.page = val
             fetchTableData()
         }
+        const handleTabClick = (val) => {
+            console.log('handleTabClick', val)
+        }
         return {
             ...toRefs(state),
             multipleTable,
@@ -62,8 +65,10 @@ export default {
             handleAdd,
             handleEdit,
             handleDelete,
+            handleTabClick,
             fetchTableData,
             changePage,
+            backup,
         }
     }
 }

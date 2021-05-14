@@ -22,8 +22,12 @@ Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], functio
     Route::resource('users', \App\Http\Controllers\UserController::class);
     Route::get('user-base', [\App\Http\Controllers\UserController::class, 'base']);
     Route::get('user-classes', [\App\Http\Controllers\UserController::class, 'classes']);
+    Route::get('user-invite-info', [\App\Http\Controllers\UserController::class, 'inviteInfo']);
     Route::get('user-match-exams', [\App\Http\Controllers\UserController::class, 'matchExams']);
+    Route::get('user-mod-comment', [\App\Http\Controllers\UserController::class, 'modComment']);
     Route::post('user-disable', [\App\Http\Controllers\UserController::class, 'disable']);
+    Route::post('user-enable', [\App\Http\Controllers\UserController::class, 'enable']);
+    Route::post('user-reset-password', [\App\Http\Controllers\UserController::class, 'resetPassword']);
 
     Route::resource('exams', \App\Http\Controllers\ExamController::class);
     Route::get('exam-indexes', [\App\Http\Controllers\ExamController::class, 'indexes']);
@@ -31,6 +35,8 @@ Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], functio
     Route::resource('exam-users', \App\Http\Controllers\ExamUserController::class);
 
     Route::get('system-info', [\App\Http\Controllers\ToolController::class, 'systemInfo']);
+
+    Route::resource('settings', \App\Http\Controllers\SettingController::class);
 
 });
 
