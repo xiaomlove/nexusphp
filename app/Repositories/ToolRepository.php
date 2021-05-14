@@ -99,7 +99,7 @@ class ToolRepository extends BaseRepository
         $settingHour = (int)$setting['hour'];
         $settingMinute = (int)$setting['minute'];
         $nowHour = (int)$now->format('H');
-        $nowMinute = (int)$now->format('m');
+        $nowMinute = (int)$now->format('i');
         do_log("Backup frequency: $frequency");
         if ($frequency == 'daily') {
             if ($settingHour != $nowHour) {
