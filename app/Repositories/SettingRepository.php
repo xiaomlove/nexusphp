@@ -12,19 +12,10 @@ class SettingRepository extends BaseRepository
 {
     public function getList(array $params)
     {
-        $query = Setting::query();
-        if (!empty($params['prefix'])) {
-            $query->where('name', 'like', "{$params['prefix']}%");
-        }
-        $settings =  $query->get();
-        $results = [];
-        foreach ($settings as $setting) {
-            $value = $setting->value;
-            $arr = json_decode($value, true);
-            if (is_array($arr)) {
-                $value = $arr;
-            }
-            Arr::set($results, $setting->name, $value);
+        $results = Setting::get();
+        $prefix = $params['prefix'] ?? null;
+        if ($prefix) {
+            return [$prefix => Arr::get($results, $prefix, [])];
         }
         return $results;
     }

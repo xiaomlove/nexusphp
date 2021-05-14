@@ -27,4 +27,5 @@ class Setting extends NexusModel
         }
         return Arr::get($settings, $name);
     }
+
 }

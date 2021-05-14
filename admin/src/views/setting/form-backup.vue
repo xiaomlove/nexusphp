@@ -126,6 +126,7 @@ export default {
                     console.log(params)
                     let res = await api.storeSetting(params)
                     ElMessage.success(res.msg)
+                    await listSetting();
                 }
             })
         }

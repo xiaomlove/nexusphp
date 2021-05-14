@@ -1,12 +1,13 @@
 <?php
 namespace App\Repositories;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ToolRepository extends BaseRepository
 {
-    public function getSystemInfo()
+    public function getSystemInfo(): array
     {
         $systemInfo = [
             'nexus_version' => config('app.nexus_version'),
@@ -21,7 +22,7 @@ class ToolRepository extends BaseRepository
         return $systemInfo;
     }
 
-    public function backupWeb()
+    public function backupWeb(): array
     {
         $webRoot = base_path();
         $dirName = basename($webRoot);
@@ -55,7 +56,7 @@ class ToolRepository extends BaseRepository
         return compact('result_code', 'filename');
     }
 
-    public function backupAll($uploadToGoogleDrive = false)
+    public function backupAll(): array
     {
         $backupWeb = $this->backupWeb();
         if ($backupWeb['result_code'] != 0) {
@@ -77,12 +78,82 @@ class ToolRepository extends BaseRepository
             "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
             $command, json_encode($output), $result_code, $result, $filename
         ));
-        $upload_result = '';
-        if ($uploadToGoogleDrive) {
-            $disk = Storage::disk('google_drive');
-            $upload_result = $disk->put(basename($filename), fopen($filename, 'r'));
-        }
-        return compact('result_code', 'filename', 'upload_result');
+        return compact('result_code', 'filename');
 
+    }
+
+    /**
+     * do backup cronjob
+     *
+     * @return array|false
+     */
+    public function cronjobBackup()
+    {
+        $setting = Setting::get('backup');
+        if ($setting['enabled'] != 'yes') {
+            do_log("Backup not enabled.");
+            return false;
+        }
+        $now = now();
+        $frequency = $setting['frequency'];
+        $settingHour = (int)$setting['hour'];
+        $settingMinute = (int)$setting['minute'];
+        $nowHour = (int)$now->format('H');
+        $nowMinute = (int)$now->format('m');
+        do_log("Backup frequency: $frequency");
+        if ($frequency == 'daily') {
+            if ($settingHour != $nowHour) {
+                do_log(sprintf('Backup setting hour: %s != now hour: %s', $settingHour, $nowHour));
+                return false;
+            }
+            if ($settingMinute != $nowMinute) {
+                do_log(sprintf('Backup setting minute: %s != now minute: %s', $settingMinute, $nowMinute));
+                return false;
+            }
+        } elseif ($frequency == 'hourly') {
+            if ($settingMinute != $nowMinute) {
+                do_log(sprintf('Backup setting minute: %s != now minute: %s', $settingMinute, $nowMinute));
+                return false;
+            }
+        } else {
+            throw new \RuntimeException("Unknown backup frequency: $frequency");
+        }
+        $backupResult = $this->backupAll();
+        do_log("Backup all result: " . json_encode($backupResult));
+        if ($backupResult['result_code'] != 0) {
+            throw new \RuntimeException("Backup all fail.");
+        }
+        $clientId = $setting['google_drive_client_id'] ?? '';
+        $clientSecret = $setting['google_drive_client_secret'] ?? '';
+        $refreshToken = $setting['google_drive_refresh_token'] ?? '';
+        $folderId = $setting['google_drive_folder_id'] ?? '';
+
+        if (empty($clientId)) {
+            do_log("No google_drive_client_id, won't do upload.");
+            return false;
+        }
+        if (empty($clientSecret)) {
+            do_log("No google_drive_client_secret, won't do upload.");
+            return false;
+        }
+        if (empty($refreshToken)) {
+            do_log("No google_drive_refresh_token, won't do upload.");
+            return false;
+        }
+        do_log("Google drive info: clientId: $clientId, clientSecret: $clientSecret, refreshToken: $refreshToken, folderId: $folderId");
+
+        $client = new \Google_Client();
+        $client->setClientId($clientId);
+        $client->setClientSecret($clientSecret);
+        $client->refreshToken($refreshToken);
+        $service = new \Google_Service_Drive($client);
+        $adapter = new \Hypweb\Flysystem\GoogleDrive\GoogleDriveAdapter($service, $folderId);
+        $filesystem = new \League\Flysystem\Filesystem($adapter);
+
+        $filename = $backupResult['filename'];
+        $upload_result = $filesystem->put(basename($filename), fopen($filename, 'r'));
+        $backupResult['upload_result'] = $upload_result;
+
+        return $backupResult;
     }
 }

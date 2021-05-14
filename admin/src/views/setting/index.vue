@@ -1,7 +1,6 @@
 <template>
     <el-tabs type="border-card" @tab-click="handleTabClick">
         <el-tab-pane label="Backup"><FormBackup ref="backup" /></el-tab-pane>
-        <el-tab-pane label="Basic"><FormBasic /></el-tab-pane>
     </el-tabs>
 </template>
 
