@@ -348,7 +348,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$res = sql_query("SELECT id, seeders, leechers, comments FROM torrents") or sqlerr(__FILE__, __LINE__);
 	while ($row = mysql_fetch_assoc($res)) {
 		$id = $row["id"];
-		$torr = $torrents[$id];
+		$torr = $torrents[$id] ?? [];
 		foreach ($fields as $field) {
 			if (!isset($torr[$field]))
 			$torr[$field] = 0;
@@ -924,9 +924,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		if (count($delids))
 		sql_query("DELETE FROM files WHERE torrent IN (" . join(",", $delids) . ")") or sqlerr(__FILE__, __LINE__);
 	} while (0);
+    $log = "delete torrents that doesn't exist any more";
+    do_log($log);
 	if ($printProgress) {
-		$log = "delete torrents that doesn't exist any more";
-		do_log($log);
 		printProgress($log);
 	}
 

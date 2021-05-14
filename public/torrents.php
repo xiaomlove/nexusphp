@@ -452,7 +452,7 @@ if (!$all)
 				$addparam .= "audiocodec{$audiocodec['id']}=1&";
 			}
 		}
-		}	
+		}
 	}
 	// when one clicked the cat, source, etc. name/image
 	elseif ($category_get)
@@ -666,7 +666,7 @@ $wherebase = $wherea;
 $search_area = 0;
 if (isset($searchstr))
 {
-	if (!$_GET['notnewword']){
+	if (!isset($_GET['notnewword']) || !$_GET['notnewword']){
 		insert_suggest($searchstr, $CURUSER['id']);
 		$notnewword="";
 	}
@@ -926,14 +926,14 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 					?>
 				</table>
 			</td>
-			
+
 			<td class="rowfollow" valign="middle">
 				<table>
 					<tr>
 						<td class="bottom" style="padding: 1px;padding-left: 10px">
 							<font class="medium"><?php echo $lang_torrents['text_show_dead_active'] ?></font>
 						</td>
-				 	</tr>				
+				 	</tr>
 					<tr>
 						<td class="bottom" style="padding: 1px;padding-left: 10px">
 							<select class="med" name="incldead" style="width: 100px;">
@@ -1029,7 +1029,7 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 								<option value="1"<?php echo isset($_GET["search_mode"]) && $_GET["search_mode"] == 1 ? " selected=\"selected\"" : "" ?>><?php echo $lang_torrents['select_or'] ?></option>
 								<option value="2"<?php echo isset($_GET["search_mode"]) && $_GET["search_mode"] == 2 ? " selected=\"selected\"" : "" ?>><?php echo $lang_torrents['select_exact'] ?></option>
 							</select>
-							
+
 							<?php echo $lang_torrents['text_mode'] ?>
 						</td>
 					</tr>
@@ -1092,7 +1092,7 @@ if ($count) {
 	print($pagertop);
 	if ($sectiontype == $browsecatmode)
 		torrenttable($rows, "torrents");
-	elseif ($sectiontype == $specialcatmode) 
+	elseif ($sectiontype == $specialcatmode)
 		torrenttable($rows, "music");
 	else torrenttable($rows, "bookmarks");
 	print($pagerbottom);

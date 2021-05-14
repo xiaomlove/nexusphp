@@ -158,7 +158,7 @@ class User extends Authenticatable
     public function updateWithModComment(array $update, $modComment)
     {
         if (!$this->exists) {
-            throw new \RuntimeException('User not exists!');
+            throw new \RuntimeException('This mehtod only works when user exists!');
         }
         $update['modcomment'] = DB::raw("concat_ws('\n', $modComment, modcomment)");
         return $this->update($update);

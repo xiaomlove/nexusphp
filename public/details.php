@@ -282,7 +282,7 @@ else {
 					{
 						$dispname=substr($dispname, 0, $max_lenght_of_torrent_name) . "..";
 					}
-
+                    $other_source_info = $other_medium_info = $other_codec_info = $other_standard_info = $other_processing_info = '';
 					if (isset($copy_row["source_name"]))
 						$other_source_info = $copy_row['source_name'].", ";
 					if (isset($copy_row["medium_name"]))

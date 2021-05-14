@@ -33,7 +33,6 @@ $rt = intval($_POST["reasontype"] ?? 0);
 if (!is_int($rt) || $rt < 1 || $rt > 5)
 	bark($lang_delete['std_invalid_reason']."$rt.");
 
-$r = $_POST["r"];
 $reason = $_POST["reason"];
 
 if ($rt == 1)
@@ -58,9 +57,9 @@ else
 deletetorrent($id);
 
 if ($row['anonymous'] == 'yes' && $CURUSER["id"] == $row["owner"]) {
-	write_log("Torrent $id ($row[name]) was deleted by its anonymous uploader ($reasonstr)",'normal');
+	write_log("Torrent $id ({$row['name']}) was deleted by its anonymous uploader ($reasonstr)",'normal');
 } else {
-	write_log("Torrent $id ($row[name]) was deleted by $CURUSER[username] ($reasonstr)",'normal');
+	write_log("Torrent $id ({$row['name']}) was deleted by {$CURUSER['username']} ($reasonstr)",'normal');
 }
 
 //===remove karma

@@ -2802,7 +2802,7 @@ function deletetorrent($id) {
 	foreach(array("peers", "files", "comments") as $x) {
 		sql_query("DELETE FROM $x WHERE torrent = ".mysql_real_escape_string($id));
 	}
-	unlink("$torrent_dir/$id.torrent");
+	unlink(getFullDirectory("$torrent_dir/$id.torrent"));
 }
 
 function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
