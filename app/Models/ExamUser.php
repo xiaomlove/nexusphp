@@ -19,6 +19,11 @@ class ExamUser extends NexusModel
     const IS_DONE_YES = 1;
     const IS_DONE_NO = 0;
 
+    public static $isDoneInfo = [
+        self::IS_DONE_YES => ['text' => 'Yes'],
+        self::IS_DONE_NO => ['text' => 'No'],
+    ];
+
 
     protected $casts = [
         'progress' => 'json'
@@ -27,6 +32,11 @@ class ExamUser extends NexusModel
     public function getStatusTextAttribute(): string
     {
         return self::$status[$this->status]['text'] ?? '';
+    }
+
+    public function getIsDoneTextAttribute(): string
+    {
+        return self::$isDoneInfo[$this->is_done]['text'] ?? '';
     }
 
     public function getBeginAttribute()

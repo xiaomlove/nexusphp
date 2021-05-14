@@ -43,8 +43,8 @@
             ></el-table-column>
 
             <el-table-column
-                prop="status_text"
-                label="Status"
+                prop="is_done_text"
+                label="Is done"
             ></el-table-column>
 
             <el-table-column

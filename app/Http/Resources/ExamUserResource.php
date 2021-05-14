@@ -30,6 +30,8 @@ class ExamUserResource extends JsonResource
             'end' => format_datetime($this->end),
             'uid' => $this->uid,
             'exam_id' => $this->exam_id,
+            'is_done' => $this->is_done,
+            'is_done_text' => $this->is_done_text,
             'user' => new UserResource($this->whenLoaded('user')),
             'exam' => new ExamResource($this->whenLoaded('exam')),
         ];
