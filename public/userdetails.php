@@ -125,7 +125,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 					$other_user_2_curuser_value[$user_snatched_arr_target['userid']] += $torrent_2_user_value_target * $torrent_2_user_value;
 				}
 			}
-			
+
 			$val = $other_user_2_curuser_value[$user['id']];
 			if ($val > 1)
 			{
@@ -161,7 +161,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 			}
 			$width = $val * 400;
 			$compatibility_info = "<table align=left border=0 width=400><tr><td style='padding: 0px; background-image: url(pic/loadbarbg.gif); background-repeat: repeat-x; width: 400px' title='" . number_format($val * 100, 2) . "%'><img align=left height=15 width=" . $width . " src=\"" . $bar_url ."\" alt='" . number_format($val * 100, 2) . "%'></td><td align=right class=embedded><strong>&nbsp;&nbsp;&nbsp;<nobr>" . $compatibility_info . "</nobr> </strong></td></tr></table>";
-			
+
 			//die("ss" . htmlspecialchars($compatibility_info));
 		}
 		print("<tr><td class=rowhead width=13%>".$lang_userdetails['row_compatibility']."</td><td class=rowfollow align=left width=87%>". $compatibility_info ."</td></tr>\n");
@@ -431,7 +431,8 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 		print("<td class=\"rowfollow\">".$lang_userdetails['text_no_warned']."</td></tr>\n");
 	}
 	print("</table></td></tr>");
-	tr($lang_userdetails['row_enabled'], "<input name=\"enabled\" value=\"yes\" type=\"radio\"" . ($enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input name=\"enabled\" value=\"no\" type=\"radio\"" . (!$enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
+//	tr($lang_userdetails['row_enabled'], "<input name=\"enabled\" value=\"yes\" type=\"radio\"" . ($enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input name=\"enabled\" value=\"no\" type=\"radio\"" . (!$enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
+	tr($lang_userdetails['row_enabled'], $lang_userdetails['disable_user_migrated'], 1);
 	tr($lang_userdetails['row_forum_post_possible'], "<input type=\"radio\" name=\"forumpost\" value=\"yes\"" .($user["forumpost"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"forumpost\" value=\"no\"" .($user["forumpost"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_upload_possible'], "<input type=\"radio\" name=\"uploadpos\" value=\"yes\"" .($user["uploadpos"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"uploadpos\" value=\"no\"" .($user["uploadpos"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_download_possible'], "<input type=\"radio\" name=\"downloadpos\" value=\"yes\"" .($user["downloadpos"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"downloadpos\" value=\"no\"" .($user["downloadpos"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);

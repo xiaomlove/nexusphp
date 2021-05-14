@@ -141,5 +141,6 @@ $lang_userdetails = array
 	'row_show_ad' => "察看廣告",
 	'row_no_ad_until' => "不顯示廣告直到",
 	'text_no_ad_until_note' => "時間格式為'年年年年-月月-日日 時時:分分:秒秒'。無廣告待遇結束的時間。",
+    'disable_user_migrated' => '啟用或禁用用戶請到管理後臺操作',
 );
 ?>

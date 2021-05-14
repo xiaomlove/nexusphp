@@ -74,7 +74,7 @@ if ($action == "edituser")
 	$updateset[] = "stafffor = " . sqlesc($stafffor);
 	$updateset[] = "pickfor = " . sqlesc($pickfor);
 	$updateset[] = "picker = " . sqlesc($moviepicker);
-	$updateset[] = "enabled = " . sqlesc($enabled);
+//	$updateset[] = "enabled = " . sqlesc($enabled);
 	$updateset[] = "uploadpos = " . sqlesc($uploadpos);
 	$updateset[] = "downloadpos = " . sqlesc($downloadpos);
 	$updateset[] = "forumpost = " . sqlesc($forumpost);
@@ -242,28 +242,28 @@ if ($action == "edituser")
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		$updateset[] = "warned = 'yes', timeswarned = timeswarned+1, lastwarned=$added, warnedby={$CURUSER['id']}";
 	}
-	if ($enabled != $curenabled)
-	{
-		if ($enabled == 'yes') {
-			$modcomment = date("Y-m-d") . " - Enabled by " . $CURUSER['username']. ".\n". $modcomment;
-			if (get_single_value("users","class","WHERE id = ".sqlesc($userid)) == UC_PEASANT){
-				$length = 30*86400; // warn users until 30 days
-				$until = sqlesc(date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $length)));
-				sql_query("UPDATE users SET enabled='yes', leechwarn='yes', leechwarnuntil=$until WHERE id = ".sqlesc($userid));
-			}
-			else{
-				sql_query("UPDATE users SET enabled='yes', leechwarn='no' WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-			}
-		} else {
-			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;
-			$banLog = [
-			    'uid' => $userid,
-                'username' => $user->username,
-                'operator' => $CURUSER['id'],
-                'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
-            ];
-		}
-	}
+//	if ($enabled != $curenabled)
+//	{
+//		if ($enabled == 'yes') {
+//			$modcomment = date("Y-m-d") . " - Enabled by " . $CURUSER['username']. ".\n". $modcomment;
+//			if (get_single_value("users","class","WHERE id = ".sqlesc($userid)) == UC_PEASANT){
+//				$length = 30*86400; // warn users until 30 days
+//				$until = sqlesc(date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $length)));
+//				sql_query("UPDATE users SET enabled='yes', leechwarn='yes', leechwarnuntil=$until WHERE id = ".sqlesc($userid));
+//			}
+//			else{
+//				sql_query("UPDATE users SET enabled='yes', leechwarn='no' WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
+//			}
+//		} else {
+//			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;
+//			$banLog = [
+//			    'uid' => $userid,
+//                'username' => $user->username,
+//                'operator' => $CURUSER['id'],
+//                'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
+//            ];
+//		}
+//	}
 	if ($arr['noad'] != $noad){
 		$updateset[]='noad = '.sqlesc($noad);
 		$modcomment = date("Y-m-d") . " - No Ad set to ".$noad." by ". $CURUSER['username']. ".\n". $modcomment;

@@ -141,5 +141,6 @@ $lang_userdetails = array
 	'row_show_ad' => "Show Ad",
 	'row_no_ad_until' => "No Ad Until",
 	'text_no_ad_until_note' => "Time format is YYYY-MM-DD hh:mm:ss. The time until when the user can turn ads off.",
+    'disable_user_migrated' => 'Enable or disable use please go to the new management system.',
 );
 ?>
