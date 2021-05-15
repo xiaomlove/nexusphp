@@ -60,6 +60,9 @@ class Test extends Command
 //        $disk = Storage::disk('google_dirve');
 //        $r = $disk->put('/', base_path('composer.json'));
 //        $r = DB::table('users')->where('id', 1)->update(['modcomment' => DB::raw("concat_ws(',', 'ddddd', modcomment)")]);
+        $user = User::query()->find(1);
+        $r = $user->peer_torrents;
+        dd($r);
     }
 
 }

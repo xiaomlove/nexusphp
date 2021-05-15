@@ -29,6 +29,22 @@ Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], functio
     Route::post('user-enable', [\App\Http\Controllers\UserController::class, 'enable']);
     Route::post('user-reset-password', [\App\Http\Controllers\UserController::class, 'resetPassword']);
 
+    Route::get('user-me',[\App\Http\Controllers\UserController::class, 'me'])->name('user.me');
+    Route::get('user-publish-torrent',[\App\Http\Controllers\UserController::class, 'publishTorrent']);
+    Route::get('user-seeding-torrent',[\App\Http\Controllers\UserController::class, 'seedingTorrent']);
+    Route::get('user-leeching-torrent',[\App\Http\Controllers\UserController::class, 'leechingTorrent']);
+    Route::get('user-finished-torrent',[\App\Http\Controllers\UserController::class, 'finishedTorrent']);
+    Route::get('user-not-finished-torrent',[\App\Http\Controllers\UserController::class, 'notFinishedTorrent']);
+    Route::resource('messages', \App\Http\Controllers\MessageController::class);
+    Route::resource('torrents', \App\Http\Controllers\TorrentController::class);
+    Route::resource('comments', \App\Http\Controllers\CommentController::class);
+    Route::resource('peers', \App\Http\Controllers\PeerController::class);
+    Route::resource('files', \App\Http\Controllers\FileController::class);
+    Route::resource('thanks', \App\Http\Controllers\ThankController::class);
+    Route::resource('snatches', \App\Http\Controllers\SnatchController::class);
+    Route::get('search-box', [\App\Http\Controllers\TorrentController::class, 'searchBox']);
+
+
     Route::resource('exams', \App\Http\Controllers\ExamController::class);
     Route::get('exam-indexes', [\App\Http\Controllers\ExamController::class, 'indexes']);
 

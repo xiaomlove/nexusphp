@@ -18,7 +18,9 @@ class Torrent extends NexusModel
     const BANNED_YES = 'yes';
     const BANNED_NO = 'no';
 
-    public $timestamps = true;
+    protected $casts = [
+        'added' => 'datetime'
+    ];
 
     public function checkIsNormal(array $fields = ['visible', 'banned'])
     {
@@ -30,5 +32,105 @@ class Torrent extends NexusModel
         }
 
         return true;
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'owner');
+    }
+
+    public function thanks()
+    {
+        return $this->hasMany(Thank::class, 'torrentid');
+    }
+
+    public function thank_users()
+    {
+        return $this->belongsToMany(User::class, 'thanks', 'torrentid', 'userid');
+    }
+
+    /**
+     * 同伴
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function peers()
+    {
+        return $this->hasMany(Peer::class, 'torrent');
+    }
+
+    /**
+     * 完成情况
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function snatches()
+    {
+        return $this->hasMany(Snatch::class, 'torrentid');
+    }
+
+    public function upload_peers()
+    {
+        return $this->peers()->where('seeder', Peer::SEEDER_YES);
+    }
+
+    public function download_peers()
+    {
+        return $this->peers()->where('seeder', Peer::SEEDER_NO);
+    }
+
+    public function finish_peers()
+    {
+        return $this->peers()->where('finishedat', '>', 0);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(File::class, 'torrent');
+    }
+
+    public function basic_category()
+    {
+        return $this->belongsTo(Category::class, 'category');
+    }
+
+    public function basic_source()
+    {
+        return $this->belongsTo(Source::class, 'source');
+    }
+
+    public function basic_media()
+    {
+        return $this->belongsTo(Media::class, 'medium');
+    }
+
+    public function basic_codec()
+    {
+        return $this->belongsTo(Codec::class, 'codec');
+    }
+
+    public function basic_standard()
+    {
+        return $this->belongsTo(Standard::class, 'standard');
+    }
+
+    public function basic_processing()
+    {
+        return $this->belongsTo(Processing::class, 'processing');
+    }
+
+    public function basic_team()
+    {
+        return $this->belongsTo(Team::class, 'team');
+    }
+
+    public function basic_audiocodec()
+    {
+        return $this->belongsTo(AudioCodec::class, 'audiocodec');
+    }
+
+    public function scopeVisible($query, $visible = self::VISIBLE_YES)
+    {
+        $query->where('visible', $visible);
     }
 }

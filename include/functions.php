@@ -4734,4 +4734,217 @@ function build_table(array $header, array $rows, array $options = [])
     return $table;
 }
 
+/**
+ * 返回链接中附件的key
+ *
+ * @param $url
+ * @return string
+ */
+function attachmentKey($url)
+{
+    if (!filter_var($url, FILTER_VALIDATE_URL))
+    {
+        throw new \InvalidArgumentException("URL: '$url' invalid.");
+    }
+    $parsed = parse_url($url);
+    $driver = config('admin.upload.disk');
+    if ($driver == 'qiniu') {
+        return trim($parsed['path'], "/");
+    } elseif ($driver == 'cloudinary') {
+        $parts = explode('/', $parsed['path']);
+        $key = end($parts);
+        if (\Illuminate\Support\Str::contains($key,'.')) {
+            $key = strstr($key, '.', true);
+        }
+        return $key;
+
+    } else {
+        throw new \RuntimeException('不支持的云盘驱动');
+    }
+
+}
+
+/**
+ * 根据key返回链接
+ *
+ * @param $location
+ * @param null $width
+ * @param null $height
+ * @param array $options
+ * @return string
+ */
+function attachmentUrl($location, $width = null, $height = null, $options = [])
+{
+    return sprintf('%s/attachments/%s', getSchemeAndHttpHost(), trim($location, '/'));
+}
+
+
+function strip_all_tags($text)
+{
+    //替换掉无参数标签
+    $bbTags = [
+        '[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[pre]', '[/pre]', '[quote]', '[/quote]',
+        '[/color]', '[/font]', '[/size]', '[/url]'
+    ];
+    $text = str_replace($bbTags, '', $text);
+    //替换掉有参数标签
+    $pattern = '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]/isU';
+    $text = preg_replace($pattern, "", $text);
+    //去掉表情
+    static $emoji = null;
+    if (is_null($emoji)) {
+        $emoji = config('emoji');
+    }
+//    $text = preg_replace("/\[em([1-9][0-9]*)\]/isU", "", $text);
+    $text = preg_replace_callback("/\[em([1-9][0-9]*)\]/isU", function ($matches) use ($emoji) {
+        return $emoji[$matches[1]] ?? '';
+    }, $text);
+
+    $text = strip_tags($text);
+
+    return trim($text);
+}
+
+function format_description(string $description)
+{
+    //替换附件
+    $pattern = '/(\[attach\](.*)\[\/attach\])/isU';
+    $matchCount = preg_match_all($pattern, $description, $matches);
+    if ($matchCount) {
+        $attachments = \App\Models\Attachment::query()->whereIn('dlkey', $matches[2])->get()->keyBy('dlkey');
+        if ($attachments->isNotEmpty()) {
+            $description = preg_replace_callback($pattern, function ($matches) use ($attachments) {
+                $item = $attachments->get($matches[2]);
+                $url = attachmentUrl($item->location);
+                return str_replace($matches[2], $url, $matches[1]);
+            }, $description);
+        }
+    }
+    //去除引用
+//    $pattern = '/\[quote.*\].*\[\/quote\]/is';
+//    $description = preg_replace($pattern, '', $description);
+
+    //去掉引用自
+    $pattern = '/\[quote=.*\]/isU';
+    $description = preg_replace_callback($pattern, function ($matches) {
+        return '[quote]';
+    }, $description);
+
+    //过虑多层引用
+    $delimiter = '__CYLX__';
+    $pattern = '/(\[quote\]){2,}(((?!\[quote\]).)*)\[\/quote\]/isU';
+    $description = preg_replace_callback($pattern, function ($matches) use ($delimiter) {
+        return $delimiter;
+    }, $description);
+
+    $pattern = "/$delimiter(((?!\[quote\]).)+)\[\/quote\]/is";
+    $description = preg_replace_callback($pattern, function ($matches) use ($delimiter) {
+        $arr = array_reverse(explode('[/quote]', $matches[0]));
+        foreach ($arr as $value) {
+            $value = trim(str_replace($delimiter, '', $value));
+            if (!empty($value)) {
+                return "[quote]{$value}[/quote]";
+            }
+        }
+    }, $description);
+
+
+    //匹配不同块
+    $attachPattern = '\[attach\].*\[\/attach\]';
+    $imgPattern = '\[img\].*\[\/img\]';
+    $urlPattern = '\[url=.*\].*\[\/url\]';
+    $quotePattern = '\[quote.*\].*\[\/quote\]';
+    $pattern = "/($attachPattern)|($imgPattern)|($urlPattern)|($quotePattern)/isU";
+//    $pattern = "/($attachPattern)|($imgPattern)|($urlPattern)/isU";
+    $delimiter = '{{||}}';
+    $description = preg_replace_callback($pattern, function ($matches) use ($delimiter) {
+        return $delimiter . $matches[0] . $delimiter;
+    }, $description);
+
+    //再进行分割
+    $descriptionArr = preg_split("/[$delimiter]+/", $description);
+    $results = [];
+    foreach ($descriptionArr as $item) {
+        if (preg_match('/\[attach\](.*)\[\/attach\]/isU', $item, $matches)) {
+            //是否附件
+            $results[] = [
+                'type' => 'attachment',
+                'data' => [
+                    'url' => $matches[1]
+                ]
+            ];
+        } elseif (preg_match('/\[img\](.*)\[\/img\]/isU', $item, $matches)) {
+            //是否图片
+            $results[] = [
+                'type' => 'image',
+                'data' => [
+                    'url' => $matches[1]
+                ]
+            ];
+        } elseif (preg_match('/\[url=(.*)\](.*)\[\/url\]/isU', $item, $matches)) {
+            $results[] = [
+                'type' => 'url',
+                'data' => [
+                    'url' => $matches[1],
+                    'text' => strip_all_tags($matches[2])
+                ]
+            ];
+        } elseif (preg_match('/\[quote=?(.*)\](.*)\[\/quote\]/isU', $item, $matches)) {
+            $results[] = [
+                'type' => 'quote',
+                'data' => [
+                    'quote_text' => $matches[1],
+                    'text' => strip_all_tags($matches[2]),
+                ]
+            ];
+        } elseif (!empty($item)) {
+            $results[] = [
+                'type' => 'text',
+                'data' => [
+                    'text' => strip_all_tags($item)
+                ]
+            ];
+        }
+    }
+//        dd($description, $results);
+    return $results;
+}
+
+function get_image_from_description(array $descriptionArr, $first = false)
+{
+    $imageType = ['attachment', 'image'];
+    $images = [];
+    foreach ($descriptionArr as $value) {
+        if (!in_array($value['type'], $imageType)) {
+            continue;
+        }
+        $url = $value['data']['url'] ?? '';
+        if (!$url) {
+            continue;
+        }
+        if ($first) {
+            return $url;
+        } else {
+            $images[] = $url;
+        }
+    }
+    if ($first) {
+        return getSchemeAndHttpHost() . "/pic/imdb_pic/nophoto.gif";
+    }
+    return $images;
+}
+
+function get_share_ratio($uploaded, $downloaded)
+{
+    if ($downloaded) {
+        $ratio = floor(($uploaded / $downloaded) * 1000) / 1000;
+    } elseif ($uploaded) {
+        //@todo 读语言文件
+        $ratio = '无限';
+    } else {
+        $ratio = '---';
+    }
+    return $ratio;
+}
+
 ?>

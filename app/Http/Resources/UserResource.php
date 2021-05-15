@@ -14,7 +14,7 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        $out = [
             'id' => $this->id,
             'email' => $this->email,
             'username' => $this->username,
@@ -35,5 +35,17 @@ class UserResource extends JsonResource
             'leechtime_text' => mkprettytime($this->leechtime),
             'inviter' => new UserResource($this->whenLoaded('inviter')),
         ];
+        if ($request->routeIs('user.me')) {
+            $out['downloaded_human'] = mksize($this->downloaded);
+            $out['uploaded_human'] = mksize($this->uploaded);
+            $out['seed_time'] = mkprettytime($this->seedtime);
+            $out['leech_time'] = mkprettytime($this->leechtime);
+            $out['share_ratio'] = get_share_ratio($this->uploaded, $this->downloaded);
+            $out['seed_bonus'] = $this->seedbonus;
+            $out['invites'] = $this->invites;
+            $out['comments_count'] = $this->comments_count;
+            $out['posts_count'] = $this->posts_count;
+        }
+        return $out;
     }
 }

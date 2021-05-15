@@ -59,6 +59,15 @@ class User extends Authenticatable
         self::CLASS_STAFF_LEADER => ['text' => 'Staff Leader'],
     ];
 
+    public static $cardTitles = [
+        'uploaded_human' => '上传',
+        'downloaded_human' => '下载',
+        'share_ratio' => '分享率',
+        'seed_time' => '做种时间',
+        'seed_bonus' => '魔力值',
+        'invites' => '邀请',
+    ];
+
     public function getClassTextAttribute(): string
     {
         return self::$classes[$this->class]['text'] ?? '';
@@ -155,6 +164,68 @@ class User extends Authenticatable
     public function inviter()
     {
         return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    public function send_messages()
+    {
+        return $this->hasMany(Message::class, 'sender');
+    }
+
+    public function receive_messages()
+    {
+        return $this->hasMany(Message::class, 'receiver');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'user');
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'userid');
+    }
+
+    public function torrents()
+    {
+        return $this->hasMany(Torrent::class, 'owner');
+    }
+
+
+    public function peers_torrents()
+    {
+        return $this->hasManyThrough(
+            Torrent::class,
+            Peer::class,
+            'userid',
+            'id',
+            'id',
+            'torrent');
+    }
+
+    public function snatched_torrents()
+    {
+        return $this->hasManyThrough(
+            Torrent::class,
+            Snatch::class,
+            'userid',
+            'id',
+            'id',
+            'torrentid');
+    }
+
+    public function getAvatarAttribute($value)
+    {
+        if ($value) {
+            if (substr($value, 0, 4) == 'http') {
+                return $value;
+            } else {
+                do_log("用户头像: $value 不是 http 地址");
+            }
+        }
+
+        return getSchemeAndHttpHost() . '/pic/default_avatar.png';
+
     }
 
     public function updateWithModComment(array $update, $modComment)

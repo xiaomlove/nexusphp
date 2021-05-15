@@ -4,8 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ExamResource;
 use App\Http\Resources\InviteResource;
+use App\Http\Resources\TorrentResource;
 use App\Http\Resources\UserResource;
+use App\Models\Peer;
+use App\Models\Snatch;
+use App\Models\User;
 use App\Repositories\ExamRepository;
+use App\Repositories\TorrentRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -161,6 +166,107 @@ class UserController extends Controller
         ]);
         $result = $this->repository->getModComment($request->uid);
         return $this->success($result);
+    }
+
+    public function me()
+    {
+        $user = Auth::user();
+
+        $resource = $this->getUserProfile($user->id);
+
+        $rows = [
+            [
+                ['icon' => 'icon-user', 'label' => '种子评论', 'name' => 'comments_count'],
+                ['icon' => 'icon-user', 'label' => '论坛坛子', 'name' => 'posts_count'],
+            ],[
+                ['icon' => 'icon-user', 'label' => '发布种子', 'name' => 'comments_count'],
+                ['icon' => 'icon-user', 'label' => '当前做种', 'name' => 'posts_count'],
+                ['icon' => 'icon-user', 'label' => '当前下载', 'name' => 'posts_count'],
+                ['icon' => 'icon-user', 'label' => '完成种子', 'name' => 'posts_count'],
+                ['icon' => 'icon-user', 'label' => '未完成种子', 'name' => 'posts_count'],
+            ]
+        ];
+        $resource->additional([
+            'card_titles' => User::$cardTitles,
+            'rows' => $rows
+        ]);
+
+        return $this->success($resource);
+    }
+
+    private function getUserProfile($id)
+    {
+        $user = User::query()->withCount(['comments', 'posts'])->findOrFail($id);
+        $resource = new UserResource($user);
+        return $resource;
+    }
+
+    public function publishTorrent(Request $request)
+    {
+        $user = Auth::user();
+
+        $result = $user->torrents()->orderBy('id', 'desc')->paginate();
+
+        $resource = TorrentResource::collection($result);
+
+        return $resource;
+
+    }
+
+    public function seedingTorrent(Request $request)
+    {
+        $user = Auth::user();
+
+        $result = $user->peers_torrents()->where('seeder', Peer::SEEDER_YES)->orderBy('torrent', 'desc')->paginate();
+
+        $resource = TorrentResource::collection($result);
+
+        return $resource;
+
+    }
+
+    public function LeechingTorrent(Request $request)
+    {
+        $user = Auth::user();
+
+        $result = $user->peers_torrents()->where('seeder', Peer::SEEDER_NO)->orderBy('torrent', 'desc')->paginate();
+
+        $resource = TorrentResource::collection($result);
+
+        return $resource;
+
+    }
+
+    public function finishedTorrent(Request $request)
+    {
+        $user = Auth::user();
+
+        $result = $user->snatched_torrents()
+            ->where('owner', '<>', $user->id)
+            ->where('finished', Snatch::FINISHED_YES)
+            ->orderBy('torrentid', 'desc')
+            ->paginate();
+
+        $resource = TorrentResource::collection($result);
+
+        return $resource;
+
+    }
+
+    public function notFinishedTorrent(Request $request)
+    {
+        $user = Auth::user();
+
+        $result = $user->snatched_torrents()
+            ->where('owner', '<>', $user->id)
+            ->where('finished', Snatch::FINISHED_NO)
+            ->orderBy('torrentid', 'desc')
+            ->paginate();
+
+        $resource = TorrentResource::collection($result);
+
+        return $resource;
+
     }
 
 }
