@@ -4856,7 +4856,7 @@ function format_description(string $description)
     $quotePattern = '\[quote.*\].*\[\/quote\]';
     $pattern = "/($attachPattern)|($imgPattern)|($urlPattern)|($quotePattern)/isU";
 //    $pattern = "/($attachPattern)|($imgPattern)|($urlPattern)/isU";
-    $delimiter = '{{||}}';
+    $delimiter = '{{__CYLX__}}';
     $description = preg_replace_callback($pattern, function ($matches) use ($delimiter) {
         return $delimiter . $matches[0] . $delimiter;
     }, $description);

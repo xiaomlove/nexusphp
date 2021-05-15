@@ -12,14 +12,14 @@ class BackuAll extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:all {--upload-to-google-drive}';
+    protected $signature = 'backup:all';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Backup all data, include web root and database. options: --upload-to-google-drive';
+    protected $description = 'Backup all data, include web root and database.';
 
     /**
      * Create a new command instance.
@@ -38,12 +38,11 @@ class BackuAll extends Command
      */
     public function handle()
     {
-        $uploadToGoogleDrive = $this->option('upload-to-google-drive');
         $rep = new ToolRepository();
-        $result = $rep->backupAll($uploadToGoogleDrive);
+        $result = $rep->backupAll();
         $log = sprintf(
-            '[%s], %s, uploadToGoogleDrive: %s, result: %s',
-            REQUEST_ID, __METHOD__, var_export($uploadToGoogleDrive, true), var_export($result, true)
+            '[%s], %s, result: %s',
+            REQUEST_ID, __METHOD__, var_export($result, true)
         );
         $this->info($log);
         do_log($log);
