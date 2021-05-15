@@ -176,11 +176,19 @@ class User extends Authenticatable
         return $this->hasMany(Message::class, 'receiver');
     }
 
+    /**
+     * torrent comments
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function comments()
     {
         return $this->hasMany(Comment::class, 'user');
     }
 
+    /**
+     * forum posts
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function posts()
     {
         return $this->hasMany(Post::class, 'userid');

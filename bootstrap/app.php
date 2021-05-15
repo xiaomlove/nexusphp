@@ -1,7 +1,7 @@
 <?php
 
+define('NEXUS_START', LARAVEL_START);
 define('IN_NEXUS', false);
-
 require dirname(__DIR__) . '/include/constants.php';
 
 /*
