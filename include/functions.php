@@ -425,7 +425,6 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_VIP: {$class_name = $this_lang_functions['text_vip']; break;}
 		case UC_UPLOADER: {$class_name = $this_lang_functions['text_uploader']; break;}
 		case UC_RETIREE: {$class_name = $this_lang_functions['text_retiree']; break;}
-		case UC_FORUM_MODERATOR: {$class_name = $this_lang_functions['text_forum_moderator']; break;}
 		case UC_MODERATOR: {$class_name = $this_lang_functions['text_moderators']; break;}
 		case UC_ADMINISTRATOR: {$class_name = $this_lang_functions['text_administrators']; break;}
 		case UC_SYSOP: {$class_name = $this_lang_functions['text_sysops']; break;}
@@ -447,7 +446,6 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_VIP: {$class_name_color = $en_lang_functions['text_vip']; break;}
 		case UC_UPLOADER: {$class_name_color = $en_lang_functions['text_uploader']; break;}
 		case UC_RETIREE: {$class_name_color = $en_lang_functions['text_retiree']; break;}
-		case UC_FORUM_MODERATOR: {$class_name_color = $en_lang_functions['text_forum_moderator']; break;}
 		case UC_MODERATOR: {$class_name_color = $en_lang_functions['text_moderators']; break;}
 		case UC_ADMINISTRATOR: {$class_name_color = $en_lang_functions['text_administrators']; break;}
 		case UC_SYSOP: {$class_name_color = $en_lang_functions['text_sysops']; break;}

@@ -48,7 +48,6 @@ define ("UC_NEXUS_MASTER", 9);
 define ("UC_VIP", 10);
 define ("UC_RETIREE",11);
 define ("UC_UPLOADER",12);
-define ("UC_FORUM_MODERATOR", 12);
 define ("UC_MODERATOR",13);
 define ("UC_ADMINISTRATOR",14);
 define ("UC_SYSOP",15);
