@@ -17,7 +17,7 @@ if ($passkey){
 		die("invalid passkey");
 	elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
 		die("account disabed or parked");
-	elseif ($_GET['linktype'] == 'dl')
+	elseif (isset($_GET['linktype']) && $_GET['linktype'] == 'dl')
 		$dllink = true;
 	$inclbookmarked=intval($_GET['inclbookmarked'] ?? 0);
 	if($inclbookmarked == 1)

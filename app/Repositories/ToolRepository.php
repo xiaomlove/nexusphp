@@ -153,7 +153,7 @@ class ToolRepository extends BaseRepository
         $filename = $backupResult['filename'];
         $upload_result = $filesystem->put(basename($filename), fopen($filename, 'r'));
         $backupResult['upload_result'] = $upload_result;
-
+        do_log("Final result: " . json_encode($backupResult));
         return $backupResult;
     }
 }

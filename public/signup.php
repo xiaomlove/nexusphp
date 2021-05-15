@@ -14,7 +14,7 @@ if ($langid)
 }
 require_once(get_langfile_path("", false, $CURLANGDIR));
 cur_user_check ();
-$type = $_GET['type'];
+$type = $_GET['type'] ?? '';
 if ($type == 'invite')
 {
 	registration_check();
@@ -32,7 +32,7 @@ if ($type == 'invite')
 	$dom = $tldm[2];
 	}
 
-	$sq = sprintf("SELECT inviter FROM invites WHERE hash ='%s'",mysql_real_escape_string($code));
+	$sq = sprintf("SELECT inviter FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
 	$res = sql_query($sq) or sqlerr(__FILE__, __LINE__);
 	$inv = mysql_fetch_assoc($res);
 	$inviter = htmlspecialchars($inv["inviter"]);
@@ -87,7 +87,7 @@ show_image_code ();
 $ct_r = sql_query("SELECT id,name FROM countries ORDER BY name") or die;
 while ($ct_a = mysql_fetch_array($ct_r))
 $countries .= "<option value=$ct_a[id]" . ($ct_a['id'] == 8 ? " selected" : "") . ">$ct_a[name]</option>n";
-tr($lang_signup['row_country'], "<select name=country>n$countries</select>", 1); 
+tr($lang_signup['row_country'], "<select name=country>n$countries</select>", 1);
 //School select
 if ($showschool == 'yes'){
 $schools = "<option value=35>---- ".$lang_signup['select_none_selected']." ----</option>n";

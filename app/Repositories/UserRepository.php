@@ -123,13 +123,25 @@ class UserRepository extends BaseRepository
 
     public function enableUser(User $operator, $uid)
     {
-        $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username']);
+        $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username', 'class']);
         if ($targetUser->enabled == User::ENABLED_YES) {
             throw new NexusException('Already enabled!');
         }
+        $update = [
+            'enabled' => User::ENABLED_YES
+        ];
+        if ($targetUser->class == User::CLASS_PEASANT) {
+            // warn users until 30 days
+            $until = now()->addDays(30)->toDateTimeString();
+            $update['leechwarn'] = 'yes';
+            $update['leechwarnuntil'] = $until;
+        } else {
+            $update['leechwarn'] = 'no';
+            $update['leechwarnuntil'] = null;
+        }
         $modCommentText = sprintf("Enable by %s.", $operator->username);
-        $targetUser->updateWithModComment(['enabled' => User::ENABLED_YES], $modCommentText);
-        do_log("user: $uid, $modCommentText");
+        $targetUser->updateWithModComment($update, $modCommentText);
+        do_log("user: $uid, $modCommentText, update: " . nexus_json_encode($update));
         return true;
     }
 
