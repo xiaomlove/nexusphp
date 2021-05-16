@@ -62,9 +62,9 @@ class Test extends Command
 //        $r = DB::table('users')->where('id', 1)->update(['modcomment' => DB::raw("concat_ws(',', 'ddddd', modcomment)")]);
 
         $yesterday = Carbon::parse('2021-05-16 13:30');
-        $now = Carbon::now();
-        $r = $yesterday->diffInSeconds($now);
-        dd($yesterday, $now, $r);
+        $now = Carbon::parse(0);
+//        $r = $yesterday->diffInSeconds($now);
+        dd($now);
     }
 
 }

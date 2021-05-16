@@ -15,6 +15,7 @@ class Peer extends NexusModel
         'started' => 'datetime',
         'last_action' => 'datetime',
         'prev_action' => 'datetime',
+        'finishedat' => 'datetime',
     ];
 
     public static $connectableText = [
