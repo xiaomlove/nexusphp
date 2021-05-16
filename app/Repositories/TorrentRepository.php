@@ -237,17 +237,21 @@ class TorrentRepository extends BaseRepository
     public function getSnatchUploadSpeed($snatch)
     {
         if ($snatch->seedtime <= 0) {
-            return mksize(0);
+            $speed =  mksize(0);
+        } else {
+            $speed = mksize($snatch->uploaded / ($snatch->seedtime + $snatch->leechtime));
         }
-        return mksize($snatch->uploaded / ($snatch->seedtime + $snatch->leechtime));
+        return "$speed/s";
     }
 
     public function getSnatchDownloadSpeed($snatch)
     {
         if ($snatch->leechtime <= 0) {
-            return mksize(0);
+            $speed = mksize(0);
+        } else {
+            $speed = mksize($snatch->downloaded / $snatch->leechtime);
         }
-        return mksize($snatch->downloaded / $snatch->leechtime);
+        return "$speed/s";
     }
 
 }
