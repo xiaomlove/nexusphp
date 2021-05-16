@@ -16,7 +16,10 @@ class SnatchController extends Controller
      */
     public function index(Request $request)
     {
-        $torrentId = $request->torrent_id;
+        $request->validate([
+            'torrent_id' => 'required',
+        ]);
+
         $snatches = Snatch::query()->where('torrentid', $torrentId)->with(['user'])->paginate();
         $resource = SnatchResource::collection($snatches);
         $resource->additional(['card_titles' => Snatch::$cardTitles]);

@@ -15,23 +15,15 @@ class SnatchResource extends PeerResource
      */
     public function toArray($request)
     {
-        $uploaded = mksize($this->uploaded);
-        $downloaded = mksize($this->downloaded);
-        $seedtime = mkprettytime($this->seedtime);
-        $leechtime = mkprettytime($this->leechtime);
-        $uprate = $this->seedtime > 0 ? mksize($this->uploaded / ($this->seedtime + $this->leechtime)) : mksize(0);
-        $downrate = $this->leechtime > 0 ? mksize($this->downloaded / $this->leechtime) : mksize(0);
-        $nowTimestamp = time();
-
         return [
             'id' => $this->id,
-            'upload_text' => $uploaded . "@" . $uprate . "/s",
-            'download_text' => $downloaded . "@" . $downrate . "/s",
-            'share_ratio' => $this->getShareRatio($this->resource),
-            'seed_time' => $seedtime,
-            'leech_time' => $leechtime,
-            'completed_at_human' => mkprettytime($nowTimestamp - $this->completedat->timestamp),
-            'last_action_human' => mkprettytime($nowTimestamp - $this->last_action->timestamp),
+            'upload_text' => $this->upload_text,
+            'download_text' => $this->download_text,
+            'share_ratio' => $this->share_ratio,
+            'seed_time' => $this->seed_time,
+            'leech_time' => $this->leech_time,
+            'completed_at_human' => $this->completed_at_human,
+            'last_action_human' => $this->last_action_human,
             'user' => new UserResource($this->whenLoaded('user')),
         ];
     }

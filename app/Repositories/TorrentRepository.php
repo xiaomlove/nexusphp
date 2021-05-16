@@ -8,6 +8,7 @@ use App\Models\Codec;
 use App\Models\Media;
 use App\Models\Peer;
 use App\Models\Processing;
+use App\Models\Snatch;
 use App\Models\Source;
 use App\Models\Standard;
 use App\Models\Team;
@@ -162,14 +163,14 @@ class TorrentRepository extends BaseRepository
 
     }
 
-    public function getUploadSpeed($peer): string
+    public function getPeerUploadSpeed($peer): string
     {
         $diff = $peer->uploaded - $peer->uploadoffset;
         $seconds = max(1, $peer->started->diffInSeconds($peer->last_action));
         return mksize($diff / $seconds) . '/s';
     }
 
-    public function getDownloadSpeed($peer): string
+    public function getPeerDownloadSpeed($peer): string
     {
         $diff = $peer->downloaded - $peer->downloadoffset;
         if ($peer->isSeeder()) {
@@ -202,8 +203,8 @@ class TorrentRepository extends BaseRepository
     {
         $nowTimestamp = time();
         foreach ($peers as &$item) {
-            $item->upload_text = sprintf('%s@%s', mksize($item->uploaded), $this->getUploadSpeed($item));
-            $item->download_text = sprintf('%s@%s', mksize($item->downloaded), $this->getDownloadSpeed($item));
+            $item->upload_text = sprintf('%s@%s', mksize($item->uploaded), $this->getPeerUploadSpeed($item));
+            $item->download_text = sprintf('%s@%s', mksize($item->downloaded), $this->getPeerDownloadSpeed($item));
             $item->download_progress = $this->getDownloadProgress($item);
             $item->share_ratio = $this->getShareRatio($item);
             $item->connect_time_total = mkprettytime($nowTimestamp - $item->started->timestamp);
@@ -211,6 +212,43 @@ class TorrentRepository extends BaseRepository
             $item->agent_human = htmlspecialchars(get_agent($item->peer_id, $item->agent));
         }
         return $peers;
+    }
+
+
+    public function listSnatches($torrentId)
+    {
+        $snatches = Snatch::query()
+            ->where('torrentid', $torrentId)
+            ->with(['user'])
+            ->orderBy('completedat', 'desc')
+            ->get();
+        $nowTimestamp = time();
+        foreach ($snatches as &$snatch) {
+            $snatch->upload_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchUploadSpeed($snatch));
+            $snatch->download_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchDownloadSpeed($snatch));
+            $snatch->share_ratio = $this->getShareRatio($snatch);
+            $snatch->seed_time = mkprettytime($snatch->seedtime);
+            $snatch->leech_time = mkprettytime($snatch->leechtime);
+            $snatch->completed_at_human = mkprettytime($nowTimestamp - $snatch->completedat->timestamp);
+            $snatch->last_action_human =  mkprettytime($nowTimestamp - $snatch->last_action->timestamp);
+        }
+        return $snatches;
+    }
+
+    public function getSnatchUploadSpeed($snatch)
+    {
+        if ($snatch->seedtime <= 0) {
+            return mksize(0);
+        }
+        return mksize($snatch->uploaded / ($snatch->seedtime + $snatch->leechtime));
+    }
+
+    public function getSnatchDownloadSpeed($snatch)
+    {
+        if ($snatch->leechtime <= 0) {
+            return mksize(0);
+        }
+        return mksize($snatch->downloaded / $snatch->leechtime);
     }
 
 }
