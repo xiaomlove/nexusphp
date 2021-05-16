@@ -6,10 +6,17 @@ use App\Http\Resources\PeerResource;
 use App\Http\Resources\SnatchResource;
 use App\Models\Peer;
 use App\Models\Snatch;
+use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
 
 class SnatchController extends Controller
 {
+    private $repository;
+
+    public function __construct(TorrentRepository $repository)
+    {
+        $this->repository = $repository;
+    }
     /**
      * @param Request $request
      * @return array
@@ -19,8 +26,7 @@ class SnatchController extends Controller
         $request->validate([
             'torrent_id' => 'required',
         ]);
-
-        $snatches = Snatch::query()->where('torrentid', $torrentId)->with(['user'])->paginate();
+        $snatches = $this->repository->listSnatches($request->torrent_id);
         $resource = SnatchResource::collection($snatches);
         $resource->additional(['card_titles' => Snatch::$cardTitles]);
 
