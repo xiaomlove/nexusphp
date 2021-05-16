@@ -201,14 +201,13 @@ class TorrentRepository extends BaseRepository
 
     private function formatPeers($peers)
     {
-        $nowTimestamp = time();
         foreach ($peers as &$item) {
             $item->upload_text = sprintf('%s@%s', mksize($item->uploaded), $this->getPeerUploadSpeed($item));
             $item->download_text = sprintf('%s@%s', mksize($item->downloaded), $this->getPeerDownloadSpeed($item));
             $item->download_progress = $this->getDownloadProgress($item);
             $item->share_ratio = $this->getShareRatio($item);
-            $item->connect_time_total = mkprettytime($nowTimestamp - $item->started->timestamp);
-            $item->last_action_human = mkprettytime($nowTimestamp - $item->last_action->timestamp);
+            $item->connect_time_total = $item->started->diffForHumans();
+            $item->last_action_human = $item->last_action->diffForHumans();
             $item->agent_human = htmlspecialchars(get_agent($item->peer_id, $item->agent));
         }
         return $peers;
@@ -219,18 +218,18 @@ class TorrentRepository extends BaseRepository
     {
         $snatches = Snatch::query()
             ->where('torrentid', $torrentId)
+            ->where('finished', Snatch::FINISHED_YES)
             ->with(['user'])
             ->orderBy('completedat', 'desc')
             ->get();
-        $nowTimestamp = time();
         foreach ($snatches as &$snatch) {
             $snatch->upload_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchUploadSpeed($snatch));
             $snatch->download_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchDownloadSpeed($snatch));
             $snatch->share_ratio = $this->getShareRatio($snatch);
             $snatch->seed_time = mkprettytime($snatch->seedtime);
             $snatch->leech_time = mkprettytime($snatch->leechtime);
-            $snatch->completed_at_human = mkprettytime($nowTimestamp - $snatch->completedat->timestamp);
-            $snatch->last_action_human =  mkprettytime($nowTimestamp - $snatch->last_action->timestamp);
+            $snatch->completed_at_human = $snatch->completedat->diffForHumans();
+            $snatch->last_action_human =  $snatch->last_action->diffForHumans();
         }
         return $snatches;
     }
