@@ -221,7 +221,7 @@ class TorrentRepository extends BaseRepository
             ->where('finished', Snatch::FINISHED_YES)
             ->with(['user'])
             ->orderBy('completedat', 'desc')
-            ->get();
+            ->paginate();
         foreach ($snatches as &$snatch) {
             $snatch->upload_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchUploadSpeed($snatch));
             $snatch->download_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchDownloadSpeed($snatch));
