@@ -5,10 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Resources\PeerResource;
 use App\Models\Peer;
 use App\Models\Torrent;
+use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
 
 class PeerController extends Controller
 {
+    private $repository;
+
+    public function __construct(TorrentRepository $repository)
+    {
+        $this->repository = $repository;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -17,22 +24,22 @@ class PeerController extends Controller
      */
     public function index(Request $request)
     {
-        $torrentId = $request->torrent_id;
-        $peers = Peer::query()->where('torrent', $torrentId)->with(['user', 'relative_torrent'])->get()->groupBy('seeder');
-        $seederResource = [];
-        $leecherResource = [];
-        if ($peers->has(Peer::SEEDER_YES)) {
-            $seederResource = PeerResource::collection($peers->get(Peer::SEEDER_YES));
-        }
-        if ($peers->has(Peer::SEEDER_NO)) {
-            $leecherResource = PeerResource::collection($peers->get(Peer::SEEDER_NO));
-        }
+        $request->validate([
+            'torrent_id' => 'required',
+        ]);
 
         $response = [
-            'seeder_list' => $seederResource,
-            'leecher_list' => $leecherResource,
+            'seeder_list' => [],
+            'leecher_list' => [],
             'card_titles' => Peer::$cardTitles,
         ];
+        $result = $this->repository->listPeers($request->torrent_id);
+        if ($result['seeder_list']->isNotEmpty()) {
+            $response['seeder_list'] = PeerResource::collection($result['seeder_list']);
+        }
+        if ($result['leecher_list']->isNotEmpty()) {
+            $response['leecher_list'] = PeerResource::collection($result['leecher_list']);
+        }
 
         return $this->success($response);
 

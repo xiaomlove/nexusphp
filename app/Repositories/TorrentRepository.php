@@ -6,6 +6,7 @@ use App\Models\AudioCodec;
 use App\Models\Category;
 use App\Models\Codec;
 use App\Models\Media;
+use App\Models\Peer;
 use App\Models\Processing;
 use App\Models\Source;
 use App\Models\Standard;
@@ -13,6 +14,7 @@ use App\Models\Team;
 use App\Models\Torrent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Seeder;
 use Illuminate\Http\Request;
 
 class TorrentRepository extends BaseRepository
@@ -122,6 +124,93 @@ class TorrentRepository extends BaseRepository
             $result['rows'][] = $item;
         }
         return $result;
+    }
+
+    public function listPeers($torrentId)
+    {
+        $seederList = $leecherList = collect();
+        $peers = Peer::query()->where('torrent', $torrentId)->with(['user', 'relative_torrent'])->get()->groupBy('seeder');
+        if ($peers->has(Peer::SEEDER_YES)) {
+            $seederList = $peers->get(Peer::SEEDER_YES)->sort(function ($a, $b) {
+                $x = $a->uploaded;
+                $y = $b->uploaded;
+                if ($x == $y)
+                    return 0;
+                if ($x < $y)
+                    return 1;
+                return -1;
+            });
+            $seederList = $this->formatPeers($seederList);
+        }
+        if ($peers->has(Peer::SEEDER_NO)) {
+            $leecherList = $peers->get(Peer::SEEDER_NO)->sort(function ($a, $b) {
+                $x = $a->to_go;
+                $y = $b->to_go;
+                if ($x == $y)
+                    return 0;
+                if ($x < $y)
+                    return -1;
+                return 1;
+            });
+            $leecherList = $this->formatPeers($leecherList);
+        }
+
+        return [
+            'seeder_list' => $seederList,
+            'leecher_list' => $leecherList,
+        ];
+
+    }
+
+    public function getUploadSpeed($peer): string
+    {
+        $diff = $peer->uploaded - $peer->uploadoffset;
+        $seconds = max(1, $peer->started->diffInSeconds($peer->last_action));
+        return mksize($diff / $seconds) . '/s';
+    }
+
+    public function getDownloadSpeed($peer): string
+    {
+        $diff = $peer->downloaded - $peer->downloadoffset;
+        if ($peer->isSeeder()) {
+            $seconds = max(1, $peer->started->diffInSeconds($peer->finishedat));
+        } else {
+            $seconds = max(1, $peer->started->diffInSeconds($peer->last_action));
+        }
+        return mksize($diff / $seconds) . '/s';
+    }
+
+    public function getDownloadProgress($peer): string
+    {
+        return sprintf("%.2f%%", 100 * (1 - ($peer->to_go / $peer->relative_torrent->size)));
+    }
+
+    public function getShareRatio($peer)
+    {
+        if ($peer->downloaded) {
+            $ratio = floor(($peer->uploaded / $peer->downloaded) * 1000) / 1000;
+        } elseif ($peer->uploaded) {
+            //@todo 读语言文件
+            $ratio = '无限';
+        } else {
+            $ratio = '---';
+        }
+        return $ratio;
+    }
+
+    private function formatPeers($peers)
+    {
+        $nowTimestamp = time();
+        foreach ($peers as &$item) {
+            $item->upload_text = sprintf('%s@%s', mksize($item->uploaded), $this->getUploadSpeed($item));
+            $item->download_text = sprintf('%s@%s', mksize($item->downloaded), $this->getDownloadSpeed($item));
+            $item->download_progress = $this->getDownloadProgress($item);
+            $item->share_ratio = $this->getShareRatio($item);
+            $item->connect_time_total = mkprettytime($nowTimestamp - $item->started->timestamp);
+            $item->last_action_human = mkprettytime($nowTimestamp - $item->last_action->timestamp);
+            $item->agent_human = htmlspecialchars(get_agent($item->peer_id, $item->agent));
+        }
+        return $peers;
     }
 
 }
