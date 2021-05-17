@@ -7,20 +7,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ToolRepository extends BaseRepository
 {
-    public function getSystemInfo(): array
-    {
-        $systemInfo = [
-            'nexus_version' => VERSION_NUMBER,
-            'nexus_release_date' => RELEASE_DATE,
-            'laravel_version' => \Illuminate\Foundation\Application::VERSION,
-            'php_version' => PHP_VERSION,
-            'mysql_version' => DB::select(DB::raw('select version() as info'))[0]->info,
-            'os' => PHP_OS,
-            'server_software' => $_SERVER['SERVER_SOFTWARE'],
-        ];
-
-        return $systemInfo;
-    }
 
     public function backupWeb(): array
     {

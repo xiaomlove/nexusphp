@@ -14,9 +14,4 @@ class ToolController extends Controller
         $this->repository = $repository;
     }
 
-    public function systemInfo()
-    {
-        $result = $this->repository->getSystemInfo();
-        return $this->success($result);
-    }
 }

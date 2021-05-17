@@ -228,7 +228,7 @@ class User extends Authenticatable
             if (substr($value, 0, 4) == 'http') {
                 return $value;
             } else {
-                do_log("用户头像: $value 不是 http 地址");
+                do_log("user: {$this->id} avatar: $value is not valid url.");
             }
         }
 

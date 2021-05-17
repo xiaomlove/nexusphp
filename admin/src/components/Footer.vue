@@ -1,15 +1,18 @@
 <template>
     <div class="footer">
         <div class="left">Powered by <a target="_blank" href="https://nexusphp.org/">NexusPHP</a></div>
-        <div class="right">
-            Version: 1.6.0-beta6
+        <div class="right" v-if="version">
+            Version: {{version}}
         </div>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'Footer'
+    name: 'Footer',
+    props: {
+        version: String
+    }
 }
 </script>
 

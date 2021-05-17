@@ -50,7 +50,10 @@ Route::group(['middleware' => ['auth:sanctum', 'permission', 'locale']], functio
 
     Route::resource('exam-users', \App\Http\Controllers\ExamUserController::class);
 
-    Route::get('system-info', [\App\Http\Controllers\ToolController::class, 'systemInfo']);
+    Route::get('dashboard/system-info', [\App\Http\Controllers\DashboardController::class, 'systemInfo']);
+    Route::get('dashboard/stat-data', [\App\Http\Controllers\DashboardController::class, 'statData']);
+    Route::get('dashboard/latest-user', [\App\Http\Controllers\DashboardController::class, 'latestUser']);
+    Route::get('dashboard/latest-torrent', [\App\Http\Controllers\DashboardController::class, 'latestTorrent']);
 
     Route::resource('settings', \App\Http\Controllers\SettingController::class);
 

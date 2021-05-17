@@ -47,9 +47,9 @@
             <el-container class="content">
                 <Header :router-name="state.routerName"/>
                 <div class="main">
-                    <router-view />
+                    <router-view @update-version="updateVersion" />
                 </div>
-                <Footer />
+                <Footer :version="state.version"/>
             </el-container>
         </el-container>
         <el-container v-else class="container">
@@ -80,7 +80,8 @@ export default {
             count: {
                 number: 1
             },
-            routerName: router.name
+            routerName: router.name,
+            version: '',
         })
         onMounted(() => {
 
@@ -106,8 +107,13 @@ export default {
             state.currentPath = to.path
             document.title = pathMap[to.name]
         })
+        const updateVersion = (val) => {
+            // console.log('updateVersion', val)
+            state.version = val.nexus_version.value
+        }
         return {
-            state
+            state,
+            updateVersion
         }
     }
 }

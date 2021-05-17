@@ -90,6 +90,19 @@ const api = {
     listSetting: (params) => {
         return axios.get('settings', {params});
     },
+    listStatData: () => {
+        return axios.get('dashboard/stat-data')
+    },
+    listLatestUser: () => {
+        return axios.get('dashboard/latest-user')
+    },
+    listLatestTorrent: () => {
+        return axios.get('dashboard/latest-torrent')
+    },
+    listSystemInfo: () => {
+        return axios.get('dashboard/system-info')
+    }
+
 }
 
 export default api
