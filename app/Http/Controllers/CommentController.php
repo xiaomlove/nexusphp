@@ -19,6 +19,9 @@ class CommentController extends Controller
         $with = ['create_user', 'update_user'];
         $comments = Comment::query()->with($with)->where('torrent', $torrentId)->paginate();
         $resource = CommentResource::collection($comments);
+        $resource->additional([
+            'page_title' => nexus_trans('comment.index.page_title'),
+        ]);
 
         return $this->success($resource);
     }

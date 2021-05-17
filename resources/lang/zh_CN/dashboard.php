@@ -21,7 +21,7 @@ return [
     'torrent' => [
         'page_title' => '种子统计',
         'total' => '总数',
-        'deaded' => '死种',
+        'dead' => '死种',
         'seeders' => '做种数',
         'leechers' => '下载数',
         'seeders_leechers' => '同伴',
@@ -42,7 +42,7 @@ return [
         'nexus_release_date' => 'NexusPHP 发布日期',
         'laravel_version' => 'Laravel 版本',
         'php_version' => 'PHP 版本',
-        'mysql_version' => 'Mysqsl 版本',
+        'mysql_version' => 'Mysql 版本',
         'os' => '操作系统',
         'server_software' => 'Web 软件',
         'load_average' => '服务器平均负载',

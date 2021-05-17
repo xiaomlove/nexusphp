@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Peer;
+use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
@@ -116,7 +117,7 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->count(),
+            'value' => sprintf('%s / %s', User::query()->count(), Setting::get('main.maxusers')),
         ];
         $name = 'unconfirmed';
         $result[$name] = [
@@ -188,7 +189,7 @@ class DashboardRepository extends BaseRepository
             'text' => nexus_trans("dashboard.torrent.$name"),
             'value' => Torrent::query()->count(),
         ];
-        $name = 'deaded';
+        $name = 'dead';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
@@ -220,7 +221,7 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => $leechers == 0 ? 0 : number_format(($seeders / $leechers) * 100, 2),
+            'value' => $leechers == 0 ? 0 : number_format(($seeders / $leechers) * 100) . '%',
         ];
         $name = 'active_web_users';
         $result[$name] = [

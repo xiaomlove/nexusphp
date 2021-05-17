@@ -32,6 +32,7 @@ class PeerController extends Controller
             'seeder_list' => [],
             'leecher_list' => [],
             'card_titles' => Peer::$cardTitles,
+            'page_title' => nexus_trans('peer.index.page_title'),
         ];
         $result = $this->repository->listPeers($request->torrent_id);
         if ($result['seeder_list']->isNotEmpty()) {

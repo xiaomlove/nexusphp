@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Attachment;
+use App\Models\Torrent;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -38,28 +39,12 @@ class TorrentResource extends JsonResource
 
         if ($request->routeIs('torrents.show')) {
             $baseInfo = [
-                ['label' => '大小', 'value' => mksize($this->size)],
+                ['label' => nexus_trans('torrent.show.size'), 'value' => mksize($this->size)],
             ];
-            if ($info = $this->whenLoaded('basic_category')) {
-                $baseInfo[] = ['label' => '类型', 'value' => $info->name];
-            }
-            if ($info = $this->whenLoaded('basic_audiocodec')) {
-                $baseInfo[] = ['label' => '音频编码', 'value' => $info->name];
-            }
-            if ($info = $this->whenLoaded('basic_codec')) {
-                $baseInfo[] = ['label' => '视频编码', 'value' => $info->name];
-            }
-            if ($info = $this->whenLoaded('basic_media')) {
-                $baseInfo[] = ['label' => '媒介', 'value' => $info->name];
-            }
-            if ($info = $this->whenLoaded('basic_source')) {
-                $baseInfo[] = ['label' => '来源', 'value' => $info->name];
-            }
-            if ($info = $this->whenLoaded('basic_standard')) {
-                $baseInfo[] = ['label' => '分辨率', 'value' => $info->name];
-            }
-            if ($info = $this->whenLoaded('basic_team')) {
-                $baseInfo[] = ['label' => '制作组', 'value' => $info->name];
+            foreach (Torrent::getBasicInfo() as $relation => $text) {
+                if ($info = $this->whenLoaded($relation)) {
+                    $baseInfo[] = ['label' => $text, 'value' => $info->name];
+                }
             }
             $out['base_info'] = $baseInfo;
             $descriptionArr = format_description($this->descr);

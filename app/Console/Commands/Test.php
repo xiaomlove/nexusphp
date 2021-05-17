@@ -61,7 +61,7 @@ class Test extends Command
 //        $r = $disk->put('/', base_path('composer.json'));
 //        $r = DB::table('users')->where('id', 1)->update(['modcomment' => DB::raw("concat_ws(',', 'ddddd', modcomment)")]);
 
-        $r = exec('uptime');
+        $r = format_description('[em4]  [em27]');
         dd($r);
     }
 

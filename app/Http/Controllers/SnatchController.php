@@ -28,7 +28,10 @@ class SnatchController extends Controller
         ]);
         $snatches = $this->repository->listSnatches($request->torrent_id);
         $resource = SnatchResource::collection($snatches);
-        $resource->additional(['card_titles' => Snatch::$cardTitles]);
+        $resource->additional([
+            'card_titles' => Snatch::$cardTitles,
+            'page_title' => nexus_trans('snatch.index.page_title'),
+        ]);
 
         return $this->success($resource);
     }

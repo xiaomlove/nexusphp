@@ -6,6 +6,7 @@
                 <el-table
                     :data="latestUser.data.data"
                     v-loading="latestUser.loading"
+                    size="mini"
                 >
                     <el-table-column
                         prop="username"
@@ -32,23 +33,26 @@
                 <el-table
                     :data="latestTorrent.data.data"
                     v-loading="latestTorrent.loading"
+                    size="mini"
                 >
                     <el-table-column
                         prop="name"
                         label="Name"
-                        width="250"
                     ></el-table-column>
                     <el-table-column
                         prop="user.username"
                         label="User"
+                        width="150"
                     ></el-table-column>
                     <el-table-column
                         prop="size_human"
                         label="Size"
+                        width="100"
                     ></el-table-column>
                     <el-table-column
                         prop="added"
                         label="Added"
+                        width="160"
                     ></el-table-column>
                 </el-table>
             </el-card>
@@ -57,24 +61,24 @@
     <div v-loading="statData.loading">
         <el-row class="row">
             <el-col :span="12" class="stat-box">
-                <el-descriptions :title="statData.user.text" :column="2" border>
+                <el-descriptions :title="statData.user.text" :column="2" size="mini" border>
                     <el-descriptions-item :label="item.text" v-for="item in statData.user.data">{{item.value}}</el-descriptions-item>
                 </el-descriptions>
             </el-col>
             <el-col :span="12" class="stat-box">
-                <el-descriptions :title="statData.user_class.text" :column="2" border>
+                <el-descriptions :title="statData.user_class.text" :column="2"  size="mini" border>
                     <el-descriptions-item :label="item.class_text" v-for="item in statData.user_class.data">{{item.counts}}</el-descriptions-item>
                 </el-descriptions>
             </el-col>
         </el-row>
         <el-row class="row">
             <el-col :span="12" class="stat-box">
-                <el-descriptions :title="statData.torrent.text" :column="2" border>
+                <el-descriptions :title="statData.torrent.text" :column="2" size="mini" border>
                     <el-descriptions-item :label="item.text" v-for="item in statData.torrent.data">{{item.value}}</el-descriptions-item>
                 </el-descriptions>
             </el-col>
             <el-col :span="12" class="stat-box">
-                <el-descriptions :title="statData.system_info.text" :column="2" border>
+                <el-descriptions :title="statData.system_info.text" :column="2" size="mini" border>
                     <el-descriptions-item :label="item.text" v-for="item in statData.system_info.data">{{item.value}}</el-descriptions-item>
                 </el-descriptions>
             </el-col>

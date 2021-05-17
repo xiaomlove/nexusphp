@@ -22,6 +22,9 @@ class TorrentController extends Controller
         $params['visible'] = Torrent::VISIBLE_YES;
         $result = $this->repository->getList($params);
         $resource = TorrentResource::collection($result);
+        $resource->additional([
+            'page_title' => nexus_trans('torrent.index.page_title'),
+        ]);
 
         return $this->success($resource);
     }
@@ -45,13 +48,15 @@ class TorrentController extends Controller
      */
     public function show($id)
     {
-        $with = ['user', 'basic_audiocodec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team'];
+        $with = ['user', 'basic_audio_codec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team'];
 
         $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users'])->visible()->findOrFail($id);
 
-//        dd($result);
-
         $resource = new TorrentResource($result);
+        $resource->additional([
+            'page_title' => nexus_trans('torrent.show.page_title'),
+            'field_labels' => Torrent::getFieldLabels(),
+        ]);
 
         return $this->success($resource);
     }

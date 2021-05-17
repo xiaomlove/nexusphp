@@ -523,7 +523,7 @@ function last_query($all = false)
     return nexus_json_encode($query);
 }
 
-function format_datetime($datetime, $format = 'Y-m-d H:i:s')
+function format_datetime($datetime, $format = 'Y-m-d H:i')
 {
     if ($datetime instanceof \Carbon\Carbon) {
         return $datetime->format($format);

@@ -22,6 +22,30 @@ class Torrent extends NexusModel
         'added' => 'datetime'
     ];
 
+    public static $basicRelations = [
+        'basic_category', 'basic_audio_codec', 'basic_codec', 'basic_media',
+        'basic_source', 'basic_standard', 'basic_team',
+    ];
+
+    public static function getBasicInfo(): array
+    {
+        $result = [];
+        foreach (self::$basicRelations as $relation) {
+            $result[$relation] = nexus_trans("torrent.show.$relation");
+        }
+        return $result;
+    }
+
+    public static function getFieldLabels(): array
+    {
+        $fields = ['comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles'];
+        $result = [];
+        foreach($fields as $field) {
+            $result[$field] = nexus_trans("torrent.show.{$field}_label");
+        }
+        return $result;
+    }
+
     public function checkIsNormal(array $fields = ['visible', 'banned'])
     {
         if (in_array('visible', $fields) && $this->getAttribute('visible') != self::VISIBLE_YES) {
@@ -124,7 +148,7 @@ class Torrent extends NexusModel
         return $this->belongsTo(Team::class, 'team');
     }
 
-    public function basic_audiocodec()
+    public function basic_audio_codec()
     {
         return $this->belongsTo(AudioCodec::class, 'audiocodec');
     }

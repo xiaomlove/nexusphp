@@ -21,7 +21,7 @@ return [
     'torrent' => [
         'page_title' => 'Torrent statistics',
         'total' => 'Total',
-        'deaded' => 'Deaded',
+        'dead' => 'Dead',
         'seeders' => 'Seeders',
         'leechers' => 'Leechers',
         'seeders_leechers' => 'Peers',
@@ -42,7 +42,7 @@ return [
         'nexus_release_date' => 'NexusPHP release date',
         'laravel_version' => 'Laravel version',
         'php_version' => 'PHP version',
-        'mysql_version' => 'Mysqsl version',
+        'mysql_version' => 'Mysql version',
         'os' => 'OS',
         'server_software' => 'Web software',
         'load_average' => 'Server load average',
