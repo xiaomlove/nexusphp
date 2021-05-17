@@ -13,7 +13,9 @@ return [
         'warned' => 'Warned',
         'disabled' => 'Disabled',
         'gender_male' => 'Male',
+        'gender_Male' => 'Male',
         'gender_female' => 'Female',
+        'gender_Female' => 'Female',
         'gender_N/A' => 'Gender unknown',
     ],
     'torrent' => [
