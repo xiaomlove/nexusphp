@@ -13,7 +13,9 @@ return [
         'warned' => '警告',
         'disabled' => '禁用',
         'gender_male' => '男生',
+        'gender_Male' => '男生',
         'gender_female' => '女生',
+        'gender_Female' => '女生',
         'gender_N/A' => '性別未知',
     ],
     'torrent' => [

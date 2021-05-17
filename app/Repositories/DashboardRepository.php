@@ -275,7 +275,7 @@ class DashboardRepository extends BaseRepository
 
     public function latestTorrent()
     {
-        return Torrent::query()->with(['user'])->orderBy('id', 'desc')->limit(10)->get();
+        return Torrent::query()->with(['user'])->orderBy('id', 'desc')->limit(5)->get();
     }
 
 
