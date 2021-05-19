@@ -19,4 +19,9 @@ return [
     'checkout_not_pass_message_content' => '你在规定时间内（:begin ~ :end）未完成考核：:exam_name，账号已被禁用。',
     'ban_log_reason' => '未完成考核：:exam_name(:begin ~ :end)',
     'ban_user_modcomment' => '未完成考核: :exam_name(:begin ~ :end), 被系统禁用.',
+    'admin' => [
+        'list' => [
+            'page_title' => '考核列表'
+        ]
+    ]
 ];

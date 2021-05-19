@@ -31,6 +31,9 @@ class ExamController extends Controller
     {
         $result = $this->repository->getList($request->all());
         $resource = ExamResource::collection($result);
+        $resource->additional([
+            'page_title' => nexus_trans('exam.admin.list.page_title'),
+        ]);
         return $this->success($resource);
     }
 

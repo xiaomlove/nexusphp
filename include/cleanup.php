@@ -1,5 +1,7 @@
 <?php
 # IMPORTANT: Do not edit below unless you know what you are doing!
+use Illuminate\Support\Facades\DB;
+
 if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
 
@@ -207,7 +209,11 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
             'reason' => nexus_trans($reasonKey, [], $user->locale),
         ];
     }
-    \App\Models\User::query()->whereIn('id', $uidArr)->delete();
+    $update = [
+        'enabled' => \App\Models\User::ENABLED_NO,
+        'modcomment' => DB::raw("concat_ws('\n', '[CLEANUP] $reasonKey', modcomment)"),
+    ];
+    \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
     do_log("delete user($reasonKey): " . implode(', ', $uidArr));
     return $uidArr;
