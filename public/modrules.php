@@ -38,7 +38,7 @@ elseif (isset($_GET["act"]) && $_GET["act"]=="addsect"){
 	header("Refresh: 0; url=modrules.php");
 }
 elseif (isset($_GET["act"]) && $_GET["act"] == "edit"){
-	$id = $_GET["id"];
+	$id = intval($_GET["id"]);
 	$res = @mysql_fetch_array(@sql_query("select * from rules where id='$id'"));
 	stdhead("Edit rules");
 	//print("<td valign=top style=\"padding: 10px;\" colspan=2 align=center>");

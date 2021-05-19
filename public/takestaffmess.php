@@ -15,7 +15,8 @@ if (!$msg)
 	stderr("Error","Don't leave any fields blank.");
 $updateset = $_POST['clases'];
 if (is_array($updateset)) {
-	foreach ($updateset as $class) {
+	foreach ($updateset as &$class) {
+        $class=intval($class);
 		if (!is_valid_id($class) && $class != 0)
 			stderr("Error","Invalid Class");
 	}
