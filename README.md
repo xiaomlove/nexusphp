@@ -21,8 +21,8 @@
 - Redis：可选
 
 ## 更多信息
-博客：[https://nexusphp.org/](http://nexusphp.org/)  
-文档：[https://doc.nexusphp.org/](http://doc.nexusphp.org/)  
+博客：[https://nexusphp.org](http://nexusphp.org/)  
+文档：[https://doc.nexusphp.org](http://doc.nexusphp.org/)  
 QQ群: [764452568](https://jq.qq.com/?_wv=1027&k=IbltZcIx)  
 ![扫码加入](http://demo.nexusphp.org/attachments/202105/20210508190106ed3a3620fc34ab12660586652bc74e34.png)
 
