@@ -1,9 +1,8 @@
-中文 | [en](/README-EN.md)
+中文 | [English](/README-EN.md)
 
 完整的 PT 建站解决方案。基于 NexusPHP + Laravel Framewwork + Element Plus。
 
 ## 功能特性
-
 - 发种
 - 求种
 - 字幕
@@ -21,4 +20,9 @@
 - Mysql: 5.7最新版或以上版本
 - Redis：可选
 
-更多信息请参考[文档](http://doc.nexusphp.org/)
+## 更多信息
+博客：[https://nexusphp.org/](http://nexusphp.org/)  
+文档：[https://doc.nexusphp.org/](http://doc.nexusphp.org/)  
+QQ群: [764452568](https://jq.qq.com/?_wv=1027&k=IbltZcIx)  
+![扫码加入](http://demo.nexusphp.org/attachments/202105/20210508190106ed3a3620fc34ab12660586652bc74e34.png)
+
