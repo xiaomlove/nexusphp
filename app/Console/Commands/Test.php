@@ -7,6 +7,7 @@ use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\User;
 use App\Repositories\ExamRepository;
+use App\Repositories\SearchBoxRepository;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +62,10 @@ class Test extends Command
 //        $r = $disk->put('/', base_path('composer.json'));
 //        $r = DB::table('users')->where('id', 1)->update(['modcomment' => DB::raw("concat_ws(',', 'ddddd', modcomment)")]);
 
-        $r = format_description('[em4]  [em27]');
+//        $r = format_description('[em4]  [em27]');
+
+        $rep = new SearchBoxRepository();
+        $r = $rep->initSearchBoxField(4);
         dd($r);
     }
 

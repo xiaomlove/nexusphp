@@ -15,9 +15,9 @@ return [
         'basic_team' => '制作组',
         'size' => '大小',
         'comments_label' => '评论',
-        'times_completed_label' => '完成次数',
+        'times_completed_label' => '完成',
         'peers_count_label' => '同伴',
-        'thank_users_count_label' => '说谢谢',
+        'thank_users_count_label' => '谢谢',
         'numfiles_label' => '文件',
     ]
 ];

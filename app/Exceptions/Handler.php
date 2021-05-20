@@ -76,15 +76,18 @@ class Handler extends ExceptionHandler
     protected function prepareJsonResponse($request, Throwable $e)
     {
         $data = $request->all();
-        if (config('app.debug')) {
+        $httpStatusCode = $this->getHttpStatusCode($e);
+        if ($httpStatusCode == 200) {
             $msg = $e->getMessage() ?: get_class($e);
-            $data['trace'] = $e->getTraceAsString();
         } else {
             $msg = 'Server Error';
         }
+        if (config('app.debug')) {
+            $data['trace'] = $e->getTraceAsString();
+        }
         return new JsonResponse(
             fail($msg, $data),
-            $this->getHttpStatusCode($e),
+            $httpStatusCode,
             $this->isHttpException($e) ? $e->getHeaders() : [],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
         );
