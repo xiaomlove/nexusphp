@@ -386,7 +386,7 @@ if ($action == 'view')
 	print_type_list($type);
 ?>
 <div style="margin-top: 8px">
-<?php	
+<?php
 	if (in_array($type, $validsubcattype)){
 		print_sub_category_list($type);
 	}
@@ -694,7 +694,7 @@ elseif($action == 'submit')
 		$showstandard = intval($_POST['showstandard'] ?? 0);
 		$showprocessing = intval($_POST['showprocessing'] ?? 0);
 		$showteam = intval($_POST['showteam'] ?? 0);
-		$showaudiocodec = $_POST['showaudiocodec'];
+		$showaudiocodec = intval($_POST['showaudiocodec'] ?? 0);
 		$updateset[] = "catsperrow=".sqlesc($catsperrow);
 		$updateset[] = "catpadding=".sqlesc($catpadding);
 		$updateset[] = "name=".sqlesc($name);

@@ -1,6 +1,6 @@
 中文 | [English](/README-EN.md)
 
-完整的 PT 建站解决方案。基于 NexusPHP + Laravel Framewwork + Element Plus。
+完整的 PT 建站解决方案。基于 NexusPHP + Laravel Framework + Element Plus。
 
 ## 功能特性
 - 发种
@@ -12,7 +12,7 @@
 - 多语言
 - 自动备份
 - 管理后台  
-- json api
+- Json api
 - ....
 
 ## 系统要求
