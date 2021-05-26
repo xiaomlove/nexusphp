@@ -135,7 +135,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	if(!$id)
 		die();
 		//stderr("Error", "I smell a rat!");
-	
+
 	$res = sql_query("SELECT * FROM offers WHERE id = $id") or sqlerr(__FILE__,__LINE__);
 	$num = mysql_fetch_array($res);
 
@@ -144,7 +144,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	stdhead($lang_offers['head_offer_detail_for']." \"".$s."\"");
 	print("<h1 align=\"center\" id=\"top\">".htmlspecialchars($s)."</h1>");
 
-	print("<table width=\"940\" cellspacing=\"0\" cellpadding=\"5\">");
+	print("<table width=\"97%\" cellspacing=\"0\" cellpadding=\"5\">");
 	$offertime = gettime($num['added'],true,false);
 	if ($CURUSER['timetype'] != 'timealive')
 		$offertime = $lang_offers['text_at'].$offertime;
@@ -176,7 +176,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 		tr($lang_offers['row_vote'], "<b>".
 		"<a href=\"?id=".$id."&amp;vote=yeah\"><font color=\"green\">".$lang_offers['text_for']."</font></a></b>".(get_user_class() >= $againstoffer_class ? " - <b><a href=\"?id=".$id."&amp;vote=against\">".
 		"<font color=\"red\">".$lang_offers['text_against']."</font></a></b>" : ""), 1);
-		tr($lang_offers['row_vote_results'], 
+		tr($lang_offers['row_vote_results'],
 	"<b>".$lang_offers['text_for'].":</b> $za  <b>".$lang_offers['text_against']."</b> $protiv &nbsp; &nbsp; <a href=\"?id=".$id."&amp;offer_vote=1\"><i>".$lang_offers['text_see_vote_detail']."</i></a>", 1);
 	}
 	//===upload torrent message
@@ -218,7 +218,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 		//print($commentbar);
 		print($pagertop);
 
-		commenttable($allrows,"offer",$id);		
+		commenttable($allrows,"offer",$id);
 		print($pagerbottom);
 	}
 	print("<table style='border:1px solid #000000;'><tr>".
@@ -351,9 +351,9 @@ if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 
 	stdhead($lang_offers['head_edit_offer'].": $s");
 	$title = htmlspecialchars(trim($s));
-	
+
 	print("<form id=\"compose\" method=\"post\" name=\"compose\" action=\"?id=".$id."&amp;take_off_edit=1\">".
-	"<table width=\"940\" cellspacing=\"0\" cellpadding=\"3\"><tr><td class=\"colhead\" align=\"center\" colspan=\"2\">".$lang_offers['text_edit_offer']."</td></tr>");
+	"<table width=\"97%\" cellspacing=\"0\" cellpadding=\"3\"><tr><td class=\"colhead\" align=\"center\" colspan=\"2\">".$lang_offers['text_edit_offer']."</td></tr>");
 	tr($lang_offers['row_type']."<font color=\"red\">*</font>", $s2, 1);
 	tr($lang_offers['row_title']."<font color=\"red\">*</font>", "<input type=\"text\" style=\"width: 650px\" name=\"name\" value=\"".$title."\" />", 1);
 	tr($lang_offers['row_post_or_photo'], "<input type=\"text\" name=\"picture\" style=\"width: 650px\" value='' /><br />".$lang_offers['text_link_to_picture'], 1);

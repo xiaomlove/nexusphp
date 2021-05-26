@@ -611,7 +611,7 @@ if ($action == "viewtopic")
 	//------ Print table
 
 	begin_main_frame();
-	print("<table border=\"0\" class=\"main\" cellspacing=\"0\" cellpadding=\"5\" width=\"940\"><tr>\n");
+	print("<table border=\"0\" class=\"main\" cellspacing=\"0\" cellpadding=\"5\" width=\"97%\"><tr>\n");
 	print("<td class=\"embedded\" width=\"99%\">&nbsp;&nbsp;".$lang_forums['there_is']."<b>".$views."</b>".$lang_forums['hits_on_this_topic']);
 	print("</td>\n");
 	print("<td class=\"embedded nowrap\" width=\"1%\" align=\"right\">");
@@ -1049,7 +1049,7 @@ if ($action == "viewforum")
 	}
 	if (get_user_class() < $row["minclassread"])
 		permissiondenied();
-	
+
 	$forumname = $row['name'];
 	$forummoderators = get_forum_moderators($forumid,false);
 	$search = mysql_real_escape_string(trim($_GET["search"] ?? ''));
@@ -1066,12 +1066,12 @@ if ($action == "viewforum")
 	list($pagertop, $pagerbottom, $limit) = pager($topicsperpage, $num, "?"."action=viewforum&forumid=".$forumid.$addparam."&");
 	if (isset($_GET["sort"])){
 		switch ($_GET["sort"]){
-			case 'firstpostasc': 
+			case 'firstpostasc':
 			{
 				$orderby = "firstpost ASC";
 				break;
 			}
-			case 'firstpostdesc': 
+			case 'firstpostdesc':
 			{
 				$orderby = "firstpost DESC";
 				break;
@@ -1109,7 +1109,7 @@ if ($action == "viewforum")
 	if (!$maypost)
 		print("<p><i>".$lang_forums['text_unpermitted_starting_new_topics']."</i></p>\n");
 
-	print("<table border=\"0\" class=\"main\" cellspacing=\"0\" cellpadding=\"5\" width=\"940\"><tr>\n");
+	print("<table border=\"0\" class=\"main\" cellspacing=\"0\" cellpadding=\"5\" width=\"97%\"><tr>\n");
 	print("<td class=\"embedded\" width=\"90%\">");
 	print($forummoderators ? "&nbsp;&nbsp;<img class=\"forum_mod\" src=\"pic/trans.gif\" alt=\"Moderator\" title=\"".$lang_forums['col_moderator']."\">&nbsp;".$forummoderators : "");
 	print("</td><td class=\"embedded nowrap\" width=\"1%\">");
@@ -1119,7 +1119,7 @@ if ($action == "viewforum")
 	print("</tr></table>\n");
 	if ($numtopics > 0)
 	{
-		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"940\">");
+		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"97%\">");
 
 		print("<tr><td class=\"colhead\" align=\"center\" width=\"99%\">".$lang_forums['col_topic']."</td><td class=\"colhead\" align=\"center\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$forumid.$addparam."&sort=".(isset($_GET["sort"]) && $_GET["sort"] == 'firstpostdesc' ? "firstpostasc" : "firstpostdesc"))."\" title=\"".(isset($_GET["sort"]) && $_GET["sort"] == 'firstpostdesc' ?  $lang_forums['title_order_topic_asc'] : $lang_forums['title_order_topic_desc'])."\">".$lang_forums['col_author']."</a></td><td class=\"colhead\" align=\"center\">".$lang_forums['col_replies']."/".$lang_forums['col_views']."</td><td class=\"colhead\" align=\"center\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$forumid.$addparam."&sort=".(isset($_GET["sort"]) && $_GET["sort"] == 'lastpostasc' ? "lastpostdesc" : "lastpostasc"))."\" title=\"".(isset($_GET["sort"]) && $_GET["sort"] == 'lastpostasc' ? $lang_forums['title_order_post_desc'] : $lang_forums['title_order_post_asc'])."\">".$lang_forums['col_last_post']."</a></td>\n");
 
@@ -1210,7 +1210,7 @@ if ($action == "viewforum")
 					$subject .= "&nbsp;&nbsp;<a href=\"".htmlspecialchars("?action=viewtopic&forumid=".$forumid."&topicid=".$topicid."&page=p".$lastpostread."#pid".$lastpostread)."\" title=\"".$lang_forums['title_jump_to_unread']."\"><font class=\"small new\"><b>".$lang_forums['text_new']."</b></font></a>";
 			}
 
-			
+
 			$topictime = substr($arr['added'],0,10);
 			if (strtotime($arr['added']) +  86400 > TIMENOW)
 				$topictime = "<font class=\"new small\">".$topictime."</font>";
@@ -1229,7 +1229,7 @@ if ($action == "viewforum")
 		} // while
 
 		//print("</table>\n");
-		//print("<table border=\"0\" cellspacing=\"0\" cellpadding=\"5\" width=\"940\">");
+		//print("<table border=\"0\" cellspacing=\"0\" cellpadding=\"5\" width=\"97%\">");
 		print("<tr><td align=\"left\">\n");
 		print("<form method=\"get\" action=\"forums.php\"><b>".$lang_forums['text_fast_search']."</b><input type=\"hidden\" name=\"action\" value=\"viewforum\" /><input type=\"hidden\" name=\"forumid\" value=\"".$forumid."\" /><input type=\"text\" style=\"width: 180px\" name=\"search\" />&nbsp;<input type=\"submit\" value=\"".$lang_forums['text_go']."\" /></form>");
 		print("</td>");
@@ -1360,7 +1360,7 @@ if ($action == "search")
 .search_table {
 	border-collapse: collapse;
 	border: none;
-	background-color: #ffffff; 
+	background-color: #ffffff;
 }
 
 </style>
@@ -1375,7 +1375,7 @@ if ($action == "search")
 		<td style="padding-bottom: 3px; border: 0;" valign="top"><?php echo $lang_forums['text_by_keyword'] ?></td>
 		</tr>
 		<tr>
-		<td style="padding-bottom: 3px; border: 0;" valign="top">			
+		<td style="padding-bottom: 3px; border: 0;" valign="top">
 			<input name="keywords" type="text" value="<?php echo $keywords?>" style="width: 400px;" /></td>
 			<td style="padding-bottom: 3px; border: 0;" valign="top"><input name="image" type="image" style="vertical-align: middle; padding-bottom: 0px; margin-left: 0px;" src="<?php echo get_forum_pic_folder()?>/search_button.gif" alt="Search" /></td>
 		</tr>
@@ -1393,7 +1393,7 @@ if ($action == "search")
 		$res = sql_query("SELECT posts.id, posts.topicid, posts.userid, posts.added, topics.subject, topics.hlcolor, forums.id AS forumid, forums.name AS forumname FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= ".sqlesc(get_user_class())." AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql) ORDER BY posts.id DESC $limit") or sqlerr(__FILE__, __LINE__);
 
 		print($pagertop);
-		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"940\">\n");
+		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"97%\">\n");
 		print("<tr><td class=\"colhead\" align=\"center\">".$lang_forums['col_post']."</td><td class=\"colhead\" align=\"center\" width=\"70%\">".$lang_forums['col_topic']."</td><td class=\"colhead\" align=\"left\">".$lang_forums['col_forum']."</td><td class=\"colhead\" align=\"left\">".$lang_forums['col_posted_by']."</td></tr>\n");
 
 		while ($post = mysql_fetch_array($res))

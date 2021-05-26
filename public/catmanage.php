@@ -163,7 +163,7 @@ function print_sub_category_list($type)
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id DESC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="940">
+<table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
 <td class="colhead"><?php echo $lang_catmanage['col_id']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_name']?></td>
@@ -401,7 +401,7 @@ if ($action == 'view')
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="940">
+<table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
 <td class="colhead"><?php echo $lang_catmanage['col_id']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_name']?></td>
@@ -455,7 +455,7 @@ print($pagerbottom);
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="940">
+<table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
 <td class="colhead"><?php echo $lang_catmanage['col_id']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_name']?></td>
@@ -501,7 +501,7 @@ print($pagerbottom);
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="940">
+<table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
 <td class="colhead"><?php echo $lang_catmanage['col_id']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_name']?></td>
@@ -554,7 +554,7 @@ print($pagerbottom);
         $res = sql_query("SELECT ".$dbtablename.".*, searchbox.name AS catmodename, caticons.name as icon_name FROM ".$dbtablename." LEFT JOIN searchbox ON ".$dbtablename.".mode=searchbox.id left join caticons on caticons.id = $dbtablename.icon_id ORDER BY ".$dbtablename.".mode ASC, ".$dbtablename.".id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="940">
+<table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
 <td class="colhead"><?php echo $lang_catmanage['col_id']?></td>
 <td class="colhead"><?php echo $lang_catmanage['col_mode']?></td>

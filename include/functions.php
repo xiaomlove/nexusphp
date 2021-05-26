@@ -508,7 +508,7 @@ function begin_main_frame($caption = "", $center = false, $width = 100)
 	if ($center)
 	$tdextra .= " align=\"center\"";
 
-	$width = 940 * $width /100;
+	$width = 1200 * $width /100;
 
 	print("<table class=\"main\" width=\"".$width."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" .
 	"<tr><td class=\"embedded\" $tdextra>");
@@ -2338,6 +2338,8 @@ if ($CURUSER){
 <script type="text/javascript" src="domTT.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript" src="domTT_drag.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript" src="fadomatic.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="jquery-1.12.4.min.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript">jQuery.noConflict();</script>
 </head>
 <body>
 <table class="head" cellspacing="0" cellpadding="0" align="center">
@@ -2375,7 +2377,7 @@ if ($enabledonation == 'yes'){?>
 	</tr>
 </table>
 
-<table class="mainouter" width="982" cellspacing="0" cellpadding="5" align="center">
+<table class="mainouter" width="1200" cellspacing="0" cellpadding="5" align="center">
 	<tr><td id="nav_block" class="text" align="center">
 <?php if (!$CURUSER) { ?>
 			<a href="login.php"><font class="big"><b><?php echo $lang_functions['text_login'] ?></b></font></a> / <a href="signup.php"><font class="big"><b><?php echo $lang_functions['text_signup'] ?></b></font></a>

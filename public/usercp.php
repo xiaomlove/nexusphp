@@ -161,7 +161,7 @@ if ($action){
 			}
 
 			usercpmenu ("personal");
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=940>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
 			if ($type == 'saved')
 				print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved']."</font></td></tr>\n");
 
@@ -170,7 +170,7 @@ if ($action){
 			"<input type=checkbox name=parked" . ($CURUSER["parked"] == "yes" ? " checked" : "") . " value=yes>".$lang_usercp['checkbox_pack_my_account']."<br /><font class=small size=1>".$lang_usercp['text_account_pack_note']."</font>"
 			,1);
 			tr_small($lang_usercp['row_pms'],$lang_usercp['text_accept_pms']."<input type=radio name=acceptpms" . ($CURUSER["acceptpms"] == "yes" ? " checked" : "") . " value=yes>".$lang_usercp['radio_all_except_blocks']."<input type=radio name=acceptpms" .  ($CURUSER["acceptpms"] == "friends" ? " checked" : "") . " value=friends>".$lang_usercp['radio_friends_only']."<input type=radio name=acceptpms" .  ($CURUSER["acceptpms"] == "no" ? " checked" : "") . " value=no>".$lang_usercp['radio_staff_only']."<br /><input type=checkbox name=deletepms" . ($CURUSER["deletepms"] == "yes" ? " checked" : "") . "> ".$lang_usercp['checkbox_delete_pms']."<br /><input type=checkbox name=savepms" . ($CURUSER["savepms"] == "yes" ? " checked" : "") . "> ".$lang_usercp['checkbox_save_pms']."<br /><input type=checkbox name=commentpm" . ($CURUSER["commentpm"] == "yes" ? " checked" : "") . " value=yes> ".$lang_usercp['checkbox_pm_on_comments'],1);
-			
+
 			tr_small($lang_usercp['row_gender'],
 			"<input type=radio name=gender" . ($CURUSER["gender"] == "N/A" ? " checked" : "") . " value=N/A>".$lang_usercp['radio_not_available']."
 <input type=radio name=gender" . ($CURUSER["gender"] == "Male" ? " checked" : "") . " value=Male>".$lang_usercp['radio_male']."<input type=radio name=gender" .  ($CURUSER["gender"] == "Female" ? " checked" : "") . " value=Female>".$lang_usercp['radio_female'],1);
@@ -395,7 +395,7 @@ if ($showprocessing) $processings = searchbox_item_list("processings");
 if ($showteam) $teams = searchbox_item_list("teams");
 if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 }
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=940>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
 			form ("tracker");
 			if ($type == 'saved')
 				print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved']."</font></td></tr>\n");
@@ -639,7 +639,7 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 			}
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_forum_settings'],true);
 			usercpmenu ("forum");
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=940>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
 			form ("forum");
 			if ($type == 'saved')
 			print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved']."</font></td></tr>\n");
@@ -716,7 +716,7 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 						$ssl = true;
 					else
 						$ssl = false;
-					
+
 					logincookie($CURUSER["id"], $passh ,1,0x7fffffff,$securelogin_indentity_cookie,$ssl);
 					//sessioncookie($CURUSER["id"], $passh);
 					$passupdated = 1;
@@ -794,7 +794,7 @@ EOD;
 			}
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_security_settings']);
 			usercpmenu ("security");
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=940>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
 			if ($type == 'save') {
 				print("<form method=post action=usercp.php><input type=hidden name=action value=security><input type=hidden name=type value=confirm>");
 				$resetpasskey = $_POST["resetpasskey"];
@@ -863,7 +863,7 @@ if ($forumposts)
 	$percentages = round($forumposts*100/$postcount, 3)."%";
 }
 ?>
-<table border="0" cellspacing="0" cellpadding="5" width=940>
+<table border="0" cellspacing="0" cellpadding="5" width=1200>
 <?php
 tr_small($lang_usercp['row_join_date'], $joindate, 1);
 tr_small($lang_usercp['row_email_address'], $CURUSER['email'], 1);
@@ -890,13 +890,13 @@ if ($forumposts)
 	tr($lang_usercp['row_forum_posts'], $forumposts." [<a href=\"userhistory.php?action=viewposts&id=".$CURUSER['id']."\" title=\"".$lang_usercp['link_view_posts']."\">".$lang_usercp['text_view']."</a>] (".$dayposts.$lang_usercp['text_posts_per_day']."; ".$percentages.$lang_usercp['text_of_total_posts'].")", 1);
 ?>
 </table>
-<table border="0" cellspacing="0" cellpadding="5" width=940>
+<table border="0" cellspacing="0" cellpadding="5" width=1200>
 <?php
 print("<td align=center class=tabletitle><b>".$lang_usercp['text_recently_read_topics']."</b></td>");
 ?>
 </table>
 <?php
-print("<table border=0 cellspacing=0 cellpadding=3 width=940><tr>".
+print("<table border=0 cellspacing=0 cellpadding=3 width=1200><tr>".
 "<td class=colhead align=left width=80%>".$lang_usercp['col_topic_title']."</td>".
 "<td class=colhead align=center><nobr>".$lang_usercp['col_replies']."/".$lang_usercp['col_views']."</nobr></td>".
 "<td class=colhead align=center>".$lang_usercp['col_topic_starter']."</td>".

@@ -64,7 +64,7 @@ else{
 ?>
 <div style="margin-top: 8px">
 <?php
-	print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" align=\"center\" width=\"940\"><tr>");
+	print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" align=\"center\" width=\"97%\"><tr>");
 	print("<td class=\"colhead\">".$lang_uploaders['col_username']."</td>");
 	print("<td class=\"colhead\">".$lang_uploaders['col_torrents_size']."</td>");
 	print("<td class=\"colhead\">".$lang_uploaders['col_torrents_num']."</td>");
