@@ -37,7 +37,7 @@ stdhead($lang_upload['head_upload']);
 			<?php
 			print("<p align=\"center\">".$lang_upload['text_red_star_required']."</p>");
 			?>
-			<table border="1" cellspacing="0" cellpadding="5" width="940">
+			<table border="1" cellspacing="0" cellpadding="5" width="97%">
 				<tr>
 					<td class='colhead' colspan='2' align='center'>
 						<?php echo $lang_upload['text_tracker_url'] ?>: &nbsp;&nbsp;&nbsp;&nbsp;<b><?php echo  get_protocol_prefix() . $announce_urls[0]?></b>
@@ -127,7 +127,7 @@ stdhead($lang_upload['head_upload']);
 						$processing_select = torrent_selection($lang_upload['text_processing'],"processing_sel","processings");
 					}
 					else $processing_select = "";
-				
+
 					tr($lang_upload['row_quality'], $source_select . $medium_select. $codec_select . $audiocodec_select. $standard_select . $processing_select, 1 );
 				}
 

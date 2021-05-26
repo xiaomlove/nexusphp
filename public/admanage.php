@@ -12,31 +12,31 @@ function get_position_name($position)
 	global $lang_admanage;
 	switch ($position)
 	{
-		case 'header': 
+		case 'header':
 			$name = $lang_admanage['text_header'];
 			break;
-		case 'footer': 
+		case 'footer':
 			$name = $lang_admanage['text_footer'];
 			break;
-		case 'belownav': 
+		case 'belownav':
 			$name = $lang_admanage['text_below_navigation'];
 			break;
-		case 'belowsearchbox': 
+		case 'belowsearchbox':
 			$name = $lang_admanage['text_below_searchbox'];
 			break;
-		case 'torrentdetail': 
+		case 'torrentdetail':
 			$name = $lang_admanage['text_torrent_detail'];
 			break;
-		case 'comment': 
+		case 'comment':
 			$name = $lang_admanage['text_comment_page'];
 			break;
-		case 'interoverforums': 
+		case 'interoverforums':
 			$name = $lang_admanage['text_inter_overforums'];
 			break;
-		case 'forumpost': 
+		case 'forumpost':
 			$name = $lang_admanage['text_forum_post_page'];
 			break;
-		case 'popup': 
+		case 'popup':
 			$name = $lang_admanage['text_popup'];
 			break;
 	}
@@ -47,19 +47,19 @@ function get_type_name($type)
 	global $lang_admanage;
 	switch ($type)
 	{
-		case 'bbcodes': 
+		case 'bbcodes':
 			$name = $lang_admanage['text_bbcodes'];
 			break;
-		case 'xhtml': 
+		case 'xhtml':
 			$name = $lang_admanage['text_xhtml'];
 			break;
-		case 'text': 
+		case 'text':
 			$name = $lang_admanage['text_text'];
 			break;
-		case 'image': 
+		case 'image':
 			$name = $lang_admanage['text_image'];
 			break;
-		case 'flash': 
+		case 'flash':
 			$name = $lang_admanage['text_flash'];
 			break;
 	}
@@ -71,31 +71,31 @@ function print_ad_editor($position, $row = "")
 	global $allowxhtmlclass;
 	switch ($position)
 	{
-		case 'header': 
+		case 'header':
 			$note = $lang_admanage['text_header_note'];
 			break;
-		case 'footer': 
+		case 'footer':
 			$note = $lang_admanage['text_footer_note'];
 			break;
-		case 'belownav': 
+		case 'belownav':
 			$note = $lang_admanage['text_below_navigation_note'];
 			break;
-		case 'belowsearchbox': 
+		case 'belowsearchbox':
 			$note = $lang_admanage['text_below_searchbox_note'];
 			break;
-		case 'torrentdetail': 
+		case 'torrentdetail':
 			$note = $lang_admanage['text_torrent_detail_note'];
 			break;
-		case 'comment': 
+		case 'comment':
 			$note = $lang_admanage['text_comment_page_note'];
 			break;
-		case 'interoverforums': 
+		case 'interoverforums':
 			$note = $lang_admanage['text_inter_overforums_note'];
 			break;
-		case 'forumpost': 
+		case 'forumpost':
 			$note = $lang_admanage['text_forum_post_page_note'];
 			break;
-		case 'popup': 
+		case 'popup':
 			$note = $lang_admanage['text_popup_note'];
 			break;
 	}
@@ -383,7 +383,7 @@ begin_main_frame();
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
 		$res = sql_query("SELECT * FROM advertisements ORDER BY id DESC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="940">
+<table border="1" cellspacing="0" cellpadding="5" width="<?=MAIN_WIDTH?>">
 <tr>
 <td class="colhead"><?php echo $lang_admanage['col_enabled']?></td>
 <td class="colhead"><?php echo $lang_admanage['col_name']?></td>
