@@ -148,11 +148,23 @@ else {
     tr($lang_functions['text_tags'], torrentTags($row['tags'], 'checkbox'), 1);
 	tr($lang_edit['row_check'], "<input type=\"checkbox\" name=\"visible\"" . ($row["visible"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" /> ".$lang_edit['checkbox_visible']."&nbsp;&nbsp;&nbsp;".(get_user_class() >= $beanonymous_class || get_user_class() >= $torrentmanage_class ? "<input type=\"checkbox\" name=\"anonymous\"" . ($row["anonymous"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_anonymous_note']."&nbsp;&nbsp;&nbsp;" : "").(get_user_class() >= $torrentmanage_class ? "<input type=\"checkbox\" name=\"banned\"" . (($row["banned"] == "yes") ? " checked=\"checked\"" : "" ) . " value=\"yes\" /> ".$lang_edit['checkbox_banned'] : ""), 1);
 	if (get_user_class()>= $torrentsticky_class || (get_user_class() >= $torrentmanage_class && $CURUSER["picker"] == 'yes')){
-		$pickcontent = "";
-	
+		$pickcontent = $pickcontentPrefix =  "";
+
+        if(get_user_class() >= $torrentonpromotion_class)
+        {
+            $pickcontent .= "<b>".$lang_edit['row_special_torrent'].":&nbsp;</b>"."<select name=\"sel_spstate\" style=\"width: 100px;\">" .promotion_selection($row["sp_state"], 0). "</select>&nbsp;&nbsp;&nbsp;".'<select name="promotion_time_type" onchange="if (this.value == \'2\') {document.getElementById(\'promotion_until_note\').style.display = \'\';} else {document.getElementById(\'promotion_until_note\').style.display = \'none\';}"><option value="0"'.($row['promotion_time_type'] == 0 ? ' selected="selected"' : '').'>'.$lang_edit['select_use_global_setting'].'</option><option value="1"'.($row['promotion_time_type'] == 1 ? ' selected="selected"' : '').'>'.$lang_edit['select_forever'].'</option><option value="2"'.($row['promotion_time_type'] == 2 ? ' selected="selected"' : '').'>'.$lang_edit['select_until'].'</option></select><span id="promotion_until_note"'.($row['promotion_time_type'] == 2 ? '' : ' style="display: none;"').'>';
+            $pickcontent .= '<input type="text" id="promotionuntiltime" name="promotionuntil" style="width: 120px;" value="'.($row['promotion_until'] > $row['added'] ? $row['promotion_until'] : '').'" />';
+            $pickcontent .= '&nbsp;('.$lang_edit['text_ie_for'].'<select name="promotionaddedtime" onchange="document.getElementById(\'promotionuntiltime\').value=this.value;"><option value="'.($row['promotion_until'] > $row['added'] ? $row['promotion_until'] : '').'">'.$lang_edit['text_keep_current'].'</option>';
+            foreach (array(900, 1800, 3600, 5400, 7200, 14400, 21600, 28800, 43200, 64800, 86400, 129600, 259200, 604800, 1296000, 2592000, 7776000, 15552000, 31104000) as $seconds) {
+                $pickcontent .= getAddedTimeOption(strtotime($row['added']), $seconds);
+            }
+            $pickcontent .= '</select>)&nbsp;'.$lang_edit['text_promotion_until_note'].'</span>&nbsp;&nbsp;';
+        }
 		if(get_user_class()>=$torrentsticky_class)
 		{
-			$pickcontent .= "<b>".$lang_edit['row_special_torrent'].":&nbsp;</b>"."<select name=\"sel_spstate\" style=\"width: 100px;\">" .promotion_selection($row["sp_state"], 0). "</select>&nbsp;&nbsp;&nbsp;";
+            if ($pickcontent) {
+                $pickcontent .= "<br />";
+            }
 			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"sel_posstate\" style=\"width: 100px;\">" .
 			"<option" . (($row["pos_state"] == "normal") ? " selected=\"selected\"" : "" ) . " value=\"0\">".$lang_edit['select_normal']."</option>" .
 			"<option" . (($row["pos_state"] == "sticky") ? " selected=\"selected\"" : "" ) . " value=\"1\">".$lang_edit['select_sticky']."</option>" .
@@ -160,6 +172,7 @@ else {
 		}
 		if(get_user_class()>=$torrentmanage_class && $CURUSER["picker"] == 'yes')
 		{
+            if ($pickcontent) $pickcontent .= '<br />';
 			$pickcontent .= "<b>".$lang_edit['row_recommended_movie'].":&nbsp;</b>"."<select name=\"sel_recmovie\" style=\"width: 100px;\">" .
 			"<option" . (($row["picktype"] == "normal") ? " selected=\"selected\"" : "" ) . " value=\"0\">".$lang_edit['select_normal']."</option>" .
 			"<option" . (($row["picktype"] == "hot") ? " selected=\"selected\"" : "" ) . " value=\"1\">".$lang_edit['select_hot']."</option>" .
@@ -188,5 +201,66 @@ else {
 	print("<tr><td class=\"toolbox\" colspan=\"2\" align=\"center\"><input type=\"submit\" style='height: 25px' value=\"".$lang_edit['submit_delete_it']."\" /></td></tr>\n");
 	print("</table>");
 	print("</form>\n");
+    $json_sticky_series = json_encode(array(4, 6, 12, 24, 36, 48, 72, 168, 360));
+    echo <<<EOT
+<script>
+jQuery(function($){
+	var date_format = function (date) {
+		var seperator1 = "-";
+		var seperator2 = ":";
+		var month = date.getMonth() + 1;
+		var strDate = date.getDate();
+		var strHour = date.getHours();
+		var strMinute = date.getMinutes();
+		var strSecond = date.getSeconds();
+		if (month >= 1 && month <= 9) {
+			month = "0" + month;
+		}
+		if (strDate >= 0 && strDate <= 9) {
+			strDate = "0" + strDate;
+		}
+		if (strHour >= 0 && strHour <= 9) strHour = "0" + strHour;
+		if (strMinute >= 0 && strMinute <= 9) strMinute = "0" + strMinute;
+		if (strSecond >= 0 && strSecond <= 9) strSecond = "0" + strSecond;
+		return date.getFullYear() + seperator1 + month + seperator1 + strDate
+				+ " " + strHour + seperator2 + strMinute
+				+ seperator2 + strSecond;
+	}
+	var pos_until_select = $("#pos_until_select");
+	var pos_until = $("#pos_until");
+	$("#pos_group").change(function(){
+		if($(this).val() == 0){
+			pos_until.hide();
+			pos_until_select.hide();
+		}else{
+			pos_until.show();
+			pos_until_select.show();
+		}
+	}).change();
+	var series = $json_sticky_series;
+	series.forEach(function(elem){
+		var label = elem >= 72 ? parseInt(parseInt(elem) / 24) + "{$lang_functions['text_day']}" : elem + "{$lang_functions['text_hour']}";
+		pos_until_select.append('<option value="' + elem + '">' + label + '</option>');
+	});
+	pos_until_select.change(function(){
+		var value = $(this).val();
+		if(value == -1){
+			pos_until.val("0000-00-00 00:00:00").attr("readonly", true);
+		}else if(value == 0){
+			pos_until.attr("readonly", false);
+		}else if(value > 0){
+			var curr = pos_until.val();
+			var d = new Date(Date.now() + 3600000 * value);
+			pos_until.attr("readonly", true).val(date_format(d));
+		}
+	}).change();
+});
+</script>
+EOT;
 }
 stdfoot();
+function getAddedTimeOption($timeStamp, $addSeconds) {
+    $timeStamp += $addSeconds;
+    $timeString = date("Y-m-d H:i:s", $timeStamp);
+    return '<option value="'.$timeString.'">'.mkprettytime($addSeconds).'</option>';
+}

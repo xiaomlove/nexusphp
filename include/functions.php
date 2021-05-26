@@ -2338,6 +2338,8 @@ if ($CURUSER){
 <script type="text/javascript" src="domTT.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript" src="domTT_drag.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript" src="fadomatic.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="jquery-1.12.4.min.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript">jQuery.noConflict();</script>
 </head>
 <body>
 <table class="head" cellspacing="0" cellpadding="0" align="center">
