@@ -64,8 +64,11 @@ class Test extends Command
 
 //        $r = format_description('[em4]  [em27]');
 
-        $rep = new SearchBoxRepository();
-        $r = $rep->initSearchBoxField(4);
+//        $rep = new SearchBoxRepository();
+//        $r = $rep->initSearchBoxField(4);
+        $imdb = new \Nexus\Imdb\Imdb();
+        $imdb_id = 5768840;
+        $r = $imdb->getMovie($imdb_id)->photo(true);
         dd($r);
     }
 

@@ -62,20 +62,20 @@ class SearchBoxRepository extends BaseRepository
     public function initSearchBoxField($id)
     {
         $searchBox = SearchBox::query()->findOrFail($id);
+        $logPrefix = "searchBox: $id";
+        $result = $searchBox->normal_fields()->delete();
+        do_log("$logPrefix, remove all normal fields: $result");
         foreach (SearchBoxField::$fieldTypes as $fieldType => $info) {
             if ($fieldType == SearchBoxField::FIELD_TYPE_CUSTOM) {
                 continue;
             }
             $name = str_replace('_', '', "show{$fieldType}");
-            $log = "name: $name, fieldType: $fieldType";
-            $searchBox->normal_fields()->where('field_type', $fieldType)->delete();
+            $log = "$logPrefix, name: $name, fieldType: $fieldType";
             if ($searchBox->{$name}) {
                 $searchBox->normal_fields()->create([
                     'field_type' => $fieldType,
                 ]);
                 do_log("$log, create.");
-            } else {
-                do_log("$log, delete.");
             }
         }
     }

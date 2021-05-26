@@ -21,3 +21,5 @@ docker-compose.override.yml
 Homestead.json
 Homestead.yaml
 yarn-error.log
+/imdb/cache
+/imdb/images
