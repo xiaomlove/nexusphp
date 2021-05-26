@@ -20,7 +20,7 @@ $res = sql_query("SELECT * FROM users WHERE users.support='yes' AND users.status
 while ($arr = mysql_fetch_assoc($res))
 {
 	$countryrow = get_country_row($arr['country']);
-	$ppl .= "<tr><td class=embedded>". get_username($arr['id']) ."</td><td class=embedded><img width=24 height=15 src=\"pic/flag/".$countryrow[flagpic]."\" title=\"".$countryrow['name']."\" style=\"padding-bottom:1px;\"></td>
+	$ppl .= "<tr><td class=embedded>". get_username($arr['id']) ."</td><td class=embedded><img width=24 height=15 src=\"pic/flag/".$countryrow['flagpic']."\" title=\"".$countryrow['name']."\" style=\"padding-bottom:1px;\"></td>
  <td class=embedded> ".(strtotime($arr['last_access']) > $dt ? $onlineimg : $offlineimg)."</td>".
  "<td class=embedded><a href=sendmessage.php?receiver=".$arr['id']." title=\"".$lang_staff['title_send_pm']."\">".$sendpmimg."</a></td>".
  "<td class=embedded>".$arr['supportlang']."</td>".
@@ -142,7 +142,7 @@ while ($arr = mysql_fetch_assoc($res))
 		if ($ppl != "")
 			$ppl .= "<tr height=15><td class=embedded colspan=5 align=right>&nbsp;</td></tr>";
 		$ppl .= "<tr height=15><td class=embedded colspan=5 align=right>" . get_user_class_name($arr["class"],false,true,true) . "</td></tr>";
-		$ppl .= "<tr>" . 
+		$ppl .= "<tr>" .
 		"<td class=embedded><b>" . $lang_staff['text_username'] . "</b></td>".
 		"<td class=embedded align=center><b>" . $lang_staff['text_country'] . "</b></td>".
 		"<td class=embedded align=center><b>" . $lang_staff['text_online_or_offline'] . "</b></td>".
