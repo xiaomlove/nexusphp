@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
+use App\Models\SearchBox;
 use App\Models\User;
 use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
@@ -66,10 +67,12 @@ class Test extends Command
 
 //        $rep = new SearchBoxRepository();
 //        $r = $rep->initSearchBoxField(4);
-        $imdb = new \Nexus\Imdb\Imdb();
-        $imdb_id = 5768840;
-        $r = $imdb->getMovie($imdb_id)->photo(true);
-        dd($r);
+//        $imdb = new \Nexus\Imdb\Imdb();
+//        $imdb_id = 5768840;
+//        $r = $imdb->getMovie($imdb_id)->photo(true);
+
+        $searchbox = (new SearchBoxRepository())->listIcon(4);
+        dd($searchbox);
     }
 
 }

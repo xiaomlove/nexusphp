@@ -22,7 +22,4 @@ class SearchBox extends NexusModel
         return $this->hasMany(SearchBoxField::class, 'searchbox_id');
     }
 
-
-
-
 }

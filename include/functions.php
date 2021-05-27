@@ -2254,6 +2254,7 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	global $tstart;
 	global $Cache;
 	global $Advertisement;
+	global $browsecatmode;
 
 	$Cache->setLanguage($CURLANGDIR);
 
@@ -2322,10 +2323,13 @@ $cssupdatedate=($cssupdatedate ? "?".htmlspecialchars($cssupdatedate) : "");
 <link rel="stylesheet" href="styles/curtain_imageresizer.css<?php echo $cssupdatedate?>" type="text/css" />
 <?php
 if ($CURUSER){
-	$caticonrow = get_category_icon_row($CURUSER['caticon']);
-	if($caticonrow['cssfile']){
+//	$caticonrow = get_category_icon_row($CURUSER['caticon']);
+//	if($caticonrow['cssfile']){
+
+    $icons = (new \App\Repositories\SearchBoxRepository())->listIcon($browsecatmode);
+    foreach ($icons as $icon) {
 ?>
-<link rel="stylesheet" href="<?php echo htmlspecialchars($caticonrow['cssfile']).$cssupdatedate?>" type="text/css" />
+<link rel="stylesheet" href="<?php echo htmlspecialchars(trim($icon['cssfile'], '/')).$cssupdatedate?>" type="text/css" />
 <?php
 	}
 }

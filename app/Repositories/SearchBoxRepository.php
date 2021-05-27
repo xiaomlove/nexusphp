@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Icon;
 use App\Models\NexusModel;
 use App\Models\SearchBox;
 use App\Models\SearchBoxField;
@@ -78,6 +79,13 @@ class SearchBoxRepository extends BaseRepository
                 do_log("$log, create.");
             }
         }
+    }
+
+    public function listIcon($id)
+    {
+        $searchBox = SearchBox::query()->findOrFail($id);
+        $iconIdArr = $searchBox->categories->pluck('icon_id')->unique();
+        return Icon::query()->find($iconIdArr);
     }
 
 
