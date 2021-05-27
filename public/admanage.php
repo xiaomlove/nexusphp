@@ -383,7 +383,7 @@ begin_main_frame();
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
 		$res = sql_query("SELECT * FROM advertisements ORDER BY id DESC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
-<table border="1" cellspacing="0" cellpadding="5" width="<?=MAIN_WIDTH?>">
+<table border="1" cellspacing="0" cellpadding="5" width="1200">
 <tr>
 <td class="colhead"><?php echo $lang_admanage['col_enabled']?></td>
 <td class="colhead"><?php echo $lang_admanage['col_name']?></td>

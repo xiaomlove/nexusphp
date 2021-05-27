@@ -97,19 +97,24 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 	if ($down_floor_gb){
 		$limit = $down_floor_gb*1024*1024*1024;
 		$maxdt = date("Y-m-d H:i:s",(TIMENOW - 86400*7*$time_week));
-		$res = sql_query("SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt)) or sqlerr(__FILE__, __LINE__);
-		if (mysql_num_rows($res) > 0)
+		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt);
+		$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
+		$matchUserCount = mysql_num_rows($res);
+        do_log("sql: $sql, match user count: $matchUserCount");
+		if ($matchUserCount > 0)
 		{
 			$dt = sqlesc(date("Y-m-d H:i:s"));
 			while ($arr = mysql_fetch_assoc($res))
 			{
 				$subject = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_promoted_to'].get_user_class_name($class,false,false,false));
 				$msg = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_now_you_are'].get_user_class_name($class,false,false,false).$lang_cleanup_target[get_user_lang($arr['id'])]['msg_see_faq']);
-				if($class<=$arr[max_class_once])
-					sql_query("UPDATE users SET class = $class WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-				else
-					sql_query("UPDATE users SET class = $class, max_class_once=$class, invites=invites+$addinvite WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-
+				if($class <= $arr['max_class_once']) {
+                    do_log(sprintf('user: %s upgrade to class: %s', $arr['id'], $class));
+                    sql_query("UPDATE users SET class = $class WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
+                } else {
+                    do_log(sprintf('user: %s upgrade to class: %s, and add invites: %s', $arr['id'], $class, $addinvite));
+                    sql_query("UPDATE users SET class = $class, max_class_once=$class, invites=invites+$addinvite WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
+                }
 				sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['id']}, $dt, $subject, $msg)") or sqlerr(__FILE__, __LINE__);
 			}
 		}
