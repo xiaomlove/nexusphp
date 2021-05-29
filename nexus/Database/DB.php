@@ -2,6 +2,8 @@
 
 namespace Nexus\Database;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class DB
 {
     private $driver;
@@ -207,6 +209,21 @@ class DB
             $result[] = $row;
         }
         return $result;
+    }
+
+    public static function bootEloquent(array $config)
+    {
+        $capsule = new Capsule;
+        $connectionName = self::ELOQUENT_CONNECTION_NAME;
+        $capsule->addConnection($config, $connectionName);
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
+        $capsule->getConnection($connectionName)->enableQueryLog();
+    }
+
+    public static function schema(): \Illuminate\Database\Schema\Builder
+    {
+        return Capsule::schema(self::ELOQUENT_CONNECTION_NAME);
     }
 
 }

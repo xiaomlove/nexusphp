@@ -2,6 +2,8 @@
 
 namespace Nexus\Install;
 
+use App\Models\Category;
+use App\Models\Icon;
 use Nexus\Database\DB;
 
 class Update extends Install
@@ -61,6 +63,12 @@ class Update extends Install
             ];
             $id = DB::insert($table, $insert);
             $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
+        }
+        if (WITH_LARAVEL && DB::schema()->hasColumn('categories', 'icon_id')) {
+            $icon = Icon::query()->orderBy('id', 'asc')->first();
+            if ($icon) {
+                Category::query()->where('icon_id', 0)->update(['icon_id' => $icon->id]);
+            }
         }
     }
 

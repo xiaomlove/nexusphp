@@ -214,7 +214,7 @@ if ($currentStep == 5) {
           </div>
       </div>
       <div class="m-10 text-center">
-          欢迎使用 NexusPHP 安装程序，如有疑问，点击<a href="http://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取帮助。
+          欢迎使用 NexusPHP 安装程序，如有疑问，点击<a href="https://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取帮助。
       </div>
   </body>
 <script>

@@ -3,10 +3,16 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 $rootpath = dirname(dirname(__DIR__)) . '/';
 define('ROOT_PATH', $rootpath);
-define('IN_NEXUS', true);
 $isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
 require $rootpath . 'vendor/autoload.php';
 require $rootpath . 'nexus/Database/helpers.php';
+require $rootpath . 'include/constants.php';
+$withLaravel = false;
+if (file_exists($rootpath . '.env')) {
+    require $rootpath . 'include/eloquent.php';
+    $withLaravel = true;
+}
+define('WITH_LARAVEL', $withLaravel);
 
 $update = new \Nexus\Install\Update();
 $currentStep = $update->currentStep();
@@ -250,7 +256,7 @@ if ($currentStep == 4) {
     </div>
 </div>
 <div class="m-10 text-center">
-    欢迎使用 NexusPHP 升级程序(v1.5 ~ v1.6)，如有疑问，点击<a href="http://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取帮助。
+    欢迎使用 NexusPHP 升级程序，如有疑问，点击<a href="https://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取帮助。
 </div>
 </body>
 <script>
