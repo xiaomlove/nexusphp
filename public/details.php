@@ -11,7 +11,17 @@ int_check($id);
 if (!isset($id) || !$id)
 die();
 
-$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info, categories.name AS cat_name, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name FROM torrents LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN sources ON torrents.source = sources.id LEFT JOIN media ON torrents.medium = media.id LEFT JOIN codecs ON torrents.codec = codecs.id LEFT JOIN standards ON torrents.standard = standards.id LEFT JOIN processings ON torrents.processing = processings.id LEFT JOIN teams ON torrents.team = teams.id LEFT JOIN audiocodecs ON torrents.audiocodec = audiocodecs.id WHERE torrents.id = $id LIMIT 1")
+$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info,
+       categories.name AS cat_name, categories.mode as search_box_id, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name
+FROM torrents LEFT JOIN categories ON torrents.category = categories.id
+    LEFT JOIN sources ON torrents.source = sources.id
+    LEFT JOIN media ON torrents.medium = media.id
+    LEFT JOIN codecs ON torrents.codec = codecs.id
+    LEFT JOIN standards ON torrents.standard = standards.id
+    LEFT JOIN processings ON torrents.processing = processings.id
+    LEFT JOIN teams ON torrents.team = teams.id
+    LEFT JOIN audiocodecs ON torrents.audiocodec = audiocodecs.id
+WHERE torrents.id = $id LIMIT 1")
 or sqlerr();
 $row = mysql_fetch_array($res);
 if (get_user_class() >= $torrentmanage_class || $CURUSER["id"] == $row["owner"])
@@ -20,11 +30,14 @@ else $owned = 0;
 
 $settingMain = get_setting('main');
 
-if (!$row)
-	stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
-elseif ($row['banned'] == 'yes' && get_user_class() < $seebanned_class)
-	permissiondenied();
-else {
+if (!$row) {
+    stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
+} elseif (
+    ($row['banned'] == 'yes' && get_user_class() < $seebanned_class)
+    || !can_access_torrent($row)
+) {
+    permissiondenied();
+} else {
     $torrentUpdate = [];
 	if (!empty($_GET["hit"])) {
         $torrentUpdate[] = 'views = views + 1';
@@ -114,6 +127,7 @@ else {
 		else $download = "";
 
 		tr($lang_details['row_action'], $download. ($owned == 1 ? "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_details['text_edit_torrent'] . "</font></b></a>&nbsp;|&nbsp;" : "").  (get_user_class() >= $askreseed_class && $row['seeders'] == 0 ? "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>&nbsp;|&nbsp;" : "") . "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>", 1);
+        tr($lang_details['torrent_dl_url'],sprintf('<b title="%s">%s/download.php?id=%u&passkey=%s</b>',$lang_details['torrent_dl_url_notice'], getSchemeAndHttpHost(),$id,$CURUSER['passkey']), 1);
 
 		// ---------------- start subtitle block -------------------//
 		$r = sql_query("SELECT subs.*, language.flagpic, language.lang_name FROM subs LEFT JOIN language ON subs.lang_id=language.id WHERE torrent_id = " . sqlesc($row["id"]). " ORDER BY subs.lang_id ASC") or sqlerr(__FILE__, __LINE__);

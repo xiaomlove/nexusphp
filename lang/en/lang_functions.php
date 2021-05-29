@@ -212,6 +212,7 @@ $lang_functions = array
 	'text_ip_range' => "IP&nbsp;Range",
 	'text_min' => " min",
 	'text_music' => "Music",
+    'text_special' => "Special",
 	'title_reply_with_quote' => "Quote",
 	'title_add_reply' => "Add&nbsp;Reply",
 	'title_delete' => "Delete",

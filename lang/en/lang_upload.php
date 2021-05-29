@@ -31,7 +31,7 @@ $lang_upload = array
 	'text_read_rules' => "I read the rules before this uploading.",
 	'submit_upload' => "Upload",
 	'text_to_browse_section' => "Upload to <b>Torrents</b> section ",
-	'text_to_special_section' => "or <b>Music</b> section ",
+	'text_to_special_section' => "or <b>Special</b> section ",
 	'text_type_note' => "&nbsp;&nbsp; <font class=\"small\">Choose <b>only</b> either of the two</font>",
 	'text_medium' => "Medium:",
 	'text_team' => "Group:",

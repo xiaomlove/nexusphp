@@ -212,6 +212,7 @@ $lang_functions = array
 	'text_ip_range' => "IP範圍",
 	'text_min' => "分鐘",
 	'text_music' => "&nbsp;音&nbsp;&nbsp;樂&nbsp;",
+    'text_special' => "&nbsp;特&nbsp;&nbsp;别&nbsp;",
 	'title_reply_with_quote' => "引用",
 	'title_add_reply' => "回復",
 	'title_delete' => "刪除",

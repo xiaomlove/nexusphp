@@ -2117,8 +2117,8 @@ function menu ($selected = "home") {
 		$selected = "forums";
 	}elseif (preg_match("/torrents/i", $script_name)) {
 		$selected = "torrents";
-	}elseif (preg_match("/music/i", $script_name)) {
-		$selected = "music";
+	}elseif (preg_match("/special/i", $script_name)) {
+		$selected = "special";
 	}elseif (preg_match("/offers/i", $script_name) OR preg_match("/offcomment/i", $script_name)) {
 		$selected = "offers";
     }elseif (preg_match("/requests/i", $script_name)) {
@@ -2149,7 +2149,7 @@ function menu ($selected = "home") {
 	print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"" . $extforumurl."\" target=\"_blank\">".$lang_functions['text_forums']."</a></li>");
 	print ("<li" . ($selected == "torrents" ? " class=\"selected\"" : "") . "><a href=\"torrents.php\">".$lang_functions['text_torrents']."</a></li>");
 	if ($enablespecial == 'yes')
-	print ("<li" . ($selected == "music" ? " class=\"selected\"" : "") . "><a href=\"music.php\">".$lang_functions['text_music']."</a></li>");
+	print ("<li" . ($selected == "special" ? " class=\"selected\"" : "") . "><a href=\"special.php\">".$lang_functions['text_special']."</a></li>");
 	if ($enableoffer == 'yes')
 	print ("<li" . ($selected == "offers" ? " class=\"selected\"" : "") . "><a href=\"offers.php\">".$lang_functions['text_offers']."</a></li>");
 	if ($enablerequest == 'yes')
@@ -2225,9 +2225,14 @@ function get_cat_folder($cat = 101)
          * use setting, not user's caticon, that filed make no sense!
          */
 		$caticonrow = get_category_icon_row($catrow['icon_id'] ?: 1);
-		$catPath[$cat] = "category/".$catmode."/".$caticonrow['folder'] . ($caticonrow['multilang'] == 'yes' ? $CURLANGDIR."/" : "");
+		$path = sprintf('category/%s/%s', trim($catmode, '/'), trim($caticonrow['folder'], '/'));
+		if ($caticonrow['multilang'] == 'yes') {
+		    $path .= '/' . trim($CURLANGDIR, '/');
+        }
+		do_log("cat: $cat, path: $path");
+        $catPath[$cat] = $path;
 	}
-	return trim($catPath[$cat] ?? '', '/');
+	return $catPath[$cat] ?? '';
 }
 
 function get_style_highlight()
@@ -2254,7 +2259,6 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	global $tstart;
 	global $Cache;
 	global $Advertisement;
-	global $browsecatmode;
 
 	$Cache->setLanguage($CURLANGDIR);
 
@@ -2325,13 +2329,15 @@ $cssupdatedate=($cssupdatedate ? "?".htmlspecialchars($cssupdatedate) : "");
 if ($CURUSER){
 //	$caticonrow = get_category_icon_row($CURUSER['caticon']);
 //	if($caticonrow['cssfile']){
+    $requireSearchBoxIdAr = list_require_search_box_id();
+    if (!empty($requireSearchBoxIdAr)) {
+        $icons = (new \App\Repositories\SearchBoxRepository())->listIcon($requireSearchBoxIdAr);
+        foreach ($icons as $icon) {
 
-    $icons = (new \App\Repositories\SearchBoxRepository())->listIcon($browsecatmode);
-    foreach ($icons as $icon) {
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars(trim($icon['cssfile'], '/')).$cssupdatedate?>" type="text/css" />
 <?php
-	}
+	}}
 }
 ?>
 <link rel="alternate" type="application/rss+xml" title="Latest Torrents" href="torrentrss.php" />
@@ -4951,6 +4957,40 @@ function get_share_ratio($uploaded, $downloaded)
         $ratio = '---';
     }
     return $ratio;
+}
+
+function list_require_search_box_id()
+{
+    $setting = get_setting('main');
+    $maps = [
+        'torrents' => [$setting['browsecat']],
+        'special' => [$setting['specialcat']],
+        'usercp' => [$setting['browsecat'], $setting['specialcat']],
+        'getrss' => [$setting['browsecat'], $setting['specialcat']],
+    ];
+    return $maps[CURRENT_SCRIPT] ?? [];
+}
+
+function can_access_torrent($torrent)
+{
+    global $specialcatmode;
+    if (get_setting('main.spsct') != 'yes') {
+        return true;
+    }
+    if (is_array($torrent) && isset($torrent['search_box_id'])) {
+        $searchBoxId = $torrent['search_box_id'];
+    } elseif (is_numeric($torrent)) {
+        $searchBoxId = \App\Models\Torrent::query()->findOrFail(intval($torrent), ['id', 'category'])->basic_category->mode;
+    } else {
+        throw new \InvalidArgumentException("Unsupported argument: " . json_encode($torrent));
+    }
+    if ($searchBoxId != $specialcatmode) {
+        return true;
+    }
+    if (get_user_class() >= get_setting('authority.view_special_torrent')) {
+        return true;
+    }
+    return false;
 }
 
 ?>

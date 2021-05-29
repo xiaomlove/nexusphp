@@ -428,7 +428,8 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 					if ($i && $numinrow == 0){
 						$categories .= "</tr>".($spenablecatrow ? "<tr><td class=embedded align=left><b>".$spcatrow[$rownum]."</b></td></tr>" : "")."<tr>";
 					}
-					$categories .= "<td align=left class=bottom style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input class=checkbox name=cat".$cat['id']." type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat['id']."]") !== false ? " checked" : "")." value='yes'><img src=pic/" .get_cat_folder($cat['id']). htmlspecialchars($cat[image]) . " border='0' alt=\"" .$cat['name']."\" title=\"" .$cat['name']."\"></td>\n";
+//					$categories .= "<td align=left class=bottom style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input class=checkbox name=cat".$cat['id']." type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat['id']."]") !== false ? " checked" : "")." value='yes'><img src=pic/" .get_cat_folder($cat['id']). '/'. htmlspecialchars($cat['image']) . " border='0' alt=\"" .$cat['name']."\" title=\"" .$cat['name']."\"></td>\n";
+					$categories .= "<td align=left class=bottom style=\"padding-bottom: 4px;padding-left: ".$catpadding."px\"><input class=checkbox name=cat".$cat['id']." type=\"checkbox\" " . (strpos($CURUSER['notifs'], "[cat".$cat['id']."]") !== false ? " checked" : "")." value='yes'>" . return_category_image($cat['id'], "special.php?allsec=1&amp;") . "</td>\n";
 					$i++;
 				}
 			$categories .= "</tr>";

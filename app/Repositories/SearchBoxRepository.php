@@ -6,6 +6,7 @@ use App\Models\Icon;
 use App\Models\NexusModel;
 use App\Models\SearchBox;
 use App\Models\SearchBoxField;
+use Illuminate\Support\Arr;
 
 class SearchBoxRepository extends BaseRepository
 {
@@ -81,11 +82,22 @@ class SearchBoxRepository extends BaseRepository
         }
     }
 
-    public function listIcon($id)
+    public function listIcon(array $idArr)
     {
-        $searchBox = SearchBox::query()->findOrFail($id);
-        $iconIdArr = $searchBox->categories->pluck('icon_id')->unique();
-        return Icon::query()->find($iconIdArr);
+        $searchBoxList = SearchBox::query()->with('categories')->find($idArr);
+        if ($searchBoxList->isEmpty()) {
+            return $searchBoxList;
+        }
+        $iconIdArr = [];
+        foreach ($searchBoxList as $value) {
+            foreach ($value->categories as $category) {
+                $iconId = $category->icon_id;
+                if (!isset($iconIdArr[$iconId])) {
+                    $iconIdArr[$iconId] = $iconId;
+                }
+            }
+        }
+        return Icon::query()->find(array_keys($iconIdArr));
     }
 
 

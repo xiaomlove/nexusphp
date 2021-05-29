@@ -218,6 +218,18 @@ $lang_details = array
 	'row_uploader_bandwidth' => "Uploader<br />Bandwidth",
 	'text_and_more' => " and more (thanks from ",
 	'text_users_in_total' => " users in total)",
+    'torrent_dl_url' => "Torrent URL",
+    'torrent_dl_url_notice' => "You can copy it to your BT Client. Take care since it contains your passkey.",
+    'span_description_have_given' =>'You have given the magic of the value',
+    'text_no_magic_added' => "No magic value of the award",
+    'magic_value_number' => "Number Magic  point value has been presented",
+    'magic_value_award' => "Magic value of awards",
+    'magic_newest_record' =>'Here only the latest record. ',
+    'magic_sum_user_give_number' => 'Number Member gave the magic award totally',
+    'magic_show_all_description' => 'View details of a single',
+    'magic_haveGotBonus' => 'Publisher now has been got Number Bonus of award.',
+    'magic_have_no_enough_bonus_value' => 'more points needed',
+
 );
 
 ?>

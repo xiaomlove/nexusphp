@@ -187,7 +187,7 @@ elseif ($action == 'savesettings_security') 	// save security
 elseif ($action == 'savesettings_authority') 	// save user authority
 {
 	stdhead($lang_settings['head_save_authority_settings']);
-	$validConfig = array('defaultclass','staffmem','newsmanage','newfunitem','funmanage','sbmanage','pollmanage','applylink', 'linkmanage', 'postmanage','commanage','forummanage','viewuserlist','torrentmanage','torrentsticky', 'torrentonpromotion', 'askreseed', 'viewnfo', 'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage','uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar');
+	$validConfig = array('defaultclass','staffmem','newsmanage','newfunitem','funmanage','sbmanage','pollmanage','applylink', 'linkmanage', 'postmanage','commanage','forummanage','viewuserlist','torrentmanage','torrentsticky', 'torrentonpromotion', 'askreseed', 'viewnfo', 'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage','uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial','view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar');
 	GetVar($validConfig);
 	$AUTHORITY = [];
 	foreach($validConfig as $config) {
@@ -404,9 +404,8 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_add_offer'], $lang_settings['text_minimum_class'].classlist('addoffer',$maxclass,$AUTHORITY['addoffer']).$lang_settings['text_default'].get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_add_offer_note'], 1);
 	tr($lang_settings['row_offer_management'], $lang_settings['text_minimum_class'].classlist('offermanage',$maxclass,$AUTHORITY['offermanage']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_offer_management_note'],1);
 	tr($lang_settings['row_upload_torrent'], $lang_settings['text_minimum_class'].classlist('upload',$maxclass,$AUTHORITY['upload']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_upload_torrent_note'], 1);
-//	if (THISTRACKER == "HDStar")
 	tr($lang_settings['row_upload_special_torrent'], $lang_settings['text_minimum_class'].classlist('uploadspecial',$maxclass,$AUTHORITY['uploadspecial']).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).$lang_settings['text_upload_special_torrent_note'],1);
-//	if (THISTRACKER == "HDStar")
+	tr($lang_settings['row_view_special_torrent'], $lang_settings['text_minimum_class'].classlist('view_special_torrent',$maxclass,$AUTHORITY['view_special_torrent']).$lang_settings['text_default'].get_user_class_name(UC_CRAZY_USER,false,true,true).$lang_settings['text_view_special_torrent_note'],1);
 	tr($lang_settings['row_move_torrent'], $lang_settings['text_minimum_class'].classlist('movetorrent',$maxclass,$AUTHORITY['movetorrent']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_move_torrent_note'],1);
 	tr($lang_settings['row_chronicle_management'], $lang_settings['text_minimum_class'].classlist('chrmanage',$maxclass,$AUTHORITY['chrmanage']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_chronicle_management_note'],1);
 	tr($lang_settings['row_view_invite'], $lang_settings['text_minimum_class'].classlist('viewinvite',$maxclass,$AUTHORITY['viewinvite']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_view_invite_note'],1);

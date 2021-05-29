@@ -64,6 +64,7 @@ function getip() {
 
 function sql_query($query)
 {
+    $query = preg_replace("/[\n\r\t]+/", " ", $query);
 	$begin = microtime(true);
 	global $query_name;
 	$result = mysql_query($query);

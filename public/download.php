@@ -70,15 +70,19 @@ else{
 
 
 
-$res = sql_query("SELECT name, filename, save_as,  size, owner,banned FROM torrents WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+$res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
 $fn = ROOT_PATH . "$torrent_dir/$id.torrent";
-if ($CURUSER['downloadpos']=="no")
-	permissiondenied();
-if (!$row || !is_file($fn) || !is_readable($fn))
-	httperr();
-if ($row['banned'] == 'yes' && get_user_class() < $seebanned_class)
-	permissiondenied();
+if ($CURUSER['downloadpos']=="no") {
+    permissiondenied();
+}
+if (!$row || !is_file($fn) || !is_readable($fn)) {
+    httperr();
+}
+if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {
+    permissiondenied();
+}
+
 sql_query("UPDATE torrents SET hits = hits + 1 WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 
 require_once "include/benc.php";

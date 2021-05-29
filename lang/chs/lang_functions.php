@@ -213,6 +213,7 @@ $lang_functions = array
 	'text_ip_range' => "IP范围",
 	'text_min' => "分钟",
 	'text_music' => "&nbsp;音&nbsp;&nbsp;乐&nbsp;",
+	'text_special' => "&nbsp;特&nbsp;&nbsp;别&nbsp;",
 	'title_reply_with_quote' => "引用",
 	'title_add_reply' => "回复",
 	'title_delete' => "删除",

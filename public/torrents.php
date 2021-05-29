@@ -1,12 +1,27 @@
 <?php
 require_once("../include/bittorrent.php");
 dbconn(true);
-require_once(get_langfile_path());
+require_once(get_langfile_path('torrents.php'));
 loggedinorreturn();
 parked();
 
 //check searchbox
-$sectiontype = $browsecatmode;
+switch (CURRENT_SCRIPT) {
+    case 'torrents':
+        $sectiontype = $browsecatmode;
+        break;
+    case 'special':
+        if (get_setting('main.spsct') != 'yes') {
+            httperr();
+        }
+        if (get_user_class() < get_setting('authority.view_special_torrent')) {
+            permissiondenied();
+        }
+        $sectiontype = $specialcatmode;
+        break;
+    default:
+        $sectiontype = 0;
+}
 $showsubcat = get_searchbox_value($sectiontype, 'showsubcat');//whether show subcategory (i.e. sources, codecs) or not
 $showsource = get_searchbox_value($sectiontype, 'showsource'); //whether show sources or not
 $showmedium = get_searchbox_value($sectiontype, 'showmedium'); //whether show media or not

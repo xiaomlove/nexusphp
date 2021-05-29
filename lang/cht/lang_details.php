@@ -39,7 +39,7 @@ $lang_details = array
 	'text_title' => " 片名: ",
 	'text_title_chinese' => "中文片名: ",
 	'text_also_known_as' => " 代號: ",
-	'text_year' => " 年代: ", 
+	'text_year' => " 年代: ",
 	'text_runtime' => " 片長: ",
 	'text_mins' => "分鐘",
 	'text_votes' => " 票數: ",
@@ -218,6 +218,17 @@ $lang_details = array
 	'row_uploader_bandwidth' => "發布者頻寬",
 	'text_and_more' => "……（這裏只顯示最新記錄。共",
 	'text_users_in_total' => "個用戶表示了感謝）",
+    'torrent_dl_url' => "種子連結",
+    'torrent_dl_url_notice' => "可在BT用戶端使用，請保護好Passkey，謹防洩露。",
+    'span_description_have_given' =>'你已經贈送魔力值',
+    'text_no_magic_added' => "暫無魔力值獎勵",
+    'magic_value_number' => "已贈送Number點魔力值",
+    'magic_value_award' => "魔力值獎勵",
+    'magic_newest_record' =>'這裏只顯示最新記錄。 ',
+    'magic_sum_user_give_number' => '共Number個會員獎勵了魔力值',
+    'magic_show_all_description' => '查看詳單',
+    'magic_haveGotBonus' => '目前發佈人已獲得Number個魔力值獎勵。',
+    'magic_have_no_enough_bonus_value' => '需要更多魔力值。',
 );
 
 ?>
