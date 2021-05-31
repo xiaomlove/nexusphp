@@ -6,9 +6,8 @@ if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
 
 function printProgress($msg) {
-	echo $msg.'...done<br />';
-	ob_flush();
-	flush();
+    $br = php_sapi_name() == 'cli' ? "\n" : "<br />";
+ 	echo sprintf("[%s] %s ... done!%s", date('Y-m-d H:i:s'), $msg, $br);
 }
 
 function torrent_promotion_expire($days, $type = 2, $targettype = 1){
