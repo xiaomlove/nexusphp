@@ -94,8 +94,12 @@ class ExamRepository extends BaseRepository
     public function delete($id)
     {
         $exam = Exam::query()->findOrFail($id);
-        $result = $exam->delete();
-        return $result;
+        DB::transaction(function () use ($exam) {
+            ExamUser::query()->where('exam_id', $exam->id)->delete();
+            ExamProgress::query()->where('exam_id', $exam->id)->delete();
+            $exam->delete();
+        });
+        return true;
     }
 
     public function listIndexes()
