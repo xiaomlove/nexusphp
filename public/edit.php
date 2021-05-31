@@ -165,10 +165,11 @@ else {
             if ($pickcontent) {
                 $pickcontent .= "<br />";
             }
-			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"sel_posstate\" style=\"width: 100px;\">" .
-			"<option" . (($row["pos_state"] == "normal") ? " selected=\"selected\"" : "" ) . " value=\"0\">".$lang_edit['select_normal']."</option>" .
-			"<option" . (($row["pos_state"] == "sticky") ? " selected=\"selected\"" : "" ) . " value=\"1\">".$lang_edit['select_sticky']."</option>" .
-			"</select>&nbsp;&nbsp;&nbsp;";
+            $options = [];
+            foreach (\App\Models\Torrent::listPosStates() as $key => $value) {
+                $options[] = "<option" . (($row["pos_state"] == $key) ? " selected=\"selected\"" : "" ) . " value=\"" . $key . "\">".$value['text']."</option>";
+            }
+			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"sel_posstate\" style=\"width: 100px;\">" . implode('', $options) . "</select>&nbsp;&nbsp;&nbsp;";
 		}
 		if(get_user_class()>=$torrentmanage_class && $CURUSER["picker"] == 'yes')
 		{

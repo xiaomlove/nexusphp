@@ -65,11 +65,23 @@ class Update extends Install
             $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
         }
         if (WITH_LARAVEL && DB::schema()->hasColumn('categories', 'icon_id')) {
+            $this->doLog('[INIT CATEGORY ICON_ID]');
             $icon = Icon::query()->orderBy('id', 'asc')->first();
             if ($icon) {
                 Category::query()->where('icon_id', 0)->update(['icon_id' => $icon->id]);
             }
         }
+        //torrent support sticky second level
+        if (WITH_LARAVEL) {
+            $columnType = DB::schema()->getColumnType('torrents', 'pos_state');
+            $this->doLog("[TORRENT POS_STATE], column type: $columnType");
+            if ($columnType == 'enum') {
+                $sql = "alter table torrents modify `pos_state` varchar(32) NOT NULL DEFAULT 'normal'";
+                $this->doLog("[ALTER TORRENT POS_STATE TYPE TO VARCHAR], $sql");
+                sql_query($sql);
+            }
+        }
+
     }
 
 }

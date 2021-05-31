@@ -27,11 +27,34 @@ class Torrent extends NexusModel
         'basic_source', 'basic_standard', 'basic_team',
     ];
 
+    const POS_STATE_STICKY_NONE = 'normal';
+    const POS_STATE_STICKY_ONE = 'sticky';
+    /**
+     * alphabet 'r' is  after 'n' and before 's', so it will fit: order by pos_state desc,
+     * first sticky, then r_sticky, then normal
+     */
+    const POS_STATE_STICKY_SECOND = 'r_sticky';
+
+    public static $posStates = [
+        self::POS_STATE_STICKY_NONE => ['text' => 'Normal', 'icon_counts' => 0],
+        self::POS_STATE_STICKY_SECOND => ['text' => 'Sticky second level', 'icon_counts' => 1],
+        self::POS_STATE_STICKY_ONE => ['text' => 'Sticky top level', 'icon_counts' => 2],
+    ];
+
     public static function getBasicInfo(): array
     {
         $result = [];
         foreach (self::$basicRelations as $relation) {
             $result[$relation] = nexus_trans("torrent.show.$relation");
+        }
+        return $result;
+    }
+
+    public static function listPosStates(): array
+    {
+        $result = self::$posStates;
+        foreach ($result as $key => &$value) {
+            $value['text'] = nexus_trans('torrent.pos_state_' . $key);
         }
         return $result;
     }

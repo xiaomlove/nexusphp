@@ -568,5 +568,6 @@ function nexus_trans($key, $replace = [], $locale = null)
         $search = array_map(function ($value) {return ":$value";}, array_keys($replace));
         $result = str_replace($search, array_values($replace), $result);
     }
+    do_log("key: $key, replace: " . nexus_json_encode($replace) . ", locale: $locale, getKey: $getKey, result: $result");
     return $result;
 }

@@ -147,12 +147,9 @@ if(get_user_class()>=$torrentonpromotion_class)
 		}
 	}
 }
-if(get_user_class()>=$torrentsticky_class)
+if(get_user_class()>=$torrentsticky_class && isset($_POST['sel_posstate']) && isset(\App\Models\Torrent::$posStates[$_POST['sel_posstate']]))
 {
-	if(intval($_POST["sel_posstate"] ?? 0) == 0)
-		$updateset[] = "pos_state = 'normal'";
-	elseif(intval($_POST["sel_posstate"] ?? 0) == 1)
-		$updateset[] = "pos_state = 'sticky'";
+    $updateset[] = "pos_state = '" . $_POST['sel_posstate'] . "'";
 }
 
 $pick_info = "";

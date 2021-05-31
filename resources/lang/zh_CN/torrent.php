@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'pos_state_normal' => '普通',
+    'pos_state_sticky' => '一级置顶',
+    'pos_state_r_sticky' => '二级置顶',
+
     'index' => [
         'page_title' => '种子列表',
     ],

@@ -220,6 +220,7 @@ $lang_details = array
 	'text_users_in_total' => " users in total)",
     'torrent_dl_url' => "Torrent URL",
     'torrent_dl_url_notice' => "You can copy it to your BT Client. Take care since it contains your passkey.",
+    'torrent_dl_url_text' => "Right click to view.",
     'span_description_have_given' =>'You have given the magic of the value',
     'text_no_magic_added' => "No magic value of the award",
     'magic_value_number' => "Number Magic  point value has been presented",
