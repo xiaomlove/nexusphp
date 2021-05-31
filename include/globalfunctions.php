@@ -47,7 +47,7 @@ function getip() {
 		} elseif (isset($_SERVER['HTTP_CLIENT_IP']) && validip($_SERVER['HTTP_CLIENT_IP'])) {
 			$ip = $_SERVER['HTTP_CLIENT_IP'];
 		} else {
-			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = $_SERVER['REMOTE_ADDR'] ?? '';
 		}
 	} else {
 		if (getenv('HTTP_X_FORWARDED_FOR') && validip(getenv('HTTP_X_FORWARDED_FOR'))) {
@@ -55,7 +55,7 @@ function getip() {
 		} elseif (getenv('HTTP_CLIENT_IP') && validip(getenv('HTTP_CLIENT_IP'))) {
 			$ip = getenv('HTTP_CLIENT_IP');
 		} else {
-			$ip = getenv('REMOTE_ADDR');
+			$ip = getenv('REMOTE_ADDR') ?? '';
 		}
 	}
 
@@ -158,8 +158,9 @@ function do_log($log, $level = 'info')
 	if (($fd = fopen($logFile, 'a')) === false) {
        $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
 	}
-	static $uid, $passkey, $env;
+	static $uid, $passkey, $env, $sequence;
 	if (is_null($uid)) {
+	    $sequence = 0;
         if (IN_NEXUS) {
             global $CURUSER;
             $user = $CURUSER;
@@ -172,14 +173,18 @@ function do_log($log, $level = 'info')
             $passkey = $user->passkey ?? $_REQUEST['passkey'] ?? '';
             $env = env('APP_ENV');
         }
+    } else {
+	    $sequence++;
     }
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
     $content = sprintf(
-        "[%s] [%s] [%s] [%s] %s.%s %s:%s %s%s%s %s%s",
+        "[%s] [%s] [%s] [%s] [%s] [%s] %s.%s %s:%s %s%s%s %s%s",
         date('Y-m-d H:i:s'),
         defined('REQUEST_ID') ? REQUEST_ID : '',
         $uid,
         $passkey,
+        $sequence,
+        sprintf('%.3f', microtime(true) - NEXUS_START),
         $env, $level,
         $backtrace[0]['file'] ?? '',
         $backtrace[0]['line'] ?? '',
