@@ -11,4 +11,4 @@ $showversion = " - Powered by ".PROJECTNAME;
 defined('ROOT_PATH') || define('ROOT_PATH', dirname(__DIR__) . '/');
 defined('CURRENT_SCRIPT') || define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));
 defined('IS_ANNOUNCE') || define('IS_ANNOUNCE', CURRENT_SCRIPT == 'announce');
-defined('REQUEST_ID') || define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? bin2hex(random_bytes(16)));
+defined('REQUEST_ID') || define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? bin2hex(random_bytes(11)) . str_replace('.', '', substr(uniqid('', true), 12)));
