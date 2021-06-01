@@ -11,6 +11,7 @@ use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -71,8 +72,13 @@ class Test extends Command
 //        $imdb_id = 5768840;
 //        $r = $imdb->getMovie($imdb_id)->photo(true);
 
-        $searchbox = (new SearchBoxRepository())->listIcon(4);
-        dd($searchbox);
+        $original = "aaa";
+        $key = base64_decode('WUbN2wa2kl3E1VDW4iKaH3RBHw3hKY7BK0hWEkBZmGg=');
+        $cipher = 'AES-256-CBC';
+        $encrypter = new Encrypter($key, $cipher);
+        $encrypted = $encrypter->encrypt($original);
+        $decrypted = $encrypter->decrypt($encrypted);
+        dd($original, $key, $cipher, $encrypted, $decrypted);
     }
 
 }
