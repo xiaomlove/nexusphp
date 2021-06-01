@@ -20,9 +20,10 @@ if (!defined('REQUEST_ID')) {
         $requestId = $_SERVER['REQUEST_ID'];
     } else {
         $prefix = ($_SERVER['SCRIPT_FILENAME'] ?? '') . implode('', $_SERVER['argv'] ?? []);
-        $prefix = substr(md5($prefix), 0, 5);
-        $requestId = bin2hex(random_bytes(11)) . substr(uniqid($prefix, true), 12);
-        $requestId = substr(str_replace('.', '', $requestId), 0, 32);
+        $prefix = substr(md5($prefix), 0, 4);
+        // 4 + 23 = 27 characters, after replace '.', 26
+        $requestId = str_replace('.', '', uniqid($prefix, true));
+        $requestId .= bin2hex(random_bytes(3));
     }
     define('REQUEST_ID', $requestId);
 }
