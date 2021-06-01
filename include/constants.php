@@ -19,7 +19,7 @@ if (!defined('REQUEST_ID')) {
     } elseif (!empty($_SERVER['REQUEST_ID'])) {
         $requestId = $_SERVER['REQUEST_ID'];
     } else {
-        $prefix = implode('', $_SERVER['argv'] ?? []);
+        $prefix = ($_SERVER['SCRIPT_FILENAME'] ?? '') . implode('', $_SERVER['argv'] ?? []);
         $requestId = bin2hex(random_bytes(11)) . str_replace('.', '', substr(uniqid($prefix, true), 12, 10));
     }
     define('REQUEST_ID', $requestId);
