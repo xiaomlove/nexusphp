@@ -2,11 +2,14 @@
 namespace App\Repositories;
 
 use App\Models\Setting;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ToolRepository extends BaseRepository
 {
+    private static $encrypter;
 
     public function backupWeb(): array
     {
@@ -141,5 +144,19 @@ class ToolRepository extends BaseRepository
         $backupResult['upload_result'] = $upload_result;
         do_log("Final result: " . json_encode($backupResult));
         return $backupResult;
+    }
+
+    public function getEncrypter(): Encrypter
+    {
+        if (!is_null(self::$encrypter)) {
+            return self::$encrypter;
+        }
+        $key = nexus_env('APP_KEY');
+        $prefix = 'base64:';
+        if (Str::startsWith($key,$prefix)) {
+            $key = substr($key, strlen($prefix));
+            $key = base64_decode($key);
+        }
+        return self::$encrypter = new Encrypter($key, 'AES-256-CBC');
     }
 }

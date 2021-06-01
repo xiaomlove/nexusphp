@@ -254,4 +254,23 @@ class TorrentRepository extends BaseRepository
         return "$speed/s";
     }
 
+    public function encryptDownHash($id, $uid): string
+    {
+        $toolRep = new ToolRepository();
+        $payload = [
+            'id' => $id,
+            'uid' => $uid,
+            'date' => date('Ymd'),
+        ];
+        return $toolRep->getEncrypter()->encrypt($payload);
+    }
+
+    public function decryptDownHash($downHash)
+    {
+        $toolRep = new ToolRepository();
+        return $toolRep->getEncrypter()->decrypt($downHash);
+    }
+
+
+
 }

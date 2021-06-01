@@ -423,9 +423,12 @@ function isHttps()
 
 function getSchemeAndHttpHost()
 {
+    global $BASEURL;
+    if (isRunningInConsole()) {
+        return $BASEURL;
+    }
     $isHttps = isHttps();
     $protocol = $isHttps ? 'https' : 'http';
-    $port = $_SERVER['SERVER_PORT'];
     $result = "$protocol://" . $_SERVER['HTTP_HOST'];
     return $result;
 
@@ -573,4 +576,9 @@ function nexus_trans($key, $replace = [], $locale = null)
         $result = str_replace($search, array_values($replace), $result);
     }
     return $result;
+}
+
+function isRunningInConsole(): bool
+{
+    return php_sapi_name() == 'cli';
 }
