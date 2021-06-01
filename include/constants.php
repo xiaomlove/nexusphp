@@ -11,4 +11,18 @@ $showversion = " - Powered by ".PROJECTNAME;
 defined('ROOT_PATH') || define('ROOT_PATH', dirname(__DIR__) . '/');
 defined('CURRENT_SCRIPT') || define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));
 defined('IS_ANNOUNCE') || define('IS_ANNOUNCE', CURRENT_SCRIPT == 'announce');
-defined('REQUEST_ID') || define('REQUEST_ID', $_SERVER['HTTP_X_REQUEST_ID'] ?? $_SERVER['REQUEST_ID'] ?? bin2hex(random_bytes(16)));
+
+//define the REQUEST_ID
+if (!defined('REQUEST_ID')) {
+    if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
+        $requestId = $_SERVER['HTTP_X_REQUEST_ID'];
+    } elseif (!empty($_SERVER['REQUEST_ID'])) {
+        $requestId = $_SERVER['REQUEST_ID'];
+    } else {
+        $prefix = ($_SERVER['SCRIPT_FILENAME'] ?? '') . implode('', $_SERVER['argv'] ?? []);
+        $prefix = substr(md5($prefix), 0, 5);
+        $requestId = bin2hex(random_bytes(11)) . substr(uniqid($prefix, true), 12);
+        $requestId = substr(str_replace('.', '', $requestId), 0, 32);
+    }
+    define('REQUEST_ID', $requestId);
+}
