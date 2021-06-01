@@ -2,11 +2,14 @@
 
 namespace App\Repositories;
 
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Str;
 
 class BaseRepository
 {
-    protected function getSortFieldAndType(array $params)
+    private static $enctyper;
+
+    protected function getSortFieldAndType(array $params): array
     {
         $field = $params['sort_field'] ?? 'id';
         $type = 'desc';
@@ -15,4 +18,5 @@ class BaseRepository
         }
         return [$field, $type];
     }
+
 }
