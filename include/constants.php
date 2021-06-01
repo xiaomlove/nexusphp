@@ -21,7 +21,8 @@ if (!defined('REQUEST_ID')) {
     } else {
         $prefix = ($_SERVER['SCRIPT_FILENAME'] ?? '') . implode('', $_SERVER['argv'] ?? []);
         $prefix = substr(md5($prefix), 0, 5);
-        $requestId = bin2hex(random_bytes(11)) . str_replace('.', '', substr(uniqid($prefix, true), 12, 10));
+        $requestId = bin2hex(random_bytes(11)) . substr(uniqid($prefix, true), 12);
+        $requestId = substr(str_replace('.', '', $requestId), 0, 32);
     }
     define('REQUEST_ID', $requestId);
 }
