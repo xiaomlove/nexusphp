@@ -14,6 +14,7 @@ use App\Models\Standard;
 use App\Models\Team;
 use App\Models\Torrent;
 use App\Models\User;
+use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\Request;
@@ -256,24 +257,23 @@ class TorrentRepository extends BaseRepository
 
     public function encryptDownHash($id, $user): string
     {
+        $key = $this->getEncryptDownHashKey($user);
+        return (new Hashids($key))->encode($id);
+    }
+
+    public function decryptDownHash($downHash, $user)
+    {
+        $key = $this->getEncryptDownHashKey($user);
+        return (new Hashids($key))->decode($downHash);
+    }
+
+    private function getEncryptDownHashKey($user)
+    {
         if (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
             $user = User::query()->findOrFail(intval($user), ['id', 'passkey'])->toArray();
         }
         //down hash is relative to user passkey
-        $key = md5($user['passkey'] . date('Ymd') . $user['id']);
-        $toolRep = new ToolRepository();
-        $payload = [
-            'id' => $id,
-            'uid' => $user['id'],
-            'date' => date('Ymd'),
-        ];
-        return $toolRep->getEncrypter($key)->encrypt($payload);
-    }
-
-    public function decryptDownHash($downHash)
-    {
-        $toolRep = new ToolRepository();
-        return $toolRep->getEncrypter()->decrypt($downHash);
+        return md5($user['passkey'] . date('Ymd') . $user['id']);
     }
 
 

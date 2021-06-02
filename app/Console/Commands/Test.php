@@ -50,7 +50,9 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $torrentRep = new TorrentRepository();
+        $r = $torrentRep->encryptDownHash(1, 1);
+        dd($r, $torrentRep->decryptDownHash($r,1));
     }
 
 }

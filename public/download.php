@@ -3,28 +3,28 @@ require_once("../include/bittorrent.php");
 dbconn();
 
 if (!empty($_REQUEST['downhash'])){
+    $params = explode('|', $_REQUEST['downhash']);
+    if (empty($params[0]) || empty($params[1])) {
+        die("invalid downhash, format error");
+    }
+    $uid = $params[0];
+    $hash = $params[1];
+    $res = sql_query("SELECT * FROM users WHERE id=". sqlesc($uid)." LIMIT 1");
+    $user = mysql_fetch_array($res);
+    if (!$user)
+        die("invalid uid");
+    elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
+        die("account disabed or parked");
+    $oldip = $user['ip'];
+    $user['ip'] = getip();
+    $CURUSER = $user;
     $torrentRep = new \App\Repositories\TorrentRepository();
-    try {
-        $params = $torrentRep->decryptDownHash($_REQUEST['downhash']);
-    } catch (\Exception $exception) {
-        do_log("downhash: " . $_REQUEST['downhash'] . " invalid: " . $exception->getMessage());
-        die("invalid downhash, decrypt fail");
+    $decrypted = $torrentRep->decryptDownHash($hash, $user);
+    if (empty($decrypted)) {
+        do_log("downhash invalid: " . nexus_json_encode($_REQUEST));
+        die("invalid downhash, decrpyt fail");
     }
-    if ($params['date'] != date('Ymd')) {
-        die("invalid downhash, expires");
-    }
-    $id = $params['id'];
-    $uid = $params['uid'];
-
-	$res = sql_query("SELECT * FROM users WHERE id=". sqlesc($uid)." LIMIT 1");
-	$user = mysql_fetch_array($res);
-	if (!$user)
-		die("invalid downhash, payload invalid");
-	elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
-		die("account disabed or parked");
-	$oldip = $user['ip'];
-	$user['ip'] = getip();
-	$CURUSER = $user;
+    $id = $decrypted[0];
 }
 else
 {
