@@ -9,8 +9,6 @@ use Illuminate\Support\Str;
 
 class ToolRepository extends BaseRepository
 {
-    private static $encrypter;
-
     public function backupWeb(): array
     {
         $webRoot = base_path();
@@ -146,17 +144,8 @@ class ToolRepository extends BaseRepository
         return $backupResult;
     }
 
-    public function getEncrypter(): Encrypter
+    public function getEncrypter(string $key): Encrypter
     {
-        if (!is_null(self::$encrypter)) {
-            return self::$encrypter;
-        }
-        $key = nexus_env('APP_KEY');
-        $prefix = 'base64:';
-        if (Str::startsWith($key,$prefix)) {
-            $key = substr($key, strlen($prefix));
-            $key = base64_decode($key);
-        }
-        return self::$encrypter = new Encrypter($key, 'AES-256-CBC');
+        return new Encrypter($key, 'AES-256-CBC');
     }
 }

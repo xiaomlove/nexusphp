@@ -1,15 +1,25 @@
 <?php
 require_once("../include/bittorrent.php");
 dbconn();
-$id = (int)$_GET["id"];
-if (!$id)
-	httperr();
-$passkey = $_GET['passkey'] ?? '';
-if ($passkey){
-	$res = sql_query("SELECT * FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+
+if (!empty($_REQUEST['downhash'])){
+    $torrentRep = new \App\Repositories\TorrentRepository();
+    try {
+        $params = $torrentRep->decryptDownHash($_REQUEST['downhash']);
+    } catch (\Exception $exception) {
+        do_log("downhash: " . $_REQUEST['downhash'] . " invalid: " . $exception->getMessage());
+        die("invalid downhash, decrypt fail");
+    }
+    if ($params['date'] != date('Ymd')) {
+        die("invalid downhash, expires");
+    }
+    $id = $params['id'];
+    $uid = $params['uid'];
+
+	$res = sql_query("SELECT * FROM users WHERE id=". sqlesc($uid)." LIMIT 1");
 	$user = mysql_fetch_array($res);
 	if (!$user)
-		die("invalid passkey");
+		die("invalid downhash, payload invalid");
 	elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
 		die("account disabed or parked");
 	$oldip = $user['ip'];
@@ -18,6 +28,9 @@ if ($passkey){
 }
 else
 {
+    $id = (int)$_GET["id"];
+    if (!$id)
+        httperr();
 	loggedinorreturn();
 	parked();
 	$letdown = intval($_GET['letdown'] ?? 0);

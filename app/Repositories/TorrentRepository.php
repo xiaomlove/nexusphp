@@ -254,15 +254,20 @@ class TorrentRepository extends BaseRepository
         return "$speed/s";
     }
 
-    public function encryptDownHash($id, $uid): string
+    public function encryptDownHash($id, $user): string
     {
+        if (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
+            $user = User::query()->findOrFail(intval($user), ['id', 'passkey'])->toArray();
+        }
+        //down hash is relative to user passkey
+        $key = md5($user['passkey'] . date('Ymd') . $user['id']);
         $toolRep = new ToolRepository();
         $payload = [
             'id' => $id,
-            'uid' => $uid,
+            'uid' => $user['id'],
             'date' => date('Ymd'),
         ];
-        return $toolRep->getEncrypter()->encrypt($payload);
+        return $toolRep->getEncrypter($key)->encrypt($payload);
     }
 
     public function decryptDownHash($downHash)
