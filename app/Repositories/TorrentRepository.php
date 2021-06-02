@@ -276,6 +276,27 @@ class TorrentRepository extends BaseRepository
         return md5($user['passkey'] . date('Ymd') . $user['id']);
     }
 
+    public function encryptAuthKey($id, $user): string
+    {
+        $key = $this->getEncryptAuthkeyKey($user);
+        return (new Hashids($key))->encode($id);
+    }
+
+    public function decryptAuthKey($downHash, $user)
+    {
+        $key = $this->getEncryptAuthkeyKey($user);
+        return (new Hashids($key))->decode($downHash);
+    }
+
+    private function getEncryptAuthkeyKey($user)
+    {
+        if (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
+            $user = User::query()->findOrFail(intval($user), ['id', 'passkey'])->toArray();
+        }
+        //down hash is relative to user passkey
+        return md5($user['passkey'] . date('Ymd') . $user['id']);
+    }
+
 
 
 }
