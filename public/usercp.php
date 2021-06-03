@@ -781,7 +781,12 @@ EOD;
 				$result = sql_query($query);
 				if (!$result)
 				sqlerr(__FILE__,__LINE__);
-				else
+
+				if (!empty($_REQUEST['resetauthkey']) && $_REQUEST['resetauthkey'] == 1) {
+				    //reset authkey
+				    $torrentRep = new \App\Repositories\TorrentRepository();
+				    $torrentRep->resetTrackerReportAuthKeySecret($user);
+                }
 				$to = "usercp.php?action=security&type=saved";
 				if ($changedemail == 1)
 				$to .= "&mail=1";
@@ -799,17 +804,20 @@ EOD;
 			if ($type == 'save') {
 				print("<form method=post action=usercp.php><input type=hidden name=action value=security><input type=hidden name=type value=confirm>");
 				$resetpasskey = $_POST["resetpasskey"];
+				$resetauthkey = $_POST["resetauthkey"];
 				$email = mysql_real_escape_string( htmlspecialchars( trim($_POST["email"]) ));
 				$chpassword = $_POST["chpassword"];
 				$passagain = $_POST["passagain"];
 				$privacy = $_POST["privacy"];
 				if ($resetpasskey == 1)
 				print("<input type=\"hidden\" name=\"resetpasskey\" value=\"1\">");
+                if ($resetauthkey == 1)
+				print("<input type=\"hidden\" name=\"resetauthkey\" value=\"1\">");
 				print("<input type=\"hidden\" name=\"email\" value=\"$email\">");
 				print("<input type=\"hidden\" name=\"chpassword\" value=\"$chpassword\">");
 				print("<input type=\"hidden\" name=\"passagain\" value=\"$passagain\">");
 				print("<input type=\"hidden\" name=\"privacy\" value=\"$privacy\">");
-				Print("<tr><td class=\"heading\" valign=\"top\" align=\"right\" width=1%>".$lang_usercp['row_security_check']."</td><td valign=\"top\" align=left><input type=password name=oldpassword style=\"width: 200px\"><br /><font class=small>".$lang_usercp['text_security_check_note']."</font></td></tr>\n");
+				Print("<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\" width=1%>".$lang_usercp['row_security_check']."</td><td valign=\"top\" align=\"left\" width=\"99%\"><input type=password name=oldpassword style=\"width: 200px\"><br /><font class=small>".$lang_usercp['text_security_check_note']."</font></td></tr>\n");
 				submit();
 				print("</table>");
 				stdfoot();
@@ -819,6 +827,7 @@ EOD;
 				print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved'].($_GET["mail"] == "1" ? $lang_usercp['std_confirmation_email_sent'] : "")." ".($_GET["passkey"] == "1" ? $lang_usercp['std_passkey_reset'] : "")." ".($_GET["password"] == "1" ? $lang_usercp['std_password_changed'] : "")." ".($_GET["privacy"] == "1" ? $lang_usercp['std_privacy_level_updated'] : "")."</font></td></tr>\n");
 			form ("security");
 			tr_small($lang_usercp['row_reset_passkey'],"<input type=checkbox name=resetpasskey value=1 />".$lang_usercp['checkbox_reset_my_passkey']."<br /><font class=small>".$lang_usercp['text_reset_passkey_note']."</font>", 1);
+			tr_small($lang_usercp['row_reset_authkey'],"<input type=checkbox name=resetauthkey value=1 />".$lang_usercp['checkbox_reset_my_authkey']."<br /><font class=small>".$lang_usercp['text_reset_authkey_note']."</font>", 1);
 			if ($disableemailchange != 'no' && $smtptype != 'none') //system-wide setting
 				tr_small($lang_usercp['row_email_address'], "<input type=\"text\" name=\"email\" style=\"width: 200px\" value=\"" . htmlspecialchars($CURUSER["email"]) . "\" /> <br /><font class=small>".$lang_usercp['text_email_address_note']."</font>", 1);
 			tr_small($lang_usercp['row_change_password'], "<input type=\"password\" name=\"chpassword\" style=\"width: 200px\" />", 1);

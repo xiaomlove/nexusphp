@@ -1,7 +1,7 @@
 <?php
 require_once("../include/bittorrent.php");
 dbconn();
-
+$torrentRep = new \App\Repositories\TorrentRepository();
 if (!empty($_REQUEST['downhash'])){
     $params = explode('|', $_REQUEST['downhash']);
     if (empty($params[0]) || empty($params[1])) {
@@ -18,7 +18,6 @@ if (!empty($_REQUEST['downhash'])){
     $oldip = $user['ip'];
     $user['ip'] = getip();
     $CURUSER = $user;
-    $torrentRep = new \App\Repositories\TorrentRepository();
     $decrypted = $torrentRep->decryptDownHash($hash, $user);
     if (empty($decrypted)) {
         do_log("downhash invalid: " . nexus_json_encode($_REQUEST));

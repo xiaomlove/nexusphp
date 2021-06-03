@@ -61,7 +61,7 @@ if ($nfofile['name'] != '') {
 }
 
 
-$small_descr = unesc($_POST["small_descr"]);
+$small_descr = unesc($_POST["small_descr"] ?? '');
 
 $descr = unesc($_POST["descr"]);
 if (!$descr)
@@ -397,10 +397,10 @@ if ($is_offer)
 {
 	$res = sql_query("SELECT `userid` FROM `offervotes` WHERE `userid` != " . $CURUSER["id"] . " AND `offerid` = ". sqlesc($offerid)." AND `vote` = 'yeah'") or sqlerr(__FILE__, __LINE__);
 
-	while($row = mysql_fetch_assoc($res)) 
+	while($row = mysql_fetch_assoc($res))
 	{
 		$pn_msg = $lang_takeupload_target[get_user_lang($row["userid"])]['msg_offer_you_voted'].$torrent.$lang_takeupload_target[get_user_lang($row["userid"])]['msg_was_uploaded_by']. $CURUSER["username"] .$lang_takeupload_target[get_user_lang($row["userid"])]['msg_you_can_download'] ."[url=" . get_protocol_prefix() . "$BASEURL/details.php?id=$id&hit=1]".$lang_takeupload_target[get_user_lang($row["userid"])]['msg_here']."[/url]";
-		
+
 		//=== use this if you DO have subject in your PMs
 		$subject = $lang_takeupload_target[get_user_lang($row["userid"])]['msg_offer'].$torrent.$lang_takeupload_target[get_user_lang($row["userid"])]['msg_was_just_uploaded'];
 		//=== use this if you DO NOT have subject in your PMs

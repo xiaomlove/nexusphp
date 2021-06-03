@@ -11,7 +11,7 @@ if (!$passkey) {
 }
 $where = "";
 if ($passkey){
-	$res = sql_query("SELECT id, enabled, parked FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$res = sql_query("SELECT id, enabled, parked, passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$user = mysql_fetch_array($res);
 	if (!$user)
 		die("invalid passkey");
@@ -107,7 +107,7 @@ if ($where)
 $query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY torrents.added DESC LIMIT $limit";
 
 $res = sql_query($query) or die(mysql_error());
-
+$torrentRep = new \App\Repositories\TorrentRepository();
 $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);
 $yearfounded = ($year ? $year : 2007);
@@ -152,7 +152,7 @@ while ($row = mysql_fetch_array($res))
 	else $author = $row['username'];
 	$itemurl = $url."/details.php?id=".$row['id'];
 	if ($dllink)
-		$itemdlurl = $url."/download.php?id=".$row['id']."&amp;passkey=".rawurlencode($passkey);
+		$itemdlurl = $url."/download.php?id=".$row['id']."&amp;downhash=".rawurlencode($torrentRep->encryptDownHash($row['id'], $user));
 	else $itemdlurl = $url."/download.php?id=".$row['id'];
 	if (!empty($_GET['icat'])) $title .= "[".$row['cat_name']."]";
 	$title .= $row['name'];
