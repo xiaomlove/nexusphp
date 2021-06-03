@@ -31,12 +31,12 @@ function takereport($reportid, $type, $reason)
 		stderr($lang_report['std_error'],$lang_report['std_missing_reason']);
 		die();
 	}
-	$res = sql_query("SELECT id FROM reports WHERE addedby = ".sqlesc($CURUSER[id])." AND reportid= ".sqlesc($reportid)." AND type = ".sqlesc($type)) or sqlerr(__FILE__,__LINE__);
+	$res = sql_query("SELECT id FROM reports WHERE addedby = ".sqlesc($CURUSER['id'])." AND reportid= ".sqlesc($reportid)." AND type = ".sqlesc($type)) or sqlerr(__FILE__,__LINE__);
 	if (mysql_num_rows($res) == 0)
 	{
 		$date = sqlesc(date("Y-m-d H:i:s"));
 
-		sql_query("INSERT into reports (addedby,reportid,type,reason,added) VALUES (".sqlesc($CURUSER[id]).",".sqlesc($reportid).",".sqlesc($type).", ".sqlesc(trim($reason)).",".$date.")") or sqlerr(__FILE__,__LINE__);
+		sql_query("INSERT into reports (addedby,reportid,type,reason,added) VALUES (".sqlesc($CURUSER['id']).",".sqlesc($reportid).",".sqlesc($type).", ".sqlesc(trim($reason)).",".$date.")") or sqlerr(__FILE__,__LINE__);
 		$Cache->delete_value('staff_report_count');
 		$Cache->delete_value('staff_new_report_count');
 		stderr($lang_report['std_message'],$lang_report['std_successfully_reported']);
@@ -139,7 +139,7 @@ elseif (isset($torrent))
 		die();
 	}
 	$arr = mysql_fetch_array($res);
-	stderr($lang_report['std_are_you_sure'], $lang_report['text_are_you_sure_torrent']."<a href=details.php?id=".htmlspecialchars($torrent)."><b>".htmlspecialchars($arr[name])."</b></a>".$lang_report['text_to_staff']."<br />".$lang_report['text_reason_note']."<br /><form method=post action=report.php><input type=hidden name=taketorrent value=\"".htmlspecialchars($torrent)."\">".$lang_report['text_reason_is']."<input type=text style=\"width: 200px\" name=reason><input type=submit value=\"".$lang_report['submit_confirm']."\"></form>", false);
+	stderr($lang_report['std_are_you_sure'], $lang_report['text_are_you_sure_torrent']."<a href=details.php?id=".htmlspecialchars($torrent)."><b>".htmlspecialchars($arr['name'])."</b></a>".$lang_report['text_to_staff']."<br />".$lang_report['text_reason_note']."<br /><form method=post action=report.php><input type=hidden name=taketorrent value=\"".htmlspecialchars($torrent)."\">".$lang_report['text_reason_is']."<input type=text style=\"width: 200px\" name=reason><input type=submit value=\"".$lang_report['submit_confirm']."\"></form>", false);
 }
 //////////TORRENT #2 END//////////
 
