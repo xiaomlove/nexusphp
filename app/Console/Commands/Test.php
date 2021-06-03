@@ -51,8 +51,10 @@ class Test extends Command
     public function handle()
     {
         $torrentRep = new TorrentRepository();
-        $r = $torrentRep->encryptDownHash(1, 1);
-        dd($r, $torrentRep->decryptDownHash($r,1));
+        $r = $torrentRep->getTrackerReportAuthKey(1, 1, true);
+//        $r = $torrentRep->resetTrackerReportAuthKeySecret(1);
+//        dd($r);
+        dd($r, $torrentRep->checkTrackerReportAuthKey($r));
     }
 
 }

@@ -11,8 +11,6 @@ class NexusModel extends Model
 
     public $timestamps = false;
 
-//    protected $perPage = 2;
-
     /**
      *
      * @param  \DateTimeInterface  $date

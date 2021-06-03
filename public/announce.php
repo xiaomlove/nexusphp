@@ -3,10 +3,35 @@ require_once('../include/bittorrent_announce.php');
 require_once('../include/benc.php');
 dbconn_announce();
 do_log(nexus_json_encode($_SERVER));
-$log = "";
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"];
 block_browser();
+
+//check authkey
+if (!empty($_REQUEST['authkey'])) {
+    $arr = explode('|', $_REQUEST['authkey']);
+    if (count($arr) != 3) {
+        err('Invalid authkey');
+    }
+    $torrentId = $arr[0];
+    $uid = $arr[1];
+    $torrentRep = new \App\Repositories\TorrentRepository();
+    try {
+        $decrypted = $torrentRep->checkTrackerReportAuthKey($_REQUEST['authkey']);
+    } catch (\Exception $exception) {
+        err($exception->getMessage());
+    }
+    if (empty($decrypted)) {
+        err('Invalid authkey');
+    }
+    $userInfo = \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+    if (!$userInfo) {
+        err('Invalid authkty');
+    }
+    $_GET['passkey'] = $userInfo->passkey;
+}
+
+
 //2. GET ANNOUNCE VARIABLES
 // get string type passkey, info_hash, peer_id, event, ip from client
 foreach (array("passkey","info_hash","peer_id","event") as $x)

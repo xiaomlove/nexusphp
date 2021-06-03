@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\NexusException;
 use App\Models\AudioCodec;
 use App\Models\Category;
 use App\Models\Codec;
@@ -13,11 +14,13 @@ use App\Models\Source;
 use App\Models\Standard;
 use App\Models\Team;
 use App\Models\Torrent;
+use App\Models\TorrentSecret;
 use App\Models\User;
 use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TorrentRepository extends BaseRepository
 {
@@ -276,25 +279,84 @@ class TorrentRepository extends BaseRepository
         return md5($user['passkey'] . date('Ymd') . $user['id']);
     }
 
-    public function encryptAuthKey($id, $user): string
+    public function getTrackerReportAuthKey($id, $uid, $initializeIfNotExists = false): string
     {
-        $key = $this->getEncryptAuthkeyKey($user);
-        return (new Hashids($key))->encode($id);
+        $key = $this->getTrackerReportAuthKeySecret($id, $uid, $initializeIfNotExists);
+        $hash = (new Hashids($key))->encode(date('Ymd'));
+        return sprintf('%s|%s|%s', $id, $uid, $hash);
     }
 
-    public function decryptAuthKey($downHash, $user)
+    /**
+     * check tracker report authkey
+     * if valid, the result will be the date the key generate, else if will be empty string
+     *
+     * @date 2021/6/3
+     * @time 20:29
+     * @param $authKey
+     * @return array
+     * @throws NexusException
+     */
+    public function checkTrackerReportAuthKey($authKey)
     {
-        $key = $this->getEncryptAuthkeyKey($user);
-        return (new Hashids($key))->decode($downHash);
-    }
-
-    private function getEncryptAuthkeyKey($user)
-    {
-        if (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
-            $user = User::query()->findOrFail(intval($user), ['id', 'passkey'])->toArray();
+        $arr = explode('|', $authKey);
+        if (count($arr) != 3) {
+            throw new NexusException('Invalid authkey');
         }
-        //down hash is relative to user passkey
-        return md5($user['passkey'] . date('Ymd') . $user['id']);
+        $id = $arr[0];
+        $uid = $arr[1];
+        $hash = $arr[2];
+        $key = $this->getTrackerReportAuthKeySecret($id, $uid);
+        return (new Hashids($key))->decode($hash);
+    }
+
+    private function getTrackerReportAuthKeySecret($id, $uid, $initializeIfNotExists = false)
+    {
+        $secret = TorrentSecret::query()
+            ->where('uid', $uid)
+            ->whereIn('torrent_id', [0, $id])
+            ->orderBy('torrent_id', 'desc')
+            ->first();
+        if ($secret) {
+            return $secret->secret;
+        }
+        if ($initializeIfNotExists) {
+            $insert = [
+                'uid' => $uid,
+                'torrent_id' => 0,
+                'secret' => Str::random(),
+            ];
+            TorrentSecret::query()->insert($insert);
+            return $insert['secret'];
+        }
+        throw new NexusException('No valid report secret, please re-download this torrent.');
+    }
+
+    /**
+     * reset user tracker report authkey secret
+     *
+     * @param $uid
+     * @param int $torrentId
+     * @return string
+     * @todo wrap with transaction
+     *
+     * @date 2021/6/3
+     * @time 20:15
+     */
+    public function resetTrackerReportAuthKeySecret($uid, $torrentId = 0)
+    {
+        $insert = [
+            'uid' => $uid,
+            'secret' => Str::random(),
+            'torrent_id' => $torrentId,
+        ];
+        if ($torrentId > 0) {
+            return TorrentSecret::query()->insert($insert);
+        }
+
+        TorrentSecret::query()->where('uid', $uid)->delete();
+        TorrentSecret::query()->insert($insert);
+        return $insert['secret'];
+
     }
 
 

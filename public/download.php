@@ -105,9 +105,11 @@ if (strlen($CURUSER['passkey']) != 32) {
 	sql_query("UPDATE users SET passkey=".sqlesc($CURUSER['passkey'])." WHERE id=".sqlesc($CURUSER['id']));
 }
 
+$trackerReportAuthKey = $torrentRep->getTrackerReportAuthKey($id, $CURUSER['id'], true);
+
 $dict = bdec_file($fn, $max_torrent_size);
 //$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?passkey=$CURUSER[passkey]";
-$dict['value']['announce']['value'] = getSchemeAndHttpHost() . "/announce.php?passkey=$CURUSER[passkey]";
+$dict['value']['announce']['value'] = getSchemeAndHttpHost() . "/announce.php?authkey=$trackerReportAuthKey";
 $dict['value']['announce']['string'] = strlen($dict['value']['announce']['value']).":".$dict['value']['announce']['value'];
 $dict['value']['announce']['strlen'] = strlen($dict['value']['announce']['string']);
 /*if ($announce_urls[1] != "") // add multi-tracker
