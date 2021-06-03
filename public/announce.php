@@ -26,7 +26,7 @@ if (!empty($_REQUEST['authkey'])) {
     }
     $userInfo = \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
     if (!$userInfo) {
-        err('Invalid authkty');
+        err('Invalid authkey');
     }
     $_GET['passkey'] = $userInfo->passkey;
 }
