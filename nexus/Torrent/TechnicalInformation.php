@@ -149,47 +149,35 @@ class TechnicalInformation
         $videos = array_filter($videos);
         $audios = $this->getAudios();
         $subtitles = $this->getSubtitles();
-        //video part
-        $videoTable = '<table style="border: none"><tbody>';
-        foreach (array_chunk($videos, 2, true) as $row) {
-            $videoTable .= '<tr>';
-            foreach ($row as $key => $value) {
-                $videoTable .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px"><b>%s: </b>%s</td>', $key, $value);
-            }
-            $videoTable .= '</tr>';
-        }
-        $videoTable .= '</tbody></table>';
-
-        $audioTable = '<table style="border: none"><tbody>';
-        $audioTable .= '<tr>';
-        foreach ($audios as $key => $value) {
-            $audioTable .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px"><b>%s: </b>%s</td>', $key, $value);
-        }
-        $audioTable .= '</tr>';
-        $audioTable .= '</tbody></table>';
-
-        $subtitleTable = '<table style="border: none"><tbody>';
-        $subtitleTable .= '<tr>';
-        foreach ($subtitles as $key => $value) {
-            $subtitleTable .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px"><b>%s: </b>%s</td>', $key, $value);
-        }
-        $subtitleTable .= '</tr>';
-        $subtitleTable .= '</tbody></table>';
-
+//        dd($videos, $audios, $subtitles);
         if (empty($videos) && empty($audios) && empty($subtitles)) {
             return '';
         }
-        $result = '<table style="border: none"><tbody><tr>';
+
+        $result = '<table style="border: none;width: 100%"><tbody><tr>';
         if (!empty($videos)) {
-            $result .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $videoTable);
+            $result .= $this->buildTdTable($videos);
         }
         if (!empty($audios)) {
-            $result .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $audioTable);
+            $result .= $this->buildTdTable($audios);
         }
         if (!empty($subtitles)) {
-            $result .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $subtitleTable);
+            $result .= $this->buildTdTable($subtitles);
         }
         $result .= '</tr></tbody></table>';
         return $result;
     }
+
+    private function buildTdTable(array $parts)
+    {
+        $table = '<table style="border: none;"><tbody>';
+        foreach ($parts as $key => $value) {
+            $table .= '<tr>';
+            $table .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px;"><b>%s: </b>%s</td>', $key, $value);
+            $table .= '</tr>';
+        }
+        $table .= '</tbody></table>';
+        return sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $table);
+    }
+
 }
