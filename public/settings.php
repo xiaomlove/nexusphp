@@ -55,7 +55,7 @@ if ($action == 'savesettings_main')	// save main
 	$Cache->delete_value('stats_torrents', true);
 	$Cache->delete_value('peers_count', true);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker MAIN settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker MAIN settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_basic') 	// save basic
@@ -71,7 +71,7 @@ elseif ($action == 'savesettings_basic') 	// save basic
 	}
 	saveSetting('basic', $BASIC);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker basic settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker basic settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_code') 	// save database
@@ -85,7 +85,7 @@ elseif ($action == 'savesettings_code') 	// save database
 	}
 	saveSetting('code', $CODE);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker code settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker code settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_bonus') 	// save bonus
@@ -107,7 +107,7 @@ elseif ($action == 'savesettings_bonus') 	// save bonus
 	ksort($BONUS['attendance_continuous']);
 	saveSetting('bonus', $BONUS);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker bonus settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker bonus settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_account') 	// save account
@@ -122,7 +122,7 @@ elseif ($action == 'savesettings_account') 	// save account
 	}
 	saveSetting('account', $ACCOUNT);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker account settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker account settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif($action == 'savesettings_torrent') 	// save account
@@ -137,7 +137,7 @@ elseif($action == 'savesettings_torrent') 	// save account
 
 	saveSetting('torrent', $TORRENT);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker torrent settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker torrent settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_smtp') 	// save smtp
@@ -158,7 +158,7 @@ elseif ($action == 'savesettings_smtp') 	// save smtp
 	}
 	saveSetting('smtp', $SMTP);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker SMTP settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker SMTP settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_security') 	// save security
@@ -181,7 +181,7 @@ elseif ($action == 'savesettings_security') 	// save security
 	}
 	saveSetting('security', $SECURITY);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker SECURITY settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker SECURITY settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_authority') 	// save user authority
@@ -196,7 +196,7 @@ elseif ($action == 'savesettings_authority') 	// save user authority
 
 	saveSetting('authority', $AUTHORITY);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker USER AUTHORITY settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker USER AUTHORITY settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_tweak')	// save tweak
@@ -210,7 +210,7 @@ elseif ($action == 'savesettings_tweak')	// save tweak
 	}
 	saveSetting('tweak', $TWEAK);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker TWEAK settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker TWEAK settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_attachment')	// save attachment
@@ -225,7 +225,7 @@ elseif ($action == 'savesettings_attachment')	// save attachment
 
 	saveSetting('attachment', $ATTACHMENT);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker ATTACHMENT settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker ATTACHMENT settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'savesettings_advertisement')	// save advertisement
@@ -240,7 +240,7 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 
 	saveSetting('advertisement', $ADVERTISEMENT);
 	$actiontime = date("F j, Y, g:i a");
-	write_log("Tracker ADVERTISEMENT settings updated by $CURUSER[username]. $actiontime",'mod');
+	write_log("Tracker ADVERTISEMENT settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
 }
 elseif ($action == 'tweaksettings')		// tweak settings

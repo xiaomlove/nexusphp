@@ -153,14 +153,15 @@
     'addoffer' => '0',
     'offermanage' => '13',
     'upload' => '2',
-    'uploadspecial' => '0',
-    'movetorrent' => '0',
+    'uploadspecial' => '12',
+    'movetorrent' => '13',
     'chrmanage' => '13',
     'viewinvite' => '13',
     'buyinvite' => '5',
     'seebanned' => '12',
     'againstoffer' => '1',
     'userbar' => '2',
+    'view_special_torrent' => '4',
   ),
   'tweak' => 
   array (

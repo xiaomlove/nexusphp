@@ -4,6 +4,7 @@ namespace App\Repositories;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\UnauthorizedException;
 
 class AuthenticateRepository extends BaseRepository
 {
@@ -11,9 +12,12 @@ class AuthenticateRepository extends BaseRepository
     {
         $user = User::query()
             ->where('username', $username)
-            ->first(array_merge(User::$commonFields, ['secret', 'passhash']));
+            ->first(array_merge(User::$commonFields, ['class', 'secret', 'passhash']));
         if (!$user || md5($user->secret . $password . $user->secret) != $user->passhash) {
             throw new \InvalidArgumentException('Username or password invalid.');
+        }
+        if (!$user->canAccessAdmin()) {
+            throw new UnauthorizedException('Unauthorized!');
         }
         $tokenName = __METHOD__ . __LINE__;
         $token = DB::transaction(function () use ($user, $tokenName) {

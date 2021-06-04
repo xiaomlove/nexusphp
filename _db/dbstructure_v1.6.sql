@@ -778,7 +778,7 @@ CREATE TABLE `failed_jobs` (
   `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`)
+  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1910,6 +1910,34 @@ INSERT INTO `searchbox` VALUES (4,'chd',1,0,1,1,1,0,1,0,10,7,'','','');
 UNLOCK TABLES;
 
 --
+-- Table structure for table `searchbox_fields`
+--
+
+DROP TABLE IF EXISTS `searchbox_fields`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `searchbox_fields` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `searchbox_id` int(11) NOT NULL,
+  `field_type` varchar(255) NOT NULL,
+  `field_id` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_searchbox_type_id` (`searchbox_id`,`field_type`,`field_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `searchbox_fields`
+--
+
+LOCK TABLES `searchbox_fields` WRITE;
+/*!40000 ALTER TABLE `searchbox_fields` DISABLE KEYS */;
+/*!40000 ALTER TABLE `searchbox_fields` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `secondicons`
 --
 
@@ -1953,8 +1981,8 @@ CREATE TABLE `settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL DEFAULT '',
   `value` mediumtext,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniqe_name` (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -2338,6 +2366,35 @@ LOCK TABLES `topics` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `torrent_secrets`
+--
+
+DROP TABLE IF EXISTS `torrent_secrets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `torrent_secrets` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) NOT NULL,
+  `torrent_id` int(11) NOT NULL DEFAULT '0',
+  `secret` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_uid` (`uid`),
+  KEY `idx_torrent_id` (`torrent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `torrent_secrets`
+--
+
+LOCK TABLES `torrent_secrets` WRITE;
+/*!40000 ALTER TABLE `torrent_secrets` DISABLE KEYS */;
+/*!40000 ALTER TABLE `torrent_secrets` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `torrents`
 --
 
@@ -2381,7 +2438,7 @@ CREATE TABLE `torrents` (
   `promotion_until` datetime DEFAULT NULL,
   `anonymous` enum('yes','no') NOT NULL DEFAULT 'no',
   `url` int(10) unsigned DEFAULT NULL,
-  `pos_state` enum('normal','sticky') NOT NULL DEFAULT 'normal',
+  `pos_state` varchar(32) NOT NULL DEFAULT 'normal',
   `cache_stamp` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `picktype` enum('hot','classic','recommended','normal') NOT NULL DEFAULT 'normal',
   `picktime` datetime DEFAULT NULL,
@@ -2703,4 +2760,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-05-14  0:29:10
+-- Dump completed on 2021-06-04 21:00:26

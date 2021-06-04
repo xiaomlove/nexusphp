@@ -885,7 +885,7 @@ if (isset($searchstr))
 	stdhead($lang_torrents['head_search_results_for'].$searchstr_ori);
 elseif ($sectiontype == $browsecatmode)
 	stdhead($lang_torrents['head_torrents']);
-else stdhead($lang_torrents['head_music']);
+else stdhead($lang_torrents['head_special']);
 print("<table width=\"97%\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
 
 displayHotAndClassic();

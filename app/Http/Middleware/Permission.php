@@ -18,14 +18,13 @@ class Permission
      */
     public function handle(Request $request, Closure $next)
     {
+        /** @var User $user */
         $user = $request->user();
-        $targetClass = User::CLASS_MODERATOR;
-        $log = sprintf('user: %s, class: %s, target class: %s', $user->id, $user->class, $targetClass);
-        if (!$user || $user->class < $targetClass) {
-            do_log("$log, denied!");
+        if (!$user || !$user->canAccessAdmin()) {
+            do_log("denied!");
             throw new UnauthorizedException('Unauthorized!');
         }
-        do_log("$log, allow!");
+        do_log("allow!");
         return $next($request);
     }
 }
