@@ -93,11 +93,11 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 	$descr = $pic;
 	$descr .= $descrmain;
 
-	$res = sql_query("SELECT name FROM offers WHERE name =".sqlesc($_POST[name])) or sqlerr(__FILE__,__LINE__);
+	$res = sql_query("SELECT name FROM offers WHERE name =".sqlesc($_POST['name'])) or sqlerr(__FILE__,__LINE__);
 	$arr = mysql_fetch_assoc($res);
 	if (!$arr['name']){
 		//===add karma //=== uncomment if you use the mod
-		//sql_query("UPDATE users SET seedbonus = seedbonus+10.0 WHERE id = $CURUSER[id]") or sqlerr(__FILE__, __LINE__);
+		//sql_query("UPDATE users SET seedbonus = seedbonus+10.0 WHERE id = $CURUSER['id']") or sqlerr(__FILE__, __LINE__);
 		//===end
 
 		$ret = sql_query("INSERT INTO offers (userid, name, descr, category, added) VALUES (" .
@@ -110,7 +110,7 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 		}
 		$id = mysql_insert_id();
 
-		write_log("offer $name was added by ".$CURUSER[username],'normal');
+		write_log("offer $name was added by ".$CURUSER['username'],'normal');
 
 		header("Refresh: 0; url=offers.php?id=$id&off_details=1");
 
@@ -186,7 +186,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 		tr($lang_offers['row_offer_allowed'],
 		$lang_offers['text_urge_upload_offer_note'], 1);
 	}
-	if ($CURUSER[id] == $num[userid] || get_user_class() >= $offermanage_class){
+	if ($CURUSER['id'] == $num['userid'] || get_user_class() >= $offermanage_class){
 		$edit = "<a href=\"?id=".$id."&amp;edit_offer=1\"><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_offers['text_edit_offer'] . "</font></b></a>&nbsp;|&nbsp;";
 		$delete = "<a href=\"?id=".$id."&amp;del_offer=1&amp;sure=0\"><img class=\"dt_delete\" src=\"pic/trans.gif\" alt=\"delete\" />&nbsp;<b><font class=\"small\">".$lang_offers['text_delete_offer']."</font></b></a>&nbsp;|&nbsp;";
 	}
@@ -255,14 +255,14 @@ if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 		$timeoutnote = $lang_offers_target[get_user_lang($arr["userid"])]['msg_you_must_upload_in'].$timeouthour.$lang_offers_target[get_user_lang($arr["userid"])]['msg_hours_otherwise'];
 	}
 	else $timeoutnote = "";
-	$msg = "$CURUSER[username]".$lang_offers_target[get_user_lang($arr["userid"])]['msg_has_allowed']."[b][url=". get_protocol_prefix() . $BASEURL ."/offers.php?id=$offid&off_details=1]" . $arr[name] . "[/url][/b]. ".$lang_offers_target[get_user_lang($arr["userid"])]['msg_find_offer_option'].$timeoutnote;
+	$msg = $CURUSER['username'].$lang_offers_target[get_user_lang($arr["userid"])]['msg_has_allowed']."[b][url=". get_protocol_prefix() . $BASEURL ."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b]. ".$lang_offers_target[get_user_lang($arr["userid"])]['msg_find_offer_option'].$timeoutnote;
 
 	$subject = $lang_offers_target[get_user_lang($arr["userid"])]['msg_your_offer_allowed'];
 	$allowedtime = date("Y-m-d H:i:s");
-	sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, $arr[userid], '" . $allowedtime . "', " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
+	sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['userid']}, '" . $allowedtime . "', " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
 	sql_query ("UPDATE offers SET allowed = 'allowed', allowedtime = '".$allowedtime."' WHERE id = $offid") or sqlerr(__FILE__,__LINE__);
 
-	write_log("$CURUSER[username] allowed offer $arr[name]",'normal');
+	write_log("{$CURUSER['username']} allowed offer {$arr['name']}",'normal');
 	header("Refresh: 0; url=" . get_protocol_prefix() . "$BASEURL/offers.php?id=$offid&off_details=1");
 }
 //=== end allow the offer
@@ -300,19 +300,19 @@ if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 			$timeoutnote = $lang_offers_target[get_user_lang($arr["userid"])]['msg_you_must_upload_in'].$timeouthour.$lang_offers_target[get_user_lang($arr["userid"])]['msg_hours_otherwise'];
 		}
 		else $timeoutnote = "";
-		$msg = $lang_offers_target[get_user_lang($arr["userid"])]['msg_offer_voted_on']."[b][url=" . get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr[name] . "[/url][/b].". $lang_offers_target[get_user_lang($arr["userid"])]['msg_find_offer_option'].$timeoutnote;
+		$msg = $lang_offers_target[get_user_lang($arr["userid"])]['msg_offer_voted_on']."[b][url=" . get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b].". $lang_offers_target[get_user_lang($arr["userid"])]['msg_find_offer_option'].$timeoutnote;
 		sql_query ("UPDATE offers SET allowed = 'allowed',allowedtime ='".$finishvotetime."' WHERE id = $offid") or sqlerr(__FILE__,__LINE__);
 	}
 	else if(($no - $yes)>=$minoffervotes){
-		$msg = $lang_offers_target[get_user_lang($arr["userid"])]['msg_offer_voted_off']."[b][url=". get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr[name] . "[/url][/b].".$lang_offers_target[get_user_lang($arr["userid"])]['msg_offer_deleted'] ;
+		$msg = $lang_offers_target[get_user_lang($arr["userid"])]['msg_offer_voted_off']."[b][url=". get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b].".$lang_offers_target[get_user_lang($arr["userid"])]['msg_offer_deleted'] ;
 		sql_query ("UPDATE offers SET allowed = 'denied' WHERE id = $offid") or sqlerr(__FILE__,__LINE__);
 	}
 			//===use this line if you DO HAVE subject in your PM system
-	$subject = $lang_offers_target[get_user_lang($arr[userid])]['msg_your_offer'].$arr[name].$lang_offers_target[get_user_lang($arr[userid])]['msg_voted_on'];
-	sql_query("INSERT INTO messages (sender, subject, receiver, added, msg) VALUES(0, ".sqlesc($subject).", $arr[userid], '" . $finishvotetime . "', " . sqlesc($msg) . ")") or sqlerr(__FILE__, __LINE__);
+	$subject = $lang_offers_target[get_user_lang($arr['userid'])]['msg_your_offer'].$arr['name'].$lang_offers_target[get_user_lang($arr['userid'])]['msg_voted_on'];
+	sql_query("INSERT INTO messages (sender, subject, receiver, added, msg) VALUES(0, ".sqlesc($subject).", {$arr['userid']}, '" . $finishvotetime . "', " . sqlesc($msg) . ")") or sqlerr(__FILE__, __LINE__);
 	//===use this line if you DO NOT subject in your PM system
-	//sql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES(0, $arr[userid], '" . date("Y-m-d H:i:s") . "', " . sqlesc($msg) . ")") or sqlerr(__FILE__, __LINE__);
-	write_log("$CURUSER[username] closed poll $arr[name]",'normal');
+	//sql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES(0, $arr['userid'], '" . date("Y-m-d H:i:s") . "', " . sqlesc($msg) . ")") or sqlerr(__FILE__, __LINE__);
+	write_log("{$CURUSER['username']} closed poll {$arr['name']}",'normal');
 
 	header("Refresh: 0; url=" . get_protocol_prefix() . "$BASEURL/offers.php?id=$offid&off_details=1");
 	die;
@@ -378,7 +378,7 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 	$res = sql_query("SELECT userid FROM offers WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 	$num = mysql_fetch_array($res);
 
-	if ($CURUSER[id] != $num[userid] && get_user_class() < $offermanage_class)
+	if ($CURUSER['id'] != $num['userid'] && get_user_class() < $offermanage_class)
 	stderr($lang_offers['std_error'], $lang_offers['std_access_denied']);
 
 	$name = $_POST["name"];
@@ -440,9 +440,9 @@ if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 
 		while ($arr = mysql_fetch_assoc($res))
 		{
-			if ($arr[vote] == 'yeah')
+			if ($arr['vote'] == 'yeah')
 				$vote = "<b><font color=green>".$lang_offers['text_for']."</font></b>";
-			elseif ($arr[vote] == 'against')
+			elseif ($arr['vote'] == 'against')
 				$vote = "<b><font color=red>".$lang_offers['text_against']."</font></b>";
 			else $vote = "unknown";
 
@@ -499,19 +499,19 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 				}
 				else $timeoutnote = "";
 				sql_query("UPDATE offers SET allowed='allowed', allowedtime=".sqlesc($finishtime)." WHERE id=".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
-				$msg = $lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_voted_on']."[b][url=". get_protocol_prefix() . $BASEURL."/offers.php?id=$offerid&off_details=1]" . $arr[name] . "[/url][/b].". $lang_offers_target[get_user_lang($arr['userid'])]['msg_find_offer_option'].$timeoutnote;
+				$msg = $lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_voted_on']."[b][url=". get_protocol_prefix() . $BASEURL."/offers.php?id=$offerid&off_details=1]" . $arr['name'] . "[/url][/b].". $lang_offers_target[get_user_lang($arr['userid'])]['msg_find_offer_option'].$timeoutnote;
 				$subject = $lang_offers_target[get_user_lang($arr['userid'])]['msg_your_offer_allowed'];
-				sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, $arr[userid], " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
-				write_log("System allowed offer $arr[name]",'normal');
+				sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['userid']}, " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
+				write_log("System allowed offer {$arr['name']}",'normal');
 			}
 			//denied and send offer voted off message
 			if(($against-$yeah)>=$minoffervotes && $ya_arr['allowed'] != "denied")
 			{
 				sql_query("UPDATE offers SET allowed='denied' WHERE id=".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
-				$msg = $lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_voted_off']."[b][url=" . get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr[name] . "[/url][/b].".$lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_deleted'] ;
+				$msg = $lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_voted_off']."[b][url=" . get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b].".$lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_deleted'] ;
 				$subject = $lang_offers_target[get_user_lang($arr['userid'])]['msg_offer_deleted'];
-				sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, $arr[userid], " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
-				write_log("System denied offer $arr[name]",'normal');
+				sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['userid']}, " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
+				write_log("System denied offer {$arr['name']}",'normal');
 			}
 
 
@@ -570,17 +570,17 @@ if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 		sql_query("DELETE FROM comments WHERE offer=$offer");
 
 		//===add karma	//=== use this if you use the karma mod
-		//sql_query("UPDATE users SET seedbonus = seedbonus-10.0 WHERE id = $num[userid]") or sqlerr(__FILE__, __LINE__);
+		//sql_query("UPDATE users SET seedbonus = seedbonus-10.0 WHERE id = $num['userid']") or sqlerr(__FILE__, __LINE__);
 		//===end
 
 		if ($CURUSER["id"] != $num["userid"])
 		{
 			$added = sqlesc(date("Y-m-d H:i:s"));
 			$subject = sqlesc($lang_offers_target[get_user_lang($num["userid"])]['msg_offer_deleted']);
-			$msg = sqlesc($lang_offers_target[get_user_lang($num["userid"])]['msg_your_offer'].$num[name].$lang_offers_target[get_user_lang($num["userid"])]['msg_was_deleted_by']. "[url=userdetails.php?id=".$CURUSER['id']."]".$CURUSER['username']."[/url]".$lang_offers_target[get_user_lang($num["userid"])]['msg_blank'].($reason != "" ? $lang_offers_target[get_user_lang($num["userid"])]['msg_reason_is'].$reason : ""));
-			sql_query("INSERT INTO messages (sender, receiver, msg, added, subject) VALUES(0, $num[userid], $msg, $added, $subject)") or sqlerr(__FILE__, __LINE__);
+			$msg = sqlesc($lang_offers_target[get_user_lang($num["userid"])]['msg_your_offer'].$num['name'].$lang_offers_target[get_user_lang($num["userid"])]['msg_was_deleted_by']. "[url=userdetails.php?id=".$CURUSER['id']."]".$CURUSER['username']."[/url]".$lang_offers_target[get_user_lang($num["userid"])]['msg_blank'].($reason != "" ? $lang_offers_target[get_user_lang($num["userid"])]['msg_reason_is'].$reason : ""));
+			sql_query("INSERT INTO messages (sender, receiver, msg, added, subject) VALUES(0, {$num['userid']}, $msg, $added, $subject)") or sqlerr(__FILE__, __LINE__);
 		}
-		write_log("Offer: $offer ($num[name]) was deleted by $CURUSER[username]".($reason != "" ? " (".$reason.")" : ""),'normal');
+		write_log("Offer: $offer ({$num['name']}) was deleted by {$CURUSER['username']}".($reason != "" ? " (".$reason.")" : ""),'normal');
 		header("Refresh: 0; url=offers.php");
 		die;
 	}
@@ -726,7 +726,7 @@ if (!$num)
 	stdmsg($lang_offers['text_nothing_found'],$lang_offers['text_nothing_found']);
 else
 {
-	$catid = $_GET[category];
+	$catid = $_GET['category'];
 	print("<table class=\"torrents\" cellspacing=\"0\" cellpadding=\"5\" width=\"100%\">");
 	print("<tr><td class=\"colhead\" style=\"padding: 0px\"><a href=\"?category=" . $catid . "&amp;sort=cat&amp;type=".$cat_order_type."\">".$lang_offers['col_type']."</a></td>".
 "<td class=\"colhead\" width=\"100%\"><a href=\"?category=" . $catid . "&amp;sort=name&amp;type=".$name_order_type."\">".$lang_offers['col_title']."</a></td>".
@@ -745,13 +745,13 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 	$addedby = get_username($arr['userid']);
 	$comms = $arr['comments'];
 	if ($comms == 0)
-		$comment = "<a href=\"comment.php?action=add&amp;pid=".$arr[id]."&amp;type=offer\" title=\"".$lang_offers['title_add_comments']."\">0</a>";
+		$comment = "<a href=\"comment.php?action=add&amp;pid=".$arr['id']."&amp;type=offer\" title=\"".$lang_offers['title_add_comments']."\">0</a>";
 	else
 	{
-		if (!$lastcom = $Cache->get_value('offer_'.$arr[id].'_last_comment_content')){
-			$res2 = sql_query("SELECT user, added, text FROM comments WHERE offer = $arr[id] ORDER BY added DESC LIMIT 1");
+		if (!$lastcom = $Cache->get_value('offer_'.$arr['id'].'_last_comment_content')){
+			$res2 = sql_query("SELECT user, added, text FROM comments WHERE offer = {$arr['id']} ORDER BY added DESC LIMIT 1");
 			$lastcom = mysql_fetch_array($res2);
-			$Cache->cache_value('offer_'.$arr[id].'_last_comment_content', $lastcom, 1855);
+			$Cache->cache_value('offer_'.$arr['id'].'_last_comment_content', $lastcom, 1855);
 		}
 		$timestamp = strtotime($lastcom["added"]);
 		$hasnewcom = ($lastcom['user'] != $CURUSER['id'] && $timestamp >= $last_offer);
@@ -775,7 +775,7 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 			$title = " title=\"".($hasnewcom ? $lang_offers['title_has_new_comment'] : $lang_offers['title_no_new_comment'])."\"";
 			$onmouseover = "";
 		}
-		$comment = "<b><a".$title." href=\"?id=".$arr[id]."&amp;off_details=1#startcomments\" ".$onmouseover.">".($hasnewcom ? "<font class='new'>" : ""). $comms .($hasnewcom ? "</font>" : "")."</a></b>";
+		$comment = "<b><a".$title." href=\"?id=".$arr['id']."&amp;off_details=1#startcomments\" ".$onmouseover.">".($hasnewcom ? "<font class='new'>" : ""). $comms .($hasnewcom ? "</font>" : "")."</a></b>";
 	}
 
 	//==== if you want allow deny for offers use this next bit
@@ -788,13 +788,13 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 	//===end
 
 	if ($arr["yeah"] == 0)
-	$zvote = $arr[yeah];
+	$zvote = $arr['yeah'];
 	else
-	$zvote = "<b><a href=\"?id=".$arr[id]."&amp;offer_vote=1\">".$arr[yeah]."</a></b>";
+	$zvote = "<b><a href=\"?id=".$arr['id']."&amp;offer_vote=1\">".$arr['yeah']."</a></b>";
 	if ($arr["against"] == 0)
-	$pvote = "$arr[against]";
+	$pvote = $arr['against'];
 	else
-	$pvote = "<b><a href=\"?id=".$arr[id]."&amp;offer_vote=1\">".$arr[against]."</a></b>";
+	$pvote = "<b><a href=\"?id=".$arr['id']."&amp;offer_vote=1\">".$arr['against']."</a></b>";
 
 	if ($arr["yeah"] == 0 && $arr["against"] == 0)
 	{
@@ -803,15 +803,15 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 	else
 	{
 
-		$v_res = "<b><a href=\"?id=".$arr[id]."&amp;offer_vote=1\" title=\"".$lang_offers['title_show_vote_details']."\"><font color=\"green\">" .$arr[yeah]."</font> - <font color=\"red\">".$arr[against]."</font> = ".($arr[yeah] - $arr[against]). "</a></b>";
+		$v_res = "<b><a href=\"?id=".$arr['id']."&amp;offer_vote=1\" title=\"".$lang_offers['title_show_vote_details']."\"><font color=\"green\">" .$arr['yeah']."</font> - <font color=\"red\">".$arr['against']."</font> = ".($arr['yeah'] - $arr['against']). "</a></b>";
 	}
 	$addtime = gettime($arr['added'],false,true);
-	$dispname = $arr[name];
-	$count_dispname=mb_strlen($arr[name],"UTF-8");
+	$dispname = $arr['name'];
+	$count_dispname=mb_strlen($arr['name'],"UTF-8");
 	$max_length_of_offer_name = 70;
 	if($count_dispname > $max_length_of_offer_name)
 		$dispname=mb_substr($dispname, 0, $max_length_of_offer_name-2,"UTF-8") . "..";
-	print("<tr><td class=\"rowfollow\" style=\"padding: 0px\"><a href=\"?category=".$arr['cat_id']."\">".return_category_image($arr['cat_id'], "")."</a></td><td style='text-align: left'><a href=\"?id=".$arr[id]."&amp;off_details=1\" title=\"".htmlspecialchars($arr[name])."\"><b>".htmlspecialchars($dispname)."</b></a>".($CURUSER['appendnew'] != 'no' && strtotime($arr["added"]) >= $last_offer ? "<b> (<font class='new'>".$lang_offers['text_new']."</font>)</b>" : "").$allowed."</td><td class=\"rowfollow nowrap\" style='padding: 5px' align=\"center\">".$v_res."</td><td class=\"rowfollow nowrap\" ".(get_user_class() < $againstoffer_class ? " colspan=\"2\" " : "")." style='padding: 5px'><a href=\"?id=".$arr[id]."&amp;vote=yeah\" title=\"".$lang_offers['title_i_want_this']."\"><font color=\"green\"><b>".$lang_offers['text_yep']."</b></font></a></td>".(get_user_class() >= $againstoffer_class ? "<td class=\"rowfollow nowrap\" align=\"center\"><a href=\"?id=".$arr[id]."&amp;vote=against\" title=\"".$lang_offers['title_do_not_want_it']."\"><font color=\"red\"><b>".$lang_offers['text_nah']."</b></font></a></td>" : ""));
+	print("<tr><td class=\"rowfollow\" style=\"padding: 0px\"><a href=\"?category=".$arr['cat_id']."\">".return_category_image($arr['cat_id'], "")."</a></td><td style='text-align: left'><a href=\"?id=".$arr['id']."&amp;off_details=1\" title=\"".htmlspecialchars($arr['name'])."\"><b>".htmlspecialchars($dispname)."</b></a>".($CURUSER['appendnew'] != 'no' && strtotime($arr["added"]) >= $last_offer ? "<b> (<font class='new'>".$lang_offers['text_new']."</font>)</b>" : "").$allowed."</td><td class=\"rowfollow nowrap\" style='padding: 5px' align=\"center\">".$v_res."</td><td class=\"rowfollow nowrap\" ".(get_user_class() < $againstoffer_class ? " colspan=\"2\" " : "")." style='padding: 5px'><a href=\"?id=".$arr['id']."&amp;vote=yeah\" title=\"".$lang_offers['title_i_want_this']."\"><font color=\"green\"><b>".$lang_offers['text_yep']."</b></font></a></td>".(get_user_class() >= $againstoffer_class ? "<td class=\"rowfollow nowrap\" align=\"center\"><a href=\"?id=".$arr['id']."&amp;vote=against\" title=\"".$lang_offers['title_do_not_want_it']."\"><font color=\"red\"><b>".$lang_offers['text_nah']."</b></font></a></td>" : ""));
 
 	print("<td class=\"rowfollow\">".$comment."</td><td class=\"rowfollow nowrap\">" . $addtime. "</td>");
 	if ($offervotetimeout_main > 0 && $offeruptimeout_main > 0){
@@ -828,7 +828,7 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 			$timeout = "N/A";
 		print("<td class=\"rowfollow nowrap\">".$timeout."</td>");
 	}
-	print("<td class=\"rowfollow\">".$addedby."</td>".(get_user_class() >= $offermanage_class ? "<td class=\"rowfollow\"><a href=\"?id=".$arr[id]."&amp;del_offer=1\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_offers['title_delete']."\" /></a><br /><a href=\"?id=".$arr[id]."&amp;edit_offer=1\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_offers['title_edit']."\" /></a></td>" : "")."</tr>");
+	print("<td class=\"rowfollow\">".$addedby."</td>".(get_user_class() >= $offermanage_class ? "<td class=\"rowfollow\"><a href=\"?id=".$arr['id']."&amp;del_offer=1\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_offers['title_delete']."\" /></a><br /><a href=\"?id=".$arr['id']."&amp;edit_offer=1\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_offers['title_edit']."\" /></a></td>" : "")."</tr>");
 	}
 	print("</table>\n");
 	echo $pagerbottom;

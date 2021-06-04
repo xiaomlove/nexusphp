@@ -144,6 +144,10 @@ if ($currentStep == 5) {
         ['label' => '确认密码', 'name' => 'confirm_password', 'value' => $_POST['confirm_password'] ?? ''],
     ];
 }
+
+if (!empty($error)) {
+    $pass = false;
+}
 ?>
 
 <!doctype html>

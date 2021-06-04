@@ -188,6 +188,10 @@ if ($currentStep == 4) {
         break;
     }
 }
+
+if (!empty($error)) {
+    $pass = false;
+}
 ?>
 
 <!doctype html>

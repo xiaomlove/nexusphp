@@ -218,7 +218,9 @@ class DB
         $capsule->addConnection($config, $connectionName);
         $capsule->setAsGlobal();
         $capsule->bootEloquent();
-        $capsule->getConnection($connectionName)->enableQueryLog();
+        $connection = $capsule->getConnection($connectionName);
+        $connection->enableQueryLog();
+        $connection->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
     }
 
     public static function schema(): \Illuminate\Database\Schema\Builder
