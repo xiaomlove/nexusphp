@@ -315,6 +315,7 @@ class TorrentRepository extends BaseRepository
             ->where('uid', $uid)
             ->whereIn('torrent_id', [0, $id])
             ->orderBy('torrent_id', 'desc')
+            ->orderBy('id', 'desc')
             ->first();
         if ($secret) {
             return $secret->secret;

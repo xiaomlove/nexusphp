@@ -22,6 +22,7 @@ if (!$update->canAccessStep($currentStep)) {
     $update->gotoStep(1);
 }
 $error = $copy = '';
+$pass = true;
 
 //step 1
 if ($currentStep == 1) {
@@ -67,7 +68,6 @@ if ($currentStep == 2) {
 }
 
 if ($currentStep == 3) {
-    $pass = true;
     $createTables = $update->listAllTableCreate();
     $existsTables = $update->listExistsTable();
     $tableRows = [];

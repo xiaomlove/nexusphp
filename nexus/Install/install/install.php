@@ -15,6 +15,7 @@ if (!$install->canAccessStep($currentStep)) {
     $install->gotoStep(1);
 }
 $error = $copy = '';
+$pass = true;
 
 //step 1
 if ($currentStep == 1) {
@@ -60,7 +61,6 @@ if ($currentStep == 2) {
 }
 
 if ($currentStep == 3) {
-    $pass = true;
     $shouldCreateTable = $install->listShouldCreateTable();
     while ($isPost) {
         try {
@@ -136,7 +136,6 @@ if ($currentStep == 5) {
             $error = $exception->getMessage();
         }
     }
-    $pass = true;
     $userFormControls = [
         ['label' => '用户名', 'name' => 'username', 'value' => $_POST['username'] ?? ''],
         ['label' => '邮箱', 'name' => 'email', 'value' => $_POST['email'] ?? ''],
