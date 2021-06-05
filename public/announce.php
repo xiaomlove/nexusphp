@@ -85,7 +85,8 @@ if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
 $userid = intval($az['id'] ?? 0);
-$GLOBALS["CURUSER"] = $currentUser;
+unset($GLOBALS['CURUSER']);
+$CURUSER = $GLOBALS["CURUSER"] = $currentUser;
 
 //3. CHECK IF CLIENT IS ALLOWED
 $clicheck_res = check_client($peer_id,$agent,$client_familyid);
@@ -110,7 +111,7 @@ if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$Cache->cache_value('torrent_hash_'.$info_hash.'_content', $torrent, 350);
 }
 if (!$torrent) {
-    do_log("[TORRENT NOT EXISTS] $checkTorrentSql");
+    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: " . json_encode($_GET));
     err("torrent not registered with this tracker");
 }
 elseif ($torrent['banned'] == 'yes' && $az['class'] < $seebanned_class) err("torrent banned");
