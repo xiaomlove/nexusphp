@@ -11,6 +11,7 @@ use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\TorrentRepository;
 use Carbon\Carbon;
+use Doctrine\DBAL\Schema\Schema;
 use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
@@ -50,11 +51,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $torrentRep = new TorrentRepository();
-        $r = $torrentRep->getTrackerReportAuthKey(1, 1, true);
-//        $r = $torrentRep->resetTrackerReportAuthKeySecret(1);
-//        dd($r);
-        dd($r, $torrentRep->checkTrackerReportAuthKey($r));
+//        $r = \Illuminate\Support\Facades\Schema::getColumnListing('torrents');
+        $r = urldecode('bm9wZQ%3D%3D');
+        $r = base64_decode($r);
+        dd($r);
     }
 
 }

@@ -228,4 +228,10 @@ class DB
         return Capsule::schema(self::ELOQUENT_CONNECTION_NAME);
     }
 
+    public static function table($table): \Illuminate\Database\Query\Builder
+    {
+        return Capsule::table($table);
+    }
+
+
 }
