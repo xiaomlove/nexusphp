@@ -81,6 +81,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror,passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = $currentUser = mysql_fetch_array($res);
+	do_log("[check passkey], currentUser: " . nexus_json_encode($currentUser));
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
@@ -111,7 +112,7 @@ if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$Cache->cache_value('torrent_hash_'.$info_hash.'_content', $torrent, 350);
 }
 if (!$torrent) {
-    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: " . json_encode($_GET));
+    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: " . $_SERVER['QUERY_STRING']);
     err("torrent not registered with this tracker");
 }
 elseif ($torrent['banned'] == 'yes' && $az['class'] < $seebanned_class) err("torrent banned");
