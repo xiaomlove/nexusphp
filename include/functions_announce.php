@@ -54,7 +54,7 @@ function benc_resp_raw($x) {
 	if (isset($_SERVER["HTTP_ACCEPT_ENCODING"]) && $_SERVER["HTTP_ACCEPT_ENCODING"] == "gzip" && function_exists('gzencode')) {
 		header("Content-Encoding: gzip");
 		echo gzencode($x, 9, FORCE_GZIP);
-	} 
+	}
 	else
 		echo $x;
 }
@@ -69,7 +69,7 @@ function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $s
 	$time = date("Y-m-d H:i:s");
 	$upspeed = ($uploaded > 0 ? $uploaded / $anctime : 0);
 	$mustBeCheaterSpeed = 1024 * 1024 * 100; //100 MB/s
-	$mayBeCheaterSpeed = 1024 * 1024 * 25; //25 MB/s
+	$mayBeCheaterSpeed = 1024 * 1024 * 50; //50 MB/s
 
 	if ($uploaded > 1073741824 && $upspeed > ($mustBeCheaterSpeed/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is no doubt cheating.
 	{

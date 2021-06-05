@@ -137,7 +137,9 @@ function dict_get($d, $k, $t) {
 	return $v["value"];
 }
 
-list($ann, $info) = dict_check($dict, "announce(string):info");
+//list($ann, $info) = dict_check($dict, "announce(string):info");
+//@see https://blog.rhilip.info/archives/1036/
+list($info) = dict_check($dict, "info");
 list($dname, $plen, $pieces) = dict_check($info, "name(string):piece length(integer):pieces(string)");
 
 /*

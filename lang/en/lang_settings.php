@@ -706,6 +706,10 @@ $lang_settings = array
 	'text_login_secret_lifetime_deadline' => 'Current login secret deadline',
 	'row_enable_technical_info' => 'Enable Technical Information',
 	'text_enable_technical_info' => "Default 'No'. Technical Information comes from software <b><a href=\"https://mediaarea.net/en/MediaInfo\" target='_blank'>MediaInfo</a></b> Text view",
+    'row_sticky_first_level_background_color' => 'Sticky first level bg color',
+    'text_sticky_first_level_background_color_note' => 'Sticky first level bg color, it will be none if not set.',
+    'row_sticky_second_level_background_color' => 'Sticky second level bg color',
+    'text_sticky_second_level_background_color_note' => 'Sticky second level bg color, it will be none if not set.',
 );
 
 ?>

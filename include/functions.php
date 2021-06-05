@@ -3159,7 +3159,7 @@ else $displaysmalldescr = true;
 foreach ($rows as $row)
 {
 	$id = $row["id"];
-	$sphighlight = get_torrent_bg_color($row['sp_state']);
+	$sphighlight = get_torrent_bg_color($row['sp_state'], $row['pos_state']);
 	print("<tr" . $sphighlight . ">\n");
 
 	print("<td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>");
@@ -3889,10 +3889,10 @@ function get_second_icon($row, $catimgurl) //for CHDBits
 	}
 }
 
-function get_torrent_bg_color($promotion = 1)
+function get_torrent_bg_color($promotion = 1, $posState = "")
 {
 	global $CURUSER;
-
+    $sphighlight = null;
 	if ($CURUSER['appendpromotion'] == 'highlight'){
 		$global_promotion_state = get_global_sp_state();
 		if ($global_promotion_state == 1){
@@ -3910,7 +3910,6 @@ function get_torrent_bg_color($promotion = 1)
 				$sphighlight = " class='twouphalfdown_bg'";
 			elseif($promotion==7)
 				$sphighlight = " class='thirtypercentdown_bg'";
-			else $sphighlight = "";
 		}
 		elseif($global_promotion_state == 2)
 			$sphighlight = " class='free_bg'";
@@ -3924,11 +3923,16 @@ function get_torrent_bg_color($promotion = 1)
 			$sphighlight = " class='twouphalfdown_bg'";
 		elseif($global_promotion_state == 7)
 			$sphighlight = " class='thirtypercentdown_bg'";
-		else
-			$sphighlight = "";
 	}
-	else $sphighlight = "";
-	return $sphighlight;
+	if (is_null($sphighlight)) {
+        $torrentSettings = get_setting('torrent');
+	    if ($posState == \App\Models\Torrent::POS_STATE_STICKY_ONE && !empty($torrentSettings['sticky_first_level_background_color'])) {
+	        $sphighlight = sprintf(' style="background-color: %s"', $torrentSettings['sticky_first_level_background_color']);
+        } elseif ($posState == \App\Models\Torrent::POS_STATE_STICKY_SECOND && !empty($torrentSettings['sticky_second_level_background_color'])) {
+            $sphighlight = sprintf(' style="background-color: %s"', $torrentSettings['sticky_second_level_background_color']);
+        }
+    }
+	return (string)$sphighlight;
 }
 
 function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = ''){

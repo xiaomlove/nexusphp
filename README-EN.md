@@ -5,6 +5,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 ## Functional Features
 
 - Upload torrent
+- Special section  
 - Request torrent
 - Subtitle
 - Exam
