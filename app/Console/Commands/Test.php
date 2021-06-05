@@ -52,8 +52,8 @@ class Test extends Command
     public function handle()
     {
 //        $r = \Illuminate\Support\Facades\Schema::getColumnListing('torrents');
-        $r = urldecode('bm9wZQ%3D%3D');
-        $r = base64_decode($r);
+        $r = urldecode('%b5%8f%7c%a9%85%ed%e2%bb%09%fd1%ab%8d%11%e5%11%bb%18%deD');
+        $r = bin2hex($r);
         dd($r);
     }
 

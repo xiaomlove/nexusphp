@@ -79,12 +79,13 @@ $seeder = ($left == 0) ? "yes" : "no";
 
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
-	$az = mysql_fetch_array($res);
+	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror,passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$az = $currentUser = mysql_fetch_array($res);
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
 $userid = intval($az['id'] ?? 0);
+$GLOBALS["CURUSER"] = $currentUser;
 
 //3. CHECK IF CLIENT IS ALLOWED
 $clicheck_res = check_client($peer_id,$agent,$client_familyid);
@@ -102,12 +103,16 @@ elseif ($az['showclienterror'] == 'yes'){
 }
 
 // check torrent based on info_hash
+$checkTorrentSql = "SELECT id, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned FROM torrents WHERE " . hash_where("info_hash", $info_hash);
 if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
-	$res = sql_query("SELECT id, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned FROM torrents WHERE " . hash_where("info_hash", $info_hash));
+	$res = sql_query($checkTorrentSql);
 	$torrent = mysql_fetch_array($res);
 	$Cache->cache_value('torrent_hash_'.$info_hash.'_content', $torrent, 350);
 }
-if (!$torrent) err("torrent not registered with this tracker");
+if (!$torrent) {
+    do_log("[TORRENT NOT EXISTS] $checkTorrentSql");
+    err("torrent not registered with this tracker");
+}
 elseif ($torrent['banned'] == 'yes' && $az['class'] < $seebanned_class) err("torrent banned");
 // select peers info from peers table for this torrent
 $torrentid = $torrent["id"];
