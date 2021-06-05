@@ -112,7 +112,14 @@ if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$Cache->cache_value('torrent_hash_'.$info_hash.'_content', $torrent, 350);
 }
 if (!$torrent) {
-    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: " . $_SERVER['QUERY_STRING']);
+    $firstNeedle = "info_hash=";
+    $queryString = $_SERVER['QUERY_STRING'];
+    $start = strpos($queryString, $firstNeedle) + strlen($firstNeedle);
+    $end = strpos($queryString, "&", $start);
+    $infoHashUrlEncode = substr($queryString, $start, $end - $start);
+    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString");
+    do_log("[TORRENT NOT EXISTS] infoHashUrlEncode: $infoHashUrlEncode");
+
     err("torrent not registered with this tracker");
 }
 elseif ($torrent['banned'] == 'yes' && $az['class'] < $seebanned_class) err("torrent banned");

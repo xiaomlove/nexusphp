@@ -52,8 +52,13 @@ class Test extends Command
     public function handle()
     {
 //        $r = \Illuminate\Support\Facades\Schema::getColumnListing('torrents');
-        $r = urldecode('%b5%8f%7c%a9%85%ed%e2%bb%09%fd1%ab%8d%11%e5%11%bb%18%deD');
-        $r = bin2hex($r);
+//        $r = urldecode('%b5%8f%7c%a9%85%ed%e2%bb%09%fd1%ab%8d%11%e5%11%bb%18%deD');
+//        $r = bin2hex($r);
+        $str = 'passkey=bef88d0cbe4ccbc1569b8404d09c4c5a&info_hash=%cd%8d%5b%09%08%d7%1d%01_o8%c0%e1Wd%ff%95%84J%e1&peer_id=-TR3000-zxcl8rs3my5o&port=51416&uploaded=0&downloaded=0&left=0&numwant=80&key=2d2ebd37&compact=1&supportcrypto=1&ipv6=240e%3A3b1%3A6400%3Ac20%3A211%3A32ff%3Afebb%3A9fb1';
+        $firstNeedle = "info_hash=";
+        $start = strpos($str, $firstNeedle) + strlen($firstNeedle);
+        $end = strpos($str, "&", $start);
+        $r = substr($str, $start, $end - $start);
         dd($r);
     }
 
