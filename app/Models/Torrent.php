@@ -28,7 +28,7 @@ class Torrent extends NexusModel
     ];
 
     const POS_STATE_STICKY_NONE = 'normal';
-    const POS_STATE_STICKY_ONE = 'sticky';
+    const POS_STATE_STICKY_FIRST = 'sticky';
     /**
      * alphabet 'r' is  after 'n' and before 's', so it will fit: order by pos_state desc,
      * first sticky, then r_sticky, then normal
@@ -37,8 +37,8 @@ class Torrent extends NexusModel
 
     public static $posStates = [
         self::POS_STATE_STICKY_NONE => ['text' => 'Normal', 'icon_counts' => 0],
-        self::POS_STATE_STICKY_SECOND => ['text' => 'Sticky second level', 'icon_counts' => 1],
-        self::POS_STATE_STICKY_ONE => ['text' => 'Sticky top level', 'icon_counts' => 2],
+        self::POS_STATE_STICKY_SECOND => ['text' => 'Sticky second', 'icon_counts' => 1],
+        self::POS_STATE_STICKY_FIRST => ['text' => 'Sticky first', 'icon_counts' => 2],
     ];
 
     public static function getBasicInfo(): array

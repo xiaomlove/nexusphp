@@ -2,8 +2,8 @@
 
 return [
     'pos_state_normal' => 'Normal',
-    'pos_state_sticky' => 'Sticky top level',
-    'pos_state_r_sticky' => 'Sticky second level',
+    'pos_state_sticky' => 'Sticky first',
+    'pos_state_r_sticky' => 'Sticky second',
 
     'index' => [
         'page_title' => 'Torrent list',
