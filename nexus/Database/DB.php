@@ -53,9 +53,6 @@ class DB
         if (!$result) {
             throw new DatabaseException(sprintf('[%s]: %s', $this->errno(), $this->error()));
         }
-        $this->driver->query("SET NAMES UTF8");
-        $this->driver->query("SET collation_connection = 'utf8_general_ci'");
-        $this->driver->query("SET sql_mode=''");
         $this->isConnected = true;
         return true;
     }
@@ -231,6 +228,22 @@ class DB
     public static function table($table): \Illuminate\Database\Query\Builder
     {
         return Capsule::table($table);
+    }
+
+    public static function getMysqlColumnInfo($table, $column)
+    {
+        static $driver;
+        $config = nexus_config('nexus.mysql');
+        if (is_null($driver)) {
+            $driver = new DBMysqli();
+            $driver->connect($config['host'], $config['username'], $config['password'], 'information_schema', $config['port']);
+        }
+        $sql = sprintf(
+            "select * from COLUMNS where TABLE_SCHEMA = '%s' and TABLE_NAME = '%s' and COLUMN_NAME = '%s'",
+            $config['database'], $table, $column
+        );
+        $res = $driver->query($sql);
+        return $driver->fetchAssoc($res);
     }
 
 

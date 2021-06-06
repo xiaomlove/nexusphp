@@ -12,6 +12,10 @@ class DBMysqli implements DBInterface
         if (mysqli_connect_errno()) {
             throw new DatabaseException(mysqli_connect_error());
         }
+        $mysqli->query("SET NAMES UTF8");
+        $mysqli->query("SET collation_connection = 'utf8_general_ci'");
+        $mysqli->query("SET sql_mode=''");
+
         /* activate reporting */
         $driver = new \mysqli_driver();
         $driver->report_mode = MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX;

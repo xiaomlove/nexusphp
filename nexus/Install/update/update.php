@@ -164,6 +164,7 @@ if ($currentStep == 3) {
 
             $update->nextStep();
         } catch (\Exception $exception) {
+            $update->doLog($exception->getMessage() . $exception->getTraceAsString());
             $error = $exception->getMessage();
             break;
         }
