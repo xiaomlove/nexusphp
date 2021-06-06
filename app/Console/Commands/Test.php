@@ -11,6 +11,7 @@ use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\TorrentRepository;
 use Carbon\Carbon;
+use GeoIp2\Database\Reader;
 use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
@@ -50,8 +51,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = \Nexus\Database\DB::getConnection();
-        dd($r);
+        $reader = new Reader(resource_path('geoip/GeoLite2-City.mmdb'));
+        $record = $reader->city('128.101.101.101');
+        dump($record->city, $record->country, $record->location);
+        $record2 = $reader->isp('128.101.101.101');
+        dump($record2->isp);
     }
 
 }
