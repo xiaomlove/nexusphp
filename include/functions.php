@@ -5017,8 +5017,12 @@ function can_access_torrent($torrent)
 function get_ip_location_from_geoip($ip)
 {
     $database = nexus_env('GEOIP2_DATABASE');
-    if (empty($database) || !is_readable($database)) {
-        do_log("no geoip2 database or $database is nor is not readable.");
+    if (empty($database)) {
+        do_log("no geoip2 database.");
+        return false;
+    }
+    if (!is_readable($database)) {
+        do_log("geoip2 database: $database is not readable.");
         return false;
     }
     static $reader;
