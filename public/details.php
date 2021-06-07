@@ -403,6 +403,132 @@ echo $scronload;
 echo "</script>";
 		}
 
+        //Add 魔力值奖励功能
+        if(isset($magic_value_bonus)){
+            $bonus_array = $magic_value_bonus;
+        }else{
+            $bonus_array = '50 , 100 , 200 , 500, 1000';
+        }
+        echo '<style type="text/css">
+					ul.magic
+					{
+						cursor:pointer;
+						list-style-type:none;
+						padding-left:0px;
+					}
+					ul.magic li
+					{
+						margin:0px;text-align:center;float:left;width:40px;margin-right:15px; height:21px;background:url("styles/huise.png") no-repeat;
+						padding-left:5px;padding-right:5px;
+						line-height:20px;
+					}
+					ul.magic li:hover
+					{
+						background:url("styles/boli.png") no-repeat
+					}
+				</style>
+		';
+        $magic_value_button = '';
+
+        if ($CURUSER['id'] <> $row['owner']) {
+            $arr_temp = explode(',',$bonus_array);
+            $bonus_has = $CURUSER['seedbonus'];
+            if(intval($bonus_has) < intval($arr_temp[0])){
+                $error_bonus_message = $lang_details['magic_have_no_enough_bonus_value'];
+                $button_name = "<input class=\"btn\" type=\"button\" value=\"".$error_bonus_message."\" disabled=\"disabled\" />";
+                $magic_value_button .= $button_name;
+            }else{
+                foreach($arr_temp as $key => $each_temp){
+                    $each_temp = intval($each_temp);
+                    if ($each_temp > 0 && $each_temp <= $bonus_has) {
+                        $button_name = $magic_value_button.$key;
+                        $magic_button_id = 'magic_value_'.$key;
+                        $each_temp_font = '<font style="font-size:8pt;padding-right:5px;">'.('+'.$each_temp).'</font>';
+                        $error_bonus_message = $lang_details['magic_have_no_enough_bonus_value'];
+                        $button_name = "<li onclick=\"saveMagicValue(".$id.",$each_temp);\">".$each_temp_font."</li>";
+
+                        $magic_value_button .= $button_name;
+                    }
+                }
+            }
+        }
+
+        $span_description = $lang_details['span_description_have_given'];
+        $span = '<input class="btn" type="button" id="magic_add" style="display:none" value="'.$span_description.'" disabled="disabled" />&nbsp;';
+        $whether_have_give_value = 0;
+        $give_value = array();
+        $no_give = "";
+        $add_value ="";
+
+        $tempresult = sql_query ("SELECT count( DISTINCT `userid` ) as count FROM magic WHERE torrentid=".sqlesc($id));
+        $count_user = mysql_fetch_array($tempresult);
+        $count_user_number = $count_user['count'];
+
+        $give_value_sql = sql_query("SELECT userid,value FROM magic WHERE torrentid=".sqlesc($id)." ORDER BY id DESC");
+
+        $give_value_count = get_row_count("magic", "WHERE torrentid=".sqlesc($id));
+        $give_value_all = mysql_num_rows($give_value_sql);
+        $sum_value = 0;
+        if ($give_value_all) {
+            while($rows_t = mysql_fetch_array($give_value_sql)) {
+                $give_value_userid = $rows_t["userid"];
+                $sum_value += $rows_t["value"]*1;
+                if ($give_value_userid == $CURUSER['id']) {
+                    $whether_have_give_value = 1;
+                    $add_value = $rows_t["value"];
+                }
+                $give_value[] = get_username($give_value_userid)." ";
+            }
+        }else $no_give = $lang_details['text_no_magic_added'];
+
+        if(intval($bonus_has) < intval($arr_temp[0])){
+
+        }else if ($whether_have_give_value == 0 ) {
+            $magic_value_button = '<ul id="listNumber" class="magic">'.$magic_value_button.'</ul>';
+        } else {
+            $add_value = str_replace("Number",$add_value,$lang_details['magic_value_number']);
+            $magic_value_button ="<input class=\"btn\" type=\"button\" value=\"".$add_value."\" disabled=\"disabled\" />";
+            //$give_value = get_username($CURUSER['id'])." ".$give_value;
+        }
+
+        $show_list = null;
+        $show_all = null;
+        $show_list_new_number = 6;
+        $other_user_str = null;
+        $other_user_span = null;
+        if(count($give_value) > 0){
+            $count_user_span = '<span id="count_user_spa">'.$count_user_number.'</span>';
+            $magic_newest_record = '<span id="magic_newest_record">'. $lang_details['magic_newest_record'].'</span>';
+            $show_list_description ='('. $magic_newest_record.$lang_details['magic_sum_user_give_number'].')';
+            $show_list_description = str_replace('Number',$count_user_span,$show_list_description);
+            $output = array_slice($give_value, 0, $show_list_new_number);
+            foreach($output as $eachOutput){
+                $show_list .= $eachOutput.'  ';
+            }
+            //other user list
+            if(count($give_value) > $show_list_new_number){
+                $show_list .= '<span id="ellipsis">&nbsp;......&nbsp;</span>';
+                $show_all_description = '['.$lang_details['magic_show_all_description'].']';
+                $show_all = '<a herf="#" style="cursor:pointer" onclick="displayOtherUserList()">'.$show_all_description.'</a>'.'<br/>';
+                $other_user_list = array_slice($give_value, $show_list_new_number, count($give_value));
+                foreach($other_user_list as $each){
+                    $other_user_str .= $each.'  ';
+                }
+                $other_user_span = '<span id="other_user_list" style="display:none">'.$other_user_str.'</span>';
+            }
+        }else{
+            $show_list_description = null;
+            $haveGotBonus = $no_give;
+        }
+        $current_user_magic = "<span id='current_user_magic' style='display:none'>".get_username($CURUSER['id'])."</span>&nbsp;";
+        $haveGotBonus = $lang_details['magic_haveGotBonus'].'&nbsp';
+        $spanSumAll = '<span id="spanSumAll">'.$sum_value.'</span>';
+        $haveGotBonus = str_replace('Number',$spanSumAll,$haveGotBonus);
+        $firstLine = '<div style="height:25px">'.$magic_value_button.$span.$haveGotBonus.$show_all.'</div>';
+        $otherLine = '<div>'.$current_user_magic.$show_list.$other_user_span.$show_list_description.'</div>';
+        tr($lang_details['magic_value_award'],$firstLine.$otherLine,1);
+        //End 魔力值奖励功能
+
 		// ------------- start thanked-by block--------------//
 
 		$torrentid = $id;

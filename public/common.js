@@ -91,6 +91,26 @@ function unpreview(obj){
 	document.getElementById("previewbutton").style.display = 'block';
 }
 
+function saveMagicValue(torrentid,value)
+{
+    var list=ajax.posts('magic.php','value='+value +'&id='+torrentid);
+//	document.getElementById("thanksbutton").innerHTML = document.getElementById("thanksadded").innerHTML;
+    document.getElementById("magic_add").value += value;
+    document.getElementById("magic_add").style.display = '';
+    document.getElementById("listNumber").style.display = 'none';
+    document.getElementById("current_user_magic").style.display = '';
+    var sumAll = document.getElementById("spanSumAll").innerHTML;
+    document.getElementById("spanSumAll").innerHTML = sumAll*1 + value;
+    if(document.getElementById("count_user_spa")){
+        var userAll = document.getElementById("count_user_spa").innerHTML;
+        document.getElementById("count_user_spa").innerHTML = userAll*1 + 1;
+    }
+
+    //document.getElementById("listNumber").innerHTML = "<input class=\"btn\" type=\"button\" id="magic_add" value=\""+value+"\" disabled=\"disabled\" />";
+
+//	document.getElementById("addcuruser").innerHTML = document.getElementById("curuser").innerHTML;
+}
+
 // java_klappe.js
 
 function klappe(id)
