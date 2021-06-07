@@ -1622,22 +1622,37 @@ function get_ip_location($ip)
 {
 	global $lang_functions;
 	global $Cache;
-	if (!$ret = $Cache->get_value('location_list')){
+
+	static $locations;
+	if (isset($locations[$ip])) {
+	    return $locations[$ip];
+    }
+	$cacheKey = "location_$ip";
+	if (!$ret = $Cache->get_value($cacheKey)){
 		$ret = array();
-		$res = sql_query("SELECT * FROM locations") or sqlerr(__FILE__, __LINE__);
-		while ($row = mysql_fetch_array($res))
-			$ret[] = $row;
-		$Cache->cache_value('location_list', $ret, 152800);
+
+//		$res = sql_query("SELECT * FROM locations") or sqlerr(__FILE__, __LINE__);
+//		while ($row = mysql_fetch_array($res))
+//			$ret[] = $row;
+
+        //get from geoip2
+        $row = get_ip_location_from_geoip($ip);
+        if ($row) {
+            $ret[] = $row;
+        }
+		$Cache->cache_value($cacheKey, $ret, 152800);
 	}
 	$location = array($lang_functions['text_unknown'],"");
 
 	foreach($ret AS $arr)
 	{
-		if(in_ip_range(false, $ip, $arr["start_ip"], $arr["end_ip"]))
-		{
-			$location = array($arr["name"], $lang_functions['text_user_ip'].":&nbsp;" . $ip . ($arr["location_main"] != "" ? "&nbsp;".$lang_functions['text_location_main'].":&nbsp;" . $arr["location_main"] : ""). ($arr["location_sub"] != "" ? "&nbsp;".$lang_functions['text_location_sub'].":&nbsp;" . $arr["location_sub"] : "") . "&nbsp;".$lang_functions['text_ip_range'].":&nbsp;" . $arr["start_ip"] . "&nbsp;~&nbsp;". $arr["end_ip"]);
-			break;
-		}
+        $location = array($arr["name"], "");
+        break;
+//		if(in_ip_range(false, $ip, $arr["start_ip"], $arr["end_ip"]))
+//		{
+//			$location = array($arr["name"], $lang_functions['text_user_ip'].":&nbsp;" . $ip . ($arr["location_main"] != "" ? "&nbsp;".$lang_functions['text_location_main'].":&nbsp;" . $arr["location_main"] : ""). ($arr["location_sub"] != "" ? "&nbsp;".$lang_functions['text_location_sub'].":&nbsp;" . $arr["location_sub"] : "") . "&nbsp;".$lang_functions['text_ip_range'].":&nbsp;" . $arr["start_ip"] . "&nbsp;~&nbsp;". $arr["end_ip"]);
+//			break;
+//		}
 	}
 	return $location;
 }
@@ -4997,6 +5012,37 @@ function can_access_torrent($torrent)
         return true;
     }
     return false;
+}
+
+function get_ip_location_from_geoip($ip)
+{
+    $database = nexus_env('GEOIP2_DATABASE');
+    if (empty($database) || !is_readable($database)) {
+        do_log("no geoip2 database or $database is nor is not readable.");
+        return false;
+    }
+    static $reader;
+    if (is_null($reader)) {
+        $reader = new \GeoIp2\Database\Reader($database);
+    }
+    $record = $reader->city($ip);
+    $lang = get_langfolder_cookie();
+    $langMap = [
+        'chs' => 'zh-CN',
+        'cht' => 'zh-CN',
+        'en' => 'en',
+    ];
+    $locale = $langMap[$lang] ?? $lang;
+    $countryName =  $record->country->names[$locale] ?? $record->country->names['en'];
+    $cityName = $record->city->names[$locale] ?? $record->city->names['en'];
+    return [
+        'name' => sprintf('%s·%s', $cityName, $countryName),
+        'location_main' => '',
+        'location_sub' => '',
+        'flagpic' => '',
+        'start_ip' => $ip,
+        'end_ip' => $ip,
+    ];
 }
 
 ?>
