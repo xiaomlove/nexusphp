@@ -52,8 +52,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $file = storage_path('logs/11270.torrent');
-        $r = Bencode::load($file);
+        $r = 'https://hdtime.org/download.php?downhash=' . urlencode('1|Roqd');
         dd($r);
     }
 

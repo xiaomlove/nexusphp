@@ -44,7 +44,7 @@ function block_browser()
 
 function benc_resp($d)
 {
-	benc_resp_raw(benc(array('type' => 'dictionary', 'value' => $d)));
+    benc_resp_raw(\Rhilip\Bencode\Bencode::encode($d));
 }
 function benc_resp_raw($x) {
 	do_log($x);
@@ -60,7 +60,7 @@ function benc_resp_raw($x) {
 }
 function err($msg, $userid = 0, $torrentid = 0)
 {
-	benc_resp(array('failure reason' => array('type' => 'string', 'value' => $msg)));
+    benc_resp(['failure reason' => $msg]);
 	exit();
 }
 function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $seeders=0, $leechers=0){

@@ -584,3 +584,34 @@ function isRunningInConsole(): bool
 {
     return php_sapi_name() == 'cli';
 }
+
+function get_base_announce_url()
+{
+    global $https_announce_urls, $announce_urls;
+    $httpsAnnounceUrls = array_filter($https_announce_urls);
+    $log = "cookie: " . json_encode($_COOKIE) . ", https_announce_urls: " . json_encode($httpsAnnounceUrls);
+    if ((isset($_COOKIE["c_secure_tracker_ssl"]) && $_COOKIE["c_secure_tracker_ssl"] == base64("yeah")) || !empty($httpsAnnounceUrls)) {
+        $log .= ", c_secure_tracker_ssl = base64('yeah'): " . base64("yeah") . ", or not empty https_announce_urls";
+        $tracker_ssl = true;
+    }  else {
+        $tracker_ssl = false;
+    }
+    $log .= ", tracker_ssl: $tracker_ssl";
+
+    if ($tracker_ssl == true){
+        $ssl_torrent = "https://";
+        if ($https_announce_urls[0] != "") {
+            $log .= ", https_announce_urls not empty, use it";
+            $base_announce_url = $https_announce_urls[0];
+        } else {
+            $log .= ", https_announce_urls empty, use announce_urls[0]";
+            $base_announce_url = $announce_urls[0];
+        }
+    }
+    else{
+        $ssl_torrent = "http://";
+        $base_announce_url = $announce_urls[0];
+    }
+    do_log($log);
+    return $ssl_torrent . $base_announce_url;
+}

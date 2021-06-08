@@ -1,6 +1,6 @@
 <?php
 require_once('../include/bittorrent_announce.php');
-require_once('../include/benc.php');
+//require_once('../include/benc.php');
 dbconn_announce();
 do_log(nexus_json_encode($_SERVER));
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
@@ -150,58 +150,50 @@ $real_annnounce_interval = $anninterthree;
 elseif ($annintertwoage && ($annintertwo > $announce_wait) && (TIMENOW - $torrent['ts']) >= ($annintertwoage * 86400))
 $real_annnounce_interval = $annintertwo;
 
-$resp = "d" . benc_str("interval") . "i" . $real_annnounce_interval . "e" . benc_str("min interval") . "i" . $announce_wait . "e". benc_str("complete") . "i" . $torrent["seeders"] . "e" . benc_str("incomplete") . "i" . $torrent["leechers"] . "e" . benc_str("peers");
+//$resp = "d" . benc_str("interval") . "i" . $real_annnounce_interval . "e" . benc_str("min interval") . "i" . $announce_wait . "e". benc_str("complete") . "i" . $torrent["seeders"] . "e" . benc_str("incomplete") . "i" . $torrent["leechers"] . "e" . benc_str("peers");
+$rep_dict = [
+    "interval" => (int)$real_annnounce_interval,
+    "min interval" => (int)$announce_wait,
+    "complete" => (int)$torrent["seeders"],
+    "incomplete" => (int)$torrent["leechers"],
+    "peers" => []  // By default it is a array object, only when `&compact=1` then it should be a string
+];
 
-$peer_list = "";
-$peer6_list = "";
+if ($compact == 1) {
+    $rep_dict['peers'] = '';  // Change `peers` from array to string
+    $rep_dict['peers6'] = '';   // If peer use IPv6 address , we should add packed string in `peers6`
+}
+
 unset($self);
-// bencoding the peers info get for this announce
-while ($row = mysql_fetch_assoc($res))
-{
-	$row["peer_id"] = hash_pad($row["peer_id"]);
 
-	// $peer_id is the announcer's peer_id while $row["peer_id"] is randomly selected from the peers table
-	if ($row["peer_id"] === $peer_id)
-	{
-		$self = $row;
-		continue;
-	}
-    if ($compact == 1){
-        $longip = ip2long($row['ip']);
-        if ($longip) //Ignore ipv6 address
-            $peer_list .= pack("Nn", sprintf("%d",$longip), $row['port']);
-        else
-        {
-            $ipv6_packed = inet_pton($row['ip']);
-            if ($ipv6_packed)
-                $peer6_list .= $ipv6_packed . pack("n", $row['port']);
+if (isset($event) && $event == "stopped") {
+    // Don't fetch peers for stopped event
+} else {
+    // bencoding the peers info get for this announce
+    while ($row = mysql_fetch_assoc($res)) {
+        $row["peer_id"] = hash_pad($row["peer_id"]);
+
+        // $peer_id is the announcer's peer_id while $row["peer_id"] is randomly selected from the peers table
+        if ($row["peer_id"] === $peer_id) {
+            $self = $row;
+            continue;
+        }
+
+        if ($compact == 1) {
+            $peerField = filter_var($row['ip'],FILTER_VALIDATE_IP,FILTER_FLAG_IPV6) ? 'peers6' : 'peers';
+            $rep_dict[$peerField] .= inet_pton($row["ip"]) . pack("n", $row["port"]);
+        } else {
+            $peer = [
+                'ip' => $row["ip"],
+                'port' => (int) $row["port"]
+            ];
+
+            if ($no_peer_id == 1) $peer['peer id'] = $row["peer_id"];
+            $rep_dict['peers'][] = $peer;
         }
     }
-    elseif ($no_peer_id == 1)
-        $peer_list .= "d" .
-            benc_str("ip") . benc_str($row["ip"]) .
-            benc_str("port") . "i" . $row["port"] . "e" .
-            "e";
-    else
-        $peer_list .= "d" .
-            benc_str("ip") . benc_str($row["ip"]) .
-            benc_str("peer id") . benc_str($row["peer_id"]) .
-            benc_str("port") . "i" . $row["port"] . "e" .
-            "e";
 }
-if ($compact == 1)
-    $resp .= benc_str($peer_list);
-else
-    $resp .= "l".$peer_list."e";
-
-if ($compact == 1 && strlen($peer6_list) > 0)
-{
-    $resp .= benc_str("peers6").benc_str($peer6_list);
-}
-
-$resp .= "e";
 $selfwhere = "torrent = $torrentid AND " . hash_where("peer_id", $peer_id);
-
 //no found in the above random selection
 if (!isset($self))
 {
@@ -482,5 +474,5 @@ try {
     do_log("add exam progress fail: " . $exception->getMessage());
 }
 
-benc_resp_raw($resp);
+benc_resp($rep_dict);
 ?>

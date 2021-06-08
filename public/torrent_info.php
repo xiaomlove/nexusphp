@@ -1,58 +1,37 @@
 <?php
 require "../include/bittorrent.php";
-require_once "include/benc.php";
 
-function print_array($array, $offset_symbol = "|--", $offset = "", $parent = "")
+if (!function_exists('is_indexed_array')) {
+    /** 索引数组：所有键名都为数值型，注意字符串类型的数字键名会被转换为数值型。
+     * 判断数组是否为索引数组
+     * @param array $arr
+     * @return bool
+     */
+    function is_indexed_array(array $arr): bool
+    {
+        if (is_array($arr)) {
+            return count(array_filter(array_keys($arr), 'is_string')) === 0;
+        }
+        return false;
+    }
+}
+
+function torrent_structure_builder($array, $parent = "")
 {
-  if (!is_array($array))
-  {
-    echo "[$array] is not an array!<br />";
-    return;
-  }
-
-  reset($array);
-
-	switch($array['type'] ?? '')
-	{
-		case "string":
-			printf("<li><div align=left class=string> - <span class=icon>[STRING]</span> <span class=title>[%s]</span> <span class=length>(%d)</span>: <span class=value>%s</span></div></li>",$parent,$array['strlen'],$array['value']);
-			break;
-		case "integer":
-			printf("<li><div align=left class=integer> - <span class=icon>[INT]</span> <span class=title>[%s]</span> <span class=length>(%d)</span>: <span class=value>%s</span></div></li>",$parent,$array['strlen'],$array['value']);
-			break;
-		case "list":
-			printf("<li><div align=left class=list> + <span class=icon>[LIST]</span> <span class=title>[%s]</span> <span class=length>(%d)</span></div>",$parent,$array['strlen']);
-			echo "<ul>";
-			print_array($array['value'], $offset_symbol, $offset.$offset_symbol);
-			echo "</ul></li>";
-			break;
-		case "dictionary":
-			printf("<li><div align=left class=dictionary> + <span class=icon>[DICT]</span> <span class=title>[%s]</span> <span class=length>(%d)</span></div>",$parent,$array['strlen']);
-            foreach ($array as $key => $val)
-			{
-				if (is_array($val))
-				{
-					echo "<ul>";
-					print_array($val, $offset_symbol, $offset.$offset_symbol,$key);
-					echo "</ul>";
-				}
-			}
-			echo "</li>";
-
-			break;
-		default:
-                foreach ($array as $key => $val)
-			  {
-			    if (is_array($val))
-			    {
-			      //echo $offset;
-			      print_array($val, $offset_symbol, $offset, $key);
-			    }
-			  }
-			break;
-
-	}
-
+    $ret = '';
+    foreach ($array as $item => $value) {
+        $value_length = strlen(\Rhilip\Bencode\Bencode::encode($value));
+        if (is_iterable($value)) {  // It may `dictionary` or `list`
+            $type = is_indexed_array($value) ? 'list' : 'dictionary';
+            $ret .= "<li><div align='left' class='" . $type . "'><a href='javascript:void(0);' onclick='jQuery(this).parent().next(\"ul\").toggle()'> + <span class=title>[" . $item . "]</span> <span class='icon'>(" . ucfirst($type) . ")</span> <span class=length>[" . $value_length . "]</span></a></div>";
+            $ret .= "<ul style='display:none'>" . torrent_structure_builder($value, $item) . "</ul></li>";
+        } else { // It may `interger` or `string`
+            $type = is_integer($value) ? 'integer' : 'string';
+            $value = ($parent == 'info' && $item == 'pieces') ? "0x" . bin2hex(substr($value, 0, 25)) . "..." : $value;  // Cut the info pieces....
+            $ret .= "<li><div align=left class=" . $type . "> - <span class=title>[" . $item . "]</span> <span class=icon>(" . ucfirst($type) . ")</span> <span class=length>[" . $value_length . "]</span>: <span class=value>" . $value . "</span></div></li>";
+        }
+    }
+    return $ret;
 }
 
 dbconn();
@@ -110,104 +89,14 @@ li span.title {font-weight: bold;}
 begin_main_frame();
 
 
-// Heading
-print("<div align=center><h1>{$row['name']}</h1>");
-
-$dict = bdec_file($fn, (1024*1024));
-
-// Start table
-print("<table width=750 border=1 cellspacing=0 cellpadding=5><td>");
-
-$dict['value']['info']['value']['pieces']['value'] = "0x".bin2hex(substr($dict['value']['info']['value']['pieces']['value'], 0, 25))."...";
-
-
-
-echo "<ul id=colapse>";
-print_array($dict,"*", "", "root");
+$dict = \Rhilip\Bencode\Bencode::load($fn);
+print("<div align=center><h1>$row[name]</h1>");  // Heading
+print("<table width=750 border=1 cellspacing=0 cellpadding=5><td>");  // Start table
+echo "<ul id='torrent-structure'>";
+echo torrent_structure_builder(['root' => $dict]);
 echo "</ul>";
+print("</td></table>"); // End table
 
-// End table
-
-print("</td></table>");
-
-
-?>
-
-
-<script type="text/javascript" language="javascript1.2">
-var openLists = [], oIcount = 0;
-function compactMenu(oID,oAutoCol,oPlMn,oMinimalLink) {
-	if( !document.getElementsByTagName || !document.childNodes || !document.createElement ) { return; }
-	var baseElement = document.getElementById( oID ); if( !baseElement ) { return; }
-	compactChildren( baseElement, 0, oID, oAutoCol, oPlMn, baseElement.tagName.toUpperCase(), oMinimalLink && oPlMn );
-}
-function compactChildren( oOb, oLev, oBsID, oCol, oPM, oT, oML ) {
-	if( !oLev ) { oBsID = escape(oBsID); if( oCol ) { openLists[oBsID] = []; } }
-	for( var x = 0, y = oOb.childNodes; x < y.length; x++ ) { if( y[x].tagName ) {
-		//for each immediate LI child
-		var theNextUL = y[x].getElementsByTagName( oT )[0];
-		if( theNextUL ) {
-			//collapse the first UL/OL child
-			theNextUL.style.display = 'none';
-			//create a link for expanding/collapsing
-			var newLink = document.createElement('A');
-			newLink.setAttribute( 'href', '#' );
-			newLink.onclick = new Function( 'clickSmack(this,' + oLev + ',\'' + oBsID + '\',' + oCol + ',\'' + escape(oT) + '\');return false;' );
-			//wrap everything upto the child U/OL in the link
-			if( oML ) { var theHTML = ''; } else {
-				var theT = y[x].innerHTML.toUpperCase().indexOf('<'+oT);
-				var theA = y[x].innerHTML.toUpperCase().indexOf('<A');
-				var theHTML = y[x].innerHTML.substr(0, ( theA + 1 && theA < theT ) ? theA : theT );
-				while( !y[x].childNodes[0].tagName || ( y[x].childNodes[0].tagName.toUpperCase() != oT && y[x].childNodes[0].tagName.toUpperCase() != 'A' ) ) {
-					y[x].removeChild( y[x].childNodes[0] ); }
-			}
-			y[x].insertBefore(newLink,y[x].childNodes[0]);
-			y[x].childNodes[0].innerHTML = oPM + theHTML.replace(/^\s*|\s*$/g,'');
-			theNextUL.MWJuniqueID = oIcount++;
-			compactChildren( theNextUL, oLev + 1, oBsID, oCol, oPM, oT, oML );
-} } } }
-function clickSmack( oThisOb, oLevel, oBsID, oCol, oT ) {
-	if( oThisOb.blur ) { oThisOb.blur(); }
-	oThisOb = oThisOb.parentNode.getElementsByTagName( unescape(oT) )[0];
-	if( oCol ) {
-		for( var x = openLists[oBsID].length - 1; x >= oLevel; x-=1 ) { if( openLists[oBsID][x] ) {
-			openLists[oBsID][x].style.display = 'none'; if( oLevel != x ) { openLists[oBsID][x] = null; }
-		} }
-		if( oThisOb == openLists[oBsID][oLevel] ) { openLists[oBsID][oLevel] = null; }
-		else { oThisOb.style.display = 'block'; openLists[oBsID][oLevel] = oThisOb; }
-	} else { oThisOb.style.display = ( oThisOb.style.display == 'block' ) ? 'none' : 'block'; }
-}
-function stateToFromStr(oID,oFStr) {
-	if( !document.getElementsByTagName || !document.childNodes || !document.createElement ) { return ''; }
-	var baseElement = document.getElementById( oID ); if( !baseElement ) { return ''; }
-	if( !oFStr && typeof(oFStr) != 'undefined' ) { return ''; } if( oFStr ) { oFStr = oFStr.split(':'); }
-	for( var oStr = '', l = baseElement.getElementsByTagName(baseElement.tagName), x = 0; l[x]; x++ ) {
-		if( oFStr && MWJisInTheArray( l[x].MWJuniqueID, oFStr ) && l[x].style.display == 'none' ) { l[x].parentNode.getElementsByTagName('a')[0].onclick(); }
-		else if( l[x].style.display != 'none' ) { oStr += (oStr?':':'') + l[x].MWJuniqueID; }
-	}
-	return oStr;
-}
-function MWJisInTheArray(oNeed,oHay) { for( var i = 0; i < oHay.length; i++ ) { if( oNeed == oHay[i] ) { return true; } } return false; }
-function selfLink(oRootElement,oClass,oExpand) {
-	if(!document.getElementsByTagName||!document.childNodes) { return; }
-	oRootElement = document.getElementById(oRootElement);
-	for( var x = 0, y = oRootElement.getElementsByTagName('a'); y[x]; x++ ) {
-		if( y[x].getAttribute('href') && !y[x].href.match(/#$/) && getRealAddress(y[x]) == getRealAddress(location) ) {
-			y[x].className = (y[x].className?(y[x].className+' '):'') + oClass;
-			if( oExpand ) {
-				oExpand = false;
-				for( var oEl = y[x].parentNode, ulStr = ''; oEl != oRootElement && oEl != document.body; oEl = oEl.parentNode ) {
-					if( oEl.tagName && oEl.tagName == oRootElement.tagName ) { ulStr = oEl.MWJuniqueID + (ulStr?(':'+ulStr):''); } }
-				stateToFromStr(oRootElement.id,ulStr);
-} } } }
-function getRealAddress(oOb) { return oOb.protocol + ( ( oOb.protocol.indexOf( ':' ) + 1 ) ? '' : ':' ) + oOb.hostname + ( ( typeof(oOb.pathname) == typeof(' ') && oOb.pathname.indexOf('/') != 0 ) ? '/' : '' ) + oOb.pathname + oOb.search; }
-
-compactMenu('colapse',false,'');
-</script>
-
-
-
-<?php
 // Standard html footers
 end_main_frame();
 stdfoot();

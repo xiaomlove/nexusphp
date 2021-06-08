@@ -64,23 +64,8 @@ if (@ini_get('output_handler') == 'ob_gzhandler' AND @ob_get_length() !== false)
 	header('Content-Encoding:');
 }
 */
-if ((isset($_COOKIE["c_secure_tracker_ssl"]) && $_COOKIE["c_secure_tracker_ssl"] == base64("yeah")) || !empty($https_announce_urls))
-$tracker_ssl = true;
-else
-$tracker_ssl = false;
-if ($tracker_ssl == true){
-	$ssl_torrent = "https://";
-	if ($https_announce_urls[0] != "")
-		$base_announce_url = $https_announce_urls[0];
-	else
-		$base_announce_url = $announce_urls[0];
-}
-else{
-	$ssl_torrent = "http://";
-	$base_announce_url = $announce_urls[0];
-}
 
-
+$base_announce_url = get_base_announce_url();
 
 $res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
@@ -97,7 +82,7 @@ if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_acc
 
 sql_query("UPDATE torrents SET hits = hits + 1 WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 
-require_once "include/benc.php";
+//require_once "include/benc.php";
 
 if (strlen($CURUSER['passkey']) != 32) {
 	$CURUSER['passkey'] = md5($CURUSER['username'].date("Y-m-d H:i:s").$CURUSER['passhash']);
@@ -107,6 +92,16 @@ if (strlen($CURUSER['passkey']) != 32) {
 $trackerReportAuthKey = $torrentRep->getTrackerReportAuthKey($id, $CURUSER['id'], true);
 $dict = \Rhilip\Bencode\Bencode::load($fn);
 $dict['announce'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";
+
+if (count($announce_urls) > 1) {
+    foreach ($announce_urls as $announce_url) {
+        /** d['announce-list'] = [[ tracker1, tracker2, tracker3 ]] */
+        $dict['announce-list'][0][] = $ssl_torrent . $announce_url . "?authkey=$trackerReportAuthKey";
+
+        /** d['announce-list'] = [ [tracker1], [backup1], [backup2] ] */
+        //$dict['announce-list'][] = [$ssl_torrent . $announce_url . "?passkey=" . $CURUSER['passkey']];
+    }
+}
 
 //$dict = bdec_file($fn, $max_torrent_size);
 //$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?passkey=$CURUSER[passkey]";
