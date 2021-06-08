@@ -6,7 +6,7 @@ use App\Models\Category;
 use App\Models\Icon;
 use App\Models\Setting;
 use Illuminate\Support\Str;
-use Nexus\Database\DB;
+use Nexus\Database\NexusDB;
 
 class Update extends Install
 {
@@ -63,11 +63,11 @@ class Update extends Install
                 'url' => $url,
                 'info' => 'Manage custom fields',
             ];
-            $id = DB::insert($table, $insert);
+            $id = NexusDB::insert($table, $insert);
             $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
         }
         //since beta8
-        if (WITH_LARAVEL && DB::schema()->hasColumn('categories', 'icon_id')) {
+        if (WITH_LARAVEL && NexusDB::schema()->hasColumn('categories', 'icon_id')) {
             $this->doLog('[INIT CATEGORY ICON_ID]');
             $icon = Icon::query()->orderBy('id', 'asc')->first();
             if ($icon) {
@@ -75,7 +75,7 @@ class Update extends Install
             }
         }
         //fix base url, since beta8
-        if (WITH_LARAVEL && DB::schema()->hasTable('settings')) {
+        if (WITH_LARAVEL && NexusDB::schema()->hasTable('settings')) {
             $settingBasic = get_setting('basic');
             if (isset($settingBasic['BASEURL']) && Str::startsWith($settingBasic['BASEURL'], 'localhost')) {
                 $this->doLog('[RESET CONFIG basic.BASEURL]');
@@ -89,7 +89,7 @@ class Update extends Install
 
         //torrent support sticky second level
         if (WITH_LARAVEL) {
-            $columnInfo = DB::getMysqlColumnInfo('torrents', 'pos_state');
+            $columnInfo = NexusDB::getMysqlColumnInfo('torrents', 'pos_state');
             $this->doLog("[TORRENT POS_STATE], column info: " . json_encode($columnInfo));
             if ($columnInfo['DATA_TYPE'] == 'enum') {
                 $sql = "alter table torrents modify `pos_state` varchar(32) NOT NULL DEFAULT 'normal'";

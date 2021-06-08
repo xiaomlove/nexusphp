@@ -2,7 +2,7 @@
 
 namespace Nexus\Torrent;
 
-use Nexus\Database\DB;
+use Nexus\Database\NexusDB;
 
 class Torrent
 {
@@ -19,7 +19,7 @@ class Torrent
         $torrentIdStr = implode(',', $torrentIdArr);
         //seeding or leeching, from peers
         $whereStr = sprintf("userid = %s and torrent in (%s)", sqlesc($uid), $torrentIdStr);
-        $peerList = DB::getAll('peers', $whereStr, 'torrent, to_go');
+        $peerList = NexusDB::getAll('peers', $whereStr, 'torrent, to_go');
         $peerList = array_column($peerList,'to_go', 'torrent');
         //download progress, from snatched
         $sql = sprintf(

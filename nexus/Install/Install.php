@@ -3,7 +3,7 @@
 namespace Nexus\Install;
 
 use Illuminate\Support\Str;
-use Nexus\Database\DB;
+use Nexus\Database\NexusDB;
 
 class Install
 {
@@ -389,7 +389,7 @@ class Install
             'added' => date('Y-m-d H:i:s'),
         ];
         $this->doLog("[CREATE ADMINISTRATOR] " . json_encode($insert));
-        return DB::insert('users', $insert);
+        return NexusDB::insert('users', $insert);
     }
 
     public function createEnvFile($data)

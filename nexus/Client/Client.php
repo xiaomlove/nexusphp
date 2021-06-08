@@ -3,7 +3,7 @@
 namespace Nexus\Client;
 
 use Nexus\Core\Management;
-use Nexus\Database\DB;
+use Nexus\Database\NexusDB;
 
 class Client extends Management
 {

@@ -4,7 +4,7 @@ namespace Nexus\Database;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class DB
+class NexusDB
 {
     private $driver;
 

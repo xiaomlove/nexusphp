@@ -5,7 +5,7 @@ if(!defined('IN_TRACKER'))
 
 function dbconn_announce() {
 
-	\Nexus\Database\DB::getInstance()->autoConnect();
+	\Nexus\Database\NexusDB::getInstance()->autoConnect();
 }
 
 function hash_where_arr($name, $hash_arr) {

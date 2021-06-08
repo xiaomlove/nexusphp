@@ -2,7 +2,7 @@
 
 namespace Nexus\Field;
 
-use Nexus\Database\DB;
+use Nexus\Database\NexusDB;
 
 class Field
 {
@@ -207,10 +207,10 @@ HEAD;
         $attributes['updated_at'] = $now;
         $table = 'torrents_custom_fields';
         if (!empty($data['id'])) {
-            $result = DB::update($table, $attributes, "id = " . sqlesc($data['id']));
+            $result = NexusDB::update($table, $attributes, "id = " . sqlesc($data['id']));
         } else {
             $attributes['created_at'] = $now;
-            $result = DB::insert($table, $attributes);
+            $result = NexusDB::insert($table, $attributes);
         }
         return $result;
     }
@@ -255,7 +255,7 @@ HEAD;
     public function renderOnUploadPage($torrentId = 0)
     {
         global $browsecatmode;
-        $searchBox = DB::getOne('searchbox', "id = $browsecatmode");
+        $searchBox = NexusDB::getOne('searchbox', "id = $browsecatmode");
         if (empty($searchBox)) {
             throw new \RuntimeException("Invalid search box: $browsecatmode");
         }

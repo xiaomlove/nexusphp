@@ -369,7 +369,7 @@ if (!empty($_POST['custom_fields'])) {
 				'created_at' => $now,
 				'updated_at' => $now,
 			];
-			\Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+			\Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
 		}
 	}
 }

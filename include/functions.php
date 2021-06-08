@@ -1769,7 +1769,7 @@ function getExportedValue($input,$t = null) {
 function dbconn($autoclean = false, $doLogin = true)
 {
     global $useCronTriggerCleanUp;
-    \Nexus\Database\DB::getInstance()->autoConnect();
+    \Nexus\Database\NexusDB::getInstance()->autoConnect();
 	if ($doLogin) {
         userlogin();
     }

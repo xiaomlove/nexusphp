@@ -521,7 +521,7 @@ function fail(...$args)
 function last_query($all = false)
 {
     if (IN_NEXUS) {
-        $queries = \Illuminate\Database\Capsule\Manager::connection(\Nexus\Database\DB::ELOQUENT_CONNECTION_NAME)->getQueryLog();
+        $queries = \Illuminate\Database\Capsule\Manager::connection(\Nexus\Database\NexusDB::ELOQUENT_CONNECTION_NAME)->getQueryLog();
     } else {
         $queries = \Illuminate\Support\Facades\DB::connection(config('database.default'))->getQueryLog();
     }

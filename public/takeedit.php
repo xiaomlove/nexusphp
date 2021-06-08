@@ -193,7 +193,7 @@ sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or
  * @since v1.6
  */
 if (!empty($_POST['custom_fields'])) {
-    \Nexus\Database\DB::delete('torrents_custom_field_values', "torrent_id = $id");
+    \Nexus\Database\NexusDB::delete('torrents_custom_field_values', "torrent_id = $id");
     $now = date('Y-m-d H:i:s');
     foreach ($_POST['custom_fields'] as $customField => $customValue) {
         foreach ((array)$customValue as $value) {
@@ -204,7 +204,7 @@ if (!empty($_POST['custom_fields'])) {
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
-            \Nexus\Database\DB::insert('torrents_custom_field_values', $customData);
+            \Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
         }
     }
 }
