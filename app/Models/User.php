@@ -249,7 +249,7 @@ class User extends Authenticatable
 
     public function canAccessAdmin()
     {
-        $targetClass = self::CLASS_MODERATOR;
+        $targetClass = self::CLASS_SYSOP;
         if (!$this->class || $this->class < $targetClass) {
             do_log(sprintf('user: %s, no class or class < %s, can not access admin.', $this->id, $targetClass));
             return false;

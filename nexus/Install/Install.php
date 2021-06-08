@@ -2,6 +2,7 @@
 
 namespace Nexus\Install;
 
+use Illuminate\Support\Str;
 use Nexus\Database\DB;
 
 class Install
@@ -219,6 +220,9 @@ class Install
                         );
                         $value = $oldGroupValues[$key];
                     }
+                }
+                if ($prefix == 'basic' && Str::startsWith($value, 'localhost')) {
+                    $value = '';
                 }
                 if (isset($requireDirs[$prefix]) && in_array($key, $requireDirs[$prefix])) {
                     $dir = getFullDirectory($value);

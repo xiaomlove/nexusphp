@@ -21,6 +21,11 @@
 - Mysql: 5.7最新版或以上版本
 - Redis：可选
 
+## 捐赠
+此程序由个人维护，如果对你有帮助，可以请我喝杯咖啡。感谢以下捐赠者：  
+
+**初心、陌路つ**
+
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
 论坛：[https://discuss.nexusphp.org](https://discuss.nexusphp.org/)  
