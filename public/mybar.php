@@ -21,7 +21,7 @@ else{
 	$uploaded = mksize($row['uploaded']);
 	$downloaded = mksize($row['downloaded']);
 }
-$my_img=imagecreatefrompng("pic/userbar/".$bgpic.".png");
+$my_img=imagecreatefrompng(getFullDirectory("pic/userbar/".$bgpic.".png"));
 imagealphablending($my_img, false);
 
 if (!$_GET['noname'])

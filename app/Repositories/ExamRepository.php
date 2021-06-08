@@ -464,10 +464,12 @@ class ExamRepository extends BaseRepository
                 $join->on("$userTable.id", "=", "$examUserTable.uid")
                     ->on("$examUserTable.status", "=", DB::raw(ExamUser::STATUS_NORMAL));
             })
+            ->where('enabled', User::ENABLED_YES)
+            ->where('visible', User::STATUS_CONFIRMED)
             ->whereRaw("$examUserTable.id is null")
             ->selectRaw("$userTable.*")
             ->orderBy("$userTable.id", "asc");
-        $size = 100;
+        $size = 1000;
         $minId = 0;
         $result = 0;
         while (true) {
@@ -522,7 +524,7 @@ class ExamRepository extends BaseRepository
             $baseQuery->whereRaw(sprintf("case %s else false end", implode(" ", $whenThens)));
         }
 
-        $size = 100;
+        $size = 1000;
         $minId = 0;
         $result = 0;
 

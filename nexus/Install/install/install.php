@@ -1,13 +1,9 @@
 <?php
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 0);
 $rootpath = dirname(dirname(__DIR__)) . '/';
 define('ROOT_PATH', $rootpath);
-define('IN_NEXUS', true);
-$isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
-require $rootpath . 'vendor/autoload.php';
-require $rootpath . 'nexus/Database/helpers.php';
+require ROOT_PATH . 'nexus/Install/install_update_start.php';
 
+$isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
 $install = new \Nexus\Install\Install();
 $currentStep = $install->currentStep();
 $maxStep = $install->maxStep();
@@ -28,7 +24,7 @@ if ($currentStep == 1) {
 
 if ($currentStep == 2) {
     $envExampleFile = $rootpath . ".env.example";
-    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
+//    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
     $envExampleData = readEnvFile($envExampleFile);
     $envFormControls = $install->listEnvFormControls();
     $newData = array_column($envFormControls, 'value', 'name');
@@ -49,12 +45,12 @@ if ($currentStep == 2) {
             'current' => $envExampleFile,
             'result' =>  $install->yesOrNo(file_exists($envExampleFile) && is_readable($envExampleFile)),
         ],
-        [
-            'label' => basename($dbstructureFile),
-            'required' => 'exists && readable',
-            'current' => $dbstructureFile,
-            'result' =>  $install->yesOrNo(file_exists($dbstructureFile) && is_readable($dbstructureFile)),
-        ],
+//        [
+//            'label' => basename($dbstructureFile),
+//            'required' => 'exists && readable',
+//            'current' => $dbstructureFile,
+//            'result' =>  $install->yesOrNo(file_exists($dbstructureFile) && is_readable($dbstructureFile)),
+//        ],
     ];
     $fails = array_filter($tableRows, function ($value) {return $value['result'] == 'NO';});
     $pass = empty($fails);
@@ -64,7 +60,19 @@ if ($currentStep == 3) {
     $shouldCreateTable = $install->listShouldCreateTable();
     while ($isPost) {
         try {
-            $install->createTable($shouldCreateTable);
+//            $install->createTable($shouldCreateTable);
+            if (!WITH_LARAVEL) {
+                throw new \RuntimeException('Larvel is not avaliable.');
+            }
+            $command = "php " . ROOT_PATH . "artisan install:migrate";
+            $result = exec($command, $output, $result_code);
+            $install->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
+            $install->doLog("output: " . json_encode($output));
+            if ($result_code != 0) {
+                throw new \RuntimeException(json_encode($output));
+            } else {
+                $install->doLog("[CREATE TABLE] success.");
+            }
             $install->nextStep();
         } catch (\Exception $exception) {
             $error = $exception->getMessage();
@@ -117,7 +125,17 @@ if ($currentStep == 4) {
         try {
             $install->createSymbolicLinks($symbolicLinks);
             $install->saveSettings($settings);
-            $install->importInitialData();
+//            $install->importInitialData();
+            //use seed
+            $command = "php " . ROOT_PATH . "artisan install:init_data";
+            $result = exec($command, $output, $result_code);
+            $install->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
+            $install->doLog("output: " . json_encode($output));
+            if ($result_code != 0) {
+                throw new \RuntimeException(json_encode($output));
+            } else {
+                $install->doLog("[INIT DATA] success.");
+            }
             $install->nextStep();
         } catch (\Exception $e) {
             $error = $e->getMessage();

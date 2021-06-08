@@ -26,7 +26,7 @@ parked();
 			stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_permission_denied']);
 		$res = sql_query("SELECT username FROM users WHERE id=" . $msga["sender"]) or sqlerr();
 		$usra = mysql_fetch_assoc($res);
-		$body .= $msga[msg]."\n\n-------- [url=userdetails.php?id=".$CURUSER["id"]."]".$CURUSER["username"]."[/url][i] Wrote at ".date("Y-m-d H:i:s").":[/i] --------\n";
+		$body .= $msga['msg']."\n\n-------- [url=userdetails.php?id=".$CURUSER["id"]."]".$CURUSER["username"]."[/url][i] Wrote at ".date("Y-m-d H:i:s").":[/i] --------\n";
 		$subject = $msga['subject'];
 		if (preg_match('/^Re:\s/', $subject))
 			$subject = preg_replace('/^Re:\s(.*)$/', 'Re(2): \\1', $subject);

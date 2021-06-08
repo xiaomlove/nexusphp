@@ -105,13 +105,15 @@ if (strlen($CURUSER['passkey']) != 32) {
 }
 
 $trackerReportAuthKey = $torrentRep->getTrackerReportAuthKey($id, $CURUSER['id'], true);
+$dict = \Rhilip\Bencode\Bencode::load($fn);
+$dict['announce'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";
 
-$dict = bdec_file($fn, $max_torrent_size);
+//$dict = bdec_file($fn, $max_torrent_size);
 //$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?passkey=$CURUSER[passkey]";
-$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";
+//$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";
 //$dict['value']['announce']['value'] = getSchemeAndHttpHost() . "/announce.php?authkey=$trackerReportAuthKey";
-$dict['value']['announce']['string'] = strlen($dict['value']['announce']['value']).":".$dict['value']['announce']['value'];
-$dict['value']['announce']['strlen'] = strlen($dict['value']['announce']['string']);
+//$dict['value']['announce']['string'] = strlen($dict['value']['announce']['value']).":".$dict['value']['announce']['value'];
+//$dict['value']['announce']['strlen'] = strlen($dict['value']['announce']['string']);
 /*if ($announce_urls[1] != "") // add multi-tracker
 {
 	$dict['value']['announce-list']['type'] = "list";
@@ -169,5 +171,6 @@ else
 
 //header ("Content-Disposition: attachment; filename=".$row["filename"]."");
 //ob_implicit_flush(true);
-print(benc($dict));
+//print(benc($dict));
+echo \Rhilip\Bencode\Bencode::encode($dict);
 ?>

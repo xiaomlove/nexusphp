@@ -41,11 +41,13 @@
         "laravel/tinker": "^2.5",
         "nao-pon/flysystem-google-drive": "^1.1",
         "orangehill/iseed": "^3.0",
+        "rhilip/bencode": "^1.1",
         "swiftmailer/swiftmailer": "^6.2"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
+        "kitloong/laravel-migrations-generator": "^4.4",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^5.0",

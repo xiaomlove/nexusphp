@@ -18,7 +18,7 @@ class Install
     protected $initializeTables = [
         'adminpanel', 'agent_allowed_exception', 'agent_allowed_family', 'allowedemails', 'audiocodecs', 'bannedemails', 'categories',
         'caticons', 'codecs', 'countries', 'downloadspeed', 'faq', 'isp', 'language', 'media', 'modpanel', 'processings', 'rules', 'schools',
-        'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed', 'agent_allowed_family',
+        'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed',
     ];
 
     protected $envNames = ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB'];
@@ -97,6 +97,19 @@ class Install
             return [];
         }
         return array_column($matches, 0, 1);
+    }
+
+    public function listAllTableCreateFromMigrations()
+    {
+        $tables = [];
+        foreach (glob(ROOT_PATH . "database/migrations/*.php") as $path) {
+            $filename = basename($path);
+            $count = preg_match('/create_(.*)_table.php/', $filename, $matches);
+            if ($count) {
+                $tables[$matches[1]] = '';
+            }
+        }
+        return $tables;
     }
 
     public function listExistsTable()
@@ -444,7 +457,8 @@ class Install
     public function listShouldCreateTable()
     {
         $existsTable = $this->listExistsTable();
-        $tableCreate = $this->listAllTableCreate();
+//        $tableCreate = $this->listAllTableCreate();
+        $tableCreate = $this->listAllTableCreateFromMigrations();
         $shouldCreateTable = [];
         foreach ($tableCreate as $table => $sql) {
             if (in_array($table, $existsTable)) {
@@ -482,7 +496,7 @@ class Install
             }
             $linkResult = symlink($path, $linkName);
             if ($linkResult === false) {
-                throw new \RuntimeException("can't not make symbolic link:  $linkName -> $path");
+                throw new \RuntimeException("can not make symbolic link:  $linkName -> $path");
             }
             $this->doLog("[CREATE SYMBOLIC LINK] success make symbolic link: $linkName -> $path");
         }

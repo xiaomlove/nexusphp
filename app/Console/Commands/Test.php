@@ -17,6 +17,7 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Rhilip\Bencode\Bencode;
 
 class Test extends Command
 {
@@ -51,11 +52,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $reader = new Reader(resource_path('geoip/GeoLite2-City.mmdb'));
-        $record = $reader->city('128.101.101.101');
-        dump($record->city, $record->country, $record->location);
-        $record2 = $reader->isp('128.101.101.101');
-        dump($record2->isp);
+        $file = storage_path('logs/11270.torrent');
+        $r = Bencode::load($file);
+        dd($r);
     }
 
 }

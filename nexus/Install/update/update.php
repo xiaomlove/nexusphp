@@ -1,20 +1,9 @@
 <?php
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 0);
 $rootpath = dirname(dirname(__DIR__)) . '/';
 define('ROOT_PATH', $rootpath);
-define('IN_NEXUS', true);
-$isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
-require $rootpath . 'vendor/autoload.php';
-require $rootpath . 'nexus/Database/helpers.php';
-require $rootpath . 'include/constants.php';
-$withLaravel = false;
-if (file_exists($rootpath . '.env')) {
-    require $rootpath . 'include/eloquent.php';
-    $withLaravel = true;
-}
-define('WITH_LARAVEL', $withLaravel);
+require ROOT_PATH . 'nexus/Install/install_update_start.php';
 
+$isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
 $update = new \Nexus\Install\Update();
 $currentStep = $update->currentStep();
 $maxStep = $update->maxStep();
@@ -35,7 +24,7 @@ if ($currentStep == 1) {
 
 if ($currentStep == 2) {
     $envExampleFile = $rootpath . ".env.example";
-    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
+//    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
     $envExampleData = readEnvFile($envExampleFile);
     $envFormControls = $update->listEnvFormControls();
     $newData = array_column($envFormControls, 'value', 'name');
@@ -56,19 +45,20 @@ if ($currentStep == 2) {
             'current' => $envExampleFile,
             'result' =>  $update->yesOrNo(file_exists($envExampleFile) && is_readable($envExampleFile)),
         ],
-        [
-            'label' => basename($dbstructureFile),
-            'required' => 'exists && readable',
-            'current' => $dbstructureFile,
-            'result' =>  $update->yesOrNo(file_exists($dbstructureFile) && is_readable($dbstructureFile)),
-        ],
+//        [
+//            'label' => basename($dbstructureFile),
+//            'required' => 'exists && readable',
+//            'current' => $dbstructureFile,
+//            'result' =>  $update->yesOrNo(file_exists($dbstructureFile) && is_readable($dbstructureFile)),
+//        ],
     ];
     $fails = array_filter($tableRows, function ($value) {return $value['result'] == 'NO';});
     $pass = empty($fails);
 }
 
 if ($currentStep == 3) {
-    $createTables = $update->listAllTableCreate();
+//    $createTables = $update->listAllTableCreate();
+    $createTables = $update->listAllTableCreateFromMigrations();
     $existsTables = $update->listExistsTable();
     $tableRows = [];
     $toCreateTable = $toAlterTable = $toUpdateTable = [];
@@ -84,22 +74,8 @@ if ($currentStep == 3) {
             $toCreateTable[$table] = $tableCreate;
             continue;
         }
-        $tableShouldHaveFields = $update->listTableFieldsFromCreateTable($tableCreate);
         $tableHaveFields = $update->listTableFieldsFromDb($table);
-        foreach ($tableShouldHaveFields as $field => $fieldCreate) {
-            if (!isset($tableHaveFields[$field])) {
-                //Field not exists
-                $tableRows[] = [
-                    "label" => "Field: $table.$field",
-                    "required" => "exists",
-                    "current" => "",
-                    "result" => 'NO',
-                ];
-                $toAlterTable[$table][$field] = "add column $fieldCreate";
-                continue;
-            }
-            $fieldInfo = $tableHaveFields[$field];
-            //Field invalid
+        foreach ($tableHaveFields as $field => $fieldInfo) {
             if ($fieldInfo['Type'] == 'datetime' && $fieldInfo['Default'] == '0000-00-00 00:00:00') {
                 $tableRows[] = [
                     'label' => "Field: $table.$field",
@@ -107,45 +83,22 @@ if ($currentStep == 3) {
                     'current' => '0000-00-00 00:00:00',
                     'result' => 'NO',
                 ];
-                $toAlterTable[$table][$field] = "modify $fieldCreate";
+                $toAlterTable[$table][$field] = "modify $field datetime default null";
                 $toUpdateTable[$table][$field] = "null";
-                continue;
             }
-            //Field invalid
-//            if ($fieldInfo['Null'] == 'NO' && $fieldInfo['Default'] === null && $fieldInfo['Key'] != 'PRI') {
-//                $typePrefix = $fieldInfo['Type'];
-//                if (($pos = strpos($typePrefix, '(')) !== false) {
-//                    $typePrefix = substr($typePrefix, 0, $pos);
-//                }
-//                if (preg_match('/varchar/', $typePrefix)) {
-//                    $tableRows[] = [
-//                        'label' => "Field: $table.$field",
-//                        'required' => "default ''",
-//                        'current' => 'null',
-//                        'result' => 'NO',
-//                    ];
-//                    $toAlterTable[$table][$field] = "modify $field {$fieldInfo['Type']} not null default ''";
-//                    continue;
-//                }
-//                if (preg_match('/int/', $typePrefix)) {
-//                    $tableRows[] = [
-//                        'label' => "Field: $table.$field",
-//                        'required' => "default 0",
-//                        'current' => 'null',
-//                        'result' => 'NO',
-//                    ];
-//                    $toAlterTable[$table][$field] = "modify $field {$fieldInfo['Type']} not null default 0";
-//                    continue;
-//                }
-//            }
         }
     }
     while ($isPost) {
         try {
             sql_query('SET sql_mode=(SELECT REPLACE(@@sql_mode,"NO_ZERO_DATE", ""))');
-            foreach ($toCreateTable as $query) {
-                $update->doLog("[CREATE TABLE] $query");
-                sql_query($query);
+            $command = "php " . ROOT_PATH . "artisan install:migrate";
+            $result = exec($command, $output, $result_code);
+            $update->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
+            $update->doLog("output: " . json_encode($output));
+            if ($result_code != 0) {
+                throw new \RuntimeException(json_encode($output));
+            } else {
+                $update->doLog("[MIGRATE] success.");
             }
             foreach ($toAlterTable as $table => $modies) {
                 $query = "alter table $table " . implode(', ', $modies);

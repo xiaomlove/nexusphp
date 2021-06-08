@@ -230,6 +230,11 @@ class NexusDB
         return Capsule::table($table);
     }
 
+    public static function transaction(\Closure $callback, $attempts = 1)
+    {
+        return Capsule::connection(self::ELOQUENT_CONNECTION_NAME)->transaction($callback, $attempts);
+    }
+
     public static function getMysqlColumnInfo($table, $column)
     {
         static $driver;

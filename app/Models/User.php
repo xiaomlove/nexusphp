@@ -121,7 +121,7 @@ class User extends Authenticatable
 
     public function checkIsNormal(array $fields = ['status', 'enabled'])
     {
-        if (in_array('visible', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {
+        if (in_array('status', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {
             throw new \InvalidArgumentException(sprintf('User: %s is not confirmed.', $this->id));
         }
         if (in_array('enabled', $fields) && $this->getAttribute('enabled') != self::ENABLED_YES) {
