@@ -64,7 +64,7 @@ if ($currentStep == 3) {
             if (!WITH_LARAVEL) {
                 throw new \RuntimeException('Laravel is not avaliable.');
             }
-            $command = "php " . ROOT_PATH . "artisan migrate";
+            $command = "php " . ROOT_PATH . "artisan migrate --force";
             $result = exec($command, $output, $result_code);
             $install->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
             $install->doLog("output: " . json_encode($output));
