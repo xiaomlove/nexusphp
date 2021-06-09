@@ -609,7 +609,7 @@ function isRunningInConsole(): bool
     return php_sapi_name() == 'cli';
 }
 
-function get_base_announce_url()
+function get_tracker_schema_and_host(): array
 {
     global $https_announce_urls, $announce_urls;
     $httpsAnnounceUrls = array_filter($https_announce_urls);
@@ -637,5 +637,5 @@ function get_base_announce_url()
         $base_announce_url = $announce_urls[0];
     }
     do_log($log);
-    return $ssl_torrent . $base_announce_url;
+    return compact('ssl_torrent', 'base_announce_url');
 }
