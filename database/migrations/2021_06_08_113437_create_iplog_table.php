@@ -13,6 +13,9 @@ class CreateIplogTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('iplog')) {
+            return;
+        }
         Schema::create('iplog', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('ip', 64)->default('');

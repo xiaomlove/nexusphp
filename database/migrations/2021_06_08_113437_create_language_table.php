@@ -13,6 +13,9 @@ class CreateLanguageTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('language')) {
+            return;
+        }
         Schema::create('language', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('lang_name', 50)->default('');

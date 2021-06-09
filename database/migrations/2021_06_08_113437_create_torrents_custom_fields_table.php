@@ -13,6 +13,9 @@ class CreateTorrentsCustomFieldsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('torrents_custom_fields')) {
+            return;
+        }
         Schema::create('torrents_custom_fields', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name')->default('');

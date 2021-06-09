@@ -13,6 +13,9 @@ class CreateAvpsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('avps')) {
+            return;
+        }
         Schema::create('avps', function (Blueprint $table) {
             $table->string('arg', 20)->default('')->primary();
             $table->text('value_s');

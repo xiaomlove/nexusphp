@@ -13,6 +13,9 @@ class CreateBannedemailsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('bannedemails')) {
+            return;
+        }
         Schema::create('bannedemails', function (Blueprint $table) {
             $table->integer('id', true);
             $table->mediumText('value');

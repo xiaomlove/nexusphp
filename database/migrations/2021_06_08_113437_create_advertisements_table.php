@@ -13,6 +13,9 @@ class CreateAdvertisementsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('advertisements')) {
+            return;
+        }
         Schema::create('advertisements', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->boolean('enabled')->default(0);

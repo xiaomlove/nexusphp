@@ -13,6 +13,9 @@ class CreateProlinkclicksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('prolinkclicks')) {
+            return;
+        }
         Schema::create('prolinkclicks', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('userid')->default(0);

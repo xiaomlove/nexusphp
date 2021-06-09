@@ -13,6 +13,9 @@ class CreateBookmarksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('bookmarks')) {
+            return;
+        }
         Schema::create('bookmarks', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('torrentid')->default(0);

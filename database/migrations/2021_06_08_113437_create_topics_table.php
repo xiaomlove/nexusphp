@@ -13,6 +13,9 @@ class CreateTopicsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('topics')) {
+            return;
+        }
         Schema::create('topics', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('userid')->default(0)->index('userid');

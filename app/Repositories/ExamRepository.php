@@ -319,6 +319,16 @@ class ExamRepository extends BaseRepository
         ExamProgress::query()->insert($insert);
         do_log("[addProgress] " . nexus_json_encode($insert));
 
+        /**
+         * Updating progress is more performance intensive and will only be done with a certain probability
+         */
+        $probability = (int)nexus_env('EXAM_PROGRESS_UPDATE_PROBABILITY', 60);
+        $random = mt_rand(1, 100);
+        do_log("probability: $probability, random: $random");
+        if ($random > $probability) {
+            do_log("[SKIP_UPDATE_PROGRESS], random: $random > probability: $probability", 'warning');
+            return true;
+        }
         $examProgress = $this->calculateProgress($examUser);
         $examProgressFormatted = $this->getProgressFormatted($exam, $examProgress);
         $examNotPassed = array_filter($examProgressFormatted, function ($item) {
@@ -452,31 +462,48 @@ class ExamRepository extends BaseRepository
             return false;
         }
         if ($exams->count() > 1) {
-            do_log("Valid and discovered exam more than 1.", "warning");
+            do_log("Valid and discovered exam more than 1.", "error");
             return false;
         }
         /** @var Exam $exam */
         $exam = $exams->first();
+        $filters = $exam->filters;
+        do_log("exam: {$exam->id}, filters: " . nexus_json_encode($filters));
         $userTable = (new User())->getTable();
         $examUserTable = (new ExamUser())->getTable();
         $baseQuery = User::query()
             ->leftJoin($examUserTable, function (JoinClause $join) use ($examUserTable, $userTable) {
-                $join->on("$userTable.id", "=", "$examUserTable.uid")
-                    ->on("$examUserTable.status", "=", DB::raw(ExamUser::STATUS_NORMAL));
+                $join->on("$userTable.id", "=", "$examUserTable.uid");
             })
-            ->where('enabled', User::ENABLED_YES)
-            ->where('visible', User::STATUS_CONFIRMED)
+            ->where("$userTable.enabled", User::ENABLED_YES)
+            ->where("$userTable.status", User::STATUS_CONFIRMED)
             ->whereRaw("$examUserTable.id is null")
             ->selectRaw("$userTable.*")
             ->orderBy("$userTable.id", "asc");
+
+        if (empty($filters->classes)) {
+            do_log("{$exam->id} no classes.");
+            return false;
+        } else {
+            $baseQuery->whereIn("$userTable.class", $filters->classes);
+        }
+        if (empty($filters->register_time_range) || empty($filters->register_time_range[0]) || empty($filters->register_time_range[1])) {
+            do_log("{$exam->id} no register_time_range.");
+            return false;
+        } else {
+            $baseQuery->where("$userTable.added", ">=", Carbon::parse($filters->register_time_range[0])->toDateTimeString())
+                ->where("$userTable.added", '<=', Carbon::parse($filters->register_time_range[1])->toDateTimeString());
+        }
+
         $size = 1000;
         $minId = 0;
         $result = 0;
         while (true) {
             $logPrefix = sprintf('[%s], exam: %s, size: %s', __FUNCTION__, $exam->id , $size);
             $users = (clone $baseQuery)->where("$userTable.id", ">", $minId)->limit($size)->get();
+            do_log("$logPrefix, query: " . last_query() . ", counts: " . $users->count());
             if ($users->isEmpty()) {
-                do_log("$logPrefix, no more data..." . last_query());
+                do_log("no more data...");
                 break;
             }
             $insert = [];
@@ -484,10 +511,10 @@ class ExamRepository extends BaseRepository
             foreach ($users as $user) {
                 $minId = $user->id;
                 $currentLogPrefix = sprintf("$logPrefix, user: %s", $user->id);
-                if (!$this->isExamMatchUser($exam, $user)) {
-                    do_log("$currentLogPrefix, exam not match this user.");
-                    continue;
-                }
+//                if (!$this->isExamMatchUser($exam, $user)) {
+//                    do_log("$currentLogPrefix, exam not match this user.");
+//                    continue;
+//                }
                 $insert[] = [
                     'uid' => $user->id,
                     'exam_id' => $exam->id,

@@ -155,11 +155,35 @@ function nexus_dd($vars)
  */
 function do_log($log, $level = 'info')
 {
+    static $uid, $passkey, $env, $sequence, $setLogLevel;
+    if (is_null($setLogLevel)) {
+        $setLogLevel = nexus_env('LOG_LEVEL', 'debug');
+    }
+    $logLevels = [
+        \Psr\Log\LogLevel::DEBUG,
+        \Psr\Log\LogLevel::INFO,
+        \Psr\Log\LogLevel::NOTICE,
+        \Psr\Log\LogLevel::WARNING,
+        \Psr\Log\LogLevel::ERROR,
+        \Psr\Log\LogLevel::CRITICAL,
+        \Psr\Log\LogLevel::ALERT,
+        \Psr\Log\LogLevel::EMERGENCY,
+    ];
+    $setLogLevelKey = array_search($setLogLevel, $logLevels);
+    $currentLogLevelKey = array_search($level, $logLevels);
+    if ($currentLogLevelKey === false) {
+        $level = \Psr\log\LogLevel::ERROR;
+        $log = "[ERROR_LOG_LEVEL] $log";
+        $currentLogLevelKey = array_search($level, $logLevels);
+    }
+    if ($currentLogLevelKey < $setLogLevelKey) {
+        return;
+    }
+
     $logFile = getLogFile();
 	if (($fd = fopen($logFile, 'a')) === false) {
        $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
 	}
-	static $uid, $passkey, $env, $sequence;
 	if (is_null($uid)) {
 	    $sequence = 0;
         if (IN_NEXUS) {

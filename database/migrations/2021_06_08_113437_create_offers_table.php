@@ -13,6 +13,9 @@ class CreateOffersTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('offers')) {
+            return;
+        }
         Schema::create('offers', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('userid')->default(0)->index('userid');

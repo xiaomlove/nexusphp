@@ -13,6 +13,9 @@ class CreateCountriesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('countries')) {
+            return;
+        }
         Schema::create('countries', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name', 50)->default('');

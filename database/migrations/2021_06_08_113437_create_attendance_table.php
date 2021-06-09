@@ -13,6 +13,9 @@ class CreateAttendanceTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('attendance')) {
+            return;
+        }
         Schema::create('attendance', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedInteger('uid')->default(0)->index('idx_uid');

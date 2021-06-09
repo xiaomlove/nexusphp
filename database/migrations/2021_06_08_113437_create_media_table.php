@@ -13,6 +13,9 @@ class CreateMediaTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('media')) {
+            return;
+        }
         Schema::create('media', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

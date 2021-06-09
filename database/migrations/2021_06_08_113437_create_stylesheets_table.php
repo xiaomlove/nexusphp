@@ -13,6 +13,9 @@ class CreateStylesheetsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('stylesheets')) {
+            return;
+        }
         Schema::create('stylesheets', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('uri')->default('');

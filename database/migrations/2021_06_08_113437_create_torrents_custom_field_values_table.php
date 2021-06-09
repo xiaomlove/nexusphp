@@ -13,6 +13,9 @@ class CreateTorrentsCustomFieldValuesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('torrents_custom_field_values')) {
+            return;
+        }
         Schema::create('torrents_custom_field_values', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('torrent_id')->default(0)->index('idx_torrent_id');

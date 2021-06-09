@@ -13,6 +13,9 @@ class CreatePmboxesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('pmboxes')) {
+            return;
+        }
         Schema::create('pmboxes', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('userid')->default(0);

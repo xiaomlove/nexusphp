@@ -13,6 +13,9 @@ class CreateAgentAllowedExceptionTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('agent_allowed_exception')) {
+            return;
+        }
         Schema::create('agent_allowed_exception', function (Blueprint $table) {
             $table->unsignedTinyInteger('family_id')->default(0)->index('family_id');
             $table->string('name', 100)->default('');

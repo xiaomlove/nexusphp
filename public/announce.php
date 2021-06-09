@@ -81,7 +81,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror,passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = $currentUser = mysql_fetch_array($res);
-	do_log("[check passkey], currentUser: " . nexus_json_encode($currentUser));
+	do_log("[check passkey], currentUser: " . nexus_json_encode($currentUser), 'error');
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
@@ -117,8 +117,8 @@ if (!$torrent) {
     $start = strpos($queryString, $firstNeedle) + strlen($firstNeedle);
     $end = strpos($queryString, "&", $start);
     $infoHashUrlEncode = substr($queryString, $start, $end - $start);
-    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString");
-    do_log("[TORRENT NOT EXISTS] infoHashUrlEncode: $infoHashUrlEncode");
+    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString", 'error');
+    do_log("[TORRENT NOT EXISTS] infoHashUrlEncode: $infoHashUrlEncode", 'error');
 
     err("torrent not registered with this tracker");
 }
@@ -471,7 +471,7 @@ $examRep = new \App\Repositories\ExamRepository();
 try {
     $examRep->addProgress($userid, $torrentid, $examIndexData);
 } catch (\Exception $exception) {
-    do_log("add exam progress fail: " . $exception->getMessage());
+    do_log("add exam progress fail: " . $exception->getMessage(), 'critical');
 }
 
 benc_resp($rep_dict);

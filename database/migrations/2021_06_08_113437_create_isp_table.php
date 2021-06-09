@@ -13,6 +13,9 @@ class CreateIspTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('isp')) {
+            return;
+        }
         Schema::create('isp', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 50)->nullable();

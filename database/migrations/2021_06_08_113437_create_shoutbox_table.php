@@ -13,6 +13,9 @@ class CreateShoutboxTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('shoutbox')) {
+            return;
+        }
         Schema::create('shoutbox', function (Blueprint $table) {
             $table->integer('id', true);
             $table->unsignedMediumInteger('userid')->default(0);

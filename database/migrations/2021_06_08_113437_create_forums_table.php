@@ -13,6 +13,9 @@ class CreateForumsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('forums')) {
+            return;
+        }
         Schema::create('forums', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->unsignedSmallInteger('sort')->default(0);

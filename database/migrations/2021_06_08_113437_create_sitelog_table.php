@@ -13,6 +13,9 @@ class CreateSitelogTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('sitelog')) {
+            return;
+        }
         Schema::create('sitelog', function (Blueprint $table) {
             $table->increments('id');
             $table->dateTime('added')->nullable()->index('added');

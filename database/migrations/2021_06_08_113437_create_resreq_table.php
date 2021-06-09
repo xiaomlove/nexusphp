@@ -13,6 +13,9 @@ class CreateResreqTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('resreq')) {
+            return;
+        }
         Schema::create('resreq', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('reqid')->default(0)->index('reqid');

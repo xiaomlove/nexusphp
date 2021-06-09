@@ -13,6 +13,9 @@ class CreateRulesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('rules')) {
+            return;
+        }
         Schema::create('rules', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->unsignedSmallInteger('lang_id')->default(6);

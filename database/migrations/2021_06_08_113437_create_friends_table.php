@@ -13,6 +13,9 @@ class CreateFriendsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('friends')) {
+            return;
+        }
         Schema::create('friends', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('userid')->default(0);

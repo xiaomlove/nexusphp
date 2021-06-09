@@ -13,6 +13,9 @@ class CreateCodecsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('codecs')) {
+            return;
+        }
         Schema::create('codecs', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

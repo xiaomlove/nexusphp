@@ -13,6 +13,9 @@ class CreateSecondiconsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('secondicons')) {
+            return;
+        }
         Schema::create('secondicons', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->unsignedTinyInteger('source')->default(0);

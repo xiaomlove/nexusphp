@@ -13,6 +13,9 @@ class CreatePollanswersTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('pollanswers')) {
+            return;
+        }
         Schema::create('pollanswers', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('pollid')->default(0)->index('pollid');

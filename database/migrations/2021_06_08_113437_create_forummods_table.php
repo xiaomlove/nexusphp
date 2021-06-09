@@ -13,6 +13,9 @@ class CreateForummodsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('forummods')) {
+            return;
+        }
         Schema::create('forummods', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->unsignedSmallInteger('forumid')->default(0)->index('forumid');

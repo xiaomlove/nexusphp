@@ -13,6 +13,9 @@ class CreateSettingsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('settings')) {
+            return;
+        }
         Schema::create('settings', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name')->default('')->unique('uniqe_name');

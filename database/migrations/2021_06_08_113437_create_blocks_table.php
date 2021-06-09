@@ -13,6 +13,9 @@ class CreateBlocksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('blocks')) {
+            return;
+        }
         Schema::create('blocks', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('userid')->default(0);

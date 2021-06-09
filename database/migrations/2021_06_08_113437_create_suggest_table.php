@@ -13,6 +13,9 @@ class CreateSuggestTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('suggest')) {
+            return;
+        }
         Schema::create('suggest', function (Blueprint $table) {
             $table->increments('id');
             $table->string('keywords')->default('')->index('keywords');

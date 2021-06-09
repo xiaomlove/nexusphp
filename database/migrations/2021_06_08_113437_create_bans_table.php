@@ -13,6 +13,9 @@ class CreateBansTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('bans')) {
+            return;
+        }
         Schema::create('bans', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->dateTime('added')->nullable();

@@ -13,6 +13,9 @@ class CreateFundsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('funds')) {
+            return;
+        }
         Schema::create('funds', function (Blueprint $table) {
             $table->increments('id');
             $table->decimal('usd')->default(0.00);

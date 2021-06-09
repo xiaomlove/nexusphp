@@ -13,6 +13,9 @@ class CreatePollsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('polls')) {
+            return;
+        }
         Schema::create('polls', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->dateTime('added')->nullable();

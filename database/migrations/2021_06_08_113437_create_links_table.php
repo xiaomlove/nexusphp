@@ -13,6 +13,9 @@ class CreateLinksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('links')) {
+            return;
+        }
         Schema::create('links', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

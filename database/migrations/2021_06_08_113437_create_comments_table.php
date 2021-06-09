@@ -13,6 +13,9 @@ class CreateCommentsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('comments')) {
+            return;
+        }
         Schema::create('comments', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('user')->default(0)->index('user');

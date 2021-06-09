@@ -13,6 +13,9 @@ class CreateSearchboxTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('searchbox')) {
+            return;
+        }
         Schema::create('searchbox', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name', 30)->nullable();

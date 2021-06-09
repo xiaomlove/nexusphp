@@ -13,6 +13,9 @@ class CreateRequestsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('requests')) {
+            return;
+        }
         Schema::create('requests', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('userid')->default(0)->index('userid');

@@ -13,6 +13,9 @@ class CreateDownloadspeedTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('downloadspeed')) {
+            return;
+        }
         Schema::create('downloadspeed', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 50)->default('');

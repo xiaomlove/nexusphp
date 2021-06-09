@@ -13,6 +13,9 @@ class CreateProcessingsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('processings')) {
+            return;
+        }
         Schema::create('processings', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

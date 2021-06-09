@@ -13,6 +13,9 @@ class CreateTorrentSecretsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('torrent_secrets')) {
+            return;
+        }
         Schema::create('torrent_secrets', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('uid')->index('idx_uid');

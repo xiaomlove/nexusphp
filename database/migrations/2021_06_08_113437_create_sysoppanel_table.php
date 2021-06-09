@@ -13,6 +13,9 @@ class CreateSysoppanelTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('sysoppanel')) {
+            return;
+        }
         Schema::create('sysoppanel', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 128)->default('');

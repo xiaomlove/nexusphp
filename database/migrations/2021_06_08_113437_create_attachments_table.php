@@ -13,6 +13,9 @@ class CreateAttachmentsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('attachments')) {
+            return;
+        }
         Schema::create('attachments', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('userid')->default(0);

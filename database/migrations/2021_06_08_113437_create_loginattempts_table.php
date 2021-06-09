@@ -13,6 +13,9 @@ class CreateLoginattemptsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('loginattempts')) {
+            return;
+        }
         Schema::create('loginattempts', function (Blueprint $table) {
             $table->increments('id');
             $table->string('ip', 64)->default('');

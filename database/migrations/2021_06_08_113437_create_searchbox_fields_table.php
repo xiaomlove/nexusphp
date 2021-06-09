@@ -13,6 +13,9 @@ class CreateSearchboxFieldsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('searchbox_fields')) {
+            return;
+        }
         Schema::create('searchbox_fields', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('searchbox_id');

@@ -13,6 +13,9 @@ class CreateAgentAllowedFamilyTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('agent_allowed_family')) {
+            return;
+        }
         Schema::create('agent_allowed_family', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('family', 50)->default('');

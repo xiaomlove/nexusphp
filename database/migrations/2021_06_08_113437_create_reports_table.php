@@ -13,6 +13,9 @@ class CreateReportsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('reports')) {
+            return;
+        }
         Schema::create('reports', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('addedby')->default(0);

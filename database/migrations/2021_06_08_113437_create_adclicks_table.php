@@ -13,6 +13,9 @@ class CreateAdclicksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('adclicks')) {
+            return;
+        }
         Schema::create('adclicks', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('adid')->nullable();

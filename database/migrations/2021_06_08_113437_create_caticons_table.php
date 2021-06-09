@@ -13,6 +13,9 @@ class CreateCaticonsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('caticons')) {
+            return;
+        }
         Schema::create('caticons', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 64)->default('');

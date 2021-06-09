@@ -13,6 +13,9 @@ class CreateMagicTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('magic')) {
+            return;
+        }
         Schema::create('magic', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('torrentid')->default(0)->index('idx_torrentid');

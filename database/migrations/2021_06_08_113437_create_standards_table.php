@@ -13,6 +13,9 @@ class CreateStandardsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('standards')) {
+            return;
+        }
         Schema::create('standards', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

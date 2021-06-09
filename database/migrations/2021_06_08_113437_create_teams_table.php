@@ -13,6 +13,9 @@ class CreateTeamsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('teams')) {
+            return;
+        }
         Schema::create('teams', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

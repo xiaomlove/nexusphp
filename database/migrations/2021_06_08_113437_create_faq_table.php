@@ -13,6 +13,9 @@ class CreateFaqTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('faq')) {
+            return;
+        }
         Schema::create('faq', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->unsignedSmallInteger('link_id')->default(0);

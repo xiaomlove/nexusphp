@@ -13,6 +13,9 @@ class CreateAllowedemailsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('allowedemails')) {
+            return;
+        }
         Schema::create('allowedemails', function (Blueprint $table) {
             $table->integer('id', true);
             $table->mediumText('value');

@@ -13,6 +13,9 @@ class CreateUploadspeedTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('uploadspeed')) {
+            return;
+        }
         Schema::create('uploadspeed', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 50)->nullable();

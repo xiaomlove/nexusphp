@@ -13,6 +13,9 @@ class CreateSubsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('subs')) {
+            return;
+        }
         Schema::create('subs', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('torrent_id')->default(0);

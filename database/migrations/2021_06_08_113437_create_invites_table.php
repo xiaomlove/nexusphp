@@ -13,6 +13,9 @@ class CreateInvitesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('invites')) {
+            return;
+        }
         Schema::create('invites', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('inviter')->default(0);

@@ -13,6 +13,9 @@ class CreateSourcesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('sources')) {
+            return;
+        }
         Schema::create('sources', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

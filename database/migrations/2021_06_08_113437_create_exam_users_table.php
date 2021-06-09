@@ -13,6 +13,9 @@ class CreateExamUsersTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('exam_users')) {
+            return;
+        }
         Schema::create('exam_users', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('uid')->index();

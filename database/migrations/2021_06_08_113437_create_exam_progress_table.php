@@ -13,6 +13,9 @@ class CreateExamProgressTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('exam_progress')) {
+            return;
+        }
         Schema::create('exam_progress', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('exam_user_id')->index();

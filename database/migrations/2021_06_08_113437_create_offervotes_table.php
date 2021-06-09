@@ -13,6 +13,9 @@ class CreateOffervotesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('offervotes')) {
+            return;
+        }
         Schema::create('offervotes', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('offerid')->default(0);

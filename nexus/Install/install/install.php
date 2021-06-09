@@ -62,7 +62,7 @@ if ($currentStep == 3) {
         try {
 //            $install->createTable($shouldCreateTable);
             if (!WITH_LARAVEL) {
-                throw new \RuntimeException('Larvel is not avaliable.');
+                throw new \RuntimeException('Laravel is not avaliable.');
             }
             $command = "php " . ROOT_PATH . "artisan install:migrate";
             $result = exec($command, $output, $result_code);

@@ -13,6 +13,9 @@ class CreateOverforumsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('overforums')) {
+            return;
+        }
         Schema::create('overforums', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name', 60)->default('');

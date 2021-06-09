@@ -106,7 +106,7 @@ class Install
             $filename = basename($path);
             $count = preg_match('/create_(.*)_table.php/', $filename, $matches);
             if ($count) {
-                $tables[$matches[1]] = '';
+                $tables[$matches[1]] = $filename;
             }
         }
         return $tables;

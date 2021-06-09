@@ -13,6 +13,9 @@ class CreateTorrentsStateTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('torrents_state')) {
+            return;
+        }
         Schema::create('torrents_state', function (Blueprint $table) {
             $table->unsignedTinyInteger('global_sp_state')->default(1);
         });

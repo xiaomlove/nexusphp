@@ -13,6 +13,9 @@ class CreateReadpostsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('readposts')) {
+            return;
+        }
         Schema::create('readposts', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('userid')->default(0)->index('userid');

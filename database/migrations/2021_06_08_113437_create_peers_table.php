@@ -13,6 +13,9 @@ class CreatePeersTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('peers')) {
+            return;
+        }
         Schema::create('peers', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('torrent')->default(0)->index('torrent');

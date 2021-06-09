@@ -13,6 +13,9 @@ class CreateFunvotesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('funvotes')) {
+            return;
+        }
         Schema::create('funvotes', function (Blueprint $table) {
             $table->unsignedMediumInteger('funid');
             $table->unsignedMediumInteger('userid');

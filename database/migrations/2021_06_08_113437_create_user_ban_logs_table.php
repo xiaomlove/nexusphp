@@ -13,6 +13,9 @@ class CreateUserBanLogsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('user_ban_logs')) {
+            return;
+        }
         Schema::create('user_ban_logs', function (Blueprint $table) {
             $table->bigInteger('id', true);
             $table->integer('uid')->default(0)->index('idx_uid');

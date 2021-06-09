@@ -13,6 +13,9 @@ class CreateFunTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('fun')) {
+            return;
+        }
         Schema::create('fun', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('userid')->default(0);

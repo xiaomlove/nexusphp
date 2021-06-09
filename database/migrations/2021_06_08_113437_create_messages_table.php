@@ -13,6 +13,9 @@ class CreateMessagesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('messages')) {
+            return;
+        }
         Schema::create('messages', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('sender')->default(0)->index('sender');

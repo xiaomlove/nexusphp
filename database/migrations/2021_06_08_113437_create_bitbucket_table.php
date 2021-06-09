@@ -13,6 +13,9 @@ class CreateBitbucketTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('bitbucket')) {
+            return;
+        }
         Schema::create('bitbucket', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('owner')->default(0);

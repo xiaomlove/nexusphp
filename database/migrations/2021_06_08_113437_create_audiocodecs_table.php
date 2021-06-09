@@ -13,6 +13,9 @@ class CreateAudiocodecsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('audiocodecs')) {
+            return;
+        }
         Schema::create('audiocodecs', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name', 30)->default('');

@@ -13,6 +13,9 @@ class CreateStaffmessagesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('staffmessages')) {
+            return;
+        }
         Schema::create('staffmessages', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('sender')->default(0);

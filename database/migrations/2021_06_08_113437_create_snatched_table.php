@@ -13,6 +13,9 @@ class CreateSnatchedTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('snatched')) {
+            return;
+        }
         Schema::create('snatched', function (Blueprint $table) {
             $table->integer('id', true);
             $table->unsignedMediumInteger('torrentid')->default(0);

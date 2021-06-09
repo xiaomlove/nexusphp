@@ -13,6 +13,9 @@ class CreateRegimagesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('regimages')) {
+            return;
+        }
         Schema::create('regimages', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->string('imagehash', 32)->default('');

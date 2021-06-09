@@ -13,6 +13,9 @@ class CreateThanksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('thanks')) {
+            return;
+        }
         Schema::create('thanks', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('torrentid')->default(0);

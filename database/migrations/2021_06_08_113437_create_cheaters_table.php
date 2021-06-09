@@ -13,6 +13,9 @@ class CreateCheatersTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('cheaters')) {
+            return;
+        }
         Schema::create('cheaters', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->dateTime('added')->nullable();

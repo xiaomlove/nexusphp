@@ -13,6 +13,9 @@ class CreateTorrentsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('torrents')) {
+            return;
+        }
         Schema::create('torrents', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->binary('info_hash')->unique('info_hash');

@@ -13,6 +13,9 @@ class CreateChronicleTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('chronicle')) {
+            return;
+        }
         Schema::create('chronicle', function (Blueprint $table) {
             $table->mediumIncrements('id');
             $table->unsignedMediumInteger('userid')->default(0);
