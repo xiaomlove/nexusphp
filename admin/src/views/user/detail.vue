@@ -116,6 +116,15 @@
                                         <el-button type="danger" size="small">Remove</el-button>
                                     </template>
                                 </el-popconfirm>
+                                <el-popconfirm
+                                    v-if="examInfo.status === 0"
+                                    title="Confirm Avoid ?"
+                                    @confirm="handleAvoidExam(examInfo.id)"
+                                >
+                                    <template #reference>
+                                        <el-button type="info" size="small">Avoid</el-button>
+                                    </template>
+                                </el-popconfirm>
                             </td>
                         </tr>
                     </table>
@@ -190,6 +199,12 @@ export default {
             await fetchPageData()
         }
 
+        const handleAvoidExam = async (id) => {
+            let res = await api.avoidExamUser(id)
+            ElMessage.success(res.msg)
+            await fetchPageData()
+        }
+
         const handleAssignExam = async () => {
             assignExam.value.open(id)
         }
@@ -213,6 +228,7 @@ export default {
         return {
             ...toRefs(state),
             handleRemoveExam,
+            handleAvoidExam,
             handleAssignExam,
             handleEnableUser,
             handleViewInviteInfo,

@@ -81,6 +81,9 @@ const api = {
     deleteExamUser: (id) => {
         return axios.delete('exam-users/' + id);
     },
+    avoidExamUser: (id) => {
+        return axios.put('exam-users-avoid', {id});
+    },
     storeExamUser: (params) => {
         return axios.post('exam-users', params);
     },

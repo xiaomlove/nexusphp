@@ -37,7 +37,7 @@ class UserRepository extends BaseRepository
         $baseInfo = $userResource->response()->getData(true)['data'];
 
         $examRep = new ExamRepository();
-        $examProgress = $examRep->getUserExamProgress($id, ExamUser::STATUS_NORMAL, ['exam']);
+        $examProgress = $examRep->getUserExamProgress($id, null, ['exam']);
         if ($examProgress) {
             $examResource = new ExamUserResource($examProgress);
             $examInfo = $examResource->response()->getData(true)['data'];

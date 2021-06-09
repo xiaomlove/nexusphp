@@ -355,6 +355,7 @@ class ExamRepository extends BaseRepository
         }
         $examUsers = $query->get();
         if ($examUsers->isEmpty()) {
+            do_log("$logPrefix, no examUser, query: " . last_query());
             return null;
         }
         if ($examUsers->count() > 1) {
@@ -451,6 +452,13 @@ class ExamRepository extends BaseRepository
             $examUser->progresses()->delete();
             return $examUser->delete();
         });
+        return $result;
+    }
+
+    public function avoidExamUser(int $examUserId)
+    {
+        $examUser = ExamUser::query()->findOrFail($examUserId);
+        $result = $examUser->update(['status' => ExamUser::STATUS_AVOIDED]);
         return $result;
     }
 

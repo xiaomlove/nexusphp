@@ -92,4 +92,11 @@ class ExamUserController extends Controller
         return $this->success($result, 'Remove user exam success!');
     }
 
+    public function avoid(Request $request)
+    {
+        $request->validate(['id' => 'required']);
+        $result = $this->repository->avoidExamUser($request->id);
+        return $this->success($result, 'Avoid user exam success!');
+    }
+
 }
