@@ -16,7 +16,6 @@ if (count($info_hash_array[1]) < 1) {
 else {
 	$query = "SELECT $fields FROM torrents WHERE " . hash_where_arr('info_hash', $info_hash_array[1]);
 }
-$r = "d" . benc_str("files") . "d";
 
 $res = sql_query($query);
 
