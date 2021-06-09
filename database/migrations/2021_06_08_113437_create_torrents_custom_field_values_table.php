@@ -20,10 +20,11 @@ class CreateTorrentsCustomFieldValuesTable extends Migration
             $table->integer('id', true);
             $table->integer('torrent_id')->default(0)->index('idx_torrent_id');
             $table->integer('custom_field_id')->default(0)->index('idx_field_id');
-            $table->mediumText('custom_field_value')->nullable()->index('idx_field_value');
+            $table->mediumText('custom_field_value')->nullable();
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
         });
+        \Illuminate\Support\Facades\DB::statement('alter table torrents_custom_field_values add index(custom_field_value(191))');
     }
 
     /**

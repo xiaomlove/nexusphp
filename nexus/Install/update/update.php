@@ -91,7 +91,7 @@ if ($currentStep == 3) {
     while ($isPost) {
         try {
             sql_query('SET sql_mode=(SELECT REPLACE(@@sql_mode,"NO_ZERO_DATE", ""))');
-            $command = "php " . ROOT_PATH . "artisan install:migrate";
+            $command = "php " . ROOT_PATH . "artisan migrate";
             $result = exec($command, $output, $result_code);
             $update->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
             $update->doLog("output: " . json_encode($output));
