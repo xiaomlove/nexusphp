@@ -245,7 +245,10 @@ $lang_usercp = array
 	'text_show_advertisement_note' => "I'd like to see the advertisements",
 	'row_promotion_link' => "Promotion Link",
 	'text_update_promotion_link' => "Update Promotion Link",
-	'text_read_more' => "Read More"
+	'text_read_more' => "Read More",
+    'row_two_step_secret' => 'Two step authentication',
+    'text_two_step_secret_bind_note' => '',
+    'text_two_step_secret_remove_note' => '',
 );
 
 ?>

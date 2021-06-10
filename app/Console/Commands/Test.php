@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Attendance;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
@@ -52,8 +53,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = 'https://hdtime.org/download.php?downhash=' . urlencode('1|Roqd');
-        dd($r);
+
     }
 
 }

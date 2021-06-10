@@ -32,5 +32,7 @@ $lang_login = array
 	'submit_clear' => "清空",
 	'text_select_lang' => "Select Site Language: ",
 	'head_login' => "登录",
+    'rowhead_two_step_code' => '两步验证',
+    'two_step_code_tooltip' => '如有设置必须填写',
 );
 ?>

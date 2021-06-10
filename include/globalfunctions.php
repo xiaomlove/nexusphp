@@ -544,16 +544,33 @@ function fail(...$args)
 
 function last_query($all = false)
 {
-    if (IN_NEXUS) {
-        $queries = \Illuminate\Database\Capsule\Manager::connection(\Nexus\Database\NexusDB::ELOQUENT_CONNECTION_NAME)->getQueryLog();
-    } else {
-        $queries = \Illuminate\Support\Facades\DB::connection(config('database.default'))->getQueryLog();
+    static $connection, $pdo;
+    if (is_null($connection)) {
+        if (IN_NEXUS) {
+            $connection = \Illuminate\Database\Capsule\Manager::connection(\Nexus\Database\NexusDB::ELOQUENT_CONNECTION_NAME);
+        } else {
+            $connection = \Illuminate\Support\Facades\DB::connection(config('database.default'));
+        }
+        $pdo = $connection->getPdo();
+    }
+    $queries = $connection->getQueryLog();
+    if (!$all) {
+        $queries = [last($queries)];
+    }
+    $queryFormatted = [];
+    foreach ($queries as $query) {
+        $sqlWithPlaceholders = str_replace(['%', '?'], ['%%', '%s'], $query['query']);
+        $bindings = $query['bindings'];
+        $realSql = $sqlWithPlaceholders;
+        if (count($bindings) > 0) {
+            $realSql = vsprintf($sqlWithPlaceholders, array_map([$pdo, 'quote'], $bindings));
+        }
+        $queryFormatted[] = $realSql;
     }
     if ($all) {
-        return nexus_json_encode($queries);
+        return nexus_json_encode($queryFormatted);
     }
-    $query = last($queries);
-    return nexus_json_encode($query);
+    return $queryFormatted[0];
 }
 
 function format_datetime($datetime, $format = 'Y-m-d H:i')

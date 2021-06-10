@@ -53,6 +53,7 @@ if (!empty($_GET["returnto"])) {
 <table border="0" cellpadding="5">
 <tr><td class="rowhead"><?php echo $lang_login['rowhead_username']?></td><td class="rowfollow" align="left"><input type="text" name="username" style="width: 180px; border: 1px solid gray" /></td></tr>
 <tr><td class="rowhead"><?php echo $lang_login['rowhead_password']?></td><td class="rowfollow" align="left"><input type="password" name="password" style="width: 180px; border: 1px solid gray"/></td></tr>
+<tr><td class="rowhead"><?php echo $lang_login['rowhead_two_step_code']?></td><td class="rowfollow" align="left"><input type="text" name="two_step_code"  placeholder="<?php echo $lang_login['two_step_code_tooltip'] ?>" style="width: 180px; border: 1px solid gray"/></td></tr>
 <?php
 show_image_code ();
 if ($securelogin == "yes")

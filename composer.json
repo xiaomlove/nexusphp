@@ -41,6 +41,7 @@
         "laravel/tinker": "^2.5",
         "nao-pon/flysystem-google-drive": "^1.1",
         "orangehill/iseed": "^3.0",
+        "phpgangsta/googleauthenticator": "dev-master",
         "rhilip/bencode": "^1.1",
         "swiftmailer/swiftmailer": "^6.2"
     },

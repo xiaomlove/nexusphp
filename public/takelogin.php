@@ -16,13 +16,23 @@ function bark($text = "")
 }
 if ($iv == "yes")
 	check_code ($_POST['imagehash'], $_POST['imagestring'],'login.php',true);
-$res = sql_query("SELECT id, passhash, secret, enabled, status FROM users WHERE username = " . sqlesc($username));
+$res = sql_query("SELECT id, passhash, secret, enabled, status, two_step_secret FROM users WHERE username = " . sqlesc($username));
 $row = mysql_fetch_array($res);
 
 if (!$row)
 	failedlogins();
 if ($row['status'] == 'pending')
 	failedlogins($lang_takelogin['std_user_account_unconfirmed']);
+
+if (!empty($row['two_step_secret'])) {
+    if (empty($_POST['two_step_code'])) {
+        failedlogins($lang_takelogin['std_require_two_step_code']);
+    }
+    $ga = new \PHPGangsta_GoogleAuthenticator();
+    if (!$ga->verifyCode($row['two_step_secret'], $_POST['two_step_code'])) {
+        failedlogins($lang_takelogin['std_invalid_two_step_code']);
+    }
+}
 
 if ($row["passhash"] != md5($row["secret"] . $password . $row["secret"]))
 	login_failedlogins();
@@ -64,7 +74,7 @@ if (isset($_POST["logout"]) && $_POST["logout"] == "yes")
 	logincookie($row["id"], $passh,1,900,$securelogin_indentity_cookie, $ssl, $trackerssl);
 	//sessioncookie($row["id"], $passh,true);
 }
-else 
+else
 {
 	logincookie($row["id"], $passh,1,0x7fffffff,$securelogin_indentity_cookie, $ssl, $trackerssl);
 	//sessioncookie($row["id"], $passh,false);

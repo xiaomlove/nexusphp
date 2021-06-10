@@ -677,6 +677,25 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 				$chpassword = $_POST["chpassword"];
 				$passagain = $_POST["passagain"];
 				$privacy = $_POST["privacy"];
+				$twoStepSecret = $_POST['two_step_secret'] ?? '';
+				$twoStepSecretHash = $_POST['two_step_code'];
+
+				if (!empty($twoStepSecretHash)) {
+                    $ga = new \PHPGangsta_GoogleAuthenticator();
+				    if (empty($CURUSER['two_step_secret'])) {
+				        //do bind
+                        $secretToVerify = $twoStepSecret;
+                        $updateset[] = "two_step_secret = " . sqlesc($twoStepSecret);
+                    } else {
+				        //unbind
+                        $secretToVerify = $CURUSER['two_step_secret'];
+                        $updateset[] = "two_step_secret = ''";
+                    }
+                    if (!$ga->verifyCode($secretToVerify, $twoStepSecretHash)) {
+                        stderr($lang_usercp['std_error'], 'Invalid two step code'.goback("-2"), 0);
+                        die;
+                    }
+                }
 
 				if ($chpassword != "") {
 					if ($chpassword == $CURUSER["username"]) {
@@ -809,6 +828,8 @@ EOD;
 				$chpassword = $_POST["chpassword"];
 				$passagain = $_POST["passagain"];
 				$privacy = $_POST["privacy"];
+				$two_step_secret = $_POST["two_step_secret"] ?? '';
+				$two_step_code = $_POST["two_step_code"];
 				if ($resetpasskey == 1)
 				print("<input type=\"hidden\" name=\"resetpasskey\" value=\"1\">");
                 if ($resetauthkey == 1)
@@ -817,6 +838,8 @@ EOD;
 				print("<input type=\"hidden\" name=\"chpassword\" value=\"$chpassword\">");
 				print("<input type=\"hidden\" name=\"passagain\" value=\"$passagain\">");
 				print("<input type=\"hidden\" name=\"privacy\" value=\"$privacy\">");
+				print("<input type=\"hidden\" name=\"two_step_secret\" value=\"$two_step_secret\">");
+				print("<input type=\"hidden\" name=\"two_step_code\" value=\"$two_step_code\">");
 				Print("<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\" width=1%>".$lang_usercp['row_security_check']."</td><td valign=\"top\" align=\"left\" width=\"99%\"><input type=password name=oldpassword style=\"width: 200px\"><br /><font class=small>".$lang_usercp['text_security_check_note']."</font></td></tr>\n");
 				submit();
 				print("</table>");
@@ -828,6 +851,29 @@ EOD;
 			form ("security");
 			tr_small($lang_usercp['row_reset_passkey'],"<input type=checkbox name=resetpasskey value=1 />".$lang_usercp['checkbox_reset_my_passkey']."<br /><font class=small>".$lang_usercp['text_reset_passkey_note']."</font>", 1);
 			tr_small($lang_usercp['row_reset_authkey'],"<input type=checkbox name=resetauthkey value=1 />".$lang_usercp['checkbox_reset_my_authkey']."<br /><font class=small>".$lang_usercp['text_reset_authkey_note']."</font>", 1);
+
+			//two step authentication
+            if (!empty($CURUSER['two_step_secret'])) {
+                tr_small($lang_usercp['row_two_step_secret'],"<input type=text name=two_step_code />".$lang_usercp['text_two_step_secret_unbind_note'], 1);
+            } else {
+                $ga = new \PHPGangsta_GoogleAuthenticator();
+                $twoStepSecret = $ga->createSecret();
+                $twoStepQrCodeUrl = $ga->getQRCodeGoogleUrl(sprintf('%s(%s)', get_setting('basic.SITENAME'), $CURUSER['username']), $twoStepSecret);
+                $twoStepY = '<div style="display: flex;align-items:center">';
+                $twoStepY .= sprintf('<div><img src="%s" /></div>', $twoStepQrCodeUrl);
+                $twoStepY .= sprintf(
+                    '<div style="padding-left: 20px">%s<a href="%s" target="_blank">Link</a><br /><br />%s%s<br/><br/>%s<input type=hidden name=two_step_secret value="%s" /><input type=text name=two_step_code /></div>',
+                    $lang_usercp['text_two_step_secret_bind_by_qrdoe_note'],
+                    $twoStepQrCodeUrl,
+                    $lang_usercp['text_two_step_secret_bind_manually_note'],
+                    $twoStepSecret,
+                    $lang_usercp['text_two_step_secret_bind_complete_note'],
+                    $twoStepSecret
+                );
+                $twoStepY .= '</div>';
+                tr_small($lang_usercp['row_two_step_secret'], $twoStepY, 1);
+            }
+
 			if ($disableemailchange != 'no' && $smtptype != 'none') //system-wide setting
 				tr_small($lang_usercp['row_email_address'], "<input type=\"text\" name=\"email\" style=\"width: 200px\" value=\"" . htmlspecialchars($CURUSER["email"]) . "\" /> <br /><font class=small>".$lang_usercp['text_email_address_note']."</font>", 1);
 			tr_small($lang_usercp['row_change_password'], "<input type=\"password\" name=\"chpassword\" style=\"width: 200px\" />", 1);

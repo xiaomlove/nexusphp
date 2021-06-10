@@ -245,7 +245,12 @@ $lang_usercp = array
 	'text_show_advertisement_note' => "我想看到广告",
 	'row_promotion_link' => "宣传链接",
 	'text_update_promotion_link' => "更新宣传链接",
-	'text_read_more' => "了解更多"
+	'text_read_more' => "了解更多",
+    'row_two_step_secret' => '两步验证',
+    'text_two_step_secret_bind_by_qrdoe_note' => '你可以使用 Google Authenticator 或 Authy 扫描左侧二维码<br/><br/>如果左侧二维码没有加载成功，可以尝试打开此链接进行加载：',
+    'text_two_step_secret_bind_manually_note' => '或者在 APP 中手动输入以下 Key：',
+    'text_two_step_secret_bind_complete_note' => '输入 code 完成两步验证',
+    'text_two_step_secret_unbind_note' => '输入 code 取消两步验证',
 );
 
 ?>
