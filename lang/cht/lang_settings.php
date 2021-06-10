@@ -710,6 +710,8 @@ $lang_settings = array
     'text_sticky_first_level_background_color_note' => '一級置頂背景顏色，不設置則無背景色。',
     'row_sticky_second_level_background_color' => '二級置頂背景顏色',
     'text_sticky_second_level_background_color_note' => '二級置頂背景顏色，不設置則無背景色。',
+    'row_download_support_passkey' => '支持 passkey 下載種子',
+    'text_download_support_passkey_note' => '是否支持通過 passkey 下載種子（同時也需要種子 ID）。',
 );
 
 ?>

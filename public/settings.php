@@ -132,7 +132,8 @@ elseif($action == 'savesettings_torrent') 	// save account
 	    'prorules', 'randomhalfleech','randomfree','randomtwoup','randomtwoupfree','randomtwouphalfdown','largesize', 'largepro','expirehalfleech',
         'expirefree','expiretwoup','expiretwoupfree','expiretwouphalfleech', 'expirenormal','hotdays','hotseeder','halfleechbecome','freebecome',
         'twoupbecome','twoupfreebecome', 'twouphalfleechbecome','normalbecome','uploaderdouble','deldeadtorrent', 'randomthirtypercentdown',
-        'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color'
+        'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
+        'download_support_passkey'
     );
 	GetVar($validConfig);
 	$TORRENT = [];
@@ -595,7 +596,8 @@ elseif ($action == 'torrentsettings')
 
     tr($lang_settings['row_sticky_first_level_background_color'],"<input type='text' name=sticky_first_level_background_color style=\"width: 100px\" value={$TORRENT['sticky_first_level_background_color']}> ".$lang_settings['text_sticky_first_level_background_color_note'], 1);
     tr($lang_settings['row_sticky_second_level_background_color'],"<input type='text' name=sticky_second_level_background_color style=\"width: 100px\" value={$TORRENT['sticky_second_level_background_color']}> ".$lang_settings['text_sticky_second_level_background_color_note'], 1);
-	yesorno($lang_settings['row_promotion_rules'], 'prorules', $TORRENT["prorules"], $lang_settings['text_promotion_rules_note']);
+    yesorno($lang_settings['row_download_support_passkey'], 'download_support_passkey', $TORRENT["download_support_passkey"], $lang_settings['text_download_support_passkey_note']);
+    yesorno($lang_settings['row_promotion_rules'], 'prorules', $TORRENT["prorules"], $lang_settings['text_promotion_rules_note']);
 	tr($lang_settings['row_random_promotion'], $lang_settings['text_random_promotion_note_one']."<ul><li><input type='text' style=\"width: 50px\" name=randomhalfleech value='".(isset($TORRENT["randomhalfleech"]) ? $TORRENT["randomhalfleech"] : 5 )."'>".$lang_settings['text_halfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomfree value='".(isset($TORRENT["randomfree"]) ? $TORRENT["randomfree"] : 2 )."'>".$lang_settings['text_free_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoup value='".(isset($TORRENT["randomtwoup"]) ? $TORRENT["randomtwoup"] : 2 )."'>".$lang_settings['text_twoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoupfree value='".(isset($TORRENT["randomtwoupfree"]) ? $TORRENT["randomtwoupfree"] : 1 )."'>".$lang_settings['text_freetwoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwouphalfdown value='".(isset($TORRENT["randomtwouphalfdown"]) ? $TORRENT["randomtwouphalfdown"] : 0 )."'>".$lang_settings['text_twouphalfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomthirtypercentdown value='".(isset($TORRENT["randomthirtypercentdown"]) ? $TORRENT["randomthirtypercentdown"] : 0 )."'>".$lang_settings['text_thirtypercentleech_chance_becoming']."</li></ul>".$lang_settings['text_random_promotion_note_two'], 1);
 	tr($lang_settings['row_large_torrent_promotion'], $lang_settings['text_torrent_larger_than']."<input type='text' style=\"width: 50px\" name=largesize value='".(isset($TORRENT["largesize"]) ? $TORRENT["largesize"] : 20 )."'>".$lang_settings['text_gb_promoted_to']."<select name=largepro>".promotion_selection((isset($TORRENT['largepro']) ? $TORRENT['largepro'] : 2), 1)."</select>".$lang_settings['text_by_system_upon_uploading']."<br />".$lang_settings['text_large_torrent_promotion_note'], 1);
 	tr($lang_settings['row_promotion_timeout'], $lang_settings['text_promotion_timeout_note_one']."<ul>
