@@ -566,11 +566,10 @@ class ExamRepository extends BaseRepository
         while (true) {
             $logPrefix = sprintf('[%s], size: %s', __FUNCTION__, $size);
             $examUsers = (clone $baseQuery)->where("$examUserTable.id", ">", $minId)->limit($size)->get();
+            do_log("$logPrefix, fetch exam users: {$examUsers->count()} by: " . last_query());
             if ($examUsers->isEmpty()) {
-                do_log("$logPrefix, no more data..." . last_query());
+                do_log("$logPrefix, no more data...");
                 break;
-            } else {
-                do_log("$logPrefix, fetch exam users: {$examUsers->count()}");
             }
             $result += $examUsers->count();
             $now = Carbon::now()->toDateTimeString();
@@ -597,6 +596,7 @@ class ExamRepository extends BaseRepository
                         'begin' => $examUser->begin,
                         'end' => $examUser->end
                     ], $locale);
+                    $userModcomment = sprintf('%s - %s', date('Y-m-d'), $userModcomment);
                     $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', modcomment)", $uid, $userModcomment);
                     $banLogReason = nexus_trans('exam.ban_log_reason', [
                         'exam_name' => $exam->name,
@@ -624,6 +624,10 @@ class ExamRepository extends BaseRepository
             }
             DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr, $userBanLog, $userModcommentUpdate, $userTable, $logPrefix) {
                 ExamUser::query()->whereIn('id', $examUserIdArr)->update(['status' => ExamUser::STATUS_FINISHED]);
+//                do {
+//                    $deleted = ExamProgress::query()->whereIn('exam_user_id', $examUserIdArr)->limit(10000)->delete();
+//                    do_log("$logPrefix, [DELETE_EXAM_PROGRESS], deleted: $deleted");
+//                } while($deleted > 0);
                 Message::query()->insert($messageToSend);
                 if (!empty($uidToDisable)) {
                     $uidStr = implode(', ', $uidToDisable);
