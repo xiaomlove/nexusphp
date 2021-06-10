@@ -99,4 +99,11 @@ class ExamUserController extends Controller
         return $this->success($result, 'Avoid user exam success!');
     }
 
+    public function recover(Request $request)
+    {
+        $request->validate(['id' => 'required']);
+        $result = $this->repository->recoverExamUser($request->id);
+        return $this->success($result, 'Recover user exam success!');
+    }
+
 }

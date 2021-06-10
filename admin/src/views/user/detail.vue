@@ -125,6 +125,15 @@
                                         <el-button type="info" size="small">Avoid</el-button>
                                     </template>
                                 </el-popconfirm>
+                                <el-popconfirm
+                                    v-if="examInfo.status === -1"
+                                    title="Confirm Recover ?"
+                                    @confirm="handleRecoverExam(examInfo.id)"
+                                >
+                                    <template #reference>
+                                        <el-button type="primary" size="small">Recover</el-button>
+                                    </template>
+                                </el-popconfirm>
                             </td>
                         </tr>
                     </table>
@@ -205,6 +214,12 @@ export default {
             await fetchPageData()
         }
 
+        const handleRecoverExam = async (id) => {
+            let res = await api.recoverExamUser(id)
+            ElMessage.success(res.msg)
+            await fetchPageData()
+        }
+
         const handleAssignExam = async () => {
             assignExam.value.open(id)
         }
@@ -230,6 +245,7 @@ export default {
             handleRemoveExam,
             handleAvoidExam,
             handleAssignExam,
+            handleRecoverExam,
             handleEnableUser,
             handleViewInviteInfo,
             handleDisableUser,

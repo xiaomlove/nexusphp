@@ -84,6 +84,9 @@ const api = {
     avoidExamUser: (id) => {
         return axios.put('exam-users-avoid', {id});
     },
+    recoverExamUser: (id) => {
+        return axios.put('exam-users-recover', {id});
+    },
     storeExamUser: (params) => {
         return axios.post('exam-users', params);
     },

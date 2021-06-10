@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Exceptions\NexusException;
 use App\Models\Exam;
+use App\Models\ExamIndexInitValue;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\Message;
@@ -91,12 +92,22 @@ class ExamRepository extends BaseRepository
         return $exam;
     }
 
+    /**
+     * delete an exam task, also will delete all exam user and progress.
+     *
+     * @param $id
+     * @return bool
+     */
     public function delete($id)
     {
         $exam = Exam::query()->findOrFail($id);
         DB::transaction(function () use ($exam) {
-            ExamUser::query()->where('exam_id', $exam->id)->delete();
-            ExamProgress::query()->where('exam_id', $exam->id)->delete();
+            do {
+                $deleted = ExamUser::query()->where('exam_id', $exam->id)->limit(10000)->delete();
+            } while ($deleted > 0);
+            do {
+                $deleted = ExamProgress::query()->where('exam_id', $exam->id)->limit(10000)->delete();
+            } while ($deleted > 0);
             $exam->delete();
         });
         return true;
@@ -232,8 +243,9 @@ class ExamRepository extends BaseRepository
             $data['end'] = $end;
         }
         do_log("$logPrefix, data: " . nexus_json_encode($data));
-        $result = $user->exams()->create($data);
-        return $result;
+        $examUser = $user->exams()->create($data);
+        $this->initProgress($examUser, $user);
+        return $examUser;
     }
 
     public function listUser(array $params)
@@ -343,6 +355,41 @@ class ExamRepository extends BaseRepository
         return true;
     }
 
+    public function initProgress($examUser, $user = null)
+    {
+        if (!$examUser instanceof ExamUser) {
+            $examUser = ExamUser::query()->findOrFail((int)$examUser);
+        }
+        $exam = $examUser->exam;
+        if (!$user instanceof User) {
+            $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus'])->first();
+        }
+        $insert = [
+            'uid' => $user->id,
+            'exam_id' => $exam->id,
+        ];
+        foreach ($exam->indexes as $key => $index) {
+            if (!isset($index['checked']) || !$index['checked']) {
+                continue;
+            }
+            $insert['index'] = $index['index'];
+            if ($index['index'] == Exam::INDEX_UPLOADED) {
+                $insert['value'] = $user->uploaded;
+            } elseif ($index['index'] == Exam::INDEX_DOWNLOADED) {
+                $insert['value'] = $user->downloaded;
+            } elseif ($index['index'] == Exam::INDEX_SEED_BONUS) {
+                $insert['value'] = $user->seedbonus;
+            } elseif ($index['index'] == Exam::INDEX_SEED_TIME_AVERAGE) {
+                $insert['value'] = 0;
+            } else {
+                throw new \RuntimeException("Unknown index: {$index['index']}");
+            }
+            ExamIndexInitValue::query()->insert($insert);
+            do_log("insert: " . json_encode($insert));
+        }
+        return true;
+    }
+
     public function getUserExamProgress($uid, $status = null, $with = ['exam', 'user'])
     {
         $logPrefix = "uid: $uid";
@@ -449,7 +496,9 @@ class ExamRepository extends BaseRepository
     {
         $examUser = ExamUser::query()->findOrFail($examUserId);
         $result = DB::transaction(function () use ($examUser) {
-            $examUser->progresses()->delete();
+            do {
+                $deleted = $examUser->progresses()->limit(10000)->delete();
+            } while ($deleted > 0);
             return $examUser->delete();
         });
         return $result;
@@ -457,8 +506,15 @@ class ExamRepository extends BaseRepository
 
     public function avoidExamUser(int $examUserId)
     {
-        $examUser = ExamUser::query()->findOrFail($examUserId);
+        $examUser = ExamUser::query()->where('status',ExamUser::STATUS_NORMAL)->findOrFail($examUserId);
         $result = $examUser->update(['status' => ExamUser::STATUS_AVOIDED]);
+        return $result;
+    }
+
+    public function recoverExamUser(int $examUserId)
+    {
+        $examUser = ExamUser::query()->where('status',ExamUser::STATUS_AVOIDED)->findOrFail($examUserId);
+        $result = $examUser->update(['status' => ExamUser::STATUS_NORMAL]);
         return $result;
     }
 
@@ -523,17 +579,16 @@ class ExamRepository extends BaseRepository
 //                    do_log("$currentLogPrefix, exam not match this user.");
 //                    continue;
 //                }
-                $insert[] = [
+                $insert = [
                     'uid' => $user->id,
                     'exam_id' => $exam->id,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
                 do_log("$currentLogPrefix, exam will be assigned to this user.");
-            }
-            if (!empty($insert)) {
-                $result += count($insert);
-                ExamUser::query()->insert($insert);
+                $examUser = ExamUser::query()->create($insert);
+                $this->initProgress($examUser, $user);
+                $result++;
             }
         }
         return $result;
