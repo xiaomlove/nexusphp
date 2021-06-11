@@ -2,6 +2,7 @@
 require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
+require_once(get_langfile_path('details.php'));
 loggedinorreturn();
 parked();
 
@@ -135,7 +136,7 @@ else {
                     while ($row = mysql_fetch_array($res)) {
                         $each = mysql_fetch_assoc(sql_query("SELECT * FROM torrents WHERE id = '" . $row["torrentid"] . "'"));
                         if (mysql_num_rows(sql_query("SELECT * FROM torrents WHERE id = '" . $row["torrentid"] . "'")) == 1)
-                            $ress .= (($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) && $arr['finish'] == "no" ? "<input type=checkbox name=torrentid[] value=" . $each["id"] . ">" : "") . "<a href='details.php?id=" . $each["id"] . "&hit=1' >" . $each["name"] . "</a> " . ($arr['finish'] == "no" ? "" : "by " . get_username($each[owner])) . "<br/>\n";
+                            $ress .= (($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) && $arr['finish'] == "no" ? "<input type=checkbox name=torrentid[] value=" . $each["id"] . ">" : "") . "<a href='details.php?id=" . $each["id"] . "&hit=1' >" . $each["name"] . "</a> " . ($arr['finish'] == "no" ? "" : "by " . get_username($each['owner'])) . "<br/>\n";
                     }
                     $ress .= "";
 
@@ -346,7 +347,7 @@ else {
             $res = sql_query("SELECT * FROM torrents WHERE id ='" . $_POST["torrentid"] . "'") or sqlerr(__FILE__, __LINE__);
             if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], "{$lang_functions['std_target_not_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             $tor = mysql_fetch_assoc($res);
-            if ($tor['last_seed'] == "0000-00-00 00:00:00" || is_null(($tor['last_seed']))) stderr($lang_functions['std_error'], "{$lang_viewrequests['torrent_not_release_yet']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
+//            if ($tor['last_seed'] == "0000-00-00 00:00:00" || is_null(($tor['last_seed']))) stderr($lang_functions['std_error'], "{$lang_viewrequests['torrent_not_release_yet']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (get_row_count('resreq', "where reqid ='" . $_POST["reqid"] . "' and torrentid='" . $_POST["torrentid"] . "'"))
                 stderr($lang_functions['std_error'], "{$lang_viewrequests['supply_already_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             sql_query("INSERT resreq (reqid , torrentid) VALUES ( '" . $_POST["reqid"] . "' , '" . $_POST["torrentid"] . "')");
