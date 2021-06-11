@@ -8,6 +8,7 @@ use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\Message;
 use App\Models\Setting;
+use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\User;
 use App\Models\UserBanLog;
@@ -173,22 +174,40 @@ class ExamRepository extends BaseRepository
         }
         $logPrefix = sprintf('exam: %s, user: %s', $exam->id, $user->id);
         $filters = $exam->filters;
-        if (empty($filters->classes)) {
+
+        $filter = Exam::FILTER_USER_CLASS;
+        if (empty($filters->{$filter})) {
             do_log("$logPrefix, exam: {$exam->id} no class");
             return false;
         }
-        if (!in_array($user->class, $filters->classes)) {
-            do_log("$logPrefix, user class: {$user->class} not in: " . json_encode($filters));
+        if (!in_array($user->class, $filters->{$filter})) {
+            do_log("$logPrefix, user class: {$user->class} not in: " . json_encode($filters->{$filter}));
+            return false;
+        }
+
+        $filter = Exam::FILTER_USER_DONATE;
+        if (empty($filters->{$filter})) {
+            do_log("$logPrefix, exam: {$exam->id} no donate");
+            return false;
+        }
+        if (!in_array($user->donate_status, $filters->{$filter})) {
+            do_log("$logPrefix, user donate status: {$user->donate_status} not in: " . json_encode($filters->{$filter}));
+            return false;
+        }
+
+
+        $filter = Exam::FILTER_USER_REGISTER_TIME_RANGE;
+        if (empty($filters->{$filter})) {
+            do_log("$logPrefix, exam: {$exam->id} no register time range");
             return false;
         }
         if (!$user->added) {
             do_log("$logPrefix, user no added time", 'warning');
             return false;
         }
-
         $added = $user->added->toDateTimeString();
-        $registerTimeBegin = isset($filters->register_time_range[0]) ? Carbon::parse($filters->register_time_range[0])->toDateTimeString() : '';
-        $registerTimeEnd = isset($filters->register_time_range[1]) ? Carbon::parse($filters->register_time_range[1])->toDateTimeString() : '';
+        $registerTimeBegin = isset($filters->{$filter}[0]) ? Carbon::parse($filters->{$filter}[0])->toDateTimeString() : '';
+        $registerTimeEnd = isset($filters->{$filter}[1]) ? Carbon::parse($filters->{$filter}[1])->toDateTimeString() : '';
         if (empty($registerTimeBegin)) {
             do_log("$logPrefix, exam: {$exam->id} no register_time_begin");
             return false;
@@ -244,7 +263,7 @@ class ExamRepository extends BaseRepository
         }
         do_log("$logPrefix, data: " . nexus_json_encode($data));
         $examUser = $user->exams()->create($data);
-        $this->initProgress($examUser, $user);
+        $this->updateProgress($examUser, $user);
         return $examUser;
     }
 
@@ -355,7 +374,7 @@ class ExamRepository extends BaseRepository
         return true;
     }
 
-    public function initProgress($examUser, $user = null)
+    public function updateProgress($examUser, $user = null)
     {
         if (!$examUser instanceof ExamUser) {
             $examUser = ExamUser::query()->findOrFail((int)$examUser);
@@ -364,29 +383,82 @@ class ExamRepository extends BaseRepository
         if (!$user instanceof User) {
             $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus'])->first();
         }
-        $insert = [
+        $attributes = [
+            'exam_user_id' => $examUser->id,
             'uid' => $user->id,
             'exam_id' => $exam->id,
         ];
+        $logPrefix = json_encode($attributes);
+        $begin = $examUser->begin;
+        if (empty($begin)) {
+            throw new \InvalidArgumentException("$logPrefix, exam: {$examUser->id} no begin.");
+        }
+        $end = $examUser->end;
+        if (empty($end)) {
+            throw new \InvalidArgumentException("$logPrefix, exam: {$examUser->id} no end.");
+        }
+        $currentProgrss = [];
         foreach ($exam->indexes as $key => $index) {
             if (!isset($index['checked']) || !$index['checked']) {
                 continue;
             }
-            $insert['index'] = $index['index'];
+            $attributes['index'] = $index['index'];
             if ($index['index'] == Exam::INDEX_UPLOADED) {
-                $insert['value'] = $user->uploaded;
+                $attributes['value'] = $user->uploaded;
             } elseif ($index['index'] == Exam::INDEX_DOWNLOADED) {
-                $insert['value'] = $user->downloaded;
+                $attributes['value'] = $user->downloaded;
             } elseif ($index['index'] == Exam::INDEX_SEED_BONUS) {
-                $insert['value'] = $user->seedbonus;
+                $attributes['value'] = $user->seedbonus;
             } elseif ($index['index'] == Exam::INDEX_SEED_TIME_AVERAGE) {
-                $insert['value'] = 0;
+                $torrentCountsRes = Snatch::query()
+                    ->where('userid', $user->id)
+                    ->where('completedat', '>=', $begin)
+                    ->where('completedat', '<=', $end)
+                    ->selectRaw("count(distinct(torrentid)) as torrent_counts")
+                    ->first();
+                do_log("$logPrefix, torrentCountsRes: " . json_encode($torrentCountsRes));
+                if ($torrentCountsRes && $torrentCountsRes->torrent_counts > 0) {
+                    $value = $user->seedtime / $torrentCountsRes->torrent_counts;
+                } else {
+                    $value = 0;
+                }
+                $attributes['value'] = $value;
             } else {
-                throw new \RuntimeException("Unknown index: {$index['index']}");
+                $msg = "Unknown index: {$index['index']}";
+                do_log("$logPrefix, $msg", 'error');
+                throw new \RuntimeException($msg);
             }
-            ExamIndexInitValue::query()->insert($insert);
-            do_log("insert: " . json_encode($insert));
+            //at the begining, value = init_value, and then value increase.
+            $progress = ExamProgress::query()
+                ->where('exam_user_id', $examUser->id)
+                ->where('torrent_id', -1)
+                ->where('index', $index['index'])
+                ->orderBy('id', 'desc')
+                ->first();
+            if ($progress) {
+                //do update
+                $progress->update(['value' => $attributes['value']]);
+                do_log("$logPrefix, doUpdat: " . last_query());
+            } else {
+                //do insert
+                $attributes['init_value'] = $attributes['value'];
+                $attributes['torrent_id'] = -1;
+                ExamProgress::query()->insert($attributes);
+                do_log("$logPrefix, doInsert with: " . json_encode($attributes));
+            }
+            $currentProgrss[$index['index']] = $attributes['value'];
         }
+        $examProgressFormatted = $this->getProgressFormatted($exam, $currentProgrss);
+        $examNotPassed = array_filter($examProgressFormatted, function ($item) {
+            return !$item['passed'];
+        });
+        $update = [
+            'progress' => $currentProgrss,
+            'is_done' => count($examNotPassed) ? ExamUser::IS_DONE_NO : ExamUser::IS_DONE_YES,
+        ];
+        do_log("[UPDATE_PROGRESS] " . nexus_json_encode($update));
+        $examUser->update($update);
+
         return true;
     }
 
@@ -410,14 +482,15 @@ class ExamRepository extends BaseRepository
         }
         $examUser = $examUsers->first();
         $exam = $examUser->exam;
-        $progress = $this->calculateProgress($examUser);
+//        $progress = $this->calculateProgress($examUser);
+        $progress = $examUser->progress;
         do_log("$logPrefix, progress: " . nexus_json_encode($progress));
         $examUser->progress = $progress;
-        $examUser->progress_formatted = $this->getProgressFormatted($exam, $progress);
+        $examUser->progress_formatted = $this->getProgressFormatted($exam, (array)$progress);
         return $examUser;
     }
 
-    private function calculateProgress(ExamUser $examUser)
+    public function calculateProgress(ExamUser $examUser)
     {
         $logPrefix = "examUser: " . $examUser->id;
         $begin = $examUser->begin;
@@ -444,6 +517,7 @@ class ExamRepository extends BaseRepository
         if (isset($progressSum[$index])) {
             $torrentCount = $examUser->progresses()
                 ->where('index', $index)
+                ->where('torrent_id', '>=', 0)
                 ->selectRaw('count(distinct(torrent_id)) as torrent_count')
                 ->first()
                 ->torrent_count;
@@ -587,7 +661,7 @@ class ExamRepository extends BaseRepository
                 ];
                 do_log("$currentLogPrefix, exam will be assigned to this user.");
                 $examUser = ExamUser::query()->create($insert);
-                $this->initProgress($examUser, $user);
+                $this->updateProgress($examUser, $user);
                 $result++;
             }
         }

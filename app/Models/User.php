@@ -59,6 +59,14 @@ class User extends Authenticatable
         self::CLASS_STAFF_LEADER => ['text' => 'Staff Leader'],
     ];
 
+    const DONATE_YES = 'yes';
+    const DONATE_NO = 'no';
+
+    public static $donateStatus = [
+        self::DONATE_YES => ['text' => 'Yes'],
+        self::DONATE_NO => ['text' => 'No'],
+    ];
+
     public static $cardTitles = [
         'uploaded_human' => '上传',
         'downloaded_human' => '下载',
@@ -71,6 +79,14 @@ class User extends Authenticatable
     public function getClassTextAttribute(): string
     {
         return self::$classes[$this->class]['text'] ?? '';
+    }
+
+    public function getDonateStatusAttribute()
+    {
+        if (empty($this->donoruntil) || $this->donoruntil == '0000-00-00 00:00:00') {
+            return self::DONATE_NO;
+        }
+        return self::DONATE_YES;
     }
 
 

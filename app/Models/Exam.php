@@ -45,10 +45,12 @@ class Exam extends NexusModel
 
     const FILTER_USER_CLASS = 'classes';
     const FILTER_USER_REGISTER_TIME_RANGE = 'register_time_range';
+    const FILTER_USER_DONATE = 'donate_status';
 
     public static $filters = [
         self::FILTER_USER_CLASS => ['name' => 'User class'],
         self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User register time range'],
+        self::FILTER_USER_DONATE => ['name' => 'User donate'],
     ];
 
     protected static function booted()

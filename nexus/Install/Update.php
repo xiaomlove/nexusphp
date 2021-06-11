@@ -3,8 +3,11 @@
 namespace Nexus\Install;
 
 use App\Models\Category;
+use App\Models\Exam;
+use App\Models\ExamUser;
 use App\Models\Icon;
 use App\Models\Setting;
+use App\Repositories\ExamRepository;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
@@ -98,6 +101,74 @@ class Update extends Install
             }
         }
 
+    }
+
+    public function migrateExamProgress()
+    {
+        if (!NexusDB::schema()->hasColumn('exam_progress', 'init_value')) {
+            sql_query('alter table exam_progress add column `init_value` bigint(20) NOT NULL after `index`');
+            $log = 'add column init_value on table exam_progress.';
+            $this->doLog($log);
+        } else {
+            $log = 'column init_value already exists on table exam_progress.';
+            $this->doLog($log);
+        }
+        $examUsersQuery = ExamUser::query()->where('status', ExamUser::STATUS_NORMAL)->with('user');
+        $page = 1;
+        $size = 100;
+        while (true) {
+            $examUsers = $examUsersQuery->forPage($page, $size)->get();
+            $log = "fetch exam user by: " . last_query();
+            $this->doLog($log);
+            if ($examUsers->isEmpty()) {
+                $log = "no more exam user to handle...";
+                $this->doLog($log);
+                break;
+            }
+            $log = 'get init_vlaue...';
+            $this->doLog($log);
+            foreach ($examUsers as $examUser) {
+                $oldProgress = $examUser->progress;
+                $user = $examUser->user;
+                $currentLogPrefix = "examUser: " . $examUser->toJson();
+                $log = sprintf("$currentLogPrefix, progress: %s", json_encode($oldProgress));
+                $this->doLog($log);
+                foreach ($oldProgress as $index => $progressValue) {
+                    if ($index == Exam::INDEX_DOWNLOADED) {
+                        $value = $user->downloaded;
+                        $initValue = $value - $progressValue;
+                    } elseif ($index == Exam::INDEX_UPLOADED) {
+                        $value = $user->uploaded;
+                        $initValue = $value - $progressValue;
+                    } elseif ($index == Exam::INDEX_SEED_BONUS) {
+                        $value = $user->seedbonus;
+                        $initValue = $value - $progressValue;
+                    } elseif ($index == Exam::INDEX_SEED_TIME_AVERAGE) {
+                        $value = $progressValue;
+                        $initValue = 0;
+                    } else {
+                        $log = sprintf("$currentLogPrefix, invalid index: %s, skip!", $index);
+                        $this->doLog($log);
+                        continue;
+                    }
+                    $insert = [
+                        'exam_user_id' => $examUser->id,
+                        'exam_id' => $examUser->exam_id,
+                        'uid' => $examUser->uid,
+                        'index' => $index,
+                        'torrent_id' => -1,
+                        'value' => $value,
+                        'init_value' => $initValue,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ];
+                    NexusDB::table('exam_progress')->insert($insert);
+                    $log = "$currentLogPrefix, insert index: $index progress: " . json_encode($insert);
+                    $this->doLog($log);
+                }
+            }
+            $page++;
+        }
     }
 
 }

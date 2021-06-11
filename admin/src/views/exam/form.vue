@@ -60,9 +60,16 @@
                         <div style="color: #aaa">Unit: days. When assign to user, begin and end are used if they are specified. Otherwise begin time is the time at assignment, and the end time is the time at assignment plus the duration.</div>
                     </el-form-item>
 
-                    <el-form-item label="Target User Class" prop="filters.classes">
+                    <el-form-item label="Target user class" prop="filters.classes">
                         <el-checkbox-group v-model="formData.filters.classes">
                             <el-checkbox v-for="(item, index) in allClasses" :label="index" :key="index">{{item}}</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+
+                    <el-form-item label="Target user donate" prop="filters.donate_status">
+                        <el-checkbox-group v-model="formData.filters.donate_status">
+                            <el-checkbox label="no">No</el-checkbox>
+                            <el-checkbox label="yes">Yes</el-checkbox>
                         </el-checkbox-group>
                     </el-form-item>
 
@@ -119,7 +126,8 @@ export default {
                 indexes: [],
                 filters: {
                     classes: [],
-                    register_time_range: []
+                    register_time_range: [],
+                    donate_status: []
                 },
                 status: '',
                 is_discovered: ''

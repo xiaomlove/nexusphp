@@ -57,6 +57,12 @@ class ExamResource extends JsonResource
             );
         }
 
+        $filter = Exam::FILTER_USER_DONATE;
+        if (!empty($currentFilters->{$filter})) {
+            $donateStatus = $classes = collect(User::$donateStatus)->only($currentFilters->{$filter});
+            $arr[] = sprintf('%s: %s', Exam::$filters[$filter]['name'], $donateStatus->pluck('text')->implode(', '));
+        }
+
         return implode("\n", $arr);
     }
 
