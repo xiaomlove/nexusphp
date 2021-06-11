@@ -175,7 +175,7 @@ else {
 
 
                 print ("
-	
+
 <a class=\"index\" href='comment.php?action=add&pid=$id&type=request'>{$lang_functions['title_add_comments']}</a></td></tr></table>");
 
                 stdfoot();
@@ -328,7 +328,7 @@ else {
 	<form action=viewrequests.php method=post>
 	<input type=hidden name=action value=takeres />
 	<input type=hidden name=reqid value=\"" . $_GET["id"] . "\" />
-	{$lang_viewrequests['type_in_torrent_id']}:http://$BASEURL/details.php?id=<input type=text name=torrentid size=11/>
+	{$lang_viewrequests['type_in_torrent_id']}:" . getSchemeAndHttpHost() . "/details.php?id=<input type=text name=torrentid size=11/>
 	<input type=submit value={$lang_functions['submit_submit']}></form><a href='viewrequests.php?action=view&id=" . $_GET["id"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             stdfoot();
             die;
@@ -346,7 +346,7 @@ else {
             $res = sql_query("SELECT * FROM torrents WHERE id ='" . $_POST["torrentid"] . "'") or sqlerr(__FILE__, __LINE__);
             if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], "{$lang_functions['std_target_not_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             $tor = mysql_fetch_assoc($res);
-            if ($tor[last_seed] == "0000-00-00 00:00:00") stderr($lang_functions['std_error'], "{$lang_viewrequests['torrent_not_release_yet']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
+            if ($tor['last_seed'] == "0000-00-00 00:00:00" || is_null(($tor['last_seed']))) stderr($lang_functions['std_error'], "{$lang_viewrequests['torrent_not_release_yet']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (get_row_count('resreq', "where reqid ='" . $_POST["reqid"] . "' and torrentid='" . $_POST["torrentid"] . "'"))
                 stderr($lang_functions['std_error'], "{$lang_viewrequests['supply_already_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             sql_query("INSERT resreq (reqid , torrentid) VALUES ( '" . $_POST["reqid"] . "' , '" . $_POST["torrentid"] . "')");
