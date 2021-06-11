@@ -2,7 +2,7 @@
 require_once("../include/bittorrent.php");
 dbconn();
 $torrentRep = new \App\Repositories\TorrentRepository();
-if (!empty($_REQUEST['downhash'])){
+if (!empty($_REQUEST['downhash'])) {
     $params = explode('|', $_REQUEST['downhash']);
     if (empty($params[0]) || empty($params[1])) {
         die("invalid downhash, format error");
@@ -24,9 +24,18 @@ if (!empty($_REQUEST['downhash'])){
         die("invalid downhash, decrpyt fail");
     }
     $id = $decrypted[0];
-}
-else
-{
+} elseif (get_setting('torrent.download_support_passkey') == 'yes' && !empty($_REQUEST['passkey']) && !empty($_REQUEST['id'])) {
+    $res = sql_query("SELECT * FROM users WHERE passkey=". sqlesc($_REQUEST['passkey'])." LIMIT 1");
+    $user = mysql_fetch_array($res);
+    if (!$user)
+        die("invalid passkey");
+    elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
+        die("account disabed or parked");
+    $oldip = $user['ip'];
+    $user['ip'] = getip();
+    $CURUSER = $user;
+    $id = $_REQUEST['id'];
+} else {
     $id = (int)$_GET["id"];
     if (!$id)
         httperr();

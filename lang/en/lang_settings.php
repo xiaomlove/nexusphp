@@ -710,6 +710,8 @@ $lang_settings = array
     'text_sticky_first_level_background_color_note' => 'Sticky first level bg color, it will be none if not set.',
     'row_sticky_second_level_background_color' => 'Sticky second level bg color',
     'text_sticky_second_level_background_color_note' => 'Sticky second level bg color, it will be none if not set.',
+    'row_download_support_passkey' => 'Support download by passkey',
+    'text_download_support_passkey_note' => 'Support download torrent file by passkey or not(also require torrent id).',
 );
 
 ?>
