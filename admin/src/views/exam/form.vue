@@ -66,14 +66,14 @@
                         </el-checkbox-group>
                     </el-form-item>
 
-                    <el-form-item label="Target user donate" prop="filters.donate_status">
+                    <el-form-item label="Target user donated" prop="filters.donate_status">
                         <el-checkbox-group v-model="formData.filters.donate_status">
                             <el-checkbox label="no">No</el-checkbox>
                             <el-checkbox label="yes">Yes</el-checkbox>
                         </el-checkbox-group>
                     </el-form-item>
 
-                    <el-form-item label="Target User Register Time">
+                    <el-form-item label="Target user register time">
                         <el-date-picker
                             v-model="formData.filters.register_time_range"
                             type="datetimerange"
@@ -171,16 +171,17 @@ export default {
             formRef.value.validate(async (vaild) => {
                 if (vaild) {
                     let params = state.formData;
+                    console.log(params)
                     if (params.begin) {
                         params.begin = dayjs(params.begin).format('YYYY-MM-DD HH:mm:ss')
                     }
                     if (params.end) {
                         params.end = dayjs(params.end).format('YYYY-MM-DD HH:mm:ss')
                     }
-                    if (params.filters.register_time_range[0]) {
+                    if (params.filters.register_time_range && params.filters.register_time_range[0]) {
                         params.filters.register_time_range[0] = dayjs(params.filters.register_time_range[0]).format('YYYY-MM-DD HH:mm:ss')
                     }
-                    if (params.filters.register_time_range[1]) {
+                    if (params.filters.register_time_range && params.filters.register_time_range[1]) {
                         params.filters.register_time_range[1] = dayjs(params.filters.register_time_range[1]).format('YYYY-MM-DD HH:mm:ss')
                     }
                     console.log(params)

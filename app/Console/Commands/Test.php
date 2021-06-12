@@ -53,7 +53,10 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $examRep = new ExamRepository();
+        $examuser = ExamUser::query()->findOrFail(2);
+        $r = $examRep->updateProgress($examuser);
+        dd($r);
     }
 
 }

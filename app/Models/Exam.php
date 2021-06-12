@@ -37,10 +37,10 @@ class Exam extends NexusModel
     const INDEX_SEED_BONUS = 4;
 
     public static $indexes = [
-        self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB'],
-        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour'],
-        self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB'],
-        self::INDEX_SEED_BONUS => ['name' => 'Seed bonus', 'unit' => ''],
+        self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB', 'source_user_field' => 'uploaded'],
+        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour', 'source_user_field' => 'seedtime'],
+        self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB', 'source_user_field' => 'downloaded'],
+        self::INDEX_SEED_BONUS => ['name' => 'Seed bonus', 'unit' => '', 'source_user_field' => 'seedbonus'],
     ];
 
     const FILTER_USER_CLASS = 'classes';
@@ -50,7 +50,7 @@ class Exam extends NexusModel
     public static $filters = [
         self::FILTER_USER_CLASS => ['name' => 'User class'],
         self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User register time range'],
-        self::FILTER_USER_DONATE => ['name' => 'User donate'],
+        self::FILTER_USER_DONATE => ['name' => 'User donated'],
     ];
 
     protected static function booted()

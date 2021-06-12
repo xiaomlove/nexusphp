@@ -101,6 +101,10 @@ class Update extends Install
             }
         }
 
+        if (WITH_LARAVEL && VERSION_NUMBER == '1.6.0-beta9') {
+            $this->migrateExamProgress();
+        }
+
     }
 
     public function migrateExamProgress()
@@ -162,8 +166,19 @@ class Update extends Install
                         'created_at' => date('Y-m-d H:i:s'),
                         'updated_at' => date('Y-m-d H:i:s'),
                     ];
-                    NexusDB::table('exam_progress')->insert($insert);
-                    $log = "$currentLogPrefix, insert index: $index progress: " . json_encode($insert);
+                    $exists = NexusDB::table('exam_progress')
+                        ->where('exam_user_id', $examUser->id)
+                        ->where('index', $insert)
+                        ->where('torrent_id', -1)
+                        ->orderBy('id', 'desc')
+                        ->first();
+                    if ($exists) {
+                        NexusDB::table('exam_progress')->where('id', $exists->id)->update($insert);
+                        $log = "$currentLogPrefix, progress exists: {$exists->id}, update index: $index progress: " . json_encode($insert);
+                    } else {
+                        NexusDB::table('exam_progress')->insert($insert);
+                        $log = "$currentLogPrefix, insert index: $index progress: " . json_encode($insert);
+                    }
                     $this->doLog($log);
                 }
             }

@@ -287,7 +287,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 				$all_bonus = $all_bonus * $donortimes_bonus;
 			KPS("+",$all_bonus,$arr["userid"]);
 			//update exam progress
-            $examRep->addProgress($arr["userid"], 0, [\App\Models\Exam::INDEX_SEED_BONUS => $all_bonus]);
+            $examRep->updateProgress($arr['userid']);
 		}
 	}
 	$log = 'calculate seeding bonus';

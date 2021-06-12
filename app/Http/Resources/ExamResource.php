@@ -25,7 +25,7 @@ class ExamResource extends JsonResource
             'end' => $this->end,
             'duration' => $this->duration ?: '',
             'duration_text' => $this->duration_text,
-            'filters' => $this->filters,
+            'filters' => $this->normalizeFilters($this->resource),
             'filters_formatted' => $this->formatFilters($this->resource),
             'indexes' => $this->indexes,
             'indexes_formatted' => $this->formatIndexes($this->resource),
@@ -34,6 +34,17 @@ class ExamResource extends JsonResource
             'is_discovered' => $this->is_discovered,
             'is_discovered_text' => $this->is_discovered_text,
         ];
+    }
+
+    private function normalizeFilters(Exam $exam)
+    {
+        $filters = $exam->filters;
+        foreach (Exam::$filters as $key => $value) {
+            if (!isset($filters->$key)) {
+                $filters->$key = [];
+            }
+        }
+        return $filters;
     }
 
     private function formatFilters(Exam $exam)
