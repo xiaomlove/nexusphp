@@ -10,7 +10,7 @@ class Exam
     public function render($uid)
     {
         $examRep = new ExamRepository();
-        $userExam = $examRep->getUserExamProgress($uid, ExamUser::STATUS_NORMAL, ['exam']);
+        $userExam = $examRep->getUserExamProgress($uid, ExamUser::STATUS_NORMAL);
         if (empty($userExam)) {
             return '';
         }

@@ -286,8 +286,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 			if ($is_donor == 'yes' && $donortimes_bonus > 0)
 				$all_bonus = $all_bonus * $donortimes_bonus;
 			KPS("+",$all_bonus,$arr["userid"]);
-			//update exam progress
-            $examRep->updateProgress($arr['userid']);
 		}
 	}
 	$log = 'calculate seeding bonus';

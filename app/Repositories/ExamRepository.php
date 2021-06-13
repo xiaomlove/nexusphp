@@ -440,6 +440,10 @@ class ExamRepository extends BaseRepository
             }
             $examUser = $examUser->first();
         }
+        if ($examUser->status != ExamUser::STATUS_NORMAL) {
+            do_log("examUser: {$examUser->id} status not normal, won't update progress.");
+            return false;
+        }
         $exam = $examUser->exam;
         if (!$user instanceof User) {
             $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus'])->first();
@@ -548,7 +552,8 @@ class ExamRepository extends BaseRepository
             "[UPDATE_PROGRESS] %s, result: %s, cost time: %s sec",
             json_encode($update), var_export($result, true), sprintf('%.3f', microtime(true) - $beginTimestamp)
         ));
-        return true;
+        $examUser->progress_formatted = $examProgressFormatted;
+        return $examUser;
     }
 
 
@@ -557,18 +562,14 @@ class ExamRepository extends BaseRepository
      *
      * @param $uid
      * @param null $status
-     * @param string[] $with
      * @return mixed|null
      */
-    public function getUserExamProgress($uid, $status = null, $with = ['exam', 'user'])
+    public function getUserExamProgress($uid, $status = null)
     {
         $logPrefix = "uid: $uid";
         $query = ExamUser::query()->where('uid', $uid)->orderBy('exam_id', 'desc');
         if (!is_null($status)) {
             $query->where('status', $status);
-        }
-        if (!empty($with)) {
-            $query->with($with);
         }
         $examUsers = $query->get();
         if ($examUsers->isEmpty()) {
@@ -579,6 +580,18 @@ class ExamRepository extends BaseRepository
             do_log("$logPrefix, user exam more than 1.", 'warning');
         }
         $examUser = $examUsers->first();
+        $logPrefix .= ", examUser: " . $examUser->id;
+        try {
+            $updateResult = $this->updateProgress($examUser);
+            if ($updateResult) {
+                do_log("$logPrefix, [UPDATE_SUCCESS_RETURN_DIRECTLY]");
+                return $updateResult;
+            } else {
+                do_log("$logPrefix, [UPDATE_SUCCESS_FAIL]");
+            }
+        } catch (\Exception $exception) {
+            do_log("$logPrefix, [UPDATE_SUCCESS_FAIL]: " . $exception->getMessage(), 'error');
+        }
         $exam = $examUser->exam;
         $progress = $examUser->progress;
         do_log("$logPrefix, progress: " . nexus_json_encode($progress));
