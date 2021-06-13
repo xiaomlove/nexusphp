@@ -46,13 +46,13 @@ class Attendance
 //        sql_query(sprintf('INSERT INTO `attendance` (`uid`,`added`,`points`,`days`) VALUES (%u, %s, %u, %u)', $this->userid, sqlesc(date('Y-m-d H:i:s')), $points, $cdays)) or sqlerr(__FILE__, __LINE__);
         if ($doUpdate) {
             $sql = sprintf(
-                'UPDATE `attendance` set added = %s, points = %s, days = %s, total_days= %s, total_points = %s where uid = %s order by id desc limit 1',
-                sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1, $totalPoints + $points, $this->userid
+                'UPDATE `attendance` set added = %s, points = %s, days = %s, total_days= %s where uid = %s order by id desc limit 1',
+                sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1, $this->userid
             );
         } else {
             $sql = sprintf(
-                'INSERT INTO `attendance` (`uid`, `added`, `points`, `days`, `total_days`, `total_points`) VALUES (%u, %s, %u, %u, %u, %u)',
-                $this->userid, sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1, $totalPoints + $points
+                'INSERT INTO `attendance` (`uid`, `added`, `points`, `days`, `total_days`) VALUES (%u, %s, %u, %u, %u, %u)',
+                $this->userid, sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1
             );
         }
         do_log(sprintf('uid: %s, date: %s, doUpdate: %s, sql: %s', $this->userid, $this->curdate, $doUpdate, $sql), 'notice');

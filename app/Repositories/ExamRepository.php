@@ -736,8 +736,8 @@ class ExamRepository extends BaseRepository
             if ($donateStatus == User::DONATE_YES) {
                 $baseQuery->where("$userTable.donoruntil", ">=", Carbon::now()->toDateTimeString());
             } elseif ($donateStatus == User::DONATE_NO) {
-                $baseQuery->where(function (Builder $query) {
-                    $query->whereNull('donoruntil')->orWhere('donoruntil', '<', Carbon::now()->toDateTimeString());
+                $baseQuery->where(function (Builder $query) use ($userTable) {
+                    $query->whereNull("$userTable.donoruntil")->orWhere("$userTable.donoruntil", '<', Carbon::now()->toDateTimeString());
                 });
             } else {
                 do_log("{$exam->id} filter $filter: $donateStatus invalid.", "error");

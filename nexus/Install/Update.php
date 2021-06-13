@@ -2,6 +2,7 @@
 
 namespace Nexus\Install;
 
+use App\Models\Attendance;
 use App\Models\Category;
 use App\Models\Exam;
 use App\Models\ExamUser;
@@ -100,6 +101,48 @@ class Update extends Install
                 sql_query($sql);
             }
         }
+
+        /**
+         * @since 1.6.0-beta9
+         *
+         * attendance change, do migrate
+         */
+        if (WITH_LARAVEL && VERSION_NUMBER == '1.6.0-beta9' && NexusDB::schema()->hasColumn('attendance', 'total_points')) {
+
+        }
+    }
+
+    private function migrateAttendance()
+    {
+        $page = 1;
+        $size = 1000;
+        $sub = Attendance::query()->orderBy('id', 'desc');
+        while (true) {
+            $logPrefix = "[MIGRATE_ATTENDANCE], page: $page, size: $size";
+            $result = Attendance::query()
+                ->fromSub($sub, 'a')
+                ->groupBy('id, uid')
+                ->selectRaw('id, uid, count(*) as counts')
+                ->forPage($page, $size)
+                ->get();
+            $this->doLog("$logPrefix, " . last_query() . ", count: " . $result->count());
+            if ($result->isEmpty()) {
+                $this->doLog("$logPrefix, no more data...");
+                break;
+            }
+            foreach ($result as $row) {
+                $update = [
+                    'total_days' => $row->counts,
+                ];
+                $updateResult = $row->update($update);
+                $this->doLog(sprintf(
+                    "$logPrefix, update user: %s(%s) => %s, result: %s",
+                    $row->uid, $row->id, json_encode($update), var_export($updateResult, true)
+                ));
+            }
+            $page++;
+        }
+
     }
 
 }
