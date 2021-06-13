@@ -584,13 +584,13 @@ class ExamRepository extends BaseRepository
         try {
             $updateResult = $this->updateProgress($examUser);
             if ($updateResult) {
-                do_log("$logPrefix, [UPDATE_SUCCESS_RETURN_DIRECTLY]");
+                do_log("$logPrefix, [UPDATE_PROGRESS_SUCCESS_RETURN_DIRECTLY]");
                 return $updateResult;
             } else {
-                do_log("$logPrefix, [UPDATE_SUCCESS_FAIL]");
+                do_log("$logPrefix, [UPDATE_PROGRESS_FAIL]");
             }
         } catch (\Exception $exception) {
-            do_log("$logPrefix, [UPDATE_SUCCESS_FAIL]: " . $exception->getMessage(), 'error');
+            do_log("$logPrefix, [UPDATE_PROGRESS_FAIL]: " . $exception->getMessage(), 'error');
         }
         $exam = $examUser->exam;
         $progress = $examUser->progress;

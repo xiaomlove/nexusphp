@@ -22,6 +22,7 @@ class Attendance
 
     public function attend($initial = 10, $step = 5, $maximum = 2000, $continous = array())
     {
+        do_log(json_encode(func_get_args()));
         if($this->check(true)) return false;
         $res = sql_query(sprintf('SELECT DATEDIFF(%s, `added`) AS diff, `days`, `total_days` FROM `attendance` WHERE `uid` = %u ORDER BY `id` DESC LIMIT 1', sqlesc($this->curdate), $this->userid)) or sqlerr(__FILE__,__LINE__);
         $doUpdate = mysql_num_rows($res);
@@ -31,8 +32,8 @@ class Attendance
         } else {
             $row = [0, 0, 0];
         }
-        $points = min($initial + $step * $row['total_attend_times'], $maximum);
         list($datediff, $days, $totalDays) = $row;
+        $points = min($initial + $step * $totalDays, $maximum);
         $cdays = $datediff == 1 ? ++$days : 1;
         if($cdays > 1){
             krsort($continous);
