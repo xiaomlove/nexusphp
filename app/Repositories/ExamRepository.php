@@ -309,6 +309,14 @@ class ExamRepository extends BaseRepository
 
     }
 
+    /**
+     * @deprecated old version used
+     * @param int $uid
+     * @param int $torrentId
+     * @param array $indexAndValue
+     * @return bool
+     * @throws NexusException
+     */
     public function addProgress(int $uid, int $torrentId, array $indexAndValue)
     {
         $logPrefix = "uid: $uid, torrentId: $torrentId, indexAndValue: " . json_encode($indexAndValue);
@@ -415,6 +423,7 @@ class ExamRepository extends BaseRepository
      */
     public function updateProgress($examUser, $user = null)
     {
+        $beginTimestamp = microtime(true);
         if (!$examUser instanceof ExamUser) {
             $uid = intval($examUser);
             $examUser = ExamUser::query()
@@ -450,6 +459,7 @@ class ExamRepository extends BaseRepository
             throw new \InvalidArgumentException("$logPrefix, exam: {$examUser->id} no end.");
         }
         $examUserProgressFieldData = [];
+        $now = now();
         foreach ($exam->indexes as $index) {
             if (!isset($index['checked']) || !$index['checked']) {
                 continue;
@@ -459,11 +469,13 @@ class ExamRepository extends BaseRepository
                 do_log("$logPrefix, $msg", 'error');
                 throw new \RuntimeException($msg);
             }
-            do_log("$logPrefix, handling index: " . json_encode($index));
+            do_log("$logPrefix, [HANDLING INDEX {$index['index']}]: " . json_encode($index));
             //First, collect data to store/update in table: exam_progress
             $attributes['index'] = $index['index'];
+            $attributes['created_at'] = $now;
+            $attributes['updated_at'] = $now;
             $attributes['value'] = $user->{Exam::$indexes[$index['index']]['source_user_field']};
-            do_log("get total value: " . $attributes['value']);
+            do_log("[GET_TOTAL_VALUE]: " . $attributes['value']);
             $newVersionProgress = ExamProgress::query()
                 ->where('exam_user_id', $examUser->id)
                 ->where('torrent_id', -1)
@@ -475,9 +487,9 @@ class ExamRepository extends BaseRepository
                 //just need to do update the value
                 if ($attributes['value'] != $newVersionProgress->value) {
                     $newVersionProgress->update(['value' => $attributes['value']]);
-                    do_log("newVersionProgress exists, doUpdate: " . last_query());
+                    do_log("newVersionProgress [EXISTS], doUpdate: " . last_query());
                 } else {
-                    do_log("newVersionProgress exists, no change....");
+                    do_log("newVersionProgress [EXISTS], no change....");
                 }
                 $attributes['init_value'] = $newVersionProgress->init_value;
             } else {
@@ -489,7 +501,7 @@ class ExamRepository extends BaseRepository
                 do_log("total: {$attributes['value']}, increment: $increment, init_value: $initValue, final init_value: {$attributes['init_value']}");
                 $attributes['torrent_id'] = -1;
                 ExamProgress::query()->insert($attributes);
-                do_log("newVersionProgress NOT exists, doInsert with: " . json_encode($attributes));
+                do_log("newVersionProgress [NOT EXISTS], doInsert with: " . json_encode($attributes));
             }
 
             //Second, update exam_user.progress
@@ -500,20 +512,22 @@ class ExamRepository extends BaseRepository
                     ->where('completedat', '<=', $end)
                     ->selectRaw("count(distinct(torrentid)) as counts")
                     ->first();
-                $torrentCounts = $torrentCountsRes ? $torrentCountsRes->counts : 0;
-                do_log("special index: {$index['index']}, get torrent count: $torrentCounts by: " . last_query());
-                if ($torrentCounts > 0) {
-                    $examUserProgressFieldData[$index['index']] = ($attributes['value'] - $attributes['init_value']) / $torrentCounts;
-                    do_log(sprintf(
-                        "torrentCounts > 0, examUserProgress: (total(%s) - init_value(%s)) / %s = %s",
-                        $attributes['value'], $attributes['init_value'], $torrentCounts, $examUserProgressFieldData[$index['index']]
-                    ));
+                do_log("special index: {$index['index']}, get torrent count by: " . last_query());
+                //if just seeding, no download torrent, counts = 1
+                if ($torrentCountsRes && $torrentCountsRes->counts > 0) {
+                    $torrentCounts = $torrentCountsRes->counts;
+                    do_log("torrent count: $torrentCounts");
                 } else {
-                    $examUserProgressFieldData[$index['index']] = 0;
-                    do_log("torrentCounts = 0, examUserProgress: 0");
+                    $torrentCounts = 1;
+                    do_log("torrent count is 0, use 1");
                 }
+                $examUserProgressFieldData[$index['index']] = bcdiv(bcsub($attributes['value'], $attributes['init_value']), $torrentCounts);
+                do_log(sprintf(
+                    "torrentCounts > 0, examUserProgress: (total(%s) - init_value(%s)) / %s = %s",
+                    $attributes['value'], $attributes['init_value'], $torrentCounts, $examUserProgressFieldData[$index['index']]
+                ));
             } else {
-                $examUserProgressFieldData[$index['index']] = $attributes['value'] - $attributes['init_value'];
+                $examUserProgressFieldData[$index['index']] = bcsub($attributes['value'], $attributes['init_value']);
                 do_log(sprintf(
                     "normal index: {$index['index']}, examUserProgress: total(%s) - init_value(%s) = %s",
                     $attributes['value'], $attributes['init_value'], $examUserProgressFieldData[$index['index']]
@@ -530,7 +544,10 @@ class ExamRepository extends BaseRepository
             'is_done' => count($examNotPassed) ? ExamUser::IS_DONE_NO : ExamUser::IS_DONE_YES,
         ];
         $result = $examUser->update($update);
-        do_log("[UPDATE_PROGRESS] " . nexus_json_encode($update) . ", result: " . var_export($result, true));
+        do_log(sprintf(
+            "[UPDATE_PROGRESS] %s, result: %s, cost time: %s sec",
+            json_encode($update), var_export($result, true), sprintf('%.3f', microtime(true) - $beginTimestamp)
+        ));
         return true;
     }
 
@@ -563,7 +580,6 @@ class ExamRepository extends BaseRepository
         }
         $examUser = $examUsers->first();
         $exam = $examUser->exam;
-//        $progress = $this->calculateProgress($examUser);
         $progress = $examUser->progress;
         do_log("$logPrefix, progress: " . nexus_json_encode($progress));
         $examUser->progress = $progress;
@@ -720,7 +736,9 @@ class ExamRepository extends BaseRepository
             if ($donateStatus == User::DONATE_YES) {
                 $baseQuery->where("$userTable.donoruntil", ">=", Carbon::now()->toDateTimeString());
             } elseif ($donateStatus == User::DONATE_NO) {
-                $baseQuery->whereNull("$userTable.donoruntil");
+                $baseQuery->where(function (Builder $query) {
+                    $query->whereNull('donoruntil')->orWhere('donoruntil', '<', Carbon::now()->toDateTimeString());
+                });
             } else {
                 do_log("{$exam->id} filter $filter: $donateStatus invalid.", "error");
                 return false;
@@ -853,10 +871,10 @@ class ExamRepository extends BaseRepository
             }
             DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr, $userBanLog, $userModcommentUpdate, $userTable, $logPrefix) {
                 ExamUser::query()->whereIn('id', $examUserIdArr)->update(['status' => ExamUser::STATUS_FINISHED]);
-//                do {
-//                    $deleted = ExamProgress::query()->whereIn('exam_user_id', $examUserIdArr)->limit(10000)->delete();
-//                    do_log("$logPrefix, [DELETE_EXAM_PROGRESS], deleted: $deleted");
-//                } while($deleted > 0);
+                do {
+                    $deleted = ExamProgress::query()->whereIn('exam_user_id', $examUserIdArr)->limit(10000)->delete();
+                    do_log("$logPrefix, [DELETE_EXAM_PROGRESS], deleted: $deleted");
+                } while($deleted > 0);
                 Message::query()->insert($messageToSend);
                 if (!empty($uidToDisable)) {
                     $uidStr = implode(', ', $uidToDisable);

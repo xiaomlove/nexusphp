@@ -64,7 +64,6 @@ function getip() {
 
 function sql_query($query)
 {
-//    $query = preg_replace("/[\n\r\t]+/", " ", $query);
 	$begin = microtime(true);
 	global $query_name;
 	$result = mysql_query($query);
@@ -90,7 +89,8 @@ function hash_pad($hash) {
 
 function hash_where($name, $hash) {
 	$shhash = preg_replace('/ *$/s', "", $hash);
-	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
+//	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
+	return sprintf("$name in (%s, %s)", sqlesc($hash), sqlesc($shhash));
 }
 
 //no need any more...
@@ -190,12 +190,12 @@ function do_log($log, $level = 'info')
             global $CURUSER;
             $user = $CURUSER;
             $uid = $user['id'] ?? 0;
-            $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? '';
+            $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
             $env = nexus_env('APP_ENV');
         } else {
             $user = \Illuminate\Support\Facades\Auth::user();
             $uid = $user->id ?? 0;
-            $passkey = $user->passkey ?? $_REQUEST['passkey'] ?? '';
+            $passkey = $user->passkey ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
             $env = env('APP_ENV');
         }
     } else {
