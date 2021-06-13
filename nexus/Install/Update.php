@@ -107,8 +107,8 @@ class Update extends Install
          *
          * attendance change, do migrate
          */
-        if (WITH_LARAVEL && VERSION_NUMBER == '1.6.0-beta9' && NexusDB::schema()->hasColumn('attendance', 'total_points')) {
-
+        if (WITH_LARAVEL && VERSION_NUMBER == '1.6.0-beta9' && NexusDB::schema()->hasColumn('attendance', 'total_days')) {
+            $this->migrateAttendance();
         }
     }
 
@@ -116,13 +116,11 @@ class Update extends Install
     {
         $page = 1;
         $size = 1000;
-        $sub = Attendance::query()->orderBy('id', 'desc');
         while (true) {
             $logPrefix = "[MIGRATE_ATTENDANCE], page: $page, size: $size";
             $result = Attendance::query()
-                ->fromSub($sub, 'a')
-                ->groupBy('id, uid')
-                ->selectRaw('id, uid, count(*) as counts')
+                ->groupBy(['uid'])
+                ->selectRaw('uid, max(id) as id, count(*) as counts')
                 ->forPage($page, $size)
                 ->get();
             $this->doLog("$logPrefix, " . last_query() . ", count: " . $result->count());
@@ -136,7 +134,7 @@ class Update extends Install
                 ];
                 $updateResult = $row->update($update);
                 $this->doLog(sprintf(
-                    "$logPrefix, update user: %s(%s) => %s, result: %s",
+                    "$logPrefix, update user: %s(ID: %s) => %s, result: %s",
                     $row->uid, $row->id, json_encode($update), var_export($updateResult, true)
                 ));
             }

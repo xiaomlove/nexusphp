@@ -53,32 +53,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $page = 1;
-        $size = 1000;
-        while (true) {
-            $logPrefix = "[MIGRATE_ATTENDANCE], page: $page, size: $size";
-            $result = Attendance::query()
-                ->groupBy(['uid'])
-                ->selectRaw('uid, max(id) as id, count(*) as counts')
-                ->forPage($page, $size)
-                ->get();
-            do_log("$logPrefix, " . last_query() . ", count: " . $result->count());
-            if ($result->isEmpty()) {
-                do_log("$logPrefix, no more data...");
-                break;
-            }
-            foreach ($result as $row) {
-                $update = [
-                    'total_days' => $row->counts,
-                ];
-                $updateResult = $row->update($update);
-                do_log(sprintf(
-                    "$logPrefix, update user: %s(ID: %s) => %s, result: %s",
-                    $row->uid, $row->id, json_encode($update), var_export($updateResult, true)
-                ));
-            }
-            $page++;
-        }
+
     }
 
 }
