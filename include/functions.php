@@ -5061,7 +5061,7 @@ function get_ip_location_from_geoip($ip)
     ];
     $locale = $langMap[$lang] ?? $lang;
     $countryName =  $record->country->names[$locale] ?? $record->country->names['en'];
-    $cityName = $record->city->names[$locale] ?? $record->city->names['en'];
+    $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
     do_log("ip: $ip, locale: $locale, city: $cityName, country: $countryName");
     return [
         'name' => sprintf('%s·%s', $cityName, $countryName),

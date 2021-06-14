@@ -266,7 +266,7 @@ function print_category_editor($type, $row='')
 ?>
 <tr><td colspan="2"><?php echo $lang_catmanage['text_icon_directory_note']?></td></tr>
 <?php
-			tr($lang_catmanage['col_name']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"name\" value=\"".htmlspecialchars($name)."\" style=\"width: 300px\" /> " . $lang_catmanage['text_category_icon_name_note'], 1);
+			tr($lang_catmanage['col_name']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"name\" value=\"".htmlspecialchars($name)."\" style=\"width: 300px\" /> ", 1);
 			tr($lang_catmanage['col_folder']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"folder\" value=\"".htmlspecialchars($folder)."\" style=\"width: 300px\" /><br />" . $lang_catmanage['text_folder_note'], 1);
 			tr($lang_catmanage['text_multi_language'], "<input type=\"checkbox\" name=\"multilang\" value=\"yes\"".($multilang == 'yes' ? " checked=\"checked\"" : "")." />".$lang_catmanage['text_yes'] ."<br />". $lang_catmanage['text_multi_language_note'], 1);
 			tr($lang_catmanage['text_second_icon'], "<input type=\"checkbox\" name=\"secondicon\" value=\"yes\"".($secondicon == 'yes' ? " checked=\"checked\"" : "")." />".$lang_catmanage['text_yes'] ."<br />". $lang_catmanage['text_second_icon_note'], 1);
