@@ -219,7 +219,7 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
 //    ];
 //    \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
     $sql = sprintf(
-        "update users set enabled = %s and modcomment = concat_ws('\n', '%s - [CLEANUP] %s', modcomment) where id in (%s)",
+        "update users set enabled = '%s', modcomment = concat_ws('\n', '%s - [CLEANUP] %s', modcomment) where id in (%s)",
         \App\Models\User::ENABLED_NO, date('Y-m-d'), addslashes($reasonKey), implode(', ', $uidArr)
     );
     sql_query($sql);
