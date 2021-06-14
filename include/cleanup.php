@@ -298,14 +298,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
-    $examRep = new \App\Repositories\ExamRepository();
-	$updateExamProgressResult = $examRep->updateProgressBulk();
-    $log = 'update exam progress';
-    do_log($log . ", result: " . json_encode($updateExamProgressResult));
-    if ($printProgress) {
-        printProgress($log);
-    }
-
 //Priority Class 2: cleanup every 30 mins
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime2'");
 	$row = mysql_fetch_array($res);
@@ -785,6 +777,15 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+	//update exam progress
+    $examRep = new \App\Repositories\ExamRepository();
+    $updateExamProgressResult = $examRep->updateProgressBulk();
+    $log = 'update exam progress';
+    do_log($log . ", result: " . json_encode($updateExamProgressResult));
+    if ($printProgress) {
+        printProgress($log);
+    }
 
 	// delete torrents that have been dead for a long time
 	if ($deldeadtorrent_torrent > 0){
