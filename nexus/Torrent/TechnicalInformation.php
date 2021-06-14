@@ -79,7 +79,7 @@ class TechnicalInformation
 
     public function getRefFrame()
     {
-        foreach ($this->mediaInfoArr['Video'] as $key => $value) {
+        foreach ($this->mediaInfoArr['Video'] ?? [] as $key => $value) {
             if (strpos($key, 'Reference frames') !== false) {
                 return $value;
             }

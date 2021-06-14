@@ -481,7 +481,7 @@ echo "</script>";
             }
         }else $no_give = $lang_details['text_no_magic_added'];
 
-        if(intval($bonus_has) < intval($arr_temp[0])){
+        if(isset($bonus_has) && isset($arr_temp) && intval($bonus_has) < intval($arr_temp[0])){
 
         }else if ($whether_have_give_value == 0 ) {
             $magic_value_button = '<ul id="listNumber" class="magic">'.$magic_value_button.'</ul>';

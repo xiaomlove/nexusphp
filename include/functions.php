@@ -3075,19 +3075,19 @@ function torrenttable($rows, $variant = "torrent") {
     $imdb = new Nexus\Imdb\Imdb();
 	$torrent = new Nexus\Torrent\Torrent();
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], array_column($rows, 'id'));
-
-	if ($variant == "torrent"){
-		$last_browse = $CURUSER['last_browse'];
-		$sectiontype = $browsecatmode;
-	}
-	elseif($variant == "music"){
-		$last_browse = $CURUSER['last_music'];
-		$sectiontype = $specialcatmode;
-	}
-	else{
-		$last_browse = $CURUSER['last_browse'];
-		$sectiontype = "";
-	}
+    $last_browse = $CURUSER['last_browse'];
+//	if ($variant == "torrent"){
+//		$last_browse = $CURUSER['last_browse'];
+//		$sectiontype = $browsecatmode;
+//	}
+//	elseif($variant == "music"){
+//		$last_browse = $CURUSER['last_music'];
+//		$sectiontype = $specialcatmode;
+//	}
+//	else{
+//		$last_browse = $CURUSER['last_browse'];
+//		$sectiontype = "";
+//	}
 
 	$time_now = TIMENOW;
 	if ($last_browse > $time_now) {
