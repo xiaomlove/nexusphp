@@ -444,6 +444,10 @@ class ExamRepository extends BaseRepository
             do_log("examUser: {$examUser->id} status not normal, won't update progress.");
             return false;
         }
+        if ($examUser->is_done == ExamUser::IS_DONE_YES) {
+            do_log("examUser: {$examUser->id} is done, won't update progress.");
+            return false;
+        }
         $exam = $examUser->exam;
         if (!$user instanceof User) {
             $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus'])->first();
@@ -799,7 +803,7 @@ class ExamRepository extends BaseRepository
         return $result;
     }
 
-    public function cronjobCheckout($ignoreTimeRange = false)
+    public function cronjobCheckout($ignoreTimeRange = false): int
     {
         $now = Carbon::now()->toDateTimeString();
         $examUserTable = (new ExamUser())->getTable();
@@ -906,7 +910,34 @@ class ExamRepository extends BaseRepository
         return $result;
     }
 
-
-
+    public function updateProgressBulk(): array
+    {
+        $query = ExamUser::query()
+            ->where('status', ExamUser::STATUS_NORMAL)
+            ->where('is_done', ExamUser::IS_DONE_NO);
+        $page = 1;
+        $size = 1000;
+        $total = $success = 0;
+        while (true) {
+            $logPrefix = "[UPDATE_EXAM_PROGRESS], page: $page, size: $size";
+            $rows = $query->forPage($page, $size)->get();
+            $count = $rows->count();
+            $total += $count;
+            do_log("$logPrefix, " . last_query() . ", count: $count");
+            if ($rows->isEmpty()) {
+                do_log("$logPrefix, no more data...");
+                break;
+            }
+            foreach ($rows as $row) {
+                $result = $this->updateProgress($row);
+                do_log("$logPrefix, examUser: " . $row->toJson() . ", result type: " . gettype($result));
+                if ($result != false) {
+                    $success += 1;
+                }
+            }
+            $page++;
+        }
+        return compact('total', 'success');
+    }
 
 }

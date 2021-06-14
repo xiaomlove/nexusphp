@@ -79,15 +79,15 @@ $seeder = ($left == 0) ? "yes" : "no";
 
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror,passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
-	$az = $currentUser = mysql_fetch_array($res);
-	do_log("[check passkey], currentUser: " . nexus_json_encode($currentUser), 'error');
+	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$az = mysql_fetch_array($res);
+	do_log("[check passkey], currentUser: " . nexus_json_encode($az), 'error');
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
 $userid = intval($az['id'] ?? 0);
 unset($GLOBALS['CURUSER']);
-$CURUSER = $GLOBALS["CURUSER"] = $currentUser;
+$CURUSER = $GLOBALS["CURUSER"] = $az;
 
 //3. CHECK IF CLIENT IS ALLOWED
 $clicheck_res = check_client($peer_id,$agent,$client_familyid);
@@ -206,8 +206,14 @@ if (!isset($self))
 }
 
 // min announce time
-if(isset($self) && $self['prevts'] > (TIMENOW - $announce_wait))
-	err('There is a minimum announce time of ' . $announce_wait . ' seconds');
+if(isset($self) && $self['prevts'] > (TIMENOW - $announce_wait)) {
+    do_log(sprintf(
+        'timezone: %s, self prevts(%s, %s) > now(%s, %s) - announce_wait(%s)',
+        ini_get('date.timezone'), $self['prevts'], date('Y-m-d H:i:s', $self['prevts']), TIMENOW, date('Y-m-d H:i:s', TIMENOW), $announce_wait
+    ));
+    err('There is a minimum announce time of ' . $announce_wait . ' seconds');
+}
+
 
 // current peer_id, or you could say session with tracker not found in table peers
 if (!isset($self))

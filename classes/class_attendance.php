@@ -24,15 +24,15 @@ class Attendance
     {
         do_log(json_encode(func_get_args()));
         if($this->check(true)) return false;
-        $res = sql_query(sprintf('SELECT DATEDIFF(%s, `added`) AS diff, `days`, `total_days` FROM `attendance` WHERE `uid` = %u ORDER BY `id` DESC LIMIT 1', sqlesc($this->curdate), $this->userid)) or sqlerr(__FILE__,__LINE__);
+        $res = sql_query(sprintf('SELECT id, DATEDIFF(%s, `added`) AS diff, `days`, `total_days` FROM `attendance` WHERE `uid` = %u ORDER BY `id` DESC LIMIT 1', sqlesc($this->curdate), $this->userid)) or sqlerr(__FILE__,__LINE__);
         $doUpdate = mysql_num_rows($res);
         if ($doUpdate) {
             $row = mysql_fetch_row($res);
             do_log("uid: {$this->userid}, row: " . json_encode($row));
         } else {
-            $row = [0, 0, 0];
+            $row = [0, 0, 0, 0];
         }
-        list($datediff, $days, $totalDays) = $row;
+        list($id, $datediff, $days, $totalDays) = $row;
         $points = min($initial + $step * $totalDays, $maximum);
         $cdays = $datediff == 1 ? ++$days : 1;
         if($cdays > 1){
@@ -47,8 +47,8 @@ class Attendance
 //        sql_query(sprintf('INSERT INTO `attendance` (`uid`,`added`,`points`,`days`) VALUES (%u, %s, %u, %u)', $this->userid, sqlesc(date('Y-m-d H:i:s')), $points, $cdays)) or sqlerr(__FILE__, __LINE__);
         if ($doUpdate) {
             $sql = sprintf(
-                'UPDATE `attendance` set added = %s, points = %s, days = %s, total_days= %s where uid = %s order by id desc limit 1',
-                sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1, $this->userid
+                'UPDATE `attendance` set added = %s, points = %s, days = %s, total_days= %s where id = %s limit 1',
+                sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1, $id
             );
         } else {
             $sql = sprintf(
