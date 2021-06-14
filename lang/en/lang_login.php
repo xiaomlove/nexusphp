@@ -32,6 +32,8 @@ $lang_login = array
 	'submit_clear' => "clear",
 	'text_select_lang' => "Select Site Language: ",
 	'head_login' => "Login",
+    'rowhead_two_step_code' => 'Two-Factor Authentication',
+    'two_step_code_tooltip' => 'If enabled must be filled in',
 );
 
 ?>
