@@ -937,7 +937,9 @@ class ExamRepository extends BaseRepository
             }
             $page++;
         }
-        return compact('total', 'success');
+        $result = compact('total', 'success');
+        do_log("$logPrefix, result: " . json_encode($result));
+        return $result;
     }
 
 }
