@@ -21,7 +21,12 @@ if (isset($_SERVER['argv'][1])) {
 }
 
 try {
-    $result = autoclean($force, true);
+    if ($force) {
+        require_once($rootpath . 'include/cleanup.php');
+        return docleanup(1, true);
+    } else {
+        $result = autoclean();
+    }
     do_log("[CLEANUP_CLI DONE!] $result");
 } catch (\Exception $exception) {
     do_log("ERROR: " . $exception->getMessage());
