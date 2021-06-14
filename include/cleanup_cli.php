@@ -15,8 +15,13 @@ register_shutdown_function(function () use ($fd) {
     fclose($fd);
 });
 
+$force = 0;
+if (isset($_SERVER['argv'][1])) {
+    $force = $_SERVER['argv'][1] ? 1 : 0;
+}
+
 try {
-    $result = autoclean();
+    $result = autoclean($force, true);
     do_log("[CLEANUP_CLI DONE!] $result");
 } catch (\Exception $exception) {
     do_log("ERROR: " . $exception->getMessage());

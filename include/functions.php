@@ -1898,7 +1898,7 @@ function userlogin() {
     return $loginResult = true;
 }
 
-function autoclean() {
+function autoclean($forceAll = 0, $printProgress = false) {
 	global $autoclean_interval_one, $rootpath;
 	$now = TIMENOW;
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime'");
@@ -1919,7 +1919,7 @@ function autoclean() {
 		return false;
 	}
 	require_once($rootpath . 'include/cleanup.php');
-	return docleanup();
+	return docleanup($forceAll, $printProgress);
 }
 
 function unesc($x) {
