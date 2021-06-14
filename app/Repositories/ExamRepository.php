@@ -633,6 +633,7 @@ class ExamRepository extends BaseRepository
             ->toArray();
         $logPrefix .= ", progressSum raw: " . json_encode($progressSum) . ", query: " . last_query();
         if ($allSum) {
+            do_log($logPrefix);
             return $progressSum;
         }
 

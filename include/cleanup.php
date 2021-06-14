@@ -213,11 +213,16 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
             'reason' => nexus_trans($reasonKey, [], $user->locale),
         ];
     }
-    $update = [
-        'enabled' => \App\Models\User::ENABLED_NO,
-        'modcomment' => DB::raw("concat_ws('\n', '[CLEANUP] $reasonKey', modcomment)"),
-    ];
-    \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
+//    $update = [
+//        'enabled' => \App\Models\User::ENABLED_NO,
+//        'modcomment' => DB::raw("concat_ws('\n', '[CLEANUP] $reasonKey', modcomment)"),
+//    ];
+//    \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
+    $sql = sprintf(
+        "update users set enabled = %s and modcomment = concat_ws('\n', '%s - [CLEANUP] %s', modcomment) where id in (%s)",
+        \App\Models\User::ENABLED_NO, date('Y-m-d'), addslashes($reasonKey), implode(', ', $uidArr)
+    );
+    sql_query($sql);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
     do_log("delete user($reasonKey): " . implode(', ', $uidArr));
     return $uidArr;
