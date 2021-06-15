@@ -197,7 +197,7 @@ function ban_user_with_leech_warning_expired()
 
 function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
 {
-    $results = $query->where('enabled', \App\Models\User::ENABLED_YES)->get(['id', 'username', 'modcomment', 'language']);
+    $results = $query->where('enabled', \App\Models\User::ENABLED_YES)->get(['id', 'username', 'modcomment', 'lang']);
     if ($results->isEmpty()) {
         return [];
     }
