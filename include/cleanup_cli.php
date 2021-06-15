@@ -27,9 +27,13 @@ try {
     } else {
         $result = autoclean();
     }
-    do_log("[CLEANUP_CLI DONE!] $result");
+    $log = "[CLEANUP_CLI DONE!] $result";
+    do_log($log);
+    printProgress($log);
 } catch (\Exception $exception) {
-    do_log("ERROR: " . $exception->getMessage());
+    $log = "ERROR: " . $exception->getMessage();
+    do_log($log);
+    printProgress($log);
     throw new \RuntimeException($exception->getMessage());
 }
 

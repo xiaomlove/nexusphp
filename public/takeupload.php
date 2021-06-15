@@ -166,6 +166,10 @@ unset ($dict['nodes']); // remove cached peers (Bitcomet & Azareus)
 
 $infohash = pack("H*", sha1(\Rhilip\Bencode\Bencode::encode($dict['info']))); // double up on the becoding solves the occassional misgenerated infohash
 
+if (\App\Models\Torrent::query()->where('info_hash', $infohash)->exists()) {
+    bark($lang_takeupload['std_torrent_existed']);
+}
+
 // ------------- start: check upload authority ------------------//
 $allowtorrents = user_can_upload("torrents");
 $allowspecial = user_can_upload("music");
