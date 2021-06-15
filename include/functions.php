@@ -35,20 +35,20 @@ function get_langfile_path($script_name ="", $target = false, $lang_folder = "")
 function get_row_count($table, $suffix = "")
 {
 	$r = sql_query("SELECT COUNT(*) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
-	$a = mysql_fetch_row($r) or die(mysql_error());
+	$a = mysql_fetch_row($r);
 	return $a[0];
 }
 
 function get_row_sum($table, $field, $suffix = "")
 {
 	$r = sql_query("SELECT SUM($field) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
-	$a = mysql_fetch_row($r) or die(mysql_error());
+	$a = mysql_fetch_row($r);
 	return $a[0];
 }
 
 function get_single_value($table, $field, $suffix = ""){
 	$r = sql_query("SELECT $field FROM $table $suffix LIMIT 1") or sqlerr(__FILE__, __LINE__);
-	$a = mysql_fetch_row($r) or die(mysql_error());
+	$a = mysql_fetch_row($r);
 	if ($a) {
 		return $a[0];
 	} else {
@@ -1578,7 +1578,7 @@ function image_code () {
 	$imagehash = md5($randomstr);
 	$dateline = time();
 	$sql = 'INSERT INTO `regimages` (`imagehash`, `imagestring`, `dateline`) VALUES (\''.$imagehash.'\', \''.$randomstr.'\', \''.$dateline.'\');';
-	sql_query($sql) or die(mysql_error());
+	sql_query($sql);
 	return $imagehash;
 }
 
@@ -1877,7 +1877,7 @@ function userlogin() {
 	}
 	if (!$row["passkey"]){
 		$passkey = md5($row['username'].date("Y-m-d H:i:s").$row['passhash']);
-		sql_query("UPDATE users SET passkey = ".sqlesc($passkey)." WHERE id=" . sqlesc($row["id"]));// or die(mysql_error());
+		sql_query("UPDATE users SET passkey = ".sqlesc($passkey)." WHERE id=" . sqlesc($row["id"]));
 	}
 
 	$oldip = $row['ip'];
@@ -2260,8 +2260,8 @@ function get_style_highlight()
 	}
 	if (!$hltr)
 	{
-		$r = sql_query("SELECT hltr FROM stylesheets WHERE id=5") or die(mysql_error());
-		$a = mysql_fetch_array($r) or die(mysql_error());
+		$r = sql_query("SELECT hltr FROM stylesheets WHERE id=5");
+		$a = mysql_fetch_array($r);
 		$hltr = $a["hltr"];
 	}
 	return $hltr;

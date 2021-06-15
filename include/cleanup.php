@@ -967,6 +967,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 	$log = 'Full cleanup is done';
 	do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
 	return $log;
 }
 ?>

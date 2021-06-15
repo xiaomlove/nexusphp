@@ -33,15 +33,15 @@ if(!$body)
 
 
 // check if email addy is already in use
-$a = (@mysql_fetch_row(@sql_query("select count(*) from users where email=".sqlesc($email)))) or die(mysql_error());
+$a = (@mysql_fetch_row(@sql_query("select count(*) from users where email=".sqlesc($email))));
 if ($a[0] != 0)
   bark($lang_takeinvite['std_email_address'].htmlspecialchars($email).$lang_takeinvite['std_is_in_use']);
-$b = (@mysql_fetch_row(@sql_query("select count(*) from invites where invitee=".sqlesc($email)))) or die(mysql_error());
+$b = (@mysql_fetch_row(@sql_query("select count(*) from invites where invitee=".sqlesc($email))));
 if ($b[0] != 0)
   bark($lang_takeinvite['std_invitation_already_sent_to'].htmlspecialchars($email).$lang_takeinvite['std_await_user_registeration']);
 
 $ret = sql_query("SELECT username FROM users WHERE id = ".sqlesc($id)) or sqlerr();
-$arr = mysql_fetch_assoc($ret); 
+$arr = mysql_fetch_assoc($ret);
 
 $hash  = md5(mt_rand(1,10000).$CURUSER['username'].TIMENOW.$CURUSER['passhash']);
 
@@ -63,7 +63,7 @@ sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false
 //this email is sent only when someone give out an invitation
 
 header("Refresh: 0; url=invite.php?id=".htmlspecialchars($id)."&sent=1");
-?> 
-  
-    
+?>
+
+
 

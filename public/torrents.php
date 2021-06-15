@@ -834,7 +834,7 @@ else
 	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $where." GROUP BY categories.mode";
 }
 
-$res = sql_query($sql) or die(mysql_error());
+$res = sql_query($sql);
 $count = 0;
 while($row = mysql_fetch_array($res))
 	$count += $row[0];
@@ -877,7 +877,7 @@ else{
 	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,tags FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $where $orderby $limit";
 }
 
-	$res = sql_query($query) or die(mysql_error());
+	$res = sql_query($query);
 }
 else
 	unset($res);

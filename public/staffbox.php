@@ -23,7 +23,7 @@ if (!$action) {
 	{
 		stdmsg($lang_staffbox['std_sorry'], $lang_staffbox['std_no_messages_yet']);
 	}
-	else 
+	else
 	{
 		begin_main_frame();
 		print("<form method=post action=\"?action=takecontactanswered\">");
@@ -130,13 +130,13 @@ if ($action == "answermessage") {
 
         int_check($receiver,true);
 
-        $res = sql_query("SELECT * FROM users WHERE id=" . sqlesc($receiver)) or die(mysql_error());
+        $res = sql_query("SELECT * FROM users WHERE id=" . sqlesc($receiver));
         $user = mysql_fetch_assoc($res);
 
         if (!$user)
    		stderr($lang_staffbox['std_error'], $lang_staffbox['std_no_user_id']);
 
-        $res2 = sql_query("SELECT * FROM staffmessages WHERE id=" . sqlesc($answeringto)) or die(mysql_error());
+        $res2 = sql_query("SELECT * FROM staffmessages WHERE id=" . sqlesc($answeringto));
         $staffmsg = mysql_fetch_assoc($res2);
 	stdhead($lang_staffbox['head_answer_to_staff_pm']);
 	begin_main_frame();

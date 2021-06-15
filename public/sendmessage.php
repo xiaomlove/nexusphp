@@ -12,7 +12,7 @@ parked();
 	if ($replyto && !is_valid_id($replyto))
 		stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_permission_denied']);
 
-	$res = sql_query("SELECT * FROM users WHERE id=$receiver") or die(mysql_error());
+	$res = sql_query("SELECT * FROM users WHERE id=$receiver");
 	$user = mysql_fetch_assoc($res);
 	if (!$user)
 		stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_no_user_id']);

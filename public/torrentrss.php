@@ -105,7 +105,7 @@ get_where("audiocodecs", "audiocodec", "aud");
 if ($where)
 	$where = "WHERE ".$where;
 $query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY torrents.added DESC LIMIT $limit";
-$res = sql_query($query) or die(mysql_error());
+$res = sql_query($query);
 $torrentRep = new \App\Repositories\TorrentRepository();
 $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);
