@@ -2,6 +2,7 @@
 require_once("../include/bittorrent.php");
 dbconn(true);
 require_once(get_langfile_path('torrents.php'));
+require_once(get_langfile_path('speical.php'));
 loggedinorreturn();
 parked();
 
@@ -15,7 +16,7 @@ switch (CURRENT_SCRIPT) {
             httperr();
         }
         if (get_user_class() < get_setting('authority.view_special_torrent')) {
-            permissiondenied();
+            stderr($lang_special['std_sorry'],$lang_special['std_permission_denied_only'].get_user_class_name(get_setting('authority.view_special_torrent'),false,true,true).$lang_special['std_or_above_can_view'],false);
         }
         $sectiontype = $specialcatmode;
         break;
