@@ -52,7 +52,7 @@ class Attendance
             );
         } else {
             $sql = sprintf(
-                'INSERT INTO `attendance` (`uid`, `added`, `points`, `days`, `total_days`) VALUES (%u, %s, %u, %u, %u, %u)',
+                'INSERT INTO `attendance` (`uid`, `added`, `points`, `days`, `total_days`) VALUES (%u, %s, %u, %u, %u)',
                 $this->userid, sqlesc(date('Y-m-d H:i:s')), $points, $cdays, $totalDays + 1
             );
         }
