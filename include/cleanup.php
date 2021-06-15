@@ -219,7 +219,7 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
     );
     sql_query($sql);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
-    do_log("delete user($reasonKey): " . implode(', ', $uidArr));
+    do_log("[DELETE_USER]($reasonKey): " . implode(', ', $uidArr));
     return $uidArr;
 }
 
