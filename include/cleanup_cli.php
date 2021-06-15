@@ -22,8 +22,8 @@ if (isset($_SERVER['argv'][1])) {
 
 try {
     if ($force) {
-        require_once($rootpath . 'include/cleanup.php');
-        return docleanup(1, true);
+        require_once(ROOT_PATH . 'include/cleanup.php');
+        $result = docleanup(1, true);
     } else {
         $result = autoclean();
     }

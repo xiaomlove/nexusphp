@@ -197,7 +197,7 @@ function ban_user_with_leech_warning_expired()
 
 function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
 {
-    $results = $query->get(['id', 'username', 'modcomment']);
+    $results = $query->where('enabled', \App\Models\User::ENABLED_YES)->get(['id', 'username', 'modcomment', 'language']);
     if ($results->isEmpty()) {
         return [];
     }
@@ -213,13 +213,8 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
             'reason' => nexus_trans($reasonKey, [], $user->locale),
         ];
     }
-//    $update = [
-//        'enabled' => \App\Models\User::ENABLED_NO,
-//        'modcomment' => DB::raw("concat_ws('\n', '[CLEANUP] $reasonKey', modcomment)"),
-//    ];
-//    \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
     $sql = sprintf(
-        "update users set enabled = '%s', modcomment = concat_ws('\n', '%s - [CLEANUP] %s', modcomment) where id in (%s)",
+        "update users set enabled = '%s', modcomment = concat_ws('\n', '%s [CLEANUP] %s', modcomment) where id in (%s)",
         \App\Models\User::ENABLED_NO, date('Y-m-d'), addslashes($reasonKey), implode(', ', $uidArr)
     );
     sql_query($sql);
