@@ -1,5 +1,5 @@
 <template>
-    <el-form :model="formData" :rules="rules" ref="formRef" label-width="250px" class="formData">
+    <el-form :model="formData" :rules="rules" ref="formRef" label-width="250px" class="formData" size="mini">
         <el-form-item label="Enabled" prop="backup.enabled">
             <el-radio v-model="formData.backup.enabled" label="yes">Yes</el-radio>
             <el-radio v-model="formData.backup.enabled" label="no">No</el-radio>

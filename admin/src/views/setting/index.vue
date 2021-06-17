@@ -1,6 +1,7 @@
 <template>
     <el-tabs type="border-card" @tab-click="handleTabClick">
         <el-tab-pane label="Backup"><FormBackup ref="backup" /></el-tab-pane>
+        <el-tab-pane label="H&R"><FormHR ref="hr" /></el-tab-pane>
     </el-tabs>
 </template>
 
@@ -13,16 +14,18 @@ import { useTable, renderTableData } from '../../utils/table'
 import FormBasic from './form-basic.vue'
 import FormMain from './form-main.vue'
 import FormBackup from './form-backup.vue'
+import FormHR from './form-hr.vue'
 
 export default {
     name: 'Setting',
     components: {
-        FormBasic, FormMain, FormBackup
+        FormBasic, FormMain, FormBackup, FormHR
     },
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
         const backup = ref(null)
+        const hr = ref(null)
         const state = useTable()
 
         onMounted(() => {
@@ -54,8 +57,8 @@ export default {
             state.query.page = val
             fetchTableData()
         }
-        const handleTabClick = (val) => {
-            console.log('handleTabClick', val)
+        const handleTabClick = (tab) => {
+            console.log('handleTabClick', tab)
         }
         return {
             ...toRefs(state),
@@ -68,6 +71,7 @@ export default {
             fetchTableData,
             changePage,
             backup,
+            hr
         }
     }
 }
