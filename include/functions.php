@@ -5011,6 +5011,8 @@ function list_require_search_box_id()
         'special' => [$setting['specialcat']],
         'usercp' => [$setting['browsecat'], $setting['specialcat']],
         'getrss' => [$setting['browsecat'], $setting['specialcat']],
+        'userdetails' => [$setting['browsecat'], $setting['specialcat']],
+        'offers' => [$setting['browsecat'], $setting['specialcat']],
     ];
     return $maps[CURRENT_SCRIPT] ?? [];
 }
