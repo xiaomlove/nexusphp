@@ -287,16 +287,19 @@ class Install
         $table = '<div class="table w-full text-left">';
         $table .= '<div class="table-row-group">';
         $table .= '<div class="table-row">';
-        foreach ($header as $value) {
-            $table .= '<div class="table-cell bg-gray-400 text-gray-700 px-4 py-2">' . $value . '</div>';
+        foreach ($header as $text) {
+            $table .= '<div class="table-cell bg-gray-400 text-gray-700 px-4 py-2">' . $text . '</div>';
         }
         $table .= '</div>';
         foreach ($data as $value) {
             $table .= '<div class="table-row">';
-            $table .= '<div class="table-cell bg-gray-200 text-gray-700 px-4 py-2 text-sm">' . $value['label'] . '</div>';
-            $table .= '<div class="table-cell bg-gray-200 text-gray-700 px-4 py-2 text-sm">' . $value['required'] . '</div>';
-            $table .= '<div class="table-cell bg-gray-200 text-gray-700 px-4 py-2 text-sm">' . $value['current'] . '</div>';
-            $table .= '<div class="table-cell bg-' . ($value['result'] == 'YES' ? 'green' : 'red') . '-200 text-gray-700 px-4 py-2 text-sm">' . $value['result'] . '</div>';
+            foreach ($header as $name => $text) {
+                $color = 'gray';
+                if ($name == 'result' && in_array($value[$name], ['YES', 'NO'])) {
+                    $color = $value[$name] == 'YES' ? 'green' : 'red';
+                }
+                $table .= '<div class="table-cell bg-gray-200 text-' . $color . '-700 px-4 py-2 text-sm">' . $value[$name] . '</div>';
+            }
             $table .= '</div>';
         }
         $table .= '</div>';

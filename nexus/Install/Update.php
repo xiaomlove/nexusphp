@@ -9,13 +9,14 @@ use App\Models\ExamUser;
 use App\Models\Icon;
 use App\Models\Setting;
 use App\Repositories\ExamRepository;
+use GuzzleHttp\Client;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
 class Update extends Install
 {
 
-    protected $steps = ['环境检测', '添加 .env 文件', '修改&创建数据表', '导入数据'];
+    protected $steps = ['环境检测', '选择版本安装', '更新 .env 文件',  '更新配置'];
 
 
     public function getLogFile()
@@ -141,6 +142,86 @@ class Update extends Install
             $page++;
         }
 
+    }
+
+    public function listVersions()
+    {
+        $client = new Client();
+        $url = "https://api.github.com/repos/xiaomlove/nexusphp/releases";
+        $response = $client->get($url, ['timeout' => 10,]);
+        if (($statusCode = $response->getStatusCode()) != 200) {
+            throw new \RuntimeException("获取版本列表失败，状态码：$statusCode");
+        }
+        if ($response->getBody()->getSize() <= 0) {
+            throw new \RuntimeException("获取版本列表失败，结果为空");
+        }
+        $bodyString = $response->getBody()->getContents();
+        $this->doLog("[LIST_VERSION_RESPONSE]: $bodyString");
+        $versions = json_decode($bodyString, true);
+        if (empty($versions) || !is_array($versions)) {
+            throw new \RuntimeException("获取版本列表结果异常");
+        }
+        return array_reverse($versions);
+    }
+
+    public function downAndExtractCode($url)
+    {
+        $arr = explode('/', $url);
+        $basename = last($arr);
+        $suffix = '.tar.gz';
+        $filename = sprintf('%s/nexusphp-%s-%s%s', sys_get_temp_dir(), $basename, date('YmdHis'), $suffix);
+        $client = new Client();
+        $response = $client->request('GET', $url, ['sink' => $filename]);
+        if (($statusCode = $response->getStatusCode()) != 200) {
+            throw new \RuntimeException("下载错误，状态码：$statusCode");
+        }
+        if (($bodySize = $response->getBody()->getSize()) <= 0) {
+            throw new \RuntimeException("下载错误，文件体积：$bodySize");
+        }
+        if (!file_exists($filename)) {
+            throw new \RuntimeException("下载错误，文件不存在：$filename");
+        }
+        if (filesize($filename) <= 0) {
+            throw new \RuntimeException("下载错误，文件大小为0");
+        }
+        $this->doLog('SUCCESS_DOWNLOAD');
+        $extractDir = str_replace($suffix, "", $filename);
+        $command = "mkdir -p $extractDir";
+        $result = exec($command, $output, $result_code);
+        $this->doLog(sprintf(
+            "command: %s, output: %s, result_code: %s, result: %s",
+            $command, json_encode($output), $result_code, $result
+        ));
+        if ($result_code != 0) {
+            throw new \RuntimeException("创建解压目录：$extractDir 失败, result_code: $result_code");
+        }
+
+        $command = "tar -xf $filename -C $extractDir";
+        $result = exec($command, $output, $result_code);
+        $this->doLog(sprintf(
+            "command: %s, output: %s, result_code: %s, result: %s",
+            $command, json_encode($output), $result_code, $result
+        ));
+        if ($result_code != 0) {
+            throw new \RuntimeException("解压文件：$filename 到：$extractDir 失败, result_code: $result_code");
+        }
+
+        foreach (glob("$extractDir/*") as $path) {
+            if (is_dir($path)) {
+                $command = sprintf('cp -Rf %s/* %s', $path, ROOT_PATH);
+                $result = exec($command, $output, $result_code);
+                $this->doLog(sprintf(
+                    "command: %s, output: %s, result_code: %s, result: %s",
+                    $command, json_encode($output), $result_code, $result
+                ));
+                if ($result_code != 0) {
+                    throw new \RuntimeException("复制错误, result_code: $result_code");
+                }
+                break;
+            }
+        }
+        $this->doLog('SUCCESS_EXTRACT');
+        return true;
     }
 
 }

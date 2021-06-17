@@ -23,6 +23,69 @@ if ($currentStep == 1) {
 }
 
 if ($currentStep == 2) {
+    $tableRows = [];
+    $versionTable = $versions = [];
+    $cacheKkey = '__versions_' . date('Ymd_H');
+    try {
+        if (!empty($_SESSION[$cacheKkey])) {
+            $update->doLog("get versions from session.");
+            $versions = $_SESSION[$cacheKkey];
+        } else {
+            $versions = $update->listVersions();
+        }
+    } catch (\Exception $exception) {
+        $error = $exception->getMessage();
+    }
+    $_SESSION[$cacheKkey] = $versions;
+    $versionHeader = [
+        'checkbox' => '选择',
+        'tag_name' => '版本(标签)',
+        'name' => '名称',
+        'published_at' => '发布时间',
+    ];
+    foreach ($versions as $version) {
+        if ($version['draft']) {
+            continue;
+        }
+        $time = \Carbon\Carbon::parse($version['published_at']);
+        $time->tz = nexus_env('TIMEZONE');
+        $versionUrl = $version['tag_name'] . '|' . $version['tarball_url'];
+        $checked = !empty($_REQUEST['version_url']) && $_REQUEST['version_url'] == $versionUrl ? ' checked' : '';
+        $tableRows[] = [
+            'checkbox' => sprintf('<input type="radio" name="version_url" value="%s"%s/>', $versionUrl, $checked),
+            'tag_name' => $version['tag_name'],
+            'name' => $version['name'],
+            'published_at' => $time->format('Y-m-d H:i:s'),
+        ];
+    }
+    while ($isPost) {
+        try {
+            if (empty($_REQUEST['version_url'])) {
+                throw new \RuntimeException("没有选择版本");
+            }
+            $versionUrlArr = explode('|', $_REQUEST['version_url']);
+            $version = strtolower($versionUrlArr[0]);
+            $downloadUrl = $versionUrlArr[1];
+            if (\Illuminate\Support\Str::startsWith($version, 'v')) {
+                $version = substr($version, 1);
+            }
+            $update->doLog("version: $version, downloadUrl: $downloadUrl, currentVersion: " . VERSION_NUMBER);
+            if (version_compare($version, VERSION_NUMBER, '<=')) {
+                throw new \RuntimeException("必须选择一个高于当前版本（" . VERSION_NUMBER . "）的");
+            }
+            $update->downAndExtractCode($downloadUrl);
+
+            $update->nextStep();
+        } catch (\Exception $exception) {
+            $update->doLog($exception->getMessage() . $exception->getTraceAsString());
+            $error = $exception->getMessage();
+            break;
+        }
+        break;
+    }
+}
+
+if ($currentStep == 3) {
     $envExampleFile = $rootpath . ".env.example";
 //    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
     $envExampleData = readEnvFile($envExampleFile);
@@ -56,74 +119,6 @@ if ($currentStep == 2) {
     $pass = empty($fails);
 }
 
-if ($currentStep == 3) {
-//    $createTables = $update->listAllTableCreate();
-    $createTables = $update->listAllTableCreateFromMigrations();
-    $existsTables = $update->listExistsTable();
-    $tableRows = [];
-    $toCreateTable = $toAlterTable = $toUpdateTable = [];
-    foreach ($createTables as $table => $tableCreate) {
-        //Table not exists
-        if (!in_array($table, $existsTables)) {
-            $tableRows[] = [
-                "label" => "Table: $table",
-                "required" => "exists",
-                "current" => "",
-                "result" => 'NO',
-            ];
-            $toCreateTable[$table] = $tableCreate;
-            continue;
-        }
-        $tableHaveFields = $update->listTableFieldsFromDb($table);
-        foreach ($tableHaveFields as $field => $fieldInfo) {
-            if ($fieldInfo['Type'] == 'datetime' && $fieldInfo['Default'] == '0000-00-00 00:00:00') {
-                $tableRows[] = [
-                    'label' => "Field: $table.$field",
-                    'required' => 'default null',
-                    'current' => '0000-00-00 00:00:00',
-                    'result' => 'NO',
-                ];
-                $toAlterTable[$table][$field] = "modify $field datetime default null";
-                $toUpdateTable[$table][$field] = "null";
-            }
-        }
-    }
-    while ($isPost) {
-        try {
-            sql_query('SET sql_mode=(SELECT REPLACE(@@sql_mode,"NO_ZERO_DATE", ""))');
-            $command = "php " . ROOT_PATH . "artisan migrate --force";
-            $result = exec($command, $output, $result_code);
-            $update->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
-            $update->doLog("output: " . json_encode($output));
-            if ($result_code != 0) {
-                throw new \RuntimeException(json_encode($output));
-            } else {
-                $update->doLog("[MIGRATE] success.");
-            }
-            foreach ($toAlterTable as $table => $modies) {
-                $query = "alter table $table " . implode(', ', $modies);
-                $update->doLog("[ALTER TABLE] $query");
-                sql_query($query);
-            }
-            foreach ($toUpdateTable as $table => $updates) {
-                foreach ($updates as $field => $fieldUpdate) {
-                    $query = sprintf("update %s set %s = %s where %s = '0000-00-00 00:00:00'", $table, $field, $fieldUpdate, $field);
-                    $update->doLog("[UPDATE TABLE] $query, affectedRows: " . mysql_affected_rows());
-                    sql_query($query);
-                }
-            }
-
-            $update->runExtraQueries();
-
-            $update->nextStep();
-        } catch (\Exception $exception) {
-            $update->doLog($exception->getMessage() . $exception->getTraceAsString());
-            $error = $exception->getMessage();
-            break;
-        }
-        break;
-    }
-}
 
 if ($currentStep == 4) {
     $settingTableRows = $update->listSettingTableRows();
@@ -135,6 +130,7 @@ if ($currentStep == 4) {
         try {
             $update->createSymbolicLinks($symbolicLinks);
             $update->saveSettings($settings);
+            $update->runExtraQueries();
             $update->nextStep();
         } catch (\Exception $e) {
             $error = $e->getMessage();
@@ -166,20 +162,25 @@ if (!empty($error)) {
             <input type="hidden" name="step" value="<?php echo $currentStep?>">
             <?php
             echo'<div class="step-' . $currentStep . ' text-center">';
-            $header = ['项目', '要求', '当前', '结果'];
+            $header = [
+                'label' => '项目',
+                'require' => '要求',
+                'current'=> '当前',
+                'result'=> '结果'
+            ];
             if ($currentStep == 1) {
                 echo $update->renderTable($header, $requirements['table_rows']);
-            } elseif ($currentStep == 2) {
+            } elseif ($currentStep == 3) {
                 echo $update->renderTable($header, $tableRows);
                 echo '<div class="text-gray-700 p-4 text-red-400">若 Redis 不启用，相关项目留空</div>';
                 echo $update->renderForm($envFormControls);
 
-            } elseif ($currentStep == 3) {
-                echo '<h1 class="mb-4 text-lg font-bold">需要修改或创建以下数据表(字段)</h1>';
+            } elseif ($currentStep == 2) {
+                echo '<h1 class="mb-4 text-lg font-bold">选择目标版本（注意必须选择比当前版本(' .  VERSION_NUMBER. ')高的）</h1>';
                 if (empty($tableRows)) {
-                    echo '<div class="text-green-600 text-center">恭喜，需要的表(字段)均符合要求!</div>';
+                    echo '<div class="text-green-600 text-center">抱歉，暂无任何版可以选择！</div>';
                 } else {
-                    echo $update->renderTable($header, $tableRows);
+                    echo $update->renderTable($versionHeader, $tableRows);
                 }
             } elseif ($currentStep == 4) {
                 echo $update->renderTable($header, $tableRows);

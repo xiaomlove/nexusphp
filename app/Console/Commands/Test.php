@@ -53,7 +53,10 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $time = '2021-06-16T04:03:35Z';
+        $date = Carbon::parse($time);
+        $date->tz = 'Asia/Shanghai';
+        dd($date->toDateTimeString());
     }
 
 }
