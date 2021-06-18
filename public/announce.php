@@ -411,7 +411,8 @@ else
     }
 	if (!$sockres)
 	{
-		$connectable = "no";
+		$connectable = "yes";
+        @fclose($sockres);
 	}
 	else
 	{
