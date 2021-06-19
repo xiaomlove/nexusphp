@@ -24,6 +24,7 @@ function maketable($res, $mode = 'seeding')
 		$showletime = false;
 		$showcotime = false;
 		$showanonymous = true;
+        $showtotalsize = true;
 		$columncount = 8;
 		break;
 		}
@@ -38,6 +39,7 @@ function maketable($res, $mode = 'seeding')
 		$showletime = false;
 		$showcotime = false;
 		$showanonymous = false;
+        $showtotalsize = true;
 		$columncount = 8;
 		break;
 		}
@@ -52,6 +54,7 @@ function maketable($res, $mode = 'seeding')
 		$showletime = false;
 		$showcotime = false;
 		$showanonymous = false;
+        $showtotalsize = true;
 		$columncount = 8;
 		break;
 		}
@@ -66,6 +69,7 @@ function maketable($res, $mode = 'seeding')
 		$showletime = true;
 		$showcotime = true;
 		$showanonymous = false;
+        $showtotalsize = false;
 		$columncount = 8;
 		break;
 		}
@@ -80,6 +84,7 @@ function maketable($res, $mode = 'seeding')
 		$showletime = true;
 		$showcotime = false;
 		$showanonymous = false;
+        $showtotalsize = false;
 		$columncount = 7;
 		break;
 		}
@@ -94,7 +99,12 @@ function maketable($res, $mode = 'seeding')
 
 		$sphighlight = get_torrent_bg_color($arr['sp_state']);
 		$sp_torrent = get_torrent_promotion_append($arr['sp_state']);
-
+        //Total size
+        if ($showtotalsize){
+			$total_size += $arr['size'];
+		}else{
+			$total_size = 0;
+		}
 		//torrent name
 		$dispname = $nametitle = htmlspecialchars($arr["torrentname"]);
 		$count_dispname=mb_strlen($dispname,"UTF-8");
@@ -176,7 +186,7 @@ switch ($type)
 		$count = mysql_num_rows($res);
 		if ($count > 0)
 		{
-			$torrentlist = maketable($res, 'uploaded');
+			list($torrentlist, $total_size) = maketable ( $res, 'uploaded' );
 		}
 		break;
 	}
@@ -187,7 +197,7 @@ switch ($type)
 		$res = sql_query("SELECT torrent,added,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, categories.name as catname,size,image,category,seeders,leechers FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='yes' ORDER BY torrents.added DESC") or sqlerr();
 		$count = mysql_num_rows($res);
 		if ($count > 0){
-			$torrentlist = maketable($res, 'seeding');
+			list($torrentlist, $total_size) = maketable ( $res, 'seeding' );
 		}
 		break;
 	}
@@ -198,7 +208,7 @@ switch ($type)
 		$res = sql_query("SELECT torrent,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, categories.name as catname,size,image,category,seeders,leechers FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='no' ORDER BY torrents.added DESC") or sqlerr();
 		$count = mysql_num_rows($res);
 		if ($count > 0){
-			$torrentlist = maketable($res, 'leeching');
+			list($torrentlist, $total_size) = maketable ( $res, 'leeching' );
 		}
 		break;
 	}
@@ -210,7 +220,7 @@ switch ($type)
 		$count = mysql_num_rows($res);
 		if ($count > 0)
 		{
-			$torrentlist = maketable($res, 'completed');
+			list($torrentlist, $total_size) = maketable ( $res, 'completed' );
 		}
 		break;
 	}
@@ -222,7 +232,7 @@ switch ($type)
 		$count = mysql_num_rows($res);
 		if ($count > 0)
 		{
-			$torrentlist = maketable($res, 'incomplete');
+			list($torrentlist, $total_size) = maketable ( $res, 'incomplete' );
 		}
 		break;
 	}
@@ -234,8 +244,11 @@ switch ($type)
 	}
 }
 
-if ($count)
-echo "<b>".$count."</b>".$lang_getusertorrentlistajax['text_record'].add_s($count)."<br />".$torrentlist;
-else
-echo $lang_getusertorrentlistajax['text_no_record'];
+if ($total_size){
+		echo "<br /><b>" . $count . "</b>" . $lang_getusertorrentlistajax ['text_record'] . add_s ( $count ) . $lang_getusertorrentlistajax['text_total_size'] . mksize($total_size) . "<br /><br />" . $torrentlist;
+	}elseif ($count){
+		echo "<br /><b>".$count."</b>".$lang_getusertorrentlistajax['text_record'].add_s($count)."<br /><br />".$torrentlist;
+	}else{
+		echo $lang_getusertorrentlistajax['text_no_record'];
+}
 ?>
