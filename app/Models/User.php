@@ -108,7 +108,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
-        'leechwarn', 'leechwarnuntil'
+        'leechwarn', 'leechwarnuntil', 'page'
     ];
 
     /**
@@ -238,6 +238,11 @@ class User extends Authenticatable
             'torrentid');
     }
 
+    public function hitAndRuns(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(HitAndRun::class, 'uid');
+    }
+
     public function getAvatarAttribute($value)
     {
         if ($value) {
@@ -260,6 +265,7 @@ class User extends Authenticatable
         //@todo how to do prepare bindings here ?
         $modComment = addslashes($modComment);
         $update['modcomment'] = DB::raw("concat_ws('\n', '$modComment', modcomment)");
+        do_log("update: " . json_encode($update) . ", modcomment: $modComment", 'notice');
         return $this->update($update);
     }
 

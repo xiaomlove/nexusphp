@@ -91,7 +91,7 @@ elseif ($action == 'savesettings_code') 	// save database
 elseif ($action == 'savesettings_bonus') 	// save bonus
 {
 	stdhead($lang_settings['head_save_bonus_settings']);
-	$validConfig = array('donortimes','perseeding','maxseeding','tzero','nzero','bzero','l', 'uploadtorrent','uploadsubtitle','starttopic','makepost','addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload','tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage', 'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max');
+	$validConfig = array('donortimes','perseeding','maxseeding','tzero','nzero','bzero','l', 'uploadtorrent','uploadsubtitle','starttopic','makepost','addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload','tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage', 'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max', 'cancel_hr');
 	GetVar($validConfig);
 	$BONUS = [];
 	foreach($validConfig as $config) {
@@ -193,7 +193,7 @@ elseif ($action == 'savesettings_security') 	// save security
 elseif ($action == 'savesettings_authority') 	// save user authority
 {
 	stdhead($lang_settings['head_save_authority_settings']);
-	$validConfig = array('defaultclass','staffmem','newsmanage','newfunitem','funmanage','sbmanage','pollmanage','applylink', 'linkmanage', 'postmanage','commanage','forummanage','viewuserlist','torrentmanage','torrentsticky', 'torrentonpromotion', 'askreseed', 'viewnfo', 'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage','uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial','view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar');
+	$validConfig = array('defaultclass','staffmem','newsmanage','newfunitem','funmanage','sbmanage','pollmanage','applylink', 'linkmanage', 'postmanage','commanage','forummanage','viewuserlist','torrentmanage','torrentsticky', 'torrentonpromotion', 'torrent_hr', 'askreseed', 'viewnfo', 'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage','uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial','view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar');
 	GetVar($validConfig);
 	$AUTHORITY = [];
 	foreach($validConfig as $config) {
@@ -389,6 +389,7 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_torrent_management'], $lang_settings['text_minimum_class'].classlist('torrentmanage',$maxclass,$AUTHORITY['torrentmanage']).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_torrent_management_note'], 1);
 	tr($lang_settings['row_torrent_sticky'], $lang_settings['text_minimum_class'].classlist('torrentsticky',$maxclass,$AUTHORITY['torrentsticky']).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_sticky_note'],1);
 	tr($lang_settings['row_torrent_on_promotion'], $lang_settings['text_minimum_class'].classlist('torrentonpromotion',$maxclass,$AUTHORITY['torrentonpromotion'] ?? '').$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_promotion_note'],1);
+	tr($lang_settings['row_torrent_hr'], $lang_settings['text_minimum_class'].classlist('torrent_hr',$maxclass,$AUTHORITY['torrent_hr'] ?? '').$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_hr_note'],1);
 	tr($lang_settings['row_ask_for_reseed'],  $lang_settings['text_minimum_class'].classlist('askreseed',$maxclass,$AUTHORITY['askreseed']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_ask_for_reseed_note'],1);
 	tr($lang_settings['row_view_nfo'], $lang_settings['text_minimum_class'].classlist('viewnfo',$maxclass,$AUTHORITY['viewnfo']).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_view_nfo_note'],1);
 	tr($lang_settings['row_view_torrent_structure'], $lang_settings['text_minimum_class'].classlist('torrentstructure',$maxclass,$AUTHORITY['torrentstructure']).$lang_settings['text_default'].get_user_class_name(UC_ULTIMATE_USER,false,true,true).$lang_settings['text_view_torrent_structure_note'],1);
@@ -523,6 +524,7 @@ elseif ($action == 'bonussettings'){
 	tr($lang_settings['row_vip_status'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=vipstatus value='".(isset($BONUS["vipstatus"]) ? $BONUS["vipstatus"] : 8000 )."'>".$lang_settings['text_vip_status_note'], 1);
 	yesorno($lang_settings['row_allow_giving_bonus_gift'], 'bonusgift', $BONUS["bonusgift"], $lang_settings['text_giving_bonus_gift_note']);
 	tr($lang_settings['row_bonus_gift_tax'], $lang_settings['text_system_charges']."<input type='text' style=\"width: 50px\" name='basictax' value='".(isset($BONUS["basictax"]) ? $BONUS["basictax"] : 5 )."'>".$lang_settings['text_bonus_points_plus']."<input type='text' style=\"width: 50px\" name='taxpercentage' value='".(isset($BONUS["taxpercentage"]) ? $BONUS["taxpercentage"] : 10 )."'>".$lang_settings['text_bonus_gift_tax_note'], 1);
+    tr($lang_settings['row_cancel_hr'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=cancel_hr value='".(isset($BONUS["cancel_hr"]) ? $BONUS["cancel_hr"] : \App\Models\BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN )."'>".$lang_settings['text_cancel_hr_note'], 1);
 	echo '<tr><td colspan="2" align="center"><b>签到奖励</b></td></tr>';
 	tr('初始奖励',sprintf('首次签到获得 <input type="number" style="width: 30px" name="attendance_initial" value="%u" min="0" /> 个魔力值。', $attendance_initial_bonus),true);
 	tr('奖励增量',sprintf('每次签到增加 <input type="number" style="width: 30px" name="attendance_step" value="%u" min="0" /> 个魔力值。', $attendance_step_bonus),true);

@@ -474,3 +474,9 @@ img.sltbar
 height:10px;
 background:url(bar.gif) repeat-x 0 -116px;
 }
+img.hitandrun {
+    width: 35px;
+    height: 12px;
+    background: url(icons.gif) no-repeat -100px -171px;
+    margin-left: 0.5em;
+}

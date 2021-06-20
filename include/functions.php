@@ -2477,7 +2477,8 @@ else {
                 [<a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>]
                 <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <?php echo number_format($CURUSER['seedbonus'], 1)?>
                 <?php if($attendance){ printf('&nbsp;'.$lang_functions['text_attended'], $attendance['points']); }else{ printf(' <a href="attendance.php" class="faqlink">%s</a>', $lang_functions['text_attendance']);}?>
-                <font class = 'color_invite'><?php echo $lang_functions['text_invite'] ?></font>[<a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_send'] ?></a>]: <?php echo $CURUSER['invites']?><br />
+                <font class = 'color_invite'><?php echo $lang_functions['text_invite'] ?></font>[<a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_send'] ?></a>]: <?php echo $CURUSER['invites']?>
+                <?php if(get_setting('hr.mode') != \App\Models\HitAndRun::MODE_DISABLED) { ?><font class='color_bonus'>H&R: </font> <?php echo sprintf('[<a href="myhr.php">%s/%s</a>]', get_row_count('hit_and_runs', "where uid = {$CURUSER['id']} and status = 3"), get_setting('hr.ban_user_when_counts_reach'))?><?php }?><br />
 	            <font class="color_ratio"><?php echo $lang_functions['text_ratio'] ?></font> <?php echo $ratio?>
                 <font class='color_uploaded'><?php echo $lang_functions['text_uploaded'] ?></font> <?php echo mksize($CURUSER['uploaded'])?>
                 <font class='color_downloaded'> <?php echo $lang_functions['text_downloaded'] ?></font> <?php echo mksize($CURUSER['downloaded'])?>
@@ -2528,12 +2529,6 @@ else {
 	}
 if ($msgalert)
 {
-	function msgalert($url, $text, $bgcolor = "red")
-	{
-		print("<p><table border=\"0\" cellspacing=\"0\" cellpadding=\"10\"><tr><td style='border: none; padding: 10px; background: ".$bgcolor."'>\n");
-		print("<b><a href=\"".$url."\"><font color=\"white\">".$text."</font></a></b>");
-		print("</td></tr></table></p><br />");
-	}
 	if($CURUSER['leechwarn'] == 'yes')
 	{
 		$kicktimeout = gettime($CURUSER['leechwarnuntil'], false, false, true);
@@ -2909,7 +2904,7 @@ function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
 
 	$start = $page * $rpp;
 	$add_key_shortcut = key_shortcut($page,$pages-1);
-	return array($pagertop, $pagerbottom, "LIMIT $start,$rpp");
+	return array($pagertop, $pagerbottom, "LIMIT $start,$rpp", $start, $rpp);
 }
 
 function commenttable($rows, $type, $parent_id, $review = false)
@@ -3247,7 +3242,9 @@ foreach ($rows as $row)
         $stickyicon = "";
     }
     $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until']);
-	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\"><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . "><td class=\"embedded\">".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>" . $sp_torrent);
+	$hrImg = get_hr_img($row);
+
+	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\"><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . "><td class=\"embedded\">".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>" . $sp_torrent . $hrImg);
 	$picked_torrent = "";
 	if ($CURUSER['appendpicked'] != 'no'){
 	if($row['picktype']=="hot")
@@ -4114,6 +4111,17 @@ function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimele
 	}
 	do_log("$log, sp_torrent: $sp_torrent");
 	return $sp_torrent;
+}
+
+function get_hr_img(array $torrent)
+{
+    $mode = get_setting('hr.mode');
+    $result = '';
+    if ($mode == \App\Models\HitAndRun::MODE_GLOBAL || ($mode == \App\Models\HitAndRun::MODE_MANUAL && isset($torrent['hr']) && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
+        $result = '<img class="hitandrun" src="pic/trans.gif" alt="H&R" title="H&R" />';
+    }
+    do_log("mode: $mode, result: $result");
+    return $result;
 }
 
 function get_user_id_from_name($username){
@@ -5073,6 +5081,13 @@ function get_ip_location_from_geoip($ip)
         'start_ip' => $ip,
         'end_ip' => $ip,
     ];
+}
+
+function msgalert($url, $text, $bgcolor = "red")
+{
+    print("<p><table border=\"0\" cellspacing=\"0\" cellpadding=\"10\"><tr><td style='border: none; padding: 10px; background: ".$bgcolor."'>\n");
+    print("<b><a href=\"".$url."\"><font color=\"white\">".$text."</font></a></b>");
+    print("</td></tr></table></p><br />");
 }
 
 ?>

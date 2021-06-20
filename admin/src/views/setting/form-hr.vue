@@ -1,24 +1,32 @@
 <template>
     <el-form :model="formData" :rules="rules" ref="formRef" label-width="250px" class="formData" size="mini">
-        <el-form-item label="Enabled" prop="hr.enabled">
-            <el-radio v-model="formData.hr.enabled" label="yes">Yes</el-radio>
-            <el-radio v-model="formData.hr.enabled" label="no">No</el-radio>
+        <el-form-item label="Mode" prop="hr.mode">
+            <el-radio v-model="formData.hr.mode" label="disabled">Disabled</el-radio>
+            <el-radio v-model="formData.hr.mode" label="manual">Manual</el-radio>
+            <el-radio v-model="formData.hr.mode" label="global">Global</el-radio>
             <div class="nexus-help-text">
-                Enable H&R or not.
+                Set H&R mode.
+            </div>
+        </el-form-item>
+
+        <el-form-item label="Inspect time" prop="hr.inspect_time">
+            <el-input v-model="formData.hr.inspect_time" type="number"></el-input>
+            <div class="nexus-help-text">
+                Inspect time duration after download complete(Unit: Hour).
             </div>
         </el-form-item>
 
         <el-form-item label="Seed time minimum" prop="hr.seed_time_minimum">
             <el-input v-model="formData.hr.seed_time_minimum" type="number"></el-input>
             <div class="nexus-help-text">
-                Seed time minimum (Unit: Hour).
+                Seed time minimum (Unit: Hour, must be less than Inspect time).
             </div>
         </el-form-item>
 
         <el-form-item label="Ignore" prop="hr.ignore_when_ratio_reach">
             <el-input v-model="formData.hr.ignore_when_ratio_reach" type="number"></el-input>
             <div class="nexus-help-text">
-                When uploaded / torrent_size reach this value, this H&R will be ignored.
+                When ratio reach this value, this H&R will be ignored.
             </div>
         </el-form-item>
 
@@ -56,7 +64,8 @@ export default {
             allClasses: [],
             formData: {
                 hr: {
-                    enabled: '',
+                    mode: '',
+                    inspect_time: '',
                     seed_time_minimum: '',
                     ignore_when_ratio_reach: '',
                     ban_user_when_counts_reach: '',

@@ -10,6 +10,11 @@ class NexusDB
 
     private static $instance;
 
+    /**
+     * @var \Illuminate\Database\Connection
+     */
+    private static $eloquentConnection;
+
     private $isConnected = false;
 
     private function __construct()
@@ -215,7 +220,7 @@ class NexusDB
         $capsule->addConnection($config, $connectionName);
         $capsule->setAsGlobal();
         $capsule->bootEloquent();
-        $connection = $capsule->getConnection($connectionName);
+        $connection = self::$eloquentConnection = $capsule->getConnection($connectionName);
         $connection->enableQueryLog();
         $connection->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
     }

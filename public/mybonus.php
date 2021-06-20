@@ -88,6 +88,17 @@ function bonusarray($option){
 			$bonus['description'] = $lang_mybonus['text_charity_giving_note'];
 			break;
 			}
+        case 10: {
+            $bonus['points'] = \App\Models\BonusLogs::getBonusForCancelHitAndRun();
+            $bonus['art'] = 'cancel_hr';
+            $bonus['menge'] = 0;
+            $bonus['name'] = $lang_mybonus['text_cancel_hr_title'];
+            $bonus['description'] = '<p>
+            <span style="">' . $lang_mybonus['text_cancel_hr_label'] . '</span>
+            <input type="number" name="hr_id" />
+        </p>';
+            break;
+        }
 		default: break;
 	}
 	return $bonus;
@@ -116,6 +127,8 @@ if (isset($do)) {
 	$msg =  $lang_mybonus['text_success_no_ad'];
 	elseif ($do == "charity")
 	$msg =  $lang_mybonus['text_success_charity'];
+    elseif ($do == "cancel_hr")
+        $msg =  $lang_mybonus['text_success_cancel_hr'];
 	else
 	$msg = '';
 }
@@ -137,11 +150,17 @@ print("<tr><td class=\"colhead\" align=\"center\">".$lang_mybonus['col_option'].
 "<td class=\"colhead\" align=\"center\">".$lang_mybonus['col_points']."</td>".
 "<td class=\"colhead\" align=\"center\">".$lang_mybonus['col_trade']."</td>".
 "</tr>");
-for ($i=1; $i <=9; $i++)
+for ($i=1; $i <=10; $i++)
 {
 	$bonusarray = bonusarray($i);
-	if (($i == 7 && $bonusgift_bonus == 'no') || ($i == 8 && ($enablead_advertisement == 'no' || $bonusnoad_advertisement == 'no')))
-		continue;
+	if (
+	    ($i == 7 && $bonusgift_bonus == 'no')
+        || ($i == 8 && ($enablead_advertisement == 'no' || $bonusnoad_advertisement == 'no'))
+        || ($i == 10 && !\App\Models\HitAndRun::getIsEnabled())
+    ) {
+        continue;
+    }
+
 	print("<tr>");
 	print("<form action=\"?action=exchange\" method=\"post\">");
 	print("<td class=\"rowhead_center\"><input type=\"hidden\" name=\"option\" value=\"".$i."\" /><b>".$i."</b></td>");
@@ -217,6 +236,7 @@ for ($i=1; $i <=9; $i++)
 	print("</tr>");
 
 }
+
 print("</table><br />");
 ?>
 
@@ -306,13 +326,12 @@ print($lang_mybonus['text_howto_get_karma_five'].$uploadtorrent_bonus.$lang_mybo
 
 // Bonus exchange
 if ($action == "exchange") {
-	if ($_POST["userid"] || $_POST["points"] || $_POST["bonus"] || $_POST["art"]){
+	if (isset($_POST["userid"]) || isset($_POST["points"]) || isset($_POST["bonus"]) || isset($_POST["art"])){
 		write_log("User " . $CURUSER["username"] . "," . $CURUSER["ip"] . " is trying to cheat at bonus system",'mod');
 		die($lang_mybonus['text_cheat_alert']);
 	}
-	$option = (int)$_POST["option"];
+	$option = intval($_POST["option"] ?? 0);
 	$bonusarray = bonusarray($option);
-
 	$points = $bonusarray['points'];
 	$userid = $CURUSER['id'];
 	$art = $bonusarray['art'];
@@ -472,7 +491,19 @@ if ($action == "exchange") {
 				print("<table width=\"97%\"><tr><td class=\"colhead\" align=\"left\" colspan=\"2\"><h1>".$lang_mybonus['text_oups']."</h1></td></tr>");
 				print("<tr><td align=\"left\"></td><td align=\"left\">".$lang_mybonus['text_not_enough_karma']."<br /><br /></td></tr></table>");
 			}
-		}
+		} elseif ($art == 'cancel_hr') {
+		    if (empty($_POST['hr_id'])) {
+		        stderr("Error","Invalid H&R ID: " . ($_POST['hr_id'] ?? ''), false, false);
+            }
+		    try {
+		        $bonusRep = new \App\Repositories\BonusRepository();
+		        $bonusRep->consumeToCancelHitAndRun($userid, $_POST['hr_id']);
+                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=cancel_hr");
+            } catch (\Exception $exception) {
+		        do_log($exception->getMessage(), 'error');
+		        stderr('Error', "Something wrong...", false, false);
+            }
+        }
 	}
 }
 stdfoot();

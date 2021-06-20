@@ -712,6 +712,10 @@ $lang_settings = array
     'text_sticky_second_level_background_color_note' => '二級置頂背景顏色，不設置則無背景色。',
     'row_download_support_passkey' => '支持 passkey 下載種子',
     'text_download_support_passkey_note' => '是否支持通過 passkey 下載種子（同時也需要種子 ID）。',
+    'row_torrent_hr' => '設定種子 H&R',
+    'text_torrent_hr_note' => '。將種子設置為參與 H&R 考察',
+    'row_cancel_hr' => '消除 H&R',
+    'text_cancel_hr_note' => "個魔力值，如果他需要消除一個 H&R。默認'10000'。",
 );
 
 ?>
