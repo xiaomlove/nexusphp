@@ -27,10 +27,12 @@ export default {
         const backup = ref(null)
         const hr = ref(null)
         const state = useTable()
+        let activeTabIndex = 0
+        const tabs = [backup, hr]
 
         onMounted(() => {
             console.log('Setting onMounted')
-            backup.value.listSetting()
+            tabs[activeTabIndex].value.listSetting()
         })
         const fetchTableData = async () => {
             state.loading = true
@@ -58,7 +60,8 @@ export default {
             fetchTableData()
         }
         const handleTabClick = (tab) => {
-            console.log('handleTabClick', tab)
+            activeTabIndex = tab.index
+            tabs[activeTabIndex].value.listSetting()
         }
         return {
             ...toRefs(state),

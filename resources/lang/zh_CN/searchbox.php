@@ -8,5 +8,5 @@ return [
     'sub_category_team_label' => '制作组',
     'sub_category_processing_label' => '处理',
     'sub_category_codec_label' => '编码',
-    'sub_category_audio_codec_label' => '音频编码',
+    'sub_category_audio_codec_label' => '音频编码', 
 ];

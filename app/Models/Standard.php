@@ -7,6 +7,6 @@ class Standard extends NexusModel
 {
     public static function getLabelName()
     {
-        return nexus_trans('searchbox.sub_standard_source_label');
+        return nexus_trans('searchbox.sub_category_standard_label');
     }
 }
