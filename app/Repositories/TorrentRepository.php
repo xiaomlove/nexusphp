@@ -11,6 +11,8 @@ use App\Models\Media;
 use App\Models\Message;
 use App\Models\Peer;
 use App\Models\Processing;
+use App\Models\SearchBox;
+use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Source;
 use App\Models\Standard;
@@ -80,34 +82,50 @@ class TorrentRepository extends BaseRepository
         return $torrents;
     }
 
-    public function getSearchBox()
+    public function getSearchBox($id = null)
     {
-        $category = Category::query()->orderBy('sort_index')->orderBy('id')->get();
-        $source = Source::query()->orderBy('sort_index')->orderBy('id')->get();
-        $media = Media::query()->orderBy('sort_index')->orderBy('id')->get();
-        $codec = Codec::query()->orderBy('sort_index')->orderBy('id')->get();
-        $standard = Standard::query()->orderBy('sort_index')->orderBy('id')->get();
-        $processing = Processing::query()->orderBy('sort_index')->orderBy('id')->get();
-        $team = Team::query()->orderBy('sort_index')->orderBy('id')->get();
-        $audioCodec = AudioCodec::query()->orderBy('sort_index')->orderBy('id')->get();
-
+        if (is_null($id)) {
+            $id = Setting::get('main.browsecat');
+        }
+        $searchBox = SearchBox::query()->findOrFail($id);
+        $category = $searchBox->categories()->orderBy('sort_index')->orderBy('id')->get();
         $modalRows = [];
-        $modalRows[] = $categoryFormatted = $this->formatRow('类型', $category, 'category');
-        $modalRows[] = $this->formatRow('媒介', $source, 'source');
-        $modalRows[] = $this->formatRow('媒介', $media, 'medium');
-        $modalRows[] = $this->formatRow('编码', $codec, 'codec');
-        $modalRows[] = $this->formatRow('音频编码', $audioCodec, 'audio_codec');
-        $modalRows[] = $this->formatRow('分辨率', $standard, 'standard');
-        $modalRows[] = $this->formatRow('处理', $processing, 'processing');
-        $modalRows[] = $this->formatRow('制作组', $team, 'team');
-
+        $modalRows[] = $categoryFormatted = $this->formatRow(Category::getLabelName(), $category, 'category');
+        if ($searchBox->showsubcat) {
+            if ($searchBox->showsource) {
+                $source = Source::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(Source::getLabelName(), $source, 'source');
+            }
+            if ($searchBox->showmedia) {
+                $media = Media::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(Media::getLabelName(), $media, 'medium');
+            }
+            if ($searchBox->showcodec) {
+                $codec = Codec::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(Codec::getLabelName(), $codec, 'codec');
+            }
+            if ($searchBox->showstandard) {
+                $standard = Standard::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(Standard::getLabelName(), $standard, 'standard');
+            }
+            if ($searchBox->showprocessing) {
+                $processing = Processing::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(Processing::getLabelName(), $processing, 'processing');
+            }
+            if ($searchBox->showteam) {
+                $team = Team::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(Team::getLabelName(), $team, 'team');
+            }
+            if ($searchBox->showaudiocodec) {
+                $audioCodec = AudioCodec::query()->orderBy('sort_index')->orderBy('id')->get();
+                $modalRows[] = $this->formatRow(AudioCodec::getLabelName(), $audioCodec, 'audio_codec');
+            }
+        }
         $results = [];
         $categories = $categoryFormatted['rows'];
         $categories[0]['active'] = 1;
         $results['categories'] = $categories;
         $results['modal_rows'] = $modalRows;
-
-
         return $results;
     }
 
@@ -115,7 +133,7 @@ class TorrentRepository extends BaseRepository
     {
         $result['header'] = $header;
         $result['rows'][] = [
-            'label' => '全部',
+            'label' => 'All',
             'value' => 0,
             'name' => $name,
             'active' => 1,
