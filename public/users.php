@@ -63,7 +63,7 @@ print("</select>\n");
 $countries = "<option value=0>".$lang_users['select_any_country']."</option>\n";
 $ct_r = sql_query("SELECT id,name FROM countries ORDER BY name") or die;
 while ($ct_a = mysql_fetch_array($ct_r))
-	$countries .= "<option value=".htmlspecialchars($ct_a[id]).">".htmlspecialchars($ct_a[name])."</option>\n";
+	$countries .= "<option value=".htmlspecialchars($ct_a['id']).">".htmlspecialchars($ct_a['name'])."</option>\n";
 print("<select name=country>".$countries."</select>");
 print("<input type=submit value=\"".$lang_users['submit_okay']."\">\n");
 print("</form>\n");
@@ -114,8 +114,8 @@ $sql = sprintf('SELECT
        IF (
          users.last_access = null, "-", users.last_access
        ) as last_access
-       
-       
+
+
        FROM users
        LEFT JOIN countries ON users.country = countries.id
        WHERE %s
