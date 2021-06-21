@@ -6,7 +6,9 @@ use App\Models\Attendance;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
+use App\Models\HitAndRun;
 use App\Models\SearchBox;
+use App\Models\Snatch;
 use App\Models\User;
 use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
@@ -53,10 +55,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $time = '2021-06-16T04:03:35Z';
-        $date = Carbon::parse($time);
-        $date->tz = 'Asia/Shanghai';
-        dd($date->toDateTimeString());
+        $user = User::query()->first();
+        $user->update([
+            'page' => DB::raw('dddd')
+        ]);
+        dd(last_query());
     }
 
 }

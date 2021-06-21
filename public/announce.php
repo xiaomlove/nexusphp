@@ -105,7 +105,7 @@ elseif ($az['showclienterror'] == 'yes'){
 }
 
 // check torrent based on info_hash
-$checkTorrentSql = "SELECT id, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned FROM torrents WHERE " . hash_where("info_hash", $info_hash);
+$checkTorrentSql = "SELECT id, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned, hr FROM torrents WHERE " . hash_where("info_hash", $info_hash);
 if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$res = sql_query($checkTorrentSql);
 	$torrent = mysql_fetch_array($res);
@@ -141,7 +141,12 @@ else $limit = "";
 $announce_wait = 30;
 
 $fields = "seeder, peer_id, ip, port, uploaded, downloaded, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
-$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
+//$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
+/**
+ * return all peers,include connectable no
+ * @since 1.6.0-beta12
+ */
+$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = " . $torrentid . $only_leech_query . $limit;
 $res = sql_query($peerlistsql);
 
 $real_annnounce_interval = $announce_interval;
@@ -399,15 +404,30 @@ elseif(isset($self))
 	{
 		if ($seeder <> $self["seeder"])
 		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1, leechers = leechers - 1" : "seeders = seeders - 1, leechers = leechers + 1");
-		sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 2");
+		$snatchInfo = \App\Models\Snatch::query()
+            ->where('torrentid', $torrentid)
+            ->where('userid', $userid)
+            ->orderBy('id', 'desc')
+            ->first();
+		if ($snatchInfo) {
+            sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 2");
+            if ($event == "completed") {
+                $hrMode = get_setting('hr.mode');
+                if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
+                    $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo->id}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
+                    $affectedRows = sql_query($sql);
+                    do_log("[INSERT_H&R], $sql, affectedRows: $affectedRows");
+                }
+            }
+        }
 	}
 }
 else
 {
     if (strlen($ip) > 15) {
-        $sockres = @pfsockopen("tcp://[".$ip."]",$port,$errno,$errstr,5);
+        $sockres = @pfsockopen("tcp://[".$ip."]",$port,$errno,$errstr,1);
     } else {
-        $sockres = @pfsockopen($ip, $port, $errno, $errstr, 5);
+        $sockres = @pfsockopen($ip, $port, $errno, $errstr, 1);
     }
 	if (!$sockres)
 	{

@@ -1,5 +1,5 @@
 <?php
-defined('VERSION_NUMBER') || define('VERSION_NUMBER', '1.6.0-beta10');
+defined('VERSION_NUMBER') || define('VERSION_NUMBER', '1.6.0-beta12');
 defined('RELEASE_DATE') || define('RELEASE_DATE', '2020-06-15');
 defined('IN_TRACKER') || define('IN_TRACKER', true);
 defined('PROJECTNAME') || define("PROJECTNAME","NexusPHP");

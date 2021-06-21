@@ -6,7 +6,9 @@ use App\Exceptions\NexusException;
 use App\Models\AudioCodec;
 use App\Models\Category;
 use App\Models\Codec;
+use App\Models\HitAndRun;
 use App\Models\Media;
+use App\Models\Message;
 use App\Models\Peer;
 use App\Models\Processing;
 use App\Models\Snatch;
@@ -16,10 +18,9 @@ use App\Models\Team;
 use App\Models\Torrent;
 use App\Models\TorrentSecret;
 use App\Models\User;
+use Carbon\Carbon;
 use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Seeder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class TorrentRepository extends BaseRepository
@@ -343,7 +344,7 @@ class TorrentRepository extends BaseRepository
      * @date 2021/6/3
      * @time 20:15
      */
-    public function resetTrackerReportAuthKeySecret($uid, $torrentId = 0)
+    public function resetTrackerReportAuthKeySecret($uid, $torrentId = 0): string
     {
         $insert = [
             'uid' => $uid,
@@ -359,7 +360,6 @@ class TorrentRepository extends BaseRepository
         return $insert['secret'];
 
     }
-
 
 
 }

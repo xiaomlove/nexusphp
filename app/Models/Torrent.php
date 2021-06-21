@@ -41,6 +41,31 @@ class Torrent extends NexusModel
         self::POS_STATE_STICKY_FIRST => ['text' => 'Sticky first', 'icon_counts' => 2],
     ];
 
+    const HR_YES = 1;
+    const HR_NO = 0;
+
+    public static $hrStatus = [
+        self::HR_NO => ['text' => 'NO'],
+        self::HR_YES => ['text' => 'YES'],
+    ];
+
+    public function getHrAttribute(): string
+    {
+        $hrMode = Setting::get('hr.mode');
+        if ($hrMode == HitAndRun::MODE_GLOBAL) {
+            return self::HR_YES;
+        }
+        if ($hrMode == HitAndRun::MODE_DISABLED) {
+            return self::HR_NO;
+        }
+        return $this->getRawOriginal('hr');
+    }
+
+    public function getHrTextAttribute()
+    {
+        return self::$hrStatus[$this->hr] ?? '';
+    }
+
     public static function getBasicInfo(): array
     {
         $result = [];

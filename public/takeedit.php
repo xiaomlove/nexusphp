@@ -58,6 +58,14 @@ if (!empty($_POST['pt_gen'])) {
 $updateset[] = "tags = " . array_sum($_POST['tags'] ?? []);
 $updateset[] = "technical_info = " . sqlesc($_POST['technical_info'] ?? '');
 
+/**
+ * hr
+ * @since 1.6.0-beta12
+ */
+if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']])) {
+    $updateset[] = "hr = " . sqlesc($_POST['hr']);
+}
+
 
 if ($enablenfo_main=='yes'){
 $nfoaction = $_POST['nfoaction'];

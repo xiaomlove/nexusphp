@@ -656,3 +656,22 @@ function get_tracker_schema_and_host(): array
     do_log($log);
     return compact('ssl_torrent', 'base_announce_url');
 }
+
+function get_hr_ratio($uped, $downed)
+{
+    if ($downed > 0) {
+        $ratio = $uped / $downed;
+        $color = get_ratio_color($ratio);
+        if ($ratio > 10000) $ratio = 'Inf.';
+        else
+            $ratio = number_format($ratio, 3);
+
+        if ($color)
+            $ratio = "<font color=\"" . $color . "\">" . $ratio . "</font>";
+    } elseif ($uped > 0)
+        $ratio = 'Inf.';
+    else
+        $ratio = "---";
+
+    return $ratio;
+}

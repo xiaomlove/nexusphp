@@ -712,6 +712,10 @@ $lang_settings = array
     'text_sticky_second_level_background_color_note' => 'Sticky second level bg color, it will be none if not set.',
     'row_download_support_passkey' => 'Support download by passkey',
     'text_download_support_passkey_note' => 'Support download torrent file by passkey or not(also require torrent id).',
+    'row_torrent_hr' => 'H&R',
+    'text_torrent_hr_note' => '.Set torrent join the H&R inspect',
+    'row_cancel_hr' => 'Cancel H&R',
+    'text_cancel_hr_note' => "bonus points to cancel one H&R。Default '10000'。",
 );
 
 ?>
