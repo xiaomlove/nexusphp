@@ -27,7 +27,10 @@ $lang_staff = array
 	'text_apply_for_it' => "Apply to join",
 	'text_forum_moderators' => "Forum Moderators",
 	'text_forum_moderators_note' => "Forum moderators are responsible for daily management of forums.",
-	'text_forums' => "Forums"
+	'text_forums' => "Forums",
+    'std_sorry' => "Sorry...",
+    'std_permission_denied_only' => "Permission denied. Only ",
+    'std_or_above_can_view' => " or above could view Staff. <br /><br /> Please see the <a class=faqlink href=faq.php#id22><b>FAQ</b></a> for more information on different user classes and what they can do.<br /><br /><b></p>The " .$SITENAME." Staff</b>",
 );
 
 ?>

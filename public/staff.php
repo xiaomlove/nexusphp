@@ -3,6 +3,10 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn(true);
+if (get_user_class() < UC_VIP)
+{
+    stderr($lang_staff['std_sorry'],$lang_staff['std_permission_denied_only'].get_user_class_name(UC_VIP,false,true,true).$lang_staff['std_or_above_can_view'],false);
+}
 stdhead($lang_staff['head_staff']);
 
 $Cache->new_page('staff_page', 900, true);
