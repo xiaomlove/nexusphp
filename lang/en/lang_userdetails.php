@@ -29,6 +29,10 @@ $lang_userdetails = array
 	'row_uploaded' => "Uploaded",
 	'row_downloaded' => "Downloaded",
 	'row_share_ratio' => "Share Ratio",
+    'row_real_uploaded' => "Actual Uploaded",
+	'row_real_downloaded' => "Actual Downloaded",
+	'row_real_share_ratio' => "Actual Share Ratio",
+	'row_real_ps' => "Actual Uploaded/Actual Downloaded (For record purposes only, not for share rate calculation)",
 	'row_internet_speed' => "Network Bandwidth",
 	'row_gender' => "Gender",
 	'row_donated' => "Donated",
@@ -142,5 +146,6 @@ $lang_userdetails = array
 	'row_no_ad_until' => "No Ad Until",
 	'text_no_ad_until_note' => "Time format is YYYY-MM-DD hh:mm:ss. The time until when the user can turn ads off.",
     'disable_user_migrated' => 'Enable or disable use please go to the new management system.',
+    'text_user_id'=> "User ID",
 );
 ?>

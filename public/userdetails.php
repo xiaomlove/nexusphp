@@ -167,7 +167,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 		print("<tr><td class=rowhead width=13%>".$lang_userdetails['row_compatibility']."</td><td class=rowfollow align=left width=87%>". $compatibility_info ."</td></tr>\n");
 	}
 */
-
+    tr_small($lang_userdetails['text_user_id'], $user['id'], 1);
 	if ($CURUSER['id'] == $user['id'] || get_user_class() >= $viewinvite_class){
 	if ($user["invites"] <= 0)
 	tr_small($lang_userdetails['row_invitation'], $lang_userdetails['text_no_invitation'], 1);
@@ -227,15 +227,29 @@ if ($clientselect)
 	tr_small($lang_userdetails['row_bt_client'], $clientselect, 1);
 
 
-if ($user["downloaded"] > 0)
+//真实分享、上传、下载率显示
+$rs_true_trans = sql_query("SELECT SUM(uploaded), SUM(downloaded) FROM snatched WHERE userid = $user[id]") or sqlerr(__FILE__, __LINE__);
+$true_download = 0;
+$true_upload = 0;
+if(mysql_num_rows($rs_true_trans) > 0)
+{
+    $row_true_trans = mysql_fetch_assoc($rs_true_trans);
+    $true_upload = $row_true_trans['SUM(uploaded)'];
+    $true_download = $row_true_trans['SUM(downloaded)'];
+	
+}
+if ($user["downloaded"] > 0 || $true_download > 0)
 {
 	$sr = floor($user["uploaded"] / $user["downloaded"] * 1000) / 1000;
-	$sr = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_share_ratio'] . "</strong>:  <font color=\"" . get_ratio_color($sr) . "\">" . number_format($sr, 3) . "</font></td><td class=\"embedded\">&nbsp;&nbsp;" . get_ratio_img($sr) . "</td></tr>";
+	$true_ratio = floor($true_upload / $true_download * 1000) / 1000;
+	$sr = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_share_ratio'] . "</strong>:  <font color=\"" . get_ratio_color($sr) . "\">" . number_format($sr, 3) . "</font>（<strong>".$lang_userdetails['row_real_share_ratio']."</strong>：".number_format($true_ratio, 3)."）</td><td class=\"embedded\">&nbsp;&nbsp;" . get_ratio_img($sr) . "</td></tr>";
+	
 }
+//end
 
 $xfer = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_uploaded'] . "</strong>:  ". mksize($user["uploaded"]) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['row_downloaded'] . "</strong>:  " . mksize($user["downloaded"]) . "</td></tr>";
-
-tr_small($lang_userdetails['row_transfer'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . ($sr ?? '') . $xfer . "</table>", 1);
+$true_xfer = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_real_uploaded'] . "</strong>:  ". mksize($true_upload) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['row_real_downloaded'] . "</strong>:  " . mksize($true_download) . "</td><td class=\"embedded\" style=\"color: #7d7b7b;\">&nbsp;&nbsp;" . $lang_userdetails['row_real_ps'] . "</td></tr>";
+tr_small($lang_userdetails['row_transfer'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . ($sr ?? '') . $xfer .  $true_xfer . "</table>", 1);
 
 
 if ($user["leechtime"] > 0)

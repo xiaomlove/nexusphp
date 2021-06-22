@@ -29,6 +29,10 @@ $lang_userdetails = array
 	'row_uploaded' => "上傳量",
 	'row_downloaded' => "下載量",
 	'row_share_ratio' => "分享率",
+    'row_real_uploaded' => "實際上傳量",
+	'row_real_downloaded' => "實際下載量",
+	'row_real_share_ratio' => "實際分享率",
+	'row_real_ps' => "實際上傳/下載量 (僅用於記錄, 不參與分享率計算)",
 	'row_internet_speed' => "網路頻寬",
 	'row_gender' => "性別",
 	'row_donated' => "捐贈",
@@ -142,5 +146,6 @@ $lang_userdetails = array
 	'row_no_ad_until' => "不顯示廣告直到",
 	'text_no_ad_until_note' => "時間格式為'年年年年-月月-日日 時時:分分:秒秒'。無廣告待遇結束的時間。",
     'disable_user_migrated' => '啟用或禁用用戶請到管理後臺操作',
+    'text_user_id'=> "用戶ID/UID",
 );
 ?>
