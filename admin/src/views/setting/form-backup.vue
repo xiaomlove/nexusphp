@@ -1,5 +1,5 @@
 <template>
-    <el-form :model="formData" :rules="rules" ref="formRef" label-width="250px" class="formData" size="mini">
+    <el-form :model="formData" :rules="rules" ref="formRef" label-width="250px" class="formData" size="mini" :v-loading="loading">
         <el-form-item label="Enabled" prop="backup.enabled">
             <el-radio v-model="formData.backup.enabled" label="yes">Yes</el-radio>
             <el-radio v-model="formData.backup.enabled" label="no">No</el-radio>
@@ -94,6 +94,7 @@ export default {
         const router = useRouter()
         const { id } = route.query
         const state = reactive({
+            loading: false,
             token: localGet('token') || '',
             id: id,
             allClasses: [],
@@ -113,6 +114,7 @@ export default {
                 'backup.enabled': [{ required: 'true',  }],
             },
         })
+
         onMounted( () => {
 
         })
@@ -138,9 +140,12 @@ export default {
             }
         }
         const listSetting = async () => {
+            //not work....
+            state.loading = true
             let res = await api.listSetting({prefix: "backup"})
             console.log("listSetting", res)
             state.formData = res.data
+            state.loading = false
         }
         return {
             ...toRefs(state),

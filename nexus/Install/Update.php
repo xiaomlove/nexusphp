@@ -7,6 +7,7 @@ use App\Models\BonusLogs;
 use App\Models\Category;
 use App\Models\Exam;
 use App\Models\ExamUser;
+use App\Models\HitAndRun;
 use App\Models\Icon;
 use App\Models\Setting;
 use App\Models\User;
@@ -132,6 +133,7 @@ class Update extends Install
         if (WITH_LARAVEL && version_compare(VERSION_NUMBER, '1.6.0-beta12', '>=')) {
             $this->addSetting('authority.torrent_hr', User::CLASS_ADMINISTRATOR);
             $this->addSetting('bonus.cancel_hr', BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN);
+            $this->addSetting('hr.mode', HitAndRun::MODE_DISABLED);
         }
     }
 
