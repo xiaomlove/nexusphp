@@ -61,18 +61,7 @@ if ($currentStep == 3) {
     while ($isPost) {
         try {
 //            $install->createTable($shouldCreateTable);
-            if (!WITH_LARAVEL) {
-                throw new \RuntimeException('Laravel is not avaliable.');
-            }
-            $command = "php " . ROOT_PATH . "artisan migrate --force";
-            $result = exec($command, $output, $result_code);
-            $install->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
-            $install->doLog("output: " . json_encode($output));
-            if ($result_code != 0) {
-                throw new \RuntimeException(json_encode($output));
-            } else {
-                $install->doLog("[CREATE TABLE] success.");
-            }
+            $install->runMigrate();
             $install->nextStep();
         } catch (\Exception $exception) {
             $error = $exception->getMessage();
@@ -124,7 +113,7 @@ if ($currentStep == 4) {
     while ($isPost) {
         try {
             $install->createSymbolicLinks($symbolicLinks);
-            $install->runMigrate();
+            $install->runDatabaseSeeder();
             $install->saveSettings($settings);
             $install->nextStep();
         } catch (\Exception $e) {
@@ -174,7 +163,12 @@ if (!empty($error)) {
               <input type="hidden" name="step" value="<?php echo $currentStep?>">
               <?php
               echo'<div class="step-' . $currentStep . ' text-center">';
-              $header = ['项目', '要求', '当前', '结果'];
+              $header = [
+                  'label' => '项目',
+                  'required' => '要求',
+                  'current' => '当前',
+                  'result' => '结果'
+              ];
                 if ($currentStep == 1) {
                     echo $install->renderTable($header, $requirements['table_rows']);
                 } elseif ($currentStep == 2) {

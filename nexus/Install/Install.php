@@ -46,11 +46,11 @@ class Install
         for ($i = 1; $i < $step; $i++) {
             $progressKey = $this->getProgressKey($i);
             if (!isset($_SESSION[$progressKey])) {
-                $this->doLog("check step: $i, session doesn't have, session: " . json_encode($_SESSION));
+                $this->doLog("check step: $i, session doesn't have" );
                 return false;
             }
         }
-        $this->doLog("check step: $step, can access, session: " . json_encode($_SESSION));
+        $this->doLog("check step: $step, can access" );
         return true;
     }
 
@@ -552,6 +552,22 @@ class Install
             throw new \RuntimeException(json_encode($output));
         } else {
             $this->doLog("[MIGRATE] success.");
+        }
+    }
+
+    public function runDatabaseSeeder()
+    {
+        if (!WITH_LARAVEL) {
+            throw new \RuntimeException('Laravel is not avaliable.');
+        }
+        $command = "php " . ROOT_PATH . "artisan db:seed";
+        $result = exec($command, $output, $result_code);
+        $this->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
+        $this->doLog("output: " . json_encode($output));
+        if ($result_code != 0) {
+            throw new \RuntimeException(json_encode($output));
+        } else {
+            $this->doLog("[DATABASE_SEED] success.");
         }
     }
 }
