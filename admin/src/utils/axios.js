@@ -10,6 +10,7 @@ axios.defaults.withCredentials = true
 axios.defaults.headers['X-Requested-With'] = 'XMLHttpRequest'
 axios.defaults.headers['Content-Type'] = 'application/json'
 axios.defaults.headers['Accept'] = 'application/json'
+axios.defaults.headers['Platform'] = 'admin'
 // axios.defaults.headers['Authorization'] = 'Bearer ' + localGet('token')
 
 axios.interceptors.request.use(config => {

@@ -2,12 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Validation\UnauthorizedException;
 
-class Permission
+class Platform
 {
     /**
      * Handle an incoming request.
@@ -18,13 +16,12 @@ class Permission
      */
     public function handle(Request $request, Closure $next)
     {
-        /** @var User $user */
-        $user = $request->user();
-        if (!$user || (IS_PLATFORM_ADMIN && !$user->canAccessAdmin())) {
-            do_log("denied!");
-            throw new UnauthorizedException('Unauthorized!');
+        if (empty(CURRENT_PLATFORM)) {
+            throw new \InvalidArgumentException("Require platform header.");
         }
-        do_log("allow!");
+        if (!in_array(CURRENT_PLATFORM, PLATFORMS)) {
+            throw new \InvalidArgumentException("Invalid platform: " . CURRENT_PLATFORM);
+        }
         return $next($request);
     }
 }

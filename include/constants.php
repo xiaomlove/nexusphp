@@ -12,6 +12,14 @@ defined('ROOT_PATH') || define('ROOT_PATH', dirname(__DIR__) . '/');
 defined('CURRENT_SCRIPT') || define('CURRENT_SCRIPT', strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true));
 defined('IS_ANNOUNCE') || define('IS_ANNOUNCE', CURRENT_SCRIPT == 'announce');
 
+defined('PLATFORM_ADMIN') || define('PLATFORM_ADMIN', 'admin');
+defined('PLATFORM_USER') || define('PLATFORM_USER', 'user');
+defined('PLATFORMS') || define('PLATFORMS', [PLATFORM_ADMIN, PLATFORM_USER]);
+defined('CURRENT_PLATFORM') || define('CURRENT_PLATFORM', $_SERVER['HTTP_PLATFORM'] ?? '');
+defined('IS_PLATFORM_ADMIN') || define('IS_PLATFORM_ADMIN', CURRENT_PLATFORM == PLATFORM_ADMIN);
+defined('IS_PLATFORM_USER') || define('IS_PLATFORM_USER', CURRENT_PLATFORM == PLATFORM_USER);
+
+
 //define the REQUEST_ID
 if (!defined('REQUEST_ID')) {
     if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
