@@ -146,5 +146,6 @@ $lang_userdetails = array
 	'row_no_ad_until' => "不显示广告直到",
 	'text_no_ad_until_note' => "时间格式为'年年年年-月月-日日 时时:分分:秒秒'。无广告待遇结束的时间。",
     'disable_user_migrated' => '启用或禁用用户请到管理后台操作',
+    'text_user_id'=> "用户ID/UID",
 );
 ?>
