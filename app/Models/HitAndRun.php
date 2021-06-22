@@ -57,7 +57,8 @@ class HitAndRun extends NexusModel
 
     public static function getIsEnabled(): bool
     {
-        return Setting::get('hr.mode') != self::MODE_DISABLED;
+        $result = Setting::get('hr.mode');
+        return $result && in_array($result, [self::MODE_GLOBAL, self::MODE_MANUAL]);
     }
 
     public function torrent(): \Illuminate\Database\Eloquent\Relations\BelongsTo

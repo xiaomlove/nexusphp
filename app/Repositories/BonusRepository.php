@@ -13,8 +13,7 @@ class BonusRepository extends BaseRepository
 {
     public function consumeToCancelHitAndRun($uid, $hitAndRunId)
     {
-        $hitAndRunMode = Setting::get('hr.mode');
-        if ($hitAndRunMode == HitAndRun::MODE_DISABLED) {
+        if (!HitAndRun::getIsEnabled()) {
             throw new \LogicException("H&R not enabled.");
         }
         $user = User::query()->findOrFail($uid);
@@ -44,6 +43,7 @@ class BonusRepository extends BaseRepository
                 'now' => Carbon::now()->toDateTimeString(),
                 'bonus' => $requireBonus,
             ], $user->locale);
+            $comment = addslashes($comment);
             do_log("comment: $comment");
             $hitAndRun->update([
                 'status' => HitAndRun::STATUS_PARDONED,
