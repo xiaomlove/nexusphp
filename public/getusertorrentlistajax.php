@@ -7,7 +7,7 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT" );
 header("Last-Modified: " . gmdate( "D, d M Y H:i:s" ) . "GMT" );
 header("Cache-Control: no-cache, must-revalidate" );
 header("Pragma: no-cache" );
-header("Content-Type: text/xml; charset=utf-8");
+//header("Content-Type: text/xml; charset=utf-8");
 function maketable($res, $mode = 'seeding')
 {
 	global $lang_getusertorrentlistajax,$CURUSER,$smalldescription_main;
@@ -106,7 +106,6 @@ function maketable($res, $mode = 'seeding')
 		}
 
 		$hrImg = get_hr_img($arr);
-
 		//torrent name
 		$dispname = $nametitle = htmlspecialchars($arr["torrentname"]);
 		$count_dispname=mb_strlen($dispname,"UTF-8");
@@ -170,7 +169,7 @@ function maketable($res, $mode = 'seeding')
 
 	}
 	$ret .= "</table>\n";
-	return $ret;
+	return [$ret, $total_size];
 }
 
 $id = intval($_GET['userid'] ?? 0);
