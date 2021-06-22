@@ -20,7 +20,7 @@ use Nexus\Database\NexusDB;
 class Update extends Install
 {
 
-    protected $steps = ['环境检测', '选择版本安装', '更新 .env 文件',  '更新配置'];
+    protected $steps = ['环境检测', '获取更新', '更新 .env 文件',  '执行更新'];
 
 
     public function getLogFile()

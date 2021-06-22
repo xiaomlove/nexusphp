@@ -27,21 +27,27 @@ if ($currentStep == 2) {
     $versionTable = $versions = [];
     $cacheKkey = '__versions_' . date('Ymd_H');
     try {
-        if (!empty($_SESSION[$cacheKkey])) {
-            $update->doLog("get versions from session.");
-            $versions = $_SESSION[$cacheKkey];
-        } else {
-            $versions = $update->listVersions();
-        }
+        $versions = $update->listVersions();
+//        if (!empty($_SESSION[$cacheKkey])) {
+//            $update->doLog("get versions from session.");
+//            $versions = $_SESSION[$cacheKkey];
+//        } else {
+//            $_SESSION[$cacheKkey] = $versions;
+//        }
     } catch (\Exception $exception) {
         $error = $exception->getMessage();
     }
-    $_SESSION[$cacheKkey] = $versions;
     $versionHeader = [
         'checkbox' => '选择',
         'tag_name' => '版本(标签)',
         'name' => '名称',
         'published_at' => '发布时间',
+    ];
+    $tableRows[] = [
+        'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
+        'tag_name' => '手动更新',
+        'name' => '如若有改动不宜全量覆盖，请勾选此选项并确保已经手动更新了代码',
+        'published_at' => '---',
     ];
     foreach ($versions as $version) {
         if ($version['draft']) {
@@ -58,10 +64,14 @@ if ($currentStep == 2) {
             'published_at' => $time->format('Y-m-d H:i:s'),
         ];
     }
+//    dd($tableRows);
     while ($isPost) {
         try {
             if (empty($_REQUEST['version_url'])) {
                 throw new \RuntimeException("没有选择版本");
+            }
+            if ($_REQUEST['version_url'] == 'manual') {
+                $update->nextStep();
             }
             $versionUrlArr = explode('|', $_REQUEST['version_url']);
             $version = strtolower($versionUrlArr[0]);
@@ -129,6 +139,7 @@ if ($currentStep == 4) {
     while ($isPost) {
         try {
             $update->createSymbolicLinks($symbolicLinks);
+            $update->runMigrate();
             $update->saveSettings($settings);
             $update->runExtraQueries();
             $update->nextStep();
@@ -176,7 +187,6 @@ if (!empty($error)) {
                 echo $update->renderForm($envFormControls);
 
             } elseif ($currentStep == 2) {
-                echo '<h1 class="mb-4 text-lg font-bold">选择目标版本（注意必须选择比当前版本(' .  VERSION_NUMBER. ')高的）</h1>';
                 if (empty($tableRows)) {
                     echo '<div class="text-green-600 text-center">抱歉，暂无任何版可以选择！</div>';
                 } else {

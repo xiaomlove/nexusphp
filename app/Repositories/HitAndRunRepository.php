@@ -25,6 +25,10 @@ class HitAndRunRepository extends BaseRepository
             do_log("H&R mode is disabled.");
             return false;
         }
+        if (empty($setting['inspect_time'])) {
+            do_log("H&R inspect_time is not set.");
+            return false;
+        }
         $query = HitAndRun::query()
             ->where('status', HitAndRun::STATUS_INSPECTING)
             ->where('created_at', '<', Carbon::now()->subHours($setting['inspect_time']))
@@ -68,7 +72,6 @@ class HitAndRunRepository extends BaseRepository
                 //check seed time
                 $targetSeedTime = $row->snatch->seedtime;
                 $requireSeedTime = bcmul($setting['seed_time_minimum'], 3600);
-                $locale = $row->user->locale;
                 do_log("targetSeedTime: $targetSeedTime, requireSeedTime: $requireSeedTime");
                 if ($targetSeedTime >= $requireSeedTime) {
                     $result = $this->reachedBySeedTime($row);

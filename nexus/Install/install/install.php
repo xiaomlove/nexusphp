@@ -124,18 +124,8 @@ if ($currentStep == 4) {
     while ($isPost) {
         try {
             $install->createSymbolicLinks($symbolicLinks);
+            $install->runMigrate();
             $install->saveSettings($settings);
-//            $install->importInitialData();
-            //use seed
-            $command = "php " . ROOT_PATH . "artisan db:seed";
-            $result = exec($command, $output, $result_code);
-            $install->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
-            $install->doLog("output: " . json_encode($output));
-            if ($result_code != 0) {
-                throw new \RuntimeException(json_encode($output));
-            } else {
-                $install->doLog("[INIT DATA] success.");
-            }
             $install->nextStep();
         } catch (\Exception $e) {
             $error = $e->getMessage();

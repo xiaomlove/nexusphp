@@ -268,6 +268,7 @@ class Install
     public function gotoStep($step)
     {
         nexus_redirect(getBaseUrl() . "?step=$step");
+        die(0);
     }
 
     public function maxStep()
@@ -536,5 +537,21 @@ class Install
             sql_query($sql);
         }
         return true;
+    }
+
+    public function runMigrate()
+    {
+        if (!WITH_LARAVEL) {
+            throw new \RuntimeException('Laravel is not avaliable.');
+        }
+        $command = "php " . ROOT_PATH . "artisan migrate --force";
+        $result = exec($command, $output, $result_code);
+        $this->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
+        $this->doLog("output: " . json_encode($output));
+        if ($result_code != 0) {
+            throw new \RuntimeException(json_encode($output));
+        } else {
+            $this->doLog("[MIGRATE] success.");
+        }
     }
 }
