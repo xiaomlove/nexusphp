@@ -60,6 +60,6 @@ $lang_viewrequests = [
     'please_confirm_supply' => '请及时确认该应求',
     'supply_success' => '应求成功',
     'add_reward_amount_minimum' => '追加悬赏赏金不得小于100个魔力值！',
-    'add_reward_amount_maximum' => '追加悬赏赏金不得小于5000个魔力值！',
+    'add_reward_amount_maximum' => '追加悬赏赏金不得大于5000个魔力值！',
     'add_reward_success' => '追加悬赏成功',
 ];
