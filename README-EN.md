@@ -9,6 +9,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - Request torrent
 - Subtitle
 - Exam
+- H&R
 - Attendance
 - Forum
 - Multi-language
@@ -18,7 +19,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - ....
 
 ## System Requirements
-- PHP: 7.3|8.0, must have extensions: ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
+- PHP: 7.3|8.0, must have extensions: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
 - Mysql: 5.7 latest version or above
 - Redis：optional
 

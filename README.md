@@ -8,6 +8,7 @@
 - 求种
 - 字幕
 - 考核
+- H&R
 - 签到
 - 论坛 
 - 多语言
@@ -17,7 +18,7 @@
 - ....
 
 ## 系统要求
-- PHP: 7.3|8.0，必须扩展：ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
+- PHP: 7.3|8.0，必须扩展：bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
 - Mysql: 5.7最新版或以上版本
 - Redis：可选
 
