@@ -6,7 +6,9 @@ use App\Models\HitAndRun;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
 
 class BonusRepository extends BaseRepository
@@ -65,4 +67,25 @@ class BonusRepository extends BaseRepository
         return $result;
 
     }
+
+    public function initSeedPoints(): int
+    {
+        $size = 10000;
+        $tableName = (new User())->getTable();
+        $result = 0;
+        do {
+            $affectedRows = DB::table($tableName)
+                ->whereNull('seed_points')
+                ->limit($size)
+                ->update([
+                    'seed_points' => DB::raw('seed_points = seedbonus')
+                ]);
+            $result += $affectedRows;
+            do_log("affectedRows: $affectedRows, query: " . last_query());
+        } while ($affectedRows > 0);
+
+        return $result;
+    }
+
+
 }

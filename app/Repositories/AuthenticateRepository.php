@@ -16,7 +16,7 @@ class AuthenticateRepository extends BaseRepository
         if (!$user || md5($user->secret . $password . $user->secret) != $user->passhash) {
             throw new \InvalidArgumentException('Username or password invalid.');
         }
-        if (!$user->canAccessAdmin()) {
+        if (IS_PLATFORM_ADMIN && !$user->canAccessAdmin()) {
             throw new UnauthorizedException('Unauthorized!');
         }
         $tokenName = __METHOD__ . __LINE__;

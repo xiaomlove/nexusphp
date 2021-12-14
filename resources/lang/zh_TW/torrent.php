@@ -23,5 +23,7 @@ return [
         'peers_count_label' => '同伴',
         'thank_users_count_label' => '謝謝',
         'numfiles_label' => '文件',
+        'bookmark_yes_label' => '已收藏',
+        'bookmark_no_label' => '加入收藏',
     ]
 ];

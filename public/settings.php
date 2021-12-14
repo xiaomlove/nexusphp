@@ -114,7 +114,19 @@ elseif ($action == 'savesettings_account') 	// save account
 {
 	stdhead($lang_settings['head_save_account_settings']);
 
-	$validConfig = array('neverdelete', 'neverdeletepacked', 'deletepacked', 'deleteunpacked', 'deletenotransfer', 'deletenotransfertwo', 'deletepeasant', 'psdlone', 'psratioone', 'psdltwo', 'psratiotwo', 'psdlthree', 'psratiothree', 'psdlfour', 'psratiofour', 'psdlfive', 'psratiofive', 'putime', 'pudl', 'puprratio', 'puderatio', 'eutime', 'eudl', 'euprratio', 'euderatio', 'cutime', 'cudl', 'cuprratio', 'cuderatio', 'iutime', 'iudl', 'iuprratio', 'iuderatio', 'vutime', 'vudl', 'vuprratio', 'vuderatio', 'exutime', 'exudl', 'exuprratio', 'exuderatio', 'uutime', 'uudl', 'uuprratio', 'uuderatio', 'nmtime', 'nmdl', 'nmprratio', 'nmderatio', 'getInvitesByPromotion');
+	$validConfig = array(
+	    'neverdelete', 'neverdeletepacked', 'deletepacked', 'deleteunpacked', 'deletenotransfer', 'deletenotransfertwo', 'deletepeasant',
+        'psdlone', 'psratioone', 'psdltwo', 'psratiotwo', 'psdlthree', 'psratiothree', 'psdlfour', 'psratiofour', 'psdlfive', 'psratiofive',
+        'putime', 'pudl', \App\Models\User::CLASS_POWER_USER . '_min_seed_points', 'puprratio', 'puderatio',
+        'eutime', 'eudl', \App\Models\User::CLASS_ELITE_USER . '_min_seed_points', 'euprratio', 'euderatio',
+        'cutime', 'cudl', \App\Models\User::CLASS_CRAZY_USER . '_min_seed_points', 'cuprratio', 'cuderatio',
+        'iutime', 'iudl', \App\Models\User::CLASS_INSANE_USER . '_min_seed_points', 'iuprratio', 'iuderatio',
+        'vutime', 'vudl', \App\Models\User::CLASS_VETERAN_USER . '_min_seed_points', 'vuprratio', 'vuderatio',
+        'exutime', 'exudl', \App\Models\User::CLASS_EXTREME_USER . '_min_seed_points', 'exuprratio', 'exuderatio',
+        'uutime', 'uudl', \App\Models\User::CLASS_ULTIMATE_USER . '_min_seed_points', 'uuprratio', 'uuderatio',
+        'nmtime', 'nmdl', \App\Models\User::CLASS_NEXUS_MASTER . '_min_seed_points', 'nmprratio', 'nmderatio',
+        'getInvitesByPromotion'
+    );
 	GetVar($validConfig);
 	$ACCOUNT = [];
 	foreach($validConfig as $config) {
@@ -567,25 +579,35 @@ elseif ($action == 'accountsettings'){
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdlfour value='".(isset($ACCOUNT["psdlfour"]) ? $ACCOUNT["psdlfour"] : 400 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratiofour value='".(isset($ACCOUNT["psratiofour"]) ? $ACCOUNT["psratiofour"] : 0.7 )."'>".$lang_settings['text_demote_peasant_default_four']."</li>
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdlfive value='".(isset($ACCOUNT["psdlfive"]) ? $ACCOUNT["psdlfive"] : 800 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratiofive value='".(isset($ACCOUNT["psratiofive"]) ? $ACCOUNT["psratiofive"] : 0.8 )."'>".$lang_settings['text_demote_peasant_default_five']."</li>
 		</ul><br />".$lang_settings['text_demote_peasant_note'], 1);
-	function promotion_criteria($class, $input, $time, $dl, $prratio, $deratio, $defaultInvites=0){
+	function promotion_criteria($class, $input, $time, $dl, $prratio, $deratio, $defaultInvites=0, $defaultSeedPoints = 0){
 		global $lang_settings;
 		global $ACCOUNT;
 		$inputtime = $input."time";
 		$inputdl = $input."dl";
 		$inputprratio = $input."prratio";
 		$inputderatio = $input."deratio";
+		$inputSeedPoints = $class . "_min_seed_points";
 		if (!isset($class))
 			return;
-		tr($lang_settings['row_promote_to_one'].get_user_class_name($class,false,false,true).$lang_settings['row_promote_to_two'], $lang_settings['text_member_longer_than']."<input type='text' style=\"width: 50px\" name='".$inputtime."' value='".(isset($ACCOUNT[$inputtime]) ? $ACCOUNT[$inputtime] : $time )."'>".$lang_settings['text_downloaded_more_than']."<input type='text' style=\"width: 50px\" name='".$inputdl."' value='".(isset($ACCOUNT[$inputdl]) ? $ACCOUNT[$inputdl] : $dl )."'>".$lang_settings['text_with_ratio_above']."<input type='text' style=\"width: 50px\" name='".$inputprratio."' value='".(isset($ACCOUNT[$inputprratio]) ? $ACCOUNT[$inputprratio] : $prratio )."'>".$lang_settings['text_be_promoted_to'].get_user_class_name($class,false,true,true).$lang_settings['text_promote_to_default_one']."'".$time."', '".$dl."', '".$prratio."'.<br />".$lang_settings['text_demote_with_ratio_below']."<input type='text' style=\"width: 50px\" name='".$inputderatio."' value='".(isset($ACCOUNT[$inputderatio]) ? $ACCOUNT[$inputderatio] : $deratio )."'>".$lang_settings['text_promote_to_default_two']."'".$deratio."'.<br />".$lang_settings['text_users_get']."<input type='text' style=\"width: 50px\" name='getInvitesByPromotion[".$class."]' value='".(isset($ACCOUNT['getInvitesByPromotion'][$class]) ? $ACCOUNT['getInvitesByPromotion'][$class] : $defaultInvites )."'>".$lang_settings['text_invitations_default']."'".$defaultInvites."'.", 1);
+		$x = $lang_settings['row_promote_to_one'].get_user_class_name($class,false,false,true).$lang_settings['row_promote_to_two'];
+		$y = $lang_settings['text_member_longer_than']."<input type='text' style=\"width: 50px\" name='".$inputtime."' value='".(isset($ACCOUNT[$inputtime]) ? $ACCOUNT[$inputtime] : $time )."'>"
+            .$lang_settings['text_downloaded_more_than']."<input type='text' style=\"width: 50px\" name='".$inputdl."' value='".(isset($ACCOUNT[$inputdl]) ? $ACCOUNT[$inputdl] : $dl )."'>"
+            .$lang_settings['text_seed_points_more_than']."<input type='text' style=\"width: 60px\" name='".$inputSeedPoints."' value='".(isset($ACCOUNT[$inputSeedPoints]) ? $ACCOUNT[$inputSeedPoints] : $defaultSeedPoints )."'>"
+            .$lang_settings['text_with_ratio_above']."<input type='text' style=\"width: 50px\" name='".$inputprratio."' value='".(isset($ACCOUNT[$inputprratio]) ? $ACCOUNT[$inputprratio] : $prratio )."'>"
+            .$lang_settings['text_be_promoted_to'].get_user_class_name($class,false,true,true).$lang_settings['text_promote_to_default_one']."'".$time."', '".$dl."', '".$defaultSeedPoints."', '".$prratio."'.<br />"
+            .$lang_settings['text_demote_with_ratio_below']."<input type='text' style=\"width: 50px\" name='".$inputderatio."' value='".(isset($ACCOUNT[$inputderatio]) ? $ACCOUNT[$inputderatio] : $deratio )."'>".$lang_settings['text_promote_to_default_two']."'".$deratio."'.<br />"
+            .$lang_settings['text_users_get']."<input type='text' style=\"width: 50px\" name='getInvitesByPromotion[".$class."]' value='".(isset($ACCOUNT['getInvitesByPromotion'][$class]) ? $ACCOUNT['getInvitesByPromotion'][$class] : $defaultInvites )."'>".$lang_settings['text_invitations_default']."'".$defaultInvites."'.";
+
+		tr($x, $y, 1);
 	}
-	promotion_criteria(UC_POWER_USER, "pu", 4, 50, 1.05, 0.95, 1);
-	promotion_criteria(UC_ELITE_USER, "eu", 8, 120, 1.55, 1.45, 0);
-	promotion_criteria(UC_CRAZY_USER, "cu", 15, 300, 2.05, 1.95, 2);
-	promotion_criteria(UC_INSANE_USER, "iu", 25, 500, 2.55, 2.45, 0);
-	promotion_criteria(UC_VETERAN_USER, "vu", 40, 750, 3.05, 2.95, 3);
-	promotion_criteria(UC_EXTREME_USER, "exu", 60, 1024, 3.55, 3.45, 0);
-	promotion_criteria(UC_ULTIMATE_USER, "uu", 80, 1536, 4.05, 3.95, 5);
-	promotion_criteria(UC_NEXUS_MASTER, "nm", 100, 3072, 4.55, 4.45, 10);
+	promotion_criteria(UC_POWER_USER, "pu", 4, 50, 1.05, 0.95, 1, \App\Models\User::$classes[UC_POWER_USER]['min_seed_points']);
+	promotion_criteria(UC_ELITE_USER, "eu", 8, 120, 1.55, 1.45, 0, \App\Models\User::$classes[UC_ELITE_USER]['min_seed_points']);
+	promotion_criteria(UC_CRAZY_USER, "cu", 15, 300, 2.05, 1.95, 2, \App\Models\User::$classes[UC_CRAZY_USER]['min_seed_points']);
+	promotion_criteria(UC_INSANE_USER, "iu", 25, 500, 2.55, 2.45, 0, \App\Models\User::$classes[UC_INSANE_USER]['min_seed_points']);
+	promotion_criteria(UC_VETERAN_USER, "vu", 40, 750, 3.05, 2.95, 3, \App\Models\User::$classes[UC_VETERAN_USER]['min_seed_points']);
+	promotion_criteria(UC_EXTREME_USER, "exu", 60, 1024, 3.55, 3.45, 0, \App\Models\User::$classes[UC_EXTREME_USER]['min_seed_points']);
+	promotion_criteria(UC_ULTIMATE_USER, "uu", 80, 1536, 4.05, 3.95, 5, \App\Models\User::$classes[UC_ULTIMATE_USER]['min_seed_points']);
+	promotion_criteria(UC_NEXUS_MASTER, "nm", 100, 3072, 4.55, 4.45, 10, \App\Models\User::$classes[UC_NEXUS_MASTER]['min_seed_points']);
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }

@@ -236,14 +236,14 @@ if(mysql_num_rows($rs_true_trans) > 0)
     $row_true_trans = mysql_fetch_assoc($rs_true_trans);
     $true_upload = $row_true_trans['SUM(uploaded)'];
     $true_download = $row_true_trans['SUM(downloaded)'];
-	
+
 }
-if ($user["downloaded"] > 0 || $true_download > 0)
+if ($user["downloaded"] > 0 && $true_download > 0)
 {
 	$sr = floor($user["uploaded"] / $user["downloaded"] * 1000) / 1000;
 	$true_ratio = floor($true_upload / $true_download * 1000) / 1000;
 	$sr = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_share_ratio'] . "</strong>:  <font color=\"" . get_ratio_color($sr) . "\">" . number_format($sr, 3) . "</font>（<strong>".$lang_userdetails['row_real_share_ratio']."</strong>：".number_format($true_ratio, 3)."）</td><td class=\"embedded\">&nbsp;&nbsp;" . get_ratio_img($sr) . "</td></tr>";
-	
+
 }
 //end
 
@@ -283,8 +283,11 @@ tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["
 
 tr_small($lang_userdetails['row_forum_posts'], ($forumposts && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewposts&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_posts']."\">".$forumposts."</a>" : $forumposts), 1);
 
-if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class)
-tr_small($lang_userdetails['row_karma_points'], htmlspecialchars($user['seedbonus']), 1);
+if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) {
+    tr_small($lang_userdetails['row_karma_points'], htmlspecialchars($user['seedbonus']), 1);
+    tr_small($lang_functions['text_seed_points'], htmlspecialchars($user['seed_points']), 1);
+}
+
 
 if ($user["ip"] && (get_user_class() >= $torrenthistory_class || $user["id"] == $CURUSER["id"])){
 

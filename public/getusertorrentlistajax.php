@@ -245,11 +245,11 @@ switch ($type)
 	}
 }
 
-if ($total_size){
-		echo "<br /><b>" . $count . "</b>" . $lang_getusertorrentlistajax ['text_record'] . add_s ( $count ) . $lang_getusertorrentlistajax['text_total_size'] . mksize($total_size) . "<br /><br />" . $torrentlist;
-	}elseif ($count){
-		echo "<br /><b>".$count."</b>".$lang_getusertorrentlistajax['text_record'].add_s($count)."<br /><br />".$torrentlist;
-	}else{
-		echo $lang_getusertorrentlistajax['text_no_record'];
+if (isset($total_size) && $total_size){
+    echo "<br /><b>" . $count . "</b>" . $lang_getusertorrentlistajax ['text_record'] . add_s ( $count ) . $lang_getusertorrentlistajax['text_total_size'] . mksize($total_size) . "<br /><br />" . $torrentlist;
+} elseif ($count){
+    echo "<br /><b>".$count."</b>".$lang_getusertorrentlistajax['text_record'].add_s($count)."<br /><br />".$torrentlist;
+} else {
+    echo $lang_getusertorrentlistajax['text_no_record'];
 }
 ?>

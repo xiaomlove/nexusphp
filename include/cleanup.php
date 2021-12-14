@@ -96,7 +96,11 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 	if ($down_floor_gb){
 		$limit = $down_floor_gb*1024*1024*1024;
 		$maxdt = date("Y-m-d H:i:s",(TIMENOW - 86400*7*$time_week));
-		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt);
+		$minSeedPoints = \App\Models\User::getMinSeedPoints($class);
+		if ($minSeedPoints === false) {
+		    throw new \RuntimeException("class: $class can't get min seed points.");
+        }
+		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND seed_points >= $minSeedPoints AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt);
 		$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
 		$matchUserCount = mysql_num_rows($res);
         do_log("sql: $sql, match user count: $matchUserCount");
@@ -122,9 +126,12 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 
 function demotion($class,$deratio){
 	global $lang_cleanup_target;
-
 	$newclass = $class - 1;
-	$res = sql_query("SELECT id FROM users WHERE class = $class AND uploaded / downloaded < $deratio") or sqlerr(__FILE__, __LINE__);
+    $minSeedPoints = \App\Models\User::getMinSeedPoints($class);
+    if ($minSeedPoints === false) {
+        throw new \RuntimeException("class: $class can't get min seed points.");
+    }
+	$res = sql_query("SELECT id FROM users WHERE class = $class AND seed_points < $minSeedPoints AND uploaded / downloaded < $deratio") or sqlerr(__FILE__, __LINE__);
 	if (mysql_num_rows($res) > 0)
 	{
 		$dt = sqlesc(date("Y-m-d H:i:s"));
@@ -280,11 +287,12 @@ function docleanup($forceAll = 0, $printProgress = false) {
 			}
 			if ($count > $maxseeding_bonus)
 				$count = $maxseeding_bonus;
-			$all_bonus = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
+			$all_bonus = $seedPoints = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
 			$is_donor = get_single_value("users","donor","WHERE id=".$arr['userid']);
 			if ($is_donor == 'yes' && $donortimes_bonus > 0)
 				$all_bonus = $all_bonus * $donortimes_bonus;
 			KPS("+",$all_bonus,$arr["userid"]);
+			\App\Models\User::query()->where('id', $arr["userid"])->update(['seed_points' => new \Illuminate\Database\Query\Expression("seed_points + $seedPoints")]);
 		}
 	}
 	$log = 'calculate seeding bonus';

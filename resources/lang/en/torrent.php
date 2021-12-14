@@ -19,9 +19,11 @@ return [
         'basic_team' => 'Team',
         'size' => 'Size',
         'comments_label' => 'Comments',
-        'times_completed_label' => 'Times completed',
+        'times_completed_label' => 'Snatched',
         'peers_count_label' => 'Peers',
-        'thank_users_count_label' => 'Thank user counts',
-        'numfiles_label' => 'Files counts',
+        'thank_users_count_label' => 'Thanks',
+        'numfiles_label' => 'Files',
+        'bookmark_yes_label' => 'Bookmarked',
+        'bookmark_no_label' => 'Add to bookmark',
     ]
 ];

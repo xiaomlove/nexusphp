@@ -31,6 +31,7 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
     Route::resource('files', \App\Http\Controllers\FileController::class);
     Route::resource('thanks', \App\Http\Controllers\ThankController::class);
     Route::resource('snatches', \App\Http\Controllers\SnatchController::class);
+    Route::resource('bookmarks', \App\Http\Controllers\BookmarkController::class);
     Route::get('search-box', [\App\Http\Controllers\TorrentController::class, 'searchBox']);
 
     Route::group(['middleware' => ['admin']], function () {

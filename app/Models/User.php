@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Middleware\Locale;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -41,15 +42,15 @@ class User extends Authenticatable
 
     public static $classes = [
         self::CLASS_PEASANT => ['text' => 'Peasant'],
-        self::CLASS_USER => ['text' => 'User'],
-        self::CLASS_POWER_USER => ['text' => 'Power User'],
-        self::CLASS_ELITE_USER => ['text' => 'Elite User'],
-        self::CLASS_CRAZY_USER => ['text' => 'Crazy User'],
-        self::CLASS_INSANE_USER => ['text' => 'Insane User'],
-        self::CLASS_VETERAN_USER => ['text' => 'Veteran User'],
-        self::CLASS_EXTREME_USER => ['text' => 'Extreme User'],
-        self::CLASS_ULTIMATE_USER => ['text' => 'Ultimate User'],
-        self::CLASS_NEXUS_MASTER => ['text' => 'Nexus Master'],
+        self::CLASS_USER => ['text' => 'User', 'min_seed_points' => 0],
+        self::CLASS_POWER_USER => ['text' => 'Power User', 'min_seed_points' => 40000],
+        self::CLASS_ELITE_USER => ['text' => 'Elite User', 'min_seed_points' => 80000],
+        self::CLASS_CRAZY_USER => ['text' => 'Crazy User', 'min_seed_points' => 150000],
+        self::CLASS_INSANE_USER => ['text' => 'Insane User', 'min_seed_points' => 250000],
+        self::CLASS_VETERAN_USER => ['text' => 'Veteran User', 'min_seed_points' => 400000],
+        self::CLASS_EXTREME_USER => ['text' => 'Extreme User', 'min_seed_points' => 600000],
+        self::CLASS_ULTIMATE_USER => ['text' => 'Ultimate User', 'min_seed_points' => 800000],
+        self::CLASS_NEXUS_MASTER => ['text' => 'Nexus Master', 'min_seed_points' => 1000000],
         self::CLASS_VIP => ['text' => 'Vip'],
         self::CLASS_RETIREE => ['text' => 'Retiree'],
         self::CLASS_UPLOADER => ['text' => 'Uploader'],
@@ -161,6 +162,20 @@ class User extends Authenticatable
         return 'en';
     }
 
+    public static function getMinSeedPoints($class)
+    {
+        $setting = Setting::get("account.{$class}_min_seed_points");
+        if (is_numeric($setting)) {
+            return $setting;
+        }
+        return self::$classes[$class]['min_seed_points'] ?? false;
+    }
+
+    public function scopeNormal(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_CONFIRMED)->where('enabled', self::ENABLED_YES);
+    }
+
 
     public function exams()
     {
@@ -213,6 +228,11 @@ class User extends Authenticatable
     public function torrents()
     {
         return $this->hasMany(Torrent::class, 'owner');
+    }
+
+    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Bookmark::class, 'userid');
     }
 
 

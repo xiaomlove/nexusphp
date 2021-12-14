@@ -86,7 +86,7 @@ class Torrent extends NexusModel
 
     public static function getFieldLabels(): array
     {
-        $fields = ['comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles'];
+        $fields = ['comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles', 'bookmark_yes', 'bookmark_no'];
         $result = [];
         foreach($fields as $field) {
             $result[$field] = nexus_trans("torrent.show.{$field}_label");

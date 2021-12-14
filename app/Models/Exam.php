@@ -40,7 +40,7 @@ class Exam extends NexusModel
         self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB', 'source_user_field' => 'uploaded'],
         self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour', 'source_user_field' => 'seedtime'],
         self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB', 'source_user_field' => 'downloaded'],
-        self::INDEX_SEED_BONUS => ['name' => 'Seed bonus', 'unit' => '', 'source_user_field' => 'seedbonus'],
+        self::INDEX_SEED_BONUS => ['name' => 'Seed bonus', 'unit' => '', 'source_user_field' => 'seed_points'],
     ];
 
     const FILTER_USER_CLASS = 'classes';

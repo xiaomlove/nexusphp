@@ -247,7 +247,7 @@ class TorrentRepository extends BaseRepository
             ->paginate();
         foreach ($snatches as &$snatch) {
             $snatch->upload_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchUploadSpeed($snatch));
-            $snatch->download_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchDownloadSpeed($snatch));
+            $snatch->download_text = sprintf('%s@%s', mksize($snatch->downloaded), $this->getSnatchDownloadSpeed($snatch));
             $snatch->share_ratio = $this->getShareRatio($snatch);
             $snatch->seed_time = mkprettytime($snatch->seedtime);
             $snatch->leech_time = mkprettytime($snatch->leechtime);
@@ -377,6 +377,13 @@ class TorrentRepository extends BaseRepository
         TorrentSecret::query()->insert($insert);
         return $insert['secret'];
 
+    }
+
+    public function getStickyStatus($torrent)
+    {
+        if (!$torrent instanceof Torrent) {
+            $torrent = Torrent::query()->findOrFail((int)$torrent, ['id', 'pos_state']);
+        }
     }
 
 

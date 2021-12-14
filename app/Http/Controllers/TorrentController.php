@@ -6,6 +6,7 @@ use App\Http\Resources\TorrentResource;
 use App\Models\Torrent;
 use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TorrentController extends Controller
 {
@@ -52,10 +53,13 @@ class TorrentController extends Controller
 
         $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users'])->visible()->findOrFail($id);
 
+        $isBookmarked = Auth::user()->bookmarks()->where('torrentid', $id)->exists();
+
         $resource = new TorrentResource($result);
         $resource->additional([
             'page_title' => nexus_trans('torrent.show.page_title'),
             'field_labels' => Torrent::getFieldLabels(),
+            'is_bookmarked' => (int)$isBookmarked,
         ]);
 
         return $this->success($resource);

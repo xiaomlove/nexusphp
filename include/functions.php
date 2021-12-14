@@ -2476,14 +2476,16 @@ else {
                 <?php if (get_user_class() >= UC_SYSOP) { ?> [<a href="settings.php"><?php echo $lang_functions['text_site_settings'] ?></a>]<?php } ?>
                 [<a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>]
                 <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <?php echo number_format($CURUSER['seedbonus'], 1)?>
+                <font class = 'color_bonus'><?php echo $lang_functions['text_seed_points'] ?></font>: <?php echo number_format($CURUSER['seed_points'], 1)?>
                 <?php if($attendance){ printf('&nbsp;'.$lang_functions['text_attended'], $attendance['points']); }else{ printf(' <a href="attendance.php" class="faqlink">%s</a>', $lang_functions['text_attendance']);}?>
                 <font class = 'color_invite'><?php echo $lang_functions['text_invite'] ?></font>[<a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_send'] ?></a>]: <?php echo $CURUSER['invites']?>
-                <?php if(get_setting('hr.mode') != \App\Models\HitAndRun::MODE_DISABLED) { ?><font class='color_bonus'>H&R: </font> <?php echo sprintf('[<a href="myhr.php">%s/%s</a>]', get_row_count('hit_and_runs', "where uid = {$CURUSER['id']} and status = 3"), get_setting('hr.ban_user_when_counts_reach'))?><?php }?><br />
+                <br />
 	            <font class="color_ratio"><?php echo $lang_functions['text_ratio'] ?></font> <?php echo $ratio?>
                 <font class='color_uploaded'><?php echo $lang_functions['text_uploaded'] ?></font> <?php echo mksize($CURUSER['uploaded'])?>
                 <font class='color_downloaded'> <?php echo $lang_functions['text_downloaded'] ?></font> <?php echo mksize($CURUSER['downloaded'])?>
                 <font class='color_active'><?php echo $lang_functions['text_active_torrents'] ?></font> <img class="arrowup" alt="Torrents seeding" title="<?php echo $lang_functions['title_torrents_seeding'] ?>" src="pic/trans.gif" /><?php echo $activeseed?>  <img class="arrowdown" alt="Torrents leeching" title="<?php echo $lang_functions['title_torrents_leeching'] ?>" src="pic/trans.gif" /><?php echo $activeleech?>&nbsp;&nbsp;
                 <font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?>
+                <?php if(get_setting('hr.mode') != \App\Models\HitAndRun::MODE_DISABLED) { ?><font class='color_bonus'>H&R: </font> <?php echo sprintf('[<a href="myhr.php">%s/%s</a>]', get_row_count('hit_and_runs', "where uid = {$CURUSER['id']} and status = 3"), get_setting('hr.ban_user_when_counts_reach'))?><?php }?>
                 <?php if(get_user_class() >= UC_SYSOP) { ?> [<a href="/admin" target="_blank"><?php echo $lang_functions['text_management_system'] ?></a>]<?php }?>
             </span>
         </td>
