@@ -126,6 +126,7 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'text_cancel_hr_title' => 'H&R cancel',
     'text_cancel_hr_label' => 'Type in H&R ID:',
     'text_success_cancel_hr' => "Success cancel one H&R.",
+    'text_success_buy_medal' => 'Success buy the medal.',
 );
 
 ?>

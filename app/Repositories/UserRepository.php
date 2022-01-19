@@ -30,20 +30,23 @@ class UserRepository extends BaseRepository
     public function getDetail($id)
     {
         $with = [
-            'inviter' => function ($query) {return $query->select(User::$commonFields);}
+            'inviter' => function ($query) {return $query->select(User::$commonFields);},
+            'valid_medals'
         ];
         $user = User::query()->with($with)->findOrFail($id, User::$commonFields);
         $userResource = new UserResource($user);
         $baseInfo = $userResource->response()->getData(true)['data'];
 
         $examRep = new ExamRepository();
-        $examProgress = $examRep->getUserExamProgress($id, null, ['exam']);
+        $examProgress = $examRep->getUserExamProgress($id, null);
         if ($examProgress) {
             $examResource = new ExamUserResource($examProgress);
             $examInfo = $examResource->response()->getData(true)['data'];
         } else {
             $examInfo = null;
         }
+
+
 
         return [
             'base_info' => $baseInfo,
@@ -156,4 +159,7 @@ class UserRepository extends BaseRepository
         $user = User::query()->findOrFail($id, ['modcomment']);
         return $user->modcomment;
     }
+
+
+
 }

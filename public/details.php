@@ -38,6 +38,7 @@ if (!$row) {
 ) {
     permissiondenied();
 } else {
+    $owner = \App\Models\User::query()->with(['valid_medals'])->findOrFail($row['owner']);
     $torrentRep = new \App\Repositories\TorrentRepository();
     $torrentUpdate = [];
 	if (!empty($_GET["hit"])) {
@@ -83,10 +84,10 @@ if (!$row) {
 			if (get_user_class() < $viewanonymous_class)
 			$uprow = "<i>".$lang_details['text_anonymous']."</i>";
 			else
-			$uprow = "<i>".$lang_details['text_anonymous']."</i> (" . get_username($row['owner'], false, true, true, false, false, true) . ")";
+			$uprow = "<i>".$lang_details['text_anonymous']."</i> (" . build_medal_image($owner->valid_medals, 20) . get_username($row['owner'], false, true, true, false, false, true) . ")";
 		}
 		else {
-			$uprow = (isset($row['owner']) ? get_username($row['owner'], false, true, true, false, false, true) : "<i>".$lang_details['text_unknown']."</i>");
+			$uprow = (isset($row['owner']) ? build_medal_image($owner->valid_medals, 20) . get_username($row['owner'], false, true, true, false, false, true) : "<i>".$lang_details['text_unknown']."</i>");
 		}
 
 		if ($CURUSER["id"] == $row["owner"])

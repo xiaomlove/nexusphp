@@ -624,13 +624,22 @@ if ($action == "viewtopic")
 	begin_frame();
 
 	$pc = mysql_num_rows($res);
+	$allPosts = $uidArr = [];
+    while ($arr = mysql_fetch_assoc($res)) {
+        $allPosts[] = $arr;
+        $uidArr[$arr['userid']] = 1;
+    }
+    $uidArr = array_keys($uidArr);
+    unset($arr);
+    $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
+    $userInfoArr = \App\Models\User::query()->with(['valid_medals'])->find($uidArr, $neededColumns)->keyBy('id');
 
 	$pn = 0;
 	$lpr = get_last_read_post_id($topicid);
 
 	if ($Advertisement->enable_ad())
 		$forumpostad=$Advertisement->get_ad('forumpost');
-	while ($arr = mysql_fetch_assoc($res))
+	foreach ($allPosts as $arr)
 	{
 		if ($pn>=1)
 		{
@@ -648,7 +657,10 @@ if ($action == "viewtopic")
 
 		//---- Get poster details
 
-		$arr2 = get_user_row($posterid);
+//		$arr2 = get_user_row($posterid);
+		$userInfo = $userInfoArr->get($posterid);
+		$arr2 = $userInfo->toArray();
+
 		$uploaded = mksize($arr2["uploaded"]);
 		$downloaded = mksize($arr2["downloaded"]);
 		$ratio = get_ratio($arr2['id']);
@@ -662,7 +674,7 @@ if ($action == "viewtopic")
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars($arr2["avatar"]) : "");
 
 		$uclass = get_user_class_image($arr2["class"]);
-		$by = get_username($posterid,false,true,true,false,false,true);
+		$by = build_medal_image($userInfo->valid_medals, 20) . get_username($posterid,false,true,true,false,false,true);
 
 		if (!$avatar)
 			$avatar = "pic/default_avatar.png";

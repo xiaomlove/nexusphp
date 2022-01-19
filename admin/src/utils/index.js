@@ -47,4 +47,6 @@ export const pathMap = {
     'exam-form': 'Exam form',
     'exam-user': 'Exam user',
     'setting': "Setting",
+    'medal': 'Medal',
+    'medal-form': 'Medal form',
 }

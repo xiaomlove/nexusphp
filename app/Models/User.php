@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Middleware\Locale;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -261,6 +262,20 @@ class User extends Authenticatable
     public function hitAndRuns(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(HitAndRun::class, 'uid');
+    }
+
+    public function medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Medal::class, 'user_medals', 'uid', 'medal_id')
+            ->withPivot(['id', 'expire_at'])
+            ->withTimestamps();
+    }
+
+    public function valid_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->medals()->where(function ($query) {
+            $query->whereNull('user_medals.expire_at')->orWhere('user_medals.expire_at', '>=', Carbon::now());
+        });
     }
 
     public function getAvatarAttribute($value)

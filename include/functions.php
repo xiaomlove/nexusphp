@@ -2920,9 +2920,16 @@ function commenttable($rows, $type, $parent_id, $review = false)
 	$count = 0;
 	if ($Advertisement->enable_ad())
 		$commentad = $Advertisement->get_ad('comment');
+
+	$uidArr = array_unique(array_column($rows, 'user'));
+    $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
+	$userInfoArr = \App\Models\User::query()->with(['valid_medals'])->find($uidArr, $neededColumns)->keyBy('id');
+
 	foreach ($rows as $row)
 	{
-		$userRow = get_user_row($row['user']);
+//		$userRow = get_user_row($row['user']);
+        $userInfo = $userInfoArr->get($row['user']);
+		$userRow = $userInfo->toArray();
 		if ($count>=1)
 		{
 			if ($Advertisement->enable_ad()){
@@ -2931,7 +2938,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 			}
 		}
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");
-		print(get_username($row["user"],false,true,true,false,false,true));
+		print(build_medal_image($userInfo->valid_medals, 20) . get_username($row["user"],false,true,true,false,false,true));
 		print("&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_at']."</font>".gettime($row["added"]).
 		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars(trim($userRow["avatar"])) : "");
@@ -5257,6 +5264,15 @@ function msgalert($url, $text, $bgcolor = "red")
     print("<p><table border=\"0\" cellspacing=\"0\" cellpadding=\"10\"><tr><td style='border: none; padding: 10px; background: ".$bgcolor."'>\n");
     print("<b><a href=\"".$url."\"><font color=\"white\">".$text."</font></a></b>");
     print("</td></tr></table></p><br />");
+}
+
+function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200): string
+{
+    $medalImages = [];
+    foreach ($medals as $medal) {
+        $medalImages[] = sprintf('<img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+    }
+    return implode('', $medalImages);
 }
 
 ?>

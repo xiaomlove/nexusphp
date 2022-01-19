@@ -34,6 +34,7 @@ class UserResource extends JsonResource
             'leechtime' => $this->leechtime,
             'leechtime_text' => mkprettytime($this->leechtime),
             'inviter' => new UserResource($this->whenLoaded('inviter')),
+            'valid_medals' => MedalResource::collection($this->whenLoaded('valid_medals')),
         ];
         if ($request->routeIs('user.me')) {
             $out['downloaded_human'] = mksize($this->downloaded);

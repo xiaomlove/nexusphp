@@ -6,103 +6,222 @@ require(get_langfile_path("",true));
 loggedinorreturn();
 parked();
 
-function bonusarray($option){
+function bonusarray($option = 0){
 	global $onegbupload_bonus,$fivegbupload_bonus,$tengbupload_bonus,$oneinvite_bonus,$customtitle_bonus,$vipstatus_bonus, $basictax_bonus, $taxpercentage_bonus, $bonusnoadpoint_advertisement, $bonusnoadtime_advertisement;
 	global $lang_mybonus;
-	$bonus = array();
-	switch ($option)
-	{
-		case 1: {//1.0 GB Uploaded
-			$bonus['points'] = $onegbupload_bonus;
-			$bonus['art'] = 'traffic';
-			$bonus['menge'] = 1073741824;
-			$bonus['name'] = $lang_mybonus['text_uploaded_one'];
-			$bonus['description'] = $lang_mybonus['text_uploaded_note'];
-			break;
-			}
-		case 2: {//5.0 GB Uploaded
-			$bonus['points'] = $fivegbupload_bonus;
-			$bonus['art'] = 'traffic';
-			$bonus['menge'] = 5368709120;
-			$bonus['name'] = $lang_mybonus['text_uploaded_two'];
-			$bonus['description'] = $lang_mybonus['text_uploaded_note'];
-			break;
-			}
-		case 3: {//10.0 GB Uploaded
-			$bonus['points'] = $tengbupload_bonus;
-			$bonus['art'] = 'traffic';
-			$bonus['menge'] = 10737418240;
-			$bonus['name'] = $lang_mybonus['text_uploaded_three'];
-			$bonus['description'] = $lang_mybonus['text_uploaded_note'];
-			break;
-			}
-		case 4: {//Invite
-			$bonus['points'] = $oneinvite_bonus;
-			$bonus['art'] = 'invite';
-			$bonus['menge'] = 1;
-			$bonus['name'] = $lang_mybonus['text_buy_invite'];
-			$bonus['description'] = $lang_mybonus['text_buy_invite_note'];
-			break;
-			}
-		case 5: {//Custom Title
-			$bonus['points'] = $customtitle_bonus;
-			$bonus['art'] = 'title';
-			$bonus['menge'] = 0;
-			$bonus['name'] = $lang_mybonus['text_custom_title'];
-			$bonus['description'] = $lang_mybonus['text_custom_title_note'];
-			break;
-			}
-		case 6: {//VIP Status
-			$bonus['points'] = $vipstatus_bonus;
-			$bonus['art'] = 'class';
-			$bonus['menge'] = 0;
-			$bonus['name'] = $lang_mybonus['text_vip_status'];
-			$bonus['description'] = $lang_mybonus['text_vip_status_note'];
-			break;
-			}
-		case 7: {//Bonus Gift
-			$bonus['points'] = 25;
-			$bonus['art'] = 'gift_1';
-			$bonus['menge'] = 0;
-			$bonus['name'] = $lang_mybonus['text_bonus_gift'];
-			$bonus['description'] = $lang_mybonus['text_bonus_gift_note'];
-			if ($basictax_bonus || $taxpercentage_bonus){
-				$onehundredaftertax = 100 - $taxpercentage_bonus - $basictax_bonus;
-				$bonus['description'] .= "<br /><br />".$lang_mybonus['text_system_charges_receiver']."<b>".($basictax_bonus ? $basictax_bonus.$lang_mybonus['text_tax_bonus_point'].add_s($basictax_bonus).($taxpercentage_bonus ? $lang_mybonus['text_tax_plus'] : "") : "").($taxpercentage_bonus ? $taxpercentage_bonus.$lang_mybonus['text_percent_of_transfered_amount'] : "")."</b>".$lang_mybonus['text_as_tax'].$onehundredaftertax.$lang_mybonus['text_tax_example_note'];
-				}
-			break;
-			}
-		case 8: {
-			$bonus['points'] = $bonusnoadpoint_advertisement;
-			$bonus['art'] = 'noad';
-			$bonus['menge'] = $bonusnoadtime_advertisement * 86400;
-			$bonus['name'] = $bonusnoadtime_advertisement.$lang_mybonus['text_no_advertisements'];
-			$bonus['description'] = $lang_mybonus['text_no_advertisements_note'];
-			break;
-			}
-		case 9: {
-			$bonus['points'] = 1000;
-			$bonus['art'] = 'gift_2';
-			$bonus['menge'] = 0;
-			$bonus['name'] = $lang_mybonus['text_charity_giving'];
-			$bonus['description'] = $lang_mybonus['text_charity_giving_note'];
-			break;
-			}
-        case 10: {
-            $bonus['points'] = \App\Models\BonusLogs::getBonusForCancelHitAndRun();
-            $bonus['art'] = 'cancel_hr';
-            $bonus['menge'] = 0;
-            $bonus['name'] = $lang_mybonus['text_cancel_hr_title'];
-            $bonus['description'] = '<p>
+
+	$results = [];
+    //1.0 GB Uploaded
+    $bonus = array();
+    $bonus['points'] = $onegbupload_bonus;
+    $bonus['art'] = 'traffic';
+    $bonus['menge'] = 1073741824;
+    $bonus['name'] = $lang_mybonus['text_uploaded_one'];
+    $bonus['description'] = $lang_mybonus['text_uploaded_note'];
+	$results[] = $bonus;
+
+    //5.0 GB Uploaded
+    $bonus = array();
+    $bonus['points'] = $fivegbupload_bonus;
+    $bonus['art'] = 'traffic';
+    $bonus['menge'] = 5368709120;
+    $bonus['name'] = $lang_mybonus['text_uploaded_two'];
+    $bonus['description'] = $lang_mybonus['text_uploaded_note'];
+    $results[] = $bonus;
+
+
+    //10.0 GB Uploaded
+    $bonus = array();
+    $bonus['points'] = $tengbupload_bonus;
+    $bonus['art'] = 'traffic';
+    $bonus['menge'] = 10737418240;
+    $bonus['name'] = $lang_mybonus['text_uploaded_three'];
+    $bonus['description'] = $lang_mybonus['text_uploaded_note'];
+    $results[] = $bonus;
+
+    //Invite
+    $bonus = array();
+    $bonus['points'] = $oneinvite_bonus;
+    $bonus['art'] = 'invite';
+    $bonus['menge'] = 1;
+    $bonus['name'] = $lang_mybonus['text_buy_invite'];
+    $bonus['description'] = $lang_mybonus['text_buy_invite_note'];
+
+    //Custom Title
+    $bonus = array();
+    $bonus['points'] = $customtitle_bonus;
+    $bonus['art'] = 'title';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_custom_title'];
+    $bonus['description'] = $lang_mybonus['text_custom_title_note'];
+    $results[] = $bonus;
+
+
+    //VIP Status
+    $bonus = array();
+    $bonus['points'] = $vipstatus_bonus;
+    $bonus['art'] = 'class';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_vip_status'];
+    $bonus['description'] = $lang_mybonus['text_vip_status_note'];
+    $results[] = $bonus;
+
+    //Bonus Gift
+    $bonus = array();
+    $bonus['points'] = 25;
+    $bonus['art'] = 'gift_1';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_bonus_gift'];
+    $bonus['description'] = $lang_mybonus['text_bonus_gift_note'];
+    if ($basictax_bonus || $taxpercentage_bonus){
+        $onehundredaftertax = 100 - $taxpercentage_bonus - $basictax_bonus;
+        $bonus['description'] .= "<br /><br />".$lang_mybonus['text_system_charges_receiver']."<b>".($basictax_bonus ? $basictax_bonus.$lang_mybonus['text_tax_bonus_point'].add_s($basictax_bonus).($taxpercentage_bonus ? $lang_mybonus['text_tax_plus'] : "") : "").($taxpercentage_bonus ? $taxpercentage_bonus.$lang_mybonus['text_percent_of_transfered_amount'] : "")."</b>".$lang_mybonus['text_as_tax'].$onehundredaftertax.$lang_mybonus['text_tax_example_note'];
+    }
+    $results[] = $bonus;
+
+
+    //No ad for 15 days
+    $bonus = array();
+    $bonus['points'] = $bonusnoadpoint_advertisement;
+    $bonus['art'] = 'noad';
+    $bonus['menge'] = $bonusnoadtime_advertisement * 86400;
+    $bonus['name'] = $bonusnoadtime_advertisement.$lang_mybonus['text_no_advertisements'];
+    $bonus['description'] = $lang_mybonus['text_no_advertisements_note'];
+    $results[] = $bonus;
+
+    //Donate
+    $bonus = array();
+    $bonus['points'] = 1000;
+    $bonus['art'] = 'gift_2';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_charity_giving'];
+    $bonus['description'] = $lang_mybonus['text_charity_giving_note'];
+    $results[] = $bonus;
+
+
+    //Cancel hit and run
+    $bonus = array();
+    $bonus['points'] = \App\Models\BonusLogs::getBonusForCancelHitAndRun();
+    $bonus['art'] = 'cancel_hr';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_cancel_hr_title'];
+    $bonus['description'] = '<p>
             <span style="">' . $lang_mybonus['text_cancel_hr_label'] . '</span>
             <input type="number" name="hr_id" />
         </p>';
-            break;
-        }
-		default: break;
-	}
-	return $bonus;
+    $results[] = $bonus;
+
+    //Buy medal
+    $medals = \App\Models\Medal::query()->get();
+    foreach ($medals as $medal) {
+        $results[] = [
+            'points' => $medal->price,
+            'art' => 'buy_medal',
+            'menge' => 0,
+            'name' => $medal->name,
+            'description' => sprintf('<span>%s</span><input type="hidden" name="medal_id" value="%s">', $medal->description, $medal->id),
+            'medal_id' => $medal->id,
+        ];
+    }
+
+    return $results;
+
+//
+//	switch ($option)
+//	{
+//		case 1: {//1.0 GB Uploaded
+//			$bonus['points'] = $onegbupload_bonus;
+//			$bonus['art'] = 'traffic';
+//			$bonus['menge'] = 1073741824;
+//			$bonus['name'] = $lang_mybonus['text_uploaded_one'];
+//			$bonus['description'] = $lang_mybonus['text_uploaded_note'];
+//			break;
+//			}
+//		case 2: {//5.0 GB Uploaded
+//			$bonus['points'] = $fivegbupload_bonus;
+//			$bonus['art'] = 'traffic';
+//			$bonus['menge'] = 5368709120;
+//			$bonus['name'] = $lang_mybonus['text_uploaded_two'];
+//			$bonus['description'] = $lang_mybonus['text_uploaded_note'];
+//			break;
+//			}
+//		case 3: {//10.0 GB Uploaded
+//			$bonus['points'] = $tengbupload_bonus;
+//			$bonus['art'] = 'traffic';
+//			$bonus['menge'] = 10737418240;
+//			$bonus['name'] = $lang_mybonus['text_uploaded_three'];
+//			$bonus['description'] = $lang_mybonus['text_uploaded_note'];
+//			break;
+//			}
+//		case 4: {//Invite
+//			$bonus['points'] = $oneinvite_bonus;
+//			$bonus['art'] = 'invite';
+//			$bonus['menge'] = 1;
+//			$bonus['name'] = $lang_mybonus['text_buy_invite'];
+//			$bonus['description'] = $lang_mybonus['text_buy_invite_note'];
+//			break;
+//			}
+//		case 5: {//Custom Title
+//			$bonus['points'] = $customtitle_bonus;
+//			$bonus['art'] = 'title';
+//			$bonus['menge'] = 0;
+//			$bonus['name'] = $lang_mybonus['text_custom_title'];
+//			$bonus['description'] = $lang_mybonus['text_custom_title_note'];
+//			break;
+//			}
+//		case 6: {//VIP Status
+//			$bonus['points'] = $vipstatus_bonus;
+//			$bonus['art'] = 'class';
+//			$bonus['menge'] = 0;
+//			$bonus['name'] = $lang_mybonus['text_vip_status'];
+//			$bonus['description'] = $lang_mybonus['text_vip_status_note'];
+//			break;
+//			}
+//		case 7: {//Bonus Gift
+//			$bonus['points'] = 25;
+//			$bonus['art'] = 'gift_1';
+//			$bonus['menge'] = 0;
+//			$bonus['name'] = $lang_mybonus['text_bonus_gift'];
+//			$bonus['description'] = $lang_mybonus['text_bonus_gift_note'];
+//			if ($basictax_bonus || $taxpercentage_bonus){
+//				$onehundredaftertax = 100 - $taxpercentage_bonus - $basictax_bonus;
+//				$bonus['description'] .= "<br /><br />".$lang_mybonus['text_system_charges_receiver']."<b>".($basictax_bonus ? $basictax_bonus.$lang_mybonus['text_tax_bonus_point'].add_s($basictax_bonus).($taxpercentage_bonus ? $lang_mybonus['text_tax_plus'] : "") : "").($taxpercentage_bonus ? $taxpercentage_bonus.$lang_mybonus['text_percent_of_transfered_amount'] : "")."</b>".$lang_mybonus['text_as_tax'].$onehundredaftertax.$lang_mybonus['text_tax_example_note'];
+//				}
+//			break;
+//			}
+//		case 8: {
+//			$bonus['points'] = $bonusnoadpoint_advertisement;
+//			$bonus['art'] = 'noad';
+//			$bonus['menge'] = $bonusnoadtime_advertisement * 86400;
+//			$bonus['name'] = $bonusnoadtime_advertisement.$lang_mybonus['text_no_advertisements'];
+//			$bonus['description'] = $lang_mybonus['text_no_advertisements_note'];
+//			break;
+//			}
+//		case 9: {
+//			$bonus['points'] = 1000;
+//			$bonus['art'] = 'gift_2';
+//			$bonus['menge'] = 0;
+//			$bonus['name'] = $lang_mybonus['text_charity_giving'];
+//			$bonus['description'] = $lang_mybonus['text_charity_giving_note'];
+//			break;
+//			}
+//        case 10: {
+//            $bonus['points'] = \App\Models\BonusLogs::getBonusForCancelHitAndRun();
+//            $bonus['art'] = 'cancel_hr';
+//            $bonus['menge'] = 0;
+//            $bonus['name'] = $lang_mybonus['text_cancel_hr_title'];
+//            $bonus['description'] = '<p>
+//            <span style="">' . $lang_mybonus['text_cancel_hr_label'] . '</span>
+//            <input type="number" name="hr_id" />
+//        </p>';
+//            break;
+//        }
+//		default: break;
+//	}
+//	return $bonus;
 }
+
+$allBonus = bonusarray();
 
 if ($bonus_tweak == "disable" || $bonus_tweak == "disablesave")
 	stderr($lang_mybonus['std_sorry'],$lang_mybonus['std_karma_system_disabled'].($bonus_tweak == "disablesave" ? "<b>".$lang_mybonus['std_points_active']."</b>" : ""),false);
@@ -129,6 +248,8 @@ if (isset($do)) {
 	$msg =  $lang_mybonus['text_success_charity'];
     elseif ($do == "cancel_hr")
         $msg =  $lang_mybonus['text_success_cancel_hr'];
+    elseif ($do == "buy_medal")
+        $msg =  $lang_mybonus['text_success_buy_medal'];
 	else
 	$msg = '';
 }
@@ -150,42 +271,44 @@ print("<tr><td class=\"colhead\" align=\"center\">".$lang_mybonus['col_option'].
 "<td class=\"colhead\" align=\"center\">".$lang_mybonus['col_points']."</td>".
 "<td class=\"colhead\" align=\"center\">".$lang_mybonus['col_trade']."</td>".
 "</tr>");
-for ($i=1; $i <=10; $i++)
+
+
+for ($i=0; $i < count($allBonus); $i++)
 {
-	$bonusarray = bonusarray($i);
+	$bonusarray = $allBonus[$i];
 	if (
-	    ($i == 7 && $bonusgift_bonus == 'no')
-        || ($i == 8 && ($enablead_advertisement == 'no' || $bonusnoad_advertisement == 'no'))
-        || ($i == 10 && !\App\Models\HitAndRun::getIsEnabled())
+	    ($bonusarray['art'] == 'gift_1' && $bonusgift_bonus == 'no')
+        || ($bonusarray['art'] == 'noad' && ($enablead_advertisement == 'no' || $bonusnoad_advertisement == 'no'))
+        || ($bonusarray['art'] == 'cancel_hr' && !\App\Models\HitAndRun::getIsEnabled())
     ) {
         continue;
     }
 
 	print("<tr>");
 	print("<form action=\"?action=exchange\" method=\"post\">");
-	print("<td class=\"rowhead_center\"><input type=\"hidden\" name=\"option\" value=\"".$i."\" /><b>".$i."</b></td>");
-	if ($i==5){ //for Custom Title!
-	$otheroption_title = "<input type=\"text\" name=\"title\" style=\"width: 200px\" maxlength=\"30\" />";
-	print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_titile'].$otheroption_title.$lang_mybonus['text_click_exchange']."</td><td class=\"rowfollow\" align='center'>".number_format($bonusarray['points'])."</td>");
+	print("<td class=\"rowhead_center\"><input type=\"hidden\" name=\"option\" value=\"".$i."\" /><b>".($i + 1)."</b></td>");
+	if ($bonusarray['art'] == 'invite'){ //for Custom Title!
+	    $otheroption_title = "<input type=\"text\" name=\"title\" style=\"width: 200px\" maxlength=\"30\" />";
+	    print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_titile'].$otheroption_title.$lang_mybonus['text_click_exchange']."</td><td class=\"rowfollow\" align='center'>".number_format($bonusarray['points'])."</td>");
 	}
-	elseif ($i==7){  //for Give A Karma Gift
+	elseif ($bonusarray['art'] == 'gift_1'){  //for Give A Karma Gift
 			$otheroption = "<table width=\"100%\"><tr><td class=\"embedded\"><b>".$lang_mybonus['text_username']."</b><input type=\"text\" name=\"username\" style=\"width: 200px\" maxlength=\"24\" /></td><td class=\"embedded\"><b>".$lang_mybonus['text_to_be_given']."</b><select name=\"bonusgift\" id=\"giftselect\" onchange=\"customgift();\"> <option value=\"25\"> 25</option><option value=\"50\"> 50</option><option value=\"100\"> 100</option> <option value=\"200\"> 200</option> <option value=\"300\"> 300</option> <option value=\"400\"> 400</option><option value=\"500\"> 500</option><option value=\"1000\" selected=\"selected\"> 1,000</option><option value=\"5000\"> 5,000</option><option value=\"10000\"> 10,000</option><option value=\"0\">".$lang_mybonus['text_custom']."</option></select><input type=\"text\" name=\"bonusgift\" id=\"giftcustom\" style='width: 80px' disabled=\"disabled\" />".$lang_mybonus['text_karma_points']."</td></tr><tr><td class=\"embedded\" colspan=\"2\"><b>".$lang_mybonus['text_message']."</b><input type=\"text\" name=\"message\" style=\"width: 400px\" maxlength=\"100\" /></td></tr></table>";
 			print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_receiver_name']."<br />$otheroption</td><td class=\"rowfollow nowrap\" align='center'>".$lang_mybonus['text_min']."25<br />".$lang_mybonus['text_max']."10,000</td>");
 	}
-	elseif ($i==9){  //charity giving
+	elseif ($bonusarray['art'] == 'gift_2'){  //charity giving
 			$otheroption = "<table width=\"100%\"><tr><td class=\"embedded\">".$lang_mybonus['text_ratio_below']."<select name=\"ratiocharity\"> <option value=\"0.1\"> 0.1</option><option value=\"0.2\"> 0.2</option><option value=\"0.3\" selected=\"selected\"> 0.3</option> <option value=\"0.4\"> 0.4</option> <option value=\"0.5\"> 0.5</option> <option value=\"0.6\"> 0.6</option><option value=\"0.7\"> 0.7</option><option value=\"0.8\"> 0.8</option></select>".$lang_mybonus['text_and_downloaded_above']." 10 GB</td><td class=\"embedded\"><b>".$lang_mybonus['text_to_be_given']."</b><select name=\"bonuscharity\" id=\"charityselect\" > <option value=\"1000\"> 1,000</option><option value=\"2000\"> 2,000</option><option value=\"3000\" selected=\"selected\"> 3000</option> <option value=\"5000\"> 5,000</option> <option value=\"8000\"> 8,000</option> <option value=\"10000\"> 10,000</option><option value=\"20000\"> 20,000</option><option value=\"50000\"> 50,000</option></select>".$lang_mybonus['text_karma_points']."</td></tr></table>";
 			print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_select_receiver_ratio']."<br />$otheroption</td><td class=\"rowfollow nowrap\" align='center'>".$lang_mybonus['text_min']."1,000<br />".$lang_mybonus['text_max']."50,000</td>");
 	}
-	else{  //for VIP or Upload
+	else {  //for VIP or Upload
 		print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."</td><td class=\"rowfollow\" align='center'>".number_format($bonusarray['points'])."</td>");
 	}
 
 	if($CURUSER['seedbonus'] >= $bonusarray['points'])
 	{
-		if ($i==7){
+		if ($bonusarray['art'] == 'gift_1'){
 			print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_karma_gift']."\" /></td>");
 		}
-		elseif ($i==8){
+		elseif ($bonusarray['art'] == 'noad'){
 			if ($enablenoad_advertisement == 'yes' && get_user_class() >= $noad_advertisement)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_class_above_no_ad']."\" disabled=\"disabled\" /></td>");
 			elseif (strtotime($CURUSER['noaduntil']) >= TIMENOW)
@@ -195,26 +318,26 @@ for ($i=1; $i <=10; $i++)
 			else
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
 		}
-		elseif ($i==9){
+		elseif ($bonusarray['art'] == 'gift_2'){
 			print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_charity_giving']."\" /></td>");
 		}
-		elseif($i==4)
+		elseif($bonusarray['art'] == 'invite')
 		{
 			if(get_user_class() < $buyinvite_class)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']."\" disabled=\"disabled\" /></td>");
 			else
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
 		}
-		elseif ($i==6)
+		elseif ($bonusarray['art'] == 'class')
 		{
 			if (get_user_class() >= UC_VIP)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['std_class_above_vip']."\" disabled=\"disabled\" /></td>");
 			else
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
 		}
-		elseif ($i==5)
+		elseif ($bonusarray['art'] == 'title')
 			print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
-		else
+		elseif ($bonusarray['art'] == 'traffic')
 		{
 			if ($CURUSER['downloaded'] > 0){
 				if ($CURUSER['uploaded'] > $dlamountlimit_bonus * 1073741824)//Uploaded amount reach limit
@@ -226,7 +349,9 @@ for ($i=1; $i <=10; $i++)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['text_ratio_too_high']."\" disabled=\"disabled\" /></td>");
 			}
 			else print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
-		}
+		} else {
+            print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
+        }
 	}
 	else
 	{
@@ -323,15 +448,14 @@ print($lang_mybonus['text_howto_get_karma_five'].$uploadtorrent_bonus.$lang_mybo
 <?php
 }
 
-
 // Bonus exchange
 if ($action == "exchange") {
-	if (isset($_POST["userid"]) || isset($_POST["points"]) || isset($_POST["bonus"]) || isset($_POST["art"])){
+	if (isset($_POST["userid"]) || isset($_POST["points"]) || isset($_POST["bonus"]) || isset($_POST["art"]) || !isset($_POST['option']) || !isset($allBonus[$_POST['option']])){
 		write_log("User " . $CURUSER["username"] . "," . $CURUSER["ip"] . " is trying to cheat at bonus system",'mod');
 		die($lang_mybonus['text_cheat_alert']);
 	}
 	$option = intval($_POST["option"] ?? 0);
-	$bonusarray = bonusarray($option);
+	$bonusarray = $allBonus[$option];
 	$points = $bonusarray['points'];
 	$userid = $CURUSER['id'];
 	$art = $bonusarray['art'];
@@ -502,6 +626,18 @@ if ($action == "exchange") {
             } catch (\Exception $exception) {
 		        do_log($exception->getMessage(), 'error');
 		        stderr('Error', "Something wrong...", false, false);
+            }
+        } elseif ($art == 'buy_medal') {
+            if (empty($_POST['medal_id'])) {
+                stderr("Error","Invalid Medal ID: " . ($_POST['medal_id'] ?? ''), false, false);
+            }
+            try {
+                $bonusRep = new \App\Repositories\BonusRepository();
+                $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
+                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
+            } catch (\Exception $exception) {
+                do_log($exception->getMessage(), 'error');
+                stderr('Error', "Something wrong...", false, false);
             }
         }
 	}

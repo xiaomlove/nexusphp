@@ -72,6 +72,24 @@ const api = {
     deleteExam: (id) => {
         return axios.delete('exams/' + id);
     },
+
+    listMedal: (params = {}) => {
+        return axios.get('medals', {params: params});
+    },
+    storeMedal: (params = {}) => {
+        return axios.post('medals', params);
+    },
+    updateMedal: (id, params = {}) => {
+        return axios.put('medals/' + id, params);
+    },
+    getMedal: (id) => {
+        return axios.get('medals/' + id);
+    },
+    deleteMedal: (id) => {
+        return axios.delete('medals/' + id);
+    },
+
+
     listClass: (params = {}) => {
         return axios.get('user-classes', {params: params});
     },
@@ -107,7 +125,10 @@ const api = {
     },
     listSystemInfo: () => {
         return axios.get('dashboard/system-info')
-    }
+    },
+    removeUserMedal: (id) => {
+        return axios.delete('user-medals/' + id);
+    },
 
 }
 

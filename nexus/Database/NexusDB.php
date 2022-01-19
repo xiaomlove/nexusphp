@@ -3,6 +3,8 @@
 namespace Nexus\Database;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 
 class NexusDB
 {
@@ -227,17 +229,34 @@ class NexusDB
 
     public static function schema(): \Illuminate\Database\Schema\Builder
     {
-        return Capsule::schema(self::ELOQUENT_CONNECTION_NAME);
+        if (IN_NEXUS) {
+            return Capsule::schema(self::ELOQUENT_CONNECTION_NAME);
+        }
+        throw new \RuntimeException('can not call this when not in nexus.');
     }
 
     public static function table($table): \Illuminate\Database\Query\Builder
     {
-        return Capsule::table($table);
+        if (IN_NEXUS) {
+            return Capsule::table($table);
+        }
+        return DB::table($table);
+    }
+
+    public static function raw($value): \Illuminate\Database\Query\Expression
+    {
+        if (IN_NEXUS) {
+            return new Expression($value);
+        }
+        return DB::raw($value);
     }
 
     public static function transaction(\Closure $callback, $attempts = 1)
     {
-        return Capsule::connection(self::ELOQUENT_CONNECTION_NAME)->transaction($callback, $attempts);
+        if (IN_NEXUS) {
+            return Capsule::connection(self::ELOQUENT_CONNECTION_NAME)->transaction($callback, $attempts);
+        }
+        return DB::transaction($callback, $attempts);
     }
 
     public static function getMysqlColumnInfo($table, $column)

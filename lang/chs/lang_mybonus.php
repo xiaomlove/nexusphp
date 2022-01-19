@@ -126,6 +126,7 @@ $lang_mybonus = array
     'text_cancel_hr_title' => 'H&R 消除',
     'text_cancel_hr_label' => '输入要消除的 H&R ID：',
     'text_success_cancel_hr' => "成功消除了一个 H&R。",
+    'text_success_buy_medal' => '成功购买该勋章。',
 );
 
 ?>

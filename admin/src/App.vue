@@ -39,6 +39,9 @@
                             <el-menu-item index="/exam-user"><i class="el-icon-menu" />Exam user</el-menu-item>
                         </el-menu-item-group>
                         <el-menu-item-group>
+                            <el-menu-item index="/medal"><i class="el-icon-menu" />Medal</el-menu-item>
+                        </el-menu-item-group>
+                        <el-menu-item-group>
                             <el-menu-item index="/setting"><i class="el-icon-menu" />Setting</el-menu-item>
                         </el-menu-item-group>
                     </el-submenu>

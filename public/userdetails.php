@@ -28,6 +28,8 @@ else
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
+$userInfo = \App\Models\User::query()->with(['valid_medals'])->findOrFail($user['id']);
+
 if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
 $joindate = $lang_userdetails['text_not_available'];
 else
@@ -271,6 +273,11 @@ tr_small($lang_userdetails['row_donated'], "$".htmlspecialchars($user['donated']
 
 if ($user["avatar"])
 tr_small($lang_userdetails['row_avatar'], return_avatar_image(htmlspecialchars(trim($user["avatar"]))), 1);
+
+if ($userInfo->valid_medals->isNotEmpty()) {
+    tr_small($lang_userdetails['row_medal'], build_medal_image($userInfo->valid_medals), 1);
+}
+
 $uclass = get_user_class_image($user["class"]);
 $utitle = get_user_class_name($user["class"],false,false,true);
 $uclassImg = "<img alt=\"".get_user_class_name($user["class"],false,false,true)."\" title=\"".get_user_class_name($user["class"],false,false,true)."\" src=\"".$uclass."\" /> ".($user['title']!=="" ? "&nbsp;".htmlspecialchars(trim($user["title"]))."" :  "");

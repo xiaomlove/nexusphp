@@ -55,6 +55,16 @@ const router = createRouter({
             component: () => import('../views/agent-allow/form.vue')
         },
         {
+            path: '/medal',
+            name: 'medal',
+            component: () => import('../views/medal/index.vue')
+        },
+        {
+            path: '/medal-form',
+            name: 'medal-form',
+            component: () => import('../views/medal/form.vue')
+        },
+        {
             path: '/setting',
             name: 'setting',
             component: () => import('../views/setting/index.vue')

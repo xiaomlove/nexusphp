@@ -7,12 +7,14 @@ use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\HitAndRun;
+use App\Models\Medal;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\User;
 use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\TorrentRepository;
+use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use GeoIp2\Database\Reader;
 use Illuminate\Console\Command;
@@ -55,11 +57,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $user = User::query()->first();
-        $user->update([
-            'page' => DB::raw('dddd')
-        ]);
-        dd(last_query());
+        $rep = new UserRepository();
+        $r = $rep->getDetail(1);
     }
 
 }

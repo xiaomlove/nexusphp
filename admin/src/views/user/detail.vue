@@ -153,11 +153,61 @@
                 </el-col>
             </el-row>
         </el-card>
+
+        <el-row v-if="baseInfo.valid_medals && baseInfo.valid_medals.length">
+            <el-col :span="12">
+                <el-card >
+                    <template #header>
+                        <div class="card-header">
+                            <span>Medal</span>
+                        </div>
+                    </template>
+
+                    <el-table
+                        v-loading="loading"
+                        ref="multipleTable"
+                        :data="baseInfo.valid_medals"
+                        tooltip-effect="dark"
+                    >
+                        <el-table-column
+                            prop="name"
+                            label="Name"
+                        ></el-table-column>
+
+                        <el-table-column
+                            prop="image_large"
+                            label="Image"
+                        >
+                        </el-table-column>
+
+                        <el-table-column
+                            prop="expire_at"
+                            label="Expire at"
+                        ></el-table-column>
+
+                        <el-table-column
+                            label="Action"
+                            width="100"
+                        >
+                            <template #default="scope">
+                                <el-popconfirm
+                                    title="Confirm Remove ?"
+                                    @confirm="handleRemoveUserMedal(scope.row.user_medal_id)"
+                                >
+                                    <template #reference>
+                                        <a style="cursor: pointer">Remove</a>
+                                    </template>
+                                </el-popconfirm>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-card>
+            </el-col>
+        </el-row>
     </div>
     <DialogAssignExam ref="assignExam" :reload="fetchPageData"/>
     <DialogViewInviteInfo ref="viewInviteInfo" />
     <DialogDisableUser ref="disableUser" :reload="fetchPageData" />
-    <DialogModComment ref="modComment" />
     <DialogModComment ref="modComment" />
     <DialogResetPassword ref="resetPassword" />
 </template>
@@ -240,6 +290,12 @@ export default {
         const handleResetPassword = async () => {
             resetPassword.value.open(id)
         }
+
+        const handleRemoveUserMedal = async (id) => {
+            let res = await api.removeUserMedal(id)
+            ElMessage.success(res.msg)
+            await fetchPageData()
+        }
         return {
             ...toRefs(state),
             handleRemoveExam,
@@ -252,6 +308,7 @@ export default {
             handleGetModComment,
             handleResetPassword,
             fetchPageData,
+            handleRemoveUserMedal,
             assignExam,
             viewInviteInfo,
             disableUser,
@@ -271,10 +328,10 @@ export default {
     text-align: left;
     tr {
         th {
-            padding-bottom: 10px;
+            padding-bottom: 4px;
         }
         td {
-            padding: 10px 0;
+            padding: 4px 0;
         }
     }
 }
