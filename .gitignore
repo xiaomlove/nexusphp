@@ -24,3 +24,4 @@ yarn-error.log
 /imdb/cache
 /imdb/images
 /resources/geoip
+.DS_Store

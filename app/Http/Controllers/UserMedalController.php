@@ -42,16 +42,13 @@ class UserMedalController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string',
-            'price' => 'required|integer|min:1',
-            'image_large' => 'required|url',
-            'image_small' => 'required|url',
+            'medal_id' => 'required|integer',
+            'uid' => 'required|integer',
             'duration' => 'nullable|integer|min:-1',
         ];
         $request->validate($rules);
-        $result = $this->repository->store($request->all());
-        $resource = new MedalResource($result);
-        return $this->success($resource);
+        $result = $this->repository->grantToUser($request->uid, $request->medal_id, $request->duration);
+        return $this->success($result);
     }
 
     /**

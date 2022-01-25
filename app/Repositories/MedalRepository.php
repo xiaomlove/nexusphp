@@ -2,7 +2,9 @@
 namespace App\Repositories;
 
 use App\Models\Medal;
+use App\Models\User;
 use App\Models\UserMedal;
+use Carbon\Carbon;
 use Nexus\Database\NexusDB;
 
 class MedalRepository extends BaseRepository
@@ -49,6 +51,22 @@ class MedalRepository extends BaseRepository
             $medal->delete();
         });
         return true;
+    }
+
+    public function  grantToUser(int $uid, int $medalId, $duration = null)
+    {
+        $user = User::query()->findOrFail($uid, User::$commonFields);
+        $medal = Medal::query()->findOrFail($medalId);
+        $exists = $user->valid_medals()->where('medal_id', $medalId)->exists();
+        do_log(last_query());
+        if ($exists) {
+            throw new \LogicException("user: $uid already own this medal: $medalId.");
+        }
+        $expireAt = null;
+        if ($duration > 0) {
+            $expireAt = Carbon::now()->addDays($duration)->toDateTimeString();
+        }
+        return $user->medals()->attach([$medal->id => ['expire_at' => $expireAt]]);
     }
 
 }

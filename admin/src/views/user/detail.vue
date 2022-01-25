@@ -22,6 +22,7 @@
                             <el-button type="primary" size="mini" @click="handleGetModComment">Mod comment</el-button>
                             <el-button type="primary" size="mini" @click="handleResetPassword">Reset password</el-button>
                             <el-button type="primary" size="mini" @click="handleAssignExam">Assign exam</el-button>
+                            <el-button type="primary" size="mini" @click="handleGrantMedal">Grant medal</el-button>
                         </div>
                     </td>
                 </tr>
@@ -206,6 +207,7 @@
         </el-row>
     </div>
     <DialogAssignExam ref="assignExam" :reload="fetchPageData"/>
+    <DialogGrantMedal ref="grantMedal" :reload="fetchPageData"/>
     <DialogViewInviteInfo ref="viewInviteInfo" />
     <DialogDisableUser ref="disableUser" :reload="fetchPageData" />
     <DialogModComment ref="modComment" />
@@ -222,17 +224,19 @@ import DialogViewInviteInfo from './dialog-invite-info.vue'
 import DialogDisableUser from './dialog-disable-user.vue'
 import DialogModComment from './dialog-mod-comment.vue'
 import DialogResetPassword from './dialog-reset-password.vue'
+import DialogGrantMedal from './dialog-grant-medal.vue'
 
 export default {
     name: "UserDetail",
     components: {
-        DialogAssignExam, DialogViewInviteInfo, DialogDisableUser, DialogModComment, DialogResetPassword
+        DialogAssignExam, DialogViewInviteInfo, DialogDisableUser, DialogModComment, DialogResetPassword, DialogGrantMedal
     },
     setup() {
         const route = useRoute()
         const router = useRouter()
         const { id } = route.query
         const assignExam = ref(null)
+        const grantMedal = ref(null)
         const viewInviteInfo = ref(null)
         const disableUser = ref(null)
         const modComment = ref(null)
@@ -273,6 +277,9 @@ export default {
         const handleAssignExam = async () => {
             assignExam.value.open(id)
         }
+        const handleGrantMedal = async () => {
+            grantMedal.value.open(id)
+        }
         const handleViewInviteInfo = async () => {
             viewInviteInfo.value.open(id)
         }
@@ -301,6 +308,7 @@ export default {
             handleRemoveExam,
             handleAvoidExam,
             handleAssignExam,
+            handleGrantMedal,
             handleRecoverExam,
             handleEnableUser,
             handleViewInviteInfo,
@@ -310,6 +318,7 @@ export default {
             fetchPageData,
             handleRemoveUserMedal,
             assignExam,
+            grantMedal,
             viewInviteInfo,
             disableUser,
             modComment,

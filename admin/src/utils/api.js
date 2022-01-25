@@ -129,6 +129,9 @@ const api = {
     removeUserMedal: (id) => {
         return axios.delete('user-medals/' + id);
     },
+    storeUserMedal: (params) => {
+        return axios.post('user-medals', params);
+    },
 
 }
 
