@@ -19,10 +19,10 @@
                     <td></td>
                     <td colspan="7">
                         <div class="other-actions">
-                            <el-button type="primary" size="mini" @click="handleGetModComment">Mod comment</el-button>
-                            <el-button type="primary" size="mini" @click="handleResetPassword">Reset password</el-button>
-                            <el-button type="primary" size="mini" @click="handleAssignExam">Assign exam</el-button>
-                            <el-button type="primary" size="mini" @click="handleGrantMedal">Grant medal</el-button>
+                            <el-button type="primary" size="default" @click="handleGetModComment">Mod comment</el-button>
+                            <el-button type="primary" size="default" @click="handleResetPassword">Reset password</el-button>
+                            <el-button type="primary" size="default" @click="handleAssignExam">Assign exam</el-button>
+                            <el-button type="primary" size="default" @click="handleGrantMedal">Grant medal</el-button>
                         </div>
                     </td>
                 </tr>
@@ -179,6 +179,9 @@
                             prop="image_large"
                             label="Image"
                         >
+                            <template #default="scope">
+                                <el-image :src="scope.row.image_large" style="max-height: 200px" />
+                            </template>
                         </el-table-column>
 
                         <el-table-column

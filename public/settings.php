@@ -166,7 +166,7 @@ elseif ($action == 'savesettings_smtp') 	// save smtp
 	if (isset($smtptype) && $smtptype == 'advanced') {
 		$validConfig = array_merge($validConfig, array('smtp_host','smtp_port','smtp_from'));
 	} elseif ($smtptype == 'external') {
-		$validConfig = array_merge($validConfig, array('smtpaddress','smtpport','accountname','accountpassword'));
+		$validConfig = array_merge($validConfig, array('smtpaddress','smtpport', 'encryption', 'accountname','accountpassword'));
 	}
 
 	GetVar($validConfig);
@@ -306,6 +306,10 @@ elseif ($action == 'smtpsettings')	// stmp settings
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_setting_for_external_type']."</b></td></tr>");
 	tr($lang_settings['row_outgoing_mail_address'], "<input type=text name=smtpaddress style=\"width: 300px\" ".(!empty($SMTP['smtpaddress']) ? "value=\"".$SMTP['smtpaddress']."\"" : "")."> ".$lang_settings['text_outgoing_mail_address_note'], 1);
 	tr($lang_settings['row_outgoing_mail_port'], "<input type=text name=smtpport style=\"width: 300px\" ".(!empty($SMTP['smtpport']) ? "value=\"".$SMTP['smtpport']."\"" : "")."> ".$lang_settings['text_outgoing_mail_port_note'], 1);
+	$encryptionRadio = '<label><input type="radio" name="encryption" value="" ' . (empty($SMTP['encryption']) ? " checked" : "") . ' />none</label>';
+	$encryptionRadio .= '<label><input type="radio" name="encryption" value="tls"' . ($SMTP['encryption'] == "tls" ? " checked" : "") . '/>tls</label>';
+	$encryptionRadio .= '<label><input type="radio" name="encryption" value="ssl"' . ($SMTP['encryption'] == "ssl" ? " checked" : "") . '/>ssl</label>';
+	tr($lang_settings['row_outgoing_mail_encryption'], $encryptionRadio, 1);
 	tr($lang_settings['row_smtp_account_name'], "<input type=text name=accountname style=\"width: 300px\" ".(!empty($SMTP['accountname']) ? "value=\"".$SMTP['accountname']."\"" : "")."> ".$lang_settings['text_smtp_account_name_note'], 1);
 	tr($lang_settings['row_smtp_account_password'], "<input type=password name=accountpassword style=\"width: 300px\" ".(!empty($SMTP['accountpassword']) ? "value=\"".$SMTP['accountpassword']."\"" : "")."> ".$lang_settings['text_smtp_account_password_note'], 1);
 	print("</tbody><tbody>");

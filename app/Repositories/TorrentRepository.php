@@ -379,12 +379,5 @@ class TorrentRepository extends BaseRepository
 
     }
 
-    public function getStickyStatus($torrent)
-    {
-        if (!$torrent instanceof Torrent) {
-            $torrent = Torrent::query()->findOrFail((int)$torrent, ['id', 'pos_state']);
-        }
-    }
-
 
 }

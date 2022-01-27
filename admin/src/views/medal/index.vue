@@ -6,7 +6,7 @@
 
                 </div>
                 <div class="right">
-                    <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">Add</el-button>
+                    <el-button type="primary" size="small" icon="Plus" @click="handleAdd">Add</el-button>
                 </div>
             </div>
         </template>
@@ -33,11 +33,19 @@
             <el-table-column
                 prop="image_large"
                 label="Large image"
-            ></el-table-column>
+            >
+                <template #default="scope">
+                    <el-image :src="scope.row.image_large" style="max-height: 200px" />
+                </template>
+            </el-table-column>
             <el-table-column
                 prop="image_small"
                 label="Small image"
-            ></el-table-column>
+            >
+                <template #default="scope">
+                    <el-image :src="scope.row.image_small" style="max-height: 200px" />
+                </template>
+            </el-table-column>
 
             <el-table-column
                 prop="get_type_text"
@@ -56,7 +64,7 @@
 
             <el-table-column
                 label="Action"
-                width="100"
+                width=""
             >
                 <template #default="scope">
                     <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>

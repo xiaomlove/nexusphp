@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "536588e03f43a227f60cd6666dbb4e3f",
+    "content-hash": "4893668aed1fe063d932fc9d9e5ea4d5",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1740,22 +1740,30 @@
         },
         {
             "name": "imdbphp/imdbphp",
-            "version": "v6.5.1",
+            "version": "v7.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tboothman/imdbphp.git",
-                "reference": "4a88ceeabadf1c7b4924dd321fb89bc642b58bee"
+                "reference": "8bd3b62344add278959c297a56f0cffd2796e12f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tboothman/imdbphp/zipball/4a88ceeabadf1c7b4924dd321fb89bc642b58bee",
-                "reference": "4a88ceeabadf1c7b4924dd321fb89bc642b58bee",
-                "shasum": ""
+                "url": "https://api.github.com/repos/tboothman/imdbphp/zipball/8bd3b62344add278959c297a56f0cffd2796e12f",
+                "reference": "8bd3b62344add278959c297a56f0cffd2796e12f",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
             },
             "require": {
                 "ext-curl": "*",
                 "ext-dom": "*",
                 "ext-json": "*",
+                "ext-libxml": "*",
+                "ext-simplexml": "*",
                 "php": ">=5.6",
                 "psr/log": "~1.0",
                 "psr/simple-cache": "^1.0"
@@ -1779,9 +1787,9 @@
             "description": "Library for retrieving film and tv information from IMDb",
             "support": {
                 "issues": "https://github.com/tboothman/imdbphp/issues",
-                "source": "https://github.com/tboothman/imdbphp/tree/v6.5.1"
+                "source": "https://github.com/tboothman/imdbphp/tree/v7.2.0"
             },
-            "time": "2021-05-30T00:19:11+00:00"
+            "time": "2021-07-15T12:15:21+00:00"
         },
         {
             "name": "laravel-lang/lang",
@@ -9439,5 +9447,5 @@
         "ext-bcmath": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }

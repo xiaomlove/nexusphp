@@ -104,15 +104,19 @@ $trackerReportAuthKey = $torrentRep->getTrackerReportAuthKey($id, $CURUSER['id']
 $dict = \Rhilip\Bencode\Bencode::load($fn);
 $dict['announce'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";
 
-if (count($announce_urls) > 1) {
-    foreach ($announce_urls as $announce_url) {
-        /** d['announce-list'] = [[ tracker1, tracker2, tracker3 ]] */
-        $dict['announce-list'][0][] = $ssl_torrent . $announce_url . "?authkey=$trackerReportAuthKey";
-
-        /** d['announce-list'] = [ [tracker1], [backup1], [backup2] ] */
-        //$dict['announce-list'][] = [$ssl_torrent . $announce_url . "?passkey=" . $CURUSER['passkey']];
-    }
-}
+/**
+ * does not support multi-tracker
+ *
+ * @see https://github.com/xiaomlove/nexusphp/issues/26
+ */
+//if (count($announce_urls) > 1) {
+//    foreach ($announce_urls as $announce_url) {
+//        /** d['announce-list'] = [[ tracker1, tracker2, tracker3 ]] */
+//        $dict['announce-list'][0][] = $ssl_torrent . $announce_url . "?authkey=$trackerReportAuthKey";
+//        /** d['announce-list'] = [ [tracker1], [backup1], [backup2] ] */
+//        //$dict['announce-list'][] = [$ssl_torrent . $announce_url . "?passkey=" . $CURUSER['passkey']];
+//    }
+//}
 
 //$dict = bdec_file($fn, $max_torrent_size);
 //$dict['value']['announce']['value'] = $ssl_torrent . $base_announce_url . "?passkey=$CURUSER[passkey]";

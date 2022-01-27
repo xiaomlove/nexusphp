@@ -17,15 +17,15 @@
                     :default-active='state.currentPath'
                 >
                     <el-menu-item index="/"><i class="el-icon-odometer" />Dashboard</el-menu-item>
-                    <el-submenu index="2">
+                    <el-sub-menu index="2">
                         <template #title>
                             <span>User</span>
                         </template>
                         <el-menu-item-group>
                             <el-menu-item index="/user"><i class="el-icon-user" />User list</el-menu-item>
                         </el-menu-item-group>
-                    </el-submenu>
-                    <el-submenu index="3">
+                    </el-sub-menu>
+                    <el-sub-menu index="3">
                         <template #title>
                             <span>System</span>
                         </template>
@@ -44,7 +44,7 @@
                         <el-menu-item-group>
                             <el-menu-item index="/setting"><i class="el-icon-menu" />Setting</el-menu-item>
                         </el-menu-item-group>
-                    </el-submenu>
+                    </el-sub-menu>
                 </el-menu>
             </el-aside>
             <el-container class="content">
@@ -186,14 +186,14 @@ body {
 .el-menu {
     border-right: none!important;
 }
-.el-submenu {
+.el-sub-menu {
     border-top: 1px solid hsla(0, 0%, 100%, .05);
     border-bottom: 1px solid rgba(0, 0, 0, .2);
 }
-.el-submenu:first-child {
+.el-sub-menu:first-child {
     border-top: none;
 }
-.el-submenu [class^="el-icon-"] {
+.el-sub-menu [class^="el-icon-"] {
     vertical-align: -1px!important;
 }
 a {

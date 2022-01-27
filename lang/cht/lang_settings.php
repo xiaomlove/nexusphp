@@ -557,6 +557,7 @@ $lang_settings = array
 	'text_setting_for_external_type' => "外部類別設定",
 	'row_outgoing_mail_address' => "SMTP位址",
 	'row_outgoing_mail_port' => "SMTP通訊埠",
+    'row_outgoing_mail_encryption' => "SMTP加密方式",
 	'text_outgoing_mail_address_note' => "<b>輔助說明：</b> smtp.yourisp.com",
 	'text_outgoing_mail_port_note' => "<b>輔助說明：</b> 25",
 	'row_smtp_account_name' => "用戶名",

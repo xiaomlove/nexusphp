@@ -22,7 +22,7 @@
         ]
     },
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^8.0",
         "ext-gd": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
@@ -35,7 +35,7 @@
         "geoip2/geoip2": "~2.0",
         "guzzlehttp/guzzle": "~6.0",
         "hashids/hashids": "^4.1",
-        "imdbphp/imdbphp": "^6.4",
+        "imdbphp/imdbphp": "^7.0",
         "laravel-lang/lang": "~7.0",
         "laravel/framework": "^8.12",
         "laravel/sanctum": "^2.10",

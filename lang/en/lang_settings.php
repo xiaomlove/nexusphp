@@ -556,6 +556,7 @@ $lang_settings = array
 	'text_setting_for_external_type' => "Settings for External type",
 	'row_outgoing_mail_address' => "Outgoing mail (SMTP) address",
 	'row_outgoing_mail_port' => "Outgoing mail (SMTP) port",
+	'row_outgoing_mail_encryption' => "Outgoing mail (SMTP) encryption",
 	'text_outgoing_mail_address_note' => "<b>hint:</b> smtp.yourisp.com",
 	'text_outgoing_mail_port_note' => "<b>hint:</b> 25",
 	'row_smtp_account_name' => "Account Name",
