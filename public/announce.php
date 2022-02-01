@@ -424,32 +424,42 @@ elseif(isset($self))
 }
 else
 {
-    if (strlen($ip) > 15) {
-        $sockres = @pfsockopen("tcp://[".$ip."]",$port,$errno,$errstr,1);
+    if ($event != 'stopped') {
+        $isPeerExistResultSet = sql_query("select id from peers where $selfwhere limit 1");
+        if ($isPeerExistResultSet && !mysqli_fetch_assoc($isPeerExistResultSet)) {
+            if (strlen($ip) > 15) {
+                $sockres = @pfsockopen("tcp://[".$ip."]",$port,$errno,$errstr,1);
+            } else {
+                $sockres = @pfsockopen($ip, $port, $errno, $errstr, 1);
+            }
+            if (!$sockres)
+            {
+                $connectable = "no";
+            }
+            else
+            {
+                $connectable = "yes";
+                @fclose($sockres);
+            }
+            sql_query("INSERT INTO peers (torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey) VALUES ($torrentid, $userid, ".sqlesc($peer_id).", ".sqlesc($ip).", $port, '$connectable', $uploaded, $downloaded, $left, $dt, $dt, '$seeder', ".sqlesc($agent).", $downloaded, $uploaded, ".sqlesc($passkey).")") or err("PL Err 2");
+
+            if (mysql_affected_rows())
+            {
+                $updateset[] = ($seeder == "yes" ? "seeders = seeders + 1" : "leechers = leechers + 1");
+
+                $check = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM snatched WHERE torrentid = $torrentid AND userid = $userid"));
+                if (!$check['0'])
+                    sql_query("INSERT INTO snatched (torrentid, userid, ip, port, uploaded, downloaded, to_go, startdat, last_action) VALUES ($torrentid, $userid, ".sqlesc($ip).", $port, $uploaded, $downloaded, $left, $dt, $dt)") or err("SL Err 4");
+                else
+                    sql_query("UPDATE snatched SET to_go = $left, last_action = ".$dt ." WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 3.1");
+            }
+        } else {
+            do_log("[INSERT PEER] peer already exists for $selfwhere.");
+        }
     } else {
-        $sockres = @pfsockopen($ip, $port, $errno, $errstr, 1);
+        do_log("[INSERT PEER] event = 'stopped', ignore.");
     }
-	if (!$sockres)
-	{
-		$connectable = "no";
-	}
-	else
-	{
-		$connectable = "yes";
-		@fclose($sockres);
-	}
-	sql_query("INSERT INTO peers (torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey) VALUES ($torrentid, $userid, ".sqlesc($peer_id).", ".sqlesc($ip).", $port, '$connectable', $uploaded, $downloaded, $left, $dt, $dt, '$seeder', ".sqlesc($agent).", $downloaded, $uploaded, ".sqlesc($passkey).")") or err("PL Err 2");
 
-	if (mysql_affected_rows())
-	{
-		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1" : "leechers = leechers + 1");
-
-		$check = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM snatched WHERE torrentid = $torrentid AND userid = $userid"));
-		if (!$check['0'])
-			sql_query("INSERT INTO snatched (torrentid, userid, ip, port, uploaded, downloaded, to_go, startdat, last_action) VALUES ($torrentid, $userid, ".sqlesc($ip).", $port, $uploaded, $downloaded, $left, $dt, $dt)") or err("SL Err 4");
-		else
-			sql_query("UPDATE snatched SET to_go = $left, last_action = ".$dt ." WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 3.1");
-	}
 }
 
 if (count($updateset)) // Update only when there is change in peer counts

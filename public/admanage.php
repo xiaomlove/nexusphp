@@ -126,8 +126,8 @@ function print_ad_editor($position, $row = "")
 <table border="1" cellspacing="0" cellpadding="10" width="100%">
 <?php
 tr($lang_admanage['row_name']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[name]\" value=\"".htmlspecialchars($name)."\" style=\"width: 300px\" /> " . $lang_admanage['text_name_note'], 1);
-tr($lang_admanage['row_start_time'], "<input type=\"text\" name=\"ad[starttime]\" value=\"".$starttime."\" style=\"width: 300px\" /> " . $lang_admanage['text_start_time_note'], 1);
-tr($lang_admanage['row_end_time'], "<input type=\"text\" name=\"ad[endtime]\" value=\"".$endtime."\" style=\"width: 300px\" /> ".$lang_admanage['text_end_time_note'], 1);
+tr($lang_admanage['row_start_time']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[starttime]\" value=\"".$starttime."\" style=\"width: 300px\" /> " . $lang_admanage['text_start_time_note'], 1);
+tr($lang_admanage['row_end_time']."<font color=\"red\">*</font>", "<input type=\"text\" name=\"ad[endtime]\" value=\"".$endtime."\" style=\"width: 300px\" /> ".$lang_admanage['text_end_time_note'], 1);
 tr($lang_admanage['row_order'], "<input type=\"text\" name=\"ad[displayorder]\" value=\"".$displayorder."\" style=\"width: 100px\" /> ".$lang_admanage['text_order_note'], 1);
 tr($lang_admanage['row_enabled']."<font color=\"red\">*</font>", "<input type=\"radio\" name=\"ad[enabled]\"".($enabled ? " checked=\"checked\"" : "")." value=\"1\" />".$lang_admanage['text_yes']."<input type=\"radio\" name=\"ad[enabled]\"".($enabled ? "" : " checked=\"checked\"")." value=\"0\" />".$lang_admanage['text_no']."<br />".$lang_admanage['text_enabled_note'], 1);
 tr($lang_admanage['row_type']."<font color=\"red\">*</font>", "<select name=\"ad[type]\" onchange=\"var key, types; types=new Array('image','text','bbcodes','xhtml','flash'); for(key in types){var obj=$('type_'+types[key]); obj.style.display=types[key]==this.options[this.selectedIndex].value?'':'none';}\"><option value=\"image\"".($type == 'image' ? " selected=\"selected\"" : "").">".$lang_admanage['text_image']."</option><option value=\"text\"".($type == 'text' ? " selected=\"selected\"" : "").">".$lang_admanage['text_text']."</option><option value=\"bbcodes\"".($type == 'bbcodes' ? " selected=\"selected\"" : "").">".$lang_admanage['text_bbcodes']."</option>".(get_user_class() >= $allowxhtmlclass ? "<option value=\"xhtml\"".($type == 'xhtml' ? " selected=\"selected\"" : "").">".$lang_admanage['text_xhtml']."</option>" : "")."<option value=\"flash\"".($type == 'flash' ? " selected=\"selected\"" : "").">".$lang_admanage['text_flash']."</option></select> ".$lang_admanage['text_type_note'], 1);
@@ -280,7 +280,7 @@ elseif ($action == 'submit')
 		$displayorder = intval($_POST['ad']['displayorder'] ?? 0);
 		$enabled = intval($_POST['ad']['enabled'] ?? 0);
 		$type = $_POST['ad']['type'];
-		if (!$name || !$type)
+		if (!$name || !$type || !$starttime || !$endtime)
 		{
 			stderr($lang_admanage['std_error'], $lang_admanage['std_missing_form_data']);
 		}

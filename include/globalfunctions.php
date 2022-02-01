@@ -291,10 +291,12 @@ function get_setting($name = null)
 		$result = sql_query($sql);
 		while ($row = mysql_fetch_assoc($result)) {
 			$value = $row['value'];
-			$arr = json_decode($value, true);
-			if (is_array($arr)) {
-				$value = $arr;
-			}
+            if (!is_null($value)) {
+                $arr = json_decode($value, true);
+                if (is_array($arr)) {
+                    $value = $arr;
+                }
+            }
 			arr_set($settings, $row['name'], $value);
 		}
 	}
