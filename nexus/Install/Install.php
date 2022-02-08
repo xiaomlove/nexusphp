@@ -542,7 +542,7 @@ class Install
     public function runMigrate()
     {
         if (!WITH_LARAVEL) {
-            throw new \RuntimeException('Laravel is not avaliable.');
+            throw new \RuntimeException('Laravel is not available.');
         }
         $command = "php " . ROOT_PATH . "artisan migrate --force";
         $result = exec($command, $output, $result_code);
@@ -558,7 +558,7 @@ class Install
     public function runDatabaseSeeder()
     {
         if (!WITH_LARAVEL) {
-            throw new \RuntimeException('Laravel is not avaliable.');
+            throw new \RuntimeException('Laravel is not available.');
         }
         $command = "php " . ROOT_PATH . "artisan db:seed";
         $result = exec($command, $output, $result_code);

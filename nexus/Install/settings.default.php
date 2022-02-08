@@ -1,5 +1,10 @@
 <?php
- return array (
+
+use App\Models\BonusLogs;
+use App\Models\HitAndRun;
+use App\Models\User;
+
+return array (
   'basic' =>
   array (
     'SITENAME' => 'NexusPHP',
@@ -164,6 +169,7 @@
     'againstoffer' => '1',
     'userbar' => '2',
     'view_special_torrent' => '4',
+      'torrent_hr' => User::CLASS_ADMINISTRATOR,
   ),
   'tweak' =>
   array (
@@ -215,6 +221,7 @@
     'taxpercentage' => '10',
     'prolinkpoint' => '1',
     'prolinktime' => '600',
+      'cancel_hr' => BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN,
   ),
   'account' =>
   array (
@@ -374,4 +381,11 @@
     'google_drive_refresh_token' => '',
     'google_drive_folder_id' => '',
   ),
+     'hr' => [
+         'mode' => HitAndRun::MODE_DISABLED,
+         'inspect_time' => '',
+         'seed_time_minimum' => '',
+         'ignore_when_ratio_reach' => '',
+         'ban_user_when_counts_reach' => '',
+     ],
 );
