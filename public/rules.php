@@ -2,7 +2,7 @@
 require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
-loggedinorreturn();
+//loggedinorreturn();
 stdhead($lang_rules['head_rules']);
 $Cache->new_page('rules', 900, true);
 if (!$Cache->get_page())

@@ -139,9 +139,9 @@ if ($currentStep == 4) {
     while ($isPost) {
         try {
             $update->createSymbolicLinks($symbolicLinks);
-            $update->runMigrate();
             $update->saveSettings($settings);
             $update->runExtraQueries();
+            $update->runMigrate();
             $update->nextStep();
         } catch (\Exception $e) {
             $error = $e->getMessage();

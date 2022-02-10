@@ -2,7 +2,7 @@
 require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
-loggedinorreturn();
+//loggedinorreturn();
 
 stdhead($lang_faq['head_faq']);
 $Cache->new_page('faq', 900, true);
@@ -61,7 +61,7 @@ if (isset($faq_categ)) {
 		if ($faq_categ[$id]['flag'] == "1")
 		{
 			print("<ul><li><a href=\"#id". $faq_categ[$id]['link_id'] ."\"><b>". $faq_categ[$id]['title'] ."</b></a><ul>\n");
-   			if (array_key_exists("items", $faq_categ[$id])) 
+   			if (array_key_exists("items", $faq_categ[$id]))
 			{
     				foreach ($faq_categ[$id]['items'] as $id2 => $temp)
 				{

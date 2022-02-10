@@ -11,9 +11,11 @@ use App\Models\HitAndRun;
 use App\Models\Icon;
 use App\Models\Setting;
 use App\Models\User;
+use App\Repositories\BonusRepository;
 use App\Repositories\ExamRepository;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
@@ -126,15 +128,25 @@ class Update extends Install
          *
          * attendance change, do migrate
          */
-        if (WITH_LARAVEL && VERSION_NUMBER == '1.6.0-beta9' && NexusDB::schema()->hasColumn('attendance', 'total_days')) {
+        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('attendance', 'total_days')) {
+            $this->runMigrate(database_path('migrations/2021_06_13_215440_add_total_days_to_attendance_table.php'));
             $this->migrateAttendance();
         }
 
-        if (WITH_LARAVEL && version_compare(VERSION_NUMBER, '1.6.0-beta12', '>=')) {
-            $this->addSetting('authority.torrent_hr', User::CLASS_ADMINISTRATOR);
-            $this->addSetting('bonus.cancel_hr', BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN);
-            $this->addSetting('hr.mode', HitAndRun::MODE_DISABLED);
+        /**
+         * @since 1.6.0-beta13
+         *
+         * add seed points to user
+         */
+        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('users', 'seed_points')) {
+            $this->runMigrate(database_path('migrations/2021_06_24_013107_add_seed_points_to_users_table.php'));
+            $result = $this->initSeedPoints();
+            $this->doLog("[INIT SEED POINTS], $result");
         }
+
+
+
+
     }
 
     private function migrateAttendance()
@@ -246,6 +258,25 @@ class Update extends Install
         }
         $this->doLog('SUCCESS_EXTRACT');
         return true;
+    }
+
+    public function initSeedPoints(): int
+    {
+        $size = 10000;
+        $tableName = (new User())->getTable();
+        $result = 0;
+        do {
+            $affectedRows = NexusDB::table($tableName)
+                ->whereNull('seed_points')
+                ->limit($size)
+                ->update([
+                    'seed_points' => NexusDB::raw('seed_points = seedbonus')
+                ]);
+            $result += $affectedRows;
+            $this->doLog("affectedRows: $affectedRows, query: " . last_query());
+        } while ($affectedRows > 0);
+
+        return $result;
     }
 
 }

@@ -1207,7 +1207,7 @@ if ($restrictemaildomain == 'yes'){
 	$newEmail = trim(strtolower($newEmail));
 	$sql = sql_query("SELECT * FROM allowedemails") or sqlerr(__FILE__, __LINE__);
 	$list = mysql_fetch_array($sql);
-	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list[value])) );
+	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'])) );
 
 	if(count($addresses) > 0)
 	{

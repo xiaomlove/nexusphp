@@ -539,12 +539,17 @@ class Install
         return true;
     }
 
-    public function runMigrate()
+    public function runMigrate($path = null)
     {
         if (!WITH_LARAVEL) {
             throw new \RuntimeException('Laravel is not available.');
         }
-        $command = "php " . ROOT_PATH . "artisan migrate --force";
+        $command = "php " . ROOT_PATH . "artisan migrate";
+        if (!is_null($path)) {
+            $command .= " --path=$path";
+        } else {
+            $command .= " --force";
+        }
         $result = exec($command, $output, $result_code);
         $this->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
         $this->doLog("output: " . json_encode($output));

@@ -344,7 +344,7 @@ if ($showstats_main == "yes")
 	if (!$Cache->get_page()){
 	$Cache->add_whole_row();
 	$registered = number_format(get_row_count("users"));
-	$unverified = number_format(get_row_count("users", "WHERE status='pending'"));
+	$unverified = number_format(get_row_count("users", "WHERE status='pending' and enabled='yes'"));
 	$totalonlinetoday = number_format(get_row_count("users","WHERE last_access >= ". sqlesc(date("Y-m-d H:i:s",(TIMENOW - 86400)))));
 	$totalonlineweek = number_format(get_row_count("users","WHERE last_access >= ". sqlesc(date("Y-m-d H:i:s",(TIMENOW - 604800)))));
 	$VIP = number_format(get_row_count("users", "WHERE class=".UC_VIP));

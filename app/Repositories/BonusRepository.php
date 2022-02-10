@@ -43,25 +43,6 @@ class BonusRepository extends BaseRepository
 
     }
 
-    public function initSeedPoints(): int
-    {
-        $size = 10000;
-        $tableName = (new User())->getTable();
-        $result = 0;
-        do {
-            $affectedRows = NexusDB::table($tableName)
-                ->whereNull('seed_points')
-                ->limit($size)
-                ->update([
-                    'seed_points' => NexusDB::raw('seed_points = seedbonus')
-                ]);
-            $result += $affectedRows;
-            do_log("affectedRows: $affectedRows, query: " . last_query());
-        } while ($affectedRows > 0);
-
-        return $result;
-    }
-
 
     public function consumeToBuyMedal($uid, $medalId): bool
     {
