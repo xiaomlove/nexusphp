@@ -284,7 +284,7 @@ class Update extends Install
 
     public function updateDependencies()
     {
-        $command = "composer install";
+        $command = "composer install -d " . ROOT_PATH;
         $this->executeCommand($command);
         $this->doLog("[COMPOSER INSTALL] SUCCESS");
     }
