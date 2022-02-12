@@ -98,6 +98,7 @@ return array (
     'smtp_from' => NULL,
     'smtpaddress' => 'smtp.qq.com',
     'smtpport' => '25',
+    'encryption' => 'ssl',
     'accountname' => '',
     'accountpassword' => '',
   ),

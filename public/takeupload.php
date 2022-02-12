@@ -117,6 +117,9 @@ function checkTorrentDict($dict, $key, $type = null)
 }
 
 $info = checkTorrentDict($dict, 'info');
+if (isset($info['piece layers']) || isset($info['files tree']) || (isset($info['meta version']) && $info['meta version'] == 2)) {
+    bark('Torrent files created with Bittorrent Protocol v2, or hybrid torrents are not supported.');
+}
 $plen = checkTorrentDict($info, 'piece length', 'integer');  // Only Check without use
 $dname = checkTorrentDict($info, 'name', 'string');
 $pieces = checkTorrentDict($info, 'pieces', 'string');

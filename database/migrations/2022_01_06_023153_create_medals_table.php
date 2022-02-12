@@ -21,7 +21,7 @@ class CreateMedalsTable extends Migration
             $table->string('image_large')->nullable();
             $table->string('image_small')->nullable();
             $table->integer('price')->default(0);
-            $table->integer('duration')->default(0);
+            $table->integer('duration')->nullable();
             $table->timestamps();
         });
     }

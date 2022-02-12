@@ -1,6 +1,5 @@
 <?php
 # IMPORTANT: Do not edit below unless you know what you are doing!
-use Illuminate\Support\Facades\DB;
 
 if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
@@ -127,12 +126,11 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 function demotion($class,$deratio){
 	global $lang_cleanup_target;
 	$newclass = $class - 1;
-    $minSeedPoints = \App\Models\User::getMinSeedPoints($class);
-    if ($minSeedPoints === false) {
-        throw new \RuntimeException("class: $class can't get min seed points.");
-    }
-	$res = sql_query("SELECT id FROM users WHERE class = $class AND seed_points < $minSeedPoints AND uploaded / downloaded < $deratio") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) > 0)
+    $sql = "SELECT id FROM users WHERE class = $class AND uploaded / downloaded < $deratio";
+	$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
+    $matchUserCount = mysql_num_rows($res);
+    do_log("sql: $sql, match user count: $matchUserCount");
+    if ($matchUserCount > 0)
 	{
 		$dt = sqlesc(date("Y-m-d H:i:s"));
 		while ($arr = mysql_fetch_assoc($res))
@@ -292,7 +290,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 			if ($is_donor == 'yes' && $donortimes_bonus > 0)
 				$all_bonus = $all_bonus * $donortimes_bonus;
 			KPS("+",$all_bonus,$arr["userid"]);
-			\App\Models\User::query()->where('id', $arr["userid"])->update(['seed_points' => new \Illuminate\Database\Query\Expression("seed_points + $seedPoints")]);
+			sql_query("update users set seed_points = seed_points + $seedPoints where id = {$arr["userid"]}");
 		}
 	}
 	$log = 'calculate seeding bonus';
