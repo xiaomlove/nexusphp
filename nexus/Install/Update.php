@@ -182,29 +182,49 @@ class Update extends Install
 
     public function listVersions()
     {
-        $client = new Client();
         $url = "https://api.github.com/repos/xiaomlove/nexusphp/releases";
-        $response = $client->get($url, ['timeout' => 10,]);
-        if (($statusCode = $response->getStatusCode()) != 200) {
-            throw new \RuntimeException("获取版本列表失败，状态码：$statusCode");
-        }
-        if ($response->getBody()->getSize() <= 0) {
-            throw new \RuntimeException("获取版本列表失败，结果为空");
-        }
-        $bodyString = $response->getBody()->getContents();
-        $this->doLog("[LIST_VERSION_RESPONSE]: $bodyString");
-        $versions = json_decode($bodyString, true);
-        if (empty($versions) || !is_array($versions)) {
-            throw new \RuntimeException("获取版本列表结果异常");
-        }
+        $versions = $this->requestGithub($url);
         return array_reverse($versions);
     }
 
-    public function downAndExtractCode($url)
+    public function getLatestCommit()
+    {
+        $url = "https://api.github.com/repos/xiaomlove/nexusphp/commits/php8";
+        return $this->requestGithub($url);
+    }
+
+    public function requestGithub($url)
+    {
+        $client = new Client();
+        $logPrefix = "请求 github: $url";
+        $response = $client->get($url, ['timeout' => 10,]);
+        if (($statusCode = $response->getStatusCode()) != 200) {
+            throw new \RuntimeException("$logPrefix 失败，状态码：$statusCode");
+        }
+        if ($response->getBody()->getSize() <= 0) {
+            throw new \RuntimeException("$logPrefix 失败，结果为空");
+        }
+        $bodyString = $response->getBody()->getContents();
+        $this->doLog("[REQUEST_GITHUB_RESPONSE]: $bodyString");
+        $results = json_decode($bodyString, true);
+        if (empty($results) || !is_array($results)) {
+            throw new \RuntimeException("$logPrefix 结果异常");
+        }
+        return $results;
+    }
+
+    public function downAndExtractCode($url): bool
     {
         $arr = explode('/', $url);
         $basename = last($arr);
-        $suffix = '.tar.gz';
+        $isZip = false;
+        if (Str::contains($basename,'.zip')) {
+            $isZip = true;
+            $basename = strstr($basename, '.zip', true);
+            $suffix = ".zip";
+        } else {
+            $suffix = '.tar.gz';
+        }
         $filename = sprintf('%s/nexusphp-%s-%s%s', sys_get_temp_dir(), $basename, date('YmdHis'), $suffix);
         $client = new Client();
         $response = $client->request('GET', $url, ['sink' => $filename]);
@@ -223,36 +243,19 @@ class Update extends Install
         $this->doLog('SUCCESS_DOWNLOAD');
         $extractDir = str_replace($suffix, "", $filename);
         $command = "mkdir -p $extractDir";
-        $result = exec($command, $output, $result_code);
-        $this->doLog(sprintf(
-            "command: %s, output: %s, result_code: %s, result: %s",
-            $command, json_encode($output), $result_code, $result
-        ));
-        if ($result_code != 0) {
-            throw new \RuntimeException("创建解压目录：$extractDir 失败, result_code: $result_code");
-        }
+        $this->executeCommand($command);
 
-        $command = "tar -xf $filename -C $extractDir";
-        $result = exec($command, $output, $result_code);
-        $this->doLog(sprintf(
-            "command: %s, output: %s, result_code: %s, result: %s",
-            $command, json_encode($output), $result_code, $result
-        ));
-        if ($result_code != 0) {
-            throw new \RuntimeException("解压文件：$filename 到：$extractDir 失败, result_code: $result_code");
+        if ($isZip) {
+            $command = "unzip $filename -d $extractDir";
+        } else {
+            $command = "tar -xf $filename -C $extractDir";
         }
+        $this->executeCommand($command);
 
         foreach (glob("$extractDir/*") as $path) {
             if (is_dir($path)) {
                 $command = sprintf('cp -Rf %s/* %s', $path, ROOT_PATH);
-                $result = exec($command, $output, $result_code);
-                $this->doLog(sprintf(
-                    "command: %s, output: %s, result_code: %s, result: %s",
-                    $command, json_encode($output), $result_code, $result
-                ));
-                if ($result_code != 0) {
-                    throw new \RuntimeException("复制错误, result_code: $result_code");
-                }
+                $this->executeCommand($command);
                 break;
             }
         }

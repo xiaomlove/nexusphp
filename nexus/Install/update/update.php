@@ -37,54 +37,69 @@ if ($currentStep == 2) {
     } catch (\Exception $exception) {
         $error = $exception->getMessage();
     }
-    $versionHeader = [
-        'checkbox' => '选择',
-        'tag_name' => '版本(标签)',
-        'name' => '名称',
-        'published_at' => '发布时间',
-    ];
-    $tableRows[] = [
-        'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
-        'tag_name' => '手动更新',
-        'name' => '如若有改动不宜全量覆盖，请勾选此选项并确保已经手动更新了代码',
-        'published_at' => '---',
-    ];
-    foreach ($versions as $version) {
-        if ($version['draft']) {
-//            continue;
-        }
-        $time = \Carbon\Carbon::parse($version['published_at']);
-        $time->tz = nexus_env('TIMEZONE');
-        $versionUrl = $version['tag_name'] . '|' . $version['tarball_url'];
-        $checked = !empty($_REQUEST['version_url']) && $_REQUEST['version_url'] == $versionUrl ? ' checked' : '';
+    if (!$isPost) {
+        $versionHeader = [
+            'checkbox' => '选择',
+            'tag_name' => '版本(标签)',
+            'name' => '名称',
+            'published_at' => '发布时间',
+        ];
         $tableRows[] = [
-            'checkbox' => sprintf('<input type="radio" name="version_url" value="%s"%s/>', $versionUrl, $checked),
-            'tag_name' => $version['tag_name'],
-            'name' => $version['name'],
+            'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
+            'tag_name' => '手动更新',
+            'name' => '如若有改动不宜全量覆盖，请勾选此选项并确保已经手动更新了代码',
+            'published_at' => '---',
+        ];
+        $latestCommit = $update->getLatestCommit();
+        $time = \Carbon\Carbon::parse($latestCommit['committer']['date']);
+        $time->tz = nexus_env('TIMEZONE');
+        $tableRows[] = [
+            'checkbox' => sprintf('<input type="radio" name="version_url" value="development"/>'),
+            'tag_name' => '最新开发代码',
+            'name' => "仅限开发测试！最新提交：" . $latestCommit['commit']['message'],
             'published_at' => $time->format('Y-m-d H:i:s'),
         ];
+        foreach ($versions as $version) {
+            if ($version['draft']) {
+                continue;
+            }
+            $time = \Carbon\Carbon::parse($version['published_at']);
+            $time->tz = nexus_env('TIMEZONE');
+            $versionUrl = $version['tag_name'] . '|' . $version['tarball_url'];
+            $checked = !empty($_REQUEST['version_url']) && $_REQUEST['version_url'] == $versionUrl ? ' checked' : '';
+            $tableRows[] = [
+                'checkbox' => sprintf('<input type="radio" name="version_url" value="%s"%s/>', $versionUrl, $checked),
+                'tag_name' => $version['tag_name'],
+                'name' => $version['name'],
+                'published_at' => $time->format('Y-m-d H:i:s'),
+            ];
+        }
     }
+
 //    dd($tableRows);
     while ($isPost) {
         try {
             if (empty($_REQUEST['version_url'])) {
                 throw new \RuntimeException("没有选择版本");
             }
+            $downloadUrl = '';
             if ($_REQUEST['version_url'] == 'manual') {
                 $update->nextStep();
-            }
-            $versionUrlArr = explode('|', $_REQUEST['version_url']);
-            $version = strtolower($versionUrlArr[0]);
-            $downloadUrl = $versionUrlArr[1];
-            if (\Illuminate\Support\Str::startsWith($version, 'v')) {
-                $version = substr($version, 1);
-            }
-            $update->doLog("version: $version, downloadUrl: $downloadUrl, currentVersion: " . VERSION_NUMBER);
-            if (version_compare($version, VERSION_NUMBER, '<=')) {
-                throw new \RuntimeException("必须选择一个高于当前版本（" . VERSION_NUMBER . "）的");
+            } elseif ($_REQUEST['version_url'] == 'development') {
+                $downloadUrl = 'https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip';
+            } else {
+                $versionUrlArr = explode('|', $_REQUEST['version_url']);
+                $version = strtolower($versionUrlArr[0]);
+                $downloadUrl = $versionUrlArr[1];
+                if (\Illuminate\Support\Str::startsWith($version, 'v')) {
+                    $version = substr($version, 1);
+                }
+                $update->doLog("version: $version, downloadUrl: $downloadUrl, currentVersion: " . VERSION_NUMBER);
+                if (version_compare($version, VERSION_NUMBER, '<=')) {
+                    throw new \RuntimeException("必须选择一个高于当前版本（" . VERSION_NUMBER . "）的");
+                }
             }
             $update->downAndExtractCode($downloadUrl);
-
             $update->nextStep();
         } catch (\Exception $exception) {
             $update->doLog($exception->getMessage() . $exception->getTraceAsString());
