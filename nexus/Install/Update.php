@@ -279,4 +279,11 @@ class Update extends Install
         return $result;
     }
 
+    public function updateDependencies()
+    {
+        $command = "composer install";
+        $this->executeCommand($command);
+        $this->doLog("[COMPOSER INSTALL] SUCCESS");
+    }
+
 }

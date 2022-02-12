@@ -51,7 +51,7 @@ if ($currentStep == 2) {
     ];
     foreach ($versions as $version) {
         if ($version['draft']) {
-            continue;
+//            continue;
         }
         $time = \Carbon\Carbon::parse($version['published_at']);
         $time->tz = nexus_env('TIMEZONE');
@@ -138,6 +138,7 @@ if ($currentStep == 4) {
     $pass = $settingTableRows['pass'];
     while ($isPost) {
         try {
+            $update->updateDependencies();
             $update->createSymbolicLinks($symbolicLinks);
             $update->saveSettings($settings);
             $update->runExtraQueries();
