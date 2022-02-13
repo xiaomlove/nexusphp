@@ -129,7 +129,7 @@ class Update extends Install
          * attendance change, do migrate
          */
         if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('attendance', 'total_days')) {
-            $this->runMigrate(database_path('migrations/2021_06_13_215440_add_total_days_to_attendance_table.php'));
+            $this->runMigrate('database/migrations/2021_06_13_215440_add_total_days_to_attendance_table.php');
             $this->migrateAttendance();
         }
 
@@ -139,7 +139,7 @@ class Update extends Install
          * add seed points to user
          */
         if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('users', 'seed_points')) {
-            $this->runMigrate(database_path('migrations/2021_06_24_013107_add_seed_points_to_users_table.php'));
+            $this->runMigrate('database/migrations/2021_06_24_013107_add_seed_points_to_users_table.php');
             $result = $this->initSeedPoints();
             $this->doLog("[INIT SEED POINTS], $result");
         }
@@ -226,6 +226,7 @@ class Update extends Install
             $suffix = '.tar.gz';
         }
         $filename = sprintf('%s/nexusphp-%s-%s%s', sys_get_temp_dir(), $basename, date('YmdHis'), $suffix);
+        $this->doLog("download from: $url, save to filename: $filename");
         $client = new Client();
         $response = $client->request('GET', $url, ['sink' => $filename]);
         if (($statusCode = $response->getStatusCode()) != 200) {
@@ -273,7 +274,7 @@ class Update extends Install
                 ->whereNull('seed_points')
                 ->limit($size)
                 ->update([
-                    'seed_points' => NexusDB::raw('seed_points = seedbonus')
+                    'seed_points' => NexusDB::raw('seedbonus')
                 ]);
             $result += $affectedRows;
             $this->doLog("affectedRows: $affectedRows, query: " . last_query());

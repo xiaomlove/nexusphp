@@ -11,6 +11,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - Exam
 - H&R
 - Attendance
+- Medal
 - Forum
 - Multi-language
 - Automatic backup
@@ -19,7 +20,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - ....
 
 ## System Requirements
-- PHP: 7.3|8.0, must have extensions: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
+- PHP: 8.0, must have extensions: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
 - Mysql: 5.7 latest version or above
 - Redis：optional
 

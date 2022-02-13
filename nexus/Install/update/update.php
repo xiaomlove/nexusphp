@@ -54,7 +54,7 @@ if ($currentStep == 2) {
         $time = \Carbon\Carbon::parse($latestCommit['committer']['date']);
         $time->tz = nexus_env('TIMEZONE');
         $tableRows[] = [
-            'checkbox' => sprintf('<input type="radio" name="version_url" value="development"/>'),
+            'checkbox' => sprintf('<input type="radio" name="version_url" value="development|%s"/>', $latestCommit['sha']),
             'tag_name' => '最新开发代码',
             'name' => "仅限开发测试！最新提交：" . $latestCommit['commit']['message'],
             'published_at' => $time->format('Y-m-d H:i:s'),
@@ -85,8 +85,9 @@ if ($currentStep == 2) {
             $downloadUrl = '';
             if ($_REQUEST['version_url'] == 'manual') {
                 $update->nextStep();
-            } elseif ($_REQUEST['version_url'] == 'development') {
-                $downloadUrl = 'https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip';
+            } elseif (\Illuminate\Support\Str::startsWith($_REQUEST['version_url'], 'development')) {
+                $downloadUrlArr = explode('|', $_REQUEST['version_url']);
+                $downloadUrl = sprintf('https://github.com/xiaomlove/nexusphp/archive/%s.zip', $downloadUrlArr[1]);
             } else {
                 $versionUrlArr = explode('|', $_REQUEST['version_url']);
                 $version = strtolower($versionUrlArr[0]);
@@ -191,7 +192,7 @@ if (!empty($error)) {
             echo'<div class="step-' . $currentStep . ' text-center">';
             $header = [
                 'label' => '项目',
-                'require' => '要求',
+                'required' => '要求',
                 'current'=> '当前',
                 'result'=> '结果'
             ];
