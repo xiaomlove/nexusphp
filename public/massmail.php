@@ -7,13 +7,13 @@ stderr("Error", "Permission denied.");
 $class = intval($_POST["class"] ?? 0);
 	if ($class)
 		int_check($class,true);
-$or = $_POST["or"] ?? '';
-if (!in_array($or, ["<", ">", "=", "<=", ">="], true)) {
-    stderr("Error", "Invalid symbol!");
-}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
+    $or = $_POST["or"] ?? '';
+    if (!in_array($or, ["<", ">", "=", "<=", ">="], true)) {
+        stderr("Error", "Invalid symbol!");
+    }
 $res = sql_query("SELECT id, username, email FROM users WHERE class $or ".mysql_real_escape_string($class)) or sqlerr(__FILE__, __LINE__);
 
 $subject = substr(htmlspecialchars(trim($_POST["subject"])), 0, 80);
@@ -33,7 +33,7 @@ $message = "Message received from ".$SITENAME." on " . date("Y-m-d H:i:s") . ".\
 $message1 . "\n\n" .
 "---------------------------------------------------------------------\n$SITENAME\n";
 
-$success = sent_mail($to,$SITENAME,$SITEEMAIL,$subject,$message,"Mass Mail",false);	
+$success = sent_mail($to,$SITENAME,$SITEEMAIL,$subject,$message,"Mass Mail",false);
 }
 
 
