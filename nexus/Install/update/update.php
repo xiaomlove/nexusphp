@@ -154,7 +154,7 @@ if ($currentStep == 4) {
     $pass = $settingTableRows['pass'];
     while ($isPost) {
         try {
-            $update->updateDependencies();
+//            $update->updateDependencies();
             $update->createSymbolicLinks($symbolicLinks);
             $update->saveSettings($settings);
             $update->runExtraQueries();
