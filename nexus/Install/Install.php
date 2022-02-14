@@ -547,9 +547,8 @@ class Install
         $command = "php " . ROOT_PATH . "artisan migrate";
         if (!is_null($path)) {
             $command .= " --path=$path";
-        } else {
-            $command .= " --force";
         }
+        $command .= " --force";
         $this->executeCommand($command);
         $this->doLog("[MIGRATE] success.");
     }
