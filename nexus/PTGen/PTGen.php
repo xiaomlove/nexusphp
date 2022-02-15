@@ -183,11 +183,12 @@ HTML;
         return $html;
     }
 
-    public function renderDetailsPageDescription($torrentId, array $torrentPtGenArr): array
+    public function renderDetailsPageDescription($torrentId, $torrentPtGenArr): array
     {
         $html = '';
         $jsonArr = [];
         $update = false;
+        $torrentPtGenArr = (array)$torrentPtGenArr;
         foreach (self::$validSites as $site => $info) {
             if (empty($torrentPtGenArr[$site]['link'])) {
                 continue;
@@ -224,9 +225,10 @@ HTML;
         return ['json_arr' => $jsonArr, 'html' => $html, 'update' => $update];
     }
 
-    public function renderTorrentsPageAverageRating(array $ptGenData)
+    public function renderTorrentsPageAverageRating($ptGenData)
     {
         $siteIdAndRating = [];
+        $ptGenData = (array)$ptGenData;
         foreach (self::$validSites as $site => $info) {
             $rating = $ptGenData[$site]['data']["{$site}_rating_average"] ?? '';
             if (empty($rating)) {
