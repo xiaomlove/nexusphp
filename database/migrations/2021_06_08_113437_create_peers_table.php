@@ -18,8 +18,8 @@ class CreatePeersTable extends Migration
         }
         Schema::create('peers', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedMediumInteger('torrent')->default(0)->index('torrent');
-            $table->binary('peer_id');
+            $table->unsignedMediumInteger('torrent')->default(0);
+            $table->char('peer_id', 20)->charset('binary');
             $table->string('ip', 64)->default('');
             $table->unsignedSmallInteger('port')->default(0);
             $table->unsignedBigInteger('uploaded')->default(0);
@@ -36,6 +36,7 @@ class CreatePeersTable extends Migration
             $table->unsignedBigInteger('downloadoffset')->default(0);
             $table->unsignedBigInteger('uploadoffset')->default(0);
             $table->char('passkey', 32)->default('');
+            $table->unique(['torrent', 'peer_id']);
         });
     }
 
