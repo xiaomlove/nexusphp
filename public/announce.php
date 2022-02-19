@@ -173,7 +173,7 @@ $params = $_GET;
 unset($params['key']);
 $lockKey = md5(http_build_query($params));
 $redis = $Cache->getRedis();
-if (!$redis->setnx($lockKey, $announce_wait, TIMENOW)) {
+if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => $announce_wait])) {
     do_log('ReAnnounce');
     benc_resp($rep_dict);
     exit();
