@@ -16,7 +16,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - Multi-language
 - Automatic backup
 - Backend management system
-- Json api
+- Json API
 - ....
 
 ## System Requirements

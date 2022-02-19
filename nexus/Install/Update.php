@@ -140,8 +140,9 @@ class Update extends Install
          */
         if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('users', 'seed_points')) {
             $this->runMigrate('database/migrations/2021_06_24_013107_add_seed_points_to_users_table.php');
-            $result = $this->initSeedPoints();
-            $this->doLog("[INIT SEED POINTS], $result");
+            //Don't do this, initial seed points = 0;
+//            $result = $this->initSeedPoints();
+            $this->doLog("[INIT SEED POINTS]");
         }
 
 
