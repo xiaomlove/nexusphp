@@ -126,7 +126,7 @@ class Install
     public function listRequirementTableRows()
     {
         $gdInfo = function_exists('gd_info') ? gd_info() : [];
-        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'gd', 'bcmath'];
+        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd'];
         $tableRows = [];
         $tableRows[] = [
             'label' => 'PHP version',
@@ -159,12 +159,6 @@ class Install
             'required' => 'true',
             'current' => $gdInfo['GIF Read Support'] ?? '',
             'result' => $this->yesOrNo($gdInfo['GIF Read Support'] ?? ''),
-        ];
-        $tableRows[] = [
-            'label' => 'PHP extension redis',
-            'required' => 'optional',
-            'current' => extension_loaded('redis'),
-            'result' => $this->yesOrNo(extension_loaded('redis')),
         ];
 
         $fails = array_filter($tableRows, function ($value) {return in_array($value['required'], ['true', 'enabled']) && $value['result'] == 'NO';});
@@ -434,15 +428,13 @@ class Install
         $this->doLog("[CREATE ENV] final newData: " . json_encode($newData));
         unset($key, $value);
         mysql_connect($newData['DB_HOST'], $newData['DB_USERNAME'], $newData['DB_PASSWORD'], $newData['DB_DATABASE'], $newData['DB_PORT']);
-        if (extension_loaded('redis') && !empty($newData['REDIS_HOST'])) {
-            $redis = new \Redis();
-            $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
-            if (isset($newData['REDIS_DB'])) {
-                if (!ctype_digit($newData['REDIS_DB']) || $newData['REDIS_DB'] < 0 || $newData['REDIS_DB'] > 15) {
-                    throw new \InvalidArgumentException("invalid redis database: " . $newData['REDIS_DB']);
-                }
-                $redis->select($newData['REDIS_DB']);
+        $redis = new \Redis();
+        $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
+        if (isset($newData['REDIS_DB'])) {
+            if (!ctype_digit($newData['REDIS_DB']) || $newData['REDIS_DB'] < 0 || $newData['REDIS_DB'] > 15) {
+                throw new \InvalidArgumentException("invalid redis database: " . $newData['REDIS_DB']);
             }
+            $redis->select($newData['REDIS_DB']);
         }
         $content = "";
         foreach ($newData as $key => $value) {

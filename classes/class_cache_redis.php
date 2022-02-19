@@ -21,8 +21,10 @@ class class_cache_redis {
     function __construct() {
         $success = $this->connect(); // Connect to Redis
         if ($success) {
+            do_log("Redis is enabled!");
             $this->isEnabled = 1;
         } else {
+            do_log("Redis is disabled!");
             $this->isEnabled = 0;
         }
     }
@@ -61,6 +63,7 @@ class class_cache_redis {
             }
             return $connectResult;
         } catch (\Exception $exception) {
+            do_log("Redis connect fail: " . $exception->getMessage(), 'error');
             return false;
         }
     }

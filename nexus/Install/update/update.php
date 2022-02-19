@@ -200,7 +200,7 @@ if (!empty($error)) {
                 echo $update->renderTable($header, $requirements['table_rows']);
             } elseif ($currentStep == 3) {
                 echo $update->renderTable($header, $tableRows);
-                echo '<div class="text-gray-700 p-4 text-red-400">若 Redis 不启用，相关项目留空</div>';
+                echo '<div class="text-gray-700 p-4 text-red-400">下一步之前，请确保在根目录执行了 composer install 更新了依赖。</div>';
                 echo $update->renderForm($envFormControls);
 
             } elseif ($currentStep == 2) {

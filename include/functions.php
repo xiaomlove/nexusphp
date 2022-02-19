@@ -1009,7 +1009,7 @@ function begin_compose($title = "",$type="new", $body="", $hassubject=true, $sub
 	print("<table class=\"main\" width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
 	if ($hassubject)
 		print("<tr><td class=\"rowhead\">".$lang_functions['row_subject']."</td>" .
-"<td class=\"rowfollow\" align=\"left\"><input type=\"text\" style=\"width: 650px;\" name=\"subject\" maxlength=\"".$maxsubjectlength."\" value=\"".$subject."\" /></td></tr>\n");
+"<td class=\"rowfollow\" align=\"left\"><input type=\"text\" style=\"width: 650px;\" name=\"subject\" maxlength=\"".$maxsubjectlength."\" value=\"".htmlspecialchars($subject)."\" /></td></tr>\n");
 	print("<tr><td class=\"rowhead\" valign=\"top\">".$lang_functions['row_body']."</td><td class=\"rowfollow\" align=\"left\"><span style=\"display: none;\" id=\"previewouter\"></span><div id=\"editorouter\">");
 	textbbcode("compose","body", $body, false);
 	print("</div></td></tr>");

@@ -10,8 +10,10 @@ require "bittorrent.php";
 $fd = fopen(sprintf('%s/nexus_cleanup_cli.lock', sys_get_temp_dir()), 'w+');
 if (!flock($fd, LOCK_EX|LOCK_NB)) {
     do_log("can not get lock, skip!");
+    exit();
 }
 register_shutdown_function(function () use ($fd) {
+    flock($fd, LOCK_UN);
     fclose($fd);
 });
 

@@ -4,11 +4,27 @@ dbconn();
 loggedinorreturn();
 if (get_user_class() < UC_MODERATOR)
 stderr("Error", "Access denied.");
+$seedBonusAll = [
+    1 => 100,
+    2 => 1000,
+    3 => 10000,
+];
+$selectName = 'seed_bonus_type';
+$select = '<select name="' . $selectName . '">';
+foreach ($seedBonusAll as $key => $value) {
+    $select .= sprintf('<option value="%s">%s</option>', $key, $value);
+}
+$select .= '</select>';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	if ($_POST['doit'] == 'yes') {
-		sql_query("UPDATE users SET seedbonus = seedbonus + 25.0 WHERE status='confirmed'");
-		stderr("Bonus", "25.0 bonus point is sent to everyone...");
+	if (isset($_POST['doit']) && $_POST['doit'] == 'yes') {
+	    if (empty($_POST[$selectName]) || !isset($seedBonusAll[$_POST[$selectName]])) {
+            stderr("Error", "Invalid form data: $selectName.");
+        }
+	    $seedBonusIncrease = $seedBonusAll[$_POST[$selectName]];
+		sql_query("UPDATE users SET seedbonus = seedbonus + $seedBonusIncrease WHERE status='confirmed'");
+		stderr("Bonus", "$seedBonusIncrease bonus point is sent to everyone...");
 		die;
 	}
 
@@ -40,14 +56,19 @@ print("<table width=100% border=1 cellspacing=0 cellpadding=5>\n");
 <?php end_table();?>
 </form>
 <?php end_main_frame();?>
-<?php begin_main_frame("Send 25.0 bonus point to everyone",false,30);?>
+<?php begin_main_frame("Send bonus point to everyone",false,30);?>
 <form action="amountbonus.php" method="post">
 <table width=100% border=1 cellspacing=0 cellpadding=5>
-<tr><td class="rowfollow" width="100%">
-Are you sure you want to give all confirmed users 25.0 extra bonus point?<br /><br /></td></tr>
-<tr><td class="toolbox" align="center"><input type = "hidden" name = "doit" value = "yes" />
-<input type="submit" class="btn" value="Yes" />
-</td></tr>
+    <tr>
+        <td class="rowhead">Bonus</td>
+        <td class="rowfollow"><?php echo $select?></td>
+    </tr>
+    <tr>
+        <td class="toolbox" align="center" colspan="2">
+            <input type = "hidden" name = "doit" value = "yes" />
+            <input type="submit" class="btn" value="Okay" />
+        </td>
+    </tr>
 <?php end_table();?>
 </form>
 <?php

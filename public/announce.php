@@ -147,7 +147,6 @@ $fields = "seeder, peer_id, ip, port, uploaded, downloaded, (".TIMENOW." - UNIX_
  * @since 1.6.0-beta12
  */
 $peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = " . $torrentid . $only_leech_query . $limit;
-$res = sql_query($peerlistsql);
 
 $real_annnounce_interval = $announce_interval;
 if ($anninterthreeage && ($anninterthree > $announce_wait) && (TIMENOW - $torrent['ts']) >= ($anninterthreeage * 86400))
@@ -172,17 +171,16 @@ if ($compact == 1) {
 //check ReAnnounce
 $params = $_GET;
 unset($params['key']);
-$lockKey = implode('', $params);
-$fp = fopen($lockKey, 'w+');
-if (!fopen($fp, LOCK_EX|LOCK_NB)) {
+$lockKey = md5(http_build_query($params));
+$redis = $Cache->getRedis();
+if (!$redis->setnx($lockKey, $announce_wait, TIMENOW)) {
     do_log('ReAnnounce');
     benc_resp($rep_dict);
-    fclose($fp);
     exit();
 }
 
 unset($self);
-
+$res = sql_query($peerlistsql);
 if (isset($event) && $event == "stopped") {
     // Don't fetch peers for stopped event
 } else {
@@ -494,8 +492,5 @@ if(count($USERUPDATESET) && $userid)
 {
 	sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid);
 }
-
-flock($fp, LOCK_UN);
-fclose($fp);
 benc_resp($rep_dict);
 ?>

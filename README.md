@@ -19,9 +19,9 @@
 - ....
 
 ## 系统要求
-- PHP: 8.0，必须扩展：bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd
+- PHP: 8.0，必须扩展：bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis
 - Mysql: 5.7最新版或以上版本
-- Redis：可选
+- Redis：1.0.0或以上版本
 
 ## 捐赠
 此程序由个人维护，如果对你有帮助，可以请我喝杯咖啡。感谢以下捐赠者：  

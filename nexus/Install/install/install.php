@@ -173,7 +173,6 @@ if (!empty($error)) {
                     echo $install->renderTable($header, $requirements['table_rows']);
                 } elseif ($currentStep == 2) {
                     echo $install->renderTable($header, $tableRows);
-                    echo '<div class="text-gray-700 p-4 text-red-400">若 Redis 不启用，相关项目留空</div>';
                     echo $install->renderForm($envFormControls);
 
                 } elseif ($currentStep == 3) {
