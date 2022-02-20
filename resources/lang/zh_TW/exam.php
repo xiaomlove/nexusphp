@@ -7,7 +7,7 @@ return [
     'index_text_' . \App\Models\Exam::INDEX_UPLOADED => '上傳量',
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => '平均做種時間',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => '下載量',
-    'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => '做種魔力',
+    'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => '做種積分',
     'require_value' => '要求',
     'current_value' => '當前',
     'result' => '結果',

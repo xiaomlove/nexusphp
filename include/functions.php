@@ -5242,7 +5242,6 @@ function get_ip_location_from_geoip($ip)
     if (is_null($reader)) {
         $reader = new \GeoIp2\Database\Reader($database);
     }
-    $record = $reader->city($ip);
     $lang = get_langfolder_cookie();
     $langMap = [
         'chs' => 'zh-CN',
@@ -5250,8 +5249,15 @@ function get_ip_location_from_geoip($ip)
         'en' => 'en',
     ];
     $locale = $langMap[$lang] ?? $lang;
-    $countryName =  $record->country->names[$locale] ?? $record->country->names['en'];
-    $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
+    try {
+        $record = $reader->city($ip);
+        $countryName =  $record->country->names[$locale] ?? $record->country->names['en'];
+        $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
+    } catch (\Exception $exception) {
+        do_log($exception->getMessage() . "\n" .  $exception->getTraceAsString(), 'error');
+        $countryName = '';
+        $cityName = '';
+    }
     do_log("ip: $ip, locale: $locale, city: $cityName, country: $countryName");
     return [
         'name' => sprintf('%s·%s', $cityName, $countryName),

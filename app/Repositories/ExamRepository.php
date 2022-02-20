@@ -482,7 +482,7 @@ class ExamRepository extends BaseRepository
             $attributes['index'] = $index['index'];
             $attributes['created_at'] = $now;
             $attributes['updated_at'] = $now;
-            $attributes['value'] = $user->{Exam::$indexes[$index['index']]['source_user_field']};
+            $attributes['value'] = $user->{Exam::$indexes[$index['index']]['source_user_field']} ?? 0;
             do_log("[GET_TOTAL_VALUE]: " . $attributes['value']);
             $newVersionProgress = ExamProgress::query()
                 ->where('exam_user_id', $examUser->id)

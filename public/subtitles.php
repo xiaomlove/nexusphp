@@ -89,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 		exit;
 	}
 	*/
-	
+
 	//end process upload file
 
 	//start process torrent ID
@@ -166,13 +166,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 		$anonymous = "no";
 		$anon = $CURUSER["username"];
 	}
-	
+
 	//$file["name"] = str_replace("", "_", htmlspecialchars("$file[name]"));
 	//$file["name"] = preg_replace('/[^a-z0-9_\-\.]/i', '_', $file[name]);
-	
+
 	//make_folder($SUBSPATH."/",$detail_torrent_id);
 	//stderr("",$file["name"]);
-	
+
 	$r = sql_query("SELECT lang_name from language WHERE sub_lang=1 AND id = " . sqlesc($lang_id)) or sqlerr(__FILE__, __LINE__);
 	$arr = mysql_fetch_assoc($r);
 
@@ -182,15 +182,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 	$size = $file["size"];
 
 	sql_query("INSERT INTO subs (torrent_id, lang_id, title, filename, added, uppedby, anonymous, size, ext) VALUES (" . implode(",", array_map("sqlesc", array($torrent_id, $lang_id, $title, $filename, $added, $uppedby, $anonymous, $size, $ext))). ")") or sqlerr();
-	
+
 	$id = mysql_insert_id();
-	
+
 	//stderr("",make_folder($SUBSPATH."/",$torrent_id). "/" . $id . "." .$ext);
 	if (!move_uploaded_file($file["tmp_name"], make_folder($SUBSPATH."/",$torrent_id). "/" . $id . "." .$ext))
 		echo($lang_subtitles['std_failed_moving_file']);
-	
+
 	KPS("+",$uploadsubtitle_bonus,$uppedby); //subtitle uploader gets bonus
-	
+
 	write_log("$arr[lang_name] Subtitle $id ($title) was uploaded by $anon");
 	$msg_bt = "$arr[lang_name] Subtitle $id ($title) was uploaded by $anon, Download: " . get_protocol_prefix() . "$BASEURL/downloadsubs.php/".$file["name"]."";
 }
@@ -270,7 +270,7 @@ if (get_user_class() >= UC_PEASANT)
 	print("<p align=left>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ".$lang_subtitles['text_rule_four']."</p>\n");
 	print("<p align=left>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ".$lang_subtitles['text_rule_five']."</p>\n");
 	print("<p align=left>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ".$lang_subtitles['text_rule_six']."</p>\n");
-	
+
 	print($lang_subtitles['text_red_star_required']);
 	if($in_detail != "")
 	{
@@ -311,7 +311,7 @@ if (get_user_class() >= UC_PEASANT)
 	{
 		tr($lang_subtitles['row_show_uploader'], "<input type=checkbox name=uplver value=yes>".$lang_subtitles['hide_uploader_note'], 1);
 	}
-	
+
 	print("<tr><td class=toolbox colspan=2 align=center><input type=submit class=btn value=".$lang_subtitles['submit_upload_file']."> <input type=reset class=btn value=\"".$lang_subtitles['submit_reset']."\"></td></tr>\n");
 	print("</table>\n");
 	print("</form>\n");
@@ -377,7 +377,7 @@ if(get_user_class() >= UC_PEASANT)
 		{
 			// the number $start_subid is just for legacy support of prevoiusly uploaded subs, if the site is completely new, it should be 0 or just remove it
 			$lang = "<td class=rowfollow align=center valign=middle>" . "<img border=\"0\" src=\"pic/flag/". $arr["flagpic"] . "\" alt=\"" . $arr["lang_name"] . "\" title=\"" . $arr["lang_name"] . "\"/>" . "</td>\n";
-			$title = "<td class=rowfollow align=left><a href=\"" . ($arr['id'] <= $start_subid ?  "downloadsubs_legacy.php/" . $arr['filename'] : "downloadsubs.php?torrentid=" . $arr['torrent_id'] ."&subid=" .$arr['id']) . "\"<b>" . htmlspecialchars($arr["title"]) . "</b></a>" .
+			$title = "<td class=rowfollow align=left><a href=\"" . (isset($start_subid) && $arr['id'] <= $start_subid ?  "downloadsubs_legacy.php/" . $arr['filename'] : "downloadsubs.php?torrentid=" . $arr['torrent_id'] ."&subid=" .$arr['id']) . "\"<b>" . htmlspecialchars($arr["title"]) . "</b></a>" .
 			($mod || ($pu && $arr["uppedby"] == $CURUSER["id"]) ? " <font class=small><a href=?delete=$arr[id]>".$lang_subtitles['text_delete']."</a></font>" : "") ."</td>\n";
 			$addtime = gettime($arr["added"],false,false);
 			$added = "<td class=rowfollow align=center><nobr>" . $addtime . "</nobr></td>\n";
