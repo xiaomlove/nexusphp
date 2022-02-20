@@ -2933,7 +2933,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 	{
 //		$userRow = get_user_row($row['user']);
         $userInfo = $userInfoArr->get($row['user']);
-		$userRow = $userInfo->toArray();
+		$userRow = empty($userInfo) ? [] : $userInfo->toArray();
 		if ($count>=1)
 		{
 			if ($Advertisement->enable_ad()){

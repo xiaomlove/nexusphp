@@ -19,6 +19,9 @@ class FileController extends Controller
         $torrentId = $request->torrent_id;
         $files = File::query()->where('torrent', $torrentId)->get();
         $resource = FileResource::collection($files);
+        $resource->additional([
+            'page_title' => nexus_trans('file.index.page_title'),
+        ]);
 
         return $this->success($resource);
     }

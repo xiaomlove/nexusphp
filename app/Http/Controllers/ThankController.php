@@ -16,8 +16,15 @@ class ThankController extends Controller
     public function index(Request $request)
     {
         $torrentId = $request->torrent_id;
-        $thanks = Thank::query()->where('torrentid', $torrentId)->with(['user'])->paginate();
+        $thanks = Thank::query()
+            ->where('torrentid', $torrentId)
+            ->whereHas('user')
+            ->with(['user'])
+            ->paginate();
         $resource = ThankResource::collection($thanks);
+        $resource->additional([
+            'page_title' => nexus_trans('thank.index.page_title'),
+        ]);
 
         return $this->success($resource);
     }

@@ -290,7 +290,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 			if ($is_donor == 'yes' && $donortimes_bonus > 0)
 				$all_bonus = $all_bonus * $donortimes_bonus;
 			KPS("+",$all_bonus,$arr["userid"]);
-			sql_query("update users set seed_points = seed_points + $seedPoints where id = {$arr["userid"]}");
+			sql_query("update users set seed_points = ifnull(seed_points, 0) + $seedPoints where id = {$arr["userid"]}");
 		}
 	}
 	$log = 'calculate seeding bonus';

@@ -72,10 +72,11 @@ class User extends Authenticatable
     public static $cardTitles = [
         'uploaded_human' => '上传',
         'downloaded_human' => '下载',
-        'share_ratio' => '分享率',
-        'seed_time' => '做种时间',
+//        'share_ratio' => '分享率',
+//        'seed_time' => '做种时间',
         'seed_bonus' => '魔力值',
-        'invites' => '邀请',
+        'seed_points' => '做种积分',
+//        'invites' => '邀请',
     ];
 
     public function getClassTextAttribute(): string

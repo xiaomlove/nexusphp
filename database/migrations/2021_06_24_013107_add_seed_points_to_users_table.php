@@ -14,7 +14,7 @@ class AddSeedPointsToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->decimal('seed_points', 20, 1)->nullable();
+            $table->decimal('seed_points', 20, 1)->default(0);
         });
     }
 
