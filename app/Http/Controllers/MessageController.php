@@ -18,7 +18,11 @@ class MessageController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $messages = Message::query()->where('receiver', $user->id)->with(['send_user'])->paginate();
+        $messages = Message::query()
+            ->where('receiver', $user->id)
+            ->with(['send_user'])
+            ->orderBy('id', 'desc')
+            ->paginate();
         $resource = MessageResource::collection($messages);
         return $this->success($resource);
 
