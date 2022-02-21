@@ -74,6 +74,12 @@ class TorrentRepository extends BaseRepository
             });
         }
 
+        if (!empty($params['category_mode'])) {
+            $query->whereHas('basic_category', function (Builder $query) use ($params) {
+                $query->where('mode', $params['category_mode']);
+            });
+        }
+
         list($sortField, $sortType) = $this->getSortFieldAndType($params);
         $query->orderBy($sortField, $sortType);
 

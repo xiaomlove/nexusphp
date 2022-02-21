@@ -21,6 +21,7 @@ class TorrentController extends Controller
     {
         $params = $request->all();
         $params['visible'] = Torrent::VISIBLE_YES;
+        $params['category_mode'] = get_setting('main.browsecat');
         $result = $this->repository->getList($params);
         $resource = TorrentResource::collection($result);
         $resource->additional([
