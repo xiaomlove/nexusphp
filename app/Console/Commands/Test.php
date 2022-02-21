@@ -57,8 +57,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new UserRepository();
-        $r = $rep->getDetail(1);
+        $r = floatval(25.32);
+        dd($r);
     }
 
 }

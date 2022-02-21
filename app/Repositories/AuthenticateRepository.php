@@ -19,6 +19,7 @@ class AuthenticateRepository extends BaseRepository
         if (IS_PLATFORM_ADMIN && !$user->canAccessAdmin()) {
             throw new UnauthorizedException('Unauthorized!');
         }
+        $user->checkIsNormal();
         $tokenName = __METHOD__ . __LINE__;
         $token = DB::transaction(function () use ($user, $tokenName) {
             $user->tokens()->delete();
