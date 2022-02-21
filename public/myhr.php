@@ -38,7 +38,7 @@ begin_main_frame("", true);
 
 print $filterForm;
 
-$rescount = \App\Models\HitAndRun::query()->where('status', $status)->count();
+$rescount = \App\Models\HitAndRun::query()->where('uid', $userid)->where('status', $status)->count();
 list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, "?status=$status");
 print("<table width='100%'>");
 print("<tr>
