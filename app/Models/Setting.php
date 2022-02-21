@@ -15,9 +15,11 @@ class Setting extends NexusModel
             $rows = self::query()->get(['name', 'value']);
             foreach ($rows as $row) {
                 $value = $row->value;
-                $arr = json_decode($value, true);
-                if (is_array($arr)) {
-                    $value = $arr;
+                if (!is_null($value)) {
+                    $arr = json_decode($value, true);
+                    if (is_array($arr)) {
+                        $value = $arr;
+                    }
                 }
                 Arr::set($settings, $row->name, $value);
             }

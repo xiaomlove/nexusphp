@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\TorrentResource;
+use App\Models\Setting;
 use App\Models\Torrent;
 use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class TorrentController extends Controller
     {
         $params = $request->all();
         $params['visible'] = Torrent::VISIBLE_YES;
-        $params['category_mode'] = get_setting('main.browsecat');
+        $params['category_mode'] = Setting::get('main.browsecat');
         $result = $this->repository->getList($params);
         $resource = TorrentResource::collection($result);
         $resource->additional([
