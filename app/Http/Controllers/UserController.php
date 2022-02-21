@@ -197,9 +197,10 @@ class UserController extends Controller
     private function getUserProfile($id)
     {
         $user = User::query()->withCount([
-            'comments', 'posts', 'torrents', 'seeding_torrents', 'leeching_torrents',
-            'completed_torrents' => function ($query) use ($id) {$query->where('snatched.userid', '!=', $id);},
-            'incomplete_torrents' => function ($query) use ($id) {$query->where('snatched.userid', '!=', $id);},
+            'comments', 'posts', 'seeding_torrents', 'leeching_torrents',
+            'torrents' => function ($query) use ($id) {$query->whereHas('snatches');},
+            'completed_torrents' => function ($query) use ($id) {$query->where('torrents.owner', '!=', $id);},
+            'incomplete_torrents' => function ($query) use ($id) {$query->where('torrents.owner', '!=', $id);},
         ])->findOrFail($id);
         $resource = new UserResource($user);
         return $resource;
