@@ -28,7 +28,7 @@ class UserResource extends JsonResource
             'uploaded_text' => mksize($this->uploaded),
             'downloaded' => $this->downloaded,
             'downloaded_text' => mksize($this->downloaded),
-            'bonus' => $this->seedbonus,
+            'seed_bonus' => $this->seedbonus,
             'seed_points' => $this->seed_points,
             'seedtime' => $this->seedtime,
             'seedtime_text' => mkprettytime($this->seedtime),
@@ -43,10 +43,14 @@ class UserResource extends JsonResource
             $out['seed_time'] = mkprettytime($this->seedtime);
             $out['leech_time'] = mkprettytime($this->leechtime);
             $out['share_ratio'] = get_share_ratio($this->uploaded, $this->downloaded);
-            $out['seed_bonus'] = $this->seedbonus;
             $out['invites'] = $this->invites;
             $out['comments_count'] = $this->comments_count;
             $out['posts_count'] = $this->posts_count;
+            $out['torrents_count'] = $this->torrents_count;
+            $out['seeding_torrents_count'] = $this->seeding_torrents_count;
+            $out['leeching_torrents_count'] = $this->leeching_torrents_count;
+            $out['completed_torrents_count'] = $this->completed_torrents_count;
+            $out['incomplete_torrents_count'] = $this->incomplete_torrents_count;
         }
         return $out;
     }

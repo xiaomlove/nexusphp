@@ -177,13 +177,13 @@ class UserController extends Controller
         $rows = [
             [
                 ['icon' => 'icon-user', 'label' => '种子评论', 'name' => 'comments_count'],
-                ['icon' => 'icon-user', 'label' => '论坛坛子', 'name' => 'posts_count'],
+                ['icon' => 'icon-user', 'label' => '论坛帖子', 'name' => 'posts_count'],
             ],[
-                ['icon' => 'icon-user', 'label' => '发布种子', 'name' => 'comments_count'],
-                ['icon' => 'icon-user', 'label' => '当前做种', 'name' => 'posts_count'],
-                ['icon' => 'icon-user', 'label' => '当前下载', 'name' => 'posts_count'],
-                ['icon' => 'icon-user', 'label' => '完成种子', 'name' => 'posts_count'],
-                ['icon' => 'icon-user', 'label' => '未完成种子', 'name' => 'posts_count'],
+                ['icon' => 'icon-user', 'label' => '发布种子', 'name' => 'torrents_count'],
+                ['icon' => 'icon-user', 'label' => '当前做种', 'name' => 'seeding_torrents_count'],
+                ['icon' => 'icon-user', 'label' => '当前下载', 'name' => 'leeching_torrents_count'],
+                ['icon' => 'icon-user', 'label' => '完成种子', 'name' => 'completed_torrents_count'],
+                ['icon' => 'icon-user', 'label' => '未完成种子', 'name' => 'incomplete_torrents_count'],
             ]
         ];
         $resource->additional([
@@ -196,7 +196,11 @@ class UserController extends Controller
 
     private function getUserProfile($id)
     {
-        $user = User::query()->withCount(['comments', 'posts'])->findOrFail($id);
+        $user = User::query()->withCount([
+            'comments', 'posts', 'torrents', 'seeding_torrents', 'leeching_torrents',
+            'completed_torrents' => function ($query) use ($id) {$query->where('snatched.userid', '!=', $id);},
+            'incomplete_torrents' => function ($query) use ($id) {$query->where('snatched.userid', '!=', $id);},
+        ])->findOrFail($id);
         $resource = new UserResource($user);
         return $resource;
     }

@@ -70,8 +70,8 @@ class User extends Authenticatable
     ];
 
     public static $cardTitles = [
-        'uploaded_human' => '上传',
-        'downloaded_human' => '下载',
+        'uploaded_human' => '上传量',
+        'downloaded_human' => '下载量',
         'share_ratio' => '分享率',
 //        'seed_time' => '做种时间',
         'seed_bonus' => '魔力值',
@@ -135,7 +135,7 @@ class User extends Authenticatable
     public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
-        'invited_by', 'enabled',
+        'invited_by', 'enabled', 'seed_points',
     ];
 
     public function checkIsNormal(array $fields = ['status', 'enabled'])
@@ -259,6 +259,27 @@ class User extends Authenticatable
             'id',
             'torrentid');
     }
+
+    public function seeding_torrents()
+    {
+        return $this->peers_torrents()->where('peers.seeder', Peer::SEEDER_YES);
+    }
+
+    public function leeching_torrents()
+    {
+        return $this->peers_torrents()->where('peers.seeder', Peer::SEEDER_NO);
+    }
+
+    public function completed_torrents()
+    {
+        return $this->snatched_torrents()->where('snatched.finished', Snatch::FINISHED_YES);
+    }
+
+    public function incomplete_torrents()
+    {
+        return $this->snatched_torrents()->where('snatched.finished', Snatch::FINISHED_NO);
+    }
+
 
     public function hitAndRuns(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
