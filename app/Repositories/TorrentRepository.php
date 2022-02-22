@@ -84,7 +84,10 @@ class TorrentRepository extends BaseRepository
         $query->orderBy($sortField, $sortType);
 
         $with = ['user'];
-        $torrents = $query->with($with)->paginate();
+        $torrents = $query->with($with)
+            ->orderBy('pos_state', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate();
         return $torrents;
     }
 

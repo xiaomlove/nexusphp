@@ -8,7 +8,7 @@
                     </el-form-item>
                     <el-form-item label="Index" prop="indexes">
                         <template v-for="(item, index) in formData.indexes" :key="index">
-                            <el-row>
+                            <el-row style="width: 100%">
                                 <el-col :span="6">
                                     <el-checkbox v-model="item.checked" :label="item.checked">{{item.name}}</el-checkbox>
                                 </el-col>

@@ -1,1 +1,0 @@
-import{_ as e}from"./index.18f7a70d.js";import{f as r,g as o}from"./vendor.51c5b88d.js";const n={};function c(t,a){return r(),o("div",null,"Agent Allow Form")}var _=e(n,[["render",c]]);export{_ as default};

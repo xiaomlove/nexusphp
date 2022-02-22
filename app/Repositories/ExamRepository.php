@@ -605,7 +605,6 @@ class ExamRepository extends BaseRepository
     }
 
     /**
-     * @deprecated old version used
      * @param ExamUser $examUser
      * @param false $allSum
      * @return array|null

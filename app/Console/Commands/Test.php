@@ -57,7 +57,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = floatval(25.32);
+        $r = User::query()->first()->seed_points;
         dd($r);
     }
 

@@ -7,7 +7,7 @@ return [
     'index_text_' . \App\Models\Exam::INDEX_UPLOADED => 'Uploaded',
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => 'Seed time average',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => 'Downloaded',
-    'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => 'Seed points',
+    'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => 'Bonus',
     'require_value' => 'Require',
     'current_value' => 'Current',
     'result' => 'Result',

@@ -92,6 +92,11 @@ class User extends Authenticatable
         return self::DONATE_YES;
     }
 
+    public function getSeedPointsAttribute(): string
+    {
+        return $this->seed_points ?? 0;
+    }
+
 
     /**
      * 为数组 / JSON 序列化准备日期。
