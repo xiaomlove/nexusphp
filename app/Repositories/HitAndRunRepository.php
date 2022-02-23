@@ -35,7 +35,7 @@ class HitAndRunRepository extends BaseRepository
             ->with([
                 'torrent' => function ($query) {$query->select(['id', 'size', 'name']);},
                 'snatch',
-                'user' => function ($query) {$query->select(['id', 'username', 'lang']);},
+                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class']);},
                 'user.language',
             ]);
         if (!is_null($uid)) {
@@ -66,6 +66,15 @@ class HitAndRunRepository extends BaseRepository
                 }
                 if (!$row->torrent) {
                     do_log("$logPrefix, torrent not exists, skip!", 'error');
+                    continue;
+                }
+
+                //If is VIP or above, pass
+                if ($row->user->class >= User::CLASS_VIP) {
+                    $result = $this->reachedBySpecialUserClass($row);
+                    if ($result) {
+                        $successCounts++;
+                    }
                     continue;
                 }
 
@@ -130,21 +139,9 @@ class HitAndRunRepository extends BaseRepository
             'ignore_when_ratio_reach' => Setting::get('hr.ignore_when_ratio_reach'),
         ], $hitAndRun->user->locale);
         $update = [
-            'status' => HitAndRun::STATUS_REACHED,
             'comment' => $comment
         ];
-        $affectedRows = DB::table($hitAndRun->getTable())
-            ->where('id', $hitAndRun->id)
-            ->where('status', HitAndRun::STATUS_INSPECTING)
-            ->update($update);
-        do_log("[H&R_REACHED_BY_SHARE_RATIO], " . last_query() . ", affectedRows: $affectedRows");
-        if ($affectedRows != 1) {
-            do_log($hitAndRun->toJson() . ", [H&R_REACHED_BY_SHARE_RATIO], affectedRows != 1, skip!", 'notice');
-            return false;
-        }
-        $message = $this->geReachedMessage($hitAndRun);
-        Message::query()->insert($message);
-        return true;
+        return $this->inspectingToReached($hitAndRun, $update, __FUNCTION__);
     }
 
     private function reachedBySeedTime(HitAndRun $hitAndRun): bool
@@ -156,16 +153,33 @@ class HitAndRunRepository extends BaseRepository
             'seed_time_minimum' => Setting::get('hr.seed_time_minimum')
         ], $hitAndRun->user->locale);
         $update = [
-            'status' => HitAndRun::STATUS_REACHED,
             'comment' => $comment
         ];
+        return $this->inspectingToReached($hitAndRun, $update, __FUNCTION__);
+    }
+
+    private function reachedBySpecialUserClass(HitAndRun $hitAndRun): bool
+    {
+        do_log(__METHOD__);
+        $comment = nexus_trans('hr.reached_by_special_user_class_comment', [
+            'user_class_text' => $hitAndRun->user->class_text,
+        ], $hitAndRun->user->locale);
+        $update = [
+            'comment' => $comment
+        ];
+        return $this->inspectingToReached($hitAndRun, $update, __FUNCTION__);
+    }
+
+    private function inspectingToReached(HitAndRun $hitAndRun, array $update, string $logPrefix = ''): bool
+    {
+        $update['status'] = HitAndRun::STATUS_REACHED;
         $affectedRows = DB::table($hitAndRun->getTable())
             ->where('id', $hitAndRun->id)
             ->where('status', HitAndRun::STATUS_INSPECTING)
             ->update($update);
-        do_log("[H&R_REACHED_BY_SEED_TIME], " . last_query() . ", affectedRows: $affectedRows");
+        do_log("[$logPrefix], " . last_query() . ", affectedRows: $affectedRows");
         if ($affectedRows != 1) {
-            do_log($hitAndRun->toJson() . ", [H&R_REACHED_BY_SEED_TIME], affectedRows != 1, skip!", 'notice');
+            do_log($hitAndRun->toJson() . ", [$logPrefix], affectedRows != 1, skip!", 'notice');
             return false;
         }
         $message = $this->geReachedMessage($hitAndRun);

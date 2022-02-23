@@ -59,7 +59,7 @@ class Test extends Command
     public function handle()
     {
         $rep = new HitAndRunRepository();
-        $r = $rep->getStatusStats(1)->get(2);
+        $r = $rep->cronjobUpdateStatus();
         dd($r);
     }
 

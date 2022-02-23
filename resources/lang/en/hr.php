@@ -12,6 +12,7 @@ return [
 
     'reached_by_seed_time_comment' => 'Up to：:now，seed time: :seed_time Hour(s) reached :seed_time_minimum Hour(s)',
     'reached_by_share_ratio_comment' => "Up to：:now \nseed time: :seed_time Hour(s) Unreached :seed_time_minimum Hour(s) \nShare ratio: :share_ratio reached standard：:ignore_when_ratio_reach",
+    'reached_by_special_user_class_comment' => "Your user class: :user_class_text, ignore this H&R",
     'reached_message_subject' => 'H&R(ID: :hit_and_run_id) reached!',
     'reached_message_content' => 'Congratulation! The torrent: :torrent_name(ID: :torrent_id) you download at: :completed_at has reach the requirement.',
 
