@@ -46,6 +46,7 @@ function bonusarray($option = 0){
     $bonus['menge'] = 1;
     $bonus['name'] = $lang_mybonus['text_buy_invite'];
     $bonus['description'] = $lang_mybonus['text_buy_invite_note'];
+    $results[] = $bonus;
 
     //Custom Title
     $bonus = array();
