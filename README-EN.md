@@ -27,3 +27,4 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 ## More information
 Blog：[https://nexusphp.org](https://nexusphp.org/)  
 Documentation：[https://doc.nexusphp.org](https://doc.nexusphp.org/en/)  
+Telegram: [https://t.me/nexusphp](https://t.me/nexusphp)  

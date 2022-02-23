@@ -12,6 +12,7 @@ use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\User;
 use App\Repositories\ExamRepository;
+use App\Repositories\HitAndRunRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\TorrentRepository;
 use App\Repositories\UserRepository;
@@ -57,7 +58,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = User::query()->first()->seed_points;
+        $rep = new HitAndRunRepository();
+        $r = $rep->getStatusStats(1)->get(2);
         dd($r);
     }
 

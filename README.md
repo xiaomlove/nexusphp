@@ -23,15 +23,11 @@
 - Mysql: 5.7最新版或以上版本
 - Redis：1.0.0或以上版本
 
-## 捐赠
-此程序由个人维护，如果对你有帮助，可以请我喝杯咖啡。感谢以下捐赠者：  
-
-**初心、陌路つ**
-
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
 论坛：[https://discuss.nexusphp.org](https://discuss.nexusphp.org/)  
 文档：[https://doc.nexusphp.org](http://doc.nexusphp.org/)  
+Telegram: [https://t.me/nexusphp](https://t.me/nexusphp)  
 QQ群: [764452568](https://jq.qq.com/?_wv=1027&k=IbltZcIx)  
 ![扫码加入](http://demo.nexusphp.org/attachments/202105/20210508190106ed3a3620fc34ab12660586652bc74e34.png)
 

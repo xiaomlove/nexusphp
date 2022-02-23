@@ -239,4 +239,23 @@ class HitAndRunRepository extends BaseRepository
 
         return true;
     }
+
+    public function getStatusStats($uid, $formatted = true)
+    {
+        $results = HitAndRun::query()->where('uid', $uid)
+            ->selectRaw('status, count(*) as counts')
+            ->groupBy('status')
+            ->get()
+            ->pluck('counts', 'status');
+        if ($formatted) {
+            return sprintf(
+                '%s/%s/%s',
+                $results->get(HitAndRun::STATUS_INSPECTING, 0),
+                $results->get(HitAndRun::STATUS_UNREACHED, 0),
+                Setting::get('hr.ban_user_when_counts_reach')
+            );
+        }
+        return $results;
+
+    }
 }
