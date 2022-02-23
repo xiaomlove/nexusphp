@@ -291,7 +291,7 @@ for ($i=0; $i < count($allBonus); $i++)
 	print("<tr>");
 	print("<form action=\"?action=exchange\" method=\"post\">");
 	print("<td class=\"rowhead_center\"><input type=\"hidden\" name=\"option\" value=\"".$i."\" /><b>".($i + 1)."</b></td>");
-	if ($bonusarray['art'] == 'invite'){ //for Custom Title!
+	if ($bonusarray['art'] == 'title'){ //for Custom Title!
 	    $otheroption_title = "<input type=\"text\" name=\"title\" style=\"width: 200px\" maxlength=\"30\" />";
 	    print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_titile'].$otheroption_title.$lang_mybonus['text_click_exchange']."</td><td class=\"rowfollow\" align='center'>".number_format($bonusarray['points'])."</td>");
 	}
