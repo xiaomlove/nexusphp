@@ -36,6 +36,9 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
 
     Route::group(['middleware' => ['admin']], function () {
         Route::resource('agent-allows', \App\Http\Controllers\AgentAllowController::class);
+        Route::get('all-agent-allows', [\App\Http\Controllers\AgentAllowController::class, 'all']);
+        Route::post('agent-check', [\App\Http\Controllers\AgentAllowController::class, 'check']);
+        Route::resource('agent-denies', \App\Http\Controllers\AgentDenyController::class);
 
         Route::resource('users', \App\Http\Controllers\UserController::class);
         Route::get('user-base', [\App\Http\Controllers\UserController::class, 'base']);

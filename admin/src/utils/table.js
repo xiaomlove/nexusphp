@@ -6,7 +6,7 @@ const useTable =  () => {
         query: {
             page: 1,
             sort_field: 'id',
-            sort_type: 'desc'
+            sort_type: 'desc',
         },
         tableData: [],
         multipleSelection: [],

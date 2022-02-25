@@ -65,6 +65,26 @@ const router = createRouter({
             component: () => import('../views/medal/form.vue')
         },
         {
+            path: '/agent-allow',
+            name: 'agent-allow',
+            component: () => import('../views/agent-allow/index.vue')
+        },
+        {
+            path: '/agent-allow-form',
+            name: 'agent-allow-form',
+            component: () => import('../views/agent-allow/form.vue')
+        },
+        {
+            path: '/agent-deny',
+            name: 'agent-deny',
+            component: () => import('../views/agent-deny/index.vue')
+        },
+        {
+            path: '/agent-deny-form',
+            name: 'agent-deny-form',
+            component: () => import('../views/agent-deny/form.vue')
+        },
+        {
             path: '/setting',
             name: 'setting',
             component: () => import('../views/setting/index.vue')

@@ -5,7 +5,15 @@
                 <div class="left">
                     <el-form :inline="true" :model="query">
                         <el-form-item label="">
-                            <el-input placeholder="Family" v-model="query.family"></el-input>
+                            <el-select v-model="query.family_id" filterable placeholder="Family">
+                                <el-option
+                                    v-for="item in extraData.agentAllows"
+                                    :key="item.id"
+                                    :label="item.family"
+                                    :value="item.id"
+                                >
+                                </el-option>
+                            </el-select>
                         </el-form-item>
                         <el-form-item>
                             <el-button type="primary" @click="handleReset">Reset</el-button>
@@ -14,7 +22,6 @@
                     </el-form>
                 </div>
                 <div class="right">
-                    <el-button type="primary" icon="Check" @click="handleCheck">Check</el-button>
                     <el-button type="primary" icon="Plus" @click="handleAdd">Add</el-button>
                 </div>
             </div>
@@ -36,52 +43,25 @@
             >
             </el-table-column>
             <el-table-column
-                prop="family"
+                prop="family_id"
                 label="Family"
+                :formatter="formatColumnFamilyId"
             ></el-table-column>
             <el-table-column
-                prop="start_name"
-                label="Start name"
+                prop="name"
+                label="Name"
             >
             </el-table-column>
 
             <el-table-column
-                prop="peer_id_start"
-                label="Peer id start"
+                prop="peer_id"
+                label="Peer id"
             >
             </el-table-column>
             <el-table-column
-                prop="peer_id_pattern"
-                label="Peer id pattern"
+                prop="agent"
+                label="Agent"
             ></el-table-column>
-<!--            <el-table-column-->
-<!--                prop="peer_id_match_num"-->
-<!--                label="Peer id match num"-->
-<!--            ></el-table-column>-->
-<!--            <el-table-column-->
-<!--                prop="peer_id_matchtype"-->
-<!--                label="Peer id match type"-->
-<!--            ></el-table-column>-->
-
-            <el-table-column
-                prop="agent_start"
-                label="Agent start"
-            >
-            </el-table-column>
-            <el-table-column
-                prop="agent_pattern"
-                label="Agent pattern"
-            ></el-table-column>
-<!--            <el-table-column-->
-<!--                prop="agent_match_num"-->
-<!--                label="Agent match num"-->
-<!--            ></el-table-column>-->
-<!--            <el-table-column-->
-<!--                prop="agent_matchtype"-->
-<!--                label="Agent match type"-->
-<!--            ></el-table-column>-->
-
-
 
             <el-table-column
                 label="Action"
@@ -110,7 +90,6 @@
             @current-change="changePage"
         />
     </el-card>
-    <DialogCheck ref="refDialogCheck" />
 </template>
 
 <script>
@@ -119,20 +98,17 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import api from '../../utils/api'
 import { useTable, renderTableData } from '../../utils/table'
-import DialogCheck from "../agent-allow/dialog-check.vue"
-
 
 export default {
     name: 'ClientTable',
-    components: {
-        DialogCheck,
-    },
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
 
         const state = useTable()
-        const refDialogCheck = ref(null)
+        let extraData = reactive({
+            agentAllows: []
+        });
 
         onMounted(() => {
             console.log('MedalTable onMounted')
@@ -140,18 +116,19 @@ export default {
         })
         const fetchTableData = async () => {
             state.loading = true
-            let res = await api.listAgentAllow(state.query)
+            await listAgentAllows()
+            let res = await api.listAgentDeny(state.query)
             renderTableData(res, state)
             state.loading = false
         }
         const handleAdd = () => {
-            router.push({ name: 'agent-allow-form' })
+            router.push({ name: 'agent-deny-form' })
         }
         const handleEdit = (id) => {
-            router.push({ path: '/agent-allow-form', query: { id } })
+            router.push({ path: '/agent-deny-form', query: { id } })
         }
         const handleDelete = async (id) => {
-            let res = await api.deleteAgentAllow(id)
+            let res = await api.deleteAgentDeny(id)
             ElMessage.success(res.msg)
             state.query.page = 1;
             await fetchTableData()
@@ -163,16 +140,23 @@ export default {
             state.query.page = val
             fetchTableData()
         }
-        const handleReset = () => {
-            state.query.family = '';
+
+        const listAgentAllows = async () => {
+            let res = await api.listAllAgentAllow()
+            extraData.agentAllows = res.data
         }
 
-        const handleCheck = () => {
-            refDialogCheck.value.open()
+        const handleReset = () => {
+            state.query.family_id = '';
+        }
+
+        const formatColumnFamilyId = (row, column) => {
+            return row.family.family
         }
 
         return {
             ...toRefs(state),
+            extraData,
             multipleTable,
             handleSelectionChange,
             handleAdd,
@@ -181,8 +165,7 @@ export default {
             fetchTableData,
             changePage,
             handleReset,
-            handleCheck,
-            refDialogCheck
+            formatColumnFamilyId
         }
     }
 }

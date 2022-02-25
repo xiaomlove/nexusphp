@@ -16,6 +16,15 @@ class UserRepository extends BaseRepository
     public function getList(array $params)
     {
         $query = User::query();
+        if (!empty($params['id'])) {
+            $query->where('id', $params['id']);
+        }
+        if (!empty($params['username'])) {
+            $query->where('username', 'like',"%{$params['username']}%");
+        }
+        if (!empty($params['email'])) {
+            $query->where('email', 'like',"%{$params['email']}%");
+        }
         list($sortField, $sortType) = $this->getSortFieldAndType($params);
         $query->orderBy($sortField, $sortType);
         return $query->paginate();

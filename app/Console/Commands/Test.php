@@ -11,6 +11,7 @@ use App\Models\Medal;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\User;
+use App\Repositories\AgentAllowRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
 use App\Repositories\SearchBoxRepository;
@@ -58,8 +59,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new HitAndRunRepository();
-        $r = $rep->cronjobUpdateStatus();
+        $peerId = '-TR2920-9bqp8iu7v9se';
+        $agent = 'Transmission/2.92';
+        $rep = new AgentAllowRepository();
+        $r = $rep->checkClient($peerId, $agent, true);
         dd($r);
     }
 

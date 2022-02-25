@@ -27,11 +27,19 @@
                     </el-sub-menu>
                     <el-sub-menu index="3">
                         <template #title>
+                            <span>Agent</span>
+                        </template>
+                        <el-menu-item-group>
+                            <el-menu-item index="/agent-allow"><i class="el-icon-user" />Allow</el-menu-item>
+                        </el-menu-item-group>
+                        <el-menu-item-group>
+                            <el-menu-item index="/agent-deny"><i class="el-icon-user" />Deny</el-menu-item>
+                        </el-menu-item-group>
+                    </el-sub-menu>
+                    <el-sub-menu index="4">
+                        <template #title>
                             <span>System</span>
                         </template>
-<!--                        <el-menu-item-group>-->
-<!--                            <el-menu-item index="/agent-allow"><i class="el-icon-menu" />Agent allow</el-menu-item>-->
-<!--                        </el-menu-item-group>-->
                         <el-menu-item-group>
                             <el-menu-item index="/exam"><i class="el-icon-menu" />Exam</el-menu-item>
                         </el-menu-item-group>

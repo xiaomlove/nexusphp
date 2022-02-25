@@ -3,10 +3,24 @@
         <template #header>
             <div class="nexus-table-header">
                 <div class="left">
-
+                    <el-form :inline="true" :model="query">
+                        <el-form-item label="">
+                            <el-input placeholder="ID" v-model="query.id"></el-input>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-input placeholder="Username" v-model="query.username"></el-input>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-input placeholder="Email" v-model="query.email"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="handleReset">Reset</el-button>
+                            <el-button type="primary" @click="fetchTableData">Query</el-button>
+                        </el-form-item>
+                    </el-form>
                 </div>
                 <div class="right">
-                    <el-button type="primary" size="small" icon="Plus" @click="handleAdd">Add</el-button>
+                    <el-button type="primary" icon="Plus" @click="handleAdd">Add</el-button>
                 </div>
             </div>
         </template>
@@ -26,7 +40,7 @@
             <el-table-column
                 prop="id"
                 label="Id"
-                width="60"
+                width="80"
                 sortable="custom"
             ></el-table-column>
 
@@ -157,6 +171,12 @@ export default {
             fetchTableData()
         }
 
+        const handleReset = () => {
+            state.query.id = '';
+            state.query.username = '';
+            state.query.email = '';
+        }
+
         const handleDetail = (id) => {
             router.push({
                 name: 'user-detail',
@@ -187,7 +207,8 @@ export default {
             handleSortChange,
             formatColumnClass,
             formatColumnUploaded,
-            formatColumnDownloaded
+            formatColumnDownloaded,
+            handleReset
         }
     }
 }

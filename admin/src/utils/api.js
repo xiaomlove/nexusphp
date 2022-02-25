@@ -7,20 +7,42 @@ const api = {
     logout: (params = {}) => {
         return axios.post('logout');
     },
-    listAllowAgent: (params = {}) => {
+    listAgentAllow: (params = {}) => {
         return axios.get('agent-allows', {params: params});
     },
-    storeAllowAgent: (params = {}) => {
+    listAllAgentAllow: (params = {}) => {
+        return axios.get('all-agent-allows', {params: params});
+    },
+    storeAgentAllow: (params = {}) => {
         return axios.post('agent-allows', params);
     },
-    updateAllowAgent: (id, params = {}) => {
+    updateAgentAllow: (id, params = {}) => {
         return axios.put('agent-allows/' + id, params);
     },
-    getAllowAgent: (id) => {
+    getAgentAllow: (id) => {
         return axios.get('agent-allows/' + id);
     },
-    deleteAllowAgent: (id) => {
+    deleteAgentAllow: (id) => {
         return axios.delete('agent-allows/' + id);
+    },
+
+    listAgentDeny: (params = {}) => {
+        return axios.get('agent-denies', {params: params});
+    },
+    storeAgentDeny: (params = {}) => {
+        return axios.post('agent-denies', params);
+    },
+    updateAgentDeny: (id, params = {}) => {
+        return axios.put('agent-denies/' + id, params);
+    },
+    getAgentDeny: (id) => {
+        return axios.get('agent-denies/' + id);
+    },
+    deleteAgentDeny: (id) => {
+        return axios.delete('agent-denies/' + id);
+    },
+    checkAgent: (params = {}) => {
+        return axios.post('agent-check', params);
     },
 
     listUser: (params = {}) => {

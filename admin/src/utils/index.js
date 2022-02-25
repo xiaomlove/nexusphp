@@ -40,6 +40,8 @@ export const pathMap = {
     account: '修改账户',
     'agent-allow': 'Agent allow',
     'agent-allow-form': 'Agent allow form',
+    'agent-deny': 'Agent deny',
+    'agent-deny-form': 'Agent deny form',
     'user': 'User',
     'user-form': 'User form',
     'user-detail': 'User detail',
