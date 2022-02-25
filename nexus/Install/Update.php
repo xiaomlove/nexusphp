@@ -145,6 +145,16 @@ class Update extends Install
             $this->doLog("[INIT SEED POINTS]");
         }
 
+        /**
+         * @since 1.6.0-beta14
+         *
+         * add id to agent_allowed_exception
+         */
+        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('agent_allowed_exception', 'id')) {
+            $this->runMigrate('database/migrations/2022_02_25_021356_add_id_to_agent_allowed_exception_table.php');
+            $this->doLog("[ADD_ID_TO_AGENT_ALLOWED_EXCEPTION]");
+        }
+
 
 
 

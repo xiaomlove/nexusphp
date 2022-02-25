@@ -12,6 +12,7 @@ use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\User;
 use App\Repositories\AgentAllowRepository;
+use App\Repositories\AttendanceRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
 use App\Repositories\SearchBoxRepository;
@@ -59,12 +60,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $peerId = '-TR2920-9bqp8iu7v9se';
-        $agent = 'Transmission/2.92';
-        $rep = new AgentAllowRepository();
-//        $r = $rep->checkClient($peerId, $agent, true);
-        $r = array_slice([1,2], 1, 3);
-        dd($r);
+        $now = Carbon::today();
+        dd($now->toDateTimeString());
     }
 
 }

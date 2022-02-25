@@ -19,7 +19,7 @@ class CreateAttendanceTable extends Migration
         Schema::create('attendance', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedInteger('uid')->default(0)->index('idx_uid');
-            $table->dateTime('added');
+            $table->dateTime('added')->index();
             $table->unsignedInteger('points')->default(0);
             $table->unsignedInteger('days')->default(1);
         });

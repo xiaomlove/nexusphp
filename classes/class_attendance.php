@@ -15,7 +15,7 @@ class Attendance
         if($flush || ($row = $Cache->get_value($this->cachename)) === false){
             $res = sql_query(sprintf('SELECT * FROM `attendance` WHERE `uid` = %u AND DATE(`added`) = %s', $this->userid, sqlesc($this->curdate.' 00:00:00'))) or sqlerr(__FILE__,__LINE__);
             $row = mysql_num_rows($res) ? mysql_fetch_assoc($res) : array();
-            $Cache->cache_value($this->cachename, $row, 86400);
+            $Cache->cache_value($this->cachename, $row, 600);
         }
         return empty($row) ? false : $row;
     }
@@ -33,7 +33,7 @@ class Attendance
             $row = [0, 0, 0, 0];
         }
         list($id, $datediff, $days, $totalDays) = $row;
-        $points = min($initial + $step * $totalDays, $maximum);
+        $points = min($initial + $step * $days, $maximum);
         $cdays = $datediff == 1 ? ++$days : 1;
         if($cdays > 1){
             krsort($continous);
