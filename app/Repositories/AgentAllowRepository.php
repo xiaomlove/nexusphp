@@ -55,7 +55,8 @@ class AgentAllowRepository extends BaseRepository
             throw new NexusException(sprintf('pattern: %s can not match start: %s', $pattern, $start));
         }
         $matchCount = count($matches) - 1;
-        if ($matchNum > $matchCount) {
+        //due to old data may be matchNum > matchCount
+        if ($matchNum > $matchCount && !IN_NEXUS) {
             throw new NexusException("pattern: $pattern match start: $start got matches count: $matchCount, but require $matchNum.");
         }
         return array_slice($matches, 1, $matchNum);

@@ -90,11 +90,26 @@ unset($GLOBALS['CURUSER']);
 $CURUSER = $GLOBALS["CURUSER"] = $az;
 
 //3. CHECK IF CLIENT IS ALLOWED
-$clicheck_res = check_client($peer_id,$agent,$client_familyid);
+//$clicheck_res = check_client($peer_id,$agent,$client_familyid);
+/**
+ * refactor check client
+ *
+ * @since v1.6.0-beta14
+ */
+$agentAllowRep = new \App\Repositories\AgentAllowRepository();
+$clicheck_res = '';
+try {
+    $checkClientResult = $agentAllowRep->checkClient($peer_id, $agent);
+    $client_familyid = $checkClientResult->id;
+} catch (\Exception $exception) {
+    $clicheck_res = $exception->getMessage();
+}
+
 if($clicheck_res){
 	if ($az['showclienterror'] == 'no')
 	{
-		sql_query("UPDATE users SET showclienterror = 'yes' WHERE id = ".sqlesc($userid));
+//		sql_query("UPDATE users SET showclienterror = 'yes' WHERE id = ".sqlesc($userid));
+        $USERUPDATESET[] = "showclienterror = 'yes'";
 		$Cache->delete_value('user_passkey_'.$passkey.'_content');
 	}
 	err($clicheck_res);

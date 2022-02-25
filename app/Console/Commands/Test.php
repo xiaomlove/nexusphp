@@ -62,7 +62,8 @@ class Test extends Command
         $peerId = '-TR2920-9bqp8iu7v9se';
         $agent = 'Transmission/2.92';
         $rep = new AgentAllowRepository();
-        $r = $rep->checkClient($peerId, $agent, true);
+//        $r = $rep->checkClient($peerId, $agent, true);
+        $r = array_slice([1,2], 1, 3);
         dd($r);
     }
 
