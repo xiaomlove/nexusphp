@@ -16,23 +16,27 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
 
-    Route::post('logout', [\App\Http\Controllers\AuthenticateController::class, 'logout']);
+    Route::group(['middleware' => ['user']], function () {
+        Route::post('logout', [\App\Http\Controllers\AuthenticateController::class, 'logout']);
 
-    Route::get('user-me',[\App\Http\Controllers\UserController::class, 'me'])->name('user.me');
-    Route::get('user-publish-torrent',[\App\Http\Controllers\UserController::class, 'publishTorrent']);
-    Route::get('user-seeding-torrent',[\App\Http\Controllers\UserController::class, 'seedingTorrent']);
-    Route::get('user-leeching-torrent',[\App\Http\Controllers\UserController::class, 'leechingTorrent']);
-    Route::get('user-finished-torrent',[\App\Http\Controllers\UserController::class, 'finishedTorrent']);
-    Route::get('user-not-finished-torrent',[\App\Http\Controllers\UserController::class, 'notFinishedTorrent']);
-    Route::resource('messages', \App\Http\Controllers\MessageController::class);
-    Route::resource('torrents', \App\Http\Controllers\TorrentController::class);
-    Route::resource('comments', \App\Http\Controllers\CommentController::class);
-    Route::resource('peers', \App\Http\Controllers\PeerController::class);
-    Route::resource('files', \App\Http\Controllers\FileController::class);
-    Route::resource('thanks', \App\Http\Controllers\ThankController::class);
-    Route::resource('snatches', \App\Http\Controllers\SnatchController::class);
-    Route::resource('bookmarks', \App\Http\Controllers\BookmarkController::class);
-    Route::get('search-box', [\App\Http\Controllers\TorrentController::class, 'searchBox']);
+        Route::get('user-me',[\App\Http\Controllers\UserController::class, 'me'])->name('user.me');
+        Route::get('user-publish-torrent',[\App\Http\Controllers\UserController::class, 'publishTorrent']);
+        Route::get('user-seeding-torrent',[\App\Http\Controllers\UserController::class, 'seedingTorrent']);
+        Route::get('user-leeching-torrent',[\App\Http\Controllers\UserController::class, 'leechingTorrent']);
+        Route::get('user-finished-torrent',[\App\Http\Controllers\UserController::class, 'finishedTorrent']);
+        Route::get('user-not-finished-torrent',[\App\Http\Controllers\UserController::class, 'notFinishedTorrent']);
+        Route::resource('messages', \App\Http\Controllers\MessageController::class);
+        Route::resource('torrents', \App\Http\Controllers\TorrentController::class);
+        Route::resource('comments', \App\Http\Controllers\CommentController::class);
+        Route::resource('peers', \App\Http\Controllers\PeerController::class);
+        Route::resource('files', \App\Http\Controllers\FileController::class);
+        Route::resource('thanks', \App\Http\Controllers\ThankController::class);
+        Route::resource('snatches', \App\Http\Controllers\SnatchController::class);
+        Route::resource('bookmarks', \App\Http\Controllers\BookmarkController::class);
+        Route::get('search-box', [\App\Http\Controllers\TorrentController::class, 'searchBox']);
+        Route::resource('news', \App\Http\Controllers\NewsController::class);
+        Route::get('attend', [\App\Http\Controllers\AttendanceController::class, 'attend']);
+    });
 
     Route::group(['middleware' => ['admin']], function () {
         Route::resource('agent-allows', \App\Http\Controllers\AgentAllowController::class);
@@ -65,6 +69,8 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::resource('settings', \App\Http\Controllers\SettingController::class);
         Route::resource('medals', \App\Http\Controllers\MedalController::class);
         Route::resource('user-medals', \App\Http\Controllers\UserMedalController::class);
+
+
     });
 
 });

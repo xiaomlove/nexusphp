@@ -9,6 +9,7 @@
 namespace Nexus\PTGen;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 
 class PTGen
 {
@@ -56,7 +57,13 @@ class PTGen
     public function generate(string $url, bool $withoutCache = false): array
     {
         $parsed = $this->parse($url);
-        $targetUrl = sprintf('%s/?site=%s&sid=%s', trim($this->apiPoint, '/'), $parsed['site'] , $parsed['id']);
+        $targetUrl = trim($this->apiPoint, '/');
+        if (Str::contains($targetUrl, '?')) {
+            $targetUrl .= "&";
+        } else {
+            $targetUrl .= "?";
+        }
+        $targetUrl .= sprintf('site=%s&sid=%s', $parsed['site'] , $parsed['id']);
         return $this->request($targetUrl, $withoutCache);
     }
 
@@ -128,6 +135,7 @@ HTML;
                 return $cache;
             }
         }
+        do_log("$logPrefix, going to send request...");
         $http = new Client();
         $response = $http->get($url, ['timeout' => 5]);
         $statusCode = $response->getStatusCode();

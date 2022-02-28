@@ -29,4 +29,5 @@ class Locale
         App::setLocale($locale);
         return $next($request);
     }
+
 }

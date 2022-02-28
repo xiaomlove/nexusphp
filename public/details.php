@@ -272,7 +272,7 @@ if (!$row) {
 		}
 	}
 
-	if (!empty($row['pt_gen'])) {
+	if (get_setting('main.enable_pt_gen_system') == 'yes' && !empty($row['pt_gen'])) {
 	    $ptGen = new \Nexus\PTGen\PTGen();
 	    $ptGenResult = $ptGen->renderDetailsPageDescription($id, json_decode($row['pt_gen'], true));
 	    if ($ptGenResult['update']) {

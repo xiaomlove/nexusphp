@@ -2934,8 +2934,8 @@ function commenttable($rows, $type, $parent_id, $review = false)
 	foreach ($rows as $row)
 	{
 //		$userRow = get_user_row($row['user']);
-        $userInfo = $userInfoArr->get($row['user']);
-		$userRow = empty($userInfo) ? [] : $userInfo->toArray();
+        $userInfo = $userInfoArr->get($row['user'], \App\Models\User::defaultUser());
+		$userRow = $userInfo->toArray();
 		if ($count>=1)
 		{
 			if ($Advertisement->enable_ad()){

@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\UnauthorizedException;
 
@@ -22,7 +23,7 @@ class AuthenticateRepository extends BaseRepository
         $user->checkIsNormal();
         $tokenName = __METHOD__ . __LINE__;
         $token = DB::transaction(function () use ($user, $tokenName) {
-            $user->tokens()->delete();
+            $user->update(['last_login' => Carbon::now()]);
             $tokenResult = $user->createToken($tokenName);
             return $tokenResult->plainTextToken;
         });

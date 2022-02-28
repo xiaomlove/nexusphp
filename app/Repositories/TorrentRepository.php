@@ -80,15 +80,21 @@ class TorrentRepository extends BaseRepository
             });
         }
 
-        list($sortField, $sortType) = $this->getSortFieldAndType($params);
-        $query->orderBy($sortField, $sortType);
+        $query = $this->handleGetListSort($query, $params);
 
         $with = ['user'];
-        $torrents = $query->with($with)
-            ->orderBy('pos_state', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate();
+        $torrents = $query->with($with)->paginate();
         return $torrents;
+    }
+
+    private function handleGetListSort(Builder $query, array $params)
+    {
+        if (empty($params['sort_field']) && empty($params['sort_type'])) {
+            //the default torrent list sort
+            return $query->orderBy('pos_state', 'desc')->orderBy('id', 'desc');
+        }
+        list($sortField, $sortType) = $this->getSortFieldAndType($params);
+        return $query->orderBy($sortField, $sortType);
     }
 
     public function getSearchBox($id = null)

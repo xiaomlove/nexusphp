@@ -17,11 +17,11 @@ class Comment extends NexusModel
 
     public function create_user()
     {
-        return $this->belongsTo(User::class, 'user');
+        return $this->belongsTo(User::class, 'user')->withDefault(User::getDefaultUserAttributes());
     }
 
     public function update_user()
     {
-        return $this->belongsTo(User::class, 'editedby');
+        return $this->belongsTo(User::class, 'editedby')->withDefault(User::getDefaultUserAttributes());
     }
 }

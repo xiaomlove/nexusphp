@@ -143,6 +143,31 @@ class User extends Authenticatable
         'invited_by', 'enabled', 'seed_points',
     ];
 
+    public static function getDefaultUserAttributes(): array
+    {
+        return [
+            'id' => 0,
+            'username' => nexus_trans('user.deleted_username'),
+            'class' => self::CLASS_PEASANT,
+            'email' => '',
+            'status' => self::STATUS_CONFIRMED,
+            'added' => '1970-01-01 08:00:00',
+            'avatar' => '',
+            'uploaded' => 0,
+            'downloaded' => 0,
+            'seedbonus' => 0,
+            'seedtime' => 0,
+            'leechtime' => 0,
+            'enabled' => self::ENABLED_NO,
+            'seed_points' => 0
+        ];
+    }
+
+    public static function defaultUser()
+    {
+        return new static(self::getDefaultUserAttributes());
+    }
+
     public function checkIsNormal(array $fields = ['status', 'enabled'])
     {
         if (in_array('status', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {

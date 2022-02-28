@@ -31,6 +31,11 @@ class Imdb
         $this->config = $config;
     }
 
+    public function setDebug($debug)
+    {
+        $this->config->debug = $debug;
+    }
+
     private function checkDir($dir, $langKeyPrefix)
     {
         global $lang_functions;
@@ -121,7 +126,7 @@ class Imdb
     {
         $id = parse_imdb_id($id);
         $movie = $this->getMovie($id);
-        //because getPate() is protected, so...
+        //because getPage() is protected, so...
         $movie->title();
         $movie->photo_localurl();
         $movie->releaseInfo();

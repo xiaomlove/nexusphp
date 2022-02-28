@@ -57,6 +57,7 @@ class AttendanceRepository extends BaseRepository
                 $attendance->update($update);
             }
         }
+        $attendance->added_time = $now->toTimeString();
         $attendance->is_updated = $isUpdated;
         do_log("[FINAL_ATTENDANCE]: " . $attendance->toJson());
         return $attendance;

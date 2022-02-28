@@ -60,8 +60,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $now = Carbon::today();
-        dd($now->toDateTimeString());
+
     }
 
 }

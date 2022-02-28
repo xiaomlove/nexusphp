@@ -108,7 +108,7 @@ class Torrent extends NexusModel
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'owner');
+        return $this->belongsTo(User::class, 'owner')->withDefault(User::getDefaultUserAttributes());
     }
 
     public function thanks()
