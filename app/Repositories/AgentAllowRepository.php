@@ -73,6 +73,7 @@ class AgentAllowRepository extends BaseRepository
         $versionTooLowStr = '';
         foreach ($allows as $agentAllow) {
             $agentAllowId = $agentAllow->id;
+            $logPrefix = "[ID: $agentAllowId]";
             $isPeerIdAllowed = $isAgentAllowed = $isPeerIdTooLow = $isAgentTooLow = false;
             //check peer_id
             if ($agentAllow->peer_id_pattern == '') {
@@ -83,15 +84,15 @@ class AgentAllowRepository extends BaseRepository
                 $matchType = $agentAllow->peer_id_matchtype;
                 $matchNum = $agentAllow->peer_id_match_num;
                 try {
-                    $peerIdResult = $this->isAllowed($pattern, $start, $matchNum, $matchType, $peerId, $debug);
+                    $peerIdResult = $this->isAllowed($pattern, $start, $matchNum, $matchType, $peerId, $debug, $logPrefix);
                     if ($debug) {
                         do_log(
-                            "agentAllowId: $agentAllowId, peerIdResult: $peerIdResult, with parameters: "
+                            "$logPrefix, peerIdResult: $peerIdResult, with parameters: "
                             . nexus_json_encode(compact('pattern', 'start', 'matchNum', 'matchType', 'peerId'))
                         );
                     }
                 } catch (\Exception $exception) {
-                    do_log("agent allow: {$agentAllow->id} check peer_id error: " . $exception->getMessage(), 'error');
+                    do_log("$logPrefix, check peer_id error: " . $exception->getMessage(), 'error');
                     throw new NexusException("regular expression err for peer_id: " . $start . ", please ask sysop to fix this");
                 }
                 if ($peerIdResult == 1) {
@@ -111,15 +112,15 @@ class AgentAllowRepository extends BaseRepository
                 $matchType = $agentAllow->agent_matchtype;
                 $matchNum = $agentAllow->agent_match_num;
                 try {
-                    $agentResult = $this->isAllowed($pattern, $start, $matchNum, $matchType, $agent, $debug);
+                    $agentResult = $this->isAllowed($pattern, $start, $matchNum, $matchType, $agent, $debug, $logPrefix);
                     if ($debug) {
                         do_log(
-                            "agentAllowId: $agentAllowId, agentResult: $agentResult, with parameters: "
+                            "$logPrefix, agentResult: $agentResult, with parameters: "
                             . nexus_json_encode(compact('pattern', 'start', 'matchNum', 'matchType', 'agent'))
                         );
                     }
                 } catch (\Exception $exception) {
-                    do_log("agent allow: {$agentAllow->id} check agent error: " . $exception->getMessage(), 'error');
+                    do_log("$logPrefix, check agent error: " . $exception->getMessage(), 'error');
                     throw new NexusException("regular expression err for agent: " . $start . ", please ask sysop to fix this");
                 }
                 if ($agentResult == 1) {
@@ -199,16 +200,20 @@ class AgentAllowRepository extends BaseRepository
      * @param $matchType
      * @param $value
      * @param bool $debug
+     * @param string $logPrefix
      * @return int
      * @throws NexusException
      */
-    private function isAllowed($pattern, $start, $matchNum, $matchType, $value, $debug = false): int
+    private function isAllowed($pattern, $start, $matchNum, $matchType, $value, $debug = false, $logPrefix = ''): int
     {
         $matchBench = $this->getPatternMatches($pattern, $start, $matchNum);
         if ($debug) {
-            do_log("matchBench: " . nexus_json_encode($matchBench));
+            do_log("$logPrefix, matchBench: " . nexus_json_encode($matchBench));
         }
         if (!preg_match($pattern, $value, $matchTarget)) {
+            if ($debug) {
+                do_log(sprintf("$logPrefix, pattern: (%s) not match: (%s)", $pattern, $value));
+            }
             return 0;
         }
         if ($matchNum <= 0) {
@@ -216,7 +221,7 @@ class AgentAllowRepository extends BaseRepository
         }
         $matchTarget = array_slice($matchTarget, 1);
         if ($debug) {
-            do_log("matchTarget: " . nexus_json_encode($matchTarget));
+            do_log("$logPrefix, matchTarget: " . nexus_json_encode($matchTarget));
         }
         for ($i = 0; $i < $matchNum; $i++) {
             if (!isset($matchBench[$i]) || !isset($matchTarget[$i])) {
@@ -232,12 +237,15 @@ class AgentAllowRepository extends BaseRepository
                 throw new NexusException(sprintf("Invalid match type: %s", $matchType));
             }
             if ($matchTarget[$i] > $matchBench[$i]) {
+                //higher, pass directly
                 return 1;
             } elseif ($matchTarget[$i] < $matchBench[$i]) {
                 return 2;
             }
         }
-        return 0;
+
+        //NOTE: at last, after all position checked, not [NOT_MATCH] or lower, it is passed!
+        return 1;
 
     }
 

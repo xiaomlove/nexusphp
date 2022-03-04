@@ -60,7 +60,10 @@ class Test extends Command
      */
     public function handle()
     {
-        echo date('Y-m-d H:i:s', 1623820546);
+        $peerId = '-TR3000-uff7q3z5126z';
+        $agent = 'Transmission/3.00';
+        $rep = new AgentAllowRepository();
+        $r = $rep->checkClient($peerId, $agent, true);
     }
 
 }
