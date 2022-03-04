@@ -4,6 +4,7 @@ dbconn();
 failedloginscheck ("Recover",true);
 $take_recover = !isset($_GET['sitelanguage']);
 $langid = intval($_GET['sitelanguage'] ?? 0);
+$baseUrl = getSchemeAndHttpHost();
 if ($langid)
 {
 	$lang_folder = validlang($langid);
@@ -49,8 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$title = $SITENAME.$lang_recover['mail_title'];
 	$body = <<<EOD
 {$lang_recover['mail_one']}($email){$lang_recover['mail_two']}$ip{$lang_recover['mail_three']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/recover.php?id={$arr["id"]}&secret=$hash')"> {$lang_recover['mail_this_link']} </a></b><br />
-http://$BASEURL/recover.php?id={$arr["id"]}&secret=$hash
+<b><a href="javascript:void(null)" onclick="window.open('$baseUrl/recover.php?id={$arr["id"]}&secret=$hash')"> {$lang_recover['mail_this_link']} </a></b><br />
+$baseUrl/recover.php?id={$arr["id"]}&secret=$hash
 {$lang_recover['mail_four']}
 EOD;
 
@@ -95,7 +96,7 @@ elseif($_SERVER["REQUEST_METHOD"] == "GET" && $take_recover && isset($_GET["id"]
 {$lang_recover['mail_two_one']}{$arr["username"]}
 {$lang_recover['mail_two_two']}$newpassword
 {$lang_recover['mail_two_three']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/login.php')">{$lang_recover['mail_here']}</a></b>
+<b><a href="javascript:void(null)" onclick="window.open('$baseUrl/login.php')">{$lang_recover['mail_here']}</a></b>
 {$lang_recover['mail_three_1']}
 <b><a href="http://www.google.com/support/bin/answer.py?answer=23852" target='_blank'>{$lang_confirm_resend['mail_google_answer']}</a></b>
 {$lang_recover['mail_two_four']}
@@ -109,9 +110,9 @@ else
 {
 	stdhead();
 	$s = "<select name=\"sitelanguage\" onchange='submit()'>\n";
-	
+
 	$langs = langlist("site_lang");
-	
+
 	foreach ($langs as $row)
 	{
 		if ($row["site_lang_folder"] == get_langfolder_cookie()) $se = " selected=\"selected\""; else $se = "";

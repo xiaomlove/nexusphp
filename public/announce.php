@@ -436,7 +436,7 @@ elseif(isset($self))
             ->first();
 		if ($snatchInfo) {
             sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 2");
-            if ($event == "completed") {
+            if ($event == "completed" && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
                 $hrMode = get_setting('hr.mode');
                 if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
                     $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo->id}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));

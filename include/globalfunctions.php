@@ -511,7 +511,7 @@ function api(...$args)
         'msg' => (string)$msg,
         'data' => $data,
         'time' => (float)number_format(microtime(true) - $start, 3),
-        'request_id' => REQUEST_ID,
+        'rid' => REQUEST_ID,
     ];
 }
 

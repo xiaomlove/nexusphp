@@ -23,7 +23,7 @@ class TorrentController extends Controller
         $params = $request->all();
         $params['visible'] = Torrent::VISIBLE_YES;
         $params['category_mode'] = Setting::get('main.browsecat');
-        $result = $this->repository->getList($params);
+        $result = $this->repository->getList($params, Auth::user());
         $resource = TorrentResource::collection($result);
         $resource->additional([
             'page_title' => nexus_trans('torrent.index.page_title'),
@@ -51,9 +51,8 @@ class TorrentController extends Controller
      */
     public function show($id)
     {
-        $with = ['user', 'basic_audio_codec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team'];
 
-        $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users'])->visible()->findOrFail($id);
+        $result = $this->repository->getDetail($id, Auth::user());
 
         $isBookmarked = Auth::user()->bookmarks()->where('torrentid', $id)->exists();
 

@@ -13,9 +13,20 @@
                         <el-form-item label="">
                             <el-input placeholder="Email" v-model="query.email"></el-input>
                         </el-form-item>
+                        <el-form-item label="">
+                            <el-select v-model="query.class" filterable placeholder="Class">
+                                <el-option
+                                    v-for="(item, index) in extraData.classes"
+                                    :key="index"
+                                    :label="item"
+                                    :value="index"
+                                >
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="handleReset">Reset</el-button>
                             <el-button type="primary" @click="fetchTableData">Query</el-button>
+                            <el-button type="primary" @click="handleReset">Reset</el-button>
                         </el-form-item>
                     </el-form>
                 </div>
@@ -53,12 +64,14 @@
             <el-table-column
                 prop="email"
                 label="Email"
+                width="200"
             ></el-table-column>
 
             <el-table-column
                 prop="class"
                 label="Class"
                 sortable="custom"
+                width="120"
                 :formatter="formatColumnClass"
             ></el-table-column>
 
@@ -82,13 +95,26 @@
             ></el-table-column>
 
             <el-table-column
+                prop="seed_points"
+                label="Seed points"
+            ></el-table-column>
+
+            <el-table-column
                 prop="status"
                 label="Status"
+                width="100"
+            ></el-table-column>
+
+            <el-table-column
+                prop="enabled"
+                label="Enabled"
+                width="100"
             ></el-table-column>
 
             <el-table-column
                 prop="added"
                 label="Added"
+                width="150"
             >
             </el-table-column>
 
@@ -136,8 +162,14 @@ export default {
 
         const state = useTable()
 
+        let extraData = reactive({
+            classes: []
+        });
+
         onMounted(() => {
-            console.log('UserTable onMounted');
+            api.listClass().then(function (res) {
+                extraData.classes = res.data
+            })
             fetchTableData()
         })
         const fetchTableData = async () => {
@@ -175,6 +207,9 @@ export default {
             state.query.id = '';
             state.query.username = '';
             state.query.email = '';
+            state.query.class = '';
+            state.query.sort_field = '';
+            state.query.sort_type = '';
         }
 
         const handleDetail = (id) => {
@@ -197,6 +232,7 @@ export default {
         return {
             ...toRefs(state),
             multipleTable,
+            extraData,
             handleSelectionChange,
             handleAdd,
             handleEdit,

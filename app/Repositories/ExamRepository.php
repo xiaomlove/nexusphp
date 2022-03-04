@@ -302,6 +302,12 @@ class ExamRepository extends BaseRepository
         if (!empty($params['exam_id'])) {
             $query->where('exam_id', $params['exam_id']);
         }
+        if (isset($params['is_done']) && is_numeric($params['is_done'])) {
+            $query->where('is_done', $params['is_done']);
+        }
+        if (isset($params['status']) && is_numeric($params['status'])) {
+            $query->where('status', $params['status']);
+        }
         list($sortField, $sortType) = $this->getSortFieldAndType($params);
         $query->orderBy($sortField, $sortType);
         $result = $query->with(['user', 'exam'])->paginate();

@@ -33,7 +33,7 @@ class TorrentRepository extends BaseRepository
      * @param array $params
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function getList(array $params)
+    public function getList(array $params, User $user)
     {
         $query = Torrent::query();
         if (!empty($params['category'])) {
@@ -84,7 +84,27 @@ class TorrentRepository extends BaseRepository
 
         $with = ['user'];
         $torrents = $query->with($with)->paginate();
+        $userArr = $user->toArray();
+        foreach($torrents as &$item) {
+            $item->download_url = $this->getDownloadUrl($item->id, $userArr);
+        }
         return $torrents;
+    }
+
+    public function getDetail($id, User $user)
+    {
+        $with = ['user', 'basic_audio_codec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team'];
+        $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users'])->visible()->findOrFail($id);
+        $result->download_url = $this->getDownloadUrl($id, $user->toArray());
+        return $result;
+    }
+
+    private function getDownloadUrl($id, array $user): string
+    {
+        return sprintf(
+            '%s/download.php?downhash=%s|%s',
+            getSchemeAndHttpHost(), $user['id'], $this->encryptDownHash($id, $user)
+        );
     }
 
     private function handleGetListSort(Builder $query, array $params)
@@ -306,6 +326,9 @@ class TorrentRepository extends BaseRepository
 
     private function getEncryptDownHashKey($user)
     {
+        if ($user instanceof User) {
+            $user = $user->toArray();
+        }
         if (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
             $user = User::query()->findOrFail(intval($user), ['id', 'passkey'])->toArray();
         }

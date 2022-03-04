@@ -329,7 +329,7 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	if ($adid) {
 //		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatAdUrl(".$adid." ,'\\1', '\\2', ".($newtab==true ? 1 : 0).", 'faqlink')", $s);
 		$s = preg_replace_callback("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/i", function ($matches) use ($adid, $newtab) {
-		    return formatAdUrl(".$adid." ,$matches[1], $matches[2], ".($newtab==true ? 1 : 0).", 'faqlink');
+		    return formatAdUrl($adid ,$matches[1], $matches[2], ".($newtab==true ? 1 : 0).", 'faqlink');
         }, $s);
 	} else {
 //		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatUrl('\\1', ".($newtab==true ? 1 : 0).", '\\2', 'faqlink')", $s);

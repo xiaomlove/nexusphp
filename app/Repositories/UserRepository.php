@@ -25,6 +25,9 @@ class UserRepository extends BaseRepository
         if (!empty($params['email'])) {
             $query->where('email', 'like',"%{$params['email']}%");
         }
+        if (!empty($params['class'])) {
+            $query->where('class', $params['class']);
+        }
         list($sortField, $sortType) = $this->getSortFieldAndType($params);
         $query->orderBy($sortField, $sortType);
         return $query->paginate();

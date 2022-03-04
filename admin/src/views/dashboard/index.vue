@@ -23,6 +23,7 @@
                     <el-table-column
                         prop="added"
                         label="Added"
+                        width="180"
                     ></el-table-column>
                 </el-table>
             </el-card>
@@ -52,7 +53,7 @@
                     <el-table-column
                         prop="added"
                         label="Added"
-                        width="160"
+                        width="180"
                     ></el-table-column>
                 </el-table>
             </el-card>

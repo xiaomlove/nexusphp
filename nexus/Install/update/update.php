@@ -119,7 +119,7 @@ if ($currentStep == 3) {
     $newData = array_column($envFormControls, 'value', 'name');
     while ($isPost) {
         try {
-            $update->createEnvFile($_POST);
+            $update->createEnvFile($_POST, 'update');
             $update->nextStep();
         } catch (\Exception $exception) {
             $error = $exception->getMessage();

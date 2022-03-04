@@ -82,8 +82,9 @@ class Handler extends ExceptionHandler
         } else {
             $msg = 'Server Error';
         }
+        $msg = $e->getMessage();
+        $trace = $e->getTraceAsString();
         if (config('app.debug')) {
-            $msg = $e->getMessage();
             $data['trace'] = $e->getTraceAsString();
         }
         return new JsonResponse(

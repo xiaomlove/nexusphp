@@ -32,6 +32,8 @@ class HitAndRun extends NexusModel
         self::MODE_GLOBAL => ['text' => 'Global'],
     ];
 
+    const MINIMUM_IGNORE_USER_CLASS = User::CLASS_VIP;
+
     public function getStatusTextAttribute()
     {
         return nexus_trans('hr.status_' . $this->status);

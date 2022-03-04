@@ -33,6 +33,7 @@ class TorrentResource extends JsonResource
             'seeders' => $this->seeders,
             'times_completed' => $this->times_completed,
             'numfiles' => $this->numfiles,
+            'download_url' => $this->download_url,
             'user' => new UserResource($this->whenLoaded('user')),
             'basic_category' => new CategoryResource($this->whenLoaded('basic_category')),
         ];

@@ -28,7 +28,7 @@ class UserResource extends JsonResource
             'uploaded_text' => mksize($this->uploaded),
             'downloaded' => $this->downloaded,
             'downloaded_text' => mksize($this->downloaded),
-            'seed_bonus' => $this->seedbonus,
+            'bonus' => $this->seedbonus,
             'seed_points' => floatval($this->seed_points),
             'seedtime' => $this->seedtime,
             'seedtime_text' => mkprettytime($this->seedtime),

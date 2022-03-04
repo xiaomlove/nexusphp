@@ -79,6 +79,9 @@ const api = {
     listExam: (params = {}) => {
         return axios.get('exams', {params: params});
     },
+    listExamAll: (params = {}) => {
+        return axios.get('exams-all', {params: params});
+    },
     listExamIndex: (params = {}) => {
         return axios.get('exam-indexes', {params: params});
     },

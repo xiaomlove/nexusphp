@@ -403,7 +403,7 @@ class Install
         return NexusDB::insert('users', $insert);
     }
 
-    public function createEnvFile($data)
+    public function createEnvFile($data, $scene = 'install')
     {
         $envExampleFile = ROOT_PATH . ".env.example";
         $envExampleData = readEnvFile($envExampleFile);
@@ -423,6 +423,17 @@ class Install
             } elseif (!isset($newData[$key])) {
                 $this->doLog("[CREATE ENV] key: $key, new value: $value from example.");
                 $newData[$key] = $value;
+            }
+            if ($scene == 'install') {
+                if ($key == 'APP_ENV') {
+                    $newData[$key] = 'production';
+                }
+                if ($key == 'APP_DEBUG') {
+                    $newData[$key] = 'false';
+                }
+                if ($key == 'LOG_LEVEL') {
+                    $newData[$key] = 'info';
+                }
             }
         }
         $this->doLog("[CREATE ENV] final newData: " . json_encode($newData));

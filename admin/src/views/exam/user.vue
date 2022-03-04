@@ -3,7 +3,36 @@
         <template #header>
             <div class="nexus-table-header">
                 <div class="left">
-
+                    <el-form :inline="true" :model="query">
+                        <el-form-item label="">
+                            <el-select v-model="query.exam_id" filterable placeholder="Exam" clearable>
+                                <el-option
+                                    v-for="item in extraData.exams"
+                                    :key="item.id"
+                                    :label="item.name"
+                                    :value="item.id"
+                                >
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-select v-model="query.is_done" filterable placeholder="IsDone" clearable>
+                                <el-option label="Yes" value="1"></el-option>
+                                <el-option label="No" value="0"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-select v-model="query.status" filterable placeholder="Status" clearable>
+                                <el-option label="Avoided" value="-1"></el-option>
+                                <el-option label="Normal" value="0"></el-option>
+                                <el-option label="Finished" value="1"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="fetchTableData">Query</el-button>
+                            <el-button type="primary" @click="handleReset">Reset</el-button>
+                        </el-form-item>
+                    </el-form>
                 </div>
                 <div class="right">
 <!--                    <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">Add</el-button>-->
@@ -26,7 +55,7 @@
             <el-table-column
                 prop="id"
                 label="Id"
-                width="60"
+                width="100"
                 sortable="custom"
             ></el-table-column>
 
@@ -45,6 +74,11 @@
             <el-table-column
                 prop="is_done_text"
                 label="Is done"
+            ></el-table-column>
+
+            <el-table-column
+                prop="status_text"
+                label="Status"
             ></el-table-column>
 
             <el-table-column
@@ -97,7 +131,14 @@ export default {
 
         const state = useTable()
 
+        let extraData = reactive({
+            exams: []
+        });
+
         onMounted(() => {
+            api.listExamAll().then(res => {
+                extraData.exams = res.data
+            })
             fetchTableData()
         })
         const fetchTableData = async () => {
@@ -147,9 +188,17 @@ export default {
         const formatColumnDownloaded = (row, column) => {
             return row.downloaded_text
         }
+
+        const handleReset = () => {
+            state.query.is_done = '';
+            state.query.status = '';
+            state.query.exam_id = '';
+        }
+
         return {
             ...toRefs(state),
             multipleTable,
+            extraData,
             handleSelectionChange,
             handleAdd,
             handleEdit,
@@ -160,7 +209,8 @@ export default {
             handleSortChange,
             formatColumnUser,
             formatColumnExam,
-            formatColumnDownloaded
+            formatColumnDownloaded,
+            handleReset
         }
     }
 }

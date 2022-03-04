@@ -70,7 +70,7 @@ class HitAndRunRepository extends BaseRepository
                 }
 
                 //If is VIP or above, pass
-                if ($row->user->class >= User::CLASS_VIP) {
+                if ($row->user->class >= HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
                     $result = $this->reachedBySpecialUserClass($row);
                     if ($result) {
                         $successCounts++;

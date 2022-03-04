@@ -9,6 +9,7 @@ use App\Models\Exam;
 use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -111,6 +112,13 @@ class ExamController extends Controller
     {
         $result = $this->repository->listIndexes();
         return $this->success($result);
+    }
+
+    public function all()
+    {
+        $result = Exam::query()->orderBy('id', 'desc')->get();
+        $resource = ExamResource::collection($result);
+        return $this->success($resource);
     }
 
 }

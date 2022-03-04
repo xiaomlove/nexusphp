@@ -60,7 +60,7 @@ class Test extends Command
      */
     public function handle()
     {
-
+        echo date('Y-m-d H:i:s', 1623820546);
     }
 
 }

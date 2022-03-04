@@ -74,7 +74,7 @@ class User extends Authenticatable
         'downloaded_human' => '下载量',
         'share_ratio' => '分享率',
 //        'seed_time' => '做种时间',
-        'seed_bonus' => '魔力值',
+        'bonus' => '魔力值',
         'seed_points' => '做种积分',
         'invites' => '邀请',
     ];
