@@ -135,12 +135,13 @@ class User extends Authenticatable
      */
     protected $casts = [
         'added' => 'datetime',
+        'last_access' => 'datetime',
     ];
 
     public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
-        'invited_by', 'enabled', 'seed_points',
+        'invited_by', 'enabled', 'seed_points', 'last_access'
     ];
 
     public static function getDefaultUserAttributes(): array

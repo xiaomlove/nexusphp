@@ -8,7 +8,7 @@ $lang_myhr = [
     'th_share_ratio' => '分享率',
     'th_seed_time_required' => '还需做种时间',
     'th_completed_at' => '下载完成时间',
-    'th_ttl' => '剩余达标时间',
+    'th_ttl' => '剩余考察时间',
     'th_comment' => '备注',
 
 ];

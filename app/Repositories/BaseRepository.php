@@ -7,8 +7,6 @@ use Illuminate\Support\Str;
 
 class BaseRepository
 {
-    private static $enctyper;
-
     protected function getSortFieldAndType(array $params): array
     {
         $field = !empty($params['sort_field']) ? $params['sort_field'] : 'id';

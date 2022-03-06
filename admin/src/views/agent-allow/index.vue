@@ -8,8 +8,8 @@
                             <el-input placeholder="Family" v-model="query.family"></el-input>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="handleReset">Reset</el-button>
                             <el-button type="primary" @click="fetchTableData">Query</el-button>
+                            <el-button type="primary" @click="handleReset">Reset</el-button>
                         </el-form-item>
                     </el-form>
                 </div>

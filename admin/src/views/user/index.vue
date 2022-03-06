@@ -95,11 +95,6 @@
             ></el-table-column>
 
             <el-table-column
-                prop="seed_points"
-                label="Seed points"
-            ></el-table-column>
-
-            <el-table-column
                 prop="status"
                 label="Status"
                 width="100"
@@ -112,11 +107,16 @@
             ></el-table-column>
 
             <el-table-column
+                prop="last_access"
+                label="Last access"
+                width="150"
+            ></el-table-column>
+
+            <el-table-column
                 prop="added"
                 label="Added"
                 width="150"
-            >
-            </el-table-column>
+            ></el-table-column>
 
             <el-table-column
                 label="Action"

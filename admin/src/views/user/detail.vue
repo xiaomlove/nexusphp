@@ -6,7 +6,7 @@
                     <span>Base info</span>
                 </div>
             </template>
-            <table class="table-base-info">
+            <table class="table-base-info" >
                 <tr>
                     <th>Field</th>
                     <th>Value</th>
@@ -17,7 +17,7 @@
                     <td>Username</td>
                     <td>{{baseInfo.username}}</td>
                     <td></td>
-                    <td colspan="7">
+                    <td colspan="11">
                         <div class="other-actions">
                             <el-button type="primary" size="default" @click="handleGetModComment">Mod comment</el-button>
                             <el-button type="primary" size="default" @click="handleResetPassword">Reset password</el-button>
@@ -29,14 +29,14 @@
                 <tr>
                     <td>Email</td>
                     <td>{{baseInfo.email}}</td>
-                    <td><el-button size="mini">Change</el-button></td>
+                    <td><el-button size="small">Change</el-button></td>
                 </tr>
                 <tr>
                     <td>Enabled</td>
                     <td>{{baseInfo.enabled}}</td>
                     <td>
                         <template v-if="baseInfo.enabled && baseInfo.enabled == 'yes'">
-                            <el-button size="mini" @click="handleDisableUser">Disable</el-button>
+                            <el-button size="small" @click="handleDisableUser">Disable</el-button>
                         </template>
                         <template v-if="baseInfo.enabled && baseInfo.enabled == 'no'">
                             <el-popconfirm
@@ -44,7 +44,7 @@
                                 @confirm="handleEnableUser"
                             >
                                 <template #reference>
-                                    <el-button size="mini">Enable</el-button>
+                                    <el-button size="small">Enable</el-button>
                                 </template>
                             </el-popconfirm>
                         </template>
@@ -55,28 +55,36 @@
                     <td>{{baseInfo.added}}</td>
                 </tr>
                 <tr>
+                    <td>Last access</td>
+                    <td>{{baseInfo.last_access}}</td>
+                </tr>
+                <tr>
                     <td>Class</td>
                     <td>{{baseInfo.class_text}}</td>
                 </tr>
                 <tr>
                     <td>Invite by</td>
                     <td>{{baseInfo.inviter && baseInfo.inviter.username}}</td>
-                    <td><el-button size="mini" @click="handleViewInviteInfo">View</el-button></td>
+                    <td><el-button size="small" @click="handleViewInviteInfo">View</el-button></td>
                 </tr>
                 <tr>
                     <td>Uploaded</td>
                     <td>{{baseInfo.uploaded_text}}</td>
-                    <td><el-button size="mini">Add</el-button></td>
+                    <td><el-button size="small">Add</el-button></td>
                 </tr>
                 <tr>
                     <td>Downloaded</td>
                     <td>{{baseInfo.downloaded_text}}</td>
-                    <td><el-button size="mini">Add</el-button></td>
+                    <td><el-button size="small">Add</el-button></td>
+                </tr>
+                <tr>
+                    <td>Seed points</td>
+                    <td>{{baseInfo.seed_points}}</td>
                 </tr>
                 <tr>
                     <td>Bonus</td>
                     <td>{{baseInfo.bonus}}</td>
-                    <td><el-button size="mini">Add</el-button></td>
+                    <td><el-button size="small">Add</el-button></td>
                 </tr>
             </table>
         </el-card>
@@ -343,7 +351,7 @@ export default {
             padding-bottom: 4px;
         }
         td {
-            padding: 4px 0;
+
         }
     }
 }
