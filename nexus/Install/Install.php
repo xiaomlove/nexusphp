@@ -572,7 +572,7 @@ class Install
         if (!WITH_LARAVEL) {
             throw new \RuntimeException('Laravel is not available.');
         }
-        $command = "php " . ROOT_PATH . "artisan db:seed";
+        $command = "php " . ROOT_PATH . "artisan db:seed --force";
         $result = exec($command, $output, $result_code);
         $this->doLog(sprintf('command: %s, result_code: %s, result: %s', $command, $result_code, $result));
         $this->doLog("output: " . json_encode($output));

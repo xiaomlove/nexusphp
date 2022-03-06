@@ -287,8 +287,12 @@ function docleanup($forceAll = 0, $printProgress = false) {
 				$count = $maxseeding_bonus;
 			$all_bonus = $seedPoints = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
 			$is_donor = get_single_value("users","donor","WHERE id=".$arr['userid']);
-			if ($is_donor == 'yes' && $donortimes_bonus > 0)
-				$all_bonus = $all_bonus * $donortimes_bonus;
+			$log = "[UPDATE_BONUS], user: {$arr['userid']}, original bonus: $all_bonus, is_donor: $is_donor, donortimes_bonus: $donortimes_bonus";
+			if ($is_donor == 'yes' && $donortimes_bonus > 0) {
+                $all_bonus = $all_bonus * $donortimes_bonus;
+                $log .= ", do multiple, all_bonus: $all_bonus";
+            }
+			do_log($log);
 			KPS("+",$all_bonus,$arr["userid"]);
 			sql_query("update users set seed_points = ifnull(seed_points, 0) + $seedPoints where id = {$arr["userid"]}");
 		}
