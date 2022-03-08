@@ -160,6 +160,17 @@ class Update extends Install
             $this->doLog("[ADD_ID_TO_AGENT_ALLOWED_EXCEPTION]");
         }
 
+        /**
+         * @since 1.6.0
+         *
+         * init tag
+         */
+        if (WITH_LARAVEL && !NexusDB::schema()->hasTable('tags')) {
+            $this->runMigrate('database/migrations/2022_03_07_012545_create_tags_table.php');
+            $this->initTag();
+            $this->doLog("[INIT_TAG]");
+        }
+
 
 
 
@@ -324,6 +335,25 @@ class Update extends Install
         $command = "composer install -d " . ROOT_PATH;
         $this->executeCommand($command);
         $this->doLog("[COMPOSER INSTALL] SUCCESS");
+    }
+
+    public function initTag()
+    {
+        $priority = count(Tag::DEFAULTS);
+        $dateTimeStringNow = date('Y-m-d H:i:s');
+        foreach (Tag::DEFAULTS as $value) {
+            $attributes = [
+                'name' => $value['name'],
+            ];
+            $values = [
+                'priority' => $priority,
+                'color' => $value['color'],
+                'created_at' => $dateTimeStringNow,
+                'updated_at' => $dateTimeStringNow,
+            ];
+            Tag::query()->firstOrCreate($attributes, $values);
+            $priority--;
+        }
     }
 
 
