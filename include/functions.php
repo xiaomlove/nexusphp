@@ -3088,7 +3088,7 @@ function torrenttable($rows, $variant = "torrent") {
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], $torrentIdArr);
     $tagRep = new \App\Repositories\TagRepository();
     $tagCollection = $tagRep->createBasicQuery()->get();
-    $tagIdStr = $tagCollection->implode('id', ',');
+    $tagIdStr = $tagCollection->implode('id', ',') ?: '0';
 	$torrentTagCollection = \App\Models\TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->orderByRaw("field(tag_id,$tagIdStr)")->get();
 	$tagKeyById = $tagCollection->keyBy('id');
 	$torrentTagResult = $torrentTagCollection->groupBy('torrent_id');
@@ -3287,8 +3287,13 @@ foreach ($rows as $row)
     /**
      * render tags
      */
-    $tagIdArr = $torrentTagResult->get($id)->pluck('tag_id')->toArray();
-	$tags = $tagRep->renderSpan($tagKeyById, $tagIdArr);
+    $tagOwns = $torrentTagResult->get($id);
+    if ($tagOwns) {
+        $tags = $tagRep->renderSpan($tagKeyById, $tagOwns->pluck('tag_id')->toArray());
+    } else {
+        $tags = '';
+    }
+
 	if ($displaysmalldescr){
 		//small descr
 		$dissmall_descr = trim($row["small_descr"]);

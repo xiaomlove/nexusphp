@@ -44,6 +44,13 @@ if ($currentStep == 2) {
             'name' => 'Description',
             'published_at' => 'Release at',
         ];
+
+        try {
+            $timezone = nexus_env('TIMEZONE');
+        } catch (\Exception $exception) {
+            $update->doLog("no .env file, release time is github original");
+            $timezone = null;
+        }
         $tableRows[] = [
             'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
             'tag_name' => 'Manual',
@@ -51,8 +58,10 @@ if ($currentStep == 2) {
             'published_at' => '---',
         ];
         $latestCommit = $update->getLatestCommit();
-        $time = \Carbon\Carbon::parse($latestCommit['committer']['date']);
-        $time->tz = nexus_env('TIMEZONE');
+        $time = \Carbon\Carbon::parse($latestCommit['commit']['committer']['date']);
+        if ($timezone) {
+            $time->tz = $timezone;
+        }
         $tableRows[] = [
             'checkbox' => sprintf('<input type="radio" name="version_url" value="development|%s"/>', $latestCommit['sha']),
             'tag_name' => 'Latest development code',
@@ -64,7 +73,9 @@ if ($currentStep == 2) {
                 continue;
             }
             $time = \Carbon\Carbon::parse($version['published_at']);
-            $time->tz = nexus_env('TIMEZONE');
+            if ($timezone) {
+                $time->tz = $timezone;
+            }
             $versionUrl = $version['tag_name'] . '|' . $version['tarball_url'];
             $checked = !empty($_REQUEST['version_url']) && $_REQUEST['version_url'] == $versionUrl ? ' checked' : '';
             $tableRows[] = [

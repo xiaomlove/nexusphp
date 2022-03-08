@@ -194,6 +194,7 @@ class Update extends Install
         } else {
             $this->doLog("no need to run [MIGRATE_TORRENT_TAG]");
         }
+
     }
 
     private function migrateAttendance()

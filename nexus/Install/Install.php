@@ -106,7 +106,7 @@ class Install
             $filename = basename($path);
             $count = preg_match('/create_(.*)_table.php/', $filename, $matches);
             if ($count) {
-                $tables[$matches[1]] = $filename;
+                $tables[$matches[1]] = "database/migrations/$filename";
             }
         }
         return $tables;
@@ -202,7 +202,7 @@ class Install
         require $originalConfigFile;
         $settings = require $defaultSettingsFile;
         $settingsFromDb = [];
-        if (get_row_count('settings') > 0) {
+        if (NexusDB::schema()->hasTable('settings') && get_row_count('settings') > 0) {
             $settingsFromDb = get_setting();
         }
         $this->doLog("settings form db: " . json_encode($settingsFromDb));
@@ -424,7 +424,7 @@ class Install
                 $this->doLog("[CREATE ENV] key: $key, new value: $value from example.");
                 $newData[$key] = $value;
             }
-            if ($scene == 'install') {
+            if ($scene == 'install' || !file_exists($envFile)) {
                 if ($key == 'APP_ENV') {
                     $newData[$key] = 'production';
                 }
@@ -487,6 +487,9 @@ class Install
 
     public function saveSettings($settings)
     {
+        if (!NexusDB::schema()->hasTable('settings')) {
+            $this->runMigrate('database/migrations/2021_06_08_113437_create_settings_table.php');
+        }
         foreach ($settings as $prefix => $group) {
             $this->doLog("[SAVE SETTING], prefix: $prefix, nameAndValues: " . json_encode($group));
             saveSetting($prefix, $group);
@@ -549,7 +552,9 @@ class Install
         }
         $command = "php " . ROOT_PATH . "artisan migrate";
         if (!is_null($path)) {
-            $command .= " --path=$path";
+            foreach ((array)$path as $key => $value) {
+                $command .= " --path=$value";
+            }
         }
         $command .= " --force";
         $this->executeCommand($command);
@@ -582,4 +587,5 @@ class Install
             $this->doLog("[DATABASE_SEED] success.");
         }
     }
+
 }
