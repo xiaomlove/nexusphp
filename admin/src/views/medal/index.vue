@@ -6,7 +6,7 @@
 
                 </div>
                 <div class="right">
-                    <el-button type="primary" size="small" icon="Plus" @click="handleAdd">Add</el-button>
+                    <el-button type="primary" icon="Plus" @click="handleAdd">Add</el-button>
                 </div>
             </div>
         </template>

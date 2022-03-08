@@ -3084,7 +3084,15 @@ function torrenttable($rows, $variant = "torrent") {
     $ptGen = new Nexus\PTGen\PTGen();
     $imdb = new Nexus\Imdb\Imdb();
 	$torrent = new Nexus\Torrent\Torrent();
-	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], array_column($rows, 'id'));
+	$torrentIdArr = array_column($rows, 'id');
+	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], $torrentIdArr);
+    $tagRep = new \App\Repositories\TagRepository();
+    $tagCollection = $tagRep->createBasicQuery()->get();
+    $tagIdStr = $tagCollection->implode('id', ',');
+	$torrentTagCollection = \App\Models\TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->orderByRaw("field(tag_id,$tagIdStr)")->get();
+	$tagKeyById = $tagCollection->keyBy('id');
+	$torrentTagResult = $torrentTagCollection->groupBy('torrent_id');
+
     $last_browse = $CURUSER['last_browse'];
 //	if ($variant == "torrent"){
 //		$last_browse = $CURUSER['last_browse'];
@@ -3275,7 +3283,12 @@ foreach ($rows as $row)
 	$banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 	$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until']);
 	print($banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg);
-	$tags = torrentTags($row['tags'], 'span');
+	//$tags = torrentTags($row['tags'], 'span');
+    /**
+     * render tags
+     */
+    $tagIdArr = $torrentTagResult->get($id)->pluck('tag_id')->toArray();
+	$tags = $tagRep->renderSpan($tagKeyById, $tagIdArr);
 	if ($displaysmalldescr){
 		//small descr
 		$dissmall_descr = trim($row["small_descr"]);
@@ -5285,6 +5298,22 @@ function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 
         $medalImages[] = sprintf('<img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
     }
     return implode('', $medalImages);
+}
+
+function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)
+{
+    $dateTimeStringNow = date('Y-m-d H:i:s');
+    if ($sync) {
+        sql_query("delete from torrent_tags where torrent_id = $torrentId");
+    }
+    $insertTagsSql = 'insert into torrent_tags (`torrent_id`, `tag_id`, `created_at`, `updated_at`) values ';
+    $values = [];
+    foreach ($tagIdArr as $tagId) {
+        $values[] = sprintf("(%s, %s, '%s', '%s')", $torrentId, $tagId, $dateTimeStringNow, $dateTimeStringNow);
+    }
+    $insertTagsSql .= implode(', ', $values);
+    do_log("[INSERT_TAGS], torrent: $torrentId with tags: " . nexus_json_encode($tagIdArr));
+    sql_query($insertTagsSql);
 }
 
 ?>

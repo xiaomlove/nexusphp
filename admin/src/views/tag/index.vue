@@ -29,58 +29,34 @@
             <el-table-column
                 prop="name"
                 label="Name"
-            >
-            </el-table-column>
-            <el-table-column
-                label="Indexes"
-                width="250px"
-            >
-                <template #default="scope" >
-                    <p style="white-space: pre-line" v-html="scope.row.indexes_formatted"></p>
-                </template>
-            </el-table-column>
-            <el-table-column
-                prop="begin"
-                label="Begin"
-                width="160"
-            >
-            </el-table-column>
-            <el-table-column
-                prop="end"
-                label="End"
-                width="160"
-            >
-            </el-table-column>
-
-            <el-table-column
-                prop="duration_text"
-                label="Duration"
             ></el-table-column>
 
             <el-table-column
-                label="Target users"
-                width="350px"
-            >
-                <template #default="scope" >
-                    <p style="white-space: pre-line" v-html="scope.row.filters_formatted"></p>
-                </template>
-            </el-table-column>
-
-            <el-table-column
-                prop="is_discovered_text"
-                label="Discovered"
+                prop="color"
+                label="Color"
             >
             </el-table-column>
 
             <el-table-column
-                prop="status_text"
-                label="Status"
+                prop="priority"
+                label="Priority"
             >
             </el-table-column>
+
+            <el-table-column
+                prop="updated_at"
+                label="Updated at"
+            ></el-table-column>
+
+            <el-table-column
+                prop="created_at"
+                label="Created at"
+            ></el-table-column>
+
 
             <el-table-column
                 label="Action"
-                width="100"
+                width="120"
             >
                 <template #default="scope">
                     <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>
@@ -115,31 +91,33 @@ import api from '../../utils/api'
 import { useTable, renderTableData } from '../../utils/table'
 
 export default {
-    name: 'ExamTable',
+    name: 'TagTable',
     setup() {
         const multipleTable = ref(null)
         const router = useRouter()
 
         const state = useTable()
+        let extraData = reactive({
+            agentAllows: []
+        });
 
         onMounted(() => {
-            console.log('ExamTable onMounted')
             fetchTableData()
         })
         const fetchTableData = async () => {
             state.loading = true
-            let res = await api.listExam(state.query)
+            let res = await api.listTag(state.query)
             renderTableData(res, state)
             state.loading = false
         }
         const handleAdd = () => {
-            router.push({ name: 'exam-form' })
+            router.push({ name: 'tag-form' })
         }
         const handleEdit = (id) => {
-            router.push({ path: '/exam-form', query: { id } })
+            router.push({ path: '/tag-form', query: { id } })
         }
         const handleDelete = async (id) => {
-            let res = await api.deleteExam(id)
+            let res = await api.deleteTag(id)
             ElMessage.success(res.msg)
             state.query.page = 1;
             await fetchTableData()
@@ -151,8 +129,14 @@ export default {
             state.query.page = val
             fetchTableData()
         }
+
+        const handleReset = () => {
+            state.query.family_id = '';
+        }
+
         return {
             ...toRefs(state),
+            extraData,
             multipleTable,
             handleSelectionChange,
             handleAdd,
@@ -160,6 +144,7 @@ export default {
             handleDelete,
             fetchTableData,
             changePage,
+            handleReset,
         }
     }
 }

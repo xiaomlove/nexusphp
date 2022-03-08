@@ -196,25 +196,37 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 
 
 sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+
+$dateTimeStringNow = date("Y-m-d H:i:s");
+
 /**
  * add custom fields
  * @since v1.6
  */
 if (!empty($_POST['custom_fields'])) {
     \Nexus\Database\NexusDB::delete('torrents_custom_field_values', "torrent_id = $id");
-    $now = date('Y-m-d H:i:s');
     foreach ($_POST['custom_fields'] as $customField => $customValue) {
         foreach ((array)$customValue as $value) {
             $customData = [
                 'torrent_id' => $id,
                 'custom_field_id' => $customField,
                 'custom_field_value' => $value,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'created_at' => $dateTimeStringNow,
+                'updated_at' => $dateTimeStringNow,
             ];
             \Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
         }
     }
+}
+
+/**
+ * handle tags
+ *
+ * @since v1.6
+ */
+$tagIdArr = array_filter($_POST['tags']);
+if (!empty($tagIdArr)) {
+    insert_torrent_tags($id, $tagIdArr, true);
 }
 
 if($CURUSER["id"] == $row["owner"])

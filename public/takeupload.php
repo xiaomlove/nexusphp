@@ -292,7 +292,7 @@ foreach ($promotionrules_torrent as $rule)
 										}
 }
 }
-
+$dateTimeStringNow = \Carbon\Carbon::now()->toDateTimeString();
 /**
  * add PT-Gen
  * @since 1.6
@@ -334,6 +334,16 @@ if (!empty($_POST['custom_fields'])) {
 			\Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
 		}
 	}
+}
+
+/**
+ * handle tags
+ *
+ * @since v1.6
+ */
+$tagIdArr = array_filter($_POST['tags']);
+if (!empty($tagIdArr)) {
+    insert_torrent_tags($id, $tagIdArr);
 }
 
 @sql_query("DELETE FROM files WHERE torrent = $id");

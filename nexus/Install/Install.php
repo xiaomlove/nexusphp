@@ -13,7 +13,7 @@ class Install
 
     protected $progressKeyPrefix = '__step';
 
-    protected $steps = ['环境检测', '添加 .env 文件', '创建数据表', '导入数据', '创建管理员账号'];
+    protected $steps = ['Env check', 'Create .env', 'Create tables', 'Import data', 'Create administrator'];
 
     protected $initializeTables = [
         'adminpanel', 'agent_allowed_exception', 'agent_allowed_family', 'allowedemails', 'audiocodecs', 'bannedemails', 'categories',
@@ -326,7 +326,7 @@ class Install
         $currentStep = $this->currentStep();
         foreach ($this->steps as $key => $value) {
             $steps .= sprintf('<div class="flex-1 %s">', $currentStep > $key + 1 ? 'text-green-500' : ($currentStep < $key + 1 ? 'text-gray-500' : ''));
-            $steps .= sprintf('<div>第%s步</div>', $key + 1);
+            $steps .= sprintf('<div>step %s</div>', $key + 1);
             $steps .= sprintf('<div>%s</div>', $value);
             $steps .= '</div>';
         }

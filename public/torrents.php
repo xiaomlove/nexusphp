@@ -6,6 +6,13 @@ require_once(get_langfile_path('speical.php'));
 loggedinorreturn();
 parked();
 
+/**
+ * tags
+ */
+$tagRep = new \App\Repositories\TagRepository();
+$tagKeyById = $tagRep->createBasicQuery()->get()->keyBy('id');
+$renderKeyArr = $tagKeyById->keys()->toArray();
+
 //check searchbox
 switch (CURRENT_SCRIPT) {
     case 'torrents':
@@ -819,20 +826,24 @@ if ($whereaudiocodecin)
 $where .= ($where ? " AND " : "") . "audiocodec IN(" . $whereaudiocodecin . ")";
 }
 
-
+$tagFilter = "";
+$tagId = intval($_REQUEST['tag_id'] ?? 0);
+if ($tagId > 0) {
+    $tagFilter = " inner join torrent_tags on torrents.id = torrent_tags.torrent_id and torrent_tags.tag_id = $tagId ";
+}
 if ($allsec == 1 || $enablespecial != 'yes')
 {
 	if ($where != "")
 		$where = "WHERE $where ";
 	else $where = "";
-	$sql = "SELECT COUNT(*) FROM torrents " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $where;
+	$sql = "SELECT COUNT(*) FROM torrents " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where;
 }
 else
 {
 	if ($where != "")
 		$where = "WHERE $where AND categories.mode = '$sectiontype'";
 	else $where = "WHERE categories.mode = '$sectiontype'";
-	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $where." GROUP BY categories.mode";
+	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where . " GROUP BY categories.mode";
 }
 
 $res = sql_query($sql);
@@ -872,10 +883,10 @@ if ($count)
 
 	list($pagertop, $pagerbottom, $limit) = pager($torrentsperpage, $count, "?" . $addparam);
 if ($allsec == 1 || $enablespecial != 'yes'){
-	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.tags,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $where $orderby $limit";
+	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.tags,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
 }
 else{
-	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.tags,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $where $orderby $limit";
+	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.tags,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
 }
 
 	$res = sql_query($query);
@@ -1073,7 +1084,13 @@ if (!$Cache->get_page()){
 	$Cache->cache_page();
 }
 echo $Cache->next_row();
+
+if ($tagKeyById->isNotEmpty()) {
+    echo '<tr><td rowspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan($tagKeyById, $renderKeyArr, true) . '</td></tr>';
+}
+
 ?>
+
 				</table>
 			</td>
 			<td class="rowfollow" align="center">

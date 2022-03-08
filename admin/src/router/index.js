@@ -89,6 +89,16 @@ const router = createRouter({
             name: 'setting',
             component: () => import('../views/setting/index.vue')
         },
+        {
+            path: '/tag',
+            name: 'tag',
+            component: () => import('../views/tag/index.vue')
+        },
+        {
+            path: '/tag-form',
+            name: 'tag-form',
+            component: () => import('../views/tag/form.vue')
+        },
     ]
 })
 

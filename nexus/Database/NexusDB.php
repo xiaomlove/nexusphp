@@ -251,6 +251,14 @@ class NexusDB
         return DB::raw($value);
     }
 
+    public static function statement($value)
+    {
+        if (IN_NEXUS) {
+            return sql_query($value);
+        }
+        return DB::statement($value);
+    }
+
     public static function transaction(\Closure $callback, $attempts = 1)
     {
         if (IN_NEXUS) {

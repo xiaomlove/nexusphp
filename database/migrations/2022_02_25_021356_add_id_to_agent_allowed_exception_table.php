@@ -14,7 +14,9 @@ class AddIdToAgentAllowedExceptionTable extends Migration
     public function up()
     {
         Schema::table('agent_allowed_exception', function (Blueprint $table) {
-            $table->increments('id');
+            if (!Schema::hasColumn('agent_allowed_exception', 'id')) {
+                $table->increments('id');
+            }
         });
     }
 

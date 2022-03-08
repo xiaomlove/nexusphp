@@ -10,9 +10,13 @@ use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Icon;
 use App\Models\Setting;
+use App\Models\Tag;
+use App\Models\Torrent;
+use App\Models\TorrentTag;
 use App\Models\User;
 use App\Repositories\BonusRepository;
 use App\Repositories\ExamRepository;
+use App\Repositories\TagRepository;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +26,7 @@ use Nexus\Database\NexusDB;
 class Update extends Install
 {
 
-    protected $steps = ['环境检测', '获取更新', '更新 .env 文件',  '执行更新'];
+    protected $steps = ['Env check', 'Get files', 'Update .env',  'Perform updates'];
 
 
     public function getLogFile()
@@ -92,8 +96,9 @@ class Update extends Install
             $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
         }
         //since beta8
-        if (WITH_LARAVEL && NexusDB::schema()->hasColumn('categories', 'icon_id')) {
+        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('categories', 'icon_id')) {
             $this->doLog('[INIT CATEGORY ICON_ID]');
+            $this->runMigrate('database/migrations/2022_03_08_040415_add_icon_id_to_categories_table.php');
             $icon = Icon::query()->orderBy('id', 'asc')->first();
             if ($icon) {
                 Category::query()->where('icon_id', 0)->update(['icon_id' => $icon->id]);
@@ -158,6 +163,26 @@ class Update extends Install
 
 
 
+    }
+
+    public function runExtraMigrate()
+    {
+        if (!WITH_LARAVEL) {
+            $this->doLog(__METHOD__ . ", laravel is not available");
+            return;
+        }
+        if (
+            NexusDB::schema()->hasColumn('torrents', 'tags')
+            && Torrent::query()->where('tags', '>', 0)->count() > 0
+            && TorrentTag::query()->count() == 0
+        ) {
+            $this->doLog("[MIGRATE_TORRENT_TAG]...");
+            $tagRep = new TagRepository();
+            $tagRep->migrateTorrentTag();
+            $this->doLog("[MIGRATE_TORRENT_TAG] done!");
+        } else {
+            $this->doLog("no need to run [MIGRATE_TORRENT_TAG]");
+        }
     }
 
     private function migrateAttendance()
@@ -300,5 +325,7 @@ class Update extends Install
         $this->executeCommand($command);
         $this->doLog("[COMPOSER INSTALL] SUCCESS");
     }
+
+
 
 }

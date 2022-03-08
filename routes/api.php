@@ -70,6 +70,7 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::resource('settings', \App\Http\Controllers\SettingController::class);
         Route::resource('medals', \App\Http\Controllers\MedalController::class);
         Route::resource('user-medals', \App\Http\Controllers\UserMedalController::class);
+        Route::resource('tags', \App\Http\Controllers\TagController::class);
 
 
     });

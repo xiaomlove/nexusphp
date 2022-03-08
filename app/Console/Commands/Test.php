@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Resources\TagResource;
 use App\Models\Attendance;
 use App\Models\Exam;
 use App\Models\ExamProgress;
@@ -10,6 +11,7 @@ use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\SearchBox;
 use App\Models\Snatch;
+use App\Models\Tag;
 use App\Models\User;
 use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
@@ -60,10 +62,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $peerId = '-TR3000-uff7q3z5126z';
-        $agent = 'Transmission/3.00';
-        $rep = new AgentAllowRepository();
-        $r = $rep->checkClient($peerId, $agent, true);
+        $r = Tag::query()->paginate();
+        $resource = TagResource::collection($r);
+        dd($resource->response()->getData(true));
+        echo $r->updated_at;
     }
 
 }

@@ -205,4 +205,9 @@ class Torrent extends NexusModel
     {
         $query->where('visible', $visible);
     }
+
+    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'torrent_tags', 'torrent_id', 'tag_id');
+    }
 }

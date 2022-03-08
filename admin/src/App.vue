@@ -50,6 +50,9 @@
                             <el-menu-item index="/medal"><i class="el-icon-menu" />Medal</el-menu-item>
                         </el-menu-item-group>
                         <el-menu-item-group>
+                            <el-menu-item index="/tag"><i class="el-icon-menu" />Tag</el-menu-item>
+                        </el-menu-item-group>
+                        <el-menu-item-group>
                             <el-menu-item index="/setting"><i class="el-icon-menu" />Setting</el-menu-item>
                         </el-menu-item-group>
                     </el-sub-menu>

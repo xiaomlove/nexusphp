@@ -39,15 +39,15 @@ if ($currentStep == 2) {
     }
     if (!$isPost) {
         $versionHeader = [
-            'checkbox' => '选择',
-            'tag_name' => '版本(标签)',
-            'name' => '名称',
-            'published_at' => '发布时间',
+            'checkbox' => 'Check',
+            'tag_name' => 'Version(tag)',
+            'name' => 'Description',
+            'published_at' => 'Release at',
         ];
         $tableRows[] = [
             'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
-            'tag_name' => '手动更新',
-            'name' => '如若有改动不宜全量覆盖，请勾选此选项并确保已经手动更新了代码',
+            'tag_name' => 'Manual',
+            'name' => 'If there are changes that are not suitable for full coverage, please check this box and make sure you have updated the code manually',
             'published_at' => '---',
         ];
         $latestCommit = $update->getLatestCommit();
@@ -55,8 +55,8 @@ if ($currentStep == 2) {
         $time->tz = nexus_env('TIMEZONE');
         $tableRows[] = [
             'checkbox' => sprintf('<input type="radio" name="version_url" value="development|%s"/>', $latestCommit['sha']),
-            'tag_name' => '最新开发代码',
-            'name' => "仅限开发测试！最新提交：" . $latestCommit['commit']['message'],
+            'tag_name' => 'Latest development code',
+            'name' => "Development testing only! Latest commit：" . $latestCommit['commit']['message'],
             'published_at' => $time->format('Y-m-d H:i:s'),
         ];
         foreach ($versions as $version) {
@@ -80,7 +80,7 @@ if ($currentStep == 2) {
     while ($isPost) {
         try {
             if (empty($_REQUEST['version_url'])) {
-                throw new \RuntimeException("没有选择版本");
+                throw new \RuntimeException("No version selected yet");
             }
             $downloadUrl = '';
             if ($_REQUEST['version_url'] == 'manual') {
@@ -97,7 +97,7 @@ if ($currentStep == 2) {
                 }
                 $update->doLog("version: $version, downloadUrl: $downloadUrl, currentVersion: " . VERSION_NUMBER);
                 if (version_compare($version, VERSION_NUMBER, '<=')) {
-                    throw new \RuntimeException("必须选择一个高于当前版本（" . VERSION_NUMBER . "）的");
+                    throw new \RuntimeException("Must select a version higher than the current one(" . VERSION_NUMBER . ")");
                 }
             }
             $update->downAndExtractCode($downloadUrl);
@@ -113,7 +113,6 @@ if ($currentStep == 2) {
 
 if ($currentStep == 3) {
     $envExampleFile = $rootpath . ".env.example";
-//    $dbstructureFile = $rootpath . "_db/dbstructure_v1.6.sql";
     $envExampleData = readEnvFile($envExampleFile);
     $envFormControls = $update->listEnvFormControls();
     $newData = array_column($envFormControls, 'value', 'name');
@@ -134,12 +133,6 @@ if ($currentStep == 3) {
             'current' => $envExampleFile,
             'result' =>  $update->yesOrNo(file_exists($envExampleFile) && is_readable($envExampleFile)),
         ],
-//        [
-//            'label' => basename($dbstructureFile),
-//            'required' => 'exists && readable',
-//            'current' => $dbstructureFile,
-//            'result' =>  $update->yesOrNo(file_exists($dbstructureFile) && is_readable($dbstructureFile)),
-//        ],
     ];
     $fails = array_filter($tableRows, function ($value) {return $value['result'] == 'NO';});
     $pass = empty($fails);
@@ -159,6 +152,7 @@ if ($currentStep == 4) {
             $update->saveSettings($settings);
             $update->runExtraQueries();
             $update->runMigrate();
+            $update->runExtraMigrate();
             $update->nextStep();
         } catch (\Exception $e) {
             $error = $e->getMessage();
@@ -191,33 +185,33 @@ if (!empty($error)) {
             <?php
             echo'<div class="step-' . $currentStep . ' text-center">';
             $header = [
-                'label' => '项目',
-                'required' => '要求',
-                'current'=> '当前',
-                'result'=> '结果'
+                'label' => 'Item',
+                'required' => 'Require',
+                'current'=> 'Current',
+                'result'=> 'Result'
             ];
             if ($currentStep == 1) {
                 echo $update->renderTable($header, $requirements['table_rows']);
             } elseif ($currentStep == 3) {
                 echo $update->renderTable($header, $tableRows);
-                echo '<div class="text-gray-700 p-4 text-red-400">下一步之前，请确保在根目录执行了 composer install 更新了依赖。</div>';
+                echo '<div class="text-gray-700 p-4 text-red-400">Before the next step, make sure that you have executed <code>composer install</code> in the root directory to update the dependencies.</div>';
                 echo $update->renderForm($envFormControls);
 
             } elseif ($currentStep == 2) {
                 if (empty($tableRows)) {
-                    echo '<div class="text-green-600 text-center">抱歉，暂无任何版可以选择！</div>';
+                    echo '<div class="text-green-600 text-center">Sorry, there is no version to choose from at this time!</div>';
                 } else {
                     echo $update->renderTable($versionHeader, $tableRows);
                 }
             } elseif ($currentStep == 4) {
                 echo $update->renderTable($header, $tableRows);
                 echo '<div class="text-blue-500 pt-10">';
-                echo sprintf('这一步会把 <code>%s</code> 的数据合并到 <code>%s</code>, 然后插入数据库中。', $tableRows[1]['label'], $tableRows[0]['label']);
+                echo sprintf('This step will merge <code>%s</code> to <code>%s</code>, then insert into database.', $tableRows[1]['label'], $tableRows[0]['label']);
                 echo '</div>';
             } elseif ($currentStep > $maxStep) {
-                echo '<div class="text-green-900 text-6xl p-10">恭喜，一切就绪！</div>';
-                echo '<div class="mb-6">有问题可查阅升级日志：<code>' . $update->getLogFile() . '</code></div>';
-                echo '<div class="text-red-500">为安全起见，请删除以下目录</div>';
+                echo '<div class="text-green-900 text-6xl p-10">Congratulations, everything is ready!</div>';
+                echo '<div class="mb-6">For questions, consult the upgrade log at: <code>' . $update->getLogFile() . '</code></div>';
+                echo '<div class="text-red-500">For security reasons, please delete the following directories</div>';
                 echo '<div class="text-red-500"><code>' . $update->getUpdateDirectory() . '</code></div>';
             }
             echo'</div>';
@@ -232,18 +226,18 @@ if (!empty($error)) {
             }
             ?>
             <div class="mt-10 text-center">
-                <button class="bg-blue-500 p-2 m-4 text-white rounded" type="button" onclick="goBack()">上一步</button>
+                <button class="bg-blue-500 p-2 m-4 text-white rounded" type="button" onclick="goBack()">Prev</button>
                 <?php if ($currentStep <= $maxStep) {?>
-                    <button class="bg-blue-<?php echo $pass ? 500 : 200;?> p-2 m-4 text-white rounded" type="submit" <?php echo $pass ? '' : 'disabled';?>>下一步</button>
+                    <button class="bg-blue-<?php echo $pass ? 500 : 200;?> p-2 m-4 text-white rounded" type="submit" <?php echo $pass ? '' : 'disabled';?>>Next</button>
                 <?php } else {?>
-                    <a class="bg-blue-500 p-2 m-4 text-white rounded" href="<?php echo getSchemeAndHttpHost()?>">回首页</a>
+                    <a class="bg-blue-500 p-2 m-4 text-white rounded" href="<?php echo getSchemeAndHttpHost()?>">Go to homepage</a>
                 <?php }?>
             </div>
         </form>
     </div>
 </div>
 <div class="m-10 text-center">
-    欢迎使用 NexusPHP 升级程序，如有疑问，点击<a href="https://nexusphp.org/" target="_blank" class="text-blue-500 p-1">这里</a>获取帮助。
+    Welcome to the NexusPHP updater, if you have any questions, click<a href="https://nexusphp.org/" target="_blank" class="text-blue-500 p-1">here</a>for help.
 </div>
 </body>
 <script>

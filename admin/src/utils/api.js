@@ -157,6 +157,21 @@ const api = {
     storeUserMedal: (params) => {
         return axios.post('user-medals', params);
     },
+    listTag: (params = {}) => {
+        return axios.get('tags', {params: params});
+    },
+    storeTag: (params = {}) => {
+        return axios.post('tags', params);
+    },
+    updateTag: (id, params = {}) => {
+        return axios.put('tags/' + id, params);
+    },
+    getTag: (id) => {
+        return axios.get('tags/' + id);
+    },
+    deleteTag: (id) => {
+        return axios.delete('tags/' + id);
+    },
 
 }
 

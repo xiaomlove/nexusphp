@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddSeedPointsToUsersTable extends Migration
+class AddIconIdToCategoriesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class AddSeedPointsToUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'seed_points')) {
-                $table->decimal('seed_points', 20, 1)->default(0);
+        Schema::table('categories', function (Blueprint $table) {
+            if (!Schema::hasColumn('categories', 'icon_id')) {
+                $table->integer('icon_id')->default(0);
             }
         });
     }
@@ -27,8 +27,8 @@ class AddSeedPointsToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('seed_points');
+        Schema::table('categories', function (Blueprint $table) {
+            $table->dropColumn('icon_id');
         });
     }
 }

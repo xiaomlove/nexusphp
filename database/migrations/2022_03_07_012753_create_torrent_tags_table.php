@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddHrToTorrentsTable extends Migration
+class CreateTorrentTagsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ class AddHrToTorrentsTable extends Migration
      */
     public function up()
     {
-        Schema::table('torrents', function (Blueprint $table) {
-            if (!Schema::hasColumn('torrents', 'hr')) {
-                $table->tinyInteger('hr')->default(0);
-            }
+        Schema::create('torrent_tags', function (Blueprint $table) {
+            $table->id();
+            $table->integer('torrent_id');
+            $table->integer('tag_id')->index();
+            $table->timestamps();
+            $table->unique(['torrent_id', 'tag_id']);
         });
     }
 
@@ -27,8 +29,6 @@ class AddHrToTorrentsTable extends Migration
      */
     public function down()
     {
-        Schema::table('torrents', function (Blueprint $table) {
-            $table->dropColumn('hr');
-        });
+        Schema::dropIfExists('torrent_tags');
     }
 }
