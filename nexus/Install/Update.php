@@ -133,9 +133,15 @@ class Update extends Install
          *
          * attendance change, do migrate
          */
-        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('attendance', 'total_days')) {
-            $this->runMigrate('database/migrations/2021_06_13_215440_add_total_days_to_attendance_table.php');
-            $this->migrateAttendance();
+        if (WITH_LARAVEL) {
+            if (!NexusDB::schema()->hasTable('attendance')) {
+                //no table yet, no need to migrate
+                $this->runMigrate('database/migrations/2021_06_08_113437_create_attendance_table.php');
+            }
+            if (!NexusDB::schema()->hasColumn('attendance', 'total_days')) {
+                $this->runMigrate('database/migrations/2021_06_13_215440_add_total_days_to_attendance_table.php');
+                $this->migrateAttendance();
+            }
         }
 
         /**
