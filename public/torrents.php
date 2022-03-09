@@ -830,7 +830,7 @@ $tagFilter = "";
 $tagId = intval($_REQUEST['tag_id'] ?? 0);
 if ($tagId > 0) {
     $tagFilter = " inner join torrent_tags on torrents.id = torrent_tags.torrent_id and torrent_tags.tag_id = $tagId ";
-    $addparam .= "&tag_id=$tagId";
+    $addparam .= "tag_id={$tagId}&";
 }
 if ($allsec == 1 || $enablespecial != 'yes')
 {
