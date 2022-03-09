@@ -58,7 +58,7 @@ class CreateTorrentsTable extends Migration
             $table->dateTime('picktime')->nullable();
             $table->dateTime('last_reseed')->nullable();
             $table->mediumText('pt_gen')->nullable();
-            $table->integer('tags')->default(0);
+//            $table->integer('tags')->default(0);
             $table->text('technical_info')->nullable();
             $table->index(['visible', 'pos_state', 'id'], 'visible_pos_id');
             $table->index(['category', 'visible', 'banned'], 'category_visible_banned');

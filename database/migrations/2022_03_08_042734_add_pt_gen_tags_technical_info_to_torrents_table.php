@@ -17,9 +17,9 @@ class AddPtGenTagsTechnicalInfoToTorrentsTable extends Migration
             if (!Schema::hasColumn('torrents', 'pt_gen')) {
                 $table->mediumText('pt_gen')->nullable();
             }
-            if (!Schema::hasColumn('torrents', 'tags')) {
-                $table->integer('tags')->default(0);
-            }
+//            if (!Schema::hasColumn('torrents', 'tags')) {
+//                $table->integer('tags')->default(0);
+//            }
             if (!Schema::hasColumn('torrents', 'technical_info')) {
                 $table->text('technical_info')->nullable();
             }
