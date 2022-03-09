@@ -55,7 +55,6 @@ if (!empty($_POST['pt_gen'])) {
     $updateset[] = "pt_gen = ''";
 }
 
-$updateset[] = "tags = " . array_sum($_POST['tags'] ?? []);
 $updateset[] = "technical_info = " . sqlesc($_POST['technical_info'] ?? '');
 
 /**

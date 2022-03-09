@@ -62,8 +62,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = urldecode('%E8%8E%B7%E5%8F%96%E7%A8%8B%E5%BA%8F');
-        echo $r;
+        $tzlist = \DateTimeZone::listIdentifiers(\DateTimeZone::ALL);
+        foreach($tzlist as $value)
+        {
+            echo $value ."\n";
+        }
     }
 
 }

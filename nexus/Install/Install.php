@@ -21,7 +21,7 @@ class Install
         'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed',
     ];
 
-    protected $envNames = ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB'];
+    protected $envNames = ['TIMEZONE', 'DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB'];
 
     public function __construct()
     {
@@ -310,10 +310,24 @@ class Install
         foreach ($formControls as $value) {
             $form .= '<div class="flex mt-2">';
             $form .= sprintf('<div class="w-%s flex justify-end items-center pr-10"><span>%s</span></div>', $labelWidth, $value['label']);
-            $form .= sprintf(
-                '<div class="w-%s flex justify-start items-center pr-10"><input class="border py-2 px-3 text-grey-darkest w-full" type="text" name="%s" value="%s" /></div>',
-                $valueWidth, $value['name'], $value['value'] ?? ''
-            );
+            $form .= sprintf('<div class="w-%s flex justify-start items-center pr-10">', $valueWidth);
+            if (isset($value['type']) && $value['type'] == 'select') {
+                $form .= sprintf('<select class="border py-2 px-3 text-grey-darkest w-full" name="%s"/>', $value['name']);
+                foreach ($value['options'] as $option) {
+                    $selected = '';
+                    if ($option == $value['value']) {
+                        $selected = ' selected';
+                    }
+                    $form .= sprintf('<option value="%s"%s>%s</option>', $option, $selected, $option);
+                }
+                $form .= '</select>';
+            } else {
+                $form .= sprintf(
+                    '<input class="border py-2 px-3 text-grey-darkest w-full" type="text" name="%s" value="%s" />',
+                    $value['name'], $value['value'] ?? ''
+                );
+            }
+            $form .= '</div>';
             $form .= '</div>';
         }
         $form .= '</div>';
@@ -351,11 +365,18 @@ class Install
             if (isset($_POST[$name])) {
                 $value = $_POST[$name];
             }
-            $formControls[] = [
+            $item = [
+                'type' => 'text',
+                'options' => [],
                 'label' => $name,
                 'name' => $name,
-                'value' => $value,
+                'value' => $value
             ];
+            if ($name == 'TIMEZONE') {
+                $item['type'] = 'select';
+                $item['options'] = $this->listTimeZone();
+            }
+            $formControls[] = $item;
         }
 
         return $formControls;
@@ -586,6 +607,14 @@ class Install
         } else {
             $this->doLog("[DATABASE_SEED] success.");
         }
+    }
+
+    public function listTimeZone()
+    {
+        $results = \DateTimeZone::listIdentifiers(\DateTimeZone::ALL);
+        $utc = array_pop($results);
+        array_unshift($results, $utc);
+        return $results;
     }
 
 }
