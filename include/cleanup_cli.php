@@ -6,6 +6,7 @@
  */
 
 require "bittorrent.php";
+require 'cleanup.php';
 
 $fd = fopen(sprintf('%s/nexus_cleanup_cli.lock', sys_get_temp_dir()), 'w+');
 if (!flock($fd, LOCK_EX|LOCK_NB)) {
@@ -21,19 +22,18 @@ $force = 0;
 if (isset($_SERVER['argv'][1])) {
     $force = $_SERVER['argv'][1] ? 1 : 0;
 }
-
+$logPrefix = "[CLEANUP_CLI]";
 try {
     if ($force) {
-        require_once(ROOT_PATH . 'include/cleanup.php');
         $result = docleanup(1, true);
     } else {
-        $result = autoclean();
+        $result = autoclean(true);
     }
-    $log = "[CLEANUP_CLI DONE!] $result";
+    $log = "$logPrefix, DONE: $result";
     do_log($log);
     printProgress($log);
 } catch (\Exception $exception) {
-    $log = "ERROR: " . $exception->getMessage();
+    $log = "$logPrefix, ERROR: " . $exception->getMessage();
     do_log($log);
     printProgress($log);
     throw new \RuntimeException($exception->getMessage());

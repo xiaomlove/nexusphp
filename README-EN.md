@@ -12,6 +12,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - H&R
 - Attendance
 - Medal
+- Custom tags 
 - Forum
 - Multi-language
 - Automatic backup

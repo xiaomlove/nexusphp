@@ -308,8 +308,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$row = mysql_fetch_array($res);
 	if (!$row) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime2',".sqlesc($now).")") or sqlerr(__FILE__, __LINE__);
-		do_log("no value for arg: 'lastcleantime2', return");
-		return;
+		$log = "no value for arg: 'lastcleantime2', return";
+		do_log($log);
+		return $log;
 	}
 	$ts = $row[0];
 	if ($ts + $autoclean_interval_two > $now && !$forceAll) {
@@ -333,8 +334,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$row = mysql_fetch_array($res);
 	if (!$row) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime3',$now)") or sqlerr(__FILE__, __LINE__);
-		do_log("no value for arg: 'lastcleantime3', return");
-		return;
+		$log = "no value for arg: 'lastcleantime3', return";
+		do_log($log);
+		return $log;
 	}
 	$ts = $row[0];
 	if ($ts + $autoclean_interval_three > $now && !$forceAll) {
@@ -492,8 +494,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$row = mysql_fetch_array($res);
 	if (!$row) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime4',$now)") or sqlerr(__FILE__, __LINE__);
-		do_log("no value for arg: 'lastcleantime4', return");
-		return;
+		$log = "no value for arg: 'lastcleantime4', return";
+		do_log($log);
+		return $log;
 	}
 	$ts = $row[0];
 	if ($ts + $autoclean_interval_four > $now && !$forceAll) {
@@ -818,8 +821,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$row = mysql_fetch_array($res);
 	if (!$row) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime5',$now)") or sqlerr(__FILE__, __LINE__);
-		do_log("no value for arg: 'lastcleantime5', return");
-		return;
+		$log = "no value for arg: 'lastcleantime5', return";
+		do_log($log);
+		return $log;
 	}
 	$ts = $row[0];
 	if ($ts + $autoclean_interval_five > $now && !$forceAll) {

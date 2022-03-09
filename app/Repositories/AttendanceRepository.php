@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Models\Attendance;
 use App\Models\Setting;
+use App\Models\User;
 use Carbon\Carbon;
 
 class AttendanceRepository extends BaseRepository
@@ -55,6 +56,7 @@ class AttendanceRepository extends BaseRepository
                 }
                 do_log("[DO_UPDATE]: " . nexus_json_encode($update));
                 $attendance->update($update);
+                User::query()->where('id', $uid)->increment('seedbonus', $update['points']);
             }
         }
         $attendance->added_time = $now->toTimeString();
