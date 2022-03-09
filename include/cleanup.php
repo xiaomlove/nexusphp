@@ -6,7 +6,7 @@ die('Hacking attempt!');
 
 function printProgress($msg) {
     $br = php_sapi_name() == 'cli' ? "\n" : "<br />";
- 	echo sprintf("[%s] %s ... done!%s", date('Y-m-d H:i:s'), $msg, $br);
+ 	echo sprintf("[%s] [%s] %s ... done!%s", date('Y-m-d H:i:s'), REQUEST_ID, $msg, $br);
 }
 
 function torrent_promotion_expire($days, $type = 2, $targettype = 1){

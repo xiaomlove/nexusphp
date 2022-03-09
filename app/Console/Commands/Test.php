@@ -62,10 +62,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = Tag::query()->paginate();
-        $resource = TagResource::collection($r);
-        dd($resource->response()->getData(true));
-        echo $r->updated_at;
+        $r = urldecode('%E8%8E%B7%E5%8F%96%E7%A8%8B%E5%BA%8F');
+        echo $r;
     }
 
 }
