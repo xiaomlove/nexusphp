@@ -223,7 +223,7 @@ if (!empty($_POST['custom_fields'])) {
  *
  * @since v1.6
  */
-$tagIdArr = array_filter($_POST['tags']);
+$tagIdArr = array_filter($_POST['tags'] ?? []);
 if (!empty($tagIdArr)) {
     insert_torrent_tags($id, $tagIdArr, true);
 }
