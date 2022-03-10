@@ -5,6 +5,7 @@ use App\Models\Attendance;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
+use Nexus\Database\NexusDB;
 
 class AttendanceRepository extends BaseRepository
 {
@@ -89,5 +90,52 @@ class AttendanceRepository extends BaseRepository
             }
         }
         return $points;
+    }
+
+    public function migrateAttendance(): int
+    {
+        $page = 1;
+        $size = 10000;
+        $caseWhens = [];
+        $idArr = [];
+        while (true) {
+            $logPrefix = "[MIGRATE_ATTENDANCE], page: $page, size: $size";
+            $result = Attendance::query()
+                ->groupBy(['uid'])
+                ->selectRaw('uid, max(id) as id, count(*) as counts')
+                ->forPage($page, $size)
+                ->get();
+            do_log("$logPrefix, " . last_query() . ", count: " . $result->count());
+            if ($result->isEmpty()) {
+                do_log("$logPrefix, no more data...");
+                break;
+            }
+            foreach ($result as $row) {
+                //use case when instead.
+                $caseWhens[] = sprintf('when %s then %s', $row->id, $row->counts);
+                $idArr[] = $row->id;
+//                $update = [
+//                    'total_days' => $row->counts,
+//                ];
+//                $updateResult = $row->update($update);
+                do_log(sprintf(
+                    "$logPrefix, update user: %s(ID: %s) => %s",
+                    $row->uid, $row->id, $row->counts
+                ));
+            }
+            $page++;
+        }
+        if (empty($caseWhens)) {
+            do_log("no data to update...");
+            return 0;
+        }
+        $caseWhenStr = sprintf('case id %s end', implode(' ', $caseWhens));
+        $result = Attendance::query()
+            ->whereIn('id', $idArr)
+            ->update(['total_days' => NexusDB::raw($caseWhenStr)]);
+
+        do_log("[MIGRATE_ATTENDANCE] DONE! $caseWhenStr, result: " . var_export($result, true));
+
+        return count($idArr);
     }
 }

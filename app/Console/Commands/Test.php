@@ -63,7 +63,9 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $rep = new AttendanceRepository();
+        $r = $rep->migrateAttendance();
+        dd($r);
     }
 
 }

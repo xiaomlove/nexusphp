@@ -157,6 +157,7 @@ if ($currentStep == 4) {
     $tableRows = $settingTableRows['table_rows'];
     $pass = $settingTableRows['pass'];
     while ($isPost) {
+        set_time_limit(300);
         try {
 //            $update->updateDependencies();
             $update->createSymbolicLinks($symbolicLinks);

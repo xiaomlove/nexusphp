@@ -14,6 +14,7 @@ use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
 use App\Models\User;
+use App\Repositories\AttendanceRepository;
 use App\Repositories\BonusRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\TagRepository;
@@ -140,7 +141,9 @@ class Update extends Install
             }
             if (!NexusDB::schema()->hasColumn('attendance', 'total_days')) {
                 $this->runMigrate('database/migrations/2021_06_13_215440_add_total_days_to_attendance_table.php');
-                $this->migrateAttendance();
+                $attendanceRep = new AttendanceRepository();
+                $count = $attendanceRep->migrateAttendance();
+                $this->doLog("[MIGRATE_ATTENDANCE] $count");
             }
         }
 
@@ -203,36 +206,6 @@ class Update extends Install
 
     }
 
-    private function migrateAttendance()
-    {
-        $page = 1;
-        $size = 1000;
-        while (true) {
-            $logPrefix = "[MIGRATE_ATTENDANCE], page: $page, size: $size";
-            $result = Attendance::query()
-                ->groupBy(['uid'])
-                ->selectRaw('uid, max(id) as id, count(*) as counts')
-                ->forPage($page, $size)
-                ->get();
-            $this->doLog("$logPrefix, " . last_query() . ", count: " . $result->count());
-            if ($result->isEmpty()) {
-                $this->doLog("$logPrefix, no more data...");
-                break;
-            }
-            foreach ($result as $row) {
-                $update = [
-                    'total_days' => $row->counts,
-                ];
-                $updateResult = $row->update($update);
-                $this->doLog(sprintf(
-                    "$logPrefix, update user: %s(ID: %s) => %s, result: %s",
-                    $row->uid, $row->id, json_encode($update), var_export($updateResult, true)
-                ));
-            }
-            $page++;
-        }
-
-    }
 
     public function listVersions()
     {

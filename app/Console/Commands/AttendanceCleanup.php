@@ -40,7 +40,7 @@ class AttendanceCleanup extends Command
     {
         $query = Attendance::query()->groupBy('uid')->selectRaw('uid, max(id) as max_id');
         $page = 1;
-        $size = 1000;
+        $size = 10000;
         while (true) {
             $rows = $query->forPage($page, $size)->get();
             $log = "sql: " . last_query() . ", count: " . $rows->count();
