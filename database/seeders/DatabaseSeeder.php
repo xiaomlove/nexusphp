@@ -41,5 +41,6 @@ class DatabaseSeeder extends Seeder
         $this->call(TeamsTableSeeder::class);
         $this->call(TorrentsStateTableSeeder::class);
         $this->call(UploadspeedTableSeeder::class);
+        $this->call(TagsTableSeeder::class);
     }
 }

@@ -167,9 +167,8 @@ if (!empty($error)) {
                 } elseif ($currentStep == 2) {
                     echo $install->renderTable($header, $tableRows);
                     echo $install->renderForm($envFormControls);
-
                 } elseif ($currentStep == 3) {
-                    echo '<h1 class="mb-4 text-lg font-bold">The following new table will be created</h1>';
+                    echo '<h1 class="mb-4 text-lg font-bold">The following tables will be created</h1>';
                     if (empty($shouldCreateTable)) {
                         echo '<div class="text-green-600 text-center">Congratulations, all the required tables have been created!</div>';
                     } else {
@@ -181,7 +180,7 @@ if (!empty($error)) {
                     echo sprintf('This step will merge <code>%s</code> to <code>%s</code>, then insert into database', $tableRows[1]['label'], $tableRows[0]['label']);
                     echo '</div>';
                 } elseif ($currentStep == 5) {
-                    echo $install->renderForm($userFormControls, '1/3', '1/4', '3/4');
+                    echo $install->renderForm($userFormControls, '1/2', '1/4', '3/4');
                 } elseif ($currentStep > $maxStep) {
                     echo '<div class="text-green-900 text-6xl p-10">Congratulations, everything is ready!</div>';
                     echo '<div class="mb-6">For questions, consult the installation log at: <code>' . $install->getLogFile() . '</code></div>';

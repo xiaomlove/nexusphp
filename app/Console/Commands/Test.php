@@ -18,6 +18,7 @@ use App\Repositories\AttendanceRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
 use App\Repositories\SearchBoxRepository;
+use App\Repositories\TagRepository;
 use App\Repositories\TorrentRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
@@ -62,11 +63,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $tzlist = \DateTimeZone::listIdentifiers(\DateTimeZone::ALL);
-        foreach($tzlist as $value)
-        {
-            echo $value ."\n";
-        }
+
     }
 
 }

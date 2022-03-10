@@ -80,11 +80,16 @@ $base_announce_url = $trackerSchemaAndHost['base_announce_url'];
 
 $res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
-$fn = ROOT_PATH . "$torrent_dir/$id.torrent";
+if (!$row) {
+    do_log("[TORRENT_NOT_EXISTS] $id", 'error');
+    httperr();
+}
+$fn = getFullDirectory("$torrent_dir/$id.torrent");
 if ($CURUSER['downloadpos']=="no") {
     permissiondenied();
 }
-if (!$row || !is_file($fn) || !is_readable($fn)) {
+if (!is_file($fn) || !is_readable($fn)) {
+    do_log("[TORRENT_NOT_READABLE] $fn",'error');
     httperr();
 }
 if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {

@@ -93,13 +93,13 @@ if ($smtptype != 'none'){
 <?php
 }
 if ($showhelpbox_main != 'no'){?>
-<table width="700" class="main" border="0" cellspacing="0" cellpadding="0"><tr><td class="embedded">
+<table width="100%" class="main" border="0" cellspacing="0" cellpadding="0"><tr><td class="embedded">
 <h2><?php echo $lang_login['text_helpbox'] ?><font class="small"> - <?php echo $lang_login['text_helpbox_note'] ?><font id= "waittime" color="red"></font></h2>
 <?php
 print("<table width='100%' border='1' cellspacing='0' cellpadding='1'><tr><td class=\"text\">\n");
-print("<iframe src='" . get_protocol_prefix() . $BASEURL . "/shoutbox.php?type=helpbox' width='650' height='180' frameborder='0' name='sbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n");
+print("<iframe src='" . get_protocol_prefix() . $BASEURL . "/shoutbox.php?type=helpbox' width='100%' height='180' frameborder='0' name='sbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n");
 print("<form action='" . get_protocol_prefix() . $BASEURL . "/shoutbox.php' id='helpbox' method='get' target='sbox' name='shbox'>\n");
-print($lang_login['text_message']."<input type='text' id=\"hbtext\" name='shbox_text' autocomplete='off' style='width: 500px; border: 1px solid gray' ><input type='submit' id='hbsubmit' class='btn' name='shout' value=\"".$lang_login['sumbit_shout']."\" /><input type='reset' class='btn' value=".$lang_login['submit_clear']." /> <input type='hidden' name='sent' value='yes'><input type='hidden' name='type' value='helpbox' />\n");
+print("<div style='display: flex'>" . $lang_login['text_message']."<input type='text' id=\"hbtext\" name='shbox_text' autocomplete='off' style='flex-grow: 1;width: 500px; border: 1px solid gray' ><input type='submit' id='hbsubmit' class='btn' name='shout' value=\"".$lang_login['sumbit_shout']."\" /><input type='reset' class='btn' value=".$lang_login['submit_clear']." /> <input type='hidden' name='sent' value='yes'><input type='hidden' name='type' value='helpbox' /></div>\n");
 print("<div id=sbword style=\"display: none\">".$lang_login['sumbit_shout']."</div>");
 print(smile_row("shbox","shbox_text"));
 print("</td></tr></table></form></td></tr></table>");
