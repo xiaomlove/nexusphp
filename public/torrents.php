@@ -157,7 +157,7 @@ elseif ($inclbookmarked == 2)		//not bookmarked
 // ----------------- end bookmarked ---------------------//
 
 if (!isset($CURUSER) || get_user_class() < $seebanned_class)
-	$wherea[] = "banned != 'yes'";
+	$wherea[] = "banned = 'no'";
 // ----------------- start include dead ---------------------//
 if (isset($_GET["incldead"]))
 	$include_dead = intval($_GET["incldead"] ?? 0);

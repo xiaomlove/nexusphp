@@ -633,7 +633,6 @@ if ($action == "viewtopic")
     unset($arr);
     $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
     $userInfoArr = \App\Models\User::query()->with(['valid_medals'])->find($uidArr, $neededColumns)->keyBy('id');
-
 	$pn = 0;
 	$lpr = get_last_read_post_id($topicid);
 
@@ -658,7 +657,8 @@ if ($action == "viewtopic")
 		//---- Get poster details
 
 //		$arr2 = get_user_row($posterid);
-		$userInfo = $userInfoArr->get($posterid);
+		$userInfo = $userInfoArr->get($posterid) ?: \App\Models\User::defaultUser();
+
 		$arr2 = $userInfo->toArray();
 
 		$uploaded = mksize($arr2["uploaded"]);
