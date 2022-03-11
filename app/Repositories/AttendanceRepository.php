@@ -98,9 +98,11 @@ class AttendanceRepository extends BaseRepository
         $size = 10000;
         $caseWhens = [];
         $idArr = [];
+        $table = 'attendance';
         while (true) {
             $logPrefix = "[MIGRATE_ATTENDANCE], page: $page, size: $size";
-            $result = Attendance::query()
+            //as soon as possible, don't use eloquent
+            $result = NexusDB::table($table)
                 ->groupBy(['uid'])
                 ->selectRaw('uid, max(id) as id, count(*) as counts')
                 ->forPage($page, $size)
@@ -111,13 +113,8 @@ class AttendanceRepository extends BaseRepository
                 break;
             }
             foreach ($result as $row) {
-                //use case when instead.
                 $caseWhens[] = sprintf('when %s then %s', $row->id, $row->counts);
                 $idArr[] = $row->id;
-//                $update = [
-//                    'total_days' => $row->counts,
-//                ];
-//                $updateResult = $row->update($update);
                 do_log(sprintf(
                     "$logPrefix, update user: %s(ID: %s) => %s",
                     $row->uid, $row->id, $row->counts
@@ -130,7 +127,7 @@ class AttendanceRepository extends BaseRepository
             return 0;
         }
         $caseWhenStr = sprintf('case id %s end', implode(' ', $caseWhens));
-        $result = Attendance::query()
+        $result = NexusDB::table($table)
             ->whereIn('id', $idArr)
             ->update(['total_days' => NexusDB::raw($caseWhenStr)]);
 

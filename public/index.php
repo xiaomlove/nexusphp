@@ -174,7 +174,7 @@ if ($showlastxforumposts_main == "yes" && $CURUSER)
 // ------------- start: latest torrents ------------------//
 
 if ($showlastxtorrents_main == "yes") {
-		$result = sql_query("SELECT * FROM torrents where visible='yes' ORDER BY added DESC LIMIT 5") or sqlerr(__FILE__, __LINE__);
+		$result = sql_query("SELECT id,name,leechers,seeders FROM torrents where visible='yes' ORDER BY id DESC LIMIT 5") or sqlerr(__FILE__, __LINE__);
 		if(mysql_num_rows($result) != 0 )
 		{
 			print ("<h2>".$lang_index['text_last_five_torrent']."</h2>");
