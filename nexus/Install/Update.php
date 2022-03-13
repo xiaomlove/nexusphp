@@ -191,17 +191,18 @@ class Update extends Install
             $this->doLog(__METHOD__ . ", laravel is not available");
             return;
         }
-        if (
-            NexusDB::schema()->hasColumn('torrents', 'tags')
-            && Torrent::query()->where('tags', '>', 0)->count() > 0
-            && TorrentTag::query()->count() == 0
-        ) {
-            $this->doLog("[MIGRATE_TORRENT_TAG]...");
-            $tagRep = new TagRepository();
-            $tagRep->migrateTorrentTag();
-            $this->doLog("[MIGRATE_TORRENT_TAG] done!");
+        if (NexusDB::schema()->hasColumn('torrents', 'tags')) {
+            if (Torrent::query()->where('tags', '>', 0)->count() > 0 && TorrentTag::query()->count() == 0) {
+                $this->doLog("[MIGRATE_TORRENT_TAG]...");
+                $tagRep = new TagRepository();
+                $tagRep->migrateTorrentTag();
+                $this->doLog("[MIGRATE_TORRENT_TAG] done!");
+            }
+            $sql = 'alter table torrents drop column tags';
+            sql_query($sql);
+            $this->doLog($sql);
         } else {
-            $this->doLog("no need to run [MIGRATE_TORRENT_TAG]");
+            $this->doLog("torrents table does not has column: tags");
         }
 
     }
