@@ -82,7 +82,7 @@ class TorrentRepository extends BaseRepository
 
         $query = $this->handleGetListSort($query, $params);
 
-        $with = ['user'];
+        $with = ['user', 'tags'];
         $torrents = $query->with($with)->paginate();
         $userArr = $user->toArray();
         foreach($torrents as &$item) {

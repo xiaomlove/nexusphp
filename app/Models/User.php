@@ -116,7 +116,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
-        'leechwarn', 'leechwarnuntil', 'page'
+        'leechwarn', 'leechwarnuntil', 'page', 'class'
     ];
 
     /**

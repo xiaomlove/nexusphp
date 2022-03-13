@@ -66,27 +66,61 @@ class UserRepository extends BaseRepository
         ];
     }
 
+    /**
+     * create user
+     *
+     * @param array $params must: username, email, password, password_confirmation. optional: id, class
+     * @return User
+     */
     public function store(array $params)
     {
         $password = $params['password'];
         if ($password != $params['password_confirmation']) {
             throw new \InvalidArgumentException("password confirmation != password");
         }
-
+        $username = $params['username'];
+        if (!validusername($username)) {
+            throw new \InvalidArgumentException("Innvalid username: $username");
+        }
+        $email = htmlspecialchars(trim($params['email']));
+        $email = safe_email($email);
+        if (!check_email($email)) {
+            throw new \InvalidArgumentException("Innvalid email: $email");
+        }
+        if (User::query()->where('email', $email)->exists()) {
+            throw new \InvalidArgumentException("The email address: $email is already in use");
+        }
+        if (mb_strlen($password) < 6 || mb_strlen($password) > 40) {
+            throw new \InvalidArgumentException("Innvalid password: $password, it should be more than 6 character and less than 40 character");
+        }
+        $class = !empty($params['class']) ? intval($params['class']) : User::CLASS_USER;
+        if (!isset(User::$classes[$class])) {
+            throw new \InvalidArgumentException("Invalid user class: $class");
+        }
         $setting = Setting::get('main');
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
         $data = [
-            'username' => $params['username'],
-            'email' => $params['email'],
+            'username' => $username,
+            'email' => $email,
             'secret' => $secret,
             'editsecret' => '',
             'passhash' => $passhash,
             'stylesheet' => $setting['defstylesheet'],
             'added' => now()->toDateTimeString(),
             'status' => User::STATUS_CONFIRMED,
+            'class' => $class
         ];
-        $user = User::query()->create($data);
+        $user = new User($data);
+        if ($params['id']) {
+            if (User::query()->where('id', $params['id'])->exists()) {
+                throw new \InvalidArgumentException("uid: {$params['id']} already exists.");
+            }
+            do_log("[CREATE_USER], specific id: " . $params['id']);
+            $user->id = $params['id'];
+        }
+        $user->save();
+
         return $user;
     }
 

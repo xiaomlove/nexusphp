@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Repositories\TagRepository;
+
 class Torrent extends NexusModel
 {
     protected $fillable = [
@@ -9,8 +11,10 @@ class Torrent extends NexusModel
         'category', 'source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec',
         'size', 'added', 'type', 'numfiles', 'owner', 'nfo', 'sp_state', 'promotion_time_type',
         'promotion_until', 'anonymous', 'url', 'pos_state', 'cache_stamp', 'picktype', 'picktime',
-        'last_reseed', 'pt_gen', 'tags', 'technical_info'
+        'last_reseed', 'pt_gen', 'technical_info'
     ];
+
+    private static $globalPromotionState;
 
     const VISIBLE_YES = 'yes';
     const VISIBLE_NO = 'no';
@@ -48,6 +52,59 @@ class Torrent extends NexusModel
         self::HR_NO => ['text' => 'NO'],
         self::HR_YES => ['text' => 'YES'],
     ];
+
+    const PROMOTION_NORMAL = 1;
+    const PROMOTION_FREE = 2;
+    const PROMOTION_TWO_TIMES_UP = 3;
+    const PROMOTION_FREE_TWO_TIMES_UP = 4;
+    const PROMOTION_HALF_DOWN = 5;
+    const PROMOTION_HALF_DOWN_TWO_TIMES_UP = 6;
+    const PROMOTION_ONE_THIRD_DOWN = 7;
+
+    public static $promotionTypes = [
+        self::PROMOTION_NORMAL => ['text' => 'Normal', 'up_multiplier' => 1, 'down_multiplier' => 1],
+        self::PROMOTION_FREE => ['text' => 'Free', 'up_multiplier' => 1, 'down_multiplier' => 0],
+        self::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'up_multiplier' => 2, 'down_multiplier' => 1],
+        self::PROMOTION_FREE_TWO_TIMES_UP => ['text' => '2X Free', 'up_multiplier' => 2, 'down_multiplier' => 0],
+        self::PROMOTION_HALF_DOWN => ['text' => '50%', 'up_multiplier' => 1, 'down_multiplier' => 0.5],
+        self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'up_multiplier' => 2, 'down_multiplier' => 0.5],
+        self::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'up_multiplier' => 1, 'down_multiplier' => 0.3],
+    ];
+
+    public function getSpStateRealTextAttribute()
+    {
+        $spStateReal = $this->sp_state_real;
+        return self::$promotionTypes[$spStateReal]['text'] ?? '';
+    }
+
+    public function getSpStateRealAttribute()
+    {
+        $spState = $this->sp_state;
+        $global = self::getGlobalPromotionState();
+        $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
+        if ($global != self::PROMOTION_NORMAL) {
+            $spState = $global;
+            $log .= sprintf(", global != %s, set sp_state to global: %s", self::PROMOTION_NORMAL, $global);
+        }
+        if (!isset(self::$promotionTypes[$spState])) {
+            $log .= ", but now sp_state: $spState, is invalid, reset to: " . self::PROMOTION_NORMAL;
+            $spState = self::PROMOTION_NORMAL;
+        }
+        do_log($log, 'debug');
+        return $spState;
+    }
+
+    public static function getGlobalPromotionState()
+    {
+        if (is_null(self::$globalPromotionState)) {
+            $result = TorrentState::query()->first(['global_sp_state']);
+            if (!$result) {
+                do_log("global sp state no value", 'error');
+            }
+            self::$globalPromotionState = $result->global_sp_state ?? false;
+        }
+        return self::$globalPromotionState;
+    }
 
     public function getHrAttribute(): string
     {
@@ -208,6 +265,7 @@ class Torrent extends NexusModel
 
     public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'torrent_tags', 'torrent_id', 'tag_id');
+        return $this->belongsToMany(Tag::class, 'torrent_tags', 'torrent_id', 'tag_id')
+            ->orderByRaw(sprintf("field(`tags`.`id`,%s)", TagRepository::getOrderByFieldIdString()));
     }
 }

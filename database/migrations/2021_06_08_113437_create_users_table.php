@@ -17,7 +17,7 @@ class CreateUsersTable extends Migration
             return;
         }
         Schema::create('users', function (Blueprint $table) {
-            $table->increments('id');
+            $table->id('id')->startingValue(10001);
             $table->string('username', 40)->default('')->unique('username');
             $table->string('passhash', 32)->default('');
             $table->binary('secret');
@@ -133,6 +133,7 @@ class CreateUsersTable extends Migration
             $table->enum('showfb', ['yes', 'no'])->default('yes');
             $table->string('page')->nullable()->default('');
             $table->index(['status', 'added'], 'status_added');
+
         });
     }
 

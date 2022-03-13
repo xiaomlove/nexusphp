@@ -20,6 +20,22 @@
                         <el-input type="password" v-model="formData.password_confirmation" placeholder=""></el-input>
                     </el-form-item>
 
+                    <el-form-item label="UID" prop="id">
+                        <el-input v-model="formData.id" type="number" placeholder=""></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="Class" prop="class">
+                        <el-select v-model="formData.class" filterable clearable>
+                            <el-option
+                                v-for="(item, index) in userClasses"
+                                :key="index"
+                                :label="item"
+                                :value="index"
+                            >
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+
                     <el-form-item>
                         <el-button type="primary" @click="submitAdd()">Submit</el-button>
                     </el-form-item>
@@ -47,11 +63,14 @@ export default {
         const { id } = route.query
         const state = reactive({
             id: id,
+            userClasses: [],
             formData: {
                 username: '',
                 email: '',
                 password: '',
                 password_confirmation: '',
+                id: '',
+                class: ''
             },
             rules: {
                 username: [
@@ -68,8 +87,8 @@ export default {
                 ],
             },
         })
-        onMounted( () => {
-
+        onMounted( async () => {
+            await listAllClass()
         })
         onBeforeUnmount(() => {
 
@@ -83,6 +102,12 @@ export default {
                 }
             })
         }
+
+        const listAllClass = async () => {
+            let res = await api.listClass()
+            state.userClasses = res.data
+        }
+
         return {
             ...toRefs(state),
             formRef,

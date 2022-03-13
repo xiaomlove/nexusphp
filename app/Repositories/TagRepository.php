@@ -9,6 +9,8 @@ use Nexus\Database\NexusDB;
 
 class TagRepository extends BaseRepository
 {
+    private static $orderByFieldIdString;
+
     public function getList(array $params)
     {
         $query = $this->createBasicQuery();
@@ -41,7 +43,7 @@ class TagRepository extends BaseRepository
         return $result;
     }
 
-    public function createBasicQuery()
+    public static function createBasicQuery()
     {
         return Tag::query()->orderBy('priority', 'desc')->orderBy('id', 'desc');
     }
@@ -125,6 +127,15 @@ class TagRepository extends BaseRepository
         NexusDB::statement($sql);
         do_log("[MIGRATE_TORRENT_TAG] done!");
         return count($values);
+    }
+
+    public static function getOrderByFieldIdString()
+    {
+        if (is_null(self::$orderByFieldIdString)) {
+            $results = self::createBasicQuery()->get(['id']);
+            self::$orderByFieldIdString = $results->isEmpty() ? '0' : $results->implode('id', ',');
+        }
+        return self::$orderByFieldIdString;
     }
 
 

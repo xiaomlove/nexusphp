@@ -33,9 +33,16 @@ class TorrentResource extends JsonResource
             'seeders' => $this->seeders,
             'times_completed' => $this->times_completed,
             'numfiles' => $this->numfiles,
+            'sp_state' => $this->sp_state,
+            'sp_state_real' => $this->sp_state_real,
+            'sp_state_real_text' => $this->spStateRealText,
+            'hr' => $this->hr,
+            'pick_type' => $this->picktype,
+            'pick_time' => $this->picktime,
             'download_url' => $this->download_url,
             'user' => new UserResource($this->whenLoaded('user')),
             'basic_category' => new CategoryResource($this->whenLoaded('basic_category')),
+            'tags' => TagResource::collection($this->whenLoaded('tags')),
         ];
         $descriptionArr = format_description($this->descr);
         $out['cover'] = get_image_from_description($descriptionArr, true);

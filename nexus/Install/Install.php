@@ -2,6 +2,8 @@
 
 namespace Nexus\Install;
 
+use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
@@ -384,44 +386,22 @@ class Install
 
     public function createAdministrator($username, $email, $password, $confirmPassword)
     {
-        $count = get_row_count('users', 'where class = 16');
+        $class = User::CLASS_STAFF_LEADER;
+        $count = get_row_count('users', 'where class = ' . $class);
         if ($count > 0) {
             throw new \InvalidArgumentException("Administrator already exists");
         }
-        if (!validusername($username)) {
-            throw new \InvalidArgumentException("Innvalid username: $username");
-        }
-        $email = htmlspecialchars(trim($email));
-        $email = safe_email($email);
-        if (!check_email($email)) {
-            throw new \InvalidArgumentException("Innvalid email: $email");
-        }
-        $res = sql_query("SELECT id FROM users WHERE email=" . sqlesc($email));
-        $arr = mysql_fetch_row($res);
-        if ($arr) {
-            throw new \InvalidArgumentException("The email address: $email is already in use");
-        }
-        if (mb_strlen($password) < 6 || mb_strlen($password) > 40) {
-            throw new \InvalidArgumentException("Innvalid password: $password, it should be more than 6 character and less than 40 character");
-        }
-        if ($password != $confirmPassword) {
-            throw new \InvalidArgumentException("confirmPassword: $confirmPassword != password");
-        }
-        $setting = get_setting('main');
-        $secret = mksecret();
-        $passhash = md5($secret . $password . $secret);
-        $insert = [
+        $data = [
             'username' => $username,
-            'passhash' => $passhash,
-            'secret' => $secret,
             'email' => $email,
-            'stylesheet' => $setting['defstylesheet'],
-            'class' => 16,
-            'status' => 'confirmed',
-            'added' => date('Y-m-d H:i:s'),
+            'password' => $password,
+            'password_confirmation' => $confirmPassword,
+            'class' => $class,
+            'id' => 1,
         ];
-        $this->doLog("[CREATE ADMINISTRATOR] " . json_encode($insert));
-        return NexusDB::insert('users', $insert);
+        $user = (new UserRepository())->store($data);
+        $this->doLog("[CREATE ADMINISTRATOR] " . $user->toJson());
+        return $user;
     }
 
     public function createEnvFile($data, $scene = 'install')

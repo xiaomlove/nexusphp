@@ -168,7 +168,9 @@ function user_to_peasant($down_floor_gb, $minratio){
 function ban_user_with_leech_warning_expired()
 {
     $dt = date("Y-m-d H:i:s"); // take date time
+    // VIP or above won't effect
     $results = \App\Models\User::query()
+        ->where('class', '<', \App\Models\User::CLASS_VIP)
         ->where('enabled', \App\Models\User::ENABLED_YES)
         ->where('leechwarn', 'yes')
         ->where('leechwarnuntil', '<', $dt)
