@@ -27,6 +27,7 @@ class AttendanceRepository extends BaseRepository
             'days' => 1,
             'total_days' => 1,
         ];
+        $update = $initialData;
         if (!$attendance) {
             //first time
             do_log("[DO_INSERT]: " . nexus_json_encode($initialData));
@@ -52,13 +53,14 @@ class AttendanceRepository extends BaseRepository
                 } else {
                     //not continuous
                     do_log("[NOT_CONTINUOUS]");
-                    $update = $initialData;
                     $update['total_days'] = $attendance->total_days + 1;
                 }
                 do_log("[DO_UPDATE]: " . nexus_json_encode($update));
                 $attendance->update($update);
-                User::query()->where('id', $uid)->increment('seedbonus', $update['points']);
             }
+        }
+        if ($isUpdated) {
+            User::query()->where('id', $uid)->increment('seedbonus', $update['points']);
         }
         $attendance->added_time = $now->toTimeString();
         $attendance->is_updated = $isUpdated;
