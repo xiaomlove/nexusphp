@@ -38,7 +38,10 @@ if (!$row) {
 ) {
     permissiondenied();
 } else {
-    $owner = \App\Models\User::query()->with(['valid_medals'])->findOrFail($row['owner']);
+    $owner = \App\Models\User::query()->with(['valid_medals'])->find($row['owner']);
+    if (!$owner) {
+        $owner = \App\Models\User::defaultUser(); 
+    }
     $torrentRep = new \App\Repositories\TorrentRepository();
     $torrentUpdate = [];
 	if (!empty($_GET["hit"])) {
