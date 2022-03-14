@@ -42,7 +42,7 @@ stdhead($lang_upload['head_upload']);
 					<td class='colhead' colspan='2' align='center'>
 						<?php echo $lang_upload['text_tracker_url'] ?>: &nbsp;&nbsp;&nbsp;&nbsp;<b><?php echo  get_protocol_prefix() . $announce_urls[0]?></b>
 						<?php
-						if(!is_writable(ROOT_PATH . $torrent_dir))
+						if(!is_writable(getFullDirectory($torrent_dir)))
 						print("<br /><br /><b>ATTENTION</b>: Torrent directory isn't writable. Please contact the administrator about this problem!");
 						if(!$max_torrent_size)
 						print("<br /><br /><b>ATTENTION</b>: Max. Torrent Size not set. Please contact the administrator about this problem!");

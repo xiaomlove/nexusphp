@@ -74,6 +74,10 @@ if (@ini_get('output_handler') == 'ob_gzhandler' AND @ob_get_length() !== false)
 }
 */
 
+if ($CURUSER['downloadpos']=="no") {
+    permissiondenied();
+}
+
 $trackerSchemaAndHost = get_tracker_schema_and_host();
 $ssl_torrent = $trackerSchemaAndHost['ssl_torrent'];
 $base_announce_url = $trackerSchemaAndHost['base_announce_url'];
@@ -81,15 +85,20 @@ $base_announce_url = $trackerSchemaAndHost['base_announce_url'];
 $res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
 if (!$row) {
-    do_log("[TORRENT_NOT_EXISTS] $id", 'error');
+    do_log("[TORRENT_NOT_EXISTS_IN_DATABASE] $id", 'error');
     httperr();
 }
 $fn = getFullDirectory("$torrent_dir/$id.torrent");
-if ($CURUSER['downloadpos']=="no") {
-    permissiondenied();
+if (!is_file($fn)) {
+    do_log("[TORRENT_NOT_EXISTS_IN_PATH] $fn",'error');
+    httperr();
 }
-if (!is_file($fn) || !is_readable($fn)) {
+if (!is_readable($fn)) {
     do_log("[TORRENT_NOT_READABLE] $fn",'error');
+    httperr();
+}
+if (filesize($fn) == 0) {
+    do_log("[TORRENT_NOT_VALID_SIZE_ZERO] $fn",'error');
     httperr();
 }
 if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {

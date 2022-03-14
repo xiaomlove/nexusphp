@@ -306,6 +306,14 @@ if (empty($url) && !empty($ptGenImdbLink)) {
 	$url = str_replace('tt', '', $ptGenImdbInfo['id']);
 }
 
+$torrentSavePath = getFullDirectory($torrent_dir);
+if (!is_dir($torrentSavePath)) {
+    bark("torrent save path: $torrentSavePath not exists.");
+}
+if (!is_writable($torrentSavePath)) {
+    bark("torrent save path: $torrentSavePath not writeable.");
+}
+
 $ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
 ", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc(json_encode($postPtGen)) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
 if (!$ret) {
@@ -315,6 +323,12 @@ if (!$ret) {
 	//bark("mysql puked: ".preg_replace_callback('/./s', "hex_esc2", mysql_error()));
 }
 $id = mysql_insert_id();
+$torrentFilePath = "$torrentSavePath/$id.torrent";
+$saveResult = \Rhilip\Bencode\Bencode::dump($torrentFilePath, $dict);
+if ($saveResult === false) {
+    sql_query("delete from torrents where id = $id limit 1");
+    bark("save torrent to $torrentFilePath fail.");
+}
 
 /**
  * add custom fields
@@ -350,9 +364,6 @@ if (!empty($tagIdArr)) {
 foreach ($filelist as $file) {
 	@sql_query("INSERT INTO files (torrent, filename, size) VALUES ($id, ".sqlesc($file[0]).",".$file[1].")");
 }
-
-//move_uploaded_file($tmpname, "$torrent_dir/$id.torrent");
-\Rhilip\Bencode\Bencode::dump(getFullDirectory("$torrent_dir/$id.torrent"),$dict);
 
 //===add karma
 KPS("+",$uploadtorrent_bonus,$CURUSER["id"]);
