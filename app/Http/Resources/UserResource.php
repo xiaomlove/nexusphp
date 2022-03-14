@@ -29,7 +29,7 @@ class UserResource extends JsonResource
             'uploaded_text' => mksize($this->uploaded),
             'downloaded' => $this->downloaded,
             'downloaded_text' => mksize($this->downloaded),
-            'bonus' => $this->seedbonus,
+            'bonus' => number_format($this->seedbonus, 1),
             'seed_points' => floatval($this->seed_points),
             'seedtime' => $this->seedtime,
             'seedtime_text' => mkprettytime($this->seedtime),

@@ -40,7 +40,7 @@ if (!$row) {
 } else {
     $owner = \App\Models\User::query()->with(['valid_medals'])->find($row['owner']);
     if (!$owner) {
-        $owner = \App\Models\User::defaultUser(); 
+        $owner = \App\Models\User::defaultUser();
     }
     $torrentRep = new \App\Repositories\TorrentRepository();
     $torrentUpdate = [];
