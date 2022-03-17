@@ -1,7 +1,7 @@
 <?php
 namespace App\Repositories;
 
-use App\Exceptions\NexusException;
+use App\Exceptions\ClientNotAllowedException;
 use App\Models\AgentAllow;
 use App\Models\AgentDeny;
 
@@ -52,16 +52,23 @@ class AgentAllowRepository extends BaseRepository
     public function getPatternMatches($pattern, $start, $matchNum)
     {
         if (!preg_match($pattern, $start, $matches)) {
-            throw new NexusException(sprintf('pattern: %s can not match start: %s', $pattern, $start));
+            throw new ClientNotAllowedException(sprintf('pattern: %s can not match start: %s', $pattern, $start));
         }
         $matchCount = count($matches) - 1;
         //due to old data may be matchNum > matchCount
         if ($matchNum > $matchCount && !IN_NEXUS) {
-            throw new NexusException("pattern: $pattern match start: $start got matches count: $matchCount, but require $matchNum.");
+            throw new ClientNotAllowedException("pattern: $pattern match start: $start got matches count: $matchCount, but require $matchNum.");
         }
         return array_slice($matches, 1, $matchNum);
     }
 
+    /**
+     * @param $peerId
+     * @param $agent
+     * @param false $debug
+     * @return \App\Models\NexusModel|mixed
+     * @throws ClientNotAllowedException
+     */
     public function checkClient($peerId, $agent, $debug = false)
     {
         //check from high version to low version, if high version allow, stop!
@@ -93,7 +100,7 @@ class AgentAllowRepository extends BaseRepository
                     }
                 } catch (\Exception $exception) {
                     do_log("$logPrefix, check peer_id error: " . $exception->getMessage(), 'error');
-                    throw new NexusException("regular expression err for peer_id: " . $start . ", please ask sysop to fix this");
+                    throw new ClientNotAllowedException("regular expression err for peer_id: " . $start . ", please ask sysop to fix this");
                 }
                 if ($peerIdResult == 1) {
                     $isPeerIdAllowed = true;
@@ -121,7 +128,7 @@ class AgentAllowRepository extends BaseRepository
                     }
                 } catch (\Exception $exception) {
                     do_log("$logPrefix, check agent error: " . $exception->getMessage(), 'error');
-                    throw new NexusException("regular expression err for agent: " . $start . ", please ask sysop to fix this");
+                    throw new ClientNotAllowedException("regular expression err for agent: " . $start . ", please ask sysop to fix this");
                 }
                 if ($agentResult == 1) {
                     $isAgentAllowed = true;
@@ -142,11 +149,11 @@ class AgentAllowRepository extends BaseRepository
         }
 
         if ($versionTooLowStr) {
-            throw new NexusException($versionTooLowStr);
+            throw new ClientNotAllowedException($versionTooLowStr);
         }
 
         if (!$agentAllowPassed) {
-            throw new NexusException("Banned Client, Please goto " . getSchemeAndHttpHost() . "/faq.php#id29 for a list of acceptable clients");
+            throw new ClientNotAllowedException("Banned Client, Please goto " . getSchemeAndHttpHost() . "/faq.php#id29 for a list of acceptable clients");
         }
 
         if ($debug) {
@@ -160,14 +167,14 @@ class AgentAllowRepository extends BaseRepository
                 if ($debug) {
                     do_log("agentDeny: " . $agentDeny->toJson());
                 }
-                throw new NexusException(sprintf(
+                throw new ClientNotAllowedException(sprintf(
                     "[%s-%s]Client: %s is banned due to: %s",
                     $agentAllowPassed->id, $agentDeny->id, $agentDeny->name, $agentDeny->comment
                 ));
             }
         }
         if (isHttps() && $agentAllowPassed->allowhttps != 'yes') {
-            throw new NexusException(sprintf(
+            throw new ClientNotAllowedException(sprintf(
                 "[%s]This client does not support https well, Please goto %s/faq.php#id29 for a list of proper clients",
                 $agentAllowPassed->id, getSchemeAndHttpHost()
             ));
@@ -202,7 +209,7 @@ class AgentAllowRepository extends BaseRepository
      * @param bool $debug
      * @param string $logPrefix
      * @return int
-     * @throws NexusException
+     * @throws ClientNotAllowedException
      */
     private function isAllowed($pattern, $start, $matchNum, $matchType, $value, $debug = false, $logPrefix = ''): int
     {
@@ -234,7 +241,7 @@ class AgentAllowRepository extends BaseRepository
                 $matchBench[$i] = hexdec($matchBench[$i]);
                 $matchTarget[$i] = hexdec($matchTarget[$i]);
             } else {
-                throw new NexusException(sprintf("Invalid match type: %s", $matchType));
+                throw new ClientNotAllowedException(sprintf("Invalid match type: %s", $matchType));
             }
             if ($matchTarget[$i] > $matchBench[$i]) {
                 //higher, pass directly

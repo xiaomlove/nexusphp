@@ -9,6 +9,7 @@ use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Medal;
+use App\Models\Peer;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
@@ -27,6 +28,7 @@ use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Rhilip\Bencode\Bencode;
 
@@ -63,9 +65,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new AttendanceRepository();
-        $r = $rep->migrateAttendance();
-        dd($r);
+
+        $peer = Peer::query()->first();
+        echo $peer->prev_action->timestamp;
     }
+
+
 
 }

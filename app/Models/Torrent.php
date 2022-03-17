@@ -61,7 +61,7 @@ class Torrent extends NexusModel
     const PROMOTION_HALF_DOWN_TWO_TIMES_UP = 6;
     const PROMOTION_ONE_THIRD_DOWN = 7;
 
-    public static $promotionTypes = [
+    public static array $promotionTypes = [
         self::PROMOTION_NORMAL => ['text' => 'Normal', 'up_multiplier' => 1, 'down_multiplier' => 1],
         self::PROMOTION_FREE => ['text' => 'Free', 'up_multiplier' => 1, 'down_multiplier' => 0],
         self::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'up_multiplier' => 2, 'down_multiplier' => 1],
@@ -79,6 +79,9 @@ class Torrent extends NexusModel
 
     public function getSpStateRealAttribute()
     {
+        if ($this->getRawOriginal('sp_state') === null) {
+            throw new \RuntimeException('no select sp_state field');
+        }
         $spState = $this->sp_state;
         $global = self::getGlobalPromotionState();
         $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);

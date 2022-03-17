@@ -348,7 +348,7 @@ class User extends Authenticatable
     public function updateWithModComment(array $update, $modComment)
     {
         if (!$this->exists) {
-            throw new \RuntimeException('This mehtod only works when user exists!');
+            throw new \RuntimeException('This method only works when user exists!');
         }
         //@todo how to do prepare bindings here ?
         $modComment = addslashes($modComment);
