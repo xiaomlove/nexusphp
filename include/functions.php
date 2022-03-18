@@ -5311,6 +5311,9 @@ function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)
     if ($sync) {
         sql_query("delete from torrent_tags where torrent_id = $torrentId");
     }
+    if (empty($tagIdArr)) {
+        return;
+    }
     $insertTagsSql = 'insert into torrent_tags (`torrent_id`, `tag_id`, `created_at`, `updated_at`) values ';
     $values = [];
     foreach ($tagIdArr as $tagId) {
