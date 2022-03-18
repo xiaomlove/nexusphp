@@ -352,6 +352,7 @@ return array (
     'watermarkquality' => '85',
     'altthumbwidth' => '180',
     'altthumbheight' => '135',
+      'download_support_passkey' => 'yes',
   ),
   'advertisement' =>
   array (

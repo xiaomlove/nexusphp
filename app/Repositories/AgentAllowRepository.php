@@ -56,9 +56,9 @@ class AgentAllowRepository extends BaseRepository
         }
         $matchCount = count($matches) - 1;
         //due to old data may be matchNum > matchCount
-        if ($matchNum > $matchCount && !IN_NEXUS) {
-            throw new ClientNotAllowedException("pattern: $pattern match start: $start got matches count: $matchCount, but require $matchNum.");
-        }
+//        if ($matchNum > $matchCount && !IN_NEXUS) {
+//            throw new ClientNotAllowedException("pattern: $pattern match start: $start got matches count: $matchCount, but require $matchNum.");
+//        }
         return array_slice($matches, 1, $matchNum);
     }
 

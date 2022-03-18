@@ -65,9 +65,9 @@ class Test extends Command
      */
     public function handle()
     {
-
-        $peer = Peer::query()->first();
-        echo $peer->prev_action->timestamp;
+        $redis = Redis::connection()->client();
+        $r = $redis->get('5da94a358e67cb5181166ae2611c2fd9');
+        dd($r);
     }
 
 

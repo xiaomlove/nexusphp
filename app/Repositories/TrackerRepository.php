@@ -12,9 +12,9 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use App\Exceptions\TrackerException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use Nexus\Database\NexusDB;
 use Rhilip\Bencode\Bencode;
 
 class TrackerRepository extends BaseRepository
@@ -25,8 +25,6 @@ class TrackerRepository extends BaseRepository
 
     const MUST_BE_CHEATER_SPEED = 1024 * 1024 * 1024; //1024 MB/s
     const MAY_BE_CHEATER_SPEED = 1024 * 1024 * 100; //100 MB/s
-
-    private array $userUpdates = [];
 
     // Port Blacklist
     protected const BLACK_PORTS = [
@@ -42,13 +40,17 @@ class TrackerRepository extends BaseRepository
         6699,  // Port used by p2p software, such as WinMX, Napster.
     ];
 
+    private array $userUpdates = [];
+
     public function announce(Request $request): \Illuminate\Http\Response
     {
+        do_log(nexus_json_encode($_SERVER));
         try {
             $withPeers = false;
             $queries = $this->checkAnnounceFields($request);
-            $clientAllow = $this->checkClient($request);
+            do_log("[QUERIES] " . json_encode(Arr::only($queries, ['ip', 'user_agent', 'uploaded', 'downloaded', 'left', 'event'])), 'debug');
             $user = $this->checkUser($request);
+            $clientAllow = $this->checkClient($request);
             $torrent = $this->checkTorrent($queries, $user);
             if ($this->isReAnnounce($queries) === false) {
                 $withPeers = true;
@@ -65,14 +67,17 @@ class TrackerRepository extends BaseRepository
                 } else {
                     $this->checkCheater($torrent, $queries, $user, $peerSelf);
                 }
+                /**
+                 * Note: Must get before update peer!
+                 */
+                $dataTraffic = $this->getDataTraffic($torrent, $queries, $user, $peerSelf);
 
                 $this->updatePeer($peerSelf, $queries);
-                $this->updateSnatch($peerSelf, $queries);
+                $this->updateSnatch($peerSelf, $queries, $dataTraffic);
                 $this->updateTorrent($torrent, $queries);
 
-                $dataTraffic = $this->getRealUploadedDownloaded($torrent, $queries, $user, $peerSelf);
-                $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded']);
-                $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded']);
+                $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
+                $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
                 $this->userUpdates['clientselect'] = $clientAllow->id;
                 $this->userUpdates['showclienterror'] = 'no';
             }
@@ -80,13 +85,17 @@ class TrackerRepository extends BaseRepository
         } catch (ClientNotAllowedException $exception) {
             do_log("[ClientNotAllowedException] " . $exception->getMessage());
             $this->userUpdates['showclienterror'] = 'yes';
-            $repDict = $this->generateFailedAnnounceResponse($exception);
+            $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (TrackerException $exception) {
-            do_log("[TrackerException] " . $exception->getMessage());
-            $repDict = $this->generateFailedAnnounceResponse($exception);
+            $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
+        } catch (\Exception $exception) {
+            //other system exception
+            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
+            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . REQUEST_ID);
         } finally {
-            if (isset($user)) {
+            if (isset($user) && count($this->userUpdates)) {
                 $user->update($this->userUpdates);
+                do_log(last_query(), 'debug');
             }
             return $this->sendFinalAnnounceResponse($repDict);
         }
@@ -132,7 +141,8 @@ class TrackerRepository extends BaseRepository
         }
 
         $agentAllowRep = new AgentAllowRepository();
-        $agentAllowRep->checkClient($request->peer_id, $userAgent);
+
+        return $agentAllowRep->checkClient($request->peer_id, $userAgent, config('app.debug'));
 
     }
 
@@ -235,11 +245,11 @@ class TrackerRepository extends BaseRepository
         // Part.5 Get Users Agent
         $queries['user_agent'] = $request->headers->get('user-agent');
 
-        // Part.6 bin2hex info_hash
-        $queries['info_hash'] = \bin2hex($queries['info_hash']);
+        // Part.6 info_hash, binary
+        $queries['info_hash'] = $queries['info_hash'];
 
-        // Part.7 bin2hex peer_id
-        $queries['peer_id'] = \bin2hex($queries['peer_id']);
+        // Part.7
+        $queries['peer_id'] = $queries['peer_id'];
 
         return $queries;
     }
@@ -247,9 +257,9 @@ class TrackerRepository extends BaseRepository
     protected function checkUser(Request $request)
     {
         if ($authkey = $request->query->get('authkey')) {
-            list($torrentId, $uid) = $this->checkAuthkey($authkey);
+            $checkResult = $this->checkAuthkey($authkey);
             $field = 'id';
-            $value = $uid;
+            $value = $checkResult['uid'];
         } elseif ($passkey = $request->query->get('passkey')) {
             $this->checkPasskey($passkey);
             $field = 'passkey';
@@ -370,10 +380,14 @@ class TrackerRepository extends BaseRepository
         $peer = Peer::query()
             ->where('torrent', $torrent->id)
             ->where('peer_id', $queries['peer_id'])
-            ->where('userid', $user->id)
             ->first();
 
-        if ($peer && $peer->isValidDate('prev_action') && Carbon::now()->diffInSeconds($peer->prev_action) < self::MIN_ANNOUNCE_WAIT_SECOND) {
+        if (
+            $peer
+            && $queries['event'] == ''
+            && $peer->isValidDate('prev_action')
+            && Carbon::now()->diffInSeconds($peer->prev_action) < self::MIN_ANNOUNCE_WAIT_SECOND
+        ) {
             throw new TrackerException('There is a minimum announce time of ' . self::MIN_ANNOUNCE_WAIT_SECOND . ' seconds');
         }
         return $peer;
@@ -484,6 +498,7 @@ class TrackerRepository extends BaseRepository
             'peers'        => [],
             'peers6'       => [],
         ];
+        do_log("[REP_DICT_BASE] " . json_encode($repDict));
         if (!$withPeers) {
             return $repDict;
         }
@@ -509,7 +524,7 @@ class TrackerRepository extends BaseRepository
             } else {
                 $peers = $baseQuery->get()->toArray();
             }
-
+            do_log("[REP_DICT_PEER_QUERY] " . last_query());
             $repDict['peers'] = $this->givePeers($peers, $queries['compact'], $queries['no_peer_id']);
             $repDict['peers6'] = $this->givePeers($peers, $queries['compact'], $queries['no_peer_id'], FILTER_FLAG_IPV6);
         }
@@ -544,28 +559,42 @@ class TrackerRepository extends BaseRepository
         return $real_annnounce_interval;
     }
 
-    private function getRealUploadedDownloaded(Torrent $torrent, $queries, User $user, Peer $peer): array
+    private function getDataTraffic(Torrent $torrent, $queries, User $user, Peer $peer): array
     {
+        $log = sprintf(
+            "torrent: %s, user: %s, peer: %s, queriesUploaded: %s, queriesDownloaded: %s",
+            $torrent->id, $user->id, $peer->id, $queries['uploaded'], $queries['downloaded']
+        );
         if ($peer->exists) {
             $realUploaded = max($queries['uploaded'] - $peer->uploaded, 0);
             $realDownloaded = max($queries['downloaded'] - $peer->downloaded, 0);
+            $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded";
         } else {
             $realUploaded = $queries['uploaded'];
             $realDownloaded = $queries['downloaded'];
+            $log .= ", [PEER_NOT_EXISTS],, realUploaded: $realUploaded, realDownloaded: $realDownloaded";
         }
         $spStateReal = $torrent->spStateReal;
         $uploaderRatio = Setting::get('torrent.uploaderdouble');
+        $log .= ", spStateReal: $spStateReal, uploaderRatio: $uploaderRatio";
         if ($torrent->owner == $user->id) {
             //uploader, use the bigger one
             $upRatio = max($uploaderRatio, Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
+            $log .= ", [IS_UPLOADER], upRatio: $upRatio";
         } else {
             $upRatio = Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
+            $log .= ", [IS_NOT_UPLOADER], upRatio: $upRatio";
         }
         $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
-        return [
-            'uploaded' => $realUploaded * $upRatio,
-            'downloaded' => $realDownloaded * $downRatio
+        $log .= ", downRatio: $downRatio";
+        $result = [
+            'uploaded_increment' => $realUploaded,
+            'uploaded_increment_for_user' => $realUploaded * $upRatio,
+            'downloaded_increment' => $realDownloaded,
+            'downloaded_increment_for_user' => $realDownloaded * $downRatio,
         ];
+        do_log("$log, result: " . json_encode($result));
+        return $result;
     }
 
     private function givePeers($peers, $compact, $noPeerId, int $filterFlag = FILTER_FLAG_IPV4): string|array
@@ -593,10 +622,10 @@ class TrackerRepository extends BaseRepository
         return $peers;
     }
 
-    protected function generateFailedAnnounceResponse(\Exception $exception): array
+    protected function generateFailedAnnounceResponse($reason): array
     {
         return [
-            'failure reason' => $exception->getMessage(),
+            'failure reason' => $reason,
             'min interval'   => self::MIN_ANNOUNCE_WAIT_SECOND,
             //'retry in'     => self::MIN_ANNOUNCE_WAIT_SECOND
         ];
@@ -631,12 +660,15 @@ class TrackerRepository extends BaseRepository
         }
 
         $torrent->save();
+        do_log(last_query(), 'debug');
     }
 
     private function updatePeer(Peer $peer, $queries)
     {
         if ($queries['event'] == 'stopped') {
-            return $peer->delete();
+            $peer->delete();
+            do_log(last_query(), 'debug');
+            return;
         }
 
         $nowStr = Carbon::now()->toDateTimeString();
@@ -648,23 +680,34 @@ class TrackerRepository extends BaseRepository
 
         $peer->to_go = $queries['left'];
         $peer->seeder = $queries['left'] == 0 ? 'yes' : 'no';
-        $peer->prev_action = DB::raw('last_action');
         $peer->last_action = $nowStr;
         $peer->uploaded = $queries['uploaded'];
         $peer->downloaded = $queries['downloaded'];
+
+        if ($peer->exists) {
+            $peer->prev_action = $peer->last_action;
+        }
 
         if ($queries['event'] == 'started') {
             $peer->started = $nowStr;
             $peer->uploadoffset = $queries['uploaded'];
             $peer->downloadoffset = $queries['downloaded'];
         } elseif ($queries['event'] == 'completed') {
-            $peer->finishat = time();
+            $peer->finishedat = time();
         }
 
         $peer->save();
+        do_log(last_query(), 'debug');
     }
 
-    private function updateSnatch(Peer $peer, $queries)
+    /**
+     * Update snatch, uploaded & downloaded, use the increment value  to do increment
+     *
+     * @param Peer $peer
+     * @param $queries
+     * @param $dataTraffic
+     */
+    private function updateSnatch(Peer $peer, $queries, $dataTraffic)
     {
         $nowStr = Carbon::now()->toDateTimeString();
 
@@ -679,13 +722,13 @@ class TrackerRepository extends BaseRepository
             //initial
             $snatch->torrentid = $peer->torrent;
             $snatch->userid = $peer->userid;
-            $snatch->uploaded = $queries['uploaded'];
-            $snatch->downloaded = $queries['downloaded'];
-            $snatch->startat = $nowStr;
+            $snatch->uploaded = $dataTraffic['uploaded_increment'];
+            $snatch->downloaded = $dataTraffic['downloaded_increment'];
+            $snatch->startdat = $nowStr;
         } else {
-            //increase
-            $snatch->uploaded = DB::raw("uploaded + " .  $queries['uploaded']);
-            $snatch->downloaded = DB::raw("downloaded + " .  $queries['downloaded']);
+            //increase, use the increment value
+            $snatch->uploaded = DB::raw("uploaded + " .  $dataTraffic['uploaded_increment']);
+            $snatch->downloaded = DB::raw("downloaded + " .  $dataTraffic['downloaded_increment']);
             $timeIncrease = Carbon::now()->diffInSeconds($peer->last_action);
             if ($queries['left'] == 0) {
                 //seeder
@@ -699,7 +742,7 @@ class TrackerRepository extends BaseRepository
         //always update
         $snatch->ip = $queries['ip'];
         $snatch->port = $queries['port'];
-        $snatch->to_go = $queries['to_go'];
+        $snatch->to_go = $queries['left'];
         $snatch->last_action = $nowStr;
         if ($queries['event'] == 'completed') {
             $snatch->completedat = $nowStr;
@@ -707,6 +750,7 @@ class TrackerRepository extends BaseRepository
         }
 
         $snatch->save();
+        do_log(last_query(), 'debug');
     }
 
 }
