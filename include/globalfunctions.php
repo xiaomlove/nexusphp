@@ -159,20 +159,11 @@ function do_log($log, $level = 'info')
     if (is_null($setLogLevel)) {
         $setLogLevel = nexus_env('LOG_LEVEL', 'debug');
     }
-    $logLevels = [
-        \Psr\Log\LogLevel::DEBUG,
-        \Psr\Log\LogLevel::INFO,
-        \Psr\Log\LogLevel::NOTICE,
-        \Psr\Log\LogLevel::WARNING,
-        \Psr\Log\LogLevel::ERROR,
-        \Psr\Log\LogLevel::CRITICAL,
-        \Psr\Log\LogLevel::ALERT,
-        \Psr\Log\LogLevel::EMERGENCY,
-    ];
+    $logLevels = ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
     $setLogLevelKey = array_search($setLogLevel, $logLevels);
     $currentLogLevelKey = array_search($level, $logLevels);
     if ($currentLogLevelKey === false) {
-        $level = \Psr\log\LogLevel::ERROR;
+        $level = 'error';
         $log = "[ERROR_LOG_LEVEL] $log";
         $currentLogLevelKey = array_search($level, $logLevels);
     }
@@ -310,7 +301,7 @@ function nexus_env($key = null, $default = null)
 {
     static $env;
     if (is_null($env)) {
-        $envFile = defined('ROOT_PATH') ? ROOT_PATH . '.env' : base_path('.env');
+        $envFile = dirname(__DIR__) . '/.env';
         $env = readEnvFile($envFile);
     }
     if (is_null($key)) {
@@ -677,4 +668,25 @@ function get_hr_ratio($uped, $downed)
         $ratio = "---";
 
     return $ratio;
+}
+
+function request_local_announce_api($announceApiLocalHost)
+{
+    $start = microtime(true);
+    $ch = curl_init();
+    $options = [
+        CURLOPT_URL => sprintf('%s/api/announce?%s', trim($announceApiLocalHost, '/'), $_SERVER['QUERY_STRING']),
+        CURLOPT_USERAGENT => $_SERVER["HTTP_USER_AGENT"],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT => 60,
+    ];
+    curl_setopt_array($ch, $options);
+    $response = curl_exec($ch);
+    $log = sprintf(
+        "[LOCAL_ANNOUNCE_API] [%s] options: %s, response(%s): %s",
+        number_format(microtime(true) - $start, 3), json_encode($options), gettype($response), $response
+    );
+    do_log($log);
+    return $response;
 }

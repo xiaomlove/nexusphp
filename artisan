@@ -14,6 +14,8 @@ define('LARAVEL_START', microtime(true));
 | loading of any our classes "manually". Feels great to relax.
 |
 */
+require __DIR__ . '/include/globalfunctions.php';
+require __DIR__ . '/include/functions.php';
 
 require __DIR__.'/vendor/autoload.php';
 

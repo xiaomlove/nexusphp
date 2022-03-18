@@ -336,4 +336,5 @@ function check_client($peer_id, $agent, &$agent_familyid)
 		return "Banned Client, Please goto $BASEURL/faq.php#id29 for a list of acceptable clients";
 	}
 }
+
 ?>

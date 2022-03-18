@@ -1,6 +1,22 @@
 <?php
+defined('NEXUS_START') || define('NEXUS_START', microtime(true));
+defined('IN_NEXUS') || define('IN_NEXUS', true);
+defined('IN_TRACKER') || define('IN_TRACKER', true);
+require __DIR__ . '/../include/constants.php';
+require __DIR__ . '/../include/globalfunctions.php';
+require __DIR__ . '/../include/functions_announce.php';
+$announceApiLocalHost = nexus_env('ANNOUNCE_API_LOCAL_HOST');
+if ($announceApiLocalHost) {
+    do_log("[GOING_TO_REQUEST_LOCAL_ANNOUNCE_URL] $announceApiLocalHost");
+    $response = request_local_announce_api($announceApiLocalHost);
+    if (empty($response)) {
+        err("error from ANNOUNCE_API_LOCAL_HOST");
+    } else {
+        exit(benc_resp_raw($response));
+    }
+}
+//continue the normal process
 require_once('../include/bittorrent_announce.php');
-//require_once('../include/benc.php');
 dbconn_announce();
 do_log(nexus_json_encode($_SERVER));
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!

@@ -17,8 +17,7 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "include/globalfunctions.php",
-            "include/functions.php"
+
         ]
     },
     "require": {

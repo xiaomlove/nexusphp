@@ -31,6 +31,9 @@ if (file_exists(__DIR__.'/../storage/framework/maintenance.php')) {
 |
 */
 
+require dirname(__DIR__) . '/include/globalfunctions.php';
+require dirname(__DIR__) . '/include/functions.php';
+
 require __DIR__.'/../vendor/autoload.php';
 
 /*

@@ -76,15 +76,25 @@ class TrackerRepository extends BaseRepository
                 $this->updateSnatch($peerSelf, $queries, $dataTraffic);
                 $this->updateTorrent($torrent, $queries);
 
-                $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
-                $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
-                $this->userUpdates['clientselect'] = $clientAllow->id;
-                $this->userUpdates['showclienterror'] = 'no';
+                if ($dataTraffic['uploaded_increment_for_user'] > 0) {
+                    $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
+                }
+                if ($dataTraffic['downloaded_increment_for_user'] > 0) {
+                    $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
+                }
+                if ($user->clientselect != $clientAllow->id) {
+                    $this->userUpdates['clientselect'] = $clientAllow->id;
+                }
+                if ($user->showclienterror == 'yes') {
+                    $this->userUpdates['showclienterror'] = 'no';
+                }
             }
             $repDict = $this->generateSuccessAnnounceResponse($torrent, $queries, $user, $withPeers);
         } catch (ClientNotAllowedException $exception) {
             do_log("[ClientNotAllowedException] " . $exception->getMessage());
-            $this->userUpdates['showclienterror'] = 'yes';
+            if (isset($user) && $user->showclienterror == 'no') {
+                $this->userUpdates['showclienterror'] = 'yes';
+            }
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (TrackerException $exception) {
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
@@ -105,6 +115,7 @@ class TrackerRepository extends BaseRepository
      * @param Request $request
      * @throws ClientNotAllowedException
      * @throws TrackerException
+     * @refs
      */
     protected function checkClient(Request $request)
     {
@@ -180,6 +191,11 @@ class TrackerRepository extends BaseRepository
         return compact('torrentId', 'uid');
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     * @throws TrackerException
+     */
     protected function checkAnnounceFields(Request $request): array
     {
         $queries = [];
@@ -336,7 +352,7 @@ class TrackerRepository extends BaseRepository
         $ratio = ($user->downloaded > 0) ? ($user->uploaded / $user->downloaded) : 1;
         $settingsMain = Setting::get('main');
         if ($settingsMain['waitsystem'] == 'yes') {
-            $elapsed = Carbon::now()->diffInSeconds($torrent->added);
+            $elapsed = Carbon::now()->diffInHours($torrent->added);
             if ($ratio < 0.4) $wait = 24;
             elseif ($ratio < 0.5) $wait = 12;
             elseif ($ratio < 0.6) $wait = 6;
