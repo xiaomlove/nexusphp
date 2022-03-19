@@ -22,4 +22,13 @@ class TrackerController extends Controller
     {
         return $this->repository->announce($request);
     }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function scrape(Request $request): \Illuminate\Http\Response
+    {
+        return $this->repository->scrape($request);
+    }
 }

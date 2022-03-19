@@ -632,7 +632,7 @@ if ($action == "viewtopic")
     $uidArr = array_keys($uidArr);
     unset($arr);
     $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
-    $userInfoArr = \App\Models\User::query()->with(['valid_medals'])->find($uidArr, $neededColumns)->keyBy('id');
+    $userInfoArr = \App\Models\User::query()->with(['wearing_medals'])->find($uidArr, $neededColumns)->keyBy('id');
 	$pn = 0;
 	$lpr = get_last_read_post_id($topicid);
 
@@ -674,7 +674,7 @@ if ($action == "viewtopic")
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars($arr2["avatar"]) : "");
 
 		$uclass = get_user_class_image($arr2["class"]);
-		$by = build_medal_image($userInfo->valid_medals, 20) . get_username($posterid,false,true,true,false,false,true);
+		$by = build_medal_image($userInfo->wearing_medals, 20) . get_username($posterid,false,true,true,false,false,true);
 
 		if (!$avatar)
 			$avatar = "pic/default_avatar.png";

@@ -3,7 +3,8 @@ defined('LARAVEL_START') || define('LARAVEL_START', microtime(true));
 defined('NEXUS_START') || define('NEXUS_START', LARAVEL_START);
 defined('IN_NEXUS') || define('IN_NEXUS', false);
 require dirname(__DIR__) . '/include/constants.php';
-
+require dirname(__DIR__) . '/include/globalfunctions.php';
+require dirname(__DIR__) . '/include/functions.php';
 /*
 |--------------------------------------------------------------------------
 | Create The Application

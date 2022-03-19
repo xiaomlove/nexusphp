@@ -669,24 +669,3 @@ function get_hr_ratio($uped, $downed)
 
     return $ratio;
 }
-
-function request_local_announce_api($announceApiLocalHost)
-{
-    $start = microtime(true);
-    $ch = curl_init();
-    $options = [
-        CURLOPT_URL => sprintf('%s/api/announce?%s', trim($announceApiLocalHost, '/'), $_SERVER['QUERY_STRING']),
-        CURLOPT_USERAGENT => $_SERVER["HTTP_USER_AGENT"],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT => 60,
-    ];
-    curl_setopt_array($ch, $options);
-    $response = curl_exec($ch);
-    $log = sprintf(
-        "[LOCAL_ANNOUNCE_API] [%s] options: %s, response(%s): %s",
-        number_format(microtime(true) - $start, 3), json_encode($options), gettype($response), $response
-    );
-    do_log($log);
-    return $response;
-}

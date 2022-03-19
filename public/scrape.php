@@ -1,5 +1,17 @@
 <?php
 require_once('../include/bittorrent_announce.php');
+$apiLocalHost = nexus_env('TRACKER_API_LOCAL_HOST');
+if ($apiLocalHost) {
+    do_log("[TRACKER_API_LOCAL_HOST] $apiLocalHost");
+    $response = request_local_api(trim($apiLocalHost, '/') . '/api/scrape');
+    if (empty($response)) {
+        err("error from TRACKER_API_LOCAL_HOST");
+    } else {
+        exit(benc_resp_raw($response));
+    }
+}
+
+require ROOT_PATH . 'include/core.php';
 //require_once('../include/benc.php');
 dbconn_announce();
 

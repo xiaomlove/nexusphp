@@ -320,8 +320,10 @@ class User extends Authenticatable
     public function medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Medal::class, 'user_medals', 'uid', 'medal_id')
-            ->withPivot(['id', 'expire_at'])
-            ->withTimestamps();
+            ->withPivot(['id', 'expire_at', 'status'])
+            ->withTimestamps()
+            ->orderByPivot('id', 'desc')
+            ;
     }
 
     public function valid_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -329,6 +331,11 @@ class User extends Authenticatable
         return $this->medals()->where(function ($query) {
             $query->whereNull('user_medals.expire_at')->orWhere('user_medals.expire_at', '>=', Carbon::now());
         });
+    }
+
+    public function wearing_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->valid_medals()->where('user_medals.status', UserMedal::STATUS_WEARING);
     }
 
     public function getAvatarAttribute($value)

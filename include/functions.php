@@ -2929,7 +2929,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 
 	$uidArr = array_unique(array_column($rows, 'user'));
     $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
-	$userInfoArr = \App\Models\User::query()->with(['valid_medals'])->find($uidArr, $neededColumns)->keyBy('id');
+	$userInfoArr = \App\Models\User::query()->with(['wearing_medals'])->find($uidArr, $neededColumns)->keyBy('id');
 
 	foreach ($rows as $row)
 	{
@@ -2944,7 +2944,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 			}
 		}
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");
-		print(build_medal_image($userInfo->valid_medals, 20) . get_username($row["user"],false,true,true,false,false,true));
+		print(build_medal_image($userInfo->wearing_medals, 20) . get_username($row["user"],false,true,true,false,false,true));
 		print("&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_at']."</font>".gettime($row["added"]).
 		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars(trim($userRow["avatar"])) : "");
@@ -5296,13 +5296,24 @@ function msgalert($url, $text, $bgcolor = "red")
     print("</td></tr></table></p><br />");
 }
 
-function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200): string
+function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false): string
 {
     $medalImages = [];
+    $wrapBefore = '<div style="display: inline;">';
+    $wrapAfter = '</div>';
     foreach ($medals as $medal) {
-        $medalImages[] = sprintf('<img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+        $html = sprintf('<div style="display: inline"><img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+        if ($withActions) {
+            $checked = '';
+            if ($medal->pivot->status == \App\Models\UserMedal::STATUS_WEARING) {
+                $checked = ' checked';
+            }
+            $html .= sprintf('<label>%s<input type="checkbox" name="medal_wearing_status" value="%s"%s></label>', '佩戴', $medal->id, $checked);
+        }
+        $html .= '</div>';
+        $medalImages[] = $html;
     }
-    return implode('', $medalImages);
+    return $wrapBefore . implode('', $medalImages) . $wrapAfter;
 }
 
 function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)

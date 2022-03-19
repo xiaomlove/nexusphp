@@ -1,4 +1,10 @@
 <?php
+/**
+ * Handle announce and scrape
+ *
+ * @link https://github.com/HDInnovations/UNIT3D-Community-Edition/blob/master/app/Http/Controllers/AnnounceController.php
+ * @link https://github.com/Rhilip/RidPT/blob/master/application/Controllers/Tracker/AnnounceController.php
+ */
 namespace App\Repositories;
 
 use App\Exceptions\ClientNotAllowedException;
@@ -13,13 +19,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use App\Exceptions\TrackerException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Rhilip\Bencode\Bencode;
 
 class TrackerRepository extends BaseRepository
 {
-    const MIN_ANNOUNCE_WAIT_SECOND = 30;
+    const MIN_ANNOUNCE_WAIT_SECOND = 300;
 
     const MAX_PEER_NUM_WANT = 50;
 
@@ -305,10 +312,7 @@ class TrackerRepository extends BaseRepository
     protected function checkTorrent($queries, User $user)
     {
         // Check Info Hash Against Torrents Table
-        $torrent = Torrent::query()
-            ->selectRaw('id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed')
-            ->where('info_hash', '=', $queries['info_hash'])
-            ->first();
+        $torrent = $this->getTorrentByInfoHash($queries['info_hash']);
 
         // If Torrent Doesnt Exists Return Error to Client
         if ($torrent === null) {
@@ -506,24 +510,23 @@ class TrackerRepository extends BaseRepository
     private function generateSuccessAnnounceResponse($torrent, $queries, $user, $withPeers = true): array
     {
         // Build Response For Bittorrent Client
+        $minInterval = self::MIN_ANNOUNCE_WAIT_SECOND;
+        $interval = max($this->getRealAnnounceInterval($torrent), $minInterval);
         $repDict = [
-            'interval'     => $this->getRealAnnounceInterval($torrent),
-            'min interval' => self::MIN_ANNOUNCE_WAIT_SECOND,
+            'interval'     => $interval + random_int(10, 100),
+            'min interval' => $minInterval + random_int(1, 10),
             'complete'     => (int) $torrent->seeders,
             'incomplete'   => (int) $torrent->leechers,
             'peers'        => [],
             'peers6'       => [],
         ];
         do_log("[REP_DICT_BASE] " . json_encode($repDict));
-        if (!$withPeers) {
-            return $repDict;
-        }
 
         /**
          * For non `stopped` event only
          * We query peers from database and send peer list, otherwise just quick return.
          */
-        if (\strtolower($queries['event']) !== 'stopped') {
+        if (\strtolower($queries['event']) !== 'stopped' && $withPeers) {
             $limit = ($queries['numwant'] <= self::MAX_PEER_NUM_WANT ? $queries['numwant'] : self::MAX_PEER_NUM_WANT);
             $baseQuery = Peer::query()
                 ->select(['peer_id', 'ip', 'port'])
@@ -767,6 +770,88 @@ class TrackerRepository extends BaseRepository
 
         $snatch->save();
         do_log(last_query(), 'debug');
+    }
+
+    public function scrape(Request $request): \Illuminate\Http\Response
+    {
+        do_log(nexus_json_encode($_SERVER));
+        try {
+            $infoHashArr = $this->checkScrapeFields($request);
+            $user = $this->checkUser($request);
+            $clientAllow = $this->checkClient($request);
+
+            if ($user->clientselect != $clientAllow->id) {
+                $this->userUpdates['clientselect'] = $clientAllow->id;
+            }
+            $repDict = $this->generateScrapeResponse($infoHashArr);
+        } catch (ClientNotAllowedException $exception) {
+            do_log("[ClientNotAllowedException] " . $exception->getMessage());
+            if (isset($user) && $user->showclienterror == 'no') {
+                $this->userUpdates['showclienterror'] = 'yes';
+            }
+            $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
+        } catch (TrackerException $exception) {
+            $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
+        } catch (\Exception $exception) {
+            //other system exception
+            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
+            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . REQUEST_ID);
+        } finally {
+            if (isset($user) && count($this->userUpdates)) {
+                $user->update($this->userUpdates);
+                do_log(last_query(), 'debug');
+            }
+            return $this->sendFinalAnnounceResponse($repDict);
+        }
+    }
+
+    private function checkScrapeFields(Request $request): array
+    {
+        preg_match_all('/info_hash=([^&]*)/i', urldecode($request->getQueryString()), $info_hash_match);
+
+        $info_hash_array = $info_hash_match[1];
+        if (count($info_hash_array) < 1) {
+            throw new TrackerException("key: info_hash is Missing !");
+        } else {
+            foreach ($info_hash_array as $item) {
+                if (strlen($item) != 20) {
+                    throw new TrackerException("Invalid info_hash ! :attribute is not 20 bytes long");
+                }
+            }
+        }
+        return $info_hash_array;
+    }
+
+    /**
+     * @param $info_hash_array
+     * @return array[]
+     * @see http://www.bittorrent.org/beps/bep_0048.html
+     */
+    private function generateScrapeResponse($info_hash_array)
+    {
+        $torrent_details = [];
+        foreach ($info_hash_array as $item) {
+            $torrent = $this->getTorrentByInfoHash($item);
+            if ($torrent) {
+                $torrent_details[$item] = [
+                    'complete' => (int)$torrent->seeders,
+                    'downloaded' => (int)$torrent->times_completed,
+                    'incomplete' => (int)$torrent->leechers,
+                ];
+            }
+        }
+
+        return ['files' => $torrent_details];
+    }
+
+    private function getTorrentByInfoHash($infoHash)
+    {
+        return Cache::remember(bin2hex($infoHash), 60, function () use ($infoHash) {
+            $fieldRaw = 'id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed';
+            $torrent = Torrent::query()->where('info_hash', $infoHash)->selectRaw($fieldRaw)->first();
+            do_log("cache miss, from database: " . last_query() . ", and get: " . $torrent->id);
+            return $torrent;
+        });
     }
 
 }
