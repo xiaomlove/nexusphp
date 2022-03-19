@@ -2812,6 +2812,9 @@ function base64 ($string, $encode=true) {
 function loggedinorreturn($mainpage = false) {
 	global $CURUSER,$BASEURL;
 	if (!$CURUSER) {
+	    if (CURRENT_SCRIPT == 'ajax') {
+	        exit(fail('Not login!', $_POST));
+        }
 		if ($mainpage)
 		header("Location: " . get_protocol_prefix() . "$BASEURL/login.php");
 		else {

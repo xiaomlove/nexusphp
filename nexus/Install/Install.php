@@ -425,6 +425,9 @@ class Install
                 $this->doLog("[CREATE ENV] key: $key, new value: $value from example.");
                 $newData[$key] = $value;
             }
+            if ($key == 'CACHE_DRIVER') {
+                $newData[$key] = 'redis';
+            }
             if ($scene == 'install' || !file_exists($envFile)) {
                 if ($key == 'APP_ENV') {
                     $newData[$key] = 'production';

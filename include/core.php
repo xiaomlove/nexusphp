@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/constants.php';
-require $rootpath . 'vendor/autoload.php';
+require_once $rootpath . 'vendor/autoload.php';
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";

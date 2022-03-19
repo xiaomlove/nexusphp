@@ -17,6 +17,7 @@ class Platform
      */
     public function handle(Request $request, Closure $next)
     {
+        do_log(nexus_json_encode($_SERVER));
         if (empty(CURRENT_PLATFORM)) {
             throw new \InvalidArgumentException("Require platform header.");
         }

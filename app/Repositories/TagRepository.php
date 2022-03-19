@@ -129,7 +129,7 @@ class TagRepository extends BaseRepository
         return count($values);
     }
 
-    public static function getOrderByFieldIdString()
+    public static function getOrderByFieldIdString(): string
     {
         if (is_null(self::$orderByFieldIdString)) {
             $results = self::createBasicQuery()->get(['id']);
