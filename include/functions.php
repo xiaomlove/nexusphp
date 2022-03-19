@@ -2241,7 +2241,7 @@ function get_cat_folder($cat = 101)
 //		$caticonrow = get_category_icon_row($CURUSER['caticon']);
         /**
          * @since v1.6
-         * use setting, not user's caticon, that filed make no sense!
+         * use setting, not user's caticon, that field make no sense!
          */
 		$caticonrow = get_category_icon_row($catrow['icon_id'] ?: 1);
 		$path = sprintf('category/%s/%s', trim($catmode, '/'), trim($caticonrow['folder'], '/'));
@@ -3199,7 +3199,7 @@ foreach ($rows as $row)
 	if (isset($row["category"])) {
 		print(return_category_image($row["category"], "?"));
 		if ($has_secondicon){
-			print(get_second_icon($row, "pic/".$catimgurl."additional/"));
+			print(get_second_icon($row));
 		}
 	}
 	else
@@ -3910,7 +3910,7 @@ function get_category_row($catid = NULL)
 	}
 }
 
-function get_second_icon($row, $catimgurl) //for CHDBits
+function get_second_icon($row) //for CHDBits
 {
 	global $CURUSER, $Cache;
 	$source=$row['source'];
@@ -3920,18 +3920,19 @@ function get_second_icon($row, $catimgurl) //for CHDBits
 	$processing=$row['processing'];
 	$team=$row['team'];
 	$audiocodec=$row['audiocodec'];
-	if (!$sirow = $Cache->get_value('secondicon_'.$source.'_'.$medium.'_'.$codec.'_'.$standard.'_'.$processing.'_'.$team.'_'.$audiocodec.'_content')){
+	$cacheKey = 'secondicon_'.$source.'_'.$medium.'_'.$codec.'_'.$standard.'_'.$processing.'_'.$team.'_'.$audiocodec.'_content';
+	if (!$sirow = $Cache->get_value($cacheKey)){
 		$res = sql_query("SELECT * FROM secondicons WHERE (source = ".sqlesc($source)." OR source=0) AND (medium = ".sqlesc($medium)." OR medium=0) AND (codec = ".sqlesc($codec)." OR codec = 0) AND (standard = ".sqlesc($standard)." OR standard = 0) AND (processing = ".sqlesc($processing)." OR processing = 0) AND (team = ".sqlesc($team)." OR team = 0) AND (audiocodec = ".sqlesc($audiocodec)." OR audiocodec = 0) LIMIT 1");
 		$sirow = mysql_fetch_array($res);
 		if (!$sirow)
 			$sirow = 'not allowed';
-		$Cache->cache_value('secondicon_'.$source.'_'.$medium.'_'.$codec.'_'.$standard.'_'.$processing.'_'.$team.'_'.$audiocodec.'_content', $sirow, 116400);
+		$Cache->cache_value($cacheKey, $sirow, 600);
 	}
 	$catimgurl = get_cat_folder($row['category']);
 	if ($sirow == 'not allowed')
-		return "<img src=\"pic/cattrans.gif\" style=\"background-image: url(pic/". $catimgurl. "additional/notallowed.png);\" alt=\"" . $sirow["name"] . "\" alt=\"Not Allowed\" />";
+		return "<img src=\"pic/cattrans.gif\" style=\"background-image: url(pic/". $catimgurl. "/additional/notallowed.png);\" title=\"Not Allowed\" alt=\"Not Allowed\" />";
 	else {
-		return "<img".($sirow['class_name'] ? " class=\"".$sirow['class_name']."\"" : "")." src=\"pic/cattrans.gif\" style=\"background-image: url(pic/". $catimgurl. "additional/". $sirow['image'].");\" alt=\"" . $sirow["name"] . "\" title=\"".$sirow['name']."\" />";
+		return "<img".($sirow['class_name'] ? " class=\"".$sirow['class_name']."\"" : "")." src=\"pic/cattrans.gif\" style=\"background-image: url(pic/". $catimgurl. "/additional/". $sirow['image'].");\" alt=\"" . $sirow["name"] . "\" title=\"".$sirow['name']."\" />";
 	}
 }
 
