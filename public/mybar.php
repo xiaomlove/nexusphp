@@ -7,7 +7,7 @@ if (!$userid)
 	die;
 if (!preg_match("/.*userid=([0-9]+)\.png$/i", $_SERVER['REQUEST_URI']))
 	die;
-if (!$my_img = $Cache->get_value('userbar_'.$_SERVER['REQUEST_URI'])){
+if (!$my_img_string = $Cache->get_value('userbar_'.$_SERVER['REQUEST_URI'])){
 $res = sql_query("SELECT username, uploaded, downloaded, class, privacy FROM users WHERE id=".sqlesc($userid)." LIMIT 1");
 $row = mysql_fetch_array($res);
 if (!$row)
@@ -24,7 +24,7 @@ else{
 $my_img=imagecreatefrompng(getFullDirectory("pic/userbar/".$bgpic.".png"));
 imagealphablending($my_img, false);
 
-if (!$_GET['noname'])
+if (empty($_GET['noname']))
 {
 	if (isset($_GET['namered']) && $_GET['namered']>=0 && $_GET['namered']<=255)
 		$namered = intval($_GET['namered'] ?? 0);
@@ -48,7 +48,7 @@ if (!$_GET['noname'])
 	imagestring($my_img, $namesize, $namex, $namey, $username, $name_colour);
 }
 
-if (!$_GET['noup'])
+if (empty($_GET['noup']))
 {
 	if (isset($_GET['upred']) && $_GET['upred']>=0 && $_GET['upred']<=255)
 		$upred = intval($_GET['upred'] ?? 0);
@@ -72,7 +72,7 @@ if (!$_GET['noup'])
 	imagestring($my_img, $upsize, $upx, $upy, $uploaded, $up_colour);
 }
 
-if (!$_GET['nodown'])
+if (empty($_GET['nodown']))
 {
 	if (isset($_GET['downred']) && $_GET['downred']>=0 && $_GET['downred']<=255)
 		$downred = intval($_GET['downred'] ?? 0);
@@ -96,10 +96,14 @@ if (!$_GET['nodown'])
 	imagestring($my_img, $downsize, $downx, $downy, $downloaded, $down_colour);
 }
 imagesavealpha($my_img, true);
-$Cache->cache_value('userbar_'.$_SERVER['REQUEST_URI'], $my_img, 300);
+ob_start();
+imagepng($my_img);
+$imgContent = ob_get_contents();
+ob_end_clean();
+$my_img_string = gzdeflate($imgContent);
+$Cache->cache_value('userbar_'.$_SERVER['REQUEST_URI'], $my_img_string, 300);
 }
 header("Content-type: image/png");
-imagepng($my_img);
-imagedestroy($my_img);
+echo gzinflate($my_img_string);
 ?>
 
