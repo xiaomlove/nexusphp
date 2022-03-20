@@ -40,7 +40,7 @@ class BackupWeb extends Command
     {
         $rep = new ToolRepository();
         $result = $rep->backupWeb();
-        $log = sprintf('[%s], %s, result: %s', REQUEST_ID, __METHOD__, var_export($result, true));
+        $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);
     }

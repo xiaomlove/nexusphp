@@ -2274,7 +2274,7 @@ function get_style_highlight()
 function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 {
 	global $lang_functions;
-	global $CURUSER, $CURLANGDIR, $USERUPDATESET, $iplog1, $oldip, $SITE_ONLINE, $FUNDS, $SITENAME, $SLOGAN, $logo_main, $BASEURL, $offlinemsg, $showversion,$enabledonation, $staffmem_class, $titlekeywords_tweak, $metakeywords_tweak, $metadescription_tweak, $cssdate_tweak, $deletenotransfertwo_account, $neverdelete_account, $iniupload_main;
+	global $CURUSER, $CURLANGDIR, $USERUPDATESET, $iplog1, $oldip, $SITE_ONLINE, $FUNDS, $SITENAME, $SLOGAN, $logo_main, $BASEURL, $offlinemsg,$enabledonation, $staffmem_class, $titlekeywords_tweak, $metakeywords_tweak, $metadescription_tweak, $cssdate_tweak, $deletenotransfertwo_account, $neverdelete_account, $iniupload_main;
 	global $tstart;
 	global $Cache;
 	global $Advertisement;
@@ -2302,7 +2302,7 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	$title = $SITENAME." :: " . htmlspecialchars($title);
 	if ($titlekeywords_tweak)
 		$title .= " ".htmlspecialchars($titlekeywords_tweak);
-	$title .= $showversion;
+	$title .= " - Powered by ".PROJECTNAME;
 	if ($SITE_ONLINE == "no") {
 		if (get_user_class() < UC_ADMINISTRATOR) {
 			die($lang_functions['std_site_down_for_maintenance']);
@@ -2660,7 +2660,7 @@ function stdfoot() {
 	}
 	// Variables for End Time
 	$tend = microtime(true);
-	$totaltime = ($tend - NEXUS_START);
+	$totaltime = ($tend - nexus()->getStartTimestamp());
 	$year = substr($datefounded, 0, 4);
 	$yearfounded = ($year ? $year : 2007);
 	print(" (c) "." <a href=\"" . get_protocol_prefix() . $BASEURL."\" target=\"_self\">".$SITENAME."</a> ".($icplicense_main ? " ".$icplicense_main." " : "").(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y")." ".VERSION."<br /><br />");
@@ -2812,7 +2812,7 @@ function base64 ($string, $encode=true) {
 function loggedinorreturn($mainpage = false) {
 	global $CURUSER,$BASEURL;
 	if (!$CURUSER) {
-	    if (CURRENT_SCRIPT == 'ajax') {
+	    if (nexus()->getScript() == 'ajax') {
 	        exit(fail('Not login!', $_POST));
         }
 		if ($mainpage)
@@ -4840,7 +4840,7 @@ function checkGuestVisit()
     if (empty($guestVisitType) || $guestVisitType == 'normal') {
         return;
     }
-    if (in_array(CURRENT_SCRIPT, ['login', 'takelogin', 'image']) && canDoLogin()) {
+    if (in_array(nexus()->getScript(), ['login', 'takelogin', 'image']) && canDoLogin()) {
         return;
     }
 
@@ -5225,7 +5225,7 @@ function list_require_search_box_id()
         'userdetails' => [$setting['browsecat'], $setting['specialcat']],
         'offers' => [$setting['browsecat'], $setting['specialcat']],
     ];
-    return $maps[CURRENT_SCRIPT] ?? [];
+    return $maps[nexus()->getScript()] ?? [];
 }
 
 function can_access_torrent($torrent)

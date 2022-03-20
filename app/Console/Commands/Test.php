@@ -65,8 +65,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $redis = Redis::connection()->client();
-        $r = $redis->get('5da94a358e67cb5181166ae2611c2fd9');
+        $peerId = '-UT355W-%af%b0ky%86N%a6%17i%f8%c1%0a';
+        $peerId = '-UT355W-%af%b0ky%86N%a6%17i%f8%c1%0a';
+        $peerId = '-UT355W-%AF%B0ky%86N%A6%17i%F8%C1';
+        $peerId = '-UT355W-%AF%B0ky%86N%A6%17i%F8%C1%0A';
+        $r = strlen(urldecode($peerId));
         dd($r);
     }
 

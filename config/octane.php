@@ -70,7 +70,7 @@ return [
         RequestReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
             ...Octane::prepareApplicationForNextRequest(),
-            //
+            \App\Listeners\ResetNexus::class,
         ],
 
         RequestHandled::class => [
@@ -189,6 +189,7 @@ return [
         'routes',
         'composer.lock',
         '.env',
+        'include/**/*.php',
     ],
 
     /*

@@ -20,7 +20,7 @@ class Permission
     {
         /** @var User $user */
         $user = $request->user();
-        if (!$user || (IS_PLATFORM_ADMIN && !$user->canAccessAdmin())) {
+        if (!$user || (nexus()->isPlatformAdmin() && !$user->canAccessAdmin())) {
             do_log("denied!");
             throw new UnauthorizedException('Unauthorized!');
         }

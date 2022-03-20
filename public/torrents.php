@@ -14,7 +14,7 @@ $tagKeyById = $tagRep->createBasicQuery()->get()->keyBy('id');
 $renderKeyArr = $tagKeyById->keys()->toArray();
 
 //check searchbox
-switch (CURRENT_SCRIPT) {
+switch (nexus()->getScript()) {
     case 'torrents':
         $sectiontype = $browsecatmode;
         break;

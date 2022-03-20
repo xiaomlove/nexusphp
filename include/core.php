@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/constants.php';
 require_once $rootpath . 'vendor/autoload.php';
+\Nexus\Nexus::boot();
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
@@ -17,7 +18,7 @@ ini_set('date.timezone', nexus_config('nexus.timezone'));
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 
-if (!in_array(CURRENT_SCRIPT, ['announce', 'scrape'])) {
+if (!in_array(nexus()->getScript(), ['announce', 'scrape'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();
 }

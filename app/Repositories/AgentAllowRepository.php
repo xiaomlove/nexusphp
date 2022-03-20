@@ -82,8 +82,8 @@ class AgentAllowRepository extends BaseRepository
             $agentAllowId = $agentAllow->id;
             $logPrefix = "[ID: $agentAllowId]";
             $isPeerIdAllowed = $isAgentAllowed = $isPeerIdTooLow = $isAgentTooLow = false;
-            //check peer_id
-            if ($agentAllow->peer_id_pattern == '') {
+            //check peer_id, when handle scrape request, no peer_id, so let it pass
+            if ($agentAllow->peer_id_pattern == '' || $peerId === null) {
                 $isPeerIdAllowed = true;
             } else {
                 $pattern = $agentAllow->peer_id_pattern;

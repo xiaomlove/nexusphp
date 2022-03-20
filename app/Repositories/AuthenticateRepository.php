@@ -17,7 +17,7 @@ class AuthenticateRepository extends BaseRepository
         if (!$user || md5($user->secret . $password . $user->secret) != $user->passhash) {
             throw new \InvalidArgumentException('Username or password invalid.');
         }
-        if (IS_PLATFORM_ADMIN && !$user->canAccessAdmin()) {
+        if (nexus()->isPlatformAdmin() && !$user->canAccessAdmin()) {
             throw new UnauthorizedException('Unauthorized!');
         }
         $user->checkIsNormal();

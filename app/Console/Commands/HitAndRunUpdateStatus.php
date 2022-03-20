@@ -44,7 +44,7 @@ class HitAndRunUpdateStatus extends Command
         $result = $rep->cronjobUpdateStatus($uid, $torrentId);
         $log = sprintf(
             '[%s], %s, uid: %s, torrentId: %s, result: %s',
-            REQUEST_ID, __METHOD__, $uid, $torrentId, var_export($result, true)
+            nexus()->getRequestId(), __METHOD__, $uid, $torrentId, var_export($result, true)
         );
         $this->info($log);
         do_log($log);

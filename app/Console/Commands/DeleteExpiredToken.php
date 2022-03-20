@@ -55,7 +55,7 @@ class DeleteExpiredToken extends Command
 
         $query->where('last_used_at', '<', Carbon::now()->subDays($days));
         $result = $query->delete();
-        $log = sprintf('[%s], %s, result: %s, query: %s', REQUEST_ID, __METHOD__, var_export($result, true), last_query());
+        $log = sprintf('[%s], %s, result: %s, query: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true), last_query());
         $this->info($log);
         do_log($log);
         return 0;

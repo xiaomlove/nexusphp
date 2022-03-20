@@ -41,7 +41,7 @@ class AttendanceMigrate extends Command
     {
         $rep = new AttendanceRepository();
         $result = $rep->migrateAttendance();
-        $log = sprintf('[%s], %s, result: %s, query: %s', REQUEST_ID, __METHOD__, var_export($result, true), last_query());
+        $log = sprintf('[%s], %s, result: %s, query: %s', nexus() ? nexus()->getRequestId() : 'NO_REQUEST_ID', __METHOD__, var_export($result, true), last_query());
         $this->info($log);
         do_log($log);
         return 0;

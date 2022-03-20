@@ -344,6 +344,7 @@ function request_local_api($api)
     $options = [
         CURLOPT_URL => sprintf('%s?%s', trim($api, '/'), $_SERVER['QUERY_STRING']),
         CURLOPT_USERAGENT => $_SERVER["HTTP_USER_AGENT"],
+        CURLOPT_HTTPHEADER => ['REQUEST_ID: ' . nexus()->getRequestId(), 'Platform: tracker'],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_TIMEOUT => 60,

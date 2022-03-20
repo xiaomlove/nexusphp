@@ -51,11 +51,10 @@ class TrackerRepository extends BaseRepository
 
     public function announce(Request $request): \Illuminate\Http\Response
     {
-        do_log(nexus_json_encode($_SERVER));
+        do_log("queryString: " . $request->getQueryString());
         try {
             $withPeers = false;
             $queries = $this->checkAnnounceFields($request);
-            do_log("[QUERIES] " . json_encode(Arr::only($queries, ['ip', 'user_agent', 'uploaded', 'downloaded', 'left', 'event'])), 'debug');
             $user = $this->checkUser($request);
             $clientAllow = $this->checkClient($request);
             $torrent = $this->checkTorrent($queries, $user);
@@ -108,7 +107,7 @@ class TrackerRepository extends BaseRepository
         } catch (\Exception $exception) {
             //other system exception
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
-            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . REQUEST_ID);
+            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
             if (isset($user) && count($this->userUpdates)) {
                 $user->update($this->userUpdates);
@@ -218,8 +217,8 @@ class TrackerRepository extends BaseRepository
         }
 
         foreach (['info_hash', 'peer_id'] as $item) {
-            if (\strlen((string) $queries[$item]) !== 20) {
-                throw new TrackerException("Invalid $item ! $item is not 20 bytes long");
+            if (($length = \strlen((string) $queries[$item])) !== 20) {
+                throw new TrackerException("Invalid $item ! $item is not 20 bytes long($length)");
             }
         }
 
@@ -502,7 +501,7 @@ class TrackerRepository extends BaseRepository
         unset($queries['key']);
         $lockKey = md5(http_build_query($queries));
         $redis = Redis::connection()->client();
-        if (!$redis->set($lockKey, NEXUS_START, ['nx', 'ex' => self::MIN_ANNOUNCE_WAIT_SECOND])) {
+        if (!$redis->set($lockKey, nexus()->getStartTimestamp(), ['nx', 'ex' => 5])) {
             do_log('[RE_ANNOUNCE]');
             return true;
         }
@@ -654,6 +653,7 @@ class TrackerRepository extends BaseRepository
 
     protected function sendFinalAnnounceResponse($repDict): \Illuminate\Http\Response
     {
+        do_log("[repDict] " . nexus_json_encode($repDict));
         return \response(Bencode::encode($repDict))
             ->withHeaders(['Content-Type' => 'text/plain; charset=utf-8'])
             ->withHeaders(['Connection' => 'close'])
@@ -776,7 +776,7 @@ class TrackerRepository extends BaseRepository
 
     public function scrape(Request $request): \Illuminate\Http\Response
     {
-        do_log(nexus_json_encode($_SERVER));
+        do_log("queryString: " . $request->getQueryString());
         try {
             $infoHashArr = $this->checkScrapeFields($request);
             $user = $this->checkUser($request);
@@ -784,6 +784,9 @@ class TrackerRepository extends BaseRepository
 
             if ($user->clientselect != $clientAllow->id) {
                 $this->userUpdates['clientselect'] = $clientAllow->id;
+            }
+            if ($user->showclienterror == 'yes') {
+                $this->userUpdates['showclienterror'] = 'no';
             }
             $repDict = $this->generateScrapeResponse($infoHashArr);
         } catch (ClientNotAllowedException $exception) {
@@ -797,8 +800,9 @@ class TrackerRepository extends BaseRepository
         } catch (\Exception $exception) {
             //other system exception
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
-            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . REQUEST_ID);
+            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
+            do_log("userUpdates: " . nexus_json_encode($this->userUpdates));
             if (isset($user) && count($this->userUpdates)) {
                 $user->update($this->userUpdates);
                 do_log(last_query(), 'debug');
@@ -817,7 +821,7 @@ class TrackerRepository extends BaseRepository
         } else {
             foreach ($info_hash_array as $item) {
                 if (strlen($item) != 20) {
-                    throw new TrackerException("Invalid info_hash ! :attribute is not 20 bytes long");
+                    throw new TrackerException("Invalid info_hash ! info_hash is not 20 bytes long");
                 }
             }
         }
@@ -852,7 +856,7 @@ class TrackerRepository extends BaseRepository
         return Cache::remember($cacheKey, 60, function () use ($infoHash) {
             $fieldRaw = 'id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed';
             $torrent = Torrent::query()->where('info_hash', $infoHash)->selectRaw($fieldRaw)->first();
-            do_log("cache miss, from database: " . last_query() . ", and get: " . $torrent->id);
+            do_log("[getTorrentByInfoHash] cache miss, from database: " . last_query() . ", and get: " . $torrent->id);
             return $torrent;
         });
     }
