@@ -73,4 +73,5 @@ $lang_staffpanel = [
     'Manage custom fields' => '管理自定义的字段',
     'Search user' => '搜索用户',
     'Confirm user' => '确认用户',
+    'Confirm user to complete registration' => '确认用户以完成注册',
 ];
