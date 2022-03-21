@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use App\Repositories\TagRepository;
+use JeroenG\Explorer\Application\Explored;
+use Laravel\Scout\Searchable;
 
-class Torrent extends NexusModel
+class Torrent extends NexusModel implements Explored
 {
+    use Searchable;
+
     protected $fillable = [
         'name', 'filename', 'save_as', 'descr', 'small_descr', 'ori_descr',
         'category', 'source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec',
@@ -70,6 +74,32 @@ class Torrent extends NexusModel
         self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'up_multiplier' => 2, 'down_multiplier' => 0.5],
         self::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'up_multiplier' => 1, 'down_multiplier' => 0.3],
     ];
+
+    public function mappableAs(): array
+    {
+        return [
+            'id' => 'long',
+            'name' => 'text',
+            'descr' => 'text',
+            'source' => 'long',
+            'leechers' => 'long',
+            'seeders' => 'long',
+            'added' => 'date',
+        ];
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'descr' => $this->descr,
+            'source' => $this->source,
+            'leechers' => $this->leechers,
+            'seeders' => $this->seeders,
+            'added' => $this->added,
+        ];
+    }
 
     public function getSpStateRealTextAttribute()
     {

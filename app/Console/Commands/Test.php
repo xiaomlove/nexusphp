@@ -13,6 +13,7 @@ use App\Models\Peer;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
+use App\Models\Torrent;
 use App\Models\User;
 use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -65,12 +67,15 @@ class Test extends Command
      */
     public function handle()
     {
-        $peerId = '-UT355W-%af%b0ky%86N%a6%17i%f8%c1%0a';
-        $peerId = '-UT355W-%af%b0ky%86N%a6%17i%f8%c1%0a';
-        $peerId = '-UT355W-%AF%B0ky%86N%A6%17i%F8%C1';
-        $peerId = '-UT355W-%AF%B0ky%86N%A6%17i%F8%C1%0A';
-        $r = strlen(urldecode($peerId));
-        dd($r);
+        $class = Torrent::class;
+        try {
+            $this->call("scout:import App\\Models\Torrent");
+        } catch (\Throwable $e) {
+            $this->info($e->getMessage());
+            $lastQueryAsJson = ElasticEngine::debug()->json();
+            dd($lastQueryAsJson);
+        }
+
     }
 
 
