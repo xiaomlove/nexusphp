@@ -71,4 +71,6 @@ $lang_staffpanel = [
     'Clear cache of memcached' => '清除緩存的數據',
     'Custom Field Manage' => '自定義字段管理',
     'Manage custom fields' => '管理自定義的字段',
+    'Search user' => '搜索用戶',
+    'Confirm user' => '確認用戶',
 ];

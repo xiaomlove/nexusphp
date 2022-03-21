@@ -30,6 +30,9 @@ class Exam
                 );
             }
         }
+        if ($exam->description) {
+            $row[] = "\n" . $exam->description;
+        }
         return  nl2br(implode("\n", $row));
     }
 }

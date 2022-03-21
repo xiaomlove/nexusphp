@@ -180,8 +180,23 @@ class Update extends Install
             $this->doLog("[INIT_TAG]");
         }
 
-
-
+        /**
+         * @since 1.6.3
+         *
+         * add usersearch.php and unco.php
+         */
+        $menus = [
+            ['name' => 'Search user', 'url' => 'usersearch.php', 'info' => 'Search user'],
+            ['name' => 'Confirm user', 'url' => 'unco.php', 'info' => 'Confirm user to complete registration'],
+        ];
+        $table = 'modpanel';
+        foreach ($menus as $menu) {
+            $count = get_row_count($table, "where url = " . sqlesc($menu['url']));
+            if ($count == 0) {
+                $id = NexusDB::insert($table, $menu);
+                $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
+            }
+        }
 
     }
 
