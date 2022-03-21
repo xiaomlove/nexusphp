@@ -717,6 +717,24 @@ $lang_settings = array
     'text_torrent_hr_note' => '.Set torrent join the H&R inspect',
     'row_cancel_hr' => 'Cancel H&R',
     'text_cancel_hr_note' => "bonus points to cancel one H&R。Default '10000'。",
+    'text_attendance_get_bonus' => 'Attendance get bonus',
+    'text_attendance_initial_reward' => 'Initial reward',
+    'text_attendance_initial_reward_input_label' => 'First time you will get',
+    'text_attendance_input_suffix' => 'bonus',
+    'text_attendance_continuous_increment' => 'Continuous increment',
+    'text_attendance_continuous_increment_input_label' => 'Every continuous attendance increment',
+    'text_attendance_reward_limit' => 'Reward limit',
+    'text_attendance_reward_limit_input_label' => 'Highest reward you will get',
+    'text_attendance_continuous' => 'Continuous',
+    'text_attendance_continuous_days' => 'Continuous days',
+    'text_attendance_continuous_days_additional_reward' => 'Additional bonus',
+    'text_attendance_continuous_days_action' => 'Action',
+    'text_attendance_continuous_unit' => 'days',
+    'text_attendance_continuous_item_action_remove' => 'Remove',
+    'text_attendance_continuous_item_action_add' => 'Add',
+    'text_attendance_continuous_add_rules' => 'Please add rules from lowest to highest',
+
+
 );
 
 ?>

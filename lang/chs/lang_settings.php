@@ -718,6 +718,22 @@ $lang_settings = array
     'text_torrent_hr_note' => '。将种子设置为参与 H&R 考察',
     'row_cancel_hr' => '消除 H&R',
     'text_cancel_hr_note' => "个魔力值，如果他需要消除一个 H&R。默认'10000'。",
+    'text_attendance_get_bonus' => '签到获得魔力值',
+    'text_attendance_initial_reward' => '初始奖励',
+    'text_attendance_initial_reward_input_label' => '第一次签到获得',
+    'text_attendance_input_suffix' => '魔力',
+    'text_attendance_continuous_increment' => '连续奖励',
+    'text_attendance_continuous_increment_input_label' => '每次连续签到增加',
+    'text_attendance_reward_limit' => '奖励上限',
+    'text_attendance_reward_limit_input_label' => '最高奖励',
+    'text_attendance_continuous' => '连续签到',
+    'text_attendance_continuous_days' => '连续天数',
+    'text_attendance_continuous_days_additional_reward' => '额外奖励',
+    'text_attendance_continuous_days_action' => '操作',
+    'text_attendance_continuous_unit' => '天',
+    'text_attendance_continuous_item_action_remove' => '删除',
+    'text_attendance_continuous_item_action_add' => '增加',
+    'text_attendance_continuous_add_rules' => '请请从小到大添加规则',
 );
 
 ?>
