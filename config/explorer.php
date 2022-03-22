@@ -9,9 +9,12 @@ return [
      * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/configuration.html
      */
     'connection' => [
-        'host' => 'localhost',
-        'port' => '9200',
-        'scheme' => 'http',
+        'host' => env('ELASTICSEARCH_HOST','localhost'),
+        'port' => env('ELASTICSEARCH_PORT','9200'),
+        'scheme' => env('ELASTICSEARCH_SCHEME','https'),
+        'user' => env('ELASTICSEARCH_USER','elastic'),
+        'pass' => env('ELASTICSEARCH_PASS',''),
+
     ],
 
     /**
