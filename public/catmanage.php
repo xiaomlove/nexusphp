@@ -492,6 +492,13 @@ print($pagerbottom);
 	}
 	elseif($type=='secondicon')
 	{
+	    $allSource = \App\Models\Source::query()->get()->keyBy('id');
+	    $allMedia = \App\Models\Media::query()->get()->keyBy('id');
+	    $allCodec = \App\Models\Codec::query()->get()->keyBy('id');
+	    $allStandard = \App\Models\Standard::query()->get()->keyBy('id');
+	    $allProcessing = \App\Models\Processing::query()->get()->keyBy('id');
+	    $allTeam = \App\Models\Team::query()->get()->keyBy('id');
+	    $allAudioCodec = \App\Models\AudioCodec::query()->get()->keyBy('id');
 	$perpage = 50;
 	$dbtablename=return_category_db_table_name($type);
 	$num = get_row_count($dbtablename);
@@ -525,13 +532,13 @@ print($pagerbottom);
 <td class="colfollow"><?php echo htmlspecialchars($row['name'])?></td>
 <td class="colfollow"><?php echo htmlspecialchars($row['image'])?></td>
 <td class="colfollow"><?php echo $row['class_name'] ? htmlspecialchars($row['class_name']) : $lang_catmanage['text_none']?></td>
-<td class="colfollow"><?php echo $row['source']?></td>
-<td class="colfollow"><?php echo $row['medium']?></td>
-<td class="colfollow"><?php echo $row['codec']?></td>
-<td class="colfollow"><?php echo $row['standard']?></td>
-<td class="colfollow"><?php echo $row['processing']?></td>
-<td class="colfollow"><?php echo $row['team']?></td>
-<td class="colfollow"><?php echo $row['audiocodec']?></td>
+<td class="colfollow"><?php echo optional($allSource->get($row['source']))->name?></td>
+<td class="colfollow"><?php echo optional($allMedia->get($row['medium']))->name?></td>
+<td class="colfollow"><?php echo optional($allCodec->get($row['codec']))->name?></td>
+<td class="colfollow"><?php echo optional($allStandard->get($row['standard']))->name?></td>
+<td class="colfollow"><?php echo optional($allProcessing->get($row['processing']))->name?></td>
+<td class="colfollow"><?php echo optional($allTeam->get($row['team']))->name?></td>
+<td class="colfollow"><?php echo optional($allAudioCodec->get($row['audiocodec']))->name?></td>
 <td class="colfollow"><a href="javascript:confirm_delete('<?php echo $row['id']?>', '<?php echo $lang_catmanage['js_sure_to_delete_this']?>', 'type=<?php echo $type?>');"><?php echo $lang_catmanage['text_delete']?></a> | <a href="?action=edit&amp;type=<?php echo $type?>&amp;id=<?php echo $row['id']?>"><?php echo $lang_catmanage['text_edit']?></a></td>
 </tr>
 <?php
