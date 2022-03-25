@@ -6,10 +6,8 @@ use App\Repositories\TagRepository;
 use JeroenG\Explorer\Application\Explored;
 use Laravel\Scout\Searchable;
 
-class Torrent extends NexusModel implements Explored
+class Torrent extends NexusModel
 {
-    use Searchable;
-
     protected $fillable = [
         'name', 'filename', 'save_as', 'descr', 'small_descr', 'ori_descr',
         'category', 'source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec',
@@ -79,12 +77,22 @@ class Torrent extends NexusModel implements Explored
     {
         return [
             'id' => 'long',
-            'name' => 'text',
-            'descr' => 'text',
+            'name' => [
+                'type' => 'text',
+                'analyzer' => 'ik_max_word',
+            ],
+            'descr' => [
+                'type' => 'text',
+                'analyzer' => 'ik_max_word',
+            ],
+            'owner' => 'long',
             'source' => 'long',
             'leechers' => 'long',
             'seeders' => 'long',
             'added' => 'date',
+            'owner_info' => [
+
+            ]
         ];
     }
 
@@ -94,6 +102,7 @@ class Torrent extends NexusModel implements Explored
             'id' => $this->id,
             'name' => $this->name,
             'descr' => $this->descr,
+            'owner' => $this->owner,
             'source' => $this->source,
             'leechers' => $this->leechers,
             'seeders' => $this->seeders,
@@ -196,6 +205,11 @@ class Torrent extends NexusModel implements Explored
         return true;
     }
 
+    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Bookmark::class, 'torrentid');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'owner')->withDefault(User::getDefaultUserAttributes());
@@ -294,6 +308,11 @@ class Torrent extends NexusModel implements Explored
     public function scopeVisible($query, $visible = self::VISIBLE_YES)
     {
         $query->where('visible', $visible);
+    }
+
+    public function torrent_tags(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TorrentTag::class, 'torrent_id');
     }
 
     public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

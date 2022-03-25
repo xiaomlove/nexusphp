@@ -79,6 +79,32 @@ class User extends Authenticatable
         'invites' => '邀请',
     ];
 
+    public function mappableAs(): array
+    {
+        return [
+            'id' => 'long',
+            'username' => [
+                'type' => 'text',
+                'analyzer' => 'ik_max_word',
+            ],
+            'email' => [
+                'type' => 'text',
+                'analyzer' => 'ik_max_word',
+            ],
+            'added' => 'date',
+        ];
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'added' => $this->added,
+        ];
+    }
+
     public function getClassTextAttribute(): string
     {
         return self::$classes[$this->class]['text'] ?? '';

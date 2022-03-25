@@ -22,7 +22,8 @@ return [
      * of the mapping possibilities can be found in the documentation of Explorer's repository.
      */
     'indexes' => [
-         \App\Models\Torrent::class
+         \App\Models\Torrent::class,
+        \App\Models\User::class,
     ],
 
     /**

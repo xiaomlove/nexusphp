@@ -156,7 +156,7 @@ function nexus_dd($vars)
  * @param $log
  * @param string $level
  */
-function do_log($log, $level = 'info')
+function do_log($log, $level = 'info', $echo = false)
 {
     static $env, $setLogLevel;
     if (is_null($setLogLevel)) {
@@ -211,6 +211,9 @@ function do_log($log, $level = 'info')
     );
     fwrite($fd, $content);
     fclose($fd);
+    if (is_bool($echo) && $echo) {
+        echo $content . PHP_EOL;
+    }
     if (nexus()) {
         nexus()->incrementLogSequence();
     }

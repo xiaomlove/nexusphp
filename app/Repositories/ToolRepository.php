@@ -148,4 +148,48 @@ class ToolRepository extends BaseRepository
     {
         return new Encrypter($key, 'AES-256-CBC');
     }
+
+    /**
+     * @param $to
+     * @param $subject
+     * @param $body
+     * @return bool
+     */
+    public function sendMail($to, $subject, $body): bool
+    {
+        do_log("to: $to, subject: $subject, body: $body");
+        $smtp = Setting::get('smtp');
+        // Create the Transport
+        $encryption = null;
+        if (isset($smtp['encryption']) && in_array($smtp['encryption'], ['ssl', 'tls'])) {
+            $encryption = $smtp['encryption'];
+        }
+        $transport = (new \Swift_SmtpTransport($smtp['smtpaddress'], $smtp['smtpport'], $encryption))
+            ->setUsername($smtp['accountname'])
+            ->setPassword($smtp['accountpassword'])
+        ;
+
+        // Create the Mailer using your created Transport
+        $mailer = new \Swift_Mailer($transport);
+
+        // Create a message
+        $message = (new \Swift_Message($subject))
+            ->setFrom($smtp['accountname'], Setting::get('basic.SITENAME'))
+            ->setTo([$to])
+            ->setBody($body, 'text/html')
+        ;
+
+        // Send the message
+        try {
+            $result = $mailer->send($message);
+            if ($result == 0) {
+                do_log("send mail fail, unknown error", 'error');
+                return false;
+            }
+            return true;
+        } catch (\Exception $e) {
+            do_log("send email fail: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error');
+            return false;
+        }
+    }
 }
