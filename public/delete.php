@@ -53,7 +53,11 @@ else
 		bark($lang_delete['std_enter_reason']);
   $reasonstr = trim($reason[3]);
 }
-
+$searchRep = new \App\Repositories\SearchRepository();
+$deleteEsResult = $searchRep->deleteTorrent($id);
+if ($deleteEsResult === false) {
+    bark('Delete es fail.');
+}
 deletetorrent($id);
 
 if ($row['anonymous'] == 'yes' && $CURUSER["id"] == $row["owner"]) {

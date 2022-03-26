@@ -372,7 +372,8 @@ KPS("+",$uploadtorrent_bonus,$CURUSER["id"]);
 
 write_log("Torrent $id ($torrent) was uploaded by $anon");
 
-\App\Events\TorrentUpdated::dispatch($id);
+$searchRep = new \App\Repositories\SearchRepository();
+$searchRep->addTorrent($id);
 
 //===notify people who voted on offer thanks CoLdFuSiOn :)
 if ($is_offer)

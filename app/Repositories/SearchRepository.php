@@ -15,6 +15,8 @@ class SearchRepository extends BaseRepository
 {
     private Client $es;
 
+    private bool $enabled = false;
+
     const INDEX_NAME = 'nexus_torrents';
 
     const DOC_TYPE_TORRENT = 'torrent';
@@ -109,7 +111,13 @@ class SearchRepository extends BaseRepository
 
     public function __construct()
     {
-        $this->es = $this->getEs();
+        $elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
+        if ($elasticsearchEnabled) {
+            $this->enabled = true;
+            $this->es = $this->getEs();
+        } else {
+            $this->enabled = false;
+        }
     }
 
     private function getEs(): Client
@@ -179,6 +187,9 @@ class SearchRepository extends BaseRepository
 
     public function import($torrentId = null)
     {
+        if (!$this->enabled) {
+            return true;
+        }
         $page = 1;
         $size = 1000;
         $fields = $this->getTorrentBaseFields();
@@ -642,7 +653,7 @@ class SearchRepository extends BaseRepository
             'total' => 0,
             'data' => [],
         ];
-        if (isset($response['errors']) && $response['errors']) {
+        if ($this->isEsResponseError($response)) {
             do_log("error response: " . nexus_json_encode($response), 'error');
             return $result;
         }
@@ -681,7 +692,10 @@ class SearchRepository extends BaseRepository
 
     public function updateTorrent(int $id): bool
     {
-        $log = "update torrent: $id";
+        if (!$this->enabled) {
+            return true;
+        }
+        $log = "[UPDATE_TORRENT]: $id";
         $baseFields = $this->getTorrentBaseFields();
         $torrent = Torrent::query()->findOrFail($id, array_merge(['id'], $baseFields));
         $data = $this->buildTorrentBody($torrent);
@@ -689,17 +703,20 @@ class SearchRepository extends BaseRepository
         $params['body']['doc'] = $data['body'];
         $result = $this->es->update($params);
         if ($this->isEsResponseError($result)) {
-            do_log("$log, update torrent fail: " . nexus_json_encode($result), 'error');
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
         }
-        do_log("$log, update torrent success: " . nexus_json_encode($result));
+        do_log("$log, success: " . nexus_json_encode($result));
 
         return $this->syncTorrentTags($torrent);
     }
 
     public function addTorrent(int $id): bool
     {
-        $log = "add torrent: $id";
+        if (!$this->enabled) {
+            return true;
+        }
+        $log = "[ADD_TORRENT]: $id";
         $baseFields = $this->getTorrentBaseFields();
         $torrent = Torrent::query()->findOrFail($id, array_merge(['id'], $baseFields));
         $data = $this->buildTorrentBody($torrent, true);
@@ -708,16 +725,39 @@ class SearchRepository extends BaseRepository
         $params['body'][] = $data['body'];
         $result = $this->es->bulk($params);
         if ($this->isEsResponseError($result)) {
-            do_log("$log, add torrent fail: " . nexus_json_encode($result), 'error');
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
         }
-        do_log("$log, add torrent success: " . nexus_json_encode($result));
+        do_log("$log, success: " . nexus_json_encode($result));
 
         return $this->syncTorrentTags($torrent);
     }
 
-    public function syncTorrentTags($torrent): bool
+    public function deleteTorrent(int $id): bool
     {
+        if (!$this->enabled) {
+            return true;
+        }
+        $log = "[DELETE_TORRENT]: $id";
+        $params = [
+            'index' => self::INDEX_NAME,
+            'id' => $this->getTorrentId($id),
+        ];
+        $result = $this->es->delete($params);
+        if ($this->isEsResponseError($result)) {
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
+            return false;
+        }
+        do_log("$log, success: " . nexus_json_encode($result));
+
+        return $this->syncTorrentTags($id, true);
+    }
+
+    public function syncTorrentTags($torrent, $onlyDelete = false): bool
+    {
+        if (!$this->enabled) {
+            return true;
+        }
         if (!$torrent instanceof Torrent) {
             $torrent = Torrent::query()->findOrFail((int)$torrent, ['id']);
         }
@@ -742,6 +782,11 @@ class SearchRepository extends BaseRepository
             return false;
         }
         do_log("$log, delete torrent tag success: " . nexus_json_encode($result));
+        if ($onlyDelete) {
+            do_log("$log, only delete, return true");
+            return true;
+        }
+
         //then insert new
         $bulk = ['body' => []];
         foreach ($torrent->torrent_tags as $torrentTag) {
@@ -764,57 +809,65 @@ class SearchRepository extends BaseRepository
 
     public function updateUser($user): bool
     {
+        if (!$this->enabled) {
+            return true;
+        }
         if (!$user instanceof User) {
             $user = User::query()->findOrFail((int)$user, ['id', 'username']);
         }
-        $log = "update user: " . $user->id;
+        $log = "[UPDATE_USER]: " . $user->id;
         $data = $this->buildUserBody($user);
         $params = $data['index'];
         $params['body']['doc'] = $data['body'];
         $result = $this->es->update($params);
         if ($this->isEsResponseError($result)) {
-            do_log("$log, update user fail: " . nexus_json_encode($result), 'error');
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
         }
-        do_log("$log, update user success: " . nexus_json_encode($result));
+        do_log("$log, success: " . nexus_json_encode($result));
         return true;
     }
 
     public function addBookmark($bookmark): bool
     {
-        if (!$bookmark instanceof Bookmark) {
-            $bookmark = Bookmark::query()->with('torrent')->findOrFail((int)$bookmark);
+        if (!$this->enabled) {
+            return true;
         }
-        $log = "add bookmark: " . $bookmark->toJson();
+        if (!$bookmark instanceof Bookmark) {
+            $bookmark = Bookmark::query()->with([
+                'torrent' => function ($query) {$query->select(['id', 'owner']);}
+            ])->findOrFail((int)$bookmark);
+        }
+        $log = "[ADD_BOOKMARK]: " . $bookmark->toJson();
         $bulk = ['body' => []];
-        $body = $this->buildBookmarkBody($bookmark->torrent, $bookmark);
+        $body = $this->buildBookmarkBody($bookmark->torrent, $bookmark, true);
         $bulk['body'][] = ['index' => $body['index']];
         $bulk['body'][] = $body['body'];
         $result = $this->es->bulk($bulk);
         if ($this->isEsResponseError($result)) {
-            do_log("$log, add bookmark fail: " . nexus_json_encode($result), 'error');
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
         }
-        do_log("$log, add bookmark success: " . nexus_json_encode($result));
+        do_log("$log, success: " . nexus_json_encode($result));
         return true;
     }
 
-    public function deleteBookmark($bookmark): bool
+    public function deleteBookmark(int $id): bool
     {
-        if (!$bookmark instanceof Bookmark) {
-            $bookmark = Bookmark::query()->with('torrent')->findOrFail((int)$bookmark);
+        if (!$this->enabled) {
+            return true;
         }
-        $log = "add bookmark: " . $bookmark->toJson();
+        $log = "[DELETE_BOOKMARK]: $id";
         $params = [
             'index' => self::INDEX_NAME,
-            'id' => $this->getBookmarkId($bookmark->id),
+            'id' => $this->getBookmarkId($id),
         ];
         $result = $this->es->delete($params);
         if ($this->isEsResponseError($result)) {
-            do_log("$log, delete bookmark fail: " . nexus_json_encode($result), 'error');
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
         }
-        do_log("$log, delete bookmark success: " . nexus_json_encode($result));
+        do_log("$log, success: " . nexus_json_encode($result));
         return true;
     }
 

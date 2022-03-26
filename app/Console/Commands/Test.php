@@ -71,9 +71,9 @@ class Test extends Command
     public function handle()
     {
         $searchRep = new SearchRepository();
-//        $r = $searchRep->deleteIndex();
-//        $r = $searchRep->createIndex();
-//        $r = $searchRep->import();
+        $r = $searchRep->deleteIndex();
+        $r = $searchRep->createIndex();
+        $r = $searchRep->import();
 
         $arr = [
             'cat' => 'category',
@@ -112,9 +112,10 @@ class Test extends Command
 
 //        $r = $searchRep->updateTorrent(1);
 //        $r = $searchRep->updateUser(1);
-        $r = $searchRep->addTorrent(1);
+//        $r = $searchRep->addTorrent(1);
+//        $r = $searchRep->deleteBookmark(1);
+//        $r = $searchRep->addBookmark(1);
 
-//        TorrentUpdated::dispatch(1);
         dd($r);
     }
 

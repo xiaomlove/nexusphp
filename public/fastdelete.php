@@ -32,6 +32,11 @@ if (!$sure)
 	stderr($lang_fastdelete['std_delete_torrent'], $lang_fastdelete['std_delete_torrent_note']."<a class=altlink href=fastdelete.php?id=$id&sure=1>".$lang_fastdelete['std_here_if_sure'],false);
 	}
 
+$searchRep = new \App\Repositories\SearchRepository();
+$deleteEsResult = $searchRep->deleteTorrent($id);
+if ($deleteEsResult === false) {
+    bark('Delete es fail.');
+}
 deletetorrent($id);
 KPS("-",$uploadtorrent_bonus,$row["owner"]);
 if ($row['anonymous'] == 'yes' && $CURUSER["id"] == $row["owner"]) {
