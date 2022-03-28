@@ -106,9 +106,11 @@ class HitAndRunRepository extends BaseRepository
                 }
 
                 //unreached
-                $result = $this->unreached($row);
-                if ($result) {
-                    $successCounts++;
+                if ($row->added->addHours($setting['inspect_time'])->lte(Carbon::now())) {
+                    $result = $this->unreached($row);
+                    if ($result) {
+                        $successCounts++;
+                    }
                 }
             }
             $page++;
