@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 class HitAndRunRepository extends BaseRepository
 {
 
-    public function cronjobUpdateStatus($uid = null, $torrentId = null)
+    public function cronjobUpdateStatus($uid = null, $torrentId = null, $ignoreTime = false): bool|int
     {
+        do_log("uid: $uid, torrentId: $torrentId, ignoreTime: " . var_export($ignoreTime, true));
         $size = 1000;
         $page = 1;
         $setting = Setting::get('hr');
@@ -31,11 +32,10 @@ class HitAndRunRepository extends BaseRepository
         }
         $query = HitAndRun::query()
             ->where('status', HitAndRun::STATUS_INSPECTING)
-            ->where('created_at', '<', Carbon::now()->subHours($setting['inspect_time']))
             ->with([
                 'torrent' => function ($query) {$query->select(['id', 'size', 'name']);},
                 'snatch',
-                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class']);},
+                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class', 'donoruntil']);},
                 'user.language',
             ]);
         if (!is_null($uid)) {
@@ -43,6 +43,9 @@ class HitAndRunRepository extends BaseRepository
         }
         if (!is_null($torrentId)) {
             $query->where('torrent_id', $torrentId);
+        }
+        if (!$ignoreTime) {
+            $query->where('created_at', '<', Carbon::now()->subHours($setting['inspect_time']));
         }
         $successCounts = 0;
         while (true) {
@@ -54,23 +57,23 @@ class HitAndRunRepository extends BaseRepository
                 break;
             }
             foreach ($rows as $row) {
-                $logPrefix = "[HANDLING] " . $row->toJson();
+                $currentLog = "$logPrefix, [HANDLING] " . $row->toJson();
                 do_log($logPrefix);
                 if (!$row->user) {
-                    do_log("$logPrefix, user not exists, skip!", 'error');
+                    do_log("$currentLog, user not exists, skip!", 'error');
                     continue;
                 }
                 if (!$row->snatch) {
-                    do_log("$logPrefix, snatch not exists, skip!", 'error');
+                    do_log("$currentLog, snatch not exists, skip!", 'error');
                     continue;
                 }
                 if (!$row->torrent) {
-                    do_log("$logPrefix, torrent not exists, skip!", 'error');
+                    do_log("$currentLog, torrent not exists, skip!", 'error');
                     continue;
                 }
 
-                //If is VIP or above, pass
-                if ($row->user->class >= HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
+                //If is VIP or above OR donated, pass
+                if ($row->user->class >= HitAndRun::MINIMUM_IGNORE_USER_CLASS || $row->user->isDonating()) {
                     $result = $this->reachedBySpecialUserClass($row);
                     if ($result) {
                         $successCounts++;
@@ -81,7 +84,7 @@ class HitAndRunRepository extends BaseRepository
                 //check seed time
                 $targetSeedTime = $row->snatch->seedtime;
                 $requireSeedTime = bcmul($setting['seed_time_minimum'], 3600);
-                do_log("targetSeedTime: $targetSeedTime, requireSeedTime: $requireSeedTime");
+                do_log("$currentLog, targetSeedTime: $targetSeedTime, requireSeedTime: $requireSeedTime");
                 if ($targetSeedTime >= $requireSeedTime) {
                     $result = $this->reachedBySeedTime($row);
                     if ($result) {
@@ -93,7 +96,7 @@ class HitAndRunRepository extends BaseRepository
                 //check share ratio
                 $targetShareRatio = bcdiv($row->snatch->uploaded, $row->torrent->size, 4);
                 $requireShareRatio = $setting['ignore_when_ratio_reach'];
-                do_log("targetShareRatio: $targetShareRatio, requireShareRatio: $requireShareRatio");
+                do_log("$currentLog, targetShareRatio: $targetShareRatio, requireShareRatio: $requireShareRatio");
                 if ($targetShareRatio >= $requireShareRatio) {
                     $result = $this->reachedByShareRatio($row);
                     if ($result) {

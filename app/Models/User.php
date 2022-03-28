@@ -367,4 +367,12 @@ class User extends Authenticatable
         return true;
     }
 
+    public function isDonating()
+    {
+        if ($this->donoruntil && $this->donoruntil >= Carbon::now()->toDateTimeString()) {
+            return true;
+        }
+        return false;
+    }
+
 }

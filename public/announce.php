@@ -79,7 +79,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = mysql_fetch_array($res);
 	do_log("[check passkey], currentUser: " . nexus_json_encode($az), 'error');
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
@@ -436,7 +436,12 @@ elseif(isset($self))
             ->first();
 		if ($snatchInfo) {
             sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 2");
-            if ($event == "completed" && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
+            if (
+                $event == 'completed'
+                && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS
+                && (empty($az['donoruntil']) || $az['donoruntil'] === '0000-00-00 00:00:00' || $az['donoruntil'] < date("Y-m-d H:i:s"))
+            ) {
+                //think about H&R
                 $hrMode = get_setting('hr.mode');
                 if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
                     $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo->id}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));

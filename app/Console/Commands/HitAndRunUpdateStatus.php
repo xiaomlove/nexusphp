@@ -12,14 +12,14 @@ class HitAndRunUpdateStatus extends Command
      *
      * @var string
      */
-    protected $signature = 'hr:update_status {--uid=} {--torrent_id=}';
+    protected $signature = 'hr:update_status {--uid=} {--torrent_id=}  {--ignore_time=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update H&R status, options: --uid, --torrent_id';
+    protected $description = 'Update H&R status, options: --uid, --torrent_id, --ignore_time';
 
     /**
      * Create a new command instance.
@@ -40,11 +40,12 @@ class HitAndRunUpdateStatus extends Command
     {
         $uid = $this->option('uid');
         $torrentId = $this->option('torrent_id');
+        $ignoreTime = $this->option('ignore_time');
         $rep = new HitAndRunRepository();
-        $result = $rep->cronjobUpdateStatus($uid, $torrentId);
+        $result = $rep->cronjobUpdateStatus($uid, $torrentId, $ignoreTime);
         $log = sprintf(
-            '[%s], %s, uid: %s, torrentId: %s, result: %s',
-            REQUEST_ID, __METHOD__, $uid, $torrentId, var_export($result, true)
+            '[%s], %s, uid: %s, torrentId: %s, ignoreTime: %s, result: %s',
+            REQUEST_ID, __METHOD__, $uid, $torrentId, $ignoreTime, var_export($result, true)
         );
         $this->info($log);
         do_log($log);

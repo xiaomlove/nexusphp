@@ -28,6 +28,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('exam:checkout_cronjob')->everyMinute();
         $schedule->command('backup:cronjob')->everyMinute();
         $schedule->command('hr:update_status')->everyMinute();
+        $schedule->command('hr:update_status --ignore_time=1')->hourly();
         $schedule->command('user:delete_expired_token')->dailyAt('04:00');
     }
 
