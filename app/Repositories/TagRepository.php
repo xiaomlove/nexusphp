@@ -67,7 +67,10 @@ class TagRepository extends BaseRepository
         foreach ($renderIdArr as $tagId) {
             $value = $tagKeyById->get($tagId);
             if ($value) {
-                $item = "<span style=\"background-color:{$value->color};color:white;border-radius:15%\">{$value->name}</span> ";
+                $item = sprintf(
+                    "<span style=\"background-color:%s;color:%s;border-radius:%s;font-size:%s;margin:%s;padding:%s\">%s</span>",
+                    $value->color, $value->font_color, $value->border_radius, $value->font_size, $value->margin, $value->padding, $value->name
+                );
                 if ($withFilterLink) {
                     $html .= sprintf('<a href="torrents.php?tag_id=%s">%s</a>', $tagId, $item);
                 } else {

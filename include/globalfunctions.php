@@ -282,19 +282,23 @@ function get_setting($name = null)
 {
 	static $settings;
 	if (is_null($settings)) {
-		//get all settings from database
-		$sql = "select name, value from settings";
-		$result = sql_query($sql);
-		while ($row = mysql_fetch_assoc($result)) {
-			$value = $row['value'];
-            if (!is_null($value)) {
-                $arr = json_decode($value, true);
-                if (is_array($arr)) {
-                    $value = $arr;
+        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus" . __METHOD__, 10, function () {
+            //get all settings from database
+            $sql = "select name, value from settings";
+            $result = sql_query($sql);
+            $final = [];
+            while ($row = mysql_fetch_assoc($result)) {
+                $value = $row['value'];
+                if (!is_null($value)) {
+                    $arr = json_decode($value, true);
+                    if (is_array($arr)) {
+                        $value = $arr;
+                    }
                 }
+                arr_set($final, $row['name'], $value);
             }
-			arr_set($settings, $row['name'], $value);
-		}
+            return $final;
+        });
 	}
 	if (is_null($name)) {
 	    return $settings;

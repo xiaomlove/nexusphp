@@ -164,7 +164,7 @@ else{
 if ($newnumpeers > $rsize)
 	$limit = " ORDER BY RAND() LIMIT $rsize";
 else $limit = "";
-$announce_wait = 30;
+$announce_wait = \App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND;
 
 $fields = "seeder, peer_id, ip, port, uploaded, downloaded, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
 //$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
@@ -199,7 +199,7 @@ $params = $_GET;
 unset($params['key']);
 $lockKey = md5(http_build_query($params));
 $redis = $Cache->getRedis();
-if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => $announce_wait])) {
+if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
     do_log('ReAnnounce');
     benc_resp($rep_dict);
     exit();

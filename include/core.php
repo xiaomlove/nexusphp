@@ -12,7 +12,6 @@ if (!file_exists($rootpath . '.env')) {
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/eloquent.php';
-require $rootpath . 'include/config.php';
 
 ini_set('date.timezone', nexus_config('nexus.timezone'));
 ini_set('error_reporting', E_ALL);
@@ -24,6 +23,8 @@ if (!in_array(nexus()->getScript(), ['announce', 'scrape'])) {
 }
 $Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
+require $rootpath . 'include/config.php';
+
 define('TIMENOW', time());
 $USERUPDATESET = array();
 $query_name=array();

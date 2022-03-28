@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
+use Nexus\Database\NexusDB;
 
 class Setting extends NexusModel
 {
@@ -10,9 +12,9 @@ class Setting extends NexusModel
 
     public static function get($name = null)
     {
-        static $settings;
-        if (is_null($settings)) {
+        $settings = NexusDB::remember("nexus_settings_in_laravel", 10, function () {
             $rows = self::query()->get(['name', 'value']);
+            $result = [];
             foreach ($rows as $row) {
                 $value = $row->value;
                 if (!is_null($value)) {
@@ -21,9 +23,10 @@ class Setting extends NexusModel
                         $value = $arr;
                     }
                 }
-                Arr::set($settings, $row->name, $value);
+                Arr::set($result, $row->name, $value);
             }
-        }
+            return $result;
+        });
         if (is_null($name)) {
             return $settings;
         }
