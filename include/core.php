@@ -17,7 +17,7 @@ ini_set('date.timezone', nexus_config('nexus.timezone'));
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 
-if (!isRunningInConsole() && !in_array(CURRENT_SCRIPT, ['announce', 'scrape', 'torrentrss'])) {
+if (!isRunningInConsole() && !in_array(CURRENT_SCRIPT, ['announce', 'scrape', 'torrentrss', 'download'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();
 }
