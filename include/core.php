@@ -16,14 +16,13 @@ require $rootpath . 'include/eloquent.php';
 ini_set('date.timezone', nexus_config('nexus.timezone'));
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
-
+$Cache = new class_cache_redis(); //Load the caching class
+$Cache->setLanguageFolderArray(get_langfolder_list());
+require $rootpath . 'include/config.php';
 if (!in_array(nexus()->getScript(), ['announce', 'scrape'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();
 }
-$Cache = new class_cache_redis(); //Load the caching class
-$Cache->setLanguageFolderArray(get_langfolder_list());
-require $rootpath . 'include/config.php';
 
 define('TIMENOW', time());
 $USERUPDATESET = array();

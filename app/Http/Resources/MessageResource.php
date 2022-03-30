@@ -19,6 +19,7 @@ class MessageResource extends JsonResource
             'subject' => $this->subject,
             'msg' => strip_all_tags($this->msg),
             'added_human' => $this->added->diffForHumans(),
+            'added' => format_datetime($this->added),
             'send_user' => new UserResource($this->whenLoaded('send_user')),
         ];
     }

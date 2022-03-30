@@ -26,6 +26,7 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::get('user-finished-torrent',[\App\Http\Controllers\UserController::class, 'finishedTorrent']);
         Route::get('user-not-finished-torrent',[\App\Http\Controllers\UserController::class, 'notFinishedTorrent']);
         Route::resource('messages', \App\Http\Controllers\MessageController::class);
+        Route::get('messages-unread', [\App\Http\Controllers\MessageController::class, 'listUnread']);
         Route::resource('torrents', \App\Http\Controllers\TorrentController::class);
         Route::resource('comments', \App\Http\Controllers\CommentController::class);
         Route::resource('peers', \App\Http\Controllers\PeerController::class);
@@ -36,6 +37,12 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::get('search-box', [\App\Http\Controllers\TorrentController::class, 'searchBox']);
         Route::resource('news', \App\Http\Controllers\NewsController::class);
         Route::get('attend', [\App\Http\Controllers\AttendanceController::class, 'attend']);
+        Route::resource('news', \App\Http\Controllers\NewsController::class);
+        Route::get('news-latest', [\App\Http\Controllers\NewsController::class, 'latest']);
+        Route::resource('polls', \App\Http\Controllers\PollController::class);
+        Route::get('polls-latest', [\App\Http\Controllers\PollController::class, 'latest']);
+        Route::post('polls-vote', [\App\Http\Controllers\PollController::class, 'vote']);
+        Route::resource('rewards', \App\Http\Controllers\RewardController::class);
     });
 
     Route::group(['middleware' => ['admin']], function () {
@@ -80,4 +87,5 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
 Route::post('login', [\App\Http\Controllers\AuthenticateController::class, 'login']);
 
 Route::get('announce', [\App\Http\Controllers\TrackerController::class, 'announce']);
+Route::get('scrape', [\App\Http\Controllers\TrackerController::class, 'scrape']);
 

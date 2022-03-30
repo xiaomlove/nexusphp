@@ -4,8 +4,9 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ThankResource extends JsonResource
+class PollResource extends JsonResource
 {
+    public $preserveKeys = true;
     /**
      * Transform the resource into an array.
      *
@@ -14,11 +15,14 @@ class ThankResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        $out = [
             'id' => $this->id,
-            'torrent_id' => $this->torrentid,
-            'user_id' => $this->userid,
-            'user' => new UserResource($this->whenLoaded('user')),
+            'added' => format_datetime($this->added),
+            'question' => $this->question,
+            'answers_count' => $this->answers_count,
+            'options' => $this->options,
         ];
+
+        return $out;
     }
 }

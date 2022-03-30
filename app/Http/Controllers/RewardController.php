@@ -2,34 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ThankResource;
-use App\Models\Thank;
-use App\Models\Torrent;
+use App\Http\Resources\RewardResource;
+use App\Http\Resources\PeerResource;
+use App\Http\Resources\SnatchResource;
+use App\Models\Peer;
+use App\Models\Snatch;
+use App\Repositories\RewardRepository;
+use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ThankController extends Controller
+class RewardController extends Controller
 {
+    private $repository;
+
+    public function __construct(RewardRepository $repository)
+    {
+        $this->repository = $repository;
+    }
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return array
      */
     public function index(Request $request)
     {
-        $torrentId = $request->torrent_id;
-        $thanks = Thank::query()
-            ->where('torrentid', $torrentId)
-            ->whereHas('user')
-            ->with(['user'])
-            ->paginate();
-        $resource = ThankResource::collection($thanks);
+        $request->validate([
+            'torrent_id' => 'required',
+        ]);
+        $result = $this->repository->getList($request->all());
+        $resource = RewardResource::collection($result);
         $resource->additional([
-            'page_title' => nexus_trans('thank.index.page_title'),
+            'page_title' => nexus_trans('reward.index.page_title'),
         ]);
 
         return $this->success($resource);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -39,16 +47,12 @@ class ThankController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate(['torrent_id' => 'required']);
-        $torrentId = $request->torrent_id;
-        $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
-        $torrent->checkIsNormal();
-        $user = Auth::user();
-        if ($user->thank_torrent_logs()->where('torrentid', $torrentId)->exists()) {
-            throw new \LogicException("you already thank this torrent");
-        }
-        $result = $user->thank_torrent_logs()->create(['torrentid' => $torrentId]);
-        $resource = new ThankResource($result);
+        $request->validate([
+            'torrent_id' => 'required',
+            'value' => 'required',
+        ]);
+        $result = $this->repository->store($request->torrent_id, $request->value, Auth::user());
+        $resource = new RewardResource($result);
         return $this->success($resource);
     }
 

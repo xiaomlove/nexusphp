@@ -28,6 +28,11 @@ class Torrent extends NexusModel
         'added' => 'datetime'
     ];
 
+    public static $commentFields = [
+        'id', 'name', 'added', 'visible', 'banned', 'owner', 'sp_state', 'pos_state', 'hr', 'picktype', 'picktime',
+        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size'
+    ];
+
     public static $basicRelations = [
         'basic_category', 'basic_audio_codec', 'basic_codec', 'basic_media',
         'basic_source', 'basic_standard', 'basic_team',
@@ -73,42 +78,9 @@ class Torrent extends NexusModel
         self::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'up_multiplier' => 1, 'down_multiplier' => 0.3],
     ];
 
-    public function mappableAs(): array
-    {
-        return [
-            'id' => 'long',
-            'name' => [
-                'type' => 'text',
-                'analyzer' => 'ik_max_word',
-            ],
-            'descr' => [
-                'type' => 'text',
-                'analyzer' => 'ik_max_word',
-            ],
-            'owner' => 'long',
-            'source' => 'long',
-            'leechers' => 'long',
-            'seeders' => 'long',
-            'added' => 'date',
-            'owner_info' => [
+    const BONUS_REWARD_VALUES = [50, 100, 200, 500, 1000];
 
-            ]
-        ];
-    }
 
-    public function toSearchableArray()
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'descr' => $this->descr,
-            'owner' => $this->owner,
-            'source' => $this->source,
-            'leechers' => $this->leechers,
-            'seeders' => $this->seeders,
-            'added' => $this->added,
-        ];
-    }
 
     public function getSpStateRealTextAttribute()
     {
@@ -185,7 +157,10 @@ class Torrent extends NexusModel
 
     public static function getFieldLabels(): array
     {
-        $fields = ['comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles', 'bookmark_yes', 'bookmark_no'];
+        $fields = [
+            'comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles', 'bookmark_yes', 'bookmark_no',
+            'reward_yes', 'reward_no', 'reward_logs', 'download', 'thanks_yes', 'thanks_no'
+        ];
         $result = [];
         foreach($fields as $field) {
             $result[$field] = nexus_trans("torrent.show.{$field}_label");
@@ -319,5 +294,10 @@ class Torrent extends NexusModel
     {
         return $this->belongsToMany(Tag::class, 'torrent_tags', 'torrent_id', 'tag_id')
             ->orderByRaw(sprintf("field(`tags`.`id`,%s)", TagRepository::getOrderByFieldIdString()));
+    }
+
+    public function reward_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Reward::class, 'torrentid');
     }
 }

@@ -18,11 +18,14 @@ class MessageController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $messages = Message::query()
-            ->where('receiver', $user->id)
+        $query = $user->receive_messages()
             ->with(['send_user'])
-            ->orderBy('id', 'desc')
-            ->paginate();
+            ->orderBy('id', 'desc');
+
+        if ($request->unread) {
+            $query->where('unread', 'yes');
+        }
+        $messages = $query->paginate();
         $resource = MessageResource::collection($messages);
         return $this->success($resource);
 
@@ -49,6 +52,9 @@ class MessageController extends Controller
     {
         $message = Message::query()->with(['send_user'])->findOrFail($id);
         $resource = new MessageResource($message);
+        $resource->additional([
+            'page_title' => nexus_trans('message.show.page_title'),
+        ]);
 
         return $this->success($resource);
     }
@@ -74,5 +80,28 @@ class MessageController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function listUnread(Request $request): array
+    {
+        $user = Auth::user();
+        $query = $user->receive_messages()
+            ->with(['send_user'])
+            ->orderBy('id', 'desc')
+            ->where('unread', 'yes');
+
+        $messages = $query->paginate();
+        $resource = MessageResource::collection($messages);
+        $resource->additional([
+            'site_info' => site_info(),
+        ]);
+        return $this->success($resource);
+    }
+
+    public function countUnread()
+    {
+        $user = Auth::user();
+        $count = $user->receive_messages()->where('unread', 'yes')->count();
+        return $this->success(['unread' => $count]);
     }
 }

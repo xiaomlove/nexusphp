@@ -93,8 +93,12 @@ class TorrentRepository extends BaseRepository
 
     public function getDetail($id, User $user)
     {
-        $with = ['user', 'basic_audio_codec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team'];
-        $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users'])->visible()->findOrFail($id);
+        $with = [
+            'user', 'basic_audio_codec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team',
+            'thanks' => function ($query) use ($user) {$query->where('userid', $user->id);},
+            'reward_logs' => function ($query) use ($user) {$query->where('userid', $user->id);},
+        ];
+        $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users', 'reward_logs'])->visible()->findOrFail($id);
         $result->download_url = $this->getDownloadUrl($id, $user->toArray());
         return $result;
     }

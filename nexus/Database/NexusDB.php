@@ -6,6 +6,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class NexusDB
 {
@@ -283,6 +284,50 @@ class NexusDB
             return $result;
         } else {
             return Cache::remember($key, $ttl, $callback);
+        }
+    }
+
+    public static function cache_put($key, $value, $ttl = 3600)
+    {
+        if (IN_NEXUS) {
+            global $Cache;
+            return $Cache->cache_value($key, $value, $ttl);
+        } else {
+            return Cache::put($key, $value, $ttl);
+        }
+    }
+
+    public static function cache_get($key)
+    {
+        if (IN_NEXUS) {
+            global $Cache;
+            return $Cache->get_value($key);
+        } else {
+            return Cache::get($key);
+        }
+    }
+
+    public static function cache_del($key)
+    {
+        if (IN_NEXUS) {
+            global $Cache;
+            $Cache->delete_value($key, true);
+        } else {
+            Cache::forget($key);
+            $langList = get_langfolder_list();
+            foreach ($langList as $lf) {
+                Cache::forget($lf . '_' . $key);
+            }
+        }
+    }
+
+    public static function redis()
+    {
+        if (IN_NEXUS) {
+            global $Cache;
+            $Cache->getRedis();
+        } else {
+            Redis::connection()->client();
         }
     }
 

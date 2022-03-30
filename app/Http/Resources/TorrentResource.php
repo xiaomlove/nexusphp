@@ -43,6 +43,8 @@ class TorrentResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
             'basic_category' => new CategoryResource($this->whenLoaded('basic_category')),
             'tags' => TagResource::collection($this->whenLoaded('tags')),
+            'thanks' => ThankResource::collection($this->whenLoaded('thanks')),
+            'reward_logs' => RewardResource::collection($this->whenLoaded('reward_logs')),
         ];
         $descriptionArr = format_description($this->descr);
         $out['cover'] = get_image_from_description($descriptionArr, true);
@@ -63,6 +65,7 @@ class TorrentResource extends JsonResource
 
             $out['thank_users_count'] = $this->thank_users_count;
             $out['peers_count'] = $this->peers_count;
+            $out['reward_logs_count'] = $this->reward_logs_count;
         }
 //            $out['upload_peers_count'] = $this->upload_peers_count;
 //            $out['download_peers_count'] = $this->download_peers_count;

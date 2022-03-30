@@ -364,6 +364,21 @@ class User extends Authenticatable
         return $this->valid_medals()->where('user_medals.status', UserMedal::STATUS_WEARING);
     }
 
+    public function reward_torrent_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Reward::class, 'userid');
+    }
+
+    public function thank_torrent_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Thank::class, 'userid');
+    }
+
+    public function poll_answers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PollAnswer::class, 'userid');
+    }
+
     public function getAvatarAttribute($value)
     {
         if ($value) {

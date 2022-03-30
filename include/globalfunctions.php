@@ -676,3 +676,13 @@ function nexus()
 {
     return \Nexus\Nexus::instance();
 }
+
+function site_info()
+{
+    $setting = \App\Models\Setting::get('basic');
+    $siteInfo = [
+        'site_name' => $setting['SITENAME'],
+        'base_url' => getSchemeAndHttpHost(),
+    ];
+    return $siteInfo;
+}

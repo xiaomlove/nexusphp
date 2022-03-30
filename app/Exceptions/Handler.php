@@ -61,7 +61,8 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (NotFoundHttpException $e) {
             if ($e->getPrevious() && $e->getPrevious() instanceof ModelNotFoundException) {
-                return response()->json(fail('No query result.', request()->all()), 404);
+                $exception = $e->getPrevious();
+                return response()->json(fail($exception->getMessage(), request()->all()), 404);
             }
         });
     }
@@ -97,7 +98,12 @@ class Handler extends ExceptionHandler
 
     protected function getHttpStatusCode(Throwable $e)
     {
-        if ($e instanceof \InvalidArgumentException || $e instanceof NexusException) {
+        if (
+            $e instanceof NexusException
+            || $e instanceof \InvalidArgumentException
+            || $e instanceof \LogicException
+            || $e instanceof \RuntimeException
+        ) {
             return 200;
         }
         if ($this->isHttpException($e)) {

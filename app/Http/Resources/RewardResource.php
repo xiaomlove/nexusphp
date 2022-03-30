@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ThankResource extends JsonResource
+class RewardResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,9 +16,12 @@ class ThankResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'torrent_id' => $this->torrentid,
             'user_id' => $this->userid,
-            'user' => new UserResource($this->whenLoaded('user')),
+            'torrent_id' => $this->torrentid,
+            'value' => $this->value,
+            'created_at' => format_datetime($this->created_at),
+            'updated_at' => format_datetime($this->updated_at),
+            'user' => new UserResource($this->whenLoaded('user'))
         ];
     }
 }

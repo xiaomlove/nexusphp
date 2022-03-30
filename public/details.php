@@ -413,7 +413,7 @@ echo "</script>";
         if(isset($magic_value_bonus)){
             $bonus_array = $magic_value_bonus;
         }else{
-            $bonus_array = '50 , 100 , 200 , 500, 1000';
+            $bonus_array = implode(',', \App\Models\Torrent::BONUS_REWARD_VALUES);
         }
         echo '<style type="text/css">
 					ul.magic

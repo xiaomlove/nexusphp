@@ -93,4 +93,20 @@ class NewsController extends Controller
         $result = $this->repository->delete($id);
         return $this->success($result);
     }
+
+    /**
+     * @todo update the unread cache
+     *
+     * @return array
+     */
+    public function latest()
+    {
+        $result = News::query()->orderBy('id', 'desc')->first();
+        $resource = new NewsResource($result);
+        $resource->additional([
+            'site_info' => site_info(),
+        ]);
+        return $this->success($resource);
+    }
+
 }

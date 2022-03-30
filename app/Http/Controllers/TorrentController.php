@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RewardResource;
 use App\Http\Resources\TorrentResource;
 use App\Models\Setting;
 use App\Models\Torrent;
+use App\Models\User;
 use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,16 +53,19 @@ class TorrentController extends Controller
      */
     public function show($id)
     {
-
-        $result = $this->repository->getDetail($id, Auth::user());
-
-        $isBookmarked = Auth::user()->bookmarks()->where('torrentid', $id)->exists();
+        /**
+         * @var User
+         */
+        $user = Auth::user();
+        $result = $this->repository->getDetail($id, $user);
+        $isBookmarked = $user->bookmarks()->where('torrentid', $id)->exists();
 
         $resource = new TorrentResource($result);
         $resource->additional([
             'page_title' => nexus_trans('torrent.show.page_title'),
             'field_labels' => Torrent::getFieldLabels(),
             'is_bookmarked' => (int)$isBookmarked,
+            'bonus_reward_values' => Torrent::BONUS_REWARD_VALUES,
         ]);
 
         return $this->success($resource);
