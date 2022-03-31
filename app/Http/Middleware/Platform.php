@@ -17,11 +17,12 @@ class Platform
      */
     public function handle(Request $request, Closure $next)
     {
-        if (empty(nexus()->getPlatform())) {
+        $platform = nexus()->getPlatform();
+        if (empty($platform)) {
             throw new \InvalidArgumentException("Require platform header.");
         }
         if (!nexus()->isPlatformValid()) {
-            throw new \InvalidArgumentException("Invalid platform: " . CURRENT_PLATFORM);
+            throw new \InvalidArgumentException("Invalid platform: " . $platform);
         }
         return $next($request);
     }

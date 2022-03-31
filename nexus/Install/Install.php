@@ -128,7 +128,7 @@ class Install
     public function listRequirementTableRows()
     {
         $gdInfo = function_exists('gd_info') ? gd_info() : [];
-        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd'];
+        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', 'pcntl'];
         $tableRows = [];
         $tableRows[] = [
             'label' => 'PHP version',

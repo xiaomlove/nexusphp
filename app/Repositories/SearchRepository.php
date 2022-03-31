@@ -696,6 +696,16 @@ class SearchRepository extends BaseRepository
             return true;
         }
         $log = "[UPDATE_TORRENT]: $id";
+        $result = $this->getTorrent($id);
+        if ($this->isEsResponseError($result)) {
+            do_log("$log, fail: " . nexus_json_encode($result), 'error');
+            return false;
+        }
+        if ($result['found'] === false) {
+            do_log("$log, not exists, do insert");
+            return $this->addTorrent($id);
+        }
+
         $baseFields = $this->getTorrentBaseFields();
         $torrent = Torrent::query()->findOrFail($id, array_merge(['id'], $baseFields));
         $data = $this->buildTorrentBody($torrent);
@@ -731,6 +741,18 @@ class SearchRepository extends BaseRepository
         do_log("$log, success: " . nexus_json_encode($result));
 
         return $this->syncTorrentTags($torrent);
+    }
+
+    public function getTorrent($id): callable|bool|array
+    {
+        if (!$this->enabled) {
+            return false;
+        }
+        $params = [
+            'index' => self::INDEX_NAME,
+            'id' => $this->getTorrentId($id),
+        ];
+        return $this->es->get($params);
     }
 
     public function deleteTorrent(int $id): bool

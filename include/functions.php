@@ -1413,44 +1413,17 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 	    */
 
         /**
-         * use swiftmailer instead
+         * use Symfony Mailer instead
          *
-         * @since 1.6
+         * @since 1.7
          * @author xiaomlove<1939737565@qq.com>
          */
 
-        $setting = get_setting('smtp');
-        // Create the Transport
-        $encryption = null;
-        if (isset($setting['encryption']) && in_array($setting['encryption'], ['ssl', 'tls'])) {
-            $encryption = $setting['encryption'];
-        }
-        $transport = (new Swift_SmtpTransport($setting['smtpaddress'], $setting['smtpport'], $encryption))
-            ->setUsername($setting['accountname'])
-            ->setPassword($setting['accountpassword'])
-        ;
-
-        // Create the Mailer using your created Transport
-        $mailer = new Swift_Mailer($transport);
-
-        // Create a message
-        $message = (new Swift_Message($subject))
-            ->setFrom($fromemail, $fromname)
-            ->setTo([$to])
-            ->setBody($body, 'text/html')
-        ;
-
-        // Send the message
-        try {
-            $result = $mailer->send($message);
-            if ($result == 0) {
-                stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail']);
-            }
-        } catch (\Exception $e) {
-            do_log("send email fail: " . $e->getMessage() . ", trace: " . $e->getTraceAsString());
+        $toolRep = new \App\Repositories\ToolRepository();
+        $sendResult = $toolRep->sendMail($to, $subject, $body);
+        if ($sendResult === false) {
             stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail']);
         }
-
 	}
 	if ($showmsg) {
 		if ($type == "confirmation")

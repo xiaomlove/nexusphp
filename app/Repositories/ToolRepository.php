@@ -7,10 +7,12 @@ use App\Models\Poll;
 use App\Models\PollAnswer;
 use App\Models\Setting;
 use App\Models\User;
-use Illuminate\Encryption\Encrypter;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Carbon\Carbon;
+use Symfony\Component\Mailer\Transport\Dsn;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class ToolRepository extends BaseRepository
 {
@@ -134,24 +136,31 @@ class ToolRepository extends BaseRepository
         }
         do_log("Google drive info: clientId: $clientId, clientSecret: $clientSecret, refreshToken: $refreshToken, folderId: $folderId");
 
-        $client = new \Google_Client();
+        $client = new \Google\Client();
         $client->setClientId($clientId);
         $client->setClientSecret($clientSecret);
         $client->refreshToken($refreshToken);
-        $service = new \Google_Service_Drive($client);
-        $adapter = new \Hypweb\Flysystem\GoogleDrive\GoogleDriveAdapter($service, $folderId);
-        $filesystem = new \League\Flysystem\Filesystem($adapter);
+        $service = new \Google\Service\Drive($client);
+        $adapter = new \Masbug\Flysystem\GoogleDriveAdapter($service, $folderId);
+
+        $filesystem = new \League\Flysystem\Filesystem($adapter, new \League\Flysystem\Config([\League\Flysystem\Config::OPTION_VISIBILITY => \League\Flysystem\Visibility::PRIVATE]));
+
+        $localAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('/');
+        $localFilesystem = new \League\Flysystem\Filesystem($localAdapter, [\League\Flysystem\Config::OPTION_VISIBILITY => \League\Flysystem\Visibility::PRIVATE]);
 
         $filename = $backupResult['filename'];
-        $upload_result = $filesystem->put(basename($filename), fopen($filename, 'r'));
-        $backupResult['upload_result'] = $upload_result;
-        do_log("Final result: " . json_encode($backupResult));
+        $time = Carbon::now();
+        try {
+            $filesystem->writeStream(basename($filename), $localFilesystem->readStream($filename), new \League\Flysystem\Config());
+            $speed = !(float)$time->diffInSeconds() ? 0 :filesize($filename) / (float)$time->diffInSeconds();
+            $log =  'Elapsed time: '.$time->diffForHumans(null, true);
+            $log .= ', Speed: '. number_format($speed/1024,2) . ' KB/s';
+            do_log($log);
+            $backupResult['upload_result'] = 'success: '  .$log;
+        } catch (\Throwable $exception) {
+            $backupResult['upload_result'] = 'fail: ' . $exception->getMessage();
+        }
         return $backupResult;
-    }
-
-    public function getEncrypter(string $key): Encrypter
-    {
-        return new Encrypter($key, 'AES-256-CBC');
     }
 
     /**
@@ -162,38 +171,40 @@ class ToolRepository extends BaseRepository
      */
     public function sendMail($to, $subject, $body): bool
     {
-        do_log("to: $to, subject: $subject, body: $body");
+        $log = "[SEND_MAIL]";
+        do_log("$log, to: $to, subject: $subject, body: $body");
+        $factory = new EsmtpTransportFactory();
         $smtp = Setting::get('smtp');
-        // Create the Transport
         $encryption = null;
         if (isset($smtp['encryption']) && in_array($smtp['encryption'], ['ssl', 'tls'])) {
             $encryption = $smtp['encryption'];
         }
-        $transport = (new \Swift_SmtpTransport($smtp['smtpaddress'], $smtp['smtpport'], $encryption))
-            ->setUsername($smtp['accountname'])
-            ->setPassword($smtp['accountpassword'])
-        ;
+        // Create the Transport
+        $transport = $factory->create(new Dsn(
+            $encryption === 'tls' ? (($smtp['smtpport'] == 465) ? 'smtps' : 'smtp') : '',
+            $smtp['smtpaddress'],
+            $smtp['accountname'] ?? null,
+            $smtp['accountpassword'] ?? null,
+            $smtp['smtpport'] ?? null
+        ));
 
         // Create the Mailer using your created Transport
-        $mailer = new \Swift_Mailer($transport);
+        $mailer = new Mailer($transport);
 
         // Create a message
-        $message = (new \Swift_Message($subject))
-            ->setFrom($smtp['accountname'], Setting::get('basic.SITENAME'))
-            ->setTo([$to])
-            ->setBody($body, 'text/html')
+        $message = (new Email())
+            ->from(new Address($smtp['accountname'], Setting::get('basic.SITENAME')))
+            ->to($to)
+            ->subject($subject)
+            ->html($body)
         ;
 
         // Send the message
         try {
-            $result = $mailer->send($message);
-            if ($result == 0) {
-                do_log("send mail fail, unknown error", 'error');
-                return false;
-            }
+            $mailer->send($message);
             return true;
-        } catch (\Exception $e) {
-            do_log("send email fail: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error');
+        } catch (\Throwable $e) {
+            do_log("$log, fail: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error');
             return false;
         }
     }
