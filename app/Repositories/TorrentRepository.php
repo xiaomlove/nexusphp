@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
+use Nexus\Database\NexusDB;
 
 class TorrentRepository extends BaseRepository
 {
@@ -372,12 +373,14 @@ class TorrentRepository extends BaseRepository
 
     private function getTrackerReportAuthKeySecret($id, $uid, $initializeIfNotExists = false)
     {
-        $secret = TorrentSecret::query()
-            ->where('uid', $uid)
-            ->whereIn('torrent_id', [0, $id])
-            ->orderBy('torrent_id', 'desc')
-            ->orderBy('id', 'desc')
-            ->first();
+        $secret = NexusDB::remember("tracker_report_authkey_secret:$id:$uid", 3600*24, function () use ($id, $uid) {
+            return TorrentSecret::query()
+                ->where('uid', $uid)
+                ->whereIn('torrent_id', [0, $id])
+                ->orderBy('torrent_id', 'desc')
+                ->orderBy('id', 'desc')
+                ->first();
+        });
         if ($secret) {
             return $secret->secret;
         }

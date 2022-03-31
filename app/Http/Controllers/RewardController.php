@@ -53,7 +53,7 @@ class RewardController extends Controller
         ]);
         $result = $this->repository->store($request->torrent_id, $request->value, Auth::user());
         $resource = new RewardResource($result);
-        return $this->success($resource);
+        return $this->success($resource, '赠魔成功！');
     }
 
     /**

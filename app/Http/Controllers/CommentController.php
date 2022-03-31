@@ -61,7 +61,7 @@ class CommentController extends Controller
         ];
         $data =  array_filter($data);
         foreach ($allTypes as $type) {
-            if ($data['type'] == $type && empty($data[$type . "_id"])) {
+            if ($data['type'] == $type && empty($data[$type])) {
                 throw new \InvalidArgumentException("require {$type}_id");
             }
         }

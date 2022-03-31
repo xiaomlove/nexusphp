@@ -1,7 +1,12 @@
 <?php
 namespace App\Repositories;
 
+use App\Models\Message;
+use App\Models\News;
+use App\Models\Poll;
+use App\Models\PollAnswer;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -191,5 +196,29 @@ class ToolRepository extends BaseRepository
             do_log("send email fail: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error');
             return false;
         }
+    }
+
+    public function getNotificationCount(User $user): array
+    {
+        $result = [];
+        //attend or not
+        $attendRep = new AttendanceRepository();
+        $attendance = $attendRep->getAttendance($user->id, date('Ymd'));
+        $result['attendance'] = $attendance ? 0 : 1;
+
+        //unread news
+        $count = News::query()->where('added', '>', $user->last_home)->count();
+        $result['news'] = $count;
+
+        //unread messages
+        $count = Message::query()->where('receiver', $user->id)->where('unread', 'yes')->count();
+        $result['message'] = $count;
+
+        //un-vote poll
+        $total = Poll::query()->count();
+        $userVoteCount = PollAnswer::query()->where('userid', $user->id)->selectRaw('count(distinct(pollid)) as counts')->first()->counts;
+        $result['poll'] = $total - $userVoteCount;
+
+        return $result;
     }
 }

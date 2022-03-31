@@ -30,10 +30,11 @@ class RewardRepository extends BaseRepository
         }
         $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
         $torrent->checkIsNormal();
-        $torrentOwner = User::query()->findOrFail($torrent->owner, ['id', 'seedbonus']);
+        $torrentOwner = User::query()->findOrFail($torrent->owner);
         if ($user->id == $torrentOwner->id) {
             throw new \LogicException("you can't reward to yourself.");
         }
+        $torrentOwner->checkIsNormal();
         return DB::transaction(function () use ($torrentId, $value, $user, $torrentOwner) {
             $model = $user->reward_torrent_logs()->create([
                 'torrentid' => $torrentId,

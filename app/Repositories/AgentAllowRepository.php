@@ -4,6 +4,7 @@ namespace App\Repositories;
 use App\Exceptions\ClientNotAllowedException;
 use App\Models\AgentAllow;
 use App\Models\AgentDeny;
+use Nexus\Database\NexusDB;
 
 class AgentAllowRepository extends BaseRepository
 {
@@ -72,10 +73,12 @@ class AgentAllowRepository extends BaseRepository
     public function checkClient($peerId, $agent, $debug = false)
     {
         //check from high version to low version, if high version allow, stop!
-        $allows = AgentAllow::query()
-            ->orderBy('peer_id_start', 'desc')
-            ->orderBy('agent_start', 'desc')
-            ->get();
+        $allows = NexusDB::remember("all_agent_allows", 600, function () {
+            return AgentAllow::query()
+                ->orderBy('peer_id_start', 'desc')
+                ->orderBy('agent_start', 'desc')
+                ->get();
+        });
         $agentAllowPassed = null;
         $versionTooLowStr = '';
         foreach ($allows as $agentAllow) {

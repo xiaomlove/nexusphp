@@ -69,18 +69,77 @@ class Torrent extends NexusModel
     const PROMOTION_ONE_THIRD_DOWN = 7;
 
     public static array $promotionTypes = [
-        self::PROMOTION_NORMAL => ['text' => 'Normal', 'up_multiplier' => 1, 'down_multiplier' => 1],
-        self::PROMOTION_FREE => ['text' => 'Free', 'up_multiplier' => 1, 'down_multiplier' => 0],
-        self::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'up_multiplier' => 2, 'down_multiplier' => 1],
-        self::PROMOTION_FREE_TWO_TIMES_UP => ['text' => '2X Free', 'up_multiplier' => 2, 'down_multiplier' => 0],
-        self::PROMOTION_HALF_DOWN => ['text' => '50%', 'up_multiplier' => 1, 'down_multiplier' => 0.5],
-        self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'up_multiplier' => 2, 'down_multiplier' => 0.5],
-        self::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'up_multiplier' => 1, 'down_multiplier' => 0.3],
+        self::PROMOTION_NORMAL => [
+            'text' => 'Normal',
+            'up_multiplier' => 1,
+            'down_multiplier' => 1,
+            'color' => ''
+        ],
+        self::PROMOTION_FREE => [
+            'text' => 'Free',
+            'up_multiplier' => 1,
+            'down_multiplier' => 0,
+            'color' => 'linear-gradient(to right, rgba(0,52,206,0.5), rgba(0,52,206,1), rgba(0,52,206,0.5))'
+        ],
+        self::PROMOTION_TWO_TIMES_UP => [
+            'text' => '2X',
+            'up_multiplier' => 2,
+            'down_multiplier' => 1,
+            'color' => 'linear-gradient(to right, rgba(0,153,0,0.5), rgba(0,153,0,1), rgba(0,153,0,0.5))'
+        ],
+        self::PROMOTION_FREE_TWO_TIMES_UP => [
+            'text' => '2X Free',
+            'up_multiplier' => 2,
+            'down_multiplier' => 0,
+            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(0,52,206,1)'
+        ],
+        self::PROMOTION_HALF_DOWN => [
+            'text' => '50%',
+            'up_multiplier' => 1,
+            'down_multiplier' => 0.5,
+            'color' => 'linear-gradient(to right, rgba(220,0,3,0.5), rgba(220,0,3,1), rgba(220,0,3,0.5))'
+        ],
+        self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => [
+            'text' => '2X 50%',
+            'up_multiplier' => 2,
+            'down_multiplier' => 0.5,
+            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(220,0,3,1)'
+        ],
+        self::PROMOTION_ONE_THIRD_DOWN => [
+            'text' => '30%',
+            'up_multiplier' => 1,
+            'down_multiplier' => 0.3,
+            'color' => 'linear-gradient(to right, rgba(65,23,73,0.5), rgba(65,23,73,1), rgba(65,23,73,0.5))'
+        ],
+    ];
+
+    const PICK_NORMAL = 'normal';
+    const PICK_HOT = 'hot';
+    const PICK_CLASSIC = 'classic';
+    const PICK_RECOMMENDED = 'recommended';
+
+    public static array $pickTypes = [
+        self::PICK_NORMAL => ['text' => self::PICK_NORMAL, 'color' => ''],
+        self::PICK_HOT => ['text' => self::PICK_HOT, 'color' => '#e78d0f'],
+        self::PICK_CLASSIC => ['text' => self::PICK_CLASSIC, 'color' => '#77b300'],
+        self::PICK_RECOMMENDED => ['text' => self::PICK_RECOMMENDED, 'color' => '#820084'],
     ];
 
     const BONUS_REWARD_VALUES = [50, 100, 200, 500, 1000];
 
+    public function getPickInfoAttribute()
+    {
+        $info = self::$pickTypes[$this->picktype] ?? null;
+        if ($info) {
+            $info['text'] = nexus_trans('torrent.pick_info.' . $this->picktype);
+            return $info;
+        }
+    }
 
+    public function getPromotionInfoAttribute()
+    {
+        return self::$promotionTypes[$this->sp_state_real] ?? null;
+    }
 
     public function getSpStateRealTextAttribute()
     {

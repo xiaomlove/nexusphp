@@ -104,7 +104,7 @@ class TrackerRepository extends BaseRepository
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (TrackerException $exception) {
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             //other system exception
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
@@ -806,7 +806,7 @@ class TrackerRepository extends BaseRepository
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (TrackerException $exception) {
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             //other system exception
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());

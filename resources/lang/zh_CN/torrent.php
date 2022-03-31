@@ -31,5 +31,11 @@ return [
         'download_label' => '下载',
         'thanks_yes_label' => '已谢谢',
         'thanks_no_label' => '谢谢',
-    ]
+    ],
+    'pick_info' => [
+        'normal' => '普通',
+        'hot' => '热门',
+        'classic' => '经典',
+        'recommended' => '推荐',
+    ],
 ];

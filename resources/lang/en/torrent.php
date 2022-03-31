@@ -25,5 +25,17 @@ return [
         'numfiles_label' => 'Files',
         'bookmark_yes_label' => 'Bookmarked',
         'bookmark_no_label' => 'Add to bookmark',
-    ]
+        'reward_logs_label' => 'Reward',
+        'reward_yes_label' => 'Rewarded',
+        'reward_no_label' => 'Reward',
+        'download_label' => 'Download',
+        'thanks_yes_label' => 'Thanked',
+        'thanks_no_label' => 'Thank',
+    ],
+    'pick_info' => [
+        'normal' => 'Normal',
+        'hot' => 'Hot',
+        'classic' => 'Classic',
+        'recommended' => 'Recommend',
+    ],
 ];

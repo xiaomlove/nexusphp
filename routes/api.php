@@ -43,6 +43,7 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::get('polls-latest', [\App\Http\Controllers\PollController::class, 'latest']);
         Route::post('polls-vote', [\App\Http\Controllers\PollController::class, 'vote']);
         Route::resource('rewards', \App\Http\Controllers\RewardController::class);
+        Route::get('notifications', [\App\Http\Controllers\ToolController::class, 'notifications']);
     });
 
     Route::group(['middleware' => ['admin']], function () {

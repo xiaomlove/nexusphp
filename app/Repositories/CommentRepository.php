@@ -41,8 +41,9 @@ class CommentRepository extends BaseRepository
         $model = new $modelName;
         $target = $model->newQuery()->with('user')->find($params[$type]);
         return DB::transaction(function () use ($params, $user, $target) {
+            $params['added'] = Carbon::now();
             $comment = $user->comments()->create($params);
-            $commentCount = Comment::query()->type($params['type'])->count();
+            $commentCount = Comment::query()->type($params['type'], $params[$params['type']])->count();
             $target->comments = $commentCount;
             $target->save();
 
@@ -60,7 +61,7 @@ class CommentRepository extends BaseRepository
                     'receiver' => $target->user->id,
                     'subject' => $messageInfo['subject'],
                     'msg' => $messageInfo['body'],
-                    'added' => Carbon::now()
+                    'added' => $params['added'],
                 ];
                 Message::query()->insert($insert);
                 NexusDB::cache_del('user_'.$target->user->id.'_unread_message_count');
@@ -100,9 +101,8 @@ class CommentRepository extends BaseRepository
         $targetScript = Comment::TYPE_MAPS[$type]['target_script'];
         $targetNameField = Comment::TYPE_MAPS[$type]['target_name_field'];
         $body = sprintf(
-            '%s [url="%s/%s"]%s[/url]',
-            $trans[$type]['msg_torrent_receive_comment'],
-            getSchemeAndHttpHost(),
+            '%s [url=%s]%s[/url]',
+            $trans['msg_torrent_receive_comment'],
             sprintf($targetScript, $target->id),
             $target->{$targetNameField}
         );

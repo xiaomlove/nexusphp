@@ -3,7 +3,7 @@
 return [
 
     'index' => [
-        'page_title' => '赠魔者列表',
+        'page_title' => '贈魔者列表',
     ],
 
 ];

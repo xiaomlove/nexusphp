@@ -51,6 +51,7 @@ class MessageController extends Controller
     public function show($id)
     {
         $message = Message::query()->with(['send_user'])->findOrFail($id);
+        $message->update(['unread' => 'no']);
         $resource = new MessageResource($message);
         $resource->additional([
             'page_title' => nexus_trans('message.show.page_title'),

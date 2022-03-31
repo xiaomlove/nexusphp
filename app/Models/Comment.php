@@ -39,11 +39,13 @@ class Comment extends NexusModel
         ],
     ];
 
-    public function scopeType(Builder $query, $type)
+    public function scopeType(Builder $query, string $type, int $typeValue)
     {
         foreach (self::TYPE_MAPS as $key => $value) {
             if ($type != $key) {
                 $query->where($value['foreign_key'], 0);
+            } else {
+                $query->where($value['foreign_key'], $typeValue);
             }
         }
         return $query;

@@ -24,6 +24,18 @@ return [
         'thank_users_count_label' => '謝謝',
         'numfiles_label' => '文件',
         'bookmark_yes_label' => '已收藏',
-        'bookmark_no_label' => '加入收藏',
-    ]
+        'bookmark_no_label' => '收藏',
+        'reward_logs_label' => '贈魔',
+        'reward_yes_label' => '已贈魔',
+        'reward_no_label' => '贈魔',
+        'download_label' => '下載',
+        'thanks_yes_label' => '已謝謝',
+        'thanks_no_label' => '謝謝',
+    ],
+    'pick_info' => [
+        'normal' => '普通',
+        'hot' => '熱門',
+        'classic' => '經典',
+        'recommended' => '推薦',
+    ],
 ];

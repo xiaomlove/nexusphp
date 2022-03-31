@@ -35,7 +35,9 @@ if (!empty($_REQUEST['authkey'])) {
     if (empty($decrypted)) {
         err('Invalid authkey');
     }
-    $userInfo = \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+    $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 600, function () use ($uid) {
+        return \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+    });
     if (!$userInfo) {
         err('Invalid authkey');
     }
