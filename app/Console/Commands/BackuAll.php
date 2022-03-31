@@ -42,7 +42,7 @@ class BackuAll extends Command
         $result = $rep->backupAll();
         $log = sprintf(
             '[%s], %s, result: %s',
-            REQUEST_ID, __METHOD__, var_export($result, true)
+            nexus()->getRequestId(), __METHOD__, var_export($result, true)
         );
         $this->info($log);
         do_log($log);

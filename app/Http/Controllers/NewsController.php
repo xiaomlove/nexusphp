@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Resources\NewsResource;
 use App\Models\News;
 use App\Repositories\NewsRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Nexus\Database\NexusDB;
 
 class NewsController extends Controller
 {
@@ -93,4 +96,24 @@ class NewsController extends Controller
         $result = $this->repository->delete($id);
         return $this->success($result);
     }
+
+    /**
+     * @return array
+     */
+    public function latest()
+    {
+        $user = Auth::user();
+        $result = News::query()->orderBy('id', 'desc')->first();
+        $resource = new NewsResource($result);
+        $resource->additional([
+            'site_info' => site_info(),
+        ]);
+        /**
+         * Visiting the home page is the same as viewing the latest news
+         * @see functions.php line 2590
+         */
+        $user->update(['last_home' => Carbon::now()]);
+        return $this->success($resource);
+    }
+
 }

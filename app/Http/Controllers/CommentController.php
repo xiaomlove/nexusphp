@@ -4,10 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
+use App\Repositories\CommentRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CommentController extends Controller
 {
+    private $repository;
+
+    public function __construct(CommentRepository $repository)
+    {
+        $this->repository = $repository;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -20,7 +30,6 @@ class CommentController extends Controller
         $comments = Comment::query()
             ->with($with)
             ->where('torrent', $torrentId)
-            ->whereHas('create_user')
             ->paginate();
         $resource = CommentResource::collection($comments);
         $resource->additional([
@@ -28,6 +37,35 @@ class CommentController extends Controller
         ]);
 
         return $this->success($resource);
+    }
+
+    private function prepareData(Request $request)
+    {
+        $allTypes = array_keys(Comment::TYPE_MAPS);
+        $request->validate([
+            'type' => ['required', Rule::in($allTypes)],
+            'torrent_id' => 'nullable|integer',
+            'text' => 'required',
+            'offer_id' => 'nullable|integer',
+            'request_id' => 'nullable|integer',
+            'anonymous' => 'nullable',
+        ]);
+        $data = [
+            'type' => $request->type,
+            'torrent' => $request->torrent_id,
+            'text' => $request->text,
+            'ori_text' => $request->text,
+            'offer' => $request->offer_id,
+            'request' => $request->request_id,
+            'anonymous' => $request->anonymous,
+        ];
+        $data =  array_filter($data);
+        foreach ($allTypes as $type) {
+            if ($data['type'] == $type && empty($data[$type])) {
+                throw new \InvalidArgumentException("require {$type}_id");
+            }
+        }
+        return $data;
     }
 
     /**
@@ -38,7 +76,10 @@ class CommentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = Auth::user();
+        $comment = $this->repository->store($this->prepareData($request), $user);
+        $resource = new CommentResource($comment);
+        return $this->success($resource);
     }
 
     /**

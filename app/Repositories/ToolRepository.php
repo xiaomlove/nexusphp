@@ -1,7 +1,12 @@
 <?php
 namespace App\Repositories;
 
+use App\Models\Message;
+use App\Models\News;
+use App\Models\Poll;
+use App\Models\PollAnswer;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -147,5 +152,73 @@ class ToolRepository extends BaseRepository
     public function getEncrypter(string $key): Encrypter
     {
         return new Encrypter($key, 'AES-256-CBC');
+    }
+
+    /**
+     * @param $to
+     * @param $subject
+     * @param $body
+     * @return bool
+     */
+    public function sendMail($to, $subject, $body): bool
+    {
+        do_log("to: $to, subject: $subject, body: $body");
+        $smtp = Setting::get('smtp');
+        // Create the Transport
+        $encryption = null;
+        if (isset($smtp['encryption']) && in_array($smtp['encryption'], ['ssl', 'tls'])) {
+            $encryption = $smtp['encryption'];
+        }
+        $transport = (new \Swift_SmtpTransport($smtp['smtpaddress'], $smtp['smtpport'], $encryption))
+            ->setUsername($smtp['accountname'])
+            ->setPassword($smtp['accountpassword'])
+        ;
+
+        // Create the Mailer using your created Transport
+        $mailer = new \Swift_Mailer($transport);
+
+        // Create a message
+        $message = (new \Swift_Message($subject))
+            ->setFrom($smtp['accountname'], Setting::get('basic.SITENAME'))
+            ->setTo([$to])
+            ->setBody($body, 'text/html')
+        ;
+
+        // Send the message
+        try {
+            $result = $mailer->send($message);
+            if ($result == 0) {
+                do_log("send mail fail, unknown error", 'error');
+                return false;
+            }
+            return true;
+        } catch (\Exception $e) {
+            do_log("send email fail: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error');
+            return false;
+        }
+    }
+
+    public function getNotificationCount(User $user): array
+    {
+        $result = [];
+        //attend or not
+        $attendRep = new AttendanceRepository();
+        $attendance = $attendRep->getAttendance($user->id, date('Ymd'));
+        $result['attendance'] = $attendance ? 0 : 1;
+
+        //unread news
+        $count = News::query()->where('added', '>', $user->last_home)->count();
+        $result['news'] = $count;
+
+        //unread messages
+        $count = Message::query()->where('receiver', $user->id)->where('unread', 'yes')->count();
+        $result['message'] = $count;
+
+        //un-vote poll
+        $total = Poll::query()->count();
+        $userVoteCount = PollAnswer::query()->where('userid', $user->id)->selectRaw('count(distinct(pollid)) as counts')->first()->counts;
+        $result['poll'] = $total - $userVoteCount;
+
+        return $result;
     }
 }

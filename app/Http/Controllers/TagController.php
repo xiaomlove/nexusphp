@@ -46,10 +46,7 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $request->validate($this->getRules());
-        $data = $request->all();
-        if (isset($data['priority'])) {
-            $data['priority'] = intval($data['priority']);
-        }
+        $data = array_filter($request->all());
         $result = $this->repository->store($data);
         $resource = new TagResource($result);
         return $this->success($resource);

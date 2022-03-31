@@ -14,11 +14,13 @@ class NewsResource extends JsonResource
      */
     public function toArray($request)
     {
+        $descriptionArr = format_description($this->body);
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'body' => $this->body,
-            'added' => $this->added,
+            'body' => $descriptionArr,
+            'images' => get_image_from_description($descriptionArr),
+            'added' => format_datetime($this->added, 'Y.m.d'),
             'user' => new UserResource($this->whenLoaded('user'))
         ];
     }

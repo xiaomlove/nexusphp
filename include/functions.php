@@ -2274,7 +2274,7 @@ function get_style_highlight()
 function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 {
 	global $lang_functions;
-	global $CURUSER, $CURLANGDIR, $USERUPDATESET, $iplog1, $oldip, $SITE_ONLINE, $FUNDS, $SITENAME, $SLOGAN, $logo_main, $BASEURL, $offlinemsg, $showversion,$enabledonation, $staffmem_class, $titlekeywords_tweak, $metakeywords_tweak, $metadescription_tweak, $cssdate_tweak, $deletenotransfertwo_account, $neverdelete_account, $iniupload_main;
+	global $CURUSER, $CURLANGDIR, $USERUPDATESET, $iplog1, $oldip, $SITE_ONLINE, $FUNDS, $SITENAME, $SLOGAN, $logo_main, $BASEURL, $offlinemsg,$enabledonation, $staffmem_class, $titlekeywords_tweak, $metakeywords_tweak, $metadescription_tweak, $cssdate_tweak, $deletenotransfertwo_account, $neverdelete_account, $iniupload_main;
 	global $tstart;
 	global $Cache;
 	global $Advertisement;
@@ -2302,7 +2302,7 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	$title = $SITENAME." :: " . htmlspecialchars($title);
 	if ($titlekeywords_tweak)
 		$title .= " ".htmlspecialchars($titlekeywords_tweak);
-	$title .= $showversion;
+	$title .= " - Powered by ".PROJECTNAME;
 	if ($SITE_ONLINE == "no") {
 		if (get_user_class() < UC_ADMINISTRATOR) {
 			die($lang_functions['std_site_down_for_maintenance']);
@@ -2660,7 +2660,7 @@ function stdfoot() {
 	}
 	// Variables for End Time
 	$tend = microtime(true);
-	$totaltime = ($tend - NEXUS_START);
+	$totaltime = ($tend - nexus()->getStartTimestamp());
 	$year = substr($datefounded, 0, 4);
 	$yearfounded = ($year ? $year : 2007);
 	print(" (c) "." <a href=\"" . get_protocol_prefix() . $BASEURL."\" target=\"_self\">".$SITENAME."</a> ".($icplicense_main ? " ".$icplicense_main." " : "").(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y")." ".VERSION."<br /><br />");
@@ -2812,6 +2812,9 @@ function base64 ($string, $encode=true) {
 function loggedinorreturn($mainpage = false) {
 	global $CURUSER,$BASEURL;
 	if (!$CURUSER) {
+	    if (nexus()->getScript() == 'ajax') {
+	        exit(fail('Not login!', $_POST));
+        }
 		if ($mainpage)
 		header("Location: " . get_protocol_prefix() . "$BASEURL/login.php");
 		else {
@@ -2929,7 +2932,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 
 	$uidArr = array_unique(array_column($rows, 'user'));
     $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
-	$userInfoArr = \App\Models\User::query()->with(['valid_medals'])->find($uidArr, $neededColumns)->keyBy('id');
+	$userInfoArr = \App\Models\User::query()->with(['wearing_medals'])->find($uidArr, $neededColumns)->keyBy('id');
 
 	foreach ($rows as $row)
 	{
@@ -2944,7 +2947,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 			}
 		}
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");
-		print(build_medal_image($userInfo->valid_medals, 20) . get_username($row["user"],false,true,true,false,false,true));
+		print(build_medal_image($userInfo->wearing_medals, 20) . get_username($row["user"],false,true,true,false,false,true));
 		print("&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_at']."</font>".gettime($row["added"]).
 		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars(trim($userRow["avatar"])) : "");
@@ -4838,7 +4841,7 @@ function checkGuestVisit()
     if (empty($guestVisitType) || $guestVisitType == 'normal') {
         return;
     }
-    if (in_array(CURRENT_SCRIPT, ['login', 'takelogin', 'image']) && canDoLogin()) {
+    if (in_array(nexus()->getScript(), ['login', 'takelogin', 'image']) && canDoLogin()) {
         return;
     }
 
@@ -5223,7 +5226,7 @@ function list_require_search_box_id()
         'userdetails' => [$setting['browsecat'], $setting['specialcat']],
         'offers' => [$setting['browsecat'], $setting['specialcat']],
     ];
-    return $maps[CURRENT_SCRIPT] ?? [];
+    return $maps[nexus()->getScript()] ?? [];
 }
 
 function can_access_torrent($torrent)
@@ -5297,13 +5300,24 @@ function msgalert($url, $text, $bgcolor = "red")
     print("</td></tr></table></p><br />");
 }
 
-function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200): string
+function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false): string
 {
     $medalImages = [];
+    $wrapBefore = '<div style="display: inline;">';
+    $wrapAfter = '</div>';
     foreach ($medals as $medal) {
-        $medalImages[] = sprintf('<img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+        $html = sprintf('<div style="display: inline"><img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+        if ($withActions) {
+            $checked = '';
+            if ($medal->pivot->status == \App\Models\UserMedal::STATUS_WEARING) {
+                $checked = ' checked';
+            }
+            $html .= sprintf('<label>%s<input type="checkbox" name="medal_wearing_status" value="%s"%s></label>', '佩戴', $medal->id, $checked);
+        }
+        $html .= '</div>';
+        $medalImages[] = $html;
     }
-    return implode('', $medalImages);
+    return $wrapBefore . implode('', $medalImages) . $wrapAfter;
 }
 
 function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)

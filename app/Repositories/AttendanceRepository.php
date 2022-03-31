@@ -75,8 +75,8 @@ class AttendanceRepository extends BaseRepository
             ->where('uid', $uid)
             ->orderBy('id', 'desc');
         if (!empty($date)) {
-            $query->where('added', '>=', Carbon::today())
-                ->where('added', '<', Carbon::tomorrow());
+            $query->where('added', '>=', Carbon::parse($date)->startOfDay())
+                ->where('added', '<=', Carbon::parse($date)->endOfDay());
         }
         return $query->first();
     }

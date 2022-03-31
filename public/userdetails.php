@@ -275,7 +275,7 @@ if ($user["avatar"])
 tr_small($lang_userdetails['row_avatar'], return_avatar_image(htmlspecialchars(trim($user["avatar"]))), 1);
 
 if ($userInfo->valid_medals->isNotEmpty()) {
-    tr_small($lang_userdetails['row_medal'], build_medal_image($userInfo->valid_medals), 1);
+    tr_small($lang_userdetails['row_medal'], build_medal_image($userInfo->valid_medals, 200, $CURUSER['id'] == $user['id']), 1);
 }
 
 $uclass = get_user_class_image($user["class"]);
@@ -500,5 +500,21 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	}
 }
 end_main_frame();
+
+echo <<<EOT
+<script>
+jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
+    let input = jQuery(this);
+    let checked = input.prop("checked")
+    jQuery.post('ajax.php', {params: {id: this.value}, action: 'toggleUserMedalStatus'}, function (response) {
+        console.log(response)
+        if (response.ret != 0) {
+            input.prop("checked", !checked)
+            alert(response.msg)
+        }
+    }, 'json')
+})
+</script>
+EOT;
 stdfoot();
 ?>

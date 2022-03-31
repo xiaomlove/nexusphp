@@ -6,6 +6,7 @@ use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\UserMedal;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Nexus\Database\NexusDB;
@@ -66,7 +67,7 @@ class BonusRepository extends BaseRepository
             if ($medal->duration > 0) {
                 $expireAt = Carbon::now()->addDays($medal->duration)->toDateTimeString();
             }
-            $user->medals()->attach([$medal->id => ['expire_at' => $expireAt]]);
+            $user->medals()->attach([$medal->id => ['expire_at' => $expireAt, 'status' => UserMedal::STATUS_NOT_WEARING]]);
 
         });
 

@@ -47,7 +47,7 @@ class UserResetPassword extends Command
 
         $rep = new UserRepository();
         $result = $rep->resetPassword($uid, $password, $passwordConfirmation);
-        $log = sprintf('[%s], %s, result: %s', REQUEST_ID, __METHOD__, var_export($result, true));
+        $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);
     }

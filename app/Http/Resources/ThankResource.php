@@ -16,6 +16,8 @@ class ThankResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'torrent_id' => $this->torrentid,
+            'user_id' => $this->userid,
             'user' => new UserResource($this->whenLoaded('user')),
         ];
     }

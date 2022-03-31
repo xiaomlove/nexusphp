@@ -3,6 +3,8 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 define('IN_NEXUS', true);
 define('NEXUS_START', microtime(true));
+require ROOT_PATH . 'include/globalfunctions.php';
+require ROOT_PATH . 'include/functions.php';
 require ROOT_PATH . 'vendor/autoload.php';
 require ROOT_PATH . 'nexus/Database/helpers.php';
 require ROOT_PATH . 'include/constants.php';

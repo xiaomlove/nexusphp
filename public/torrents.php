@@ -12,9 +12,10 @@ parked();
 $tagRep = new \App\Repositories\TagRepository();
 $tagKeyById = $tagRep->createBasicQuery()->get()->keyBy('id');
 $renderKeyArr = $tagKeyById->keys()->toArray();
+$elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
 
 //check searchbox
-switch (CURRENT_SCRIPT) {
+switch (nexus()->getScript()) {
     case 'torrents':
         $sectiontype = $browsecatmode;
         break;
@@ -847,10 +848,17 @@ else
 	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where . " GROUP BY categories.mode";
 }
 
-$res = sql_query($sql);
-$count = 0;
-while($row = mysql_fetch_array($res))
-	$count += $row[0];
+if ($elasticsearchEnabled) {
+    $searchRep = new \App\Repositories\SearchRepository();
+    $resultFromElastic = $searchRep->listTorrentFromEs($_GET, $CURUSER['id'], $_SERVER['QUERY_STRING']);
+    $count = $resultFromElastic['total'];
+} else {
+    $res = sql_query($sql);
+    $count = 0;
+    while($row = mysql_fetch_array($res)) {
+        $count += $row[0];
+    }
+}
 
 if ($CURUSER["torrentsperpage"])
 $torrentsperpage = (int)$CURUSER["torrentsperpage"];
@@ -883,17 +891,19 @@ if ($count)
 	//echo $addparam;
 
 	list($pagertop, $pagerbottom, $limit) = pager($torrentsperpage, $count, "?" . $addparam);
-if ($allsec == 1 || $enablespecial != 'yes'){
-	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
-}
-else{
-	$query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
+    if ($allsec == 1 || $enablespecial != 'yes'){
+        $query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
+    }
+    else{
+        $query = "SELECT torrents.id, torrents.sp_state, torrents.promotion_time_type, torrents.promotion_until, torrents.banned, torrents.picktype, torrents.pos_state, torrents.category, torrents.source, torrents.medium, torrents.codec, torrents.standard, torrents.processing, torrents.team, torrents.audiocodec, torrents.leechers, torrents.seeders, torrents.name, torrents.small_descr, torrents.times_completed, torrents.size, torrents.added, torrents.comments,torrents.anonymous,torrents.owner,torrents.url,torrents.cache_stamp,torrents.pt_gen,torrents.hr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
+    }
+    if (!$elasticsearchEnabled) {
+        $res = sql_query($query);
+    }
+} else {
+    unset($res);
 }
 
-	$res = sql_query($query);
-}
-else
-	unset($res);
 if (isset($searchstr))
 	stdhead($lang_torrents['head_search_results_for'].$searchstr_ori);
 elseif ($sectiontype == $browsecatmode)
@@ -1120,8 +1130,12 @@ elseif($inclbookmarked == 2)
 
 if ($count) {
     $rows = [];
-    while ($row = mysql_fetch_assoc($res)) {
-        $rows[] = $row;
+    if ($elasticsearchEnabled) {
+        $rows = $resultFromElastic['data'];
+    } else {
+        while ($row = mysql_fetch_assoc($res)) {
+            $rows[] = $row;
+        }
     }
 	print($pagertop);
 	if ($sectiontype == $browsecatmode)

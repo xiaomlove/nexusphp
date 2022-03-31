@@ -7,7 +7,7 @@ class Tag extends NexusModel
     public $timestamps = true;
 
     protected $fillable = [
-        'id', 'name', 'color', 'priority', 'created_at', 'updated_at'
+        'id', 'name', 'color', 'priority', 'created_at', 'updated_at', 'font_size', 'font_color', 'padding', 'margin', 'border_radius'
     ];
 
     const DEFAULTS = [

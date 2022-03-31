@@ -241,6 +241,10 @@ else
 {
 	write_log("Torrent $id ($name) was edited by {$CURUSER['username']}, Mod Edit" . $pick_info . $place_info);
 }
+
+$searchRep = new \App\Repositories\SearchRepository();
+$searchRep->updateTorrent($id);
+
 $returl = "details.php?id=$id&edited=1";
 if (isset($_POST["returnto"]))
 	$returl = $_POST["returnto"];

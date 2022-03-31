@@ -336,4 +336,27 @@ function check_client($peer_id, $agent, &$agent_familyid)
 		return "Banned Client, Please goto $BASEURL/faq.php#id29 for a list of acceptable clients";
 	}
 }
+
+function request_local_api($api)
+{
+    $start = microtime(true);
+    $ch = curl_init();
+    $options = [
+        CURLOPT_URL => sprintf('%s?%s', trim($api, '/'), $_SERVER['QUERY_STRING']),
+        CURLOPT_USERAGENT => $_SERVER["HTTP_USER_AGENT"],
+        CURLOPT_HTTPHEADER => ['REQUEST_ID: ' . nexus()->getRequestId(), 'Platform: tracker'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT => 60,
+    ];
+    curl_setopt_array($ch, $options);
+    $response = curl_exec($ch);
+    $log = sprintf(
+        "[LOCAL_ANNOUNCE_API] [%s] options: %s, response(%s): %s",
+        number_format(microtime(true) - $start, 3), nexus_json_encode($options), gettype($response), $response
+    );
+    do_log($log);
+    return $response;
+}
+
 ?>

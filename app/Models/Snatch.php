@@ -9,6 +9,11 @@ class Snatch extends NexusModel
 {
     protected $table = 'snatched';
 
+    protected $fillable = [
+        'torrentid', 'userid', 'ip', 'port', 'uploaded', 'downloaded', 'to_go', 'seedtime', 'leechtime',
+        'last_action', 'startdat', 'completedat', 'finished'
+    ];
+
     protected $casts = [
         'last_action' => 'datetime',
         'startdat' => 'datetime',

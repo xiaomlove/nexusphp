@@ -1,6 +1,17 @@
 <?php
-require_once('../include/bittorrent_announce.php');
-//require_once('../include/benc.php');
+require '../include/bittorrent_announce.php';
+$apiLocalHost = nexus_env('TRACKER_API_LOCAL_HOST');
+if ($apiLocalHost) {
+    do_log("[TRACKER_API_LOCAL_HOST] $apiLocalHost");
+    $response = request_local_api(trim($apiLocalHost, '/') . '/api/announce');
+    if (empty($response)) {
+        err("error from TRACKER_API_LOCAL_HOST");
+    } else {
+        exit(benc_resp_raw($response));
+    }
+}
+//continue the normal process
+require ROOT_PATH . 'include/core.php';
 dbconn_announce();
 do_log(nexus_json_encode($_SERVER));
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
@@ -24,7 +35,9 @@ if (!empty($_REQUEST['authkey'])) {
     if (empty($decrypted)) {
         err('Invalid authkey');
     }
-    $userInfo = \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+    $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 600, function () use ($uid) {
+        return \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+    });
     if (!$userInfo) {
         err('Invalid authkey');
     }
@@ -153,7 +166,7 @@ else{
 if ($newnumpeers > $rsize)
 	$limit = " ORDER BY RAND() LIMIT $rsize";
 else $limit = "";
-$announce_wait = 30;
+$announce_wait = \App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND;
 
 $fields = "seeder, peer_id, ip, port, uploaded, downloaded, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
 //$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
@@ -188,7 +201,7 @@ $params = $_GET;
 unset($params['key']);
 $lockKey = md5(http_build_query($params));
 $redis = $Cache->getRedis();
-if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => $announce_wait])) {
+if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
     do_log('ReAnnounce');
     benc_resp($rep_dict);
     exit();

@@ -33,7 +33,37 @@
 
             <el-table-column
                 prop="color"
-                label="Color"
+                label="Background color"
+            >
+            </el-table-column>
+
+            <el-table-column
+                prop="font_color"
+                label="Font color"
+            >
+            </el-table-column>
+
+            <el-table-column
+                prop="font_size"
+                label="Font size"
+            >
+            </el-table-column>
+
+            <el-table-column
+                prop="margin"
+                label="Margin"
+            >
+            </el-table-column>
+
+            <el-table-column
+                prop="padding"
+                label="Padding"
+            >
+            </el-table-column>
+
+            <el-table-column
+                prop="border_radius"
+                label="Border radius"
             >
             </el-table-column>
 
@@ -47,12 +77,6 @@
                 prop="updated_at"
                 label="Updated at"
             ></el-table-column>
-
-            <el-table-column
-                prop="created_at"
-                label="Created at"
-            ></el-table-column>
-
 
             <el-table-column
                 label="Action"

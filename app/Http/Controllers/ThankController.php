@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ThankResource;
+use App\Models\Setting;
 use App\Models\Thank;
+use App\Models\Torrent;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ThankController extends Controller
 {
@@ -37,7 +42,48 @@ class ThankController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = Auth::user();
+        $request->validate(['torrent_id' => 'required']);
+        $torrentId = $request->torrent_id;
+        $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
+        $torrent->checkIsNormal();
+        $torrentOwner = User::query()->findOrFail($torrent->owner);
+        if ($user->id == $torrentOwner->id) {
+            throw new \LogicException("you can't thank to yourself");
+        }
+        $torrentOwner->checkIsNormal();
+        if ($user->thank_torrent_logs()->where('torrentid', $torrentId)->exists()) {
+            throw new \LogicException("you already thank this torrent");
+        }
+
+        $result = DB::transaction(function () use ($user, $torrentOwner, $torrent) {
+            $thank = $user->thank_torrent_logs()->create(['torrentid' => $torrent->id]);
+            $sayThanksBonus = Setting::get('bonus.saythanks');
+            $receiveThanksBonus = Setting::get('bonus.receivethanks');
+            if ($sayThanksBonus > 0) {
+                $affectedRows = User::query()
+                    ->where('id', $user->id)
+                    ->where('seedbonus', $user->seedbonus)
+                    ->increment('seedbonus', $sayThanksBonus);
+                if ($affectedRows != 1) {
+                    do_log("affectedRows: $affectedRows, query: " . last_query(), 'error');
+                    throw new \RuntimeException("increment user bonus fail.");
+                }
+            }
+            if ($receiveThanksBonus > 0) {
+                $affectedRows = User::query()
+                    ->where('id', $torrentOwner->id)
+                    ->where('seedbonus', $torrentOwner->seedbonus)
+                    ->increment('seedbonus', $receiveThanksBonus);
+                if ($affectedRows != 1) {
+                    do_log("affectedRows: $affectedRows, query: " . last_query(), 'error');
+                    throw new \RuntimeException("increment owner bonus fail.");
+                }
+            }
+            return $thank;
+        });
+        $resource = new ThankResource($result);
+        return $this->success($resource, '说谢谢成功！');
     }
 
     /**

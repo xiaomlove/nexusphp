@@ -1,4 +1,7 @@
 <?php
+
+use JetBrains\PhpStorm\Pure;
+
 function get_global_sp_state()
 {
 	global $Cache;
@@ -153,26 +156,20 @@ function nexus_dd($vars)
  * @param $log
  * @param string $level
  */
-function do_log($log, $level = 'info')
+function do_log($log, $level = 'info', $echo = false)
 {
-    static $uid, $passkey, $env, $sequence, $setLogLevel;
+    static $env, $setLogLevel;
     if (is_null($setLogLevel)) {
         $setLogLevel = nexus_env('LOG_LEVEL', 'debug');
     }
-    $logLevels = [
-        \Psr\Log\LogLevel::DEBUG,
-        \Psr\Log\LogLevel::INFO,
-        \Psr\Log\LogLevel::NOTICE,
-        \Psr\Log\LogLevel::WARNING,
-        \Psr\Log\LogLevel::ERROR,
-        \Psr\Log\LogLevel::CRITICAL,
-        \Psr\Log\LogLevel::ALERT,
-        \Psr\Log\LogLevel::EMERGENCY,
-    ];
+    if (is_null($env)) {
+        $env = nexus_env('APP_ENV', 'production');
+    }
+    $logLevels = ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
     $setLogLevelKey = array_search($setLogLevel, $logLevels);
     $currentLogLevelKey = array_search($level, $logLevels);
     if ($currentLogLevelKey === false) {
-        $level = \Psr\log\LogLevel::ERROR;
+        $level = 'error';
         $log = "[ERROR_LOG_LEVEL] $log";
         $currentLogLevelKey = array_search($level, $logLevels);
     }
@@ -184,32 +181,25 @@ function do_log($log, $level = 'info')
 	if (($fd = fopen($logFile, 'a')) === false) {
        $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
 	}
-	if (is_null($uid)) {
-	    $sequence = 0;
-        if (IN_NEXUS) {
-            global $CURUSER;
-            $user = $CURUSER;
-            $uid = $user['id'] ?? 0;
-            $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
-            $env = nexus_env('APP_ENV');
-        } else {
-            $user = \Illuminate\Support\Facades\Auth::user();
-            $uid = $user->id ?? 0;
-            $passkey = $user->passkey ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
-            $env = env('APP_ENV');
-        }
+    if (IN_NEXUS) {
+        global $CURUSER;
+        $user = $CURUSER;
+        $uid = $user['id'] ?? 0;
+        $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
     } else {
-	    $sequence++;
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $uid = $user->id ?? 0;
+        $passkey = $user->passkey ?? request('passkey', request('authkey', ''));
     }
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
     $content = sprintf(
         "[%s] [%s] [%s] [%s] [%s] [%s] %s.%s %s:%s %s%s%s %s%s",
         date('Y-m-d H:i:s'),
-        defined('REQUEST_ID') ? REQUEST_ID : '',
+        nexus() ? nexus()->getRequestId() : 'NO_REQUEST_ID',
+        nexus() ? nexus()->getLogSequence() : 0,
+        sprintf('%.3f', microtime(true) - (nexus() ? nexus()->getStartTimestamp() : 0)),
         $uid,
         $passkey,
-        $sequence,
-        sprintf('%.3f', microtime(true) - NEXUS_START),
         $env, $level,
         $backtrace[0]['file'] ?? '',
         $backtrace[0]['line'] ?? '',
@@ -221,6 +211,12 @@ function do_log($log, $level = 'info')
     );
     fwrite($fd, $content);
     fclose($fd);
+    if (is_bool($echo) && $echo) {
+        echo $content . PHP_EOL;
+    }
+    if (nexus()) {
+        nexus()->incrementLogSequence();
+    }
 }
 
 function getLogFile()
@@ -286,19 +282,23 @@ function get_setting($name = null)
 {
 	static $settings;
 	if (is_null($settings)) {
-		//get all settings from database
-		$sql = "select name, value from settings";
-		$result = sql_query($sql);
-		while ($row = mysql_fetch_assoc($result)) {
-			$value = $row['value'];
-            if (!is_null($value)) {
-                $arr = json_decode($value, true);
-                if (is_array($arr)) {
-                    $value = $arr;
+        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus" . __METHOD__, 10, function () {
+            //get all settings from database
+            $sql = "select name, value from settings";
+            $result = sql_query($sql);
+            $final = [];
+            while ($row = mysql_fetch_assoc($result)) {
+                $value = $row['value'];
+                if (!is_null($value)) {
+                    $arr = json_decode($value, true);
+                    if (is_array($arr)) {
+                        $value = $arr;
+                    }
                 }
+                arr_set($final, $row['name'], $value);
             }
-			arr_set($settings, $row['name'], $value);
-		}
+            return $final;
+        });
 	}
 	if (is_null($name)) {
 	    return $settings;
@@ -310,7 +310,7 @@ function nexus_env($key = null, $default = null)
 {
     static $env;
     if (is_null($env)) {
-        $envFile = defined('ROOT_PATH') ? ROOT_PATH . '.env' : base_path('.env');
+        $envFile = dirname(__DIR__) . '/.env';
         $env = readEnvFile($envFile);
     }
     if (is_null($key)) {
@@ -492,26 +492,19 @@ function api(...$args)
         $msg = $args[1];
         $data = $args[2];
     }
-    if (defined('LARAVEL_START')) {
-        $start = LARAVEL_START;
-        if ($data instanceof \Illuminate\Http\Resources\Json\ResourceCollection || $data instanceof \Illuminate\Http\Resources\Json\JsonResource) {
-            $data = $data->response()->getData(true);
-            if (isset($data['data']) && count($data) == 1) {
-                //单纯的集合，无分页等其数据
-                $data = $data['data'];
-            }
+    if ($data instanceof \Illuminate\Http\Resources\Json\ResourceCollection || $data instanceof \Illuminate\Http\Resources\Json\JsonResource) {
+        $data = $data->response()->getData(true);
+        if (isset($data['data']) && count($data) == 1) {
+            //单纯的集合，无分页等其数据
+            $data = $data['data'];
         }
-    } elseif (defined('NEXUS_START')) {
-        $start = NEXUS_START;
-    } else {
-        throw new \RuntimeException("no constant START is defined.");
     }
     return [
         'ret' => (int)$ret,
         'msg' => (string)$msg,
         'data' => $data,
-        'time' => (float)number_format(microtime(true) - $start, 3),
-        'rid' => REQUEST_ID,
+        'time' => (float)number_format(microtime(true) - nexus()->getStartTimestamp(), 3),
+        'rid' => nexus()->getRequestId(),
     ];
 }
 
@@ -677,4 +670,19 @@ function get_hr_ratio($uped, $downed)
         $ratio = "---";
 
     return $ratio;
+}
+
+function nexus()
+{
+    return \Nexus\Nexus::instance();
+}
+
+function site_info()
+{
+    $setting = \App\Models\Setting::get('basic');
+    $siteInfo = [
+        'site_name' => $setting['SITENAME'],
+        'base_url' => getSchemeAndHttpHost(),
+    ];
+    return $siteInfo;
 }

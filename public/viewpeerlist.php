@@ -3,9 +3,9 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 //Send some headers to keep the user's browser from caching the response.
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT" ); 
-header("Last-Modified: " . gmdate( "D, d M Y H:i:s" ) . "GMT" ); 
-header("Cache-Control: no-cache, must-revalidate" ); 
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT" );
+header("Last-Modified: " . gmdate( "D, d M Y H:i:s" ) . "GMT" );
+header("Cache-Control: no-cache, must-revalidate" );
 header("Pragma: no-cache" );
 header("Content-Type: text/xml; charset=utf-8");
 
@@ -51,7 +51,7 @@ function dltable($name, $arr, $torrent)
 		else
 			$s .= "<td class=rowfollow align=left width=1%>" . get_username($e['userid']);
 
-		$secs = max(1, ($e["la"] - $e["st"]));
+		 $secs = max(1, ($e["la"] - $e["st"]));
 		if ($enablelocation_tweak == 'yes'){
 			list($loc_pub, $loc_mod) = get_ip_location($e["ip"]);
 			$location = get_user_class() >= $userprofile_class ? "<div title='" . $loc_mod . "'>" . $loc_pub . "</div>" : $loc_pub;

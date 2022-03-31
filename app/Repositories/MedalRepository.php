@@ -66,7 +66,23 @@ class MedalRepository extends BaseRepository
         if ($duration > 0) {
             $expireAt = Carbon::now()->addDays($duration)->toDateTimeString();
         }
-        return $user->medals()->attach([$medal->id => ['expire_at' => $expireAt]]);
+        return $user->medals()->attach([$medal->id => ['expire_at' => $expireAt, 'status' => UserMedal::STATUS_NOT_WEARING]]);
+    }
+
+    function toggleUserMedalStatus($id, $userId)
+    {
+        $userMedal = UserMedal::query()->findOrFail($id);
+        if ($userMedal->uid != $userId) {
+            throw new \LogicException("no privilege");
+        }
+        $current = $userMedal->status;
+        if ($current == UserMedal::STATUS_NOT_WEARING) {
+            $userMedal->status = UserMedal::STATUS_WEARING;
+        } elseif ($current == UserMedal::STATUS_WEARING) {
+            $userMedal->status = UserMedal::STATUS_NOT_WEARING;
+        }
+        $userMedal->save();
+        return $userMedal;
     }
 
 }

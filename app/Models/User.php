@@ -79,6 +79,32 @@ class User extends Authenticatable
         'invites' => '邀请',
     ];
 
+    public function mappableAs(): array
+    {
+        return [
+            'id' => 'long',
+            'username' => [
+                'type' => 'text',
+                'analyzer' => 'ik_max_word',
+            ],
+            'email' => [
+                'type' => 'text',
+                'analyzer' => 'ik_max_word',
+            ],
+            'added' => 'date',
+        ];
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'added' => $this->added,
+        ];
+    }
+
     public function getClassTextAttribute(): string
     {
         return self::$classes[$this->class]['text'] ?? '';
@@ -116,7 +142,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
-        'leechwarn', 'leechwarnuntil', 'page', 'class'
+        'leechwarn', 'leechwarnuntil', 'page', 'class', 'uploaded', 'downloaded', 'clientselect', 'showclienterror',
     ];
 
     /**
@@ -320,8 +346,10 @@ class User extends Authenticatable
     public function medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Medal::class, 'user_medals', 'uid', 'medal_id')
-            ->withPivot(['id', 'expire_at'])
-            ->withTimestamps();
+            ->withPivot(['id', 'expire_at', 'status'])
+            ->withTimestamps()
+            ->orderByPivot('id', 'desc')
+            ;
     }
 
     public function valid_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -329,6 +357,26 @@ class User extends Authenticatable
         return $this->medals()->where(function ($query) {
             $query->whereNull('user_medals.expire_at')->orWhere('user_medals.expire_at', '>=', Carbon::now());
         });
+    }
+
+    public function wearing_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->valid_medals()->where('user_medals.status', UserMedal::STATUS_WEARING);
+    }
+
+    public function reward_torrent_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Reward::class, 'userid');
+    }
+
+    public function thank_torrent_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Thank::class, 'userid');
+    }
+
+    public function poll_answers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PollAnswer::class, 'userid');
     }
 
     public function getAvatarAttribute($value)
@@ -348,7 +396,7 @@ class User extends Authenticatable
     public function updateWithModComment(array $update, $modComment)
     {
         if (!$this->exists) {
-            throw new \RuntimeException('This mehtod only works when user exists!');
+            throw new \RuntimeException('This method only works when user exists!');
         }
         //@todo how to do prepare bindings here ?
         $modComment = addslashes($modComment);

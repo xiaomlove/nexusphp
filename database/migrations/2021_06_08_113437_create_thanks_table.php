@@ -19,9 +19,8 @@ class CreateThanksTable extends Migration
         Schema::create('thanks', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedMediumInteger('torrentid')->default(0);
-            $table->unsignedMediumInteger('userid')->default(0);
-            $table->unique(['torrentid', 'id'], 'torrentid_id');
-            $table->index(['torrentid', 'userid'], 'torrentid_userid');
+            $table->unsignedMediumInteger('userid')->default(0)->index();
+            $table->unique(['torrentid', 'userid']);
         });
     }
 

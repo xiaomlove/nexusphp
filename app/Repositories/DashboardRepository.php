@@ -54,7 +54,7 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.system_info.$name"),
-            'value' =>  $_SERVER['SERVER_SOFTWARE'],
+            'value' =>  $_SERVER['SERVER_SOFTWARE'] ?? '',
         ];
         $name = 'load_average';
         $result[$name] = [

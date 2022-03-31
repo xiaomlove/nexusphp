@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Repositories\TagRepository;
+use JeroenG\Explorer\Application\Explored;
+use Laravel\Scout\Searchable;
 
 class Torrent extends NexusModel
 {
@@ -24,6 +26,11 @@ class Torrent extends NexusModel
 
     protected $casts = [
         'added' => 'datetime'
+    ];
+
+    public static $commentFields = [
+        'id', 'name', 'added', 'visible', 'banned', 'owner', 'sp_state', 'pos_state', 'hr', 'picktype', 'picktime',
+        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size'
     ];
 
     public static $basicRelations = [
@@ -61,15 +68,78 @@ class Torrent extends NexusModel
     const PROMOTION_HALF_DOWN_TWO_TIMES_UP = 6;
     const PROMOTION_ONE_THIRD_DOWN = 7;
 
-    public static $promotionTypes = [
-        self::PROMOTION_NORMAL => ['text' => 'Normal', 'up_multiplier' => 1, 'down_multiplier' => 1],
-        self::PROMOTION_FREE => ['text' => 'Free', 'up_multiplier' => 1, 'down_multiplier' => 0],
-        self::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'up_multiplier' => 2, 'down_multiplier' => 1],
-        self::PROMOTION_FREE_TWO_TIMES_UP => ['text' => '2X Free', 'up_multiplier' => 2, 'down_multiplier' => 0],
-        self::PROMOTION_HALF_DOWN => ['text' => '50%', 'up_multiplier' => 1, 'down_multiplier' => 0.5],
-        self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'up_multiplier' => 2, 'down_multiplier' => 0.5],
-        self::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'up_multiplier' => 1, 'down_multiplier' => 0.3],
+    public static array $promotionTypes = [
+        self::PROMOTION_NORMAL => [
+            'text' => 'Normal',
+            'up_multiplier' => 1,
+            'down_multiplier' => 1,
+            'color' => ''
+        ],
+        self::PROMOTION_FREE => [
+            'text' => 'Free',
+            'up_multiplier' => 1,
+            'down_multiplier' => 0,
+            'color' => 'linear-gradient(to right, rgba(0,52,206,0.5), rgba(0,52,206,1), rgba(0,52,206,0.5))'
+        ],
+        self::PROMOTION_TWO_TIMES_UP => [
+            'text' => '2X',
+            'up_multiplier' => 2,
+            'down_multiplier' => 1,
+            'color' => 'linear-gradient(to right, rgba(0,153,0,0.5), rgba(0,153,0,1), rgba(0,153,0,0.5))'
+        ],
+        self::PROMOTION_FREE_TWO_TIMES_UP => [
+            'text' => '2X Free',
+            'up_multiplier' => 2,
+            'down_multiplier' => 0,
+            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(0,52,206,1)'
+        ],
+        self::PROMOTION_HALF_DOWN => [
+            'text' => '50%',
+            'up_multiplier' => 1,
+            'down_multiplier' => 0.5,
+            'color' => 'linear-gradient(to right, rgba(220,0,3,0.5), rgba(220,0,3,1), rgba(220,0,3,0.5))'
+        ],
+        self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => [
+            'text' => '2X 50%',
+            'up_multiplier' => 2,
+            'down_multiplier' => 0.5,
+            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(220,0,3,1)'
+        ],
+        self::PROMOTION_ONE_THIRD_DOWN => [
+            'text' => '30%',
+            'up_multiplier' => 1,
+            'down_multiplier' => 0.3,
+            'color' => 'linear-gradient(to right, rgba(65,23,73,0.5), rgba(65,23,73,1), rgba(65,23,73,0.5))'
+        ],
     ];
+
+    const PICK_NORMAL = 'normal';
+    const PICK_HOT = 'hot';
+    const PICK_CLASSIC = 'classic';
+    const PICK_RECOMMENDED = 'recommended';
+
+    public static array $pickTypes = [
+        self::PICK_NORMAL => ['text' => self::PICK_NORMAL, 'color' => ''],
+        self::PICK_HOT => ['text' => self::PICK_HOT, 'color' => '#e78d0f'],
+        self::PICK_CLASSIC => ['text' => self::PICK_CLASSIC, 'color' => '#77b300'],
+        self::PICK_RECOMMENDED => ['text' => self::PICK_RECOMMENDED, 'color' => '#820084'],
+    ];
+
+    const BONUS_REWARD_VALUES = [50, 100, 200, 500, 1000];
+
+    public function getPickInfoAttribute()
+    {
+        $info = self::$pickTypes[$this->picktype] ?? null;
+        if ($info) {
+            $info['text'] = nexus_trans('torrent.pick_info.' . $this->picktype);
+            return $info;
+        }
+    }
+
+    public function getPromotionInfoAttribute()
+    {
+        return self::$promotionTypes[$this->sp_state_real] ?? null;
+    }
 
     public function getSpStateRealTextAttribute()
     {
@@ -79,6 +149,9 @@ class Torrent extends NexusModel
 
     public function getSpStateRealAttribute()
     {
+        if ($this->getRawOriginal('sp_state') === null) {
+            throw new \RuntimeException('no select sp_state field');
+        }
         $spState = $this->sp_state;
         $global = self::getGlobalPromotionState();
         $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
@@ -143,7 +216,10 @@ class Torrent extends NexusModel
 
     public static function getFieldLabels(): array
     {
-        $fields = ['comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles', 'bookmark_yes', 'bookmark_no'];
+        $fields = [
+            'comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles', 'bookmark_yes', 'bookmark_no',
+            'reward_yes', 'reward_no', 'reward_logs', 'download', 'thanks_yes', 'thanks_no'
+        ];
         $result = [];
         foreach($fields as $field) {
             $result[$field] = nexus_trans("torrent.show.{$field}_label");
@@ -161,6 +237,11 @@ class Torrent extends NexusModel
         }
 
         return true;
+    }
+
+    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Bookmark::class, 'torrentid');
     }
 
     public function user()
@@ -263,9 +344,19 @@ class Torrent extends NexusModel
         $query->where('visible', $visible);
     }
 
+    public function torrent_tags(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TorrentTag::class, 'torrent_id');
+    }
+
     public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'torrent_tags', 'torrent_id', 'tag_id')
             ->orderByRaw(sprintf("field(`tags`.`id`,%s)", TagRepository::getOrderByFieldIdString()));
+    }
+
+    public function reward_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Reward::class, 'torrentid');
     }
 }

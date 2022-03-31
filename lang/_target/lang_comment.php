@@ -34,4 +34,5 @@ $lang_comment_target = array
 	),
 );
 
+return $lang_comment_target;
 ?>

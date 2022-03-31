@@ -42,7 +42,7 @@ class ExamUpdateProgress extends Command
         $uid = $this->argument('uid');
         $examRep = new ExamRepository();
         $result = $examRep->updateProgress($uid);
-        $this->info(REQUEST_ID . ", result: " . var_export($result, true));
+        $this->info(nexus()->getRequestId() . ", result: " . var_export($result, true));
         return 0;
     }
 }

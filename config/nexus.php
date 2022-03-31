@@ -24,4 +24,18 @@ return [
         'database' => nexus_env('REDIS_DB', 0),
     ],
 
+    'elasticsearch' => [
+        'hosts' => [
+            [
+                'host' => nexus_env('ELASTICSEARCH_HOST','localhost'),
+                'port' => nexus_env('ELASTICSEARCH_PORT','9200'),
+                'scheme' => nexus_env('ELASTICSEARCH_SCHEME','https'),
+                'user' => nexus_env('ELASTICSEARCH_USER','elastic'),
+                'pass' => nexus_env('ELASTICSEARCH_PASS',''),
+            ]
+        ],
+
+        'ssl_verification' => nexus_env('ELASTICSEARCH_SSL_VERIFICATION', ''),
+    ]
+
 ];

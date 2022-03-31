@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/constants.php';
-require $rootpath . 'vendor/autoload.php';
+require_once __DIR__ . '/constants.php';
+require_once $rootpath . 'vendor/autoload.php';
+\Nexus\Nexus::boot();
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
     $installScriptFile = $rootpath . "public/$installScriptRelativePath";
@@ -11,18 +12,18 @@ if (!file_exists($rootpath . '.env')) {
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/eloquent.php';
-require $rootpath . 'include/config.php';
 
 ini_set('date.timezone', nexus_config('nexus.timezone'));
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
-
-if (!isRunningInConsole() && !in_array(CURRENT_SCRIPT, ['announce', 'scrape', 'torrentrss', 'download'])) {
+$Cache = new class_cache_redis(); //Load the caching class
+$Cache->setLanguageFolderArray(get_langfolder_list());
+require $rootpath . 'include/config.php';
+if (!in_array(nexus()->getScript(), ['announce', 'scrape', 'torrentrss', 'download'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();
 }
-$Cache = new class_cache_redis(); //Load the caching class
-$Cache->setLanguageFolderArray(get_langfolder_list());
+
 define('TIMENOW', time());
 $USERUPDATESET = array();
 $query_name=array();
