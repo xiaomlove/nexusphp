@@ -14,7 +14,7 @@ class AddMarginPaddingToTagsTable extends Migration
     public function up()
     {
         Schema::table('tags', function (Blueprint $table) {
-            $table->string('padding')->default(0);
+            $table->string('padding')->default('1px 2px');
             $table->string('margin')->default('0 4px 0 0');
             $table->string('border_radius')->default(0);
             $table->string('font_size')->default('12px');

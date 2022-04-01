@@ -40,7 +40,7 @@ stdhead($lang_upload['head_upload']);
 			<table border="1" cellspacing="0" cellpadding="5" width="97%">
 				<tr>
 					<td class='colhead' colspan='2' align='center'>
-						<?php echo $lang_upload['text_tracker_url'] ?>: &nbsp;&nbsp;&nbsp;&nbsp;<b><?php echo  get_protocol_prefix() . $announce_urls[0]?></b>
+						<?php echo $lang_upload['text_tracker_url'] ?>: &nbsp;&nbsp;&nbsp;&nbsp;<b><?php echo  get_tracker_schema_and_host(true)?></b>
 						<?php
 						if(!is_writable(getFullDirectory($torrent_dir)))
 						print("<br /><br /><b>ATTENTION</b>: Torrent directory isn't writable. Please contact the administrator about this problem!");
@@ -56,9 +56,9 @@ stdhead($lang_upload['head_upload']);
 <b>".$lang_upload['text_chinese_title']."</b>&nbsp;<input type=\"text\" style=\"width: 250px\" name=\"cnname\"><br /><font class=\"medium\">".$lang_upload['text_titles_note']."</font>", 1);
 				}
 				else
-					tr($lang_upload['row_torrent_name'], "<input type=\"text\" style=\"width: 650px;\" id=\"name\" name=\"name\" /><br /><font class=\"medium\">".$lang_upload['text_torrent_name_note']."</font>", 1);
+					tr($lang_upload['row_torrent_name'], "<input type=\"text\" style=\"width: 99%;\" id=\"name\" name=\"name\" /><br /><font class=\"medium\">".$lang_upload['text_torrent_name_note']."</font>", 1);
 				if ($smalldescription_main == 'yes')
-				tr($lang_upload['row_small_description'], "<input type=\"text\" style=\"width: 650px;\" name=\"small_descr\" /><br /><font class=\"medium\">".$lang_upload['text_small_description_note']."</font>", 1);
+				tr($lang_upload['row_small_description'], "<input type=\"text\" style=\"width: 99%;\" name=\"small_descr\" /><br /><font class=\"medium\">".$lang_upload['text_small_description_note']."</font>", 1);
 				get_external_tr();
 				if ($settingMain['enable_pt_gen_system'] == 'yes') {
                     $ptGen = new \Nexus\PTGen\PTGen();
@@ -70,11 +70,11 @@ stdhead($lang_upload['head_upload']);
                     tr($lang_upload['row_nfo_file'], "<input type=\"file\" class=\"file\" name=\"nfo\" /><br /><font class=\"medium\">".$lang_upload['text_only_viewed_by'].get_user_class_name($viewnfo_class,false,true,true).$lang_upload['text_or_above']."</font>", 1);
                 }
 				print("<tr><td class=\"rowhead\" style='padding: 3px' valign=\"top\">".$lang_upload['row_description']."<font color=\"red\">*</font></td><td class=\"rowfollow\">");
-				textbbcode("upload","descr","",false);
+				textbbcode("upload","descr", "", false, 130, true);
 				print("</td></tr>\n");
 
                 if ($settingMain['enable_technical_info'] == 'yes') {
-                    tr($lang_functions['text_technical_info'], '<textarea name="technical_info" rows="8" style="width: 650px;"></textarea><br/>' . $lang_functions['text_technical_info_help_text'], 1);
+                    tr($lang_functions['text_technical_info'], '<textarea name="technical_info" rows="8" style="width: 99%;"></textarea><br/>' . $lang_functions['text_technical_info_help_text'], 1);
                 }
 
 				if ($allowtorrents){
@@ -156,7 +156,6 @@ stdhead($lang_upload['head_upload']);
 				{
 					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" />".$lang_upload['checkbox_hide_uploader_note'], 1);
 				}
-//                tr($lang_functions['text_tags'], torrentTags(0, 'checkbox'), 1);
                 tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox(), 1);
 				?>
 				<tr><td class="toolbox" align="center" colspan="2"><b><?php echo $lang_upload['text_read_rules']?></b> <input id="qr" type="submit" class="btn" value="<?php echo $lang_upload['submit_upload']?>" /></td></tr>

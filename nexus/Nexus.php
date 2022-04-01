@@ -129,14 +129,21 @@ final class Nexus
     private function setRequestId()
     {
         $requestId = '';
+        $names = ['HTTP_X_REQUEST_ID', 'REQUEST_ID', 'Request-Id', 'request-id'];
         if ($this->runningInOctane()) {
             $request = request();
-            $requestId = $request->server('request_id', $request->header('request_id', ''));
+            foreach ($names as $name) {
+                $requestId = $request->server($name, $request->header($name));
+                if (!empty($requestId)) {
+                    break;
+                }
+            }
         } else {
-            if (!empty($_SERVER['HTTP_X_REQUEST_ID'])) {
-                $requestId = $_SERVER['HTTP_X_REQUEST_ID'];
-            } elseif (!empty($_SERVER['REQUEST_ID'])) {
-                $requestId = $_SERVER['REQUEST_ID'];
+            foreach ($names as $name) {
+                $requestId = $_SERVER[$name] ?? '';
+                if (!empty($requestId)) {
+                    break;
+                }
             }
         }
         if (empty($requestId)) {

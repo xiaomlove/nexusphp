@@ -4,11 +4,12 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
 
 class Locale
 {
-    public static $languageMaps = [
+    public static array $languageMaps = [
         'en' => 'en',
         'chs' => 'zh_CN',
         'cht' => 'zh_TW',
@@ -27,7 +28,11 @@ class Locale
         $locale = self::$languageMaps[$language->site_lang_folder] ?? 'en';
         do_log("set locale: " . $locale);
         App::setLocale($locale);
-        return $next($request);
+
+        /** @var Response $response */
+        $response = $next($request);
+        $response->header('Request-Id', nexus()->getRequestId());
+        return $response;
     }
 
 }

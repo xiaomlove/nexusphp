@@ -6,14 +6,14 @@ use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
 use App\Models\User;
-use Elasticsearch\Client;
-use Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Support\Arr;
 use Nexus\Database\NexusDB;
 
 class SearchRepository extends BaseRepository
 {
-    private Client $es;
+    private ?Client $es = null;
 
     private bool $enabled = false;
 
@@ -114,7 +114,6 @@ class SearchRepository extends BaseRepository
         $elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
         if ($elasticsearchEnabled) {
             $this->enabled = true;
-            $this->es = $this->getEs();
         } else {
             $this->enabled = false;
         }
@@ -122,12 +121,15 @@ class SearchRepository extends BaseRepository
 
     private function getEs(): Client
     {
-        $config = nexus_config('nexus.elasticsearch');
-        $es = ClientBuilder::create()->setHosts($config['hosts']);
-        if (!empty($config['ssl_verification'])) {
-            $es->setSSLVerification($config['ssl_verification']);
+        if (is_null($this->es)) {
+            $config = nexus_config('nexus.elasticsearch');
+            $es = ClientBuilder::create()->setHosts($config['hosts']);
+            if (!empty($config['ssl_verification'])) {
+                $es->setSSLVerification($config['ssl_verification']);
+            }
+            $this->es = $es;
         }
-        return $es->build();
+        return $this->es;
     }
 
     private function getTorrentRawMappingFields(): array
@@ -167,7 +169,7 @@ class SearchRepository extends BaseRepository
 
     public function getEsInfo(): callable|array
     {
-        return $this->es->info();
+        return $this->getEs()->info();
     }
 
     public function createIndex()
@@ -176,20 +178,17 @@ class SearchRepository extends BaseRepository
         $properties = $params['body']['mappings']['properties'];
         $properties = array_merge($properties, $this->getTorrentRawMappingFields());
         $params['body']['mappings']['properties'] = $properties;
-        return $this->es->indices()->create($params);
+        return $this->getEs()->indices()->create($params);
     }
 
     public function deleteIndex()
     {
         $params = ['index' => self::INDEX_NAME];
-        return $this->es->indices()->delete($params);
+        return $this->getEs()->indices()->delete($params);
     }
 
     public function import($torrentId = null)
     {
-        if (!$this->enabled) {
-            return true;
-        }
         $page = 1;
         $size = 1000;
         $fields = $this->getTorrentBaseFields();
@@ -235,19 +234,19 @@ class SearchRepository extends BaseRepository
             }
 
             //index user
-            $result = $this->es->bulk($userBodyBulk);
+            $result = $this->getEs()->bulk($userBodyBulk);
             $this->logEsResponse("$log, bulk index user done!", $result);
 
             //index torrent
-            $result = $this->es->bulk($torrentBodyBulk);
+            $result = $this->getEs()->bulk($torrentBodyBulk);
             $this->logEsResponse("$log, bulk index torrent done!", $result);
 
             //index tag
-            $result = $this->es->bulk($tagBodyBulk);
+            $result = $this->getEs()->bulk($tagBodyBulk);
             $this->logEsResponse("$log, bulk index tag done!", $result);
 
             //index bookmark
-            $result = $this->es->bulk($bookmarkBodyBulk);
+            $result = $this->getEs()->bulk($bookmarkBodyBulk);
             $this->logEsResponse("$log, bulk index bookmark done!", $result);
 
             $page++;
@@ -648,7 +647,7 @@ class SearchRepository extends BaseRepository
             'index' => self::INDEX_NAME,
             'body' => $query,
         ];
-        $response = $this->es->search($esParams);
+        $response = $this->getEs()->search($esParams);
         $result = [
             'total' => 0,
             'data' => [],
@@ -711,7 +710,7 @@ class SearchRepository extends BaseRepository
         $data = $this->buildTorrentBody($torrent);
         $params = $data['index'];
         $params['body']['doc'] = $data['body'];
-        $result = $this->es->update($params);
+        $result = $this->getEs()->update($params);
         if ($this->isEsResponseError($result)) {
             do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -733,7 +732,7 @@ class SearchRepository extends BaseRepository
         $params = ['body' => []];
         $params['body'][] = ['index' => $data['index']];
         $params['body'][] = $data['body'];
-        $result = $this->es->bulk($params);
+        $result = $this->getEs()->bulk($params);
         if ($this->isEsResponseError($result)) {
             do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -752,7 +751,7 @@ class SearchRepository extends BaseRepository
             'index' => self::INDEX_NAME,
             'id' => $this->getTorrentId($id),
         ];
-        return $this->es->get($params);
+        return $this->getEs()->get($params);
     }
 
     public function deleteTorrent(int $id): bool
@@ -765,7 +764,7 @@ class SearchRepository extends BaseRepository
             'index' => self::INDEX_NAME,
             'id' => $this->getTorrentId($id),
         ];
-        $result = $this->es->delete($params);
+        $result = $this->getEs()->delete($params);
         if ($this->isEsResponseError($result)) {
             do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -798,7 +797,7 @@ class SearchRepository extends BaseRepository
                 ]
             ]
         ];
-        $result = $this->es->deleteByQuery($params);
+        $result = $this->getEs()->deleteByQuery($params);
         if ($this->isEsResponseError($result)) {
             do_log("$log, delete torrent tag fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -820,7 +819,7 @@ class SearchRepository extends BaseRepository
             do_log("$log, no tags, return true");
             return true;
         }
-        $result = $this->es->bulk($bulk);
+        $result = $this->getEs()->bulk($bulk);
         if ($this->isEsResponseError($result)) {
             do_log("$log, insert torrent tag fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -841,7 +840,7 @@ class SearchRepository extends BaseRepository
         $data = $this->buildUserBody($user);
         $params = $data['index'];
         $params['body']['doc'] = $data['body'];
-        $result = $this->es->update($params);
+        $result = $this->getEs()->update($params);
         if ($this->isEsResponseError($result)) {
             do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -865,7 +864,7 @@ class SearchRepository extends BaseRepository
         $body = $this->buildBookmarkBody($bookmark->torrent, $bookmark, true);
         $bulk['body'][] = ['index' => $body['index']];
         $bulk['body'][] = $body['body'];
-        $result = $this->es->bulk($bulk);
+        $result = $this->getEs()->bulk($bulk);
         if ($this->isEsResponseError($result)) {
             do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;
@@ -884,7 +883,7 @@ class SearchRepository extends BaseRepository
             'index' => self::INDEX_NAME,
             'id' => $this->getBookmarkId($id),
         ];
-        $result = $this->es->delete($params);
+        $result = $this->getEs()->delete($params);
         if ($this->isEsResponseError($result)) {
             do_log("$log, fail: " . nexus_json_encode($result), 'error');
             return false;

@@ -158,7 +158,7 @@ echo("<td class=rowfollow><input class=checkbox type=\"checkbox\" name=\"message
 }
 ?>
 <tr class="colhead">
-<td colspan="5" align="right" class="colhead"><input class=btn type="button" value="<?php echo $lang_messages['input_check_all']; ?>" onClick="this.value=check(form,'<?php echo $lang_messages['input_check_all'] ?>','<?php echo $lang_messages['input_uncheck_all'] ?>')"> 
+<td colspan="5" align="right" class="colhead"><input class=btn type="button" value="<?php echo $lang_messages['input_check_all']; ?>" onClick="this.value=check(form,'<?php echo $lang_messages['input_check_all'] ?>','<?php echo $lang_messages['input_uncheck_all'] ?>')">
 <?php if($mailbox != PM_SENTBOX) print("<input class=btn type=\"submit\" name=\"markread\" value=\"".$lang_messages['submit_mark_as_read']."\">") ?>
 <input class=btn type="submit" name="delete" value=<?php echo $lang_messages['submit_delete']?>>
 <?php
@@ -179,7 +179,7 @@ print("</form>");
         </select>
       </td>
     </tr>
-  
+
   </form><tr><td class=toolbox colspan=5>
 <div align="center"><img class="unreadpm" src="pic/trans.gif" alt="Unread" title="<?php echo $lang_messages['title_unread'] ?>" /><a href="messages.php?action=viewmailbox&box=<?php echo $mailbox?>&unread=yes"><?php echo $lang_messages['text_unread_messages'] ?></a>
 <img class="readpm" src="pic/trans.gif" alt="Read" title="<?php echo $lang_messages['title_read'] ?>" /><a href="messages.php?action=viewmailbox&box=<?php echo $mailbox?>&unread=no"><?php echo $lang_messages['text_read_messages'] ?></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -229,6 +229,7 @@ $reply = " [ <a href=\"sendmessage.php?receiver=" . $message['sender'] . "&reply
 }
 }
 $body = format_comment($message['msg']);
+$body = htmlspecialchars_decode($body);
 $added = $message['added'];
 if ($message['sender'] == $CURUSER['id'])
 {
@@ -673,7 +674,7 @@ function insertJumpTo($selected = 0)
 {
 global $lang_messages;
 global $CURUSER;
-$res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' ORDER BY boxnumber'); 
+$res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' ORDER BY boxnumber');
 $place = $_GET['place'] ?? '';
 ?>
 <form action="messages.php" method="get">

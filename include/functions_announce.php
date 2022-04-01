@@ -341,10 +341,19 @@ function request_local_api($api)
 {
     $start = microtime(true);
     $ch = curl_init();
+    $headers = [
+        'Request-Id: ' . nexus()->getRequestId(),
+        'Platform: tracker',
+        'Scheme: ' . (isHttps() ? 'https' : 'http'),
+        'SERVER_PORT: ' . ($_SERVER['SERVER_PORT'] ?? ''),
+        'Host: ' . ($_SERVER['HTTP_HOST'] ?? ''),
+        'REMOTE_ADDR: ' . ($_SERVER['REMOTE_ADDR'] ?? ''),
+        'X-Forwarded-For: ' . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''),
+    ];
     $options = [
         CURLOPT_URL => sprintf('%s?%s', trim($api, '/'), $_SERVER['QUERY_STRING']),
         CURLOPT_USERAGENT => $_SERVER["HTTP_USER_AGENT"],
-        CURLOPT_HTTPHEADER => ['REQUEST_ID: ' . nexus()->getRequestId(), 'Platform: tracker'],
+        CURLOPT_HTTPHEADER => $headers,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_TIMEOUT => 60,

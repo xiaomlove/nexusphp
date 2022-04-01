@@ -282,7 +282,7 @@ function get_setting($name = null)
 {
 	static $settings;
 	if (is_null($settings)) {
-        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus" . __METHOD__, 10, function () {
+        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus", 10, function () {
             //get all settings from database
             $sql = "select name, value from settings";
             $result = sql_query($sql);
@@ -443,7 +443,12 @@ function arr_set(&$array, $key, $value)
 
 function isHttps()
 {
-    $result = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
+    if (RUNNING_IN_OCTANE) {
+        $https = request()->server('HTTPS');
+        $result = !empty($https) && (strtolower($https) !== 'off');
+    } else {
+        $result = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
+    }
     return $result;
 }
 
@@ -456,7 +461,12 @@ function getSchemeAndHttpHost()
     }
     $isHttps = isHttps();
     $protocol = $isHttps ? 'https' : 'http';
-    $result = "$protocol://" . $_SERVER['HTTP_HOST'];
+    if (RUNNING_IN_OCTANE) {
+        $host = request()->server('HTTP_HOST', '');
+    } else {
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+    }
+    $result = "$protocol://" . $host;
     return $result;
 
 }
@@ -619,10 +629,10 @@ function nexus_trans($key, $replace = [], $locale = null)
 
 function isRunningInConsole(): bool
 {
-    return php_sapi_name() == 'cli';
+    return !RUNNING_IN_OCTANE && php_sapi_name() == 'cli';
 }
 
-function get_tracker_schema_and_host(): array
+function get_tracker_schema_and_host($combine = false): array|string
 {
     global $https_announce_urls, $announce_urls;
     $httpsAnnounceUrls = array_filter($https_announce_urls);
@@ -644,14 +654,17 @@ function get_tracker_schema_and_host(): array
             $log .= ", https_announce_urls empty, use announce_urls[0]";
             $base_announce_url = $announce_urls[0];
         }
-    }
-    else{
+    } else {
         $ssl_torrent = "http://";
         $base_announce_url = $announce_urls[0];
     }
     do_log($log);
+    if ($combine) {
+        return $ssl_torrent . $base_announce_url;
+    }
     return compact('ssl_torrent', 'base_announce_url');
 }
+
 
 function get_hr_ratio($uped, $downed)
 {

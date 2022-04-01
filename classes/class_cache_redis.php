@@ -21,7 +21,6 @@ class class_cache_redis {
     function __construct() {
         $success = $this->connect(); // Connect to Redis
         if ($success) {
-            do_log("Redis is enabled!");
             $this->isEnabled = 1;
         } else {
             do_log("Redis is disabled!");
@@ -45,27 +44,22 @@ class class_cache_redis {
         if (!empty($config['timeout'])) {
             $params[] = $config['timeout'];
         }
-        try {
-            $connectResult = $redis->connect(...$params);
-            $auth = [];
-            if (!empty($config['password'])) {
-                $auth['pass'] = $config['password'];
-                if (!empty($config['username'])) {
-                    $auth['user'] = $config['username'];
-                }
-                $connectResult = $connectResult && $redis->auth($auth);
+        $connectResult = $redis->connect(...$params);
+        $auth = [];
+        if (!empty($config['password'])) {
+            $auth['pass'] = $config['password'];
+            if (!empty($config['username'])) {
+                $auth['user'] = $config['username'];
             }
-            if ($connectResult) {
-                $this->redis = $redis;
-                if (is_numeric($config['database'])) {
-                    $redis->select($config['database']);
-                }
-            }
-            return $connectResult;
-        } catch (\Exception $exception) {
-            do_log("Redis connect fail: " . $exception->getMessage(), 'error');
-            return false;
+            $connectResult = $connectResult && $redis->auth($auth);
         }
+        if ($connectResult) {
+            $this->redis = $redis;
+            if (is_numeric($config['database'])) {
+                $redis->select($config['database']);
+            }
+        }
+        return $connectResult;
     }
 
     function getIsEnabled() {

@@ -296,7 +296,7 @@ class TrackerRepository extends BaseRepository
             return User::query()->where($field, $value)->first();
         });
         if (!$user) {
-            throw new TrackerException("Invalid $field: $value.");
+            throw new TrackerException("Invalid user $field: $value.");
         }
         $user->checkIsNormal();
 
@@ -861,11 +861,11 @@ class TrackerRepository extends BaseRepository
 
     private function getTorrentByInfoHash($infoHash)
     {
-        $cacheKey = bin2hex($infoHash) . __METHOD__;
-        return Cache::remember($cacheKey, 60, function () use ($infoHash) {
+        $cacheKey = __METHOD__ . bin2hex($infoHash);
+        return Cache::remember($cacheKey, 60, function () use ($infoHash, $cacheKey) {
             $fieldRaw = 'id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed';
             $torrent = Torrent::query()->where('info_hash', $infoHash)->selectRaw($fieldRaw)->first();
-            do_log("[getTorrentByInfoHash] cache miss, from database: " . last_query() . ", and get: " . $torrent->id);
+            do_log("[getTorrentByInfoHash] cache miss [$cacheKey], from database, and get: " . ($torrent->id ?? ''));
             return $torrent;
         });
     }

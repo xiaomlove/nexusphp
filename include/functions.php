@@ -636,13 +636,22 @@ function get_elapsed_time($ts,$shortunit = false)
 	return "&lt; 1".($shortunit ? $lang_functions['text_short_min'] : $lang_functions['text_min']);
 }
 
-function textbbcode($form,$text,$content="",$hastitle=false, $col_num = 130)
+function textbbcode($form,$text,$content="",$hastitle=false, $col_num = 130, $withPreview = false)
 {
 	global $lang_functions;
 	global $subject, $BASEURL, $CURUSER, $enableattach_attachment;
+	$editTbodyId = "$form-$text-edit";
+	$previewTbodyId = "$form-$text-preview";
+	$btnEditId = "$form-$text-btn-edit";
+    $btnPreviewId = "$form-$text-btn-preview";
 ?>
 
 <script type="text/javascript">
+    let textareaId = "<?php echo $text?>"
+    let editTbodyId = "<?php echo $editTbodyId?>"
+    let previewTbodyId = "<?php echo $previewTbodyId?>"
+    let btnEditId = "<?php echo $btnEditId?>"
+    let btnPreviewId = "<?php echo $btnPreviewId?>"
 //<![CDATA[
 var b_open = 0;
 var i_open = 0;
@@ -841,9 +850,25 @@ function simpletag(thetag)
 		cstat();
 	}
 }
+
+function textBBCodePreview() {
+    let poststr = encodeURIComponent( document.getElementById(textareaId).value );
+    let result=ajax.posts('preview.php','body='+poststr);
+    jQuery('#' + editTbodyId).hide()
+    jQuery('#' + previewTbodyId).html(result).show()
+    jQuery('#' + btnPreviewId).hide()
+    jQuery('#' + btnEditId).show()
+}
+function textBBCodeEdit() {
+    jQuery('#' + editTbodyId).show()
+    jQuery('#' + previewTbodyId).hide()
+    jQuery('#' + btnPreviewId).show()
+    jQuery('#' + btnEditId).hide()
+}
 //]]>
 </script>
 <table width="100%" cellspacing="0" cellpadding="5" border="0">
+    <tbody id="<?php echo $editTbodyId?>">
 <tr><td align="left" colspan="2">
 <table cellspacing="1" cellpadding="2" border="0">
 <tr>
@@ -944,16 +969,16 @@ if ($enableattach_attachment == 'yes'){
 ?>
 <tr>
 <td colspan="2" valign="middle">
-<iframe src="<?php echo get_protocol_prefix() . $BASEURL?>/attachment.php" width="100%" height="24" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+<iframe src="<?php echo getSchemeAndHttpHost()?>/attachment.php" width="100%" height="24" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
 </td>
 </tr>
 <?php
 }
 print("<tr>");
-print("<td align=\"left\"><textarea class=\"bbcode\" cols=\"100\" style=\"width: 650px;\" name=\"".$text."\" id=\"".$text."\" rows=\"20\" onkeydown=\"ctrlenter(event,'compose','qr')\">".$content."</textarea>");
+print("<td align=\"left\"><textarea class=\"bbcode\" cols=\"100\" style=\"width: 100%;\" name=\"".$text."\" id=\"".$text."\" rows=\"20\" onkeydown=\"ctrlenter(event,'compose','qr')\">".$content."</textarea>");
 ?>
 </td>
-<td align="center" width="99%">
+<td align="center" width="">
 <table cellspacing="1" cellpadding="3">
 <tr>
 <?php
@@ -970,7 +995,17 @@ foreach ($quickSmilies as $smily) {
 </tr></table>
 <br />
 <a href="javascript:winop();"><?php echo $lang_functions['text_more_smilies'] ?></a>
-</td></tr></table>
+</td></tr></tobdy>
+    <?php if($withPreview) {?>
+    <tbody id="<?php echo $previewTbodyId?>"></tbody>
+    <tbody>
+        <tr><td colspan="2" style="text-align: center;border: none">
+            <input id="<?php echo $btnPreviewId ?>" type="button" class="btn" value="<?php echo $lang_functions['submit_preview']?>" onclick="javascript:textBBCodePreview()">
+            <input id="<?php echo $btnEditId ?>" type="button" class="btn" style="display: none" value="<?php echo $lang_functions['submit_edit']?>" onclick="javascript:textBBCodeEdit()">
+        </td></tr>
+    </tbody>
+    <?php }?>
+</table>
 <?php
 }
 
@@ -1009,7 +1044,7 @@ function begin_compose($title = "",$type="new", $body="", $hassubject=true, $sub
 	print("<table class=\"main\" width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
 	if ($hassubject)
 		print("<tr><td class=\"rowhead\">".$lang_functions['row_subject']."</td>" .
-"<td class=\"rowfollow\" align=\"left\"><input type=\"text\" style=\"width: 650px;\" name=\"subject\" maxlength=\"".$maxsubjectlength."\" value=\"".htmlspecialchars($subject)."\" /></td></tr>\n");
+"<td class=\"rowfollow\" align=\"left\"><input type=\"text\" style=\"width: 99%;\" name=\"subject\" maxlength=\"".$maxsubjectlength."\" value=\"".htmlspecialchars($subject)."\" /></td></tr>\n");
 	print("<tr><td class=\"rowhead\" valign=\"top\">".$lang_functions['row_body']."</td><td class=\"rowfollow\" align=\"left\"><span style=\"display: none;\" id=\"previewouter\"></span><div id=\"editorouter\">");
 	textbbcode("compose","body", $body, false);
 	print("</div></td></tr>");
@@ -1042,7 +1077,7 @@ function get_external_tr($imdb_url = "")
 	global $lang_functions;
 	global $showextinfo;
 	$imdbNumber = parse_imdb_id($imdb_url);
-	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 650px;\" name=\"url\" value=\"".($imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
+	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 100%;\" name=\"url\" value=\"".($imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
 }
 
 function get_torrent_extinfo_identifier($torrentid)

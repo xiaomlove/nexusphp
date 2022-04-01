@@ -428,6 +428,9 @@ class Install
             if ($key == 'CACHE_DRIVER') {
                 $newData[$key] = 'redis';
             }
+            if ($key == 'QUEUE_CONNECTION') {
+                $newData[$key] = 'redis';
+            }
             if ($scene == 'install' || !file_exists($envFile)) {
                 if ($key == 'APP_ENV') {
                     $newData[$key] = 'production';
