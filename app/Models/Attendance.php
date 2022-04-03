@@ -21,4 +21,10 @@ class Attendance extends NexusModel
         30 => 1000
     ];
 
+
+    public function logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AttendanceLog::class, 'uid', 'uid');
+    }
+
 }

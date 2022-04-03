@@ -70,21 +70,21 @@ class Test extends Command
      */
     public function handle()
     {
-        $searchRep = new SearchRepository();
-        $r = $searchRep->deleteIndex();
-        $r = $searchRep->createIndex();
-        $r = $searchRep->import();
-
-        $arr = [
-            'cat' => 'category',
-            'source' => 'source',
-            'medium' => 'medium',
-            'codec' => 'codec',
-            'audiocodec' => 'audiocodec',
-            'standard' => 'standard',
-            'processing' => 'processing',
-            'team' => 'team',
-        ];
+//        $searchRep = new SearchRepository();
+//        $r = $searchRep->deleteIndex();
+//        $r = $searchRep->createIndex();
+//        $r = $searchRep->import();
+//
+//        $arr = [
+//            'cat' => 'category',
+//            'source' => 'source',
+//            'medium' => 'medium',
+//            'codec' => 'codec',
+//            'audiocodec' => 'audiocodec',
+//            'standard' => 'standard',
+//            'processing' => 'processing',
+//            'team' => 'team',
+//        ];
         $queryString = 'cat401=1&cat404=1&source2=1&medium2=1&medium3=1&codec3=1&audiocodec3=1&standard2=1&standard3=1&processing2=1&team3=1&team4=1&incldead=1&spstate=0&inclbookmarked=0&search=&search_area=0&search_mode=0';
         $userSetting = '[cat401][cat404][sou1][med1][cod1][sta2][sta3][pro2][tea2][aud2][incldead=0][spstate=3][inclbookmarked=2]';
 //        foreach ($arr as $queryField => $value) {
@@ -116,6 +116,11 @@ class Test extends Command
 //        $r = $searchRep->deleteBookmark(1);
 //        $r = $searchRep->addBookmark(1);
 
+        $rep = new AttendanceRepository();
+        $uid = 1;
+        $attendance = $rep->getAttendance($uid);
+//        $r = $rep->migrateAttendanceLogs($uid);
+        $r = $rep->getContinuousDays($attendance);
         dd($r);
     }
 

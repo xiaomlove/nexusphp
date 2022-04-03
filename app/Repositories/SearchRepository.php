@@ -71,6 +71,9 @@ class SearchRepository extends BaseRepository
                     //tag
                     'tag_id' => ['type' => 'long', ],
 
+                    //use for category.mode
+                    'mode' => ['type' => 'long', ],
+
                     //relations
                     'torrent_relations' => [
                         'type' => 'join',
@@ -194,7 +197,7 @@ class SearchRepository extends BaseRepository
         $fields = $this->getTorrentBaseFields();
         array_unshift($fields, 'id');
         $query = Torrent::query()
-            ->with(['user', 'torrent_tags', 'bookmarks'])
+            ->with(['user', 'torrent_tags', 'bookmarks', 'basic_category'])
             ->select($fields);
         if (!is_null($torrentId)) {
             $idArr = preg_split('/[,\s]+/', $torrentId);
@@ -299,6 +302,7 @@ class SearchRepository extends BaseRepository
             'routing' => $torrent->owner,
         ];
         $data = Arr::only($torrent->toArray(), $baseFields);
+        $data['mode'] = $torrent->basic_category->mode;
         $body = array_merge($data, [
             '_doc_type' => $docType,
             'torrent_id' => $torrent->id,
@@ -433,6 +437,9 @@ class SearchRepository extends BaseRepository
         $must = $must_not = [];
         $mustBoolShould = [];
         $must[] = ['match' => ['_doc_type' => self::DOC_TYPE_TORRENT]];
+        if (!empty($params['mode'])) {
+            $must[] = ['match' => ['mode' => $params['mode']]];
+        }
 
         foreach (self::$queryFieldToTorrentFieldMaps as $queryField => $torrentField) {
             if (isset($params[$queryField]) && $params[$queryField] !== '') {

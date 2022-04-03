@@ -27,3 +27,10 @@ function toggleUserMedalStatus($params)
 }
 
 
+function attendanceRetroactive($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\AttendanceRepository();
+    return $rep->retroactive($CURUSER['id'], $params['timestamp']);
+}
+

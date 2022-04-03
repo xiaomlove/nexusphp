@@ -41,7 +41,7 @@ class User extends Authenticatable
     const CLASS_SYSOP = "15";
     const CLASS_STAFF_LEADER = "16";
 
-    public static $classes = [
+    public static array $classes = [
         self::CLASS_PEASANT => ['text' => 'Peasant'],
         self::CLASS_USER => ['text' => 'User', 'min_seed_points' => 0],
         self::CLASS_POWER_USER => ['text' => 'Power User', 'min_seed_points' => 40000],

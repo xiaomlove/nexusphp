@@ -850,7 +850,9 @@ else
 
 if ($elasticsearchEnabled) {
     $searchRep = new \App\Repositories\SearchRepository();
-    $resultFromElastic = $searchRep->listTorrentFromEs($_GET, $CURUSER['id'], $_SERVER['QUERY_STRING']);
+    $esParams = $_GET;
+    $esParams['mode'] = $sectiontype;
+    $resultFromElastic = $searchRep->listTorrentFromEs($esParams, $CURUSER['id'], $_SERVER['QUERY_STRING']);
     $count = $resultFromElastic['total'];
 } else {
     $res = sql_query($sql);

@@ -17,6 +17,10 @@ final class Nexus
 
     private static ?Nexus $instance = null;
 
+    private static array $appendHeaders = [];
+
+    private static array $appendFooters = [];
+
     const PLATFORM_USER = 'user';
     const PLATFORM_ADMIN = 'admin';
     const PLATFORM_TRACKER = 'tracker';
@@ -178,6 +182,49 @@ final class Nexus
         }
         $this->platform = $platform;
     }
+
+    public static function js(string $js, string $position, bool $isFile)
+    {
+        if ($isFile) {
+            $append = sprintf('<script type="text/javascript" src="%s"></script>', $js);
+        } else {
+            $append = sprintf('<script type="text/javascript">%s</script>', $js);
+        }
+        if ($position == 'header') {
+            self::$appendHeaders[] = $append;
+        } elseif ($position == 'footer') {
+            self::$appendFooters[] = $append;
+        } else {
+            throw new \InvalidArgumentException("Invalid position: $position");
+        }
+    }
+
+    public static function css(string $css, string $position, bool $isFile)
+    {
+        if ($isFile) {
+            $append = sprintf('<link rel="stylesheet" href="%s" type="text/css">', $css);
+        } else {
+            $append = sprintf('<style type="text/css">%s</style>', $css);
+        }
+        if ($position == 'header') {
+            self::$appendHeaders[] = $append;
+        } elseif ($position == 'footer') {
+            self::$appendFooters[] = $append;
+        } else {
+            throw new \InvalidArgumentException("Invalid position: $position");
+        }
+    }
+
+    public static function getAppendHeaders(): array
+    {
+        return self::$appendHeaders;
+    }
+
+    public static function getAppendFooters(): array
+    {
+        return self::$appendFooters;
+    }
+
 
 
 }

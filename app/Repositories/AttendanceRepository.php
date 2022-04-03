@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Models\Attendance;
+use App\Models\AttendanceLog;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
@@ -16,9 +17,6 @@ class AttendanceRepository extends BaseRepository
         $today = Carbon::today();
         $settings = Setting::get('bonus');
         $initialBonus = $settings['attendance_initial'] ?? Attendance::INITIAL_BONUS;
-        $stepBonus = $settings['attendance_step'] ?? Attendance::STEP_BONUS;
-        $maxBonus = $settings['attendance_max'] ?? Attendance::MAX_BONUS;
-        $continuousBonus = $settings['attendance_continuous'] ?? Attendance::CONTINUOUS_BONUS;
         $isUpdated = 1;
         $initialData = [
             'uid' => $uid,
@@ -43,11 +41,12 @@ class AttendanceRepository extends BaseRepository
                 if ($diffDays == 1) {
                     //yesterday do it, it's continuous
                     do_log("[CONTINUOUS]");
-                    $points = $this->getContinuousPoints($initialBonus, $stepBonus, $attendance->days, $maxBonus, $continuousBonus);
+                    $continuousDays = $this->getContinuousDays($attendance);
+                    $points = $this->getContinuousPoints($continuousDays);
                     $update = [
                         'added' => $now,
                         'points' => $points,
-                        'days' => $attendance->days + 1,
+                        'days' => $continuousDays + 1,
                         'total_days' => $attendance->total_days + 1,
                     ];
                 } else {
@@ -61,6 +60,12 @@ class AttendanceRepository extends BaseRepository
         }
         if ($isUpdated) {
             User::query()->where('id', $uid)->increment('seedbonus', $update['points']);
+            $attendanceLog = [
+                'uid' => $attendance->uid,
+                'points' => $update['points'],
+                'date' => $now->format('Y-m-d'),
+            ];
+            AttendanceLog::query()->insert($attendanceLog);
         }
         $attendance->added_time = $now->toTimeString();
         $attendance->is_updated = $isUpdated;
@@ -81,8 +86,13 @@ class AttendanceRepository extends BaseRepository
         return $query->first();
     }
 
-    private function getContinuousPoints($initial, $step, $days, $max, $extraAwards)
+    private function getContinuousPoints($days)
     {
+        $settings = Setting::get('bonus');
+        $initial = $settings['attendance_initial'] ?? Attendance::INITIAL_BONUS;
+        $step = $settings['attendance_step'] ?? Attendance::STEP_BONUS;
+        $max = $settings['attendance_max'] ?? Attendance::MAX_BONUS;
+        $extraAwards = $settings['attendance_continuous'] ?? Attendance::CONTINUOUS_BONUS;
         $points = min($initial + $days * $step, $max);
         krsort($extraAwards);
         foreach ($extraAwards as $key => $value) {
@@ -94,6 +104,11 @@ class AttendanceRepository extends BaseRepository
         return $points;
     }
 
+    /**
+     * 将旧的 1 人 1 天 1 条迁移到新版 1 人一条
+     *
+     * @return int
+     */
     public function migrateAttendance(): int
     {
         $page = 1;
@@ -136,5 +151,175 @@ class AttendanceRepository extends BaseRepository
         do_log("[MIGRATE_ATTENDANCE] DONE! $caseWhenStr, result: " . var_export($result, true));
 
         return count($idArr);
+    }
+
+    /**
+     * 清理签到记录，每人只保留一条
+     *
+     * @return int
+     */
+    public function cleanup(): int
+    {
+        $query = Attendance::query()->groupBy('uid')->havingRaw("count(*) > 1")->selectRaw('uid, max(id) as max_id');
+        $page = 1;
+        $size = 10000;
+        $deleteCounts = 0;
+        while (true) {
+            $rows = $query->forPage($page, $size)->get();
+            $log = "sql: " . last_query() . ", count: " . $rows->count();
+            do_log($log, 'info', app()->runningInConsole());
+            if ($rows->isEmpty()) {
+                $log = "no more data....";
+                do_log($log, 'info', app()->runningInConsole());
+                break;
+            }
+            foreach ($rows as $row) {
+                do {
+                    $deleted = Attendance::query()
+                        ->where('uid', $row->uid)
+                        ->where('id', '<', $row->max_id)
+                        ->limit(10000)
+                        ->delete();
+                    $log = "delete: $deleted by sql: " . last_query();
+                    $deleteCounts += $deleted;
+                    do_log($log, 'info', app()->runningInConsole());
+                } while ($deleted > 0);
+            }
+            $page++;
+        }
+        return $deleteCounts;
+    }
+
+    /**
+     * 为 1.7 新的补签功能回写当前连续签到记录
+     *
+     * @param int $uid
+     * @return int
+     */
+    public function migrateAttendanceLogs($uid = 0): int
+    {
+        $cleanUpCounts = $this->cleanup();
+        do_log("cleanup count: $cleanUpCounts", 'info', app()->runningInConsole());
+
+        $page = 1;
+        $size = 10000;
+        $insert = [];
+        $table = 'attendance_logs';
+        while (true) {
+            $logPrefix = "[MIGRATE_ATTENDANCE_LOGS], page: $page, size: $size";
+            $query = Attendance::query()
+                ->where('added', '>=', Carbon::yesterday())
+                ->forPage($page, $size);
+            if ($uid) {
+                $query->where('uid', $uid);
+            }
+            $result = $query->get();
+            do_log("$logPrefix, " . last_query() . ", count: " . $result->count(), 'info', app()->runningInConsole());
+            if ($result->isEmpty()) {
+                do_log("$logPrefix, no more data...");
+                break;
+            }
+            foreach ($result as $row) {
+                $interval =\DateInterval::createFromDateString("-1 day");
+                $period = new \DatePeriod($row->added->addDay(1), $interval, $row->days, \DatePeriod::EXCLUDE_START_DATE);
+                $i = 0;
+                foreach ($period as $periodValue) {
+                    $insert[] = [
+                        'uid' => $row->uid,
+                        'points' => ($i == 0 ? $row->points : 0),
+                        'date' => $periodValue->format('Y-m-d'),
+                    ];
+                    $i++;
+                }
+            }
+            $page++;
+        }
+        if (empty($insert)) {
+            do_log("no data to insert...", 'info', app()->runningInConsole());
+            return 0;
+        }
+        NexusDB::table($table)->insert($insert);
+        $insertCount = count($insert);
+        do_log("[MIGRATE_ATTENDANCE_LOGS] DONE! insert count: " . $insertCount, 'info', app()->runningInConsole());
+
+        return $insertCount;
+    }
+
+    public function getContinuousDays(Attendance $attendance, $start = ''): int
+    {
+        if (!empty($start)) {
+            $start = Carbon::parse($start);
+        } else {
+            $start = $attendance->added;
+        }
+        $logQuery = $attendance->logs()->where('created_at', '<=', $start)->orderBy('date', 'desc');
+        $attendanceLogs = $logQuery->get(['date'])->keyBy('date');
+        $counts = $attendanceLogs->count();
+        do_log(sprintf('user: %s, log counts: %s from query: %s', $attendance->uid, $counts, last_query()));
+        if ($counts == 0) {
+            return 0;
+        }
+        $interval =\DateInterval::createFromDateString("-1 day");
+        $period = new \DatePeriod($start->clone()->addDay(1), $interval, $counts, \DatePeriod::EXCLUDE_START_DATE);
+        $days = 0;
+        foreach ($period as $value) {
+            $checkDate = $value->format('Y-m-d');
+            if ($attendanceLogs->has($checkDate)) {
+                $days++;
+                do_log(sprintf('user: %s, date: %s, has attendance, now days: %s', $attendance->uid, $checkDate, $days));
+            } else {
+                do_log(sprintf('user: %s, date: %s, not attendance, now days: %s', $attendance->uid, $checkDate, $days));
+                break;
+            }
+        }
+        return $days;
+
+    }
+
+    public function retroactive($user, $timestampMs)
+    {
+        if (!$user instanceof User) {
+            $user = User::query()->findOrFail((int)$user);
+        }
+        $attendance = $this->getAttendance($user->id);
+        if (!$attendance) {
+            throw new \LogicException("Haven't attendance yet");
+        }
+        $date = Carbon::createFromTimestampMs($timestampMs);
+        return NexusDB::transaction(function () use ($user, $attendance, $date) {
+            if (AttendanceLog::query()->where('uid', $user->id)->where('date', $date->format('Y-m-d'))->exists()) {
+                throw new \RuntimeException("Already attendance");
+            }
+            if ($user->attendance_card < 1) {
+                throw new \RuntimeException("Attendance card not enough");
+            }
+            $log = sprintf('user: %s, card: %s, retroactive date: %s', $user->id, $user->attendance_card, $date->format('Y-m-d'));
+            $continuousDays = $this->getContinuousDays($attendance, $date->clone()->subDay(1));
+            $log .= ", continuousDays: $continuousDays";
+            $points = $this->getContinuousPoints($continuousDays);
+            $log .= ", points: $points";
+            do_log($log);
+            $userUpdates = [
+                'attendance_card' => NexusDB::raw('attendance_card - 1'),
+                'seedbonus' => NexusDB::raw("seedbonus + $points"),
+            ];
+            $affectedRows = User::query()
+                ->where('id', $user->id)
+                ->where('attendance_card', $user->attendance_card)
+                ->update($userUpdates);
+            $msg = "Decrement user attendance_card and increment bonus";
+            if ($affectedRows != 1) {
+                do_log("$msg fail, query: " . last_query());
+                throw new \RuntimeException("$msg fail");
+            }
+            do_log("$msg success, query: " . last_query());
+            $insert = [
+                'uid' => $user->id,
+                'points' => $points,
+                'date' => $date,
+                'is_retroactive' => 1,
+            ];
+            return AttendanceLog::query()->create($insert);
+        });
     }
 }

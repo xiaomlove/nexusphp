@@ -198,6 +198,19 @@ class Update extends Install
             }
         }
 
+        /**
+         * @since 1.7.0
+         *
+         * add attendance_card to users
+         */
+        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('users', 'attendance_card')) {
+            $this->runMigrate('database/migrations/2022_04_02_163930_create_attendance_logs_table.php');
+            $this->runMigrate('database/migrations/2022_04_03_041642_add_attendance_card_to_users_table.php');
+            $rep = new AttendanceRepository();
+            $count = $rep->migrateAttendanceLogs();
+            $this->doLog("[ADD_ATTENDANCE_CARD_TO_USERS], migrateAttendanceLogs: $count");
+        }
+
     }
 
     public function runExtraMigrate()

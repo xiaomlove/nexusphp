@@ -296,7 +296,7 @@ $lang_functions = array
 	'text_please_download_something_within' => "请在",
 	'text_inactive_account_be_deleted' => "内做些下载。没有流量的用户会被删除账号。",
 	'text_attendance' => '签到得魔力',
-	'text_attended' => '(签到已得%u)',
+	'text_attended' => '(签到已得%u, 补签卡:%d)',
 	'row_pt_gen_douban_url' => "PT-Gen douban 链接",
 	'text_pt_gen_douban_url_note' => "(来自 <strong><a href=\"https://www.douban.com/\">douban</a></strong> 的链接。如电影 <b>Transformers</b> 的链接是<b> https://movie.douban.com/subject/1794171/</b>)",
 	'row_pt_gen_imdb_url' => "PT-Gen imdb 链接",
