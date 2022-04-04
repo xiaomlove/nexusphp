@@ -74,4 +74,6 @@ $lang_staffpanel = [
     'Search user' => '搜索用户',
     'Confirm user' => '确认用户',
     'Confirm user to complete registration' => '确认用户以完成注册',
+    'Add Attendance card' => '增加补签卡',
+    'Add Attendance card to certain classes' => '为特定等级用户增加补签卡',
 ];

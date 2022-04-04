@@ -70,10 +70,11 @@ class Test extends Command
      */
     public function handle()
     {
-//        $searchRep = new SearchRepository();
-//        $r = $searchRep->deleteIndex();
-//        $r = $searchRep->createIndex();
-//        $r = $searchRep->import();
+        $searchRep = new SearchRepository();
+        $r = $searchRep->deleteIndex();
+        $r = $searchRep->createIndex();
+        $r = $searchRep->import();
+        dd($r);
 //
 //        $arr = [
 //            'cat' => 'category',
@@ -116,12 +117,18 @@ class Test extends Command
 //        $r = $searchRep->deleteBookmark(1);
 //        $r = $searchRep->addBookmark(1);
 
-        $rep = new AttendanceRepository();
-        $uid = 1;
-        $attendance = $rep->getAttendance($uid);
+//        $rep = new AttendanceRepository();
+//        $uid = 1;
+//        $attendance = $rep->getAttendance($uid);
 //        $r = $rep->migrateAttendanceLogs($uid);
-        $r = $rep->getContinuousDays($attendance);
-        dd($r);
+//        $r = $rep->getContinuousDays($attendance);
+//        $r = $rep->getContinuousPoints(30);
+//        $today = Carbon::today();
+//        $tomorrow = Carbon::tomorrow();
+//        $yesterday = Carbon::parse('+10 days');
+//        dd($today->diffInDays($yesterday));
+//        $r = get_smile(12);
+//        dd($r);
     }
 
 

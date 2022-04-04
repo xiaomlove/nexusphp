@@ -12,14 +12,14 @@ class BackupCronjob extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:cronjob';
+    protected $signature = 'backup:cronjob {--force=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Backup all data cronjob, and upload to Google drive.';
+    protected $description = 'Backup all data cronjob, and upload to Google drive. options: --force';
 
     /**
      * Create a new command instance.
@@ -38,11 +38,13 @@ class BackupCronjob extends Command
      */
     public function handle(): int
     {
+        $force = $this->option('force');
+        $this->info("force: $force");
         $rep = new ToolRepository();
-        $result = $rep->cronjobBackup();
+        $result = $rep->cronjobBackup($force);
         $log = sprintf(
             '[%s], %s, result: %s',
-            nexus()->getRequestId(), __METHOD__,  var_export($result, true)
+            nexus()->getRequestId(), __METHOD__, var_export($result, true)
         );
         $this->info($log);
         do_log($log);

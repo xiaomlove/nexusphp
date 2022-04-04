@@ -789,13 +789,14 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//update exam progress
-    $examRep = new \App\Repositories\ExamRepository();
-    $updateExamProgressResult = $examRep->updateProgressBulk();
-    $log = 'update exam progress';
-    do_log($log . ", result: " . json_encode($updateExamProgressResult));
-    if ($printProgress) {
-        printProgress($log);
-    }
+    //move to cronjob from v1.7
+//    $examRep = new \App\Repositories\ExamRepository();
+//    $updateExamProgressResult = $examRep->updateProgressBulk();
+//    $log = 'update exam progress';
+//    do_log($log . ", result: " . json_encode($updateExamProgressResult));
+//    if ($printProgress) {
+//        printProgress($log);
+//    }
 
 	// delete torrents that have been dead for a long time
 	if ($deldeadtorrent_torrent > 0){

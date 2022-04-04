@@ -352,7 +352,8 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 
 //	$s = preg_replace("/\[em([1-9][0-9]*)\]/ie", "(\\1 < 192 ? '<img src=\"pic/smilies/\\1.gif\" alt=\"[em\\1]\" />' : '[em\\1]')", $s);
 	$s = preg_replace_callback("/\[em([1-9][0-9]*)\]/i", function ($matches) {
-	    return $matches[1] < 192 ? '<img src="pic/smilies/' . $matches[1] . '.gif" alt="[em' . $matches[1] . ']" />' : '[em' . $matches[1] . ']';
+	    $smile = get_smile($matches[1]);
+	    return $smile ? '<img src="'.$smile.'" alt="[em' . $matches[1] . ']" />' : '[em' . $matches[1] . ']';
     }, $s);
 	reset($tempCode);
 	$j = $i = 0;
@@ -2707,6 +2708,15 @@ function stdfoot() {
 	foreach (\Nexus\Nexus::getAppendFooters() as $value) {
 	    print($value);
     }
+	$backToTop = <<<TOTOP
+<script type="application/javascript" src="/vendor/jquery-goup-1.1.3/jquery.goup.min.js"></script>
+<script>
+jQuery(document).ready(function(){
+    jQuery.goup();
+});
+</script>
+TOTOP;
+    print($backToTop);
 	print("</body></html>");
 
 	//echo replacePngTags(ob_get_clean());
@@ -3208,6 +3218,8 @@ if ($smalldescription_main == 'no' || $CURUSER['showsmalldescr'] == 'no')
 	$displaysmalldescr = false;
 else $displaysmalldescr = true;
 //while ($row = mysql_fetch_assoc($res))
+$lastcom_tooltip = [];
+$torrent_tooltip = [];
 foreach ($rows as $row)
 {
 	$id = $row["id"];
@@ -3368,8 +3380,6 @@ foreach ($rows as $row)
 	//comments
 
 	$nl = "<br />";
-	$lastcom_tooltip = [];
-	$torrent_tooltip = [];
 	if (!$row["comments"]) {
 		print("<a href=\"comment.php?action=add&amp;pid=".$id."&amp;type=torrent\" title=\"".$lang_functions['title_add_comments']."\">" . $row["comments"] .  "</a>");
 	} else {
@@ -3688,7 +3698,7 @@ function create_tooltip_container($id_content_arr, $width = 400)
 {
 	if(count($id_content_arr))
 	{
-		$result = "<div id=\"tooltipPool\" style=\"display: none\">";
+		$result = "<div style=\"display: none\">";
 		foreach($id_content_arr as $id_content_arr_each)
 		{
 			$result .= "<div id=\"" . $id_content_arr_each['id'] . "\">" . $id_content_arr_each['content'] . "</div>";
@@ -3703,12 +3713,13 @@ function getimdb($imdb_id, $cache_stamp, $mode = 'minor')
 	global $lang_functions;
 	global $showextinfo;
 	$thenumbers = $imdb_id;
-	$movie = new imdb ($thenumbers);
+	$imdb = new Nexus\Imdb\Imdb();
+	$movie = $imdb->getMovie($imdb_id);
 	$movieid = $thenumbers;
-	$movie->setid ($movieid);
+//	$movie->setid ($movieid);
 
 	$target = array('Title', 'Credits', 'Plot');
-	switch ($movie->cachestate($target))
+	switch ($imdb->getCacheStatus($imdb_id))
 	{
 		case "0": //cache is not ready
 			{
@@ -3772,7 +3783,7 @@ function getimdb($imdb_id, $cache_stamp, $mode = 'minor')
 					}
 				case 'median':
 					{
-					if (($photo_url = $movie->photo_localurl() ) != FALSE)
+					if (($photo_url = $movie->photo() ) != FALSE)
 						$smallth = "<img src=\"".$photo_url. "\" width=\"105\" alt=\"poster\" />";
 					else $smallth = "";
 					$runtime = $movie->runtime ();
@@ -5353,6 +5364,21 @@ function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)
     $insertTagsSql .= implode(', ', $values);
     do_log("[INSERT_TAGS], torrent: $torrentId with tags: " . nexus_json_encode($tagIdArr));
     sql_query($insertTagsSql);
+}
+
+function get_smile($num)
+{
+    static $all;
+    if (is_null($all)) {
+        $all = [];
+        $prefix = getFullDirectory('public');
+        foreach (glob(getFullDirectory('public/pic/smilies') . '/*') as $value) {
+            $subPath = substr($value, strlen($prefix));
+            $basename = basename($subPath);
+            $all[strstr($basename, '.', true)] = $subPath;
+        }
+    }
+    return $all[$num] ?? null;
 }
 
 ?>

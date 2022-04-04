@@ -30,7 +30,15 @@ parked();
 
 \Nexus\Nexus::css('vendor/fullcalendar-5.10.2/main.min.css', 'header', true);
 \Nexus\Nexus::js('vendor/fullcalendar-5.10.2/main.min.js', 'footer', true);
-\Nexus\Nexus::js('vendor/fullcalendar-5.10.2/locales/zh-cn.js', 'footer', true);
+
+$lang = get_langfolder_cookie();
+$localesMap = [
+    'en' => 'en-us',
+    'chs' => 'zh-cn',
+    'cht' => 'zh-tw',
+];
+$localeJs = $localesMap[$lang] ?? 'en-us';
+\Nexus\Nexus::js("vendor/fullcalendar-5.10.2/locales/{$localeJs}.js", 'footer', true);
 
 $today = \Carbon\Carbon::today();
 $tomorrow = \Carbon\Carbon::tomorrow();
@@ -57,7 +65,7 @@ foreach ($period as $value) {
         if ($logValue->is_retroactive) {
             $events[] = array_merge($eventBase, ['title' => $lang_attendance['retroactive_event_text'], 'display' => 'list-item']);
         }
-    } else {
+    } elseif ($value->lte($today) && $value->diffInDays($today) <= \App\Models\Attendance::MAX_RETROACTIVE_DAYS) {
         $events[] = array_merge($eventBase, ['groupId' => 'to_do', 'display' => 'list-item']);
     }
 }

@@ -716,7 +716,7 @@ $lang_settings = array
     'row_torrent_hr' => 'H&R',
     'text_torrent_hr_note' => '.Set torrent join the H&R inspect',
     'row_cancel_hr' => 'Cancel H&R',
-    'text_cancel_hr_note' => "bonus points to cancel one H&R。Default '10000'。",
+    'text_cancel_hr_note' => "bonus points to cancel one H&R. Default '".\App\Models\BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN."'.",
     'text_attendance_get_bonus' => 'Attendance get bonus',
     'text_attendance_initial_reward' => 'Initial reward',
     'text_attendance_initial_reward_input_label' => 'First time you will get',
@@ -733,8 +733,8 @@ $lang_settings = array
     'text_attendance_continuous_item_action_remove' => 'Remove',
     'text_attendance_continuous_item_action_add' => 'Add',
     'text_attendance_continuous_add_rules' => 'Please add rules from lowest to highest',
-
-
+    'row_attendance_card' => 'Buy attendance card',
+    'text_attendance_card_note' => "bonus points to buy a attendance card. Default'" . \App\Models\BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD . "'.",
 );
 
 ?>

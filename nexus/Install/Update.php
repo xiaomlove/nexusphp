@@ -211,6 +211,17 @@ class Update extends Install
             $this->doLog("[ADD_ATTENDANCE_CARD_TO_USERS], migrateAttendanceLogs: $count");
         }
 
+        /**
+         * @since 1.7.0
+         *
+         * add amountattendancecard.php
+         */
+        $menus = [
+            ['name' => 'Add Attendance card', 'url' => 'amountattendancecard.php', 'info' => 'Add Attendance card to certain classes'],
+        ];
+        $table = 'sysoppanel';
+        $this->addMenu($table, $menus);
+
     }
 
     public function runExtraMigrate()
@@ -233,6 +244,17 @@ class Update extends Install
             $this->doLog("torrents table does not has column: tags");
         }
 
+    }
+
+    private function addMenu($table, array $menus)
+    {
+        foreach ($menus as $menu) {
+            $count = get_row_count($table, "where url = " . sqlesc($menu['url']));
+            if ($count == 0) {
+                $id = NexusDB::insert($table, $menu);
+                $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
+            }
+        }
     }
 
 

@@ -127,6 +127,9 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'text_cancel_hr_label' => 'Type in H&R ID:',
     'text_success_cancel_hr' => "Success cancel one H&R.",
     'text_success_buy_medal' => 'Success buy the medal.',
+    'text_attendance_card' => 'Buy attendance card',
+    'text_attendance_card_note' => 'One day to make up the attendance consume one, attend of the target date of the bonus rewards in accordance with the normal calculation, that is, the target date forward to calculate the number of continuous days to obtain rewards.',
+    'text_success_buy_attendance_card' => 'Success buy 1 attendance card.',
 );
 
 ?>

@@ -26,6 +26,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('exam:assign_cronjob')->everyMinute();
         $schedule->command('exam:checkout_cronjob')->everyMinute();
+        $schedule->command('exam:update_progress --bulk=1')->hourly();
         $schedule->command('backup:cronjob')->everyMinute();
         $schedule->command('hr:update_status')->everyMinute();
         $schedule->command('hr:update_status --ignore_time=1')->hourly();

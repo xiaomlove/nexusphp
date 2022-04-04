@@ -90,6 +90,15 @@ function bonusarray($option = 0){
     $bonus['description'] = $lang_mybonus['text_no_advertisements_note'];
     $results[] = $bonus;
 
+    //Attendance card
+    $bonus = array();
+    $bonus['points'] = \App\Models\BonusLogs::getBonusForBuyAttendanceCard();
+    $bonus['art'] = 'attendance_card';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_attendance_card'];
+    $bonus['description'] = $lang_mybonus['text_attendance_card_note'];
+    $results[] = $bonus;
+
     //Donate
     $bonus = array();
     $bonus['points'] = 1000;
@@ -254,6 +263,8 @@ if (isset($do)) {
         $msg =  $lang_mybonus['text_success_cancel_hr'];
     elseif ($do == "buy_medal")
         $msg =  $lang_mybonus['text_success_buy_medal'];
+    elseif ($do == "attendance_card")
+        $msg =  $lang_mybonus['text_success_buy_attendance_card'];
 	else
 	$msg = '';
 }
@@ -639,6 +650,15 @@ if ($action == "exchange") {
                 $bonusRep = new \App\Repositories\BonusRepository();
                 $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
                 nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
+            } catch (\Exception $exception) {
+                do_log($exception->getMessage(), 'error');
+                stderr('Error', "Something wrong...", false, false);
+            }
+        } elseif ($art == 'attendance_card') {
+            try {
+                $bonusRep = new \App\Repositories\BonusRepository();
+                $bonusRep->consumeToBuyAttendanceCard($userid);
+                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=attendance_card");
             } catch (\Exception $exception) {
                 do_log($exception->getMessage(), 'error');
                 stderr('Error', "Something wrong...", false, false);

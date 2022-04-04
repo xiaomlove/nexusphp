@@ -91,7 +91,7 @@ elseif ($action == 'savesettings_code') 	// save database
 elseif ($action == 'savesettings_bonus') 	// save bonus
 {
 	stdhead($lang_settings['head_save_bonus_settings']);
-	$validConfig = array('donortimes','perseeding','maxseeding','tzero','nzero','bzero','l', 'uploadtorrent','uploadsubtitle','starttopic','makepost','addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload','tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage', 'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max', 'cancel_hr');
+	$validConfig = array('donortimes','perseeding','maxseeding','tzero','nzero','bzero','l', 'uploadtorrent','uploadsubtitle','starttopic','makepost','addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload','tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage', 'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max', 'cancel_hr', 'attendance_card');
 	GetVar($validConfig);
 	$BONUS = [];
 	foreach($validConfig as $config) {
@@ -263,7 +263,7 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 }
 elseif ($action == 'tweaksettings')		// tweak settings
 {
-	$TWEAK = get_setting('tweak');
+	$TWEAK = get_setting_from_db('tweak');
 	stdhead($lang_settings['head_tweak_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_tweak' />");
@@ -286,7 +286,7 @@ elseif ($action == 'tweaksettings')		// tweak settings
 }
 elseif ($action == 'smtpsettings')	// stmp settings
 {
-	$SMTP = get_setting('smtp');
+	$SMTP = get_setting_from_db('smtp');
 	stdhead($lang_settings['head_smtp_settings']);
 	print ($notice);
 	print("<tbody>");
@@ -320,7 +320,7 @@ print("</tbody>");
 }
 elseif ($action == 'securitysettings')	//security settings
 {
-	$SECURITY = get_setting('security');
+	$SECURITY = get_setting_from_db('security');
 	stdhead($lang_settings['head_security_settings']);
 	print ($notice);
 	print("<tbody>");
@@ -384,7 +384,7 @@ elseif ($action == 'securitysettings')	//security settings
 }
 elseif ($action == 'authoritysettings')	//Authority settings
 {
-	$AUTHORITY = get_setting('authority');
+	$AUTHORITY = get_setting_from_db('authority');
 	stdhead($lang_settings['head_authority_settings']);
 	print ($notice);
 	$maxclass = UC_SYSOP;
@@ -443,7 +443,7 @@ elseif ($action == 'basicsettings')	// basic settings
 {
 	stdhead($lang_settings['head_basic_settings']);
 	print ($notice);
-	$config = get_setting('basic');
+	$config = get_setting_from_db('basic');
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_basic'>");
 	tr($lang_settings['row_site_name'],"<input type='text' style=\"width: 300px\" name=SITENAME value='".($config["SITENAME"] ? $config["SITENAME"]: "Nexus")."'> ".$lang_settings['text_site_name_note'], 1);
 	tr($lang_settings['row_base_url'],"<input type='text' style=\"width: 300px\" name=BASEURL value='".($config["BASEURL"] ? $config["BASEURL"] : $_SERVER["HTTP_HOST"])."'> ".$lang_settings['text_it_should_be'] . $_SERVER["HTTP_HOST"] . $lang_settings['text_base_url_note'], 1);
@@ -462,7 +462,7 @@ elseif ($action == 'basicsettings')	// basic settings
 }
 elseif ($action == 'attachmentsettings')	// basic settings
 {
-	$ATTACHMENT = get_setting('attachment');
+	$ATTACHMENT = get_setting_from_db('attachment');
 	stdhead($lang_settings['head_attachment_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_attachment'>");
@@ -484,7 +484,7 @@ elseif ($action == 'attachmentsettings')	// basic settings
 }
 elseif ($action == 'advertisementsettings')
 {
-	$ADVERTISEMENT = get_setting('advertisement');
+	$ADVERTISEMENT = get_setting_from_db('advertisement');
 	stdhead($lang_settings['head_advertisement_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_advertisement'>");
@@ -498,7 +498,7 @@ elseif ($action == 'advertisementsettings')
 }
 elseif ($action == 'codesettings')	// code settings
 {
-	$CODE = get_setting('code');
+	$CODE = get_setting_from_db('code');
 	stdhead($lang_settings['head_code_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_code'>");
@@ -510,7 +510,7 @@ elseif ($action == 'codesettings')	// code settings
 	print ("</form>");
 }
 elseif ($action == 'bonussettings'){
-	$BONUS = get_setting('bonus');
+	$BONUS = get_setting_from_db('bonus');
 	stdhead($lang_settings['head_bonus_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_bonus'>");
@@ -541,7 +541,10 @@ elseif ($action == 'bonussettings'){
 	yesorno($lang_settings['row_allow_giving_bonus_gift'], 'bonusgift', $BONUS["bonusgift"], $lang_settings['text_giving_bonus_gift_note']);
 	tr($lang_settings['row_bonus_gift_tax'], $lang_settings['text_system_charges']."<input type='text' style=\"width: 50px\" name='basictax' value='".(isset($BONUS["basictax"]) ? $BONUS["basictax"] : 5 )."'>".$lang_settings['text_bonus_points_plus']."<input type='text' style=\"width: 50px\" name='taxpercentage' value='".(isset($BONUS["taxpercentage"]) ? $BONUS["taxpercentage"] : 10 )."'>".$lang_settings['text_bonus_gift_tax_note'], 1);
     tr($lang_settings['row_cancel_hr'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=cancel_hr value='".(isset($BONUS["cancel_hr"]) ? $BONUS["cancel_hr"] : \App\Models\BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN )."'>".$lang_settings['text_cancel_hr_note'], 1);
-	echo '<tr><td colspan="2" align="center"><b>' . $lang_settings['text_attendance_get_bonus'] . '</b></td></tr>';
+    tr($lang_settings['row_attendance_card'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=attendance_card value='".(isset($BONUS["attendance_card"]) ? $BONUS["attendance_card"] : \App\Models\BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD )."'>".$lang_settings['text_attendance_card_note'], 1);
+
+
+    echo '<tr><td colspan="2" align="center"><b>' . $lang_settings['text_attendance_get_bonus'] . '</b></td></tr>';
 	tr($lang_settings['text_attendance_initial_reward'],sprintf($lang_settings['text_attendance_initial_reward_input_label'].' <input type="number" style="width: 30px" name="attendance_initial" value="%u" min="0" /> ' . $lang_settings['text_attendance_input_suffix'], $attendance_initial_bonus),true);
 	tr($lang_settings['text_attendance_continuous_increment'],sprintf($lang_settings['text_attendance_continuous_increment_input_label'].' <input type="number" style="width: 30px" name="attendance_step" value="%u" min="0" /> ' . $lang_settings['text_attendance_input_suffix'], $attendance_step_bonus),true);
 	tr($lang_settings['text_attendance_reward_limit'],sprintf($lang_settings['text_attendance_reward_limit_input_label'].' <input type="number" style="width: 50px" name="attendance_max" value="%u" min="0" /> ' . $lang_settings['text_attendance_input_suffix'], $attendance_max_bonus),true);
@@ -564,7 +567,7 @@ elseif ($action == 'bonussettings'){
 	print ("</form>");
 }
 elseif ($action == 'accountsettings'){
-	$ACCOUNT = get_setting('account');
+	$ACCOUNT = get_setting_from_db('account');
 	stdhead($lang_settings['head_account_settings']);
 	print ($notice);
 	$maxclass = UC_VIP;
@@ -618,7 +621,7 @@ elseif ($action == 'accountsettings'){
 }
 elseif ($action == 'torrentsettings')
 {
-	$TORRENT = get_setting('torrent');
+	$TORRENT = get_setting_from_db('torrent');
 	stdhead($lang_settings['head_torrent_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_torrent'>");
@@ -653,7 +656,7 @@ elseif ($action == 'torrentsettings')
 }
 elseif ($action == 'mainsettings')	// main settings
 {
-	$MAIN = get_setting('main');
+	$MAIN = get_setting_from_db('main');
 	stdhead($lang_settings['head_main_settings']);
 	print ($notice);
 	print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_main'>");

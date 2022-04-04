@@ -451,8 +451,12 @@ class ExamRepository extends BaseRepository
             return false;
         }
         if ($examUser->is_done == ExamUser::IS_DONE_YES) {
-            do_log("examUser: {$examUser->id} is done, won't update progress.");
-            return false;
+            /**
+             * continue  update
+             * @since v1.7.0
+             */
+//            do_log("examUser: {$examUser->id} is done, won't update progress.");
+//            return false;
         }
         $exam = $examUser->exam;
         if (!$user instanceof User) {

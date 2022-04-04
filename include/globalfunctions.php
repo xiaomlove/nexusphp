@@ -276,35 +276,36 @@ function nexus_config($key, $default = null)
  *
  * @date 2021/1/11
  * @param null $name
- * @return array|mixed|string
+ * @param null $default
+ * @return mixed
  */
-function get_setting($name = null)
+function get_setting($name = null, $default = null): mixed
 {
 	static $settings;
 	if (is_null($settings)) {
         $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus", 10, function () {
             //get all settings from database
-            $sql = "select name, value from settings";
-            $result = sql_query($sql);
-            $final = [];
-            while ($row = mysql_fetch_assoc($result)) {
-                $value = $row['value'];
-                if (!is_null($value)) {
-                    $arr = json_decode($value, true);
-                    if (is_array($arr)) {
-                        $value = $arr;
-                    }
-                }
-                arr_set($final, $row['name'], $value);
-            }
-            return $final;
+            return \App\Models\Setting::getFromDb();
         });
 	}
 	if (is_null($name)) {
 	    return $settings;
     }
-    return arr_get($settings, $name);
+    return arr_get($settings, $name, $default);
 }
+
+function get_setting_from_db($name = null, $default = null)
+{
+    static $final;
+    if (is_null($final)) {
+        $final = \App\Models\Setting::getFromDb();
+    }
+    if (is_null($name)) {
+        return $final;
+    }
+    return arr_get($final, $name, $default);
+}
+
 
 function nexus_env($key = null, $default = null)
 {

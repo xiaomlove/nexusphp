@@ -13,14 +13,14 @@ class ExamUpdateProgress extends Command
      *
      * @var string
      */
-    protected $signature = 'exam:update_progress {uid}';
+    protected $signature = 'exam:update_progress {--uid} {--bulk}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update exam progress.';
+    protected $description = 'Update exam progress. options: --uid, --bulk';
 
     /**
      * Create a new command instance.
@@ -39,10 +39,22 @@ class ExamUpdateProgress extends Command
      */
     public function handle()
     {
-        $uid = $this->argument('uid');
+        $uid = $this->option('uid');
+        $bulk = $this->option('bulk');
         $examRep = new ExamRepository();
-        $result = $examRep->updateProgress($uid);
-        $this->info(nexus()->getRequestId() . ", result: " . var_export($result, true));
+        $log = "uid: $uid, bulk: $bulk";
+        $this->info($log);
+        if (is_numeric($uid) && $uid) {
+            $log .= ", do updateProgress";
+            $result = $examRep->updateProgress($uid);
+        } elseif ($bulk) {
+            $result = $examRep->updateProgressBulk();
+            $log .= ", do updateProgressBulk";
+        } else {
+            $this->error("specific uid or bulk.");
+            return 0;
+        }
+        $this->info(nexus()->getRequestId() . ", $log, result: " . var_export($result, true));
         return 0;
     }
 }

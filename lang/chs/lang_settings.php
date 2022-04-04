@@ -717,7 +717,7 @@ $lang_settings = array
     'row_torrent_hr' => '设定种子 H&R',
     'text_torrent_hr_note' => '。将种子设置为参与 H&R 考察',
     'row_cancel_hr' => '消除 H&R',
-    'text_cancel_hr_note' => "个魔力值，如果他需要消除一个 H&R。默认'10000'。",
+    'text_cancel_hr_note' => "个魔力值，如果他需要消除一个 H&R。默认'".\App\Models\BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN."'。",
     'text_attendance_get_bonus' => '签到获得魔力值',
     'text_attendance_initial_reward' => '初始奖励',
     'text_attendance_initial_reward_input_label' => '第一次签到获得',
@@ -734,6 +734,8 @@ $lang_settings = array
     'text_attendance_continuous_item_action_remove' => '删除',
     'text_attendance_continuous_item_action_add' => '增加',
     'text_attendance_continuous_add_rules' => '请请从小到大添加规则',
+    'row_attendance_card' => '购买补签卡',
+    'text_attendance_card_note' => "个魔力值，如果他需要购买一张补签卡。默认'" . \App\Models\BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD . "'。",
 );
 
 ?>

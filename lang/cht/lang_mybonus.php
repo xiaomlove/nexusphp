@@ -127,6 +127,9 @@ $lang_mybonus = array
     'text_cancel_hr_label' => '輸入要消除的 H&R ID：',
     'text_success_cancel_hr' => "成功消除了一個 H&R。",
     'text_success_buy_medal' => '成功購買該勛章。',
+    'text_attendance_card' => '購買補簽卡',
+    'text_attendance_card_note' => '補簽一天消耗一張，補簽目標日期所得魔力獎勵按照正常計算，即目標日期往前推計算連續天數獲得獎勵。',
+    'text_success_buy_attendance_card' => '成功購買了一張補簽卡。',
 );
 
 ?>

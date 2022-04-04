@@ -6,8 +6,8 @@ use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
 use App\Models\User;
-use Elastic\Elasticsearch\Client;
-use Elastic\Elasticsearch\ClientBuilder;
+use Elasticsearch\Client;
+use Elasticsearch\ClientBuilder;
 use Illuminate\Support\Arr;
 use Nexus\Database\NexusDB;
 
@@ -126,11 +126,11 @@ class SearchRepository extends BaseRepository
     {
         if (is_null($this->es)) {
             $config = nexus_config('nexus.elasticsearch');
-            $es = ClientBuilder::create()->setHosts($config['hosts']);
+            $builder = ClientBuilder::create()->setHosts($config['hosts']);
             if (!empty($config['ssl_verification'])) {
-                $es->setSSLVerification($config['ssl_verification']);
+                $builder->setSSLVerification($config['ssl_verification']);
             }
-            $this->es = $es;
+            $this->es = $builder->build();
         }
         return $this->es;
     }

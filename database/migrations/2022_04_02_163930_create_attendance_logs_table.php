@@ -15,12 +15,13 @@ return new class extends Migration
     {
         Schema::create('attendance_logs', function (Blueprint $table) {
             $table->id();
-            $table->integer('uid')->index();
+            $table->integer('uid');
             $table->integer('points');
             $table->date('date')->index();
             $table->smallInteger('is_retroactive')->default(0);
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->unique(['uid', 'date']);
         });
     }
 

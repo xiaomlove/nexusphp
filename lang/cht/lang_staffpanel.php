@@ -73,4 +73,6 @@ $lang_staffpanel = [
     'Manage custom fields' => '管理自定義的字段',
     'Search user' => '搜索用戶',
     'Confirm user' => '確認用戶',
+    'Add Attendance card' => '增加補簽卡',
+    'Add Attendance card to certain classes' => '為特定等級用戶增加補簽卡',
 ];

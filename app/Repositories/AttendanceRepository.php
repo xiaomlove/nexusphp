@@ -86,7 +86,7 @@ class AttendanceRepository extends BaseRepository
         return $query->first();
     }
 
-    private function getContinuousPoints($days)
+    public function getContinuousPoints($days)
     {
         $settings = Setting::get('bonus');
         $initial = $settings['attendance_initial'] ?? Attendance::INITIAL_BONUS;
@@ -96,7 +96,7 @@ class AttendanceRepository extends BaseRepository
         $points = min($initial + $days * $step, $max);
         krsort($extraAwards);
         foreach ($extraAwards as $key => $value) {
-            if ($days >= $key) {
+            if ($days >= $key - 1) {
                 $points += $value;
                 break;
             }
@@ -224,11 +224,10 @@ class AttendanceRepository extends BaseRepository
                 $period = new \DatePeriod($row->added->addDay(1), $interval, $row->days, \DatePeriod::EXCLUDE_START_DATE);
                 $i = 0;
                 foreach ($period as $periodValue) {
-                    $insert[] = [
-                        'uid' => $row->uid,
-                        'points' => ($i == 0 ? $row->points : 0),
-                        'date' => $periodValue->format('Y-m-d'),
-                    ];
+                    $insert[] = sprintf(
+                        "(%d, %d, '%s')",
+                        $row->uid, $i == 0 ? $row->points : 0, $periodValue->format('Y-m-d')
+                    );
                     $i++;
                 }
             }
@@ -238,9 +237,13 @@ class AttendanceRepository extends BaseRepository
             do_log("no data to insert...", 'info', app()->runningInConsole());
             return 0;
         }
-        NexusDB::table($table)->insert($insert);
+        $sql = sprintf(
+            "insert into `%s` (`uid`, `points`, `date`) values %s on duplicate key update `points` = values(`points`)",
+            $table, implode(',', $insert)
+        );
+        NexusDB::statement($sql);
         $insertCount = count($insert);
-        do_log("[MIGRATE_ATTENDANCE_LOGS] DONE! insert count: " . $insertCount, 'info', app()->runningInConsole());
+        do_log("[MIGRATE_ATTENDANCE_LOGS] DONE! insert sql: " . $sql, 'info', app()->runningInConsole());
 
         return $insertCount;
     }
@@ -252,7 +255,7 @@ class AttendanceRepository extends BaseRepository
         } else {
             $start = $attendance->added;
         }
-        $logQuery = $attendance->logs()->where('created_at', '<=', $start)->orderBy('date', 'desc');
+        $logQuery = $attendance->logs()->where('date', '<=', $start)->orderBy('date', 'desc');
         $attendanceLogs = $logQuery->get(['date'])->keyBy('date');
         $counts = $attendanceLogs->count();
         do_log(sprintf('user: %s, log counts: %s from query: %s', $attendance->uid, $counts, last_query()));
@@ -286,6 +289,10 @@ class AttendanceRepository extends BaseRepository
             throw new \LogicException("Haven't attendance yet");
         }
         $date = Carbon::createFromTimestampMs($timestampMs);
+        $now = Carbon::now();
+        if ($date->gte($now) || $now->diffInDays($date) > Attendance::MAX_RETROACTIVE_DAYS) {
+            throw new \LogicException(sprintf("date: %s can't be retroactive attend", $date->format('Y-m-d')));
+        }
         return NexusDB::transaction(function () use ($user, $attendance, $date) {
             if (AttendanceLog::query()->where('uid', $user->id)->where('date', $date->format('Y-m-d'))->exists()) {
                 throw new \RuntimeException("Already attendance");

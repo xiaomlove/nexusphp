@@ -81,10 +81,10 @@ class ToolRepository extends BaseRepository
      *
      * @return array|false
      */
-    public function cronjobBackup()
+    public function cronjobBackup($force = false): bool|array
     {
         $setting = Setting::get('backup');
-        if ($setting['enabled'] != 'yes') {
+        if ($setting['enabled'] != 'yes' && !$force) {
             do_log("Backup not enabled.");
             return false;
         }
@@ -94,23 +94,25 @@ class ToolRepository extends BaseRepository
         $settingMinute = (int)$setting['minute'];
         $nowHour = (int)$now->format('H');
         $nowMinute = (int)$now->format('i');
-        do_log("Backup frequency: $frequency");
-        if ($frequency == 'daily') {
-            if ($settingHour != $nowHour) {
-                do_log(sprintf('Backup setting hour: %s != now hour: %s', $settingHour, $nowHour));
-                return false;
+        do_log("Backup frequency: $frequency, force: " . strval($force));
+        if (!$force) {
+            if ($frequency == 'daily') {
+                if ($settingHour != $nowHour) {
+                    do_log(sprintf('Backup setting hour: %s != now hour: %s', $settingHour, $nowHour));
+                    return false;
+                }
+                if ($settingMinute != $nowMinute) {
+                    do_log(sprintf('Backup setting minute: %s != now minute: %s', $settingMinute, $nowMinute));
+                    return false;
+                }
+            } elseif ($frequency == 'hourly') {
+                if ($settingMinute != $nowMinute) {
+                    do_log(sprintf('Backup setting minute: %s != now minute: %s', $settingMinute, $nowMinute));
+                    return false;
+                }
+            } else {
+                throw new \RuntimeException("Unknown backup frequency: $frequency");
             }
-            if ($settingMinute != $nowMinute) {
-                do_log(sprintf('Backup setting minute: %s != now minute: %s', $settingMinute, $nowMinute));
-                return false;
-            }
-        } elseif ($frequency == 'hourly') {
-            if ($settingMinute != $nowMinute) {
-                do_log(sprintf('Backup setting minute: %s != now minute: %s', $settingMinute, $nowMinute));
-                return false;
-            }
-        } else {
-            throw new \RuntimeException("Unknown backup frequency: $frequency");
         }
         $backupResult = $this->backupAll();
         do_log("Backup all result: " . json_encode($backupResult));
@@ -143,17 +145,17 @@ class ToolRepository extends BaseRepository
         $service = new \Google\Service\Drive($client);
         $adapter = new \Masbug\Flysystem\GoogleDriveAdapter($service, $folderId);
 
-        $filesystem = new \League\Flysystem\Filesystem($adapter, new \League\Flysystem\Config([\League\Flysystem\Config::OPTION_VISIBILITY => \League\Flysystem\Visibility::PRIVATE]));
+        $filesystem = new \League\Flysystem\Filesystem($adapter);
 
         $localAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('/');
-        $localFilesystem = new \League\Flysystem\Filesystem($localAdapter, [\League\Flysystem\Config::OPTION_VISIBILITY => \League\Flysystem\Visibility::PRIVATE]);
+        $localFilesystem = new \League\Flysystem\Filesystem($localAdapter);
 
         $filename = $backupResult['filename'];
-        $time = Carbon::now();
+        $start = Carbon::now();
         try {
-            $filesystem->writeStream(basename($filename), $localFilesystem->readStream($filename), new \League\Flysystem\Config());
-            $speed = !(float)$time->diffInSeconds() ? 0 :filesize($filename) / (float)$time->diffInSeconds();
-            $log =  'Elapsed time: '.$time->diffForHumans(null, true);
+            $filesystem->writeStream(basename($filename), $localFilesystem->readStream($filename));
+            $speed = !(float)$start->diffInSeconds() ? 0 :filesize($filename) / (float)$start->diffInSeconds();
+            $log =  'Elapsed time: '.$start->diffForHumans(null, true);
             $log .= ', Speed: '. number_format($speed/1024,2) . ' KB/s';
             do_log($log);
             $backupResult['upload_result'] = 'success: '  .$log;
@@ -174,7 +176,7 @@ class ToolRepository extends BaseRepository
         $log = "[SEND_MAIL]";
         do_log("$log, to: $to, subject: $subject, body: $body");
         $factory = new EsmtpTransportFactory();
-        $smtp = Setting::get('smtp');
+        $smtp = Setting::getFromDb('smtp');
         $encryption = null;
         if (isset($smtp['encryption']) && in_array($smtp['encryption'], ['ssl', 'tls'])) {
             $encryption = $smtp['encryption'];

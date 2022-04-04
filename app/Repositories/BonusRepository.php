@@ -75,6 +75,24 @@ class BonusRepository extends BaseRepository
 
     }
 
+    public function consumeToBuyAttendanceCard($uid): bool
+    {
+        $user = User::query()->findOrFail($uid);
+        $requireBonus = BonusLogs::getBonusForBuyAttendanceCard();
+        NexusDB::transaction(function () use ($user, $requireBonus) {
+            $comment = nexus_trans('bonus.comment_buy_attendance_card', [
+                'bonus' => $requireBonus,
+            ], $user->locale);
+            $comment = addslashes($comment);
+            do_log("comment: $comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_ATTENDANCE_CARD, "$comment");
+            User::query()->where('id', $user->id)->increment('attendance_card');
+        });
+
+        return true;
+
+    }
+
     private function consumeUserBonus($user, $requireBonus, $logBusinessType, $logComment = '')
     {
         if ($user->seedbonus < $requireBonus) {
