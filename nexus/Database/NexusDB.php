@@ -331,7 +331,7 @@ class NexusDB
         }
     }
 
-    public static function getMysqlColumnInfo($table, $column)
+    public static function getMysqlColumnInfo($table, $column = null)
     {
         static $driver;
         $config = nexus_config('nexus.mysql');
@@ -340,11 +340,22 @@ class NexusDB
             $driver->connect($config['host'], $config['username'], $config['password'], 'information_schema', $config['port']);
         }
         $sql = sprintf(
-            "select * from COLUMNS where TABLE_SCHEMA = '%s' and TABLE_NAME = '%s' and COLUMN_NAME = '%s'",
-            $config['database'], $table, $column
+            "select * from COLUMNS where TABLE_SCHEMA = '%s' and TABLE_NAME = '%s'",
+            $config['database'], $table
         );
+        if ($column !== null) {
+            $sql .= " and COLUMN_NAME = '$column'";
+        }
         $res = $driver->query($sql);
-        return $driver->fetchAssoc($res);
+        if ($column !== null) {
+            return $driver->fetchAssoc($res);
+        }
+        $results = [];
+        while ($row = $driver->fetchAssoc($res)) {
+            $results[$row['COLUMN_NAME']] = $row;
+        }
+        return $results;
+
     }
 
 

@@ -174,7 +174,7 @@ function ban_user_with_leech_warning_expired()
         ->where('enabled', \App\Models\User::ENABLED_YES)
         ->where('leechwarn', 'yes')
         ->where('leechwarnuntil', '<', $dt)
-        ->get(['id', 'username', 'modcomment']);
+        ->get(['id', 'username', 'modcomment', 'lang']);
     if ($results->isEmpty()) {
         return [];
     }
@@ -193,7 +193,8 @@ function ban_user_with_leech_warning_expired()
     }
     $update = [
         'enabled' => \App\Models\User::ENABLED_NO,
-        'leechwarnuntil' => null,
+        //old version site this field NOT NULL DEFAULT '0000-00-00 00:00:00'
+//        'leechwarnuntil' => null,
     ];
     \App\Models\User::query()->whereIn('id', $uidArr)->update($update);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
@@ -308,7 +309,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //Priority Class 2: cleanup every 30 mins
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime2'");
 	$row = mysql_fetch_array($res);
-	if (!$row) {
+	if (!$row && !$forceAll) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime2',".sqlesc($now).")") or sqlerr(__FILE__, __LINE__);
 		$log = "no value for arg: 'lastcleantime2', return";
 		do_log($log);
@@ -334,7 +335,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //Priority Class 3: cleanup every 60 mins
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime3'");
 	$row = mysql_fetch_array($res);
-	if (!$row) {
+	if (!$row && !$forceAll) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime3',$now)") or sqlerr(__FILE__, __LINE__);
 		$log = "no value for arg: 'lastcleantime3', return";
 		do_log($log);
@@ -494,7 +495,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //Priority Class 4: cleanup every 24 hours
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime4'");
 	$row = mysql_fetch_array($res);
-	if (!$row) {
+	if (!$row && !$forceAll) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime4',$now)") or sqlerr(__FILE__, __LINE__);
 		$log = "no value for arg: 'lastcleantime4', return";
 		do_log($log);
@@ -822,7 +823,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //Priority Class 5: cleanup every 15 days
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime5'");
 	$row = mysql_fetch_array($res);
-	if (!$row) {
+	if (!$row && !$forceAll) {
 		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime5',$now)") or sqlerr(__FILE__, __LINE__);
 		$log = "no value for arg: 'lastcleantime5', return";
 		do_log($log);
