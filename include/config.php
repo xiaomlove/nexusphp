@@ -73,7 +73,7 @@ $announce_urls = array();
 $announce_urls[] = $BASIC['announce_url'] ?: ($BASEURL . '/announce.php');
 
 $SITE_ONLINE = $MAIN['site_online'];
-$max_torrent_size = $MAIN['max_torrent_size'];
+$max_torrent_size = (int)$MAIN['max_torrent_size'];
 $announce_interval = (int)$MAIN['announce_interval'];
 $annintertwoage = (int)$MAIN['annintertwoage'];
 $annintertwo = (int)$MAIN['annintertwo'];
