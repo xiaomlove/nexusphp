@@ -374,7 +374,7 @@ class SearchRepository extends BaseRepository
         if (isset($response['errors']) && $response['errors'] == true) {
             $msg .= var_export($response, true);
         }
-        do_log($msg, 'info', app()->runningInConsole());
+        do_log($msg, 'info', isRunningInConsole());
     }
 
     private function getTorrentId($id): string

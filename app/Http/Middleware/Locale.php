@@ -31,7 +31,7 @@ class Locale
 
         /** @var Response $response */
         $response = $next($request);
-        $response->header('Request-Id', nexus()->getRequestId());
+        $response->header('Request-Id', nexus()->getRequestId())->header('Running-In-Octane', RUNNING_IN_OCTANE ? 1 : 0);
         return $response;
     }
 

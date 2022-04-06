@@ -15,21 +15,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		if ($hidenotice){
 			sql_query("UPDATE users SET showdlnotice=0 WHERE id=".sqlesc($CURUSER['id']));
 		}
-		header("Location: " . get_protocol_prefix() . "$BASEURL/download.php?id=".$torrentid."&letdown=1");
-		die;
+		nexus_redirect(getSchemeAndHttpHost(). "/download.php?id=".$torrentid."&letdown=1");
 	}
 	elseif ($type == 'client')
 	{
 		if ($hidenotice){
 			sql_query("UPDATE users SET showclienterror='no' WHERE id=".sqlesc($CURUSER['id']));
 		}
-		header("Location: " . get_protocol_prefix() . "$BASEURL/download.php?id=".$torrentid."&letdown=1");
-		die;
+        nexus_redirect(getSchemeAndHttpHost() . "/download.php?id=".$torrentid."&letdown=1");
 	}
 	else
 	{
-		header("Location: " . get_protocol_prefix() . "$BASEURL/download.php?id=".$torrentid."&letdown=1");
-		die;
+        nexus_redirect(getSchemeAndHttpHost() . "/download.php?id=".$torrentid."&letdown=1");
 	}
 }
 else

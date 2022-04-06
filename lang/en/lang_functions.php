@@ -318,8 +318,8 @@ $lang_functions = array
 	'text_tag_hdr' => 'HDR',
 	'text_required' => 'Required',
 	'text_invalid' => 'Invalid',
-	'text_technical_info' => 'Technical Info',
-	'text_technical_info_help_text' => 'Technical Information comes from software <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，open file, click the view menu > text > right click in the box > select all > copy > past into this box.',
+	'text_technical_info' => 'MediaInfo',
+	'text_technical_info_help_text' => 'MediaInfo comes from software <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，open file, click the view menu > text > right click in the box > select all > copy > past into this box.',
     'text_management_system' => 'Management system',
     'text_seed_points' => 'Seed points',
 );

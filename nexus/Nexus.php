@@ -113,8 +113,10 @@ final class Nexus
     public static function boot()
     {
         if (self::$booted) {
+//            file_put_contents('/tmp/reset.log', "booted\n",FILE_APPEND);
             return;
         }
+//        file_put_contents('/tmp/reset.log', "booting\n",FILE_APPEND);
         $instance = new self();
         $instance->setStartTimestamp();
         $instance->setRequestId();
@@ -127,7 +129,6 @@ final class Nexus
     public static function flush()
     {
         self::$booted = false;
-
     }
 
     private function setRequestId()

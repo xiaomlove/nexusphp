@@ -275,11 +275,11 @@ class NexusDB
             global $Cache;
             $result = $Cache->get_value($key);
             if ($result === false) {
-                do_log("cache miss [$key], get from database.");
                 $result = $callback();
+                do_log("cache miss [$key]" );
                 $Cache->cache_value($key, $result, $ttl);
             } else {
-                do_log("cache hit [$key].");
+                do_log("cache hit [$key]");
             }
             return $result;
         } else {

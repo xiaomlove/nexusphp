@@ -43,7 +43,8 @@
         "masbug/flysystem-google-drive-ext": "^2.0",
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",
-        "rhilip/bencode": "^2.0"
+        "rhilip/bencode": "^2.0",
+        "spiral/roadrunner": "^2.8"
     },
     "require-dev": {
         "spatie/laravel-ignition": "^1.0",

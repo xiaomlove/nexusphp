@@ -167,10 +167,10 @@ class AttendanceRepository extends BaseRepository
         while (true) {
             $rows = $query->forPage($page, $size)->get();
             $log = "sql: " . last_query() . ", count: " . $rows->count();
-            do_log($log, 'info', app()->runningInConsole());
+            do_log($log, 'info', isRunningInConsole());
             if ($rows->isEmpty()) {
                 $log = "no more data....";
-                do_log($log, 'info', app()->runningInConsole());
+                do_log($log, 'info', isRunningInConsole());
                 break;
             }
             foreach ($rows as $row) {
@@ -182,7 +182,7 @@ class AttendanceRepository extends BaseRepository
                         ->delete();
                     $log = "delete: $deleted by sql: " . last_query();
                     $deleteCounts += $deleted;
-                    do_log($log, 'info', app()->runningInConsole());
+                    do_log($log, 'info', isRunningInConsole());
                 } while ($deleted > 0);
             }
             $page++;
@@ -199,7 +199,7 @@ class AttendanceRepository extends BaseRepository
     public function migrateAttendanceLogs($uid = 0): int
     {
         $cleanUpCounts = $this->cleanup();
-        do_log("cleanup count: $cleanUpCounts", 'info', app()->runningInConsole());
+        do_log("cleanup count: $cleanUpCounts", 'info', isRunningInConsole());
 
         $page = 1;
         $size = 10000;
@@ -214,7 +214,7 @@ class AttendanceRepository extends BaseRepository
                 $query->where('uid', $uid);
             }
             $result = $query->get();
-            do_log("$logPrefix, " . last_query() . ", count: " . $result->count(), 'info', app()->runningInConsole());
+            do_log("$logPrefix, " . last_query() . ", count: " . $result->count(), 'info', isRunningInConsole());
             if ($result->isEmpty()) {
                 do_log("$logPrefix, no more data...");
                 break;
@@ -234,16 +234,16 @@ class AttendanceRepository extends BaseRepository
             $page++;
         }
         if (empty($insert)) {
-            do_log("no data to insert...", 'info', app()->runningInConsole());
+            do_log("no data to insert...", 'info', isRunningInConsole());
             return 0;
         }
         $sql = sprintf(
-            "insert into `%s` (`uid`, `points`, `date`) values %s on duplicate key update `points` = values(`points`)",
+            "insert into `%s` (`uid`, `points`, `date`) values %s on duplicate key update `uid` = values(`uid`)",
             $table, implode(',', $insert)
         );
         NexusDB::statement($sql);
         $insertCount = count($insert);
-        do_log("[MIGRATE_ATTENDANCE_LOGS] DONE! insert sql: " . $sql, 'info', app()->runningInConsole());
+        do_log("[MIGRATE_ATTENDANCE_LOGS] DONE! insert sql: " . $sql, 'info', isRunningInConsole());
 
         return $insertCount;
     }

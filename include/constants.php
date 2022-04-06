@@ -9,9 +9,12 @@ defined('VERSION') || define("VERSION","Powered by <a href=\"aboutnexus.php\">".
 defined('THISTRACKER') || define("THISTRACKER","General");
 defined('ROOT_PATH') || define('ROOT_PATH', dirname(__DIR__) . '/');
 if (!defined('RUNNING_IN_OCTANE')) {
-    if (!empty($_SERVER['PWD']) && str_contains($_SERVER['PWD'], 'vendor/laravel/octane/bin')) {
-        define('RUNNING_IN_OCTANE', true);
-    } else {
-        define('RUNNING_IN_OCTANE', false);
+    $runningInOctane = false;
+    foreach (($_SERVER['argv'] ?? []) as $command) {
+        if (preg_match('/swoole|roadrunner/i', $command)) {
+            $runningInOctane = true;
+            break;
+        }
     }
+    define('RUNNING_IN_OCTANE', $runningInOctane);
 }

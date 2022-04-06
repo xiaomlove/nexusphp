@@ -373,14 +373,13 @@ class TorrentRepository extends BaseRepository
 
     private function getTrackerReportAuthKeySecret($id, $uid, $initializeIfNotExists = false)
     {
-        $secret = NexusDB::remember("tracker_report_authkey_secret:$id:$uid", 3600*24, function () use ($id, $uid) {
-            return TorrentSecret::query()
-                ->where('uid', $uid)
-                ->whereIn('torrent_id', [0, $id])
-                ->orderBy('torrent_id', 'desc')
-                ->orderBy('id', 'desc')
-                ->first();
-        });
+        $secret = TorrentSecret::query()
+            ->where('uid', $uid)
+            ->whereIn('torrent_id', [0, $id])
+            ->orderBy('torrent_id', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
         if ($secret) {
             return $secret->secret;
         }
@@ -390,6 +389,7 @@ class TorrentRepository extends BaseRepository
                 'torrent_id' => 0,
                 'secret' => Str::random(),
             ];
+            do_log("[INSERT_TORRENT_SECRET] " . json_encode($insert));
             TorrentSecret::query()->insert($insert);
             return $insert['secret'];
         }

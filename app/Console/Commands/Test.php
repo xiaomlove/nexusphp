@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use JeroenG\Explorer\Domain\Syntax\Matching;
 use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
+use Nexus\Database\NexusDB;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -70,11 +71,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $searchRep = new SearchRepository();
-        $r = $searchRep->deleteIndex();
-        $r = $searchRep->createIndex();
-        $r = $searchRep->import();
-        dd($r);
+//        $searchRep = new SearchRepository();
+//        $r = $searchRep->deleteIndex();
+//        $r = $searchRep->createIndex();
+//        $r = $searchRep->import();
+//        dd($r);
 //
 //        $arr = [
 //            'cat' => 'category',
@@ -129,6 +130,12 @@ class Test extends Command
 //        dd($today->diffInDays($yesterday));
 //        $r = get_smile(12);
 //        dd($r);
+
+//        $key = "dddd1";
+//        $model = \App\Models\TorrentSecret::query()->where('id', 1)->first();
+//        \Nexus\Database\NexusDB::cache_put($key, $model);
+        $value = NexusDB::cache_get("tracker_report_authkey_secret:1:10002");
+        dd($value);
     }
 
 

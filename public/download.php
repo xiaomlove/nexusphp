@@ -44,15 +44,15 @@ if (!empty($_REQUEST['downhash'])) {
 	$letdown = intval($_GET['letdown'] ?? 0);
 	if (!$letdown && $CURUSER['showdlnotice'] == 1)
 	{
-		header("Location: " . get_protocol_prefix() . "$BASEURL/downloadnotice.php?torrentid=".$id."&type=firsttime");
+		nexus_redirect(getSchemeAndHttpHost() . "/downloadnotice.php?torrentid=".$id."&type=firsttime");
 	}
 	elseif (!$letdown && $CURUSER['showclienterror'] == 'yes')
 	{
-		header("Location: " . get_protocol_prefix() . "$BASEURL/downloadnotice.php?torrentid=".$id."&type=client");
+        nexus_redirect(getSchemeAndHttpHost() . "/downloadnotice.php?torrentid=".$id."&type=client");
 	}
 	elseif (!$letdown && $CURUSER['leechwarn'] == 'yes')
 	{
-		header("Location: " . get_protocol_prefix() . "$BASEURL/downloadnotice.php?torrentid=".$id."&type=ratio");
+        nexus_redirect(getSchemeAndHttpHost() . "/downloadnotice.php?torrentid=".$id."&type=ratio");
 	}
 }
 //User may choose to download torrent from RSS. So log ip changes when downloading torrents.
@@ -113,7 +113,6 @@ if (strlen($CURUSER['passkey']) != 32) {
 	$CURUSER['passkey'] = md5($CURUSER['username'].date("Y-m-d H:i:s").$CURUSER['passhash']);
 	sql_query("UPDATE users SET passkey=".sqlesc($CURUSER['passkey'])." WHERE id=".sqlesc($CURUSER['id']));
 }
-
 $trackerReportAuthKey = $torrentRep->getTrackerReportAuthKey($id, $CURUSER['id'], true);
 $dict = \Rhilip\Bencode\Bencode::load($fn);
 $dict['announce'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";

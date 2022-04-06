@@ -181,15 +181,20 @@ function do_log($log, $level = 'info', $echo = false)
 	if (($fd = fopen($logFile, 'a')) === false) {
        $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
 	}
+	$uid = 0;
     if (IN_NEXUS) {
         global $CURUSER;
         $user = $CURUSER;
         $uid = $user['id'] ?? 0;
         $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
     } else {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $uid = $user->id ?? 0;
-        $passkey = $user->passkey ?? request('passkey', request('authkey', ''));
+        try {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $uid = $user->id ?? 0;
+            $passkey = $user->passkey ?? request('passkey', request('authkey', ''));
+        } catch (\Throwable $exception) {
+            $passkey = "!IN_NEXUS:" . $exception->getMessage();
+        }
     }
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
     $content = sprintf(
@@ -225,11 +230,7 @@ function getLogFile()
     if (!is_null($logFile)) {
         return $logFile;
     }
-    if (IN_NEXUS) {
-        $config = nexus_config('nexus');
-    } else {
-        $config = config('nexus');
-    }
+    $config = nexus_config('nexus');
     $logFile = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
     if (!empty($config['log_file'])) {
         $logFile = $config['log_file'];

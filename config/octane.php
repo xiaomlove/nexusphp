@@ -35,7 +35,7 @@ return [
     |
     */
 
-    'server' => env('OCTANE_SERVER', 'swoole'),
+    'server' => env('OCTANE_SERVER', 'roadrunner'),
 
     /*
     |--------------------------------------------------------------------------
@@ -74,11 +74,11 @@ return [
         ],
 
         RequestHandled::class => [
-            //
+
         ],
 
         RequestTerminated::class => [
-            //
+
         ],
 
         TaskReceived::class => [
