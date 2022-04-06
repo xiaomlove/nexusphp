@@ -43,7 +43,8 @@ return [
 
         'single' => [
             'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
+            'tap' => [\App\Logging\NexusFormatter::class],
+            'path' => env('LOG_FILE', '/tmp/nexus.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
 
@@ -99,7 +100,7 @@ return [
         ],
 
         'emergency' => [
-            'path' => storage_path('logs/laravel.log'),
+            'path' => env('LOG_FILE', '/tmp/nexus.log'),
         ],
     ],
 
