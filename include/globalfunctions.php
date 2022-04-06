@@ -443,15 +443,10 @@ function arr_set(&$array, $key, $value)
     return $array;
 }
 
-function isHttps()
+function isHttps(): bool
 {
-    if (RUNNING_IN_OCTANE) {
-        $https = request()->server('HTTPS');
-        $result = !empty($https) && (strtolower($https) !== 'off');
-    } else {
-        $result = !empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off');
-    }
-    return $result;
+    $schema = nexus()->getRequestSchema();
+    return $schema == 'https';
 }
 
 

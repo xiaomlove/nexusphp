@@ -21,7 +21,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - ....
 
 ## System Requirements
-- PHP: 8.0, must have extensions: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis
+- PHP: 8.0, must have extensions: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets
 - Mysql: 5.7 latest version or above
 - Redis：1.0.0 or above
 

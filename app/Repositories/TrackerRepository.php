@@ -262,7 +262,7 @@ class TrackerRepository extends BaseRepository
         }
 
         // Part.4 Get User Ip Address
-        $queries['ip'] = $request->getClientIp();
+        $queries['ip'] = nexus()->getRequestIp();
 
         // Part.5 Get Users Agent
         $queries['user_agent'] = $request->headers->get('user-agent');

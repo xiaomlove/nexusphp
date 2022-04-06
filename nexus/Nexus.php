@@ -92,6 +92,42 @@ final class Nexus
         $this->logSequence++;
     }
 
+    public function getRequestSchema()
+    {
+        $schema = $this->retrieveFromServer(['HTTP_X_FORWARDED_PROTO', 'REQUEST_SCHEME', 'HTTP_SCHEME']);
+        if (empty($schema)) {
+            $tmp = $this->retrieveFromServer(['HTTPS']);
+            if ($tmp == 'on') {
+                $schema = 'https';
+            }
+        }
+        return $schema;
+    }
+
+    public function getRequestIp()
+    {
+        $ip = $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_REMOTE_ADDR']);
+        if (empty($ip)) {
+            $ip = request()->getClientIp();
+        }
+        return $ip;
+    }
+
+    private function retrieveFromServer(array $fields)
+    {
+        if ($this->runningInOctane()) {
+            $servers = request()->server();
+        } else {
+            $servers = $_SERVER;
+        }
+        foreach ($fields as $field) {
+            if (!empty($servers[$field])) {
+                do_log("got from $field");
+                return $servers[$field];
+            }
+        }
+    }
+
     private function runningInOctane(): bool
     {
         if (defined('RUNNING_IN_OCTANE') && RUNNING_IN_OCTANE) {
