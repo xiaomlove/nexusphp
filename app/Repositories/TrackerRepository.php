@@ -298,7 +298,11 @@ class TrackerRepository extends BaseRepository
         if (!$user) {
             throw new TrackerException("Invalid user $field: $value.");
         }
-        $user->checkIsNormal();
+        try {
+            $user->checkIsNormal();
+        } catch (\Throwable $exception) {
+            throw new TrackerException($exception->getMessage());
+        }
 
         if ($user->parked == 'yes') {
             throw new TrackerException("Your account is parked! (Read the FAQ)");
@@ -829,8 +833,8 @@ class TrackerRepository extends BaseRepository
             throw new TrackerException("key: info_hash is Missing !");
         } else {
             foreach ($info_hash_array as $item) {
-                if (strlen($item) != 20) {
-                    throw new TrackerException("Invalid info_hash ! info_hash is not 20 bytes long");
+                if (($length = strlen($item)) != 20) {
+                    throw new TrackerException("Invalid info_hash ! info_hash is not 20 bytes long($length)");
                 }
             }
         }
