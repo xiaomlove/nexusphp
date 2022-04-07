@@ -16,3 +16,4 @@ if (file_exists(ROOT_PATH . '.env')) {
     $withLaravel = true;
 }
 define('WITH_LARAVEL', $withLaravel);
+\Nexus\Nexus::boot();

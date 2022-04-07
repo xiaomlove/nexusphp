@@ -12,7 +12,7 @@ class SettingRepository extends BaseRepository
 {
     public function getList(array $params)
     {
-        $results = Setting::get();
+        $results = Setting::getFromDb();
         $prefix = $params['prefix'] ?? null;
         if ($prefix) {
             return [$prefix => Arr::get($results, $prefix, [])];
