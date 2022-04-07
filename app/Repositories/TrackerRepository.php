@@ -722,7 +722,7 @@ class TrackerRepository extends BaseRepository
             $peer->prev_action = $peer->last_action;
         }
 
-        if ($queries['event'] == 'started') {
+        if ($queries['event'] == 'started' || !$peer->exists) {
             $peer->started = $nowStr;
             $peer->uploadoffset = $queries['uploaded'];
             $peer->downloadoffset = $queries['downloaded'];

@@ -458,14 +458,8 @@ function getSchemeAndHttpHost()
     }
     $isHttps = isHttps();
     $protocol = $isHttps ? 'https' : 'http';
-    if (RUNNING_IN_OCTANE) {
-        $host = request()->server('HTTP_HOST', '');
-    } else {
-        $host = $_SERVER['HTTP_HOST'] ?? '';
-    }
-    $result = "$protocol://" . $host;
-    return $result;
-
+    $host = nexus()->getRequestHost();
+    return "$protocol://" . $host;
 }
 
 function getBaseUrl()
@@ -634,8 +628,12 @@ function get_tracker_schema_and_host($combine = false): array|string
     global $https_announce_urls, $announce_urls;
     $httpsAnnounceUrls = array_filter($https_announce_urls);
     $log = "cookie: " . json_encode($_COOKIE) . ", https_announce_urls: " . json_encode($httpsAnnounceUrls);
-    if ((isset($_COOKIE["c_secure_tracker_ssl"]) && $_COOKIE["c_secure_tracker_ssl"] == base64("yeah")) || !empty($httpsAnnounceUrls)) {
-        $log .= ", c_secure_tracker_ssl = base64('yeah'): " . base64("yeah") . ", or not empty https_announce_urls";
+    if (
+        (isset($_COOKIE["c_secure_tracker_ssl"]) && $_COOKIE["c_secure_tracker_ssl"] == base64("yeah"))
+        || !empty($httpsAnnounceUrls)
+        || isHttps()
+    ) {
+        $log .= ", c_secure_tracker_ssl = base64('yeah'): " . base64("yeah") . ", or not empty https_announce_urls, or isHttps()";
         $tracker_ssl = true;
     }  else {
         $tracker_ssl = false;

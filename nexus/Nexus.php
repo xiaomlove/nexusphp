@@ -107,9 +107,15 @@ final class Nexus
         return $schema;
     }
 
+    public function getRequestHost(): string
+    {
+        $host = $this->retrieveFromServer(['HTTP_HOST', 'host', ], true);
+        return (string)$host;
+    }
+
     public function getRequestIp()
     {
-        return $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR']);
+        return $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'x-forwarded-for', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR'], true);
     }
 
     private function retrieveFromServer(array $fields, bool $includeHeader = false)
