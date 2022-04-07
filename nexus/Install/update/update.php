@@ -25,17 +25,16 @@ if ($currentStep == 1) {
 if ($currentStep == 2) {
     $tableRows = [];
     $versionTable = $versions = [];
-    $cacheKkey = '__versions_' . date('Ymd_H');
+    $tableRows[] = [
+        'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
+        'tag_name' => 'Manual',
+        'name' => 'If there are changes that are not suitable for full coverage, please check this box and make sure you have updated the code manually',
+        'published_at' => '---',
+    ];
     try {
         $versions = $update->listVersions();
-//        if (!empty($_SESSION[$cacheKkey])) {
-//            $update->doLog("get versions from session.");
-//            $versions = $_SESSION[$cacheKkey];
-//        } else {
-//            $_SESSION[$cacheKkey] = $versions;
-//        }
     } catch (\Exception $exception) {
-        $error = $exception->getMessage();
+        $update->doLog("can not fetch versions from github: " . $exception->getMessage());
     }
     if (!$isPost) {
         $versionHeader = [
@@ -51,23 +50,22 @@ if ($currentStep == 2) {
             $update->doLog("no .env file, release time is github original");
             $timezone = null;
         }
-        $tableRows[] = [
-            'checkbox' => sprintf('<input type="radio" name="version_url" value="manual"/>'),
-            'tag_name' => 'Manual',
-            'name' => 'If there are changes that are not suitable for full coverage, please check this box and make sure you have updated the code manually',
-            'published_at' => '---',
-        ];
-        $latestCommit = $update->getLatestCommit();
-        $time = \Carbon\Carbon::parse($latestCommit['commit']['committer']['date']);
-        if ($timezone) {
-            $time->tz = $timezone;
+
+        try {
+            $latestCommit = $update->getLatestCommit();
+            $time = \Carbon\Carbon::parse($latestCommit['commit']['committer']['date']);
+            if ($timezone) {
+                $time->tz = $timezone;
+            }
+            $tableRows[] = [
+                'checkbox' => sprintf('<input type="radio" name="version_url" value="development|%s"/>', $latestCommit['sha']),
+                'tag_name' => 'Latest development code',
+                'name' => "Development testing only! Latest commit：" . $latestCommit['commit']['message'],
+                'published_at' => $time->format('Y-m-d H:i:s'),
+            ];
+        } catch (\Exception $exception) {
+            $update->doLog("can not fetch latest commit from github: " . $exception->getMessage());
         }
-        $tableRows[] = [
-            'checkbox' => sprintf('<input type="radio" name="version_url" value="development|%s"/>', $latestCommit['sha']),
-            'tag_name' => 'Latest development code',
-            'name' => "Development testing only! Latest commit：" . $latestCommit['commit']['message'],
-            'published_at' => $time->format('Y-m-d H:i:s'),
-        ];
         foreach ($versions as $version) {
             if ($version['draft']) {
                 continue;

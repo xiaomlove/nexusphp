@@ -6,6 +6,7 @@ use App\Http\Resources\PollResource;
 use App\Models\Poll;
 use App\Repositories\PollRepository;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -96,7 +97,6 @@ class PollController extends Controller
     }
 
     /**
-     * @todo 弃权选项
      * @return array
      */
     public function latest()
@@ -130,9 +130,11 @@ class PollController extends Controller
             foreach ($answerStats as $index => &$value) {
                 $value = number_format(($value / $poll->answers_count) * 100, 2) . '%';
             }
+            $resource = new PollResource($poll);
+        } else {
+            $resource = new JsonResource(null);
         }
 
-        $resource = new PollResource($poll);
         $resource->additional([
             'selection' => $selection,
             'answer_stats' => $answerStats,

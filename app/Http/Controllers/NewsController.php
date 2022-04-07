@@ -7,6 +7,7 @@ use App\Models\News;
 use App\Repositories\NewsRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Nexus\Database\NexusDB;
@@ -104,10 +105,15 @@ class NewsController extends Controller
     {
         $user = Auth::user();
         $result = News::query()->orderBy('id', 'desc')->first();
-        $resource = new NewsResource($result);
+        if ($result) {
+            $resource = new NewsResource($result);
+        } else {
+            $resource = new JsonResource(null);
+        }
         $resource->additional([
             'site_info' => site_info(),
         ]);
+
         /**
          * Visiting the home page is the same as viewing the latest news
          * @see functions.php line 2590
