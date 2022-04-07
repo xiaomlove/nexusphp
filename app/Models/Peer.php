@@ -98,7 +98,7 @@ class Peer extends NexusModel
             } else {
                 $this->connectable = self::CONNECTABLE_NO;
             }
-            Cache::put($cacheKey, $this->connectable, 600);
+            Cache::put($cacheKey, $this->connectable, 3600);
             $log .= ", do check, connectable: " . $this->connectable;
         } else {
             $log .= ", don't do check";

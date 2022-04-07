@@ -826,19 +826,22 @@ class TrackerRepository extends BaseRepository
 
     private function checkScrapeFields(Request $request): array
     {
-        preg_match_all('/info_hash=([^&]*)/i', urldecode($request->getQueryString()), $info_hash_match);
+        preg_match_all('/info_hash=([^&]*)/i', $request->getQueryString(), $info_hash_match);
 
         $info_hash_array = $info_hash_match[1];
+        $info_hash_original = [];
         if (count($info_hash_array) < 1) {
             throw new TrackerException("key: info_hash is Missing !");
         } else {
             foreach ($info_hash_array as $item) {
+                $item = urldecode($item);
                 if (($length = strlen($item)) != 20) {
                     throw new TrackerException("Invalid info_hash ! info_hash is not 20 bytes long($length)");
                 }
+                $info_hash_original[] = $item;
             }
         }
-        return $info_hash_array;
+        return $info_hash_original;
     }
 
     /**

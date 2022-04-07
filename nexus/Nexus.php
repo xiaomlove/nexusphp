@@ -1,6 +1,9 @@
 <?php
 namespace Nexus;
 
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+
 final class Nexus
 {
     private string $requestId;
@@ -96,8 +99,8 @@ final class Nexus
     {
         $schema = $this->retrieveFromServer(['HTTP_X_FORWARDED_PROTO', 'REQUEST_SCHEME', 'HTTP_SCHEME']);
         if (empty($schema)) {
-            $tmp = $this->retrieveFromServer(['HTTPS']);
-            if ($tmp == 'on') {
+            $https = $this->retrieveFromServer(['HTTPS']);
+            if ($https == 'on') {
                 $schema = 'https';
             }
         }
@@ -106,24 +109,31 @@ final class Nexus
 
     public function getRequestIp()
     {
-        $ip = $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_REMOTE_ADDR']);
-        if (empty($ip)) {
-            $ip = request()->getClientIp();
-        }
-        return $ip;
+        return $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR']);
     }
 
-    private function retrieveFromServer(array $fields)
+    private function retrieveFromServer(array $fields, bool $includeHeader = false)
     {
         if ($this->runningInOctane()) {
             $servers = request()->server();
+            $headers = request()->header();
         } else {
             $servers = $_SERVER;
+            $headers = getallheaders();
         }
         foreach ($fields as $field) {
-            if (!empty($servers[$field])) {
-                do_log("got from $field");
-                return $servers[$field];
+            $result = $servers[$field] ?? null;
+            if ($result !== null && $result !== '') {
+                return $result;
+            }
+            if ($includeHeader) {
+                $result = $headers[$field] ?? null;
+                if (is_array($result)) {
+                    $result = Arr::first($result);
+                }
+                if ($result !== null && $result !== '') {
+                    return $result;
+                }
             }
         }
     }
@@ -169,39 +179,20 @@ final class Nexus
 
     private function setRequestId()
     {
-        $requestId = '';
-        $names = ['HTTP_X_REQUEST_ID', 'REQUEST_ID', 'Request-Id', 'request-id'];
-        if ($this->runningInOctane()) {
-            $request = request();
-            foreach ($names as $name) {
-                $requestId = $request->server($name, $request->header($name));
-                if (!empty($requestId)) {
-                    break;
-                }
-            }
-        } else {
-            foreach ($names as $name) {
-                $requestId = $_SERVER[$name] ?? '';
-                if (!empty($requestId)) {
-                    break;
-                }
-            }
-        }
+        $requestId = $this->retrieveFromServer(['HTTP_X_REQUEST_ID', 'REQUEST_ID', 'Request-Id', 'request-id'], true);
         if (empty($requestId)) {
             $requestId = $this->generateRequestId();
         }
-        $this->requestId = $requestId;
+        $this->requestId = (string)$requestId;
     }
 
     private function setScript()
     {
-        if ($this->runningInOctane()) {
-            $request = request();
-            $script = $request->header('script_filename', '');
-        } else {
-            $script = strstr(basename($_SERVER['SCRIPT_FILENAME']), '.', true);
+        $script = $this->retrieveFromServer(['SCRIPT_FILENAME', 'SCRIPT_NAME', 'Script', 'script'], true);
+        if (str_contains($script, '.')) {
+            $script = strstr(basename($script), '.', true);
         }
-        $this->script = $script;
+        $this->script = (string)$script;
     }
 
     private function setStartTimestamp()
@@ -211,13 +202,7 @@ final class Nexus
 
     private function setPlatform()
     {
-        if ($this->runningInOctane()) {
-            $request = request();
-            $platform = $request->header('platform', '');
-        } else {
-            $platform = $_SERVER['HTTP_PLATFORM'] ?? '';
-        }
-        $this->platform = $platform;
+        $this->platform = (string)$this->retrieveFromServer(['HTTP_PLATFORM', 'Platform', 'platform'], true);
     }
 
     public static function js(string $js, string $position, bool $isFile)

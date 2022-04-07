@@ -134,8 +134,6 @@ class Test extends Command
 //        $key = "dddd1";
 //        $model = \App\Models\TorrentSecret::query()->where('id', 1)->first();
 //        \Nexus\Database\NexusDB::cache_put($key, $model);
-        $value = NexusDB::cache_get("tracker_report_authkey_secret:1:10002");
-        dd($value);
     }
 
 
