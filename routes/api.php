@@ -86,7 +86,3 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
 });
 
 Route::post('login', [\App\Http\Controllers\AuthenticateController::class, 'login']);
-
-Route::get('announce', [\App\Http\Controllers\TrackerController::class, 'announce']);
-Route::get('scrape', [\App\Http\Controllers\TrackerController::class, 'scrape']);
-
