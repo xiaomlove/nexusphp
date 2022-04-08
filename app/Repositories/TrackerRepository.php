@@ -9,6 +9,7 @@ namespace App\Repositories;
 
 use App\Exceptions\ClientNotAllowedException;
 use App\Models\Cheater;
+use App\Models\HitAndRun;
 use App\Models\Peer;
 use App\Models\Setting;
 use App\Models\Snatch;
@@ -58,8 +59,9 @@ class TrackerRepository extends BaseRepository
             $user = $this->checkUser($request);
             $clientAllow = $this->checkClient($request);
             $torrent = $this->checkTorrent($queries, $user);
-            if ($this->isReAnnounce($queries) === false) {
+            if ($this->isReAnnounce($request) === false) {
                 $withPeers = true;
+                /** @var Peer $peerSelf */
                 $peerSelf = $this->checkMinInterval($torrent, $queries, $user);
                 if (!$peerSelf) {
                     $this->checkPeer($torrent, $queries, $user);
@@ -70,16 +72,24 @@ class TrackerRepository extends BaseRepository
                         'userid' => $user->id,
                         'passkey' => $user->passkey,
                     ]);
-                } else {
-                    $this->checkCheater($torrent, $queries, $user, $peerSelf);
                 }
                 /**
                  * Note: Must get before update peer!
                  */
                 $dataTraffic = $this->getDataTraffic($torrent, $queries, $user, $peerSelf);
 
+                /**
+                 * Note: Only check in old session
+                 */
+                if ($peerSelf->exists) {
+                    $this->checkCheater($torrent, $dataTraffic, $user, $peerSelf);
+                }
+
                 $this->updatePeer($peerSelf, $queries);
-                $this->updateSnatch($peerSelf, $queries, $dataTraffic);
+                $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic);
+                if ($queries['event'] == 'completed') {
+                    $this->handleHitAndRun($user, $torrent, $snatch);
+                }
                 $this->updateTorrent($torrent, $queries);
 
                 if ($dataTraffic['uploaded_increment_for_user'] > 0) {
@@ -418,7 +428,7 @@ class TrackerRepository extends BaseRepository
         return $peer;
     }
 
-    protected function checkCheater(Torrent $torrent, $queries, User $user, Peer $peer)
+    protected function checkCheater(Torrent $torrent, $dataTraffic, User $user, Peer $peer)
     {
         $settingSecurity = Setting::get('security');
         $level = $settingSecurity['cheaterdet'];
@@ -435,7 +445,8 @@ class TrackerRepository extends BaseRepository
             return;
         }
         $duration = Carbon::now()->diffInSeconds($peer->last_action);
-        $upSpeed = $queries['uploaded'] > 0 ? ($queries['uploaded'] / $duration) : 0;
+        $upSpeed = $dataTraffic['uploaded_increment'] > 0 ? ($dataTraffic['uploaded_increment'] / $duration) : 0;
+        do_log("peer: " . $peer->toJson() . ", upSpeed: $upSpeed, dataTraffic: " . json_encode($dataTraffic));
         $oneGB = 1024 * 1024 * 1024;
         $tenMB = 1024 * 1024 * 10;
         $nowStr = Carbon::now()->toDateTimeString();
@@ -443,14 +454,14 @@ class TrackerRepository extends BaseRepository
             'added' => $nowStr,
             'userid' => $user->id,
             'torrentid' => $torrent->id,
-            'uploaded' => $queries['uploaded'],
-            'downloaded' => $queries['downloaded'],
+            'uploaded' => $dataTraffic['uploaded_increment'],
+            'downloaded' => $dataTraffic['downloaded_increment'],
             'anctime' => $duration,
             'seeders' => $torrent->seeders,
             'leechers' => $torrent->leechers,
         ];
 
-        if ($queries['uploaded'] > $oneGB && ($upSpeed > self::MUST_BE_CHEATER_SPEED / $level)) {
+        if ($dataTraffic['uploaded_increment'] > $oneGB && ($upSpeed > self::MUST_BE_CHEATER_SPEED / $level)) {
             //Uploaded more than 1 GB with uploading rate higher than 1024 MByte/S (For Consertive level). This is no doubt cheating.
             $comment = "User account was automatically disabled by system";
             $data = array_merge($cheaterBaseData, ['comment' => $comment]);
@@ -460,7 +471,7 @@ class TrackerRepository extends BaseRepository
             throw new TrackerException($modComment);
         }
 
-        if ($queries['uploaded'] > $oneGB && ($upSpeed > self::MAY_BE_CHEATER_SPEED / $level)) {
+        if ($dataTraffic['uploaded_increment'] > $oneGB && ($upSpeed > self::MAY_BE_CHEATER_SPEED / $level)) {
             //Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is likely cheating.
             $comment = "Abnormally high uploading rate";
             $data = array_merge($cheaterBaseData, ['comment' => $comment]);
@@ -468,14 +479,14 @@ class TrackerRepository extends BaseRepository
         }
 
         if ($level > 1) {
-            if ($queries['uploaded'] > $oneGB && ($upSpeed > 1024 * 1024) && ($queries['leechers'] < 2 * $level)) {
+            if ($dataTraffic['uploaded_increment'] > $oneGB && ($upSpeed > 1024 * 1024) && ($torrent->leechers < 2 * $level)) {
                 //Uploaded more than 1 GB with uploading rate higher than 1 MByte/S when there is less than 8 leechers (For Consertive level). This is likely cheating.
                 $comment = "User is uploading fast when there is few leechers";
                 $data = array_merge($cheaterBaseData, ['comment' => $comment]);
                 $this->createOrUpdateCheater($torrent, $user, $data);
             }
 
-            if ($queries['uploaded'] > $tenMB && ($upSpeed > 1024 * 100) && ($queries['leechers'] == 0)) {
+            if ($dataTraffic['uploaded_increment'] > $tenMB && ($upSpeed > 1024 * 100) && ($torrent->leechers == 0)) {
                 ///Uploaded more than 10 MB with uploading speed faster than 100 KByte/S when there is no leecher. This is likely cheating.
                 $comment = "User is uploading when there is no leecher";
                 $data = array_merge($cheaterBaseData, ['comment' => $comment]);
@@ -500,12 +511,15 @@ class TrackerRepository extends BaseRepository
         }
     }
 
-    protected function isReAnnounce(array $queries): bool
+    protected function isReAnnounce(Request $request): bool
     {
-        unset($queries['key']);
-        $lockKey = md5(http_build_query($queries));
+        $key = $request->query->get('key');
+        $queryString = $request->getQueryString();
+        $lockKey = md5(str_replace($key, '', $queryString));
+        $startTimestamp = nexus()->getStartTimestamp();
+        do_log("key: $key, queryString: $queryString, lockKey: $lockKey, startTimestamp: $startTimestamp");
         $redis = Redis::connection()->client();
-        if (!$redis->set($lockKey, nexus()->getStartTimestamp(), ['nx', 'ex' => 5])) {
+        if (!$redis->set($lockKey, $startTimestamp, ['nx', 'ex' => 5])) {
             do_log('[RE_ANNOUNCE]');
             return true;
         }
@@ -590,8 +604,8 @@ class TrackerRepository extends BaseRepository
             $torrent->id, $user->id, $peer->id, $queries['uploaded'], $queries['downloaded']
         );
         if ($peer->exists) {
-            $realUploaded = max($queries['uploaded'] - $peer->uploaded, 0);
-            $realDownloaded = max($queries['downloaded'] - $peer->downloaded, 0);
+            $realUploaded = max(bcsub($queries['uploaded'], $peer->uploaded), 0);
+            $realDownloaded = max(bcsub($queries['downloaded'], $peer->downloaded), 0);
             $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded";
         } else {
             $realUploaded = $queries['uploaded'];
@@ -785,6 +799,8 @@ class TrackerRepository extends BaseRepository
 
         $snatch->save();
         do_log(last_query(), 'debug');
+
+        return $snatch;
     }
 
     public function scrape(Request $request): \Illuminate\Http\Response
@@ -875,6 +891,29 @@ class TrackerRepository extends BaseRepository
             do_log("[getTorrentByInfoHash] cache miss [$cacheKey], from database, and get: " . ($torrent->id ?? ''));
             return $torrent;
         });
+    }
+
+    private function handleHitAndRun(User $user, Torrent $torrent, Snatch $snatch)
+    {
+        $now = Carbon::now();
+        if ($user->class >= \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
+            return;
+        }
+        if ($user->donoruntil && $user->donoruntil->gte($now)) {
+            return;
+        }
+        $hrMode = Setting::get('hr.mode');
+        if ($hrMode == HitAndRun::MODE_DISABLED) {
+            return;
+        }
+        if ($hrMode == HitAndRun::MODE_MANUAL && $torrent->hr != Torrent::HR_YES) {
+            return;
+        }
+        $sql = sprintf(
+            "insert into `hit_and_runs` (`uid`, `torrent_id`, `snatched_id`) values(%d, %d, %d) on duplicate key update updated_at = '%s'",
+            $user->id, $torrent->id, $snatch->id, $now->toDateTimeString()
+        );
+        DB::statement($sql);
     }
 
 }

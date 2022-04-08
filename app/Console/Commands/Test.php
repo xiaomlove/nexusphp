@@ -134,6 +134,9 @@ class Test extends Command
 //        $key = "dddd1";
 //        $model = \App\Models\TorrentSecret::query()->where('id', 1)->first();
 //        \Nexus\Database\NexusDB::cache_put($key, $model);
+
+        $r = User::query()->first();
+        dd($r->donoruntil);
     }
 
 

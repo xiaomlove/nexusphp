@@ -161,7 +161,24 @@ class User extends Authenticatable
      */
     protected $casts = [
         'added' => 'datetime',
+        'last_login' => 'datetime',
         'last_access' => 'datetime',
+        'last_home' => 'datetime',
+        'last_offer' => 'datetime',
+        'forum_access' => 'datetime',
+        'last_staffmsg' => 'datetime',
+        'last_pm' => 'datetime',
+        'last_comment' => 'datetime',
+        'last_post' => 'datetime',
+        'lastwarned' => 'datetime',
+        'last_browse' => 'datetime:U',
+        'last_music' => 'datetime:U',
+        'last_catchup' => 'datetime:U',
+        'donoruntil' => 'datetime',
+        'warneduntil' => 'datetime',
+        'noaduntil' => 'datetime',
+        'vip_until' => 'datetime',
+        'leechwarnuntil' => 'datetime',
     ];
 
     public static $commonFields = [

@@ -11,6 +11,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel Framework + E
 - Exam
 - H&R
 - Attendance
+- Retroactive attendance card  
 - Medal
 - Custom tags 
 - Forum
