@@ -34,11 +34,11 @@ width:80px;
 height:15px;
 background:url(icons.gif) -110px -20px;
 }
-img.firefox
+img.img-browser
 {
-width:80px;
-height:15px;
-background:url(icons.gif) -110px -35px;
+height:14px;
+vertical-align: text-bottom;
+margin: 0 4px;
 }
 img.azureus
 {
