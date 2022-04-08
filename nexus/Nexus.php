@@ -129,6 +129,12 @@ final class Nexus
         }
         foreach ($fields as $field) {
             $result = $servers[$field] ?? null;
+            if ($result && in_array($field, ['HTTP_X_FORWARDED_FOR', 'x-forwarded-for'])) {
+                $result = preg_split('/[,\s]+/', $result);
+            }
+            if (is_array($result)) {
+                $result = Arr::first($result);
+            }
             if ($result !== null && $result !== '') {
                 return $result;
             }

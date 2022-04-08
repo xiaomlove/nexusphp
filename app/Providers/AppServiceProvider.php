@@ -29,6 +29,6 @@ class AppServiceProvider extends ServiceProvider
     {
 //        JsonResource::withoutWrapping();
         DB::connection(config('database.default'))->enableQueryLog();
-//        Nexus::boot();
+
     }
 }
