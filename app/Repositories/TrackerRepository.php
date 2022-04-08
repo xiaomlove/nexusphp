@@ -422,13 +422,14 @@ class TrackerRepository extends BaseRepository
             ->where('peer_id', $queries['peer_id'])
             ->first();
 
-        if (
-            $peer
-            && $queries['event'] == ''
-            && $peer->isValidDate('prev_action')
-            && Carbon::now()->diffInSeconds($peer->prev_action) < self::MIN_ANNOUNCE_WAIT_SECOND
-        ) {
-            throw new TrackerException('There is a minimum announce time of ' . self::MIN_ANNOUNCE_WAIT_SECOND . ' seconds');
+        if ($peer) {
+            do_log(sprintf(
+                'event: %s, prev_action: %s, isValidDate: %s, diffInSeconds: %s',
+                $queries['event'], $peer->prev_action, var_export($peer->isValidDate('prev_action'), true), Carbon::now()->diffInSeconds($peer->prev_action)
+            ));
+            if ($queries['event'] == '' && $peer->isValidDate('prev_action') && Carbon::now()->diffInSeconds($peer->prev_action) < self::MIN_ANNOUNCE_WAIT_SECOND) {
+                throw new TrackerException('There is a minimum announce time of ' . self::MIN_ANNOUNCE_WAIT_SECOND . ' seconds');
+            }
         }
         return $peer;
     }
