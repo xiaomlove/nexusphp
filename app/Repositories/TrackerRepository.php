@@ -446,7 +446,8 @@ class TrackerRepository extends BaseRepository
         }
         $duration = Carbon::now()->diffInSeconds($peer->last_action);
         $upSpeed = $dataTraffic['uploaded_increment'] > 0 ? ($dataTraffic['uploaded_increment'] / $duration) : 0;
-        do_log("peer: " . $peer->toJson() . ", upSpeed: $upSpeed, dataTraffic: " . json_encode($dataTraffic));
+        $peerInfo = Arr::except($peer->toArray(), ['peer_id']);
+        do_log("peerInfo: " . json_encode($peerInfo) . ", upSpeed: $upSpeed, dataTraffic: " . json_encode($dataTraffic));
         $oneGB = 1024 * 1024 * 1024;
         $tenMB = 1024 * 1024 * 10;
         $nowStr = Carbon::now()->toDateTimeString();
