@@ -739,7 +739,7 @@ class TrackerRepository extends BaseRepository
         $peer->downloaded = $queries['downloaded'];
 
         if ($peer->exists) {
-            $peer->prev_action = $peer->last_action;
+            $peer->prev_action = DB::raw('last_action');
         }
 
         if ($queries['event'] == 'started' || !$peer->exists) {
