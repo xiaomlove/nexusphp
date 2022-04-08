@@ -732,15 +732,15 @@ class TrackerRepository extends BaseRepository
         $peer->agent = $queries['user_agent'];
         $peer->updateConnectableStateIfNeeded();
 
+        if ($peer->exists) {
+            $peer->prev_action = $peer->last_action;
+        }
+
         $peer->to_go = $queries['left'];
         $peer->seeder = $queries['left'] == 0 ? 'yes' : 'no';
         $peer->last_action = $nowStr;
         $peer->uploaded = $queries['uploaded'];
         $peer->downloaded = $queries['downloaded'];
-
-        if ($peer->exists) {
-            $peer->prev_action = DB::raw('last_action');
-        }
 
         if ($queries['event'] == 'started' || !$peer->exists) {
             $peer->started = $nowStr;
