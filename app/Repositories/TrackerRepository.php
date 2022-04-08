@@ -85,11 +85,16 @@ class TrackerRepository extends BaseRepository
                     $this->checkCheater($torrent, $dataTraffic, $user, $peerSelf);
                 }
 
-                $this->updatePeer($peerSelf, $queries);
+                /**
+                 * Note: Must update snatch first, otherwise peer last_action already change
+                 */
                 $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic);
                 if ($queries['event'] == 'completed') {
                     $this->handleHitAndRun($user, $torrent, $snatch);
                 }
+
+                $this->updatePeer($peerSelf, $queries);
+
                 $this->updateTorrent($torrent, $queries);
 
                 if ($dataTraffic['uploaded_increment_for_user'] > 0) {

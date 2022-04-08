@@ -135,8 +135,8 @@ class Test extends Command
 //        $model = \App\Models\TorrentSecret::query()->where('id', 1)->first();
 //        \Nexus\Database\NexusDB::cache_put($key, $model);
 
-        $r = User::query()->first();
-        dd($r->donoruntil);
+        $peer = new Peer(['last_action' => '2022-04-08 22:20:14']);
+
     }
 
 
