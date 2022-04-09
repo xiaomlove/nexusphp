@@ -39,7 +39,7 @@ class ToolRepository extends BaseRepository
         $config = config("database.connections.$connectionName");
         $filename = sprintf('%s/%s.database.%s.sql', sys_get_temp_dir(), basename(base_path()), date('Ymd.His'));
         $command = sprintf(
-            'mysqldump --user=%s --password=%s --port=%s --single-transaction --databases %s >> %s',
+            'mysqldump --user=%s --password=%s --port=%s --single-transaction --no-create-db --databases %s >> %s',
             $config['username'], $config['password'], $config['port'], $config['database'], $filename,
         );
         $result = exec($command, $output, $result_code);

@@ -128,13 +128,7 @@ class TrackerRepository extends BaseRepository
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
-            $setUpdate = "[USER_SET_UPDATE] user: " . $user->id;
-            foreach ($this->userUpdates as $key => $value) {
-                $setUpdate .= ", $key = $value";
-            }
-            do_log($setUpdate);
             if (isset($user) && count($this->userUpdates)) {
-//                $user->update($this->userUpdates);
                 $user->fill($this->userUpdates);
                 $willBeUpdate = "[USER_ACTUAL_UPDATE] user: " . $user->id;
                 foreach ($user->getDirty() as $key => $value) {
@@ -862,10 +856,15 @@ class TrackerRepository extends BaseRepository
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
-            do_log("userUpdates: " . nexus_json_encode($this->userUpdates));
             if (isset($user) && count($this->userUpdates)) {
-                $user->update($this->userUpdates);
-                do_log(last_query(), 'debug');
+                $user->fill($this->userUpdates);
+                $willBeUpdate = "[USER_ACTUAL_UPDATE] user: " . $user->id;
+                foreach ($user->getDirty() as $key => $value) {
+                    $willBeUpdate .= ", $key = $value";
+                }
+                do_log($willBeUpdate);
+                $user->save();
+                do_log(last_query());
             }
             return $this->sendFinalAnnounceResponse($repDict);
         }
