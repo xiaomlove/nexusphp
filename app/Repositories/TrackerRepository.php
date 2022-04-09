@@ -612,7 +612,7 @@ class TrackerRepository extends BaseRepository
     {
         $log = sprintf(
             "torrent: %s, user: %s, peer: %s, queriesUploaded: %s, queriesDownloaded: %s",
-            $torrent->id, $user->id, $peer->id, $queries['uploaded'], $queries['downloaded']
+            $torrent->id, $user->id, json_encode($peer->only(['uploaded', 'downloaded'])), $queries['uploaded'], $queries['downloaded']
         );
         if ($peer->exists) {
             $realUploaded = max(bcsub($queries['uploaded'], $peer->uploaded), 0);
