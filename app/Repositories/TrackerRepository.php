@@ -53,6 +53,10 @@ class TrackerRepository extends BaseRepository
     public function announce(Request $request): \Illuminate\Http\Response
     {
         do_log("queryString: " . $request->getQueryString());
+        /**
+         * Note: In Octane this class will be reused, must reset this property !!!
+         */
+        $this->userUpdates = [];
         try {
             $withPeers = false;
             $queries = $this->checkAnnounceFields($request);
@@ -829,6 +833,10 @@ class TrackerRepository extends BaseRepository
     public function scrape(Request $request): \Illuminate\Http\Response
     {
         do_log("queryString: " . $request->getQueryString());
+        /**
+         * Note: In Octane this class will be reused, must reset this property !!!
+         */
+        $this->userUpdates = [];
         try {
             $infoHashArr = $this->checkScrapeFields($request);
             $user = $this->checkUser($request);
