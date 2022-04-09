@@ -734,7 +734,7 @@ class TrackerRepository extends BaseRepository
     {
         if ($queries['event'] == 'stopped') {
             $peer->delete();
-            do_log(last_query();
+            do_log(last_query());
             return;
         }
 
