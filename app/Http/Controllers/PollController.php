@@ -128,7 +128,7 @@ class PollController extends Controller
                 ->selectRaw("selection, count(*) as count")->groupBy("selection")
                 ->get()->pluck('count', 'selection')->toArray();
             foreach ($answerStats as $index => &$value) {
-                $value = number_format(($value / $poll->answers_count) * 100, 2) . '%';
+                $value = number_format(($value / $poll->answers_count) * 100, 1) . '%';
             }
             $resource = new PollResource($poll);
         } else {

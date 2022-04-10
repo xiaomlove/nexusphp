@@ -78,15 +78,10 @@ class Handler extends ExceptionHandler
     {
         $data = $request->all();
         $httpStatusCode = $this->getHttpStatusCode($e);
-        if ($httpStatusCode == 200) {
-            $msg = $e->getMessage() ?: get_class($e);
-        } else {
-            $msg = 'Server Error';
-        }
         $msg = $e->getMessage();
         $trace = $e->getTraceAsString();
         if (config('app.debug')) {
-            $data['trace'] = $e->getTraceAsString();
+            $data['trace'] = $trace;
         }
         return new JsonResponse(
             fail($msg, $data),

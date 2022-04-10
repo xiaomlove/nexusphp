@@ -19,7 +19,7 @@ ini_set('display_errors', 0);
 $Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 require $rootpath . 'include/config.php';
-if (!in_array(nexus()->getScript(), ['announce', 'scrape', 'torrentrss', 'download'])) {
+if (!isRunningInConsole() && !in_array(nexus()->getScript(), ['announce', 'scrape', 'torrentrss', 'download'])) {
     require $rootpath . get_langfile_path("functions.php");
     checkGuestVisit();
 }

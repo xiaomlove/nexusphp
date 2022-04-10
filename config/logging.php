@@ -46,6 +46,7 @@ return [
             'tap' => [\App\Logging\NexusFormatter::class],
             'path' => env('LOG_FILE', '/tmp/nexus.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'ignore_exceptions' => false,
         ],
 
         'daily' => [
@@ -54,6 +55,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'tap' => [\App\Logging\NexusFormatter::class],
             'days' => 14,
+            'ignore_exceptions' => false,
         ],
 
         'slack' => [
@@ -79,6 +81,8 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'formatter' => env('LOG_STDERR_FORMATTER'),
+            'ignore_exceptions' => false,
+            'tap' => [\App\Logging\NexusFormatter::class],
             'with' => [
                 'stream' => 'php://stderr',
             ],
