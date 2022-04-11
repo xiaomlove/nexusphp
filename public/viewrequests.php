@@ -116,7 +116,7 @@ else {
                 else $arr = mysql_fetch_assoc($res);
                 stdhead($lang_viewrequests['page_title']);
                 print("<h1 align=center id=top>{$lang_viewrequests['request']}-" . htmlspecialchars($arr["request"]) . "</h1>\n");
-                print("<table width=940 cellspacing=0 cellpadding=5>\n");
+                print("<table width=100% cellspacing=0 cellpadding=5>\n");
                 $res = sql_query("SELECT * FROM resreq WHERE reqid ='" . $_GET["id"] . "'" . $limit) or sqlerr(__FILE__, __LINE__);
                 tr($lang_viewrequests['basic_info'], get_username($arr['userid']) . $lang_viewrequests['created_at'] . gettime($arr["added"], true, false) . "\n", 1);
                 tr($lang_viewrequests['reward'], $lang_viewrequests['newest_bidding'] . $arr['amount'] . "     {$lang_viewrequests['original_bidding']}" . $arr["ori_amount"] . "\n", 1);
@@ -200,10 +200,10 @@ else {
 		<input type=hidden name=action  value=takeedit >
 		<input type=hidden name=reqid  value=" . $_GET["id"] . " >
 		");
-                print("<table width=940 cellspacing=0 cellpadding=3><tr><td class=colhead align=center colspan=2>{$lang_functions['title_edit']}{$lang_viewrequests['request']}</td></tr>");
+                print("<table width=100% cellspacing=0 cellpadding=3><tr><td class=colhead align=center colspan=2>{$lang_functions['title_edit']}{$lang_viewrequests['request']}</td></tr>");
                 tr("{$lang_functions['col_name']}：", "<input name=request value=\"" . $arr["request"] . "\" size=134 ><br/>", 1);
                 print("<tr><td class=rowhead align=right valign=top><b>{$lang_functions['std_desc']}：</b></td><td class=rowfollow align=left>");
-                textbbcode("edit", "descr", $arr["descr"]);
+                textbbcode("edit", "descr", $arr["descr"], false, 130, true);
                 print("</td></tr>");
                 print("</td></tr><tr><td class=toolbox align=center colspan=2><input id=qr type=submit class=btn value={$lang_functions['text_edit']}{$lang_viewrequests['request']} ></td></tr></table></form><br />\n");
                 stdfoot();
@@ -217,11 +217,11 @@ else {
                 stdhead($lang_viewrequests['add_request']);
                 print(
                 "<form id=edit method=post name=edit action=viewrequests.php >\n<input type=hidden name=action  value=takeadded >\n");
-                print("<table width=940 cellspacing=0 cellpadding=3><tr><td class=colhead align=center colspan=2>{$lang_viewrequests['add_request']}</td></tr>\n");
+                print("<table width=100% cellspacing=0 cellpadding=3><tr><td class=colhead align=center colspan=2>{$lang_viewrequests['add_request']}</td></tr>\n");
                 tr("{$lang_functions['col_name']}：", "<input name=request size=134><br/>", 1);
                 tr("{$lang_viewrequests['reward']}：", "<input name=amount size=11 value=2000>{$lang_viewrequests['add_request_desc']}<br/>", 1);
                 print("<tr><td class=rowhead align=right valign=top><b>{$lang_functions['std_desc']}：</b></td><td class=rowfollow align=left>");
-                textbbcode("edit", "descr", $arr["descr"]);
+                textbbcode("edit", "descr", $arr["descr"], false, 130, true);
                 print("</td></tr>");
                 print("<tr><td class=toolbox style=vertical-align: middle; padding-top: 10px; padding-bottom: 10px; align=center colspan=2><input id=qr type=submit value={$lang_viewrequests['add_request']} class=btn /></td></tr></table></form><br />\n");
 
@@ -246,7 +246,7 @@ else {
 
                 print(
                     "<form id=reply name=reply method=post action=viewrequests.php >\n<input type=hidden name=action value=message ><input type=hidden name=id value=" . $_GET["id"] . " >\n");
-                print("<table width=940 cellspacing=0 cellpadding=3>\n");
+                print("<table width=100% cellspacing=0 cellpadding=3>\n");
 
                 print("<tr><td class=rowfollow align=left>");
                 if ($ruserid) {
@@ -308,14 +308,14 @@ else {
         case "takeedit":
         {
             if (!is_numeric($_POST["reqid"])) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_id_must_be_numeric']}<a href='viewrequests.php?action=edit&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . sqlesc( $_POST["reqid"]) . "'") or sqlerr(__FILE__, __LINE__);
+            $res = sql_query("SELECT * FROM requests WHERE id =" . sqlesc( $_POST["reqid"])) or sqlerr(__FILE__, __LINE__);
             if (!$_POST["descr"]) stderr($lang_functions['std_error'], "{$lang_viewrequests['description_required']}<a href='viewrequests.php?action=edit&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (!$_POST["request"]) stderr($lang_functions['std_error'], "{$lang_viewrequests['name_required']}<a href='viewrequests.php?action=edit&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_deleted']}<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             $arr = mysql_fetch_assoc($res);
             if ($arr["finish"] == "yes") stderr($lang_functions['std_error'], "{$lang_viewrequests['request_already_resolved']}<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if ($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) {
-                sql_query("UPDATE requests SET descr = " . sqlesc($_POST["descr"]) . " , request = " . sqlesc($_POST["request"]) . " WHERE id ='" . sqlesc($_POST["reqid"]) . "'") or sqlerr(__FILE__, __LINE__);
+                sql_query("UPDATE requests SET descr = " . sqlesc($_POST["descr"]) . " , request = " . sqlesc($_POST["request"]) . " WHERE id =" . sqlesc($_POST["reqid"])) or sqlerr(__FILE__, __LINE__);
                 stderr($lang_functions['std_success'], "{$lang_viewrequests['edit_request_success']}，<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             } else stderr($lang_functions['std_error'], "{$lang_functions['std_permission_denied']}<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             die;

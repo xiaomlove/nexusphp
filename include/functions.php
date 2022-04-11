@@ -242,6 +242,26 @@ function formatFlv($src, $width, $height) {
 	}
 	return addTempCode("<object width=\"$width\" height=\"$height\"><param name=\"movie\" value=\"flvplayer.swf?file=$src\" /><param name=\"allowFullScreen\" value=\"true\" /><embed src=\"flvplayer.swf?file=$src\" type=\"application/x-shockwave-flash\" allowfullscreen=\"true\" width=\"$width\" height=\"$height\"></embed></object>");
 }
+function formatYoutube($src, $width = '', $height = ''): string
+{
+    if (!$width) {
+        $width = 560;
+    }
+    if (!$height) {
+        $height = 315;
+    }
+    $queryString = parse_url($src, PHP_URL_QUERY);
+    parse_str($queryString, $parameters);
+    if (empty($parameters['v'])) {
+        $videoId = '';
+    } else {
+        $videoId = $parameters['v'];
+    }
+    return addTempCode(sprintf(
+        '<iframe width="%s" height="%s" src="https://www.youtube.com/embed/%s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
+        $width, $height, $videoId
+    ));
+}
 function format_urls($text, $newWindow = false) {
 //	return preg_replace("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/ei", "formatUrl('\\1', ".($newWindow==true ? 1 : 0).", '', 'faqlink')", $text);
 	return preg_replace_callback("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/i", function ($matches) use ($newWindow) {
@@ -324,6 +344,12 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 			$s = preg_replace("/\[flv(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|ftp):\/\/[^\s'\"<>]+(\.(flv)))\[\/flv\]/i", '', $s);
 		}
 	}
+    //[youtube,560,315]https://www.youtube.com/watch?v=DWDL3VTCcCg&ab_channel=ESPNMMA[/youtube]
+	if (str_contains($s, '[youtube') && str_contains($s, 'v=')) {
+        $s = preg_replace_callback("/\[youtube(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|https):\/\/[^\s'\"<>]+)\[\/youtube\]/i", function ($matches) {
+            return formatYoutube($matches[4], $matches[2], $matches[3]);
+        }, $s);
+    }
 
 	// [url=http://www.example.com]Text[/url]
 	if ($adid) {

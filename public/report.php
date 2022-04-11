@@ -102,7 +102,7 @@ elseif ((isset($takesubtitleid)) && (isset($takereason)))
 elseif (isset($user))
 {
 	int_check($user);
-	if ($user == $CURUSER[id]) {
+	if ($user == $CURUSER['id']) {
 		stderr($lang_report['std_sorry'],$lang_report['std_cannot_report_oneself']);
 		die;
 	}
@@ -200,7 +200,7 @@ elseif (isset($reportofferid))
 		stderr($lang_report['std_error'],$lang_report['std_invalid_offer_id']);
 	}
 	$arr = mysql_fetch_array($res);
-	stderr($lang_report['std_are_you_sure'], $lang_report['text_are_you_sure_offer']."<a href=\"offers.php?id=".$arr[id]."&off_details=1\"><b>".htmlspecialchars($arr['name'])."</b></a>".$lang_report['text_to_staff']."<br />".$lang_report['text_reason_note']."<br /><form method=post action=report.php><input type=hidden name=takereportofferid value=\"".htmlspecialchars($reportofferid)."\">".$lang_report['text_reason_is']."<input type=text style=\"width: 200px\" name=reason><input type=submit value=\"".$lang_report['submit_confirm']."\"></form>", false);
+	stderr($lang_report['std_are_you_sure'], $lang_report['text_are_you_sure_offer']."<a href=\"offers.php?id=".$arr['id']."&off_details=1\"><b>".htmlspecialchars($arr['name'])."</b></a>".$lang_report['text_to_staff']."<br />".$lang_report['text_reason_note']."<br /><form method=post action=report.php><input type=hidden name=takereportofferid value=\"".htmlspecialchars($reportofferid)."\">".$lang_report['text_reason_is']."<input type=text style=\"width: 200px\" name=reason><input type=submit value=\"".$lang_report['submit_confirm']."\"></form>", false);
 }
 //////////OFFERT #2 END//////////
 
@@ -214,7 +214,7 @@ elseif (isset($reportrequestid))
 		stderr($lang_report['std_error'],$lang_report['std_invalid_request_id']);
 	}
 	$arr = mysql_fetch_array($res);
-	stderr($lang_report['std_are_you_sure'], $lang_report['text_are_you_sure_request']."<a href=\"viewrequests.php?id=".$arr[id]."&req_details=1\"><b>".htmlspecialchars($arr['request'])."</b></a>".$lang_report['text_to_staff']."<br />".$lang_report['text_reason_note']."<br /><form method=post action=report.php><input type=hidden name=takerequestid value=\"".htmlspecialchars($reportrequestid)."\">".$lang_report['text_reason_is']."<input type=text style=\"width: 200px\" name=reason><input type=submit value=\"".$lang_report['submit_confirm']."\"></form>", false);
+	stderr($lang_report['std_are_you_sure'], $lang_report['text_are_you_sure_request']."<a href=\"viewrequests.php?id=".$arr['id']."&req_details=1\"><b>".htmlspecialchars($arr['request'])."</b></a>".$lang_report['text_to_staff']."<br />".$lang_report['text_reason_note']."<br /><form method=post action=report.php><input type=hidden name=takerequestid value=\"".htmlspecialchars($reportrequestid)."\">".$lang_report['text_reason_is']."<input type=text style=\"width: 200px\" name=reason><input type=submit value=\"".$lang_report['submit_confirm']."\"></form>", false);
 }
 //////////REQUEST #2 END//////////
 

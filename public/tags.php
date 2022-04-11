@@ -219,7 +219,7 @@ insert_tag(
 	""
 );
 
-/*
+
 insert_tag(
 	$lang_tags['text_youtube'],
 	$lang_tags['text_youtube_description'],
@@ -227,7 +227,7 @@ insert_tag(
 	$lang_tags['text_youtube_example'],
 	""
 );
-
+/*
 insert_tag(
 	$lang_tags['text_youku'],
 	$lang_tags['text_youku_description'],

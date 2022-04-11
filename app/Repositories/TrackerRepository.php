@@ -90,16 +90,19 @@ class TrackerRepository extends BaseRepository
                 }
 
                 /**
-                 * Note: Must update snatch first, otherwise peer last_action already change
+                 * Note: Must update snatch first, otherwise peer `last_action` already change
                  */
                 $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic);
                 if ($queries['event'] == 'completed') {
                     $this->handleHitAndRun($user, $torrent, $snatch);
                 }
 
-                $this->updatePeer($peerSelf, $queries);
+                /**
+                 * Note: Must update torrent first, otherwise peer `exists` property already change
+                 */
+                $this->updateTorrent($torrent, $queries, $peerSelf);
 
-                $this->updateTorrent($torrent, $queries);
+                $this->updatePeer($peerSelf, $queries);
 
                 if ($dataTraffic['uploaded_increment_for_user'] > 0) {
                     $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
@@ -628,24 +631,30 @@ class TrackerRepository extends BaseRepository
             $realUploaded = max(bcsub($queries['uploaded'], $peer->uploaded), 0);
             $realDownloaded = max(bcsub($queries['downloaded'], $peer->downloaded), 0);
             $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded";
+            $spStateReal = $torrent->spStateReal;
+            $uploaderRatio = Setting::get('torrent.uploaderdouble');
+            $log .= ", spStateReal: $spStateReal, uploaderRatio: $uploaderRatio";
+            if ($torrent->owner == $user->id) {
+                //uploader, use the bigger one
+                $upRatio = max($uploaderRatio, Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
+                $log .= ", [IS_UPLOADER], upRatio: $upRatio";
+            } else {
+                $upRatio = Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
+                $log .= ", [IS_NOT_UPLOADER], upRatio: $upRatio";
+            }
+            $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
+            $log .= ", downRatio: $downRatio";
         } else {
             $realUploaded = $queries['uploaded'];
             $realDownloaded = $queries['downloaded'];
-            $log .= ", [PEER_NOT_EXISTS],, realUploaded: $realUploaded, realDownloaded: $realDownloaded";
+            /**
+             * If peer not exits, user increment = 0;
+             */
+            $upRatio = 0;
+            $downRatio = 0;
+            $log .= ", [PEER_NOT_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded, upRatio: $upRatio, downRatio: $downRatio";
         }
-        $spStateReal = $torrent->spStateReal;
-        $uploaderRatio = Setting::get('torrent.uploaderdouble');
-        $log .= ", spStateReal: $spStateReal, uploaderRatio: $uploaderRatio";
-        if ($torrent->owner == $user->id) {
-            //uploader, use the bigger one
-            $upRatio = max($uploaderRatio, Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
-            $log .= ", [IS_UPLOADER], upRatio: $upRatio";
-        } else {
-            $upRatio = Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
-            $log .= ", [IS_NOT_UPLOADER], upRatio: $upRatio";
-        }
-        $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
-        $log .= ", downRatio: $downRatio";
+
         $result = [
             'uploaded_increment' => $realUploaded,
             'uploaded_increment_for_user' => $realUploaded * $upRatio,
@@ -705,7 +714,7 @@ class TrackerRepository extends BaseRepository
      * @param Torrent $torrent
      * @param $queries
      */
-    private function updateTorrent(Torrent $torrent, $queries)
+    private function updateTorrent(Torrent $torrent, $queries, Peer $peer)
     {
         if (empty($queries['event'])) {
             do_log("no event, return", 'debug');
@@ -724,7 +733,7 @@ class TrackerRepository extends BaseRepository
         $torrent->visible = Torrent::VISIBLE_YES;
         $torrent->last_action = Carbon::now();
 
-        if ($queries['event'] == 'completed') {
+        if ($peer->exists && $queries['event'] == 'completed') {
             $torrent->times_completed = DB::raw("times_completed + 1");
         }
 
@@ -766,7 +775,7 @@ class TrackerRepository extends BaseRepository
         }
 
         $peer->save();
-        do_log(last_query(), 'debug');
+        do_log(last_query());
     }
 
     /**
@@ -788,11 +797,11 @@ class TrackerRepository extends BaseRepository
         //torrentid, userid, ip, port, uploaded, downloaded, to_go, ,seedtime, leechtime, last_action, startdat, completedat, finished
         if (!$snatch) {
             $snatch = new Snatch();
-            //initial
+            //initial, use report uploaded + downloaded
             $snatch->torrentid = $peer->torrent;
             $snatch->userid = $peer->userid;
-            $snatch->uploaded = $dataTraffic['uploaded_increment'];
-            $snatch->downloaded = $dataTraffic['downloaded_increment'];
+            $snatch->uploaded = $queries['uploaded'];
+            $snatch->downloaded = $queries['downloaded'];
             $snatch->startdat = $nowStr;
         } else {
             //increase, use the increment value
@@ -813,7 +822,7 @@ class TrackerRepository extends BaseRepository
         $snatch->port = $queries['port'];
         $snatch->to_go = $queries['left'];
         $snatch->last_action = $nowStr;
-        if ($queries['event'] == 'completed') {
+        if ($queries['event'] == 'completed' && $peer->exists) {
             $snatch->completedat = $nowStr;
             $snatch->finished = 'yes';
         }

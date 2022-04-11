@@ -40,7 +40,7 @@ if (isset($_GET['add_offer']) && $_GET["add_offer"]){
 	print("<p>".$lang_offers['text_red_star_required']."</p>");
 
 	print("<div align=\"center\"><form id=\"compose\" action=\"?new_offer=1\" name=\"compose\" method=\"post\">".
-	"<table width=940 border=0 cellspacing=0 cellpadding=5><tr><td class=colhead align=center colspan=2>".$lang_offers['text_offers_open_to_all']."</td></tr>\n");
+	"<table width=100% border=0 cellspacing=0 cellpadding=5><tr><td class=colhead align=center colspan=2>".$lang_offers['text_offers_open_to_all']."</td></tr>\n");
 
 	$s = "<select name=type>\n<option value=0>".$lang_offers['select_type_select']."</option>\n";
 	$cats = genrelist($browsecatmode);
@@ -48,11 +48,11 @@ if (isset($_GET['add_offer']) && $_GET["add_offer"]){
 	$s .= "<option value=".$row["id"].">" . htmlspecialchars($row["name"]) . "</option>\n";
 	$s .= "</select>\n";
 	print("<tr><td class=rowhead align=right><b>".$lang_offers['row_type']."<font color=red>*</font></b></td><td class=rowfollow align=left> $s</td></tr>".
-	"<tr><td class=rowhead align=right><b>".$lang_offers['row_title']."<font color=red>*</font></b></td><td class=rowfollow align=left><input type=text name=name style=\"width: 650px;\" />".
+	"<tr><td class=rowhead align=right><b>".$lang_offers['row_title']."<font color=red>*</font></b></td><td class=rowfollow align=left><input type=text name=name style=\"width: 99%;\" />".
 	"</td></tr><tr><td class=rowhead align=right><b>".$lang_offers['row_post_or_photo']."</b></td><td class=rowfollow align=left>".
-	"<input type=text name=picture style=\"width: 650px;\"><br />".$lang_offers['text_link_to_picture']."</td></tr>".
+	"<input type=text name=picture style=\"width: 99%;\"><br />".$lang_offers['text_link_to_picture']."</td></tr>".
 	"<tr><td class=rowhead align=right valign=top><b>".$lang_offers['row_description']."<b><font color=red>*</font></td><td class=rowfollow align=left>\n");
-	textbbcode("compose","body",$body,false);
+	textbbcode("compose","body",$body,false, 130, true);
 	print("</td></tr><tr><td class=toolbox align=center colspan=2><input id=qr type=submit class=btn value=".$lang_offers['submit_add_offer']." ></td></tr></table></form><br />\n");
 	stdfoot();
 	die;
@@ -85,7 +85,7 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 
 	if (!empty($_POST['picture'])){
 		$picture = unesc($_POST["picture"]);
-		if(!preg_match("/^http:\/\/[^\s'\"<>]+\.(jpg|gif|png)$/i", $picture))
+		if(!preg_match("/^https?:\/\/[^\s'\"<>]+\.(jpg|gif|png)$/i", $picture))
 		stderr($lang_offers['std_error'], $lang_offers['std_wrong_image_format']);
 		$pic = "[img]".$picture."[/img]\n";
 	}
@@ -355,10 +355,10 @@ if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 	print("<form id=\"compose\" method=\"post\" name=\"compose\" action=\"?id=".$id."&amp;take_off_edit=1\">".
 	"<table width=\"97%\" cellspacing=\"0\" cellpadding=\"3\"><tr><td class=\"colhead\" align=\"center\" colspan=\"2\">".$lang_offers['text_edit_offer']."</td></tr>");
 	tr($lang_offers['row_type']."<font color=\"red\">*</font>", $s2, 1);
-	tr($lang_offers['row_title']."<font color=\"red\">*</font>", "<input type=\"text\" style=\"width: 650px\" name=\"name\" value=\"".$title."\" />", 1);
-	tr($lang_offers['row_post_or_photo'], "<input type=\"text\" name=\"picture\" style=\"width: 650px\" value='' /><br />".$lang_offers['text_link_to_picture'], 1);
+	tr($lang_offers['row_title']."<font color=\"red\">*</font>", "<input type=\"text\" style=\"width: 99%\" name=\"name\" value=\"".$title."\" />", 1);
+	tr($lang_offers['row_post_or_photo'], "<input type=\"text\" name=\"picture\" style=\"width: 99%\" value='' /><br />".$lang_offers['text_link_to_picture'], 1);
 	print("<tr><td class=\"rowhead\" align=\"right\" valign=\"top\"><b>".$lang_offers['row_description']."<font color=\"red\">*</font></b></td><td class=\"rowfollow\" align=\"left\">");
-	textbbcode("compose","body",$body,false);
+	textbbcode("compose","body",$body, false, 130, true);
 	print("</td></tr>");
 	print("<tr><td class=\"toolbox\" style=\"vertical-align: middle; padding-top: 10px; padding-bottom: 10px;\" align=\"center\" colspan=\"2\"><input id=\"qr\" type=\"submit\" value=\"".$lang_offers['submit_edit_offer']."\" class=\"btn\" /></td></tr></table></form><br />\n");
 	stdfoot();
@@ -385,7 +385,7 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 
 	if (!empty($_POST['picture'])){
 		$picture = unesc($_POST["picture"]);
-		if(!preg_match("/^http:\/\/[^\s'\"<>]+\.(jpg|gif|png)$/i", $picture))
+		if(!preg_match("/^https?:\/\/[^\s'\"<>]+\.(jpg|gif|png)$/i", $picture))
 		stderr($lang_offers['std_error'], $lang_offers['std_wrong_image_format']);
 		$pic = "[img]".$picture."[/img]\n";
 	}
@@ -708,7 +708,7 @@ if ($offeruptimeout_main)
 	print("<li>".$lang_offers['text_rule_four_one']."<b>".($offeruptimeout_main / 3600)."</b>".$lang_offers['text_rule_four_two']."</li>\n");
 print("</ul></div>");
 if (get_user_class() >= $addoffer_class)
-print("<div align=\"center\" style=\"margin-bottom: 8px;\"><a href=\"?add_offer=1\">".
+print("<div align=\"right\" style=\"margin-bottom: 8px;\"><a href=\"?add_offer=1\">".
 "<b>".$lang_offers['text_add_offer']."</b></a></div>");
 print("<div align=\"center\"><form method=\"get\" action=\"?\">".$lang_offers['text_search_offers']."&nbsp;&nbsp;<input type=\"text\" id=\"specialboxg\" name=\"search\" />&nbsp;&nbsp;");
 $cats = genrelist($browsecatmode);
