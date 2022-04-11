@@ -129,6 +129,10 @@ $lang_tags = array
 	'text_ninety_eight_image_syntax' => " [98img=[auto|number]]图片文件[/98img]",
 	'text_ninety_eight_image_example' => "[98img=150]uploadfile/2008/10/30/2362924185.png[/98img]",
 	'text_ninety_eight_image_remarks' => "CC98是浙江大学的一个论坛",
+    'text_spoiler' => '折叠',
+    'text_spoiler_description' => '在页面插入可展开/收缩的内容',
+    'text_spoiler_syntax' => '[spoiler=标题]这是被折叠的内容[/spoiler]',
+    'text_spoiler_example' => '[spoiler=英雄最后的结局怎么样了？]英雄最后死掉了！[/spoiler]',
 );
 
 ?>

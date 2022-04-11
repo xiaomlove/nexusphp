@@ -118,24 +118,13 @@ class Test extends Command
 //        $r = $searchRep->deleteBookmark(1);
 //        $r = $searchRep->addBookmark(1);
 
-//        $rep = new AttendanceRepository();
-//        $uid = 1;
-//        $attendance = $rep->getAttendance($uid);
+        $rep = new AttendanceRepository();
+        $uid = 1;
+        $attendance = $rep->getAttendance($uid);
 //        $r = $rep->migrateAttendanceLogs($uid);
 //        $r = $rep->getContinuousDays($attendance);
-//        $r = $rep->getContinuousPoints(30);
-//        $today = Carbon::today();
-//        $tomorrow = Carbon::tomorrow();
-//        $yesterday = Carbon::parse('+10 days');
-//        dd($today->diffInDays($yesterday));
-//        $r = get_smile(12);
-//        dd($r);
-
-//        $key = "dddd1";
-//        $model = \App\Models\TorrentSecret::query()->where('id', 1)->first();
-//        \Nexus\Database\NexusDB::cache_put($key, $model);
-
-        $peer = new Peer(['last_action' => '2022-04-08 22:20:14']);
+        $r = $rep->getContinuousPoints(11);
+        dd($r);
 
     }
 

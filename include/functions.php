@@ -262,6 +262,36 @@ function formatYoutube($src, $width = '', $height = ''): string
         $width, $height, $videoId
     ));
 }
+
+function formatSpoiler($content, $title = '', $defaultCollapsed = true): string
+{
+    global $lang_functions;
+    if (!$title) {
+        $title = $lang_functions['spoiler_default_title'];
+    }
+    $content = str_replace(['<br>', '<br />'], '', $content);
+    $contentClass = "spoiler-content";
+    if ($defaultCollapsed) {
+        $contentClass .= " collapse";
+    }
+    $HTML = sprintf(
+        '<div><div><div class="spoiler-title" title="%s">%s</div></div><div class="%s"><pre>%s</pre></div></div>',
+        $lang_functions['spoiler_expand_collapse'], $title, $contentClass, $content
+    );
+    $js = <<<JS
+jQuery('.spoiler-title').on('click', function () {
+    let content = jQuery(this).parent().next();
+    if (content.hasClass('collapse')) {
+         content.height(content[0].scrollHeight).removeClass('collapse')
+    } else {
+        content.height(0).addClass('collapse')
+    }
+})
+JS;
+    \Nexus\Nexus::js($js, 'footer', false, 'spoiler');
+    return addTempCode($HTML);
+}
+
 function format_urls($text, $newWindow = false) {
 //	return preg_replace("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/ei", "formatUrl('\\1', ".($newWindow==true ? 1 : 0).", '', 'faqlink')", $text);
 	return preg_replace_callback("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/i", function ($matches) use ($newWindow) {
@@ -348,6 +378,12 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	if (str_contains($s, '[youtube') && str_contains($s, 'v=')) {
         $s = preg_replace_callback("/\[youtube(\,([1-9][0-9]*)\,([1-9][0-9]*))?\]((http|https):\/\/[^\s'\"<>]+)\[\/youtube\]/i", function ($matches) {
             return formatYoutube($matches[4], $matches[2], $matches[3]);
+        }, $s);
+    }
+    //[spoiler=What happens to the hero?]The hero dies at the end![/spoiler]
+    if (str_contains($s, '[spoiler')) {
+        $s = preg_replace_callback("/\[spoiler(=(.*))?\](.+?)\[\/spoiler\]/is", function ($matches) {
+            return formatSpoiler($matches[3], $matches[2], nexus()->getScript() != 'preview');
         }, $s);
     }
 
@@ -2202,7 +2238,7 @@ function menu ($selected = "home") {
 	else
 	print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"" . $extforumurl."\" target=\"_blank\">".$lang_functions['text_forums']."</a></li>");
 	print ("<li" . ($selected == "torrents" ? " class=\"selected\"" : "") . "><a href=\"torrents.php\">".$lang_functions['text_torrents']."</a></li>");
-	if ($enablespecial == 'yes')
+	if ($enablespecial == 'yes' && get_user_class() >= get_setting('authority.view_special_torrent'))
 	print ("<li" . ($selected == "special" ? " class=\"selected\"" : "") . "><a href=\"special.php\">".$lang_functions['text_special']."</a></li>");
 	if ($enableoffer == 'yes')
 	print ("<li" . ($selected == "offers" ? " class=\"selected\"" : "") . "><a href=\"offers.php\">".$lang_functions['text_offers']."</a></li>");
@@ -5105,11 +5141,11 @@ function strip_all_tags($text)
     //替换掉无参数标签
     $bbTags = [
         '[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[pre]', '[/pre]', '[quote]', '[/quote]',
-        '[/color]', '[/font]', '[/size]', '[/url]'
+        '[/color]', '[/font]', '[/size]', '[/url]', '[/youtube]',
     ];
     $text = str_replace($bbTags, '', $text);
     //替换掉有参数标签
-    $pattern = '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]/isU';
+    $pattern = '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]|\[youtube.*\]/isU';
     $text = preg_replace($pattern, "", $text);
     //去掉表情
     static $emoji = null;
@@ -5365,7 +5401,7 @@ function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 
             if ($medal->pivot->status == \App\Models\UserMedal::STATUS_WEARING) {
                 $checked = ' checked';
             }
-            $html .= sprintf('<label>%s<input type="checkbox" name="medal_wearing_status" value="%s"%s></label>', '佩戴', $medal->id, $checked);
+            $html .= sprintf('<label>%s<input type="checkbox" name="medal_wearing_status" value="%s"%s></label>', nexus_trans('medal.action_wearing'), $medal->pivot->id, $checked);
         }
         $html .= '</div>';
         $medalImages[] = $html;

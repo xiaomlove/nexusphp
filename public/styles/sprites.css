@@ -480,3 +480,18 @@ img.hitandrun {
     background: url(icons.gif) no-repeat -100px -171px;
     margin-left: 0.5em;
 }
+.spoiler-title {
+    line-height: 40px;
+    color: #4d6c99;
+    cursor: pointer;
+    font-weight: 700;
+    background-color: rgba(77, 108, 153, 0.1);
+    display: inline-block;
+    padding: 0 10px;
+}
+.spoiler-content {
+    display: inline-block;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease;
+}

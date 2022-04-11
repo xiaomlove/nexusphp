@@ -322,6 +322,8 @@ $lang_functions = array
 	'text_technical_info_help_text' => 'MediaInfo comes from software <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，open file, click the view menu > text > right click in the box > select all > copy > past into this box.',
     'text_management_system' => 'Management system',
     'text_seed_points' => 'Seed points',
+    'spoiler_expand_collapse' => 'Click to expand/collapse',
+    'spoiler_default_title' => 'Collapse content',
 );
 
 ?>

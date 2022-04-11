@@ -217,33 +217,39 @@ final class Nexus
         $this->platform = (string)$this->retrieveFromServer(['HTTP_PLATFORM', 'Platform', 'platform'], true);
     }
 
-    public static function js(string $js, string $position, bool $isFile)
+    public static function js(string $js, string $position, bool $isFile, $key = null)
     {
         if ($isFile) {
             $append = sprintf('<script type="text/javascript" src="%s"></script>', $js);
         } else {
             $append = sprintf('<script type="text/javascript">%s</script>', $js);
         }
-        if ($position == 'header') {
-            self::$appendHeaders[] = $append;
-        } elseif ($position == 'footer') {
-            self::$appendFooters[] = $append;
-        } else {
-            throw new \InvalidArgumentException("Invalid position: $position");
-        }
+        self::appendJsCss($append, $position, $key);
     }
 
-    public static function css(string $css, string $position, bool $isFile)
+    public static function css(string $css, string $position, bool $isFile, $key = null)
     {
         if ($isFile) {
             $append = sprintf('<link rel="stylesheet" href="%s" type="text/css">', $css);
         } else {
             $append = sprintf('<style type="text/css">%s</style>', $css);
         }
+        self::appendJsCss($append, $position, $key);
+    }
+
+    private static function appendJsCss($append, $position, $key = null)
+    {
+        if ($key === null) {
+            $key = md5($append);
+        }
         if ($position == 'header') {
-            self::$appendHeaders[] = $append;
+            if (!isset(self::$appendHeaders[$key])) {
+                self::$appendHeaders[$key] = $append;
+            }
         } elseif ($position == 'footer') {
-            self::$appendFooters[] = $append;
+            if (!isset(self::$appendFooters[$key])) {
+                self::$appendFooters[$key] = $append;
+            }
         } else {
             throw new \InvalidArgumentException("Invalid position: $position");
         }

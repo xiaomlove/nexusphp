@@ -252,6 +252,15 @@ insert_tag(
 	$lang_tags['text_ninety_eight_image_remarks']
 );*/
 
+
+insert_tag(
+    $lang_tags['text_spoiler'],
+    $lang_tags['text_spoiler_description'],
+    $lang_tags['text_spoiler_syntax'],
+    $lang_tags['text_spoiler_example'],
+    ""
+);
+
 end_frame();
 end_main_frame();
 stdfoot();

@@ -129,6 +129,10 @@ $lang_tags = array
 	'text_ninety_eight_image_syntax' => " [98img=[auto|number]]image file[/98img]",
 	'text_ninety_eight_image_example' => "[98img=150]uploadfile/2008/10/30/2362924185.png[/98img]",
 	'text_ninety_eight_image_remarks' => "CC98 is a forum at Zhejiang University",
+    'text_spoiler' => 'Spoiler',
+    'text_spoiler_description' => 'Insert expandable/collapsible content on the page',
+    'text_spoiler_syntax' => '[spoiler=title]This is the folded content[/spoiler]',
+    'text_spoiler_example' => '[spoiler=What happened to the final ending of the hero?]The hero died last![/spoiler]',
 );
 
 ?>

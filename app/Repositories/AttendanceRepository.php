@@ -40,9 +40,9 @@ class AttendanceRepository extends BaseRepository
                 $diffDays = $today->diffInDays($added);
                 if ($diffDays == 1) {
                     //yesterday do it, it's continuous
-                    do_log("[CONTINUOUS]");
-                    $continuousDays = $this->getContinuousDays($attendance);
-                    $points = $this->getContinuousPoints($continuousDays);
+                    $continuousDays = $this->getContinuousDays($attendance, Carbon::yesterday());
+                    $points = $this->getContinuousPoints($continuousDays + 1);
+                    do_log("[CONTINUOUS] continuous days from yesterday: $continuousDays, points: $points");
                     $update = [
                         'added' => $now,
                         'points' => $points,
@@ -93,10 +93,10 @@ class AttendanceRepository extends BaseRepository
         $step = $settings['attendance_step'] ?? Attendance::STEP_BONUS;
         $max = $settings['attendance_max'] ?? Attendance::MAX_BONUS;
         $extraAwards = $settings['attendance_continuous'] ?? Attendance::CONTINUOUS_BONUS;
-        $points = min($initial + $days * $step, $max);
+        $points = min($initial + ($days - 1) * $step, $max);
         krsort($extraAwards);
         foreach ($extraAwards as $key => $value) {
-            if ($days >= $key - 1) {
+            if ($days == $key) {
                 $points += $value;
                 break;
             }
@@ -248,14 +248,10 @@ class AttendanceRepository extends BaseRepository
         return $insertCount;
     }
 
-    public function getContinuousDays(Attendance $attendance, $start = ''): int
+    public function getContinuousDays(Attendance $attendance, $start): int
     {
-        if (!empty($start)) {
-            $start = Carbon::parse($start);
-        } else {
-            $start = $attendance->added;
-        }
-        $logQuery = $attendance->logs()->where('date', '<=', $start)->orderBy('date', 'desc');
+        $start = Carbon::parse($start);
+        $logQuery = $attendance->logs()->where('date', '<=', $start->format('Y-m-d'))->orderBy('date', 'desc');
         $attendanceLogs = $logQuery->get(['date'])->keyBy('date');
         $counts = $attendanceLogs->count();
         do_log(sprintf('user: %s, log counts: %s from query: %s', $attendance->uid, $counts, last_query()));
@@ -269,9 +265,9 @@ class AttendanceRepository extends BaseRepository
             $checkDate = $value->format('Y-m-d');
             if ($attendanceLogs->has($checkDate)) {
                 $days++;
-                do_log(sprintf('user: %s, date: %s, has attendance, now days: %s', $attendance->uid, $checkDate, $days));
+                do_log(sprintf('user: %s, date: %s, [HAS_ATTENDANCE], now days: %s', $attendance->uid, $checkDate, $days));
             } else {
-                do_log(sprintf('user: %s, date: %s, not attendance, now days: %s', $attendance->uid, $checkDate, $days));
+                do_log(sprintf('user: %s, date: %s, [NOT_ATTENDANCE], now days: %s', $attendance->uid, $checkDate, $days));
                 break;
             }
         }
@@ -286,24 +282,24 @@ class AttendanceRepository extends BaseRepository
         }
         $attendance = $this->getAttendance($user->id);
         if (!$attendance) {
-            throw new \LogicException("Haven't attendance yet");
+            throw new \LogicException(nexus_trans('attendance.have_not_attendance_yet'));
         }
         $date = Carbon::createFromTimestampMs($timestampMs);
         $now = Carbon::now();
         if ($date->gte($now) || $now->diffInDays($date) > Attendance::MAX_RETROACTIVE_DAYS) {
-            throw new \LogicException(sprintf("date: %s can't be retroactive attend", $date->format('Y-m-d')));
+            throw new \LogicException(nexus_trans('attendance.target_date_can_no_be_retroactive', ['date' => $date->format('Y-m-d')]));
         }
         return NexusDB::transaction(function () use ($user, $attendance, $date) {
             if (AttendanceLog::query()->where('uid', $user->id)->where('date', $date->format('Y-m-d'))->exists()) {
-                throw new \RuntimeException("Already attendance");
+                throw new \RuntimeException(nexus_trans('attendance.already_attendance'));
             }
             if ($user->attendance_card < 1) {
-                throw new \RuntimeException("Attendance card not enough");
+                throw new \RuntimeException(nexus_trans('attendance.card_not_enough'));
             }
             $log = sprintf('user: %s, card: %s, retroactive date: %s', $user->id, $user->attendance_card, $date->format('Y-m-d'));
-            $continuousDays = $this->getContinuousDays($attendance, $date->clone()->subDay(1));
-            $log .= ", continuousDays: $continuousDays";
-            $points = $this->getContinuousPoints($continuousDays);
+            $continuousDays = $this->getContinuousDays($attendance, $date->clone()->subDays(1));
+            $log .= ", continuousDays from prev day: $continuousDays";
+            $points = $this->getContinuousPoints($continuousDays + 1);
             $log .= ", points: $points";
             do_log($log);
             $userUpdates = [
