@@ -758,6 +758,13 @@ class TrackerRepository extends BaseRepository
 
         if ($peer->exists) {
             $peer->prev_action = $peer->last_action;
+            if ($queries['event'] == 'completed') {
+                $peer->finishedat = time();
+            }
+        } else {
+            $peer->started = $nowStr;
+            $peer->uploadoffset = $queries['uploaded'];
+            $peer->downloadoffset = $queries['downloaded'];
         }
 
         $peer->to_go = $queries['left'];
@@ -765,14 +772,6 @@ class TrackerRepository extends BaseRepository
         $peer->last_action = $nowStr;
         $peer->uploaded = $queries['uploaded'];
         $peer->downloaded = $queries['downloaded'];
-
-        if ($queries['event'] == 'started' || !$peer->exists) {
-            $peer->started = $nowStr;
-            $peer->uploadoffset = $queries['uploaded'];
-            $peer->downloadoffset = $queries['downloaded'];
-        } elseif ($queries['event'] == 'completed') {
-            $peer->finishedat = time();
-        }
 
         $peer->save();
         do_log(last_query());
@@ -803,7 +802,7 @@ class TrackerRepository extends BaseRepository
             $snatch->uploaded = $queries['uploaded'];
             $snatch->downloaded = $queries['downloaded'];
             $snatch->startdat = $nowStr;
-        } else {
+        } elseif ($peer->exists) {
             //increase, use the increment value
             $snatch->uploaded = DB::raw("uploaded + " .  $dataTraffic['uploaded_increment']);
             $snatch->downloaded = DB::raw("downloaded + " .  $dataTraffic['downloaded_increment']);
@@ -815,6 +814,10 @@ class TrackerRepository extends BaseRepository
                 $timeField = 'leechtime';
             }
             $snatch->{$timeField} = DB::raw("$timeField + $timeIncrease");
+            if ($queries['event'] == 'completed') {
+                $snatch->completedat = $nowStr;
+                $snatch->finished = 'yes';
+            }
         }
 
         //always update
@@ -822,10 +825,6 @@ class TrackerRepository extends BaseRepository
         $snatch->port = $queries['port'];
         $snatch->to_go = $queries['left'];
         $snatch->last_action = $nowStr;
-        if ($queries['event'] == 'completed' && $peer->exists) {
-            $snatch->completedat = $nowStr;
-            $snatch->finished = 'yes';
-        }
 
         $snatch->save();
         do_log(last_query());
