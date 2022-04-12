@@ -382,7 +382,7 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
     }
     //[spoiler=What happens to the hero?]The hero dies at the end![/spoiler]
     if (str_contains($s, '[spoiler')) {
-        $s = preg_replace_callback("/\[spoiler(=(.*))?\](.+?)\[\/spoiler\]/is", function ($matches) {
+        $s = preg_replace_callback("/\[spoiler(=(.*))?\](.*)\[\/spoiler\]/isU", function ($matches) {
             return formatSpoiler($matches[3], $matches[2], nexus()->getScript() != 'preview');
         }, $s);
     }
@@ -5141,11 +5141,11 @@ function strip_all_tags($text)
     //替换掉无参数标签
     $bbTags = [
         '[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[pre]', '[/pre]', '[quote]', '[/quote]',
-        '[/color]', '[/font]', '[/size]', '[/url]', '[/youtube]',
+        '[/color]', '[/font]', '[/size]', '[/url]', '[/youtube]', '[/spoiler]',
     ];
     $text = str_replace($bbTags, '', $text);
     //替换掉有参数标签
-    $pattern = '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]|\[youtube.*\]/isU';
+    $pattern = '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]|\[youtube.*\]|\[spoiler.*\]/isU';
     $text = preg_replace($pattern, "", $text);
     //去掉表情
     static $emoji = null;
