@@ -162,4 +162,6 @@ stdhead($lang_upload['head_upload']);
 		</table>
 	</form>
 <?php
+\Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
+\Nexus\Nexus::js('js/ptgen.js', 'footer', true);
 stdfoot();

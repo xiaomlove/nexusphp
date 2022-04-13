@@ -133,6 +133,21 @@ $lang_tags = array
     'text_spoiler_description' => 'Insert expandable/collapsible content on the page',
     'text_spoiler_syntax' => '[spoiler=title]This is the folded content[/spoiler]',
     'text_spoiler_example' => '[spoiler=What happened to the final ending of the hero?]The hero died last![/spoiler]',
+
+    'text_left' => 'Text align left',
+    'text_left_description' => 'Insert left-justified content on the page',
+    'text_left_syntax' => '[left]This is the left-aligned content[/left]',
+    'text_left_example' => '[left]This is the left-aligned content[/left]',
+
+    'text_center' => 'Text align center',
+    'text_center_description' => 'Insert center-justified content on the page',
+    'text_center_syntax' => '[center]This is the center-aligned content[/center]',
+    'text_center_example' => '[center]This is the center-aligned content[/center]',
+
+    'text_right' => 'Text align right',
+    'text_right_description' => 'Insert right-justified content on the page',
+    'text_right_syntax' => '[right]This is the right-aligned content[/right]',
+    'text_right_example' => '[right]This is the right-aligned content[/right]',
 );
 
 ?>

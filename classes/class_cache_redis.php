@@ -288,13 +288,11 @@ class class_cache_redis {
         if (!$this->getIsEnabled()) {
             return 0;
         }
+        $this->redis->del($Key);
         if ($AllLang){
             $langfolder_array = $this->getLanguageFolderArray();
             foreach($langfolder_array as $lf)
                 $this->redis->del($lf."_".$Key);
-        }
-        else {
-            $this->redis->del($Key);
         }
     }
 

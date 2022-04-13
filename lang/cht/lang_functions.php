@@ -323,6 +323,7 @@ $lang_functions = array
     'text_seed_points' => '做種積分',
     'spoiler_expand_collapse' => '點擊展開/收縮',
     'spoiler_default_title' => '折疊內容',
+    'pt_gen_get_description' => '獲取簡介',
 );
 
 ?>

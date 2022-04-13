@@ -6,9 +6,10 @@ function get_langfolder_cookie()
 		return $deflang;
 	} else {
 		$langfolder_array = get_langfolder_list();
+		$enabled = \App\Models\Language::listEnabled();
 		foreach($langfolder_array as $lf)
 		{
-			if($lf == $_COOKIE["c_lang_folder"])
+			if($lf == $_COOKIE["c_lang_folder"] && in_array($lf, $enabled))
 			return $_COOKIE["c_lang_folder"];
 		}
 		return $deflang;
@@ -278,18 +279,12 @@ function formatSpoiler($content, $title = '', $defaultCollapsed = true): string
         '<div><div><div class="spoiler-title" title="%s">%s</div></div><div class="%s"><pre>%s</pre></div></div>',
         $lang_functions['spoiler_expand_collapse'], $title, $contentClass, $content
     );
-    $js = <<<JS
-jQuery('.spoiler-title').on('click', function () {
-    let content = jQuery(this).parent().next();
-    if (content.hasClass('collapse')) {
-         content.height(content[0].scrollHeight).removeClass('collapse')
-    } else {
-        content.height(0).addClass('collapse')
-    }
-})
-JS;
-    \Nexus\Nexus::js($js, 'footer', false, 'spoiler');
     return addTempCode($HTML);
+}
+
+function formatTextAlign($text, $align): string
+{
+    return addTempCode(sprintf('<div style="text-align: %s">%s</div>', $align, $text));
 }
 
 function format_urls($text, $newWindow = false) {
@@ -340,12 +335,12 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	if ($enableimage) {
 //		$s = preg_replace("/\[img\]([^\<\r\n\"']+?)\[\/img\]/ei", "formatImg('\\1',".$imageresizer.",".$image_max_width.",".$image_max_height.")", $s, $imagenum, $imgReplaceCount);
 		$s = preg_replace_callback("/\[img\]([^\<\r\n\"']+?)\[\/img\]/i", function ($matches) use ($imageresizer, $image_max_width, $image_max_height) {
-		    return formatImg($matches[1],".$imageresizer.",".$image_max_width.",".$image_max_height.");
+		    return formatImg($matches[1],$imageresizer,$image_max_width,$image_max_height);
         }, $s, $imagenum, $imgReplaceCount);
 
 //		$s = preg_replace("/\[img=([^\<\r\n\"']+?)\]/ei", "formatImg('\\1',".$imageresizer.",".$image_max_width.",".$image_max_height.")", $s, ($imagenum != -1 ? max($imagenum-$imgReplaceCount, 0) : -1));
 		$s = preg_replace_callback("/\[img=([^\<\r\n\"']+?)\]/i", function ($matches) use ($imageresizer, $image_max_width, $image_max_height) {
-		    return formatImg($matches[1],".$imageresizer.",".$image_max_width.",".$image_max_height.");
+		    return formatImg($matches[1],$imageresizer,$image_max_width,$image_max_height);
         }, $s, ($imagenum != -1 ? max($imagenum-$imgReplaceCount, 0) : -1));
 	} else {
 		$s = preg_replace("/\[img\]([^\<\r\n\"']+?)\[\/img\]/i", '', $s, -1);
@@ -380,12 +375,6 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
             return formatYoutube($matches[4], $matches[2], $matches[3]);
         }, $s);
     }
-    //[spoiler=What happens to the hero?]The hero dies at the end![/spoiler]
-    if (str_contains($s, '[spoiler')) {
-        $s = preg_replace_callback("/\[spoiler(=(.*))?\](.*)\[\/spoiler\]/isU", function ($matches) {
-            return formatSpoiler($matches[3], $matches[2], nexus()->getScript() != 'preview');
-        }, $s);
-    }
 
 	// [url=http://www.example.com]Text[/url]
 	if ($adid) {
@@ -406,6 +395,22 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	    return formatUrl($matches[1], ".($newtab==true ? 1 : 0).", '', 'faqlink');
     }, $s);
 
+    // [left]Left text[/left]
+    $s = preg_replace_callback("/\[left\](.*)\[\/left\]/isU", function ($matches) {
+        return formatTextAlign($matches[1], 'left');
+    }, $s);
+
+    // [center]Center text[/center]
+    $s = preg_replace_callback("/\[center\](.*)\[\/center\]/isU", function ($matches) {
+        return formatTextAlign($matches[1], 'center');
+    }, $s);
+
+    // [right]Right text[/right]
+    $s = preg_replace_callback("/\[right\](.*)\[\/right\]/isU", function ($matches) {
+        return formatTextAlign($matches[1], 'right');
+    }, $s);
+
+
 	$s = format_urls($s, $newtab);
 	// Quotes
 	if (strpos($s,"[quote") !== false && strpos($s,"[/quote]") !== false) { //format_quote is kind of slow. Better check if [quote] exists beforehand
@@ -417,6 +422,14 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	    $smile = get_smile($matches[1]);
 	    return $smile ? '<img src="'.$smile.'" alt="[em' . $matches[1] . ']" />' : '[em' . $matches[1] . ']';
     }, $s);
+
+    //[spoiler=What happens to the hero?]The hero dies at the end![/spoiler]
+    if (str_contains($s, '[spoiler')) {
+        $s = preg_replace_callback("/\[spoiler(=(.*))?\](.*)\[\/spoiler\]/isU", function ($matches) {
+            return formatSpoiler($matches[3], $matches[2], nexus()->getScript() != 'preview');
+        }, $s);
+    }
+
 	reset($tempCode);
 	$j = $i = 0;
 	while(count($tempCode) || $j > 5) {
@@ -1139,8 +1152,15 @@ function get_external_tr($imdb_url = "")
 {
 	global $lang_functions;
 	global $showextinfo;
+	if ($showextinfo['imdb'] != 'yes') {
+	    return '';
+    }
+	$ptGen = new Nexus\PTGen\PTGen();
 	$imdbNumber = parse_imdb_id($imdb_url);
-	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 99%;\" name=\"url\" value=\"".($imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
+    $y = $ptGen->buildInput("url", $imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "", $lang_functions['text_imdb_url_note'], $lang_functions['pt_gen_get_description']);
+    return tr($lang_functions['row_imdb_url'], $y, 1);
+
+//	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 99%;\" name=\"url\" value=\"".($imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
 }
 
 function get_torrent_extinfo_identifier($torrentid)
@@ -2431,19 +2451,19 @@ if ($CURUSER){
 }
 ?>
 <link rel="alternate" type="application/rss+xml" title="Latest Torrents" href="torrentrss.php" />
-<script type="text/javascript" src="curtain_imageresizer.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="ajaxbasic.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="common.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="domLib.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="domTT.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="domTT_drag.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="fadomatic.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/curtain_imageresizer.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/ajaxbasic.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/common.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/domLib.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/domTT.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/domTT_drag.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/fadomatic.js<?php echo $cssupdatedate?>"></script>
 <?php
 foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
     print($value);
 }
 ?>
-<script type="text/javascript" src="jquery-1.12.4.min.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="js/jquery-1.12.4.min.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript">jQuery.noConflict();</script>
 </head>
 <body>
@@ -2770,15 +2790,16 @@ function stdfoot() {
 	foreach (\Nexus\Nexus::getAppendFooters() as $value) {
 	    print($value);
     }
-	$backToTop = <<<TOTOP
-<script type="application/javascript" src="/vendor/jquery-goup-1.1.3/jquery.goup.min.js"></script>
+	$js = <<<JS
+<script type="application/javascript" src="js/nexus.js"></script>
+<script type="application/javascript" src="vendor/jquery-goup-1.1.3/jquery.goup.min.js"></script>
 <script>
 jQuery(document).ready(function(){
-    jQuery.goup();
+    jQuery.goup()
 });
 </script>
-TOTOP;
-    print($backToTop);
+JS;
+    print($js);
 	print("</body></html>");
 
 	//echo replacePngTags(ob_get_clean());
@@ -3094,16 +3115,24 @@ function searchbox_item_list($table = "sources"){
 	return $ret;
 }
 
-function langlist($type) {
+function langlist($type, $enabled = null) {
 	global $Cache;
-	if (!$ret = $Cache->get_value($type.'_lang_list')){
-		$ret = array();
-		$res = sql_query("SELECT id, lang_name, flagpic, site_lang_folder FROM language WHERE ". $type ."=1 ORDER BY site_lang DESC, id ASC");
-		while ($row = mysql_fetch_array($res))
-			$ret[] = $row;
-		$Cache->cache_value($type.'_lang_list', $ret, 152800);
-	}
-	return $ret;
+	$cacheKey = $type.'_lang_list';
+	return  \Nexus\Database\NexusDB::remember($cacheKey, 600, function () use ($type, $enabled) {
+        $query = \App\Models\Language::query()->where($type, 1);
+        if ($enabled !== null) {
+            $query->whereIn('site_lang_folder', \App\Models\Language::listEnabled(true));
+        }
+        return $query->get()->toArray();
+    });
+//    if (!$ret = $Cache->get_value($type.'_lang_list')){
+//        $ret = array();
+//        $res = sql_query("SELECT id, lang_name, flagpic, site_lang_folder FROM language WHERE ". $type ."=1 ORDER BY site_lang DESC, id ASC");
+//        while ($row = mysql_fetch_array($res))
+//            $ret[] = $row;
+//        $Cache->cache_value($type.'_lang_list', $ret, 152800);
+//    }
+//	return $ret;
 }
 
 function linkcolor($num) {
@@ -3169,11 +3198,6 @@ function torrenttable($rows, $variant = "torrent") {
 	global $torrentmanage_class, $smalldescription_main, $enabletooltip_tweak;
 	global $CURLANGDIR;
 
-	$setting = get_setting('main');
-	$enablePtGen = $setting['enable_pt_gen_system'] == 'yes';
-	$enableImdb = $setting['showimdbinfo'] == 'yes';
-    $ptGen = new Nexus\PTGen\PTGen();
-    $imdb = new Nexus\Imdb\Imdb();
 	$torrent = new Nexus\Torrent\Torrent();
 	$torrentIdArr = array_column($rows, 'id');
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], $torrentIdArr);
@@ -3406,11 +3430,9 @@ foreach ($rows as $row)
 	    echo $torrent->renderProgressBar($torrentSeedingLeechingStatus[$row['id']]['active_status'], $torrentSeedingLeechingStatus[$row['id']]['progress']);
     }
 	print("</td>");
-    if ($enablePtGen && !empty($row['pt_gen'])) {
-        echo $ptGen->renderTorrentsPageAverageRating(json_decode($row['pt_gen'], true));
-    } elseif ($enableImdb) {
-        echo $imdb->renderTorrentsPageAverageRating($row['url']);
-    }
+
+    echo $torrent->renderTorrentsPageAverageRating($row);
+
 		$act = "";
 		if ($CURUSER["dlicon"] != 'no' && $CURUSER["downloadpos"] != "no")
 		$act .= "<a href=\"download.php?id=".$id."\"><img class=\"download\" src=\"pic/trans.gif\" style='padding-bottom: 2px;' alt=\"download\" title=\"".$lang_functions['title_download_torrent']."\" /></a>" ;

@@ -322,6 +322,7 @@ $lang_functions = array
     'text_seed_points' => '做种积分',
     'spoiler_expand_collapse' => '点击展开/收缩',
     'spoiler_default_title' => '折叠内容',
+    'pt_gen_get_description' => '获取简介',
 );
 
 ?>

@@ -6,10 +6,14 @@ $langid = intval($_GET['sitelanguage'] ?? 0);
 if ($langid)
 {
 	$lang_folder = validlang($langid);
+	$enabled = \App\Models\Language::listEnabled();
+	if (!in_array($lang_folder, $enabled)) {
+	    nexus_redirect(getBaseUrl());
+    }
 	if(get_langfolder_cookie() != $lang_folder)
 	{
 		set_langfolder_cookie($lang_folder);
-		header("Location: " . $_SERVER['REQUEST_URI']);
+		nexus_redirect($_SERVER['REQUEST_URI']);
 	}
 }
 require_once(get_langfile_path("", false, $CURLANGDIR));
@@ -20,8 +24,7 @@ stdhead($lang_login['head_login']);
 
 $s = "<select name=\"sitelanguage\" onchange='submit()'>\n";
 
-$langs = langlist("site_lang");
-
+$langs = langlist("site_lang", true);
 foreach ($langs as $row)
 {
 	if ($row["site_lang_folder"] == get_langfolder_cookie()) $se = "selected=\"selected\""; else $se = "";

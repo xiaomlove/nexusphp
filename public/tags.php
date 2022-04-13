@@ -188,6 +188,30 @@ insert_tag(
 );
 
 insert_tag(
+    $lang_tags['text_left'],
+    $lang_tags['text_left_description'],
+    $lang_tags['text_left_syntax'],
+    $lang_tags['text_left_example'],
+    ""
+);
+
+insert_tag(
+    $lang_tags['text_center'],
+    $lang_tags['text_center_description'],
+    $lang_tags['text_center_syntax'],
+    $lang_tags['text_center_example'],
+    ""
+);
+
+insert_tag(
+    $lang_tags['text_right'],
+    $lang_tags['text_right_description'],
+    $lang_tags['text_right_syntax'],
+    $lang_tags['text_right_example'],
+    ""
+);
+
+insert_tag(
 	$lang_tags['text_flash'],
 	$lang_tags['text_flash_description'],
 	$lang_tags['text_flash_syntax'],

@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Storage;
 use JeroenG\Explorer\Domain\Syntax\Matching;
 use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use Nexus\Database\NexusDB;
+use Nexus\Imdb\Imdb;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -118,14 +119,17 @@ class Test extends Command
 //        $r = $searchRep->deleteBookmark(1);
 //        $r = $searchRep->addBookmark(1);
 
-        $rep = new AttendanceRepository();
-        $uid = 1;
-        $attendance = $rep->getAttendance($uid);
+//        $rep = new AttendanceRepository();
+//        $uid = 1;
+//        $attendance = $rep->getAttendance($uid);
 //        $r = $rep->migrateAttendanceLogs($uid);
 //        $r = $rep->getContinuousDays($attendance);
-        $r = $rep->getContinuousPoints(11);
-        dd($r);
+//        $r = $rep->getContinuousPoints(11);
 
+        $url = 'https://www.imdb.com/title/tt4574334/?ref_=vp_vi_tt';
+        $imdb = new Imdb();
+        $rating = $imdb->getRating($url);
+        dd($rating);
     }
 
 

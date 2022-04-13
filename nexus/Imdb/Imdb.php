@@ -262,7 +262,12 @@ class Imdb
 
     }
 
-    public function renderTorrentsPageAverageRating($imdbId)
+    public function renderTorrentsPageAverageRating($imdbId): string
+    {
+        return $this->getPtGen()->buildRatingSpan([PTGen::SITE_IMDB => $this->getRating($imdbId)]);
+    }
+
+    public function getRating($imdbId): float|string
     {
         $imdbId = parse_imdb_id($imdbId);
         $defaultRating = $rating = 'N/A';
@@ -273,7 +278,7 @@ class Imdb
         if (!is_numeric($rating)) {
             $rating = $defaultRating;
         }
-        return $this->getPtGen()->buildRatingSpan([PTGen::SITE_IMDB => $rating]);
+        return $rating;
     }
 
     public function getPtGen()

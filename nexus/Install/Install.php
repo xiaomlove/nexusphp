@@ -128,7 +128,7 @@ class Install
     public function listRequirementTableRows()
     {
         $gdInfo = function_exists('gd_info') ? gd_info() : [];
-        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', 'pcntl', 'sockets', 'posix'];
+        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', 'sockets', 'posix'];
         $tableRows = [];
         $tableRows[] = [
             'label' => 'PHP version',
@@ -140,10 +140,17 @@ class Install
             $tableRows[] = [
                 'label' => "PHP extension $extension",
                 'required' => 'enabled',
-                'current' => extension_loaded($extension),
+                'current' => (int)extension_loaded($extension),
                 'result' => $this->yesOrNo(extension_loaded($extension)),
             ];
         }
+        $tableRows[] = [
+            'label' => 'PHP extension pcntl',
+            'required' => 'true',
+            'current' => (int)extension_loaded($extension),
+            'result' => "If 'current' showing 0, make sure it's on php -m",
+        ];
+
         $tableRows[] = [
             'label' => 'PHP extension gd JPEG Support',
             'required' => 'true',

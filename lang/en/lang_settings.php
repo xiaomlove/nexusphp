@@ -735,6 +735,9 @@ $lang_settings = array
     'text_attendance_continuous_add_rules' => 'Please add rules from lowest to highest',
     'row_attendance_card' => 'Buy attendance card',
     'text_attendance_card_note' => "bonus points to buy a attendance card. Default'" . \App\Models\BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD . "'.",
+    'row_site_language_enabled' => 'Site enabled language',
+    'text_site_language_enabled_note' => 'Select site enabled language',
+    'keep_at_least_one' => 'Keep at least one',
 );
 
 ?>

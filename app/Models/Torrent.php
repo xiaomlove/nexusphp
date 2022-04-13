@@ -25,7 +25,8 @@ class Torrent extends NexusModel
     const BANNED_NO = 'no';
 
     protected $casts = [
-        'added' => 'datetime'
+        'added' => 'datetime',
+        'pt_gen' => 'array',
     ];
 
     public static $commentFields = [

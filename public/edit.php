@@ -267,6 +267,8 @@ jQuery(function($){
 </script>
 EOT;
 }
+\Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
+\Nexus\Nexus::js('js/ptgen.js', 'footer', true);
 stdfoot();
 function getAddedTimeOption($timeStamp, $addSeconds) {
     $timeStamp += $addSeconds;

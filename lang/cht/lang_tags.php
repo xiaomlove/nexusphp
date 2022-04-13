@@ -134,6 +134,21 @@ $lang_tags = array
     'text_spoiler_syntax' => '[spoiler=標題]這是被折疊的內容[/spoiler]',
     'text_spoiler_example' => '[spoiler=英雄最後的結局怎麽樣了？]英雄最後死掉了！[/spoiler]',
 
+    'text_left' => '靠左對齊',
+    'text_left_description' => '在頁面插入靠左對齊的內容',
+    'text_left_syntax' => '[left]這是靠左對齊的內容[/left]',
+    'text_left_example' => '[left]這是靠左對齊的內容[/left]',
+
+    'text_center' => '居中對齊',
+    'text_center_description' => '在頁面插入居中對齊的內容',
+    'text_center_syntax' => '[center]這是居中對齊的內容[/center]',
+    'text_center_example' => '[center]這是居中對齊的內容[/center]',
+
+    'text_right' => '靠右對齊',
+    'text_right_description' => '在頁面插入靠右對齊的內容',
+    'text_right_syntax' => '[right]這是靠右對齊的內容[/right]',
+    'text_right_example' => '[right]這是靠右對齊的內容[/right]',
+
 );
 
 ?>

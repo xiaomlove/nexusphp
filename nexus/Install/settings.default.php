@@ -88,6 +88,7 @@ return array (
     'pt_gen_api_point' => '',
     'enable_pt_gen_system' => 'no',
     'enable_technical_info' => 'no',
+      'site_language_enabled' => \App\Models\Language::DEFAULT_ENABLED,
   ),
   'smtp' =>
   array (

@@ -12,7 +12,7 @@ $siteid = $_GET["siteid"] ?? 0; // 1 for IMDb
 if (!isset($id) || !$id || !is_numeric($id) || !isset($type) || !$type || !is_numeric($type) || !isset($siteid) || !$siteid)
 die();
 
-$r = sql_query("SELECT id, url, pt_gen from torrents WHERE id = " . sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+$r = sql_query("SELECT * from torrents WHERE id = " . sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 if(mysql_num_rows($r) != 1)
 die();
 
@@ -20,7 +20,7 @@ $row = mysql_fetch_assoc($r);
 
 switch ($siteid)
 {
-	case 1 : 
+	case 1 :
 	{
 		$imdb_id = parse_imdb_id($row["url"]);
 		if ($imdb_id)
@@ -41,7 +41,7 @@ switch ($siteid)
 				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
 				do_log($log, 'error');
 			}
-			header("Location: " . get_protocol_prefix() . "$BASEURL/details.php?id=".htmlspecialchars($id));
+            nexus_redirect(getSchemeAndHttpHost() . "/details.php?id=$id");
 		}
 		break;
 	}
@@ -49,18 +49,14 @@ switch ($siteid)
 	case \Nexus\PTGen\PTGen::SITE_DOUBAN:
 	case \Nexus\PTGen\PTGen::SITE_BANGUMI:
 		{
-			$ptGenInfo = json_decode($row['pt_gen'], true);
-			$link = $ptGenInfo[$siteid]['link'];
 			$ptGen = new \Nexus\PTGen\PTGen();
 			try {
-				$result = $ptGen->generate($link, true);
-				$ptGenInfo[$siteid]['data'] = $result;
-				sql_query(sprintf("update torrents set pt_gen = %s where id = %s", sqlesc(json_encode($ptGenInfo)), $id))  or sqlerr(__FILE__, __LINE__);
+				$ptGen->updateTorrentPtGen($row, $siteid);
 			} catch (\Exception $e) {
 				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
 				do_log($log, 'error');
 			}
-			header("Location: " . get_protocol_prefix() . "$BASEURL/details.php?id=".htmlspecialchars($id));
+			nexus_redirect(getSchemeAndHttpHost() . "/details.php?id=$id");
 			break;
 		}
 	default :

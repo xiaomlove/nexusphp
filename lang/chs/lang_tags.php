@@ -133,6 +133,21 @@ $lang_tags = array
     'text_spoiler_description' => '在页面插入可展开/收缩的内容',
     'text_spoiler_syntax' => '[spoiler=标题]这是被折叠的内容[/spoiler]',
     'text_spoiler_example' => '[spoiler=英雄最后的结局怎么样了？]英雄最后死掉了！[/spoiler]',
+
+    'text_left' => '靠左对齐',
+    'text_left_description' => '在页面插入靠左对齐的内容',
+    'text_left_syntax' => '[left]这是靠左对齐的内容[/left]',
+    'text_left_example' => '[left]这是靠左对齐的内容[/left]',
+
+    'text_center' => '居中对齐',
+    'text_center_description' => '在页面插入居中对齐的内容',
+    'text_center_syntax' => '[center]这是居中对齐的内容[/center]',
+    'text_center_example' => '[center]这是居中对齐的内容[/center]',
+
+    'text_right' => '靠右对齐',
+    'text_right_description' => '在页面插入靠右对齐的内容',
+    'text_right_syntax' => '[right]这是靠右对齐的内容[/right]',
+    'text_right_example' => '[right]这是靠右对齐的内容[/right]',
 );
 
 ?>

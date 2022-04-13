@@ -735,6 +735,9 @@ $lang_settings = array
     'text_attendance_continuous_add_rules' => '請請從小到大添加規則',
     'row_attendance_card' => '購買補簽卡',
     'text_attendance_card_note' => "個魔力值，如果他需要購買一張補簽卡。默認'" . \App\Models\BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD . "'。",
+    'row_site_language_enabled' => '站點啟用語言',
+    'text_site_language_enabled_note' => '選擇站點啟用的語言',
+    'keep_at_least_one' => '至少保留一個',
 );
 
 ?>

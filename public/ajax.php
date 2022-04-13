@@ -34,3 +34,16 @@ function attendanceRetroactive($params)
     return $rep->retroactive($CURUSER['id'], $params['timestamp']);
 }
 
+function getPtGen($params)
+{
+    $rep = new Nexus\PTGen\PTGen();
+    $result = $rep->generate($params['url']);
+    if ($rep->isRawPTGen($result)) {
+        return $result['format'];
+    } elseif ($rep->isIyuu($result)) {
+        return $result['data']['format'];
+    } else {
+        return '';
+    }
+}
+

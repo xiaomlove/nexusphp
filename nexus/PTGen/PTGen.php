@@ -8,8 +8,10 @@
  */
 namespace Nexus\PTGen;
 
+use App\Models\Torrent;
 use GuzzleHttp\Client;
 use Illuminate\Support\Str;
+use Nexus\Imdb\Imdb;
 
 class PTGen
 {
@@ -19,16 +21,18 @@ class PTGen
     const SITE_IMDB = 'imdb';
     const SITE_BANGUMI = 'bangumi';
 
-    private static $validSites = [
+    public static array $validSites = [
         self::SITE_IMDB => [
             'url_pattern' => '/(?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/(tt\d+)\/?/',
             'home_page' => 'https://www.imdb.com/',
             'rating_average_img' => 'pic/imdb2.png',
+            'rating_pattern_in_desc' => "/IMDb评分.*([\d\.]+)\//isU",
         ],
         self::SITE_DOUBAN => [
             'url_pattern' => '/(?:https?:\/\/)?(?:(?:movie|www)\.)?douban\.com\/(?:subject|movie)\/(\d+)\/?/',
             'home_page' => 'https://www.douban.com/',
             'rating_average_img' => 'pic/douban2.png',
+            'rating_pattern_in_desc' => "/豆瓣评分.*([\d\.]+)\//isU",
         ],
         self::SITE_BANGUMI => [
             'url_pattern' => '/(?:https?:\/\/)?(?:bgm\.tv|bangumi\.tv|chii\.in)\/subject\/(\d+)\/?/',
@@ -51,7 +55,7 @@ class PTGen
 
     public function setApiPoint(string $apiPoint)
     {
-        $this->apiPoint = $apiPoint;
+        $this->apiPoint = trim($apiPoint);
     }
 
     public function generate(string $url, bool $withoutCache = false): array
@@ -63,7 +67,7 @@ class PTGen
         } else {
             $targetUrl .= "?";
         }
-        $targetUrl .= sprintf('site=%s&sid=%s', $parsed['site'] , $parsed['id']);
+        $targetUrl .= sprintf('site=%s&sid=%s&url=%s', $parsed['site'] , $parsed['id'], urlencode($parsed['url']));
         return $this->request($targetUrl, $withoutCache);
     }
 
@@ -81,24 +85,39 @@ class PTGen
         throw new PTGenException("invalid url: $url");
     }
 
-    private function buildDetailsPageTableRow($torrentId, $ptGenArr, $site)
+    private function buildDetailsPageTableRow($torrentId, $ptGenArr, $site): string
     {
         global $lang_details;
-        $ptGenFormatted = $ptGenArr['format'];
+        if ($this->isRawPTGen($ptGenArr)) {
+            $ptGenFormatted = $ptGenArr['format'];
+        } elseif ($this->isIyuu($ptGenArr)) {
+            $ptGenFormatted = $ptGenArr['data']['format'];
+        } else {
+            do_log("Invalid pt gen data", 'error');
+            return '';
+        }
         $poster = '';
         if (!empty($ptGenArr['poster'])) {
             $poster = $ptGenArr['poster'];
+        } elseif (preg_match('/\[img\](.*)\[\/img\]/iU', $ptGenFormatted, $matches)) {
+            $poster = $matches[1];
+        }
+        if ($poster) {
             $prefix = sprintf("[img]%s[/img]\n", $poster);
             $ptGenFormatted = mb_substr($ptGenFormatted, mb_strlen($prefix, 'utf-8') + 1);
         }
         $ptGenFormatted = format_comment($ptGenFormatted);
         $ptGenFormatted .= sprintf(
-            '%s%s%s<a href="retriver.php?id=%s&type=1&siteid=%s">%s</a>',
-            $lang_details['text_information_updated_at'], !empty($ptGenArr['generate_at']) ? date('Y-m-d H:i:s', intval($ptGenArr['generate_at'] / 1000)) : '', $lang_details['text_might_be_outdated'],
+            '%s %s%s<a href="retriver.php?id=%s&type=1&siteid=%s">%s</a>',
+            $lang_details['text_information_updated_at'], $ptGenArr['__updated_at'], $lang_details['text_might_be_outdated'],
             $torrentId, $site, $lang_details['text_here_to_update']
         );
         $titleShowOrHide = $lang_details['title_show_or_hide'] ?? '';
         $id = 'pt-gen-' . $site;
+        $posterHtml = "";
+        if ($poster) {
+            $posterHtml = sprintf('<div id="poster%s"><img src="%s" width="105" onclick="Preview(this);" title="%s"', $id, $poster, $titleShowOrHide);
+        }
         $html = <<<HTML
 <tr>
     <td class="rowhead">
@@ -108,9 +127,7 @@ class PTGen
                 PT-Gen-{$site}
             </span>
         </a>
-        <div id="poster{$id}">
-            <img src="{$poster}" width="105" onclick="Preview(this);" alt="poster" />
-        </div>
+        $posterHtml
     </td>
     <td class="rowfollow" align="left">
         <div id="k{$id}">
@@ -156,14 +173,16 @@ HTML;
             do_log("$logPrefix, $msg");
             throw new PTGenException($msg);
         }
-        if (!isset($bodyArr['success']) || !$bodyArr['success']) {
+        if ($this->isRawPTGen($bodyArr) || $this->isIyuu($bodyArr)) {
+            $Cache->cache_value($cacheKey, $bodyArr, 24 * 3600);
+            do_log("$logPrefix, success get from api point, use time: " . (microtime(true) - $begin));
+            $bodyArr['__updated_at'] = now()->toDateTimeString();
+            return $bodyArr;
+        } else {
             $msg = "error: " . $bodyArr['error'] ?? '';
             do_log("$logPrefix, response: $bodyString");
             throw new PTGenException($msg);
         }
-        $Cache->cache_value($cacheKey, $bodyArr, 24 * 3600);
-        do_log("$logPrefix, success get from api point, use time: " . (microtime(true) - $begin));
-        return $bodyArr;
     }
 
     public function deleteApiPointResultCache($url)
@@ -185,10 +204,28 @@ HTML;
         foreach (self::$validSites as $site => $info) {
             $value = $ptGen[$site]['link'] ?? '';
             $x = $lang_functions["row_pt_gen_{$site}_url"];
-            $y = "<input type=\"text\" style=\"width: 650px;\" name=\"pt_gen[{$site}][link]\" value=\"{$value}\" /><br /><font class=\"medium\">".$lang_functions["text_pt_gen_{$site}_url_note"]."</font>";
+            $y = $this->buildInput("pt_gen[{$site}][link]", $value, $lang_functions["text_pt_gen_{$site}_url_note"], $lang_functions['pt_gen_get_description']);
             $html .= tr($x, $y, 1);
         }
         return $html;
+    }
+
+    public function buildInput($name, $value, $note, $btnText): string
+    {
+        $btn = '';
+        if ($this->apiPoint != '') {
+            $btn = '<div><input type="button" class="btn-get-pt-gen" value="'.$btnText.'"></div>';
+        }
+        $input = <<<HTML
+<div style="display: flex">
+    <div style="display: flex;flex-direction: column;flex-grow: 1">
+        <input type="text" name="$name" value="{$value}" data-pt-gen="$name">
+        <span class="medium">{$note}</span>
+    </div>
+    $btn
+</div>
+HTML;
+        return $input;
     }
 
     public function renderDetailsPageDescription($torrentId, $torrentPtGenArr): array
@@ -233,21 +270,7 @@ HTML;
         return ['json_arr' => $jsonArr, 'html' => $html, 'update' => $update];
     }
 
-    public function renderTorrentsPageAverageRating($ptGenData)
-    {
-        $siteIdAndRating = [];
-        $ptGenData = (array)$ptGenData;
-        foreach (self::$validSites as $site => $info) {
-            $rating = $ptGenData[$site]['data']["{$site}_rating_average"] ?? '';
-            if (empty($rating)) {
-                continue;
-            }
-            $siteIdAndRating[$site] = $rating;
-        }
-        return $this->buildRatingSpan($siteIdAndRating);
-    }
-
-    public function buildRatingSpan(array $siteIdAndRating)
+    public function buildRatingSpan(array $siteIdAndRating): string
     {
         $result = '<td class="embedded" style="text-align: right; width: 40px;padding: 4px"><div style="display: flex;flex-direction: column">';
         $count = 1;
@@ -275,12 +298,119 @@ HTML;
         return $result;
     }
 
-    public function getRatingIcon($siteId, $rating)
+    public function getRatingIcon($siteId, $rating): string
     {
+        if (is_numeric($rating)) {
+            $rating = number_format($rating, 1);
+        }
         $result = sprintf(
             '<div style="display: flex;align-content: center;justify-content: space-between;padding: 2px 0"><img src="%s" alt="%s" title="%s" style="max-width: 16px;max-height: 16px"/><span>%s</span></div>',
             self::$validSites[$siteId]['rating_average_img'], $siteId, $siteId, $rating
         );
         return $result;
     }
+
+    public function isRawPTGen(array $bodyArr): bool
+    {
+        return isset($bodyArr['success']) && $bodyArr['success'];
+    }
+
+    public function isIyuu(array $bodyArr): bool
+    {
+        return isset($bodyArr['ret']) && $bodyArr['ret'] == 200;
+    }
+
+    public function listRatings(array $ptGenData, string $imdbLink, string $desc = ''): array
+    {
+        $results = [];
+        $log = "";
+        //First, get from PTGen
+        foreach (self::$validSites as $site => $info) {
+            if (!isset($ptGenData[$site]['data'])) {
+                continue;
+            }
+            $data = $ptGenData[$site]['data'];
+            $log .= ", handling site: $site";
+            $rating = '';
+            if (isset($data['__rating'])) {
+                //__rating is new add
+                $rating = $data['__rating'];
+                $log .= ", from __rating";
+            } else {
+                // from original structure fetch
+                if ($this->isRawPTGen($data)) {
+                    $log .= ", isRawPTGen";
+                    $rating = $data["{$site}_rating_average"] ?? '';
+                } elseif ($this->isIyuu($data)) {
+                    $log .= ", isIyuu";
+                    $pattern = $info['rating_pattern_in_desc'] ?? null;
+                    if ($pattern && preg_match($pattern,$data['data']['format'], $matches)) {
+                        $rating = $matches[1];
+                    }
+                }
+            }
+            if (!empty($rating)) {
+                $results[$site] = $rating;
+                $log .= ", get rating: $rating";
+            } else {
+                $log .= ", can't get rating";
+            }
+        }
+        //Second, imdb can get from imdb api
+        if (!isset($results[self::SITE_IMDB]) && !empty($imdbLink)) {
+            $imdb = new Imdb();
+            $imdbRating = $imdb->getRating($imdbLink);
+            $results[self::SITE_IMDB] = $imdbRating;
+            $log .= ", again 'imdb' from: $imdbLink} -> $imdbRating";
+        }
+        //Otherwise, get from desc
+        if (!empty($desc)) {
+            foreach (self::$validSites as $site => $info) {
+                if (isset($results[$site])) {
+                    continue;
+                }
+                if (empty($info['rating_pattern_in_desc'])) {
+                    continue;
+                }
+                $pattern = $info['rating_pattern_in_desc'];
+                $log .= ", at last, trying to get '$site' from desc with pattern: $pattern";
+                if (preg_match($pattern, $desc, $matches)) {
+                    $log .= ", get " . $matches[1];
+                    $results[$site] = $matches[1];
+                } else {
+                    $log .= ", not match";
+                }
+            }
+        }
+        do_log($log);
+        return $results;
+    }
+
+    public function updateTorrentPtGen(array $torrentInfo, $siteId = null)
+    {
+        $ptGenInfo = json_decode($torrentInfo['pt_gen'], true);
+        foreach (self::$validSites as $site => $siteConfig) {
+            if ($siteId !== null && $siteId != $site) {
+                //If specific, only update it
+                continue;
+            }
+            if (empty($ptGenInfo[$site]['link'])) {
+                do_log("site: $site no link...");
+                continue;
+            }
+            try {
+                $response = $this->generate($ptGenInfo[$site]['link'], true);
+                $ptGenInfo[$site]['data'] = $response;
+            } catch (\Exception $exception) {
+                do_log("site: $site can not be updated: " . $exception->getMessage(), 'error');
+            }
+        }
+        $siteIdAndRating = $this->listRatings($ptGenInfo, $torrentInfo['url'], $torrentInfo['descr']);
+        foreach ($siteIdAndRating as $key => $value) {
+            $ptGenInfo[$key]['data']["__rating"] = $value;
+        }
+        Torrent::query()->where('id', $torrentInfo['id'])->update(['pt_gen' => $ptGenInfo]);
+        return $ptGenInfo;
+    }
+
 }

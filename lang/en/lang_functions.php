@@ -324,6 +324,7 @@ $lang_functions = array
     'text_seed_points' => 'Seed points',
     'spoiler_expand_collapse' => 'Click to expand/collapse',
     'spoiler_default_title' => 'Collapse content',
+    'pt_gen_get_description' => 'Get desc',
 );
 
 ?>

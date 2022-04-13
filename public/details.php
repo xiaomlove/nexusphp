@@ -207,7 +207,7 @@ if (!$row) {
 	{
 		$thenumbers = $imdb_id;
 
-		$Cache->new_page('imdb_id_'.$thenumbers.'_large', 1296000, true);
+		$Cache->new_page('imdb_id_'.$thenumbers.'_large', 3600*24, true);
 		if (!$Cache->get_page()){
 			switch ($imdb->getCacheStatus($imdb_id))
 			{
@@ -225,7 +225,7 @@ if (!$row) {
                         if (($photo_url = $movie->photo() ) != FALSE)
                             $smallth = "<img src=\"".$photo_url. "\" width=\"105\" onclick=\"Preview(this);\" alt=\"poster\" />";
                         else
-                            $smallth = "<img src=\"pic/nophoto.gif\" alt=\"no poster\" />";
+                            $smallth = "<img src=\"pic/imdb_pic/nophoto.gif\" alt=\"no poster\" />";
 
                         $autodata = $imdb->renderDetailsPageDescription($row['id'], $imdb_id);
                         $cache_time = $imdb->getCachedAt($imdb_id);

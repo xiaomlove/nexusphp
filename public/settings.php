@@ -41,7 +41,7 @@ if ($action == 'savesettings_main')	// save main
 		'showpolls','showstats','showlastxtorrents', 'showtrackerload','showshoutbox','showfunbox','showoffer','sptime','showhelpbox','enablebitbucket',
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
-		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info'
+		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled'
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -54,6 +54,7 @@ if ($action == 'savesettings_main')	// save main
 	$Cache->delete_value('stats_users', true);
 	$Cache->delete_value('stats_torrents', true);
 	$Cache->delete_value('peers_count', true);
+    $Cache->delete_value('site_lang_lang_list', true);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker MAIN settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
@@ -710,11 +711,49 @@ elseif ($action == 'mainsettings')	// main settings
 	tr($lang_settings['row_torrents_category_mode'], $bcatlist."<br />".$lang_settings['text_torrents_category_mode_note'], 1);
 //	if (THISTRACKER == "HDStar")
 	tr($lang_settings['row_special_category_mode'], $scatlist."<br />".$lang_settings['text_special_category_mode_note'], 1);
-	$res = sql_query("SELECT * FROM language WHERE site_lang=1") or sqlerr(__FILE__, __LINE__);
+
+    $allSiteLanguages = \App\Models\Language::query()->where('site_lang', 1)->get();
+    $allEnabled = \App\Models\Language::listEnabled(true);
+    $langlist = "";
+    foreach ($allSiteLanguages as $lang) {
+        $langlist .= sprintf('<label><input type="checkbox" name="site_language_enabled[]" value="%s"%s/>%s</label>&nbsp;', $lang->site_lang_folder, in_array($lang->site_lang_folder, $allEnabled) ? " checked" : "", $lang->lang_name);
+    }
+    tr($lang_settings['row_site_language_enabled'], $langlist."<br />".$lang_settings['text_site_language_enabled_note'], 1);
+
 	$langlist = "";
-	while($array = mysql_fetch_array($res))
-		$langlist .= "<input type=radio name=defaultlang value='".$array['site_lang_folder']."'".($MAIN["defaultlang"] == $array['site_lang_folder'] ? " checked" : "").">".$array['lang_name']."&nbsp;";
+	foreach ($allSiteLanguages as $lang) {
+        $langlist .= sprintf(
+            '<label><input type="radio" name="defaultlang" value="%s"%s%s/>%s</label>&nbsp;',
+            $lang->site_lang_folder,
+            $MAIN["defaultlang"] == $lang->site_lang_folder ? " checked" : "",
+            !in_array($lang->site_lang_folder, $allEnabled) ? " disabled" : "",
+            $lang->lang_name
+        );
+    }
 	tr($lang_settings['row_default_site_language'], $langlist."<br />".$lang_settings['text_default_site_language_note'], 1);
+	$changeDefaultLangJs = <<<JS
+let msg = "{$lang_settings['keep_at_least_one']}"
+jQuery('input[name="site_language_enabled[]"]').on("change", function () {
+    let enabledCount = jQuery('input[name="site_language_enabled[]"]:checked').length
+    if (enabledCount == 0 && !this.checked) {
+         alert(msg)
+        this.checked = true
+        return
+    }
+    let target = jQuery('input[name="defaultlang"][value="' + this.value +'"]')
+    if (this.checked) {
+        target.prop("disabled", false);
+    } else {
+        target.prop("disabled", true);
+        if (target.is(":checked")) {
+            target.prop("checked", false)
+            jQuery('input[name="defaultlang"]:enabled:first').prop("checked", true)
+        }
+    }
+})
+JS;
+    \Nexus\Nexus::js($changeDefaultLangJs, 'footer', false);
+
 	$res = sql_query("SELECT * FROM stylesheets ORDER BY name") or sqlerr(__FILE__, __LINE__);
 	$csslist = "<select name=defstylesheet>";
 	while($array = mysql_fetch_array($res))
