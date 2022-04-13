@@ -147,7 +147,7 @@ class Install
         $tableRows[] = [
             'label' => 'PHP extension pcntl',
             'required' => 'true',
-            'current' => (int)extension_loaded($extension),
+            'current' => (int)extension_loaded('pcntl'),
             'result' => "If 'current' showing 0, make sure it's on php -m",
         ];
 
