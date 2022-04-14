@@ -9,7 +9,9 @@
 namespace Nexus\PTGen;
 
 use App\Models\Torrent;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Nexus\Imdb\Imdb;
 
@@ -20,6 +22,9 @@ class PTGen
     const SITE_DOUBAN = 'douban';
     const SITE_IMDB = 'imdb';
     const SITE_BANGUMI = 'bangumi';
+    const SITE_STEAM = 'steam';
+    const SITE_INDIENOVA = 'indienova';
+    const SITE_EPIC = 'epic';
 
     public static array $validSites = [
         self::SITE_IMDB => [
@@ -39,6 +44,23 @@ class PTGen
             'home_page' => 'https://bangumi.tv/',
             'rating_average_img' => 'pic/bangumi.jpg',
         ],
+        //Banned !
+//        self::SITE_STEAM => [
+//            'url_pattern' => '/(?:https?:\/\/)?(?:store\.)?steam(?:powered|community)\.com\/app\/(\d+)\/?/',
+//            'home_page' => 'https://store.steampowered.com/',
+//            'rating_average_img' => 'pic/steam.svg',
+//        ],
+        self::SITE_INDIENOVA => [
+            'url_pattern' => '/(?:https?:\/\/)?indienova\.com\/game\/(\S+)/',
+            'home_page' => 'https://indienova.com/',
+            'rating_average_img' => 'pic/invienova.jpg',
+        ],
+        //seems url_pattern has changed
+//        self::SITE_EPIC => [
+//            'url_pattern' => '/(?:https?:\/\/)?www\.epicgames\.com\/store\/[a-zA-Z-]+\/product\/(\S+)\/\S?/',
+//            'home_page' => 'https://store.epicgames.com/',
+//            'rating_average_img' => 'pic/epic_game.png',
+//        ],
     ];
 
 
@@ -196,18 +218,21 @@ HTML;
         return __METHOD__ . "_$url";
     }
 
-    public function renderUploadPageFormInput($ptGen = '')
+    public function renderUploadPageFormInput($ptGen = ''): string
     {
-        global $lang_functions;
-        $html = '';
-        $ptGen = (array)json_decode($ptGen, true);
+        $arr = json_decode($ptGen, true);
+        $link = is_array($arr) ? $arr['__link'] : $ptGen;
+        $y = $this->buildInput("pt_gen", $link, nexus_trans('ptgen.tooltip', ['sites' => $this->buildTooltip()]), nexus_trans('ptgen.btn_get_desc'));
+        return tr(nexus_trans('ptgen.label'), $y, 1, '', true);
+    }
+
+    private function buildTooltip(): string
+    {
+        $results = [];
         foreach (self::$validSites as $site => $info) {
-            $value = $ptGen[$site]['link'] ?? '';
-            $x = $lang_functions["row_pt_gen_{$site}_url"];
-            $y = $this->buildInput("pt_gen[{$site}][link]", $value, $lang_functions["text_pt_gen_{$site}_url_note"], $lang_functions['pt_gen_get_description']);
-            $html .= tr($x, $y, 1);
+            $results[] = sprintf('<a href="%s" target="_blank" /><strong>%s</strong></a>', $info['home_page'], $site);
         }
-        return $html;
+        return implode(' / ', $results);
     }
 
     public function buildInput($name, $value, $note, $btnText): string
@@ -317,7 +342,9 @@ HTML;
 
     public function isIyuu(array $bodyArr): bool
     {
-        return isset($bodyArr['ret']) && $bodyArr['ret'] == 200;
+        return false;
+        //Not support, due to change frequently
+//        return isset($bodyArr['ret']) && $bodyArr['ret'] == 200;
     }
 
     public function listRatings(array $ptGenData, string $imdbLink, string $desc = ''): array
@@ -340,7 +367,7 @@ HTML;
                 // from original structure fetch
                 if ($this->isRawPTGen($data)) {
                     $log .= ", isRawPTGen";
-                    $rating = $data["{$site}_rating_average"] ?? '';
+                    $rating = $this->getRawPTGenRating($data, $site);
                 } elseif ($this->isIyuu($data)) {
                     $log .= ", isIyuu";
                     $pattern = $info['rating_pattern_in_desc'] ?? null;
@@ -361,7 +388,7 @@ HTML;
             $imdb = new Imdb();
             $imdbRating = $imdb->getRating($imdbLink);
             $results[self::SITE_IMDB] = $imdbRating;
-            $log .= ", again 'imdb' from: $imdbLink} -> $imdbRating";
+            $log .= ", again 'imdb' from: $imdbLink -> $imdbRating";
         }
         //Otherwise, get from desc
         if (!empty($desc)) {
@@ -386,31 +413,80 @@ HTML;
         return $results;
     }
 
-    public function updateTorrentPtGen(array $torrentInfo, $siteId = null)
+    public function updateTorrentPtGen(array $torrentInfo): bool|array
     {
-        $ptGenInfo = json_decode($torrentInfo['pt_gen'], true);
-        foreach (self::$validSites as $site => $siteConfig) {
-            if ($siteId !== null && $siteId != $site) {
-                //If specific, only update it
-                continue;
+        $now = Carbon::now();
+        $log = "torrent: " . $torrentInfo['id'];
+        $arr = json_decode($torrentInfo['pt_gen'], true);
+        if (is_array($arr)) {
+            if (!empty($arr['__updated_at'])) {
+                $log .= ", updated_at: " . $arr['__updated_at'];
+                $updatedAt = Carbon::parse($arr['__updated_at']);
+                $diffInDays = $now->diffInDays($updatedAt);
+                $log .= ", diffInDays: $diffInDays";
+                if ($diffInDays < 30) {
+                    do_log("$log, less 30 days, don't update");
+                    return false;
+                }
             }
-            if (empty($ptGenInfo[$site]['link'])) {
-                do_log("site: $site no link...");
+            $link = $this->getLink($arr);
+        } else {
+            $link = $torrentInfo['pt_gen'];
+        }
+        if (empty($link)) {
+            do_log("$log, no link...");
+            return false;
+        }
+        $ptGenInfo = [];
+        foreach (self::$validSites as $site => $siteConfig) {
+            if (!preg_match($siteConfig['url_pattern'], $link, $matches)) {
                 continue;
             }
             try {
-                $response = $this->generate($ptGenInfo[$site]['link'], true);
+                $response = $this->generate($matches[0], true);
                 $ptGenInfo[$site]['data'] = $response;
             } catch (\Exception $exception) {
-                do_log("site: $site can not be updated: " . $exception->getMessage(), 'error');
+                do_log("$log, site: $site can not be updated: " . $exception->getMessage(), 'error');
             }
         }
         $siteIdAndRating = $this->listRatings($ptGenInfo, $torrentInfo['url'], $torrentInfo['descr']);
         foreach ($siteIdAndRating as $key => $value) {
             $ptGenInfo[$key]['data']["__rating"] = $value;
         }
+        $ptGenInfo['__link'] = $link;
+        $ptGenInfo['__updated_at'] = $now->toDateTimeString();
         Torrent::query()->where('id', $torrentInfo['id'])->update(['pt_gen' => $ptGenInfo]);
+        do_log("$log, success update");
         return $ptGenInfo;
+    }
+
+    public function getLink(array $ptGenInfo)
+    {
+        if (isset($ptGenInfo['__link'])) {
+            //new
+            return $ptGenInfo['__link'];
+        }
+        $result = '';
+        foreach ($ptGenInfo as $item) {
+            if (!empty($item['link'])) {
+                //old, use the last one
+                $result = $item['link'];
+            }
+        }
+        return $result;
+    }
+
+    private function getRawPTGenRating(array $ptGenInfo, $site)
+    {
+        $key = $site . "_rating_average";
+        if (isset($ptGenInfo[$key])) {
+            return $ptGenInfo[$key];
+        }
+        if ($site == self::SITE_INDIENOVA) {
+            $parts = preg_split('/[\s:]+/', $ptGenInfo['rate']);
+            return Arr::last($parts);
+        }
+        return '';
     }
 
 }

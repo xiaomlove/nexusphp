@@ -35,3 +35,6 @@ B站: [xiaomlove](https://space.bilibili.com/1319303059)
 微信公众号：  
 ![扫码关注](https://nexusphp.org/wp-content/uploads/2022/03/wechat_official_account.png)
 
+## Project supported by JetBrains
+Many thanks to Jetbrains for kindly providing a license for me to work on this and other open-source projects.  
+[![](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=https://github.com/xiaomlove/nexusphp)

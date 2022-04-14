@@ -277,11 +277,7 @@ if (!$row) {
 
 	if (get_setting('main.enable_pt_gen_system') == 'yes' && !empty($row['pt_gen'])) {
 	    $ptGen = new \Nexus\PTGen\PTGen();
-	    $ptGenResult = $ptGen->renderDetailsPageDescription($id, json_decode($row['pt_gen'], true));
-	    if ($ptGenResult['update']) {
-            $torrentUpdate[] = 'pt_gen = ' . sqlesc(json_encode($ptGenResult['json_arr']));
-        }
-	    echo $ptGenResult['html'];
+	    $ptGen->updateTorrentPtGen($row);
     }
 		if ($imdb_id)
 		{

@@ -126,10 +126,8 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $url = 'https://www.imdb.com/title/tt4574334/?ref_=vp_vi_tt';
-        $imdb = new Imdb();
-        $rating = $imdb->getRating($url);
-        dd($rating);
+        $r = json_decode('http://www.imdb.com/title/tt0468569', true);
+        dd($r);
     }
 
 

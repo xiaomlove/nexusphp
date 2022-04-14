@@ -297,12 +297,6 @@ $lang_functions = array
 	'text_inactive_account_be_deleted' => "内做些下载。没有流量的用户会被删除账号。",
 	'text_attendance' => '签到得魔力',
 	'text_attended' => '(签到已得%u, 补签卡:%d)',
-	'row_pt_gen_douban_url' => "PT-Gen douban 链接",
-	'text_pt_gen_douban_url_note' => "(来自 <strong><a href=\"https://www.douban.com/\">douban</a></strong> 的链接。如电影 <b>Transformers</b> 的链接是<b> https://movie.douban.com/subject/1794171/</b>)",
-	'row_pt_gen_imdb_url' => "PT-Gen imdb 链接",
-	'text_pt_gen_imdb_url_note' => "(来自 <strong><a href=\"https://www.imdb.com//\">imdb</a></strong> 的链接。如电影 <b>Transformers</b> 的链接是<b> https://www.imdb.com/title/tt0418279/</b>)",
-	'row_pt_gen_bangumi_url' => "PT-Gen bangumi 链接",
-	'text_pt_gen_bangumi_url_note' => "(来自 <strong><a href=\"https://bangumi.tv/\">bangumi</a></strong> 的链接。如动画 <b>星际牛仔</b> 的链接是<b> https://bangumi.tv/subject/253/</b>)",
 	'imdb_cache_dir_can_not_create' => 'imdb 缓存目录无法创建',
 	'imdb_cache_dir_is_not_writeable' => 'imdb 缓存目录不可写',
 	'imdb_photo_dir_can_not_create' => 'imdb 图片目录无法创建',
@@ -322,7 +316,6 @@ $lang_functions = array
     'text_seed_points' => '做种积分',
     'spoiler_expand_collapse' => '点击展开/收缩',
     'spoiler_default_title' => '折叠内容',
-    'pt_gen_get_description' => '获取简介',
 );
 
 ?>

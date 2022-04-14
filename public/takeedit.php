@@ -19,7 +19,7 @@ if (!$id)
 	die();
 
 
-$res = sql_query("SELECT category, owner, filename, save_as, anonymous, picktype, picktime, added FROM torrents WHERE id = ".mysql_real_escape_string($id));
+$res = sql_query("SELECT category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen FROM torrents WHERE id = ".mysql_real_escape_string($id));
 $row = mysql_fetch_array($res);
 $torrentAddedTimeString = $row['added'];
 if (!$row)
@@ -28,7 +28,6 @@ if (!$row)
 if ($CURUSER["id"] != $row["owner"] && get_user_class() < $torrentmanage_class)
 	bark($lang_takeedit['std_not_owner']);
 $oldcatmode = get_single_value("categories","mode","WHERE id=".sqlesc($row['category']));
-
 $updateset = array();
 
 //$fname = $row["filename"];
@@ -42,15 +41,12 @@ $url = parse_imdb_id($_POST['url'] ?? '');
  * @since 1.6
  */
 if (!empty($_POST['pt_gen'])) {
-    //use PT-Gen imdb  for url
     $postPtGen = $_POST['pt_gen'];
-    $ptGenImdbLink = $postPtGen[\Nexus\PTGen\PTGen::SITE_IMDB]['link'] ?? '';
-    if (empty($url) && !empty($ptGenImdbLink)) {
-        $ptGen = new \Nexus\PTGen\PTGen();
-        $ptGenImdbInfo = $ptGen->parse($ptGenImdbLink);
-        $url = str_replace('tt', '', $ptGenImdbInfo['id']);
+    $existsPtGenInfo = json_decode($row['pt_gen'], true) ?? [];
+    $ptGen = new \Nexus\PTGen\PTGen();
+    if ($postPtGen != $ptGen->getLink($existsPtGenInfo)) {
+        $updateset[] = "pt_gen = " . sqlesc($postPtGen);
     }
-    $updateset[] = "pt_gen = " . sqlesc(json_encode($postPtGen));
 } else {
     $updateset[] = "pt_gen = ''";
 }

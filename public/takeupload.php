@@ -293,18 +293,6 @@ foreach ($promotionrules_torrent as $rule)
 }
 }
 $dateTimeStringNow = \Carbon\Carbon::now()->toDateTimeString();
-/**
- * add PT-Gen
- * @since 1.6
- */
-$postPtGen = $_POST['pt_gen'] ?? [];
-$ptGenImdbLink = $postPtGen[\Nexus\PTGen\PTGen::SITE_IMDB]['link'] ?? '';
-if (empty($url) && !empty($ptGenImdbLink)) {
-	//use PT-Gen imdb  for url
-	$ptGen = new \Nexus\PTGen\PTGen();
-	$ptGenImdbInfo = $ptGen->parse($ptGenImdbLink);
-	$url = str_replace('tt', '', $ptGenImdbInfo['id']);
-}
 
 $torrentSavePath = getFullDirectory($torrent_dir);
 if (!is_dir($torrentSavePath)) {
@@ -315,7 +303,7 @@ if (!is_writable($torrentSavePath)) {
 }
 
 $ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
-", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc(json_encode($postPtGen)) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
+", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc($_POST['pt_gen']) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
 if (!$ret) {
 	if (mysql_errno() == 1062)
 	bark($lang_takeupload['std_torrent_existed']);
