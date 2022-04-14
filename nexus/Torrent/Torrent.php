@@ -76,7 +76,7 @@ class Torrent
         }
         $ptGenInfo = json_decode($torrentInfo['pt_gen'], true);
         $log = "torrent: " . $torrentInfo['id'];
-        $siteIdAndRating = $ptGen->listRatings($ptGenInfo, $torrentInfo['url']);
+        $siteIdAndRating = $ptGen->listRatings($ptGenInfo ?? [], $torrentInfo['url']);
         $log .= "siteIdAndRating: " . json_encode($siteIdAndRating);
         do_log($log);
         return $ptGen->buildRatingSpan($siteIdAndRating);
