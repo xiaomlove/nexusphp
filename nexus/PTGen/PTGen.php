@@ -154,7 +154,7 @@ HTML;
         }
         do_log("$logPrefix, going to send request...");
         $http = new Client();
-        $response = $http->get($url, ['timeout' => 5]);
+        $response = $http->get($url, ['timeout' => 10]);
         $statusCode = $response->getStatusCode();
         if ($statusCode != 200) {
             $msg = "api point response http status code: $statusCode";
