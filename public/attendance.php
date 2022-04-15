@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
-      locale: 'zh-cn',
+      locale: '$localeJs',
       events: events,
       validRange: validRange,
       eventClick: function(info) {
