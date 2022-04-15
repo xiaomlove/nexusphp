@@ -31,13 +31,13 @@ class PTGen
             'url_pattern' => '/(?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/(tt\d+)\/?/',
             'home_page' => 'https://www.imdb.com/',
             'rating_average_img' => 'pic/imdb2.png',
-            'rating_pattern_in_desc' => "/IMDb评分.*([\d\.]+)\//isU",
+            'rating_pattern_in_desc' => "/IMDb评分.*([\d\.]+)\//iU",
         ],
         self::SITE_DOUBAN => [
             'url_pattern' => '/(?:https?:\/\/)?(?:(?:movie|www)\.)?douban\.com\/(?:subject|movie)\/(\d+)\/?/',
             'home_page' => 'https://www.douban.com/',
             'rating_average_img' => 'pic/douban2.png',
-            'rating_pattern_in_desc' => "/豆瓣评分.*([\d\.]+)\//isU",
+            'rating_pattern_in_desc' => "/豆瓣评分.*([\d\.]+)\//iU",
         ],
         self::SITE_BANGUMI => [
             'url_pattern' => '/(?:https?:\/\/)?(?:bgm\.tv|bangumi\.tv|chii\.in)\/subject\/(\d+)\/?/',
