@@ -11,6 +11,8 @@ permissiondenied();
 function go_back()
 {
 	global $lang_settings;
+	\Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
+	\Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
 	stdmsg($lang_settings['std_message'], $lang_settings['std_click']."<a class=\"altlink\" href=\"settings.php\">".$lang_settings['std_here']."</a>".$lang_settings['std_to_go_back']);
 }
 

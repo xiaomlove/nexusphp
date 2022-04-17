@@ -75,6 +75,7 @@ if (@ini_get('output_handler') == 'ob_gzhandler' AND @ob_get_length() !== false)
 */
 
 if ($CURUSER['downloadpos']=="no") {
+    require_once(get_langfile_path());
     permissiondenied();
 }
 
@@ -102,6 +103,7 @@ if (filesize($fn) == 0) {
     httperr();
 }
 if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {
+    require_once(get_langfile_path());
     permissiondenied();
 }
 
