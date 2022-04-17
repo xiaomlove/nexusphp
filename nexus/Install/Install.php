@@ -632,4 +632,16 @@ class Install
         return compact('version', 'match');
     }
 
+    public function checkLock($path)
+    {
+        if (file_exists("$path/.lock")) {
+            die("Locked! Delete .lock file first");
+        }
+    }
+
+    public function setLock($path)
+    {
+        file_put_contents("$path/.lock", "Lock at: " . date('Y-m-d H:i:s'));
+    }
+
 }
