@@ -5406,9 +5406,9 @@ function get_ip_location_from_geoip($ip)
 
 function msgalert($url, $text, $bgcolor = "red")
 {
-    print("<p><table border=\"0\" cellspacing=\"0\" cellpadding=\"10\"><tr><td style='border: none; padding: 10px; background: ".$bgcolor."'>\n");
+    print("<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\"><tr><td style='border: none; padding: 10px; background: ".$bgcolor."'>\n");
     print("<b><a href=\"".$url."\"><font color=\"white\">".$text."</font></a></b>");
-    print("</td></tr></table></p><br />");
+    print("</td></tr></table><br />");
 }
 
 function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false): string

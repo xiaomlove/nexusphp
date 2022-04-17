@@ -69,6 +69,10 @@ class AttendanceRepository extends BaseRepository
         }
         $attendance->added_time = $now->toTimeString();
         $attendance->is_updated = $isUpdated;
+        $baseQuery = AttendanceLog::query()->where('date', $today->format('Y-m-d'));
+        $attendance->today_counts = (clone $baseQuery)->count();
+        $myId = (clone $baseQuery)->where('uid', $uid)->first(['id'])->id;
+        $attendance->my_ranking = (clone $baseQuery)->where('id', '<=', $myId)->count();
         do_log("[FINAL_ATTENDANCE]: " . $attendance->toJson());
         return $attendance;
 

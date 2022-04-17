@@ -123,7 +123,9 @@ if (1) {
     stdhead($lang_attendance['title']);
     begin_main_frame();
     begin_frame($lang_attendance['success']);
-    printf('<p>'.$lang_attendance['attend_info'].$lang_attendance['retroactive_description'].'</p>', $count, $cdays, $points, $CURUSER['attendance_card']);
+    $headerLeft = sprintf($lang_attendance['attend_info'].$lang_attendance['retroactive_description'], $count, $cdays, $points, $CURUSER['attendance_card']);
+    $headerRight = nexus_trans('attendance.ranking', ['ranking' => $attendance->my_ranking, 'counts' => $attendance->today_counts]);
+    printf('<p>%s<span style="float:right">%s</span></p>', $headerLeft, $headerRight);
     end_frame();
     echo '<div style="display: flex;justify-content: center;padding: 20px 0"><div id="calendar" style="width: 60%"></div></div>';
     echo '<ul>';

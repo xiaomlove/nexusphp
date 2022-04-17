@@ -56,6 +56,7 @@
             <el-table-column
                 prop=""
                 label="Username"
+                width="120"
                 :formatter="formatColumnUsername"
             >
             </el-table-column>
@@ -63,7 +64,6 @@
             <el-table-column
                 prop=""
                 label="Torrent"
-                width="300"
             >
                 <template #default="scope">
                     <a class="text-one-line" :title="scope.row.torrent.name" :href="scope.row.torrent.details_url" target="_blank">{{scope.row.torrent.name}}</a>
@@ -73,7 +73,7 @@
             <el-table-column
                 prop=""
                 label="Uploaded"
-                width="180"
+                width="200"
                 :formatter="formatColumnUploaded"
             >
             </el-table-column>
@@ -81,7 +81,7 @@
             <el-table-column
                 prop=""
                 label="Downloaded"
-                width="180"
+                width="200"
                 :formatter="formatColumnDownloaded"
             >
             </el-table-column>
@@ -109,12 +109,6 @@
                 prop="status_text"
                 label="Status"
                 width="70"
-            ></el-table-column>
-
-            <el-table-column
-                prop="created_at"
-                label="Created at"
-                width="160"
             ></el-table-column>
 
             <el-table-column
