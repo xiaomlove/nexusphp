@@ -73,7 +73,7 @@
             <el-table-column
                 prop=""
                 label="Uploaded"
-                width="160"
+                width="180"
                 :formatter="formatColumnUploaded"
             >
             </el-table-column>
@@ -81,7 +81,7 @@
             <el-table-column
                 prop=""
                 label="Downloaded"
-                width="160"
+                width="180"
                 :formatter="formatColumnDownloaded"
             >
             </el-table-column>

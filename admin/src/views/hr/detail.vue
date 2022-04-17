@@ -74,7 +74,7 @@
                         <el-popconfirm
                             title="Confirm Pardon ?"
                             @confirm="handlePardon(formData.id)"
-                            v-if="formData.status != 4"
+                            v-if="[1,3].includes(formData.status)"
                         >
                             <template #reference>
                                 <el-button type="primary">Pardon</el-button>
