@@ -8,8 +8,6 @@ return [
 
     'log_split' => nexus_env('LOG_SPLIT', 'daily'),
 
-    'use_cron_trigger_cleanup' => nexus_env('USE_CRON_TRIGGER_CLEANUP', false),
-
     'mysql' => [
         'host' => nexus_env('DB_HOST', '127.0.0.1'),
         'port' => nexus_env('DB_PORT', 3306),

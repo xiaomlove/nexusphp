@@ -285,15 +285,6 @@ class TorrentRepository extends BaseRepository
             ->with(['user'])
             ->orderBy('completedat', 'desc')
             ->paginate();
-        foreach ($snatches as &$snatch) {
-            $snatch->upload_text = sprintf('%s@%s', mksize($snatch->uploaded), $this->getSnatchUploadSpeed($snatch));
-            $snatch->download_text = sprintf('%s@%s', mksize($snatch->downloaded), $this->getSnatchDownloadSpeed($snatch));
-            $snatch->share_ratio = $this->getShareRatio($snatch);
-            $snatch->seed_time = mkprettytime($snatch->seedtime);
-            $snatch->leech_time = mkprettytime($snatch->leechtime);
-            $snatch->completed_at_human = $snatch->completedat->diffForHumans();
-            $snatch->last_action_human =  $snatch->last_action->diffForHumans();
-        }
         return $snatches;
     }
 

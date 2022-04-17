@@ -14,7 +14,11 @@ class NexusFormatter
 
     protected function formatter()
     {
-        $format = "[%datetime%] [" . nexus()->getRequestId() . "] %channel%.%level_name%: %message% %context% %extra%\n";
+        $id = 'NO_REQUEST_ID';
+        if (nexus()) {
+            $id = nexus()->getRequestId();
+        }
+        $format = "[%datetime%] [" . $id . "] %channel%.%level_name%: %message% %context% %extra%\n";
         return tap(new LineFormatter($format, 'Y-m-d H:i:s', true, true), function ($formatter) {
             $formatter->includeStacktraces();
         });

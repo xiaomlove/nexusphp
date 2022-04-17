@@ -102,7 +102,7 @@ if ($action){
 				else
 				$avatar = $_POST["avatar"];
 
-				if(preg_match("/^http:\/\/[^\s'\"<>]+\.(jpg|gif|png|jpeg)$/i", $avatar) && !preg_match("/\.php/i",$avatar) && !preg_match("/\.js/i",$avatar) && !preg_match("/\.cgi/i",$avatar)) {
+				if(preg_match("/^https?:\/\/[^\s'\"<>]+\.(jpg|gif|png|jpeg)$/i", $avatar) && !preg_match("/\.php/i",$avatar) && !preg_match("/\.js/i",$avatar) && !preg_match("/\.cgi/i",$avatar)) {
 					$avatar = htmlspecialchars( trim( $avatar ) );
 					$updateset[] = "avatar = " . sqlesc($avatar);
 				}

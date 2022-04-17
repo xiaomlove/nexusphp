@@ -9,3 +9,18 @@
 .pre-line {
     white-space: pre-line;
 }
+.text-one-line{
+    display: inline-block;
+    white-space: nowrap;
+    width: 100%;
+    overflow: hidden;
+    text-overflow:ellipsis;
+}
+.text-two-line {
+    width:200px;
+    word-break:break-all;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}

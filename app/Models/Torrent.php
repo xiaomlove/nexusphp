@@ -13,7 +13,7 @@ class Torrent extends NexusModel
         'category', 'source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec',
         'size', 'added', 'type', 'numfiles', 'owner', 'nfo', 'sp_state', 'promotion_time_type',
         'promotion_until', 'anonymous', 'url', 'pos_state', 'cache_stamp', 'picktype', 'picktime',
-        'last_reseed', 'pt_gen', 'technical_info'
+        'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders',
     ];
 
     private static $globalPromotionState;

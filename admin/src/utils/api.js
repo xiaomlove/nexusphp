@@ -172,6 +172,27 @@ const api = {
     deleteTag: (id) => {
         return axios.delete('tags/' + id);
     },
+    listHr: (params = {}) => {
+        return axios.get('hr', {params: params});
+    },
+    listHrStatus: (params = {}) => {
+        return axios.get('hr-status');
+    },
+    storeHr: (params = {}) => {
+        return axios.post('hr', params);
+    },
+    updateHr: (id, params = {}) => {
+        return axios.put('hr/' + id, params);
+    },
+    getHr: (id) => {
+        return axios.get('hr/' + id);
+    },
+    deleteHr: (id) => {
+        return axios.delete('hr/' + id);
+    },
+    pardonHr: (id) => {
+        return axios.put('hr-pardon/' + id);
+    },
 
 }
 

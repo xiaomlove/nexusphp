@@ -6,6 +6,7 @@ use App\Models\Attachment;
 use App\Models\Torrent;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Nexus\Nexus;
 
 class TorrentResource extends JsonResource
 {
@@ -69,6 +70,10 @@ class TorrentResource extends JsonResource
             $out['peers_count'] = $this->peers_count;
             $out['reward_logs_count'] = $this->reward_logs_count;
         }
+        if (nexus()->isPlatformAdmin()) {
+            $out['details_url'] = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $this->id);
+        }
+
 //            $out['upload_peers_count'] = $this->upload_peers_count;
 //            $out['download_peers_count'] = $this->download_peers_count;
 //            $out['finish_peers_count'] = $this->finish_peers_count;

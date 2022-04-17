@@ -4,6 +4,8 @@ namespace App\Models;
 
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use JetBrains\PhpStorm\Pure;
 
 class Snatch extends NexusModel
 {
@@ -32,6 +34,59 @@ class Snatch extends NexusModel
     const FINISHED_YES = 'yes';
 
     const FINISHED_NO = 'no';
+
+    protected function uploadText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['uploaded']), $this->getUploadSpeed())
+        );
+    }
+
+    protected function downloadText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())
+        );
+    }
+
+    protected function shareRatio(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => $this->getShareRatio()
+        );
+    }
+
+    public function getUploadSpeed(): string
+    {
+        if ($this->seedtime <= 0) {
+            $speed =  mksize(0);
+        } else {
+            $speed = mksize($this->uploaded / ($this->seedtime + $this->leechtime));
+        }
+        return "$speed/s";
+    }
+
+    public function getDownloadSpeed(): string
+    {
+        if ($this->leechtime <= 0) {
+            $speed = mksize(0);
+        } else {
+            $speed = mksize($this->downloaded / $this->leechtime);
+        }
+        return "$speed/s";
+    }
+
+    public function getShareRatio()
+    {
+        if ($this->downloaded) {
+            $ratio = floor(($this->uploaded / $this->downloaded) * 1000) / 1000;
+        } elseif ($this->uploaded) {
+            $ratio = nexus_trans('snatch.share_ratio_infinity');
+        } else {
+            $ratio = '---';
+        }
+        return $ratio;
+    }
 
     public function scopeIsFinished(Builder $builder)
     {

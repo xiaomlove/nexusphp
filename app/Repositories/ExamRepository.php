@@ -3,7 +3,6 @@ namespace App\Repositories;
 
 use App\Exceptions\NexusException;
 use App\Models\Exam;
-use App\Models\ExamIndexInitValue;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\Message;
@@ -14,6 +13,7 @@ use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -33,11 +33,15 @@ class ExamRepository extends BaseRepository
         $this->checkIndexes($params);
         $this->checkBeginEnd($params);
         $this->checkFilters($params);
-        $valid = $this->listValid(null, Exam::DISCOVERED_YES);
-        if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
-            throw new NexusException("Enabled and discovered exam already exists.");
-        }
-        $exam = Exam::query()->create($params);
+        /**
+         * does not limit this
+         * @since 1.7.4
+         */
+//        $valid = $this->listValid(null, Exam::DISCOVERED_YES);
+//        if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
+//            throw new NexusException("Enabled and discovered exam already exists.");
+//        }
+        $exam = Exam::query()->create($this->formatParams($params));
         return $exam;
     }
 
@@ -46,13 +50,28 @@ class ExamRepository extends BaseRepository
         $this->checkIndexes($params);
         $this->checkBeginEnd($params);
         $this->checkFilters($params);
-        $valid = $this->listValid($id, Exam::DISCOVERED_YES);
-        if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
-            throw new NexusException("Enabled and discovered exam already exists.");
-        }
+        /**
+         * does not limit this
+         * @since 1.7.4
+         */
+//        $valid = $this->listValid($id, Exam::DISCOVERED_YES);
+//        if ($valid->isNotEmpty() && $params['status'] == Exam::STATUS_ENABLED) {
+//            throw new NexusException("Enabled and discovered exam already exists.");
+//        }
         $exam = Exam::query()->findOrFail($id);
-        $exam->update($params);
+        $exam->update($this->formatParams($params));
         return $exam;
+    }
+
+    private function formatParams(array $params): array
+    {
+        if (isset($params['begin']) && $params['begin'] == '') {
+            $params['begin'] = null;
+        }
+        if (isset($params['end']) && $params['end'] == '') {
+            $params['end'] = null;
+        }
+        return $params;
     }
 
     private function checkIndexes(array $params): bool
@@ -187,14 +206,15 @@ class ExamRepository extends BaseRepository
         $query = Exam::query()
             ->where('status', Exam::STATUS_ENABLED)
             ->whereRaw("if(begin is not null and end is not null, begin <= '$now' and end >= '$now', duration > 0)")
-            ->orderBy('id', 'desc');
+        ;
+
         if (!is_null($excludeId)) {
             $query->whereNotIn('id', Arr::wrap($excludeId));
         }
         if (!is_null($isDiscovered)) {
             $query->where('is_discovered', $isDiscovered);
         }
-        return $query->get();
+        return $query->orderBy('id', 'asc')->get();
     }
 
     /**
@@ -732,23 +752,40 @@ class ExamRepository extends BaseRepository
             do_log("No valid and discovered exam.");
             return false;
         }
-        if ($exams->count() > 1) {
-            do_log("Valid and discovered exam more than 1.", "error");
-            return false;
+        /**
+         * valid exam can has multiple
+         *
+         * @since 1.7.4
+         */
+//        if ($exams->count() > 1) {
+//            do_log("Valid and discovered exam more than 1.", "error");
+//            return false;
+//        }
+
+        $result = 0;
+        foreach ($exams as $exam) {
+            $start = microtime(true);
+            $count = $this->fetchUserAndDoAssign($exam);
+            do_log(sprintf(
+                'exam: %s assign to user count: %s -> %s, cost time: %s',
+                $exam->id, gettype($count), $count, number_format(microtime(true) - $start, 3)
+            ));
+            $result += $count;
         }
-        /** @var Exam $exam */
-        $exam = $exams->first();
+        return $result;
+
+    }
+
+    private function fetchUserAndDoAssign(Exam $exam): bool|int
+    {
         $filters = $exam->filters;
         do_log("exam: {$exam->id}, filters: " . nexus_json_encode($filters));
         $userTable = (new User())->getTable();
         $examUserTable = (new ExamUser())->getTable();
+        //Fetch user doesn't has this exam and doesn't has any other unfinished exam
         $baseQuery = User::query()
-            ->leftJoin($examUserTable, function (JoinClause $join) use ($examUserTable, $userTable) {
-                $join->on("$userTable.id", "=", "$examUserTable.uid");
-            })
             ->where("$userTable.enabled", User::ENABLED_YES)
             ->where("$userTable.status", User::STATUS_CONFIRMED)
-            ->whereRaw("$examUserTable.id is null")
             ->selectRaw("$userTable.*")
             ->orderBy("$userTable.id", "asc");
 
@@ -782,6 +819,14 @@ class ExamRepository extends BaseRepository
             $baseQuery->where("$userTable.added", ">=", Carbon::parse($range[0])->toDateTimeString())
                 ->where("$userTable.added", '<=', Carbon::parse($range[1])->toDateTimeString());
         }
+        //Does not has this exam
+        $baseQuery->whereDoesntHave('exams', function (Builder $query) use ($exam) {
+            $query->where('exam_id', $exam->id);
+        });
+        //Does not has any other normal exam
+        $baseQuery->whereDoesntHave('exams', function (Builder $query) use ($exam) {
+            $query->where('status',ExamUser::STATUS_NORMAL);
+        });
 
         $size = 1000;
         $minId = 0;

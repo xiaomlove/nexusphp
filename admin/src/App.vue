@@ -23,6 +23,7 @@
                         </template>
                         <el-menu-item-group>
                             <el-menu-item index="/user"><i class="el-icon-user" />User list</el-menu-item>
+                            <el-menu-item index="/hr"><i class="el-icon-user" />H&R</el-menu-item>
                         </el-menu-item-group>
                     </el-sub-menu>
                     <el-sub-menu index="3">

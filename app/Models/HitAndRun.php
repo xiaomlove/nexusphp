@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 class HitAndRun extends NexusModel
 {
     protected $table = 'hit_and_runs';
@@ -33,6 +35,20 @@ class HitAndRun extends NexusModel
     ];
 
     const MINIMUM_IGNORE_USER_CLASS = User::CLASS_VIP;
+
+    protected function seedTimeRequired(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => $this->status == self::STATUS_INSPECTING ? mkprettytime(3600 * Setting::get('hr.seed_time_minimum') - $this->snatch->seedtime) : '---'
+        );
+    }
+
+    protected function inspectTimeLeft(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => $this->status == self::STATUS_INSPECTING ? mkprettytime(\Carbon\Carbon::now()->diffInSeconds($this->snatch->completedat->addHours(Setting::get('hr.inspect_time')))) : '---'
+        );
+    }
 
     public function getStatusTextAttribute()
     {

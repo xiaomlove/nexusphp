@@ -52,5 +52,7 @@ export const pathMap = {
     'medal': 'Medal',
     'medal-form': 'Medal form',
     'tag': 'Tag',
-    'tag-form': 'Tag form'
+    'tag-form': 'Tag form',
+    'hr': 'H&R',
+    'hr-detail': 'H&R Detail'
 }

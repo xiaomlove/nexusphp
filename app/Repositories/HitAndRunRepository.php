@@ -7,10 +7,57 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class HitAndRunRepository extends BaseRepository
 {
+    public function getList(array $params)
+    {
+        $query = HitAndRun::query()->with(['user', 'torrent', 'snatch']);
+        if (!empty($params['status'])) {
+            $query->where('status', $params['status']);
+        }
+        if (!empty($params['uid'])) {
+            $query->where('uid', $params['uid']);
+        }
+        if (!empty($params['torrent_id'])) {
+            $query->where('torrent_id', $params['torrent_id']);
+        }
+        if (!empty($params['username'])) {
+            $query->whereHas('user', function (Builder $query) use ($params) {
+                return $query->where('username', $params['username']);
+            });
+        }
+        $query->orderBy('id', 'desc');
+        return $query->paginate();
+    }
+
+    public function store(array $params)
+    {
+        $model = HitAndRun::query()->create($params);
+        return $model;
+    }
+
+    public function update(array $params, $id)
+    {
+        $model = HitAndRun::query()->findOrFail($id);
+        $model->update($params);
+        return $model;
+    }
+
+    public function getDetail($id)
+    {
+        $model = HitAndRun::query()->with(['user', 'torrent', 'snatch'])->findOrFail($id);
+        return $model;
+    }
+
+    public function delete($id)
+    {
+        $model = HitAndRun::query()->findOrFail($id);
+        $result = $model->delete();
+        return $result;
+    }
 
     public function cronjobUpdateStatus($uid = null, $torrentId = null, $ignoreTime = false): bool|int
     {
@@ -276,5 +323,26 @@ class HitAndRunRepository extends BaseRepository
         }
         return $results;
 
+    }
+
+    public function listStatus()
+    {
+        $results = [];
+        foreach (HitAndRun::$status as $key => $value) {
+            $results[] = ['status' => $key, 'text' => nexus_trans('hr.status_' . $key)];
+        }
+        return $results;
+    }
+
+    public function pardon($id, User $user): bool
+    {
+        $model = HitAndRun::query()->findOrFail($id);
+        if (!in_array($model->status, [HitAndRun::STATUS_INSPECTING, HitAndRun::STATUS_UNREACHED])) {
+            throw new \LogicException("Can't be pardoned due to status is: " . $model->status_text . " !");
+        }
+        $model->status = HitAndRun::STATUS_PARDONED;
+        $model->comment = DB::raw(sprintf("concat_ws('\n', comment, '%s')", addslashes('Pardon by ' . $user->username)));
+        $model->save();
+        return true;
     }
 }

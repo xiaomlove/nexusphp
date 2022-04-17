@@ -403,7 +403,7 @@ $SUBSPATH = "subs";
 //Make sure you have wget installed on your OS
 //replace "http://www.nexusphp.com/" with your own site address
 
-$useCronTriggerCleanUp = nexus_config('nexus.use_cron_trigger_cleanup', false);
+$useCronTriggerCleanUp = true;
 //some promotion rules
 //$promotionrules_torrent = array(0 => array("mediumid" => array(1), "promotion" => 5), 1 => array("mediumid" => array(3), "promotion" => 5), 2 => array("catid" => array(402), "standardid" => array(3), "promotion" => 4), 3 => array("catid" => array(403), "standardid" => array(3), "promotion" => 4));
 $promotionrules_torrent = array();

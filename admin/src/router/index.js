@@ -99,6 +99,16 @@ const router = createRouter({
             name: 'tag-form',
             component: () => import('../views/tag/form.vue')
         },
+        {
+            path: '/hr',
+            name: 'hr',
+            component: () => import('../views/hr/index.vue')
+        },
+        {
+            path: '/hr-detail',
+            name: 'hr-detail',
+            component: () => import('../views/hr/detail.vue')
+        },
     ]
 })
 

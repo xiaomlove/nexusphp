@@ -25,6 +25,14 @@ class Install
 
     protected $envNames = ['TIMEZONE', 'DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB'];
 
+    protected array $requiredExtensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', ];
+    protected array $optionalExtensions = [
+        ['name' => 'pcntl', 'desc' => "If use Octane and 'Current' showing 0, make sure it's on php -m"],
+        ['name' => 'posix', 'desc' => "If use Octane and 'Current' showing 0, make sure it's on php -m"],
+        ['name' => 'sockets', 'desc' => "If use roadrunner for Octane, make sure 'current' shows 1"],
+        ['name' => 'swoole', 'desc' => "If use swoole for Octane, make sure 'current' shows 1"],
+    ];
+
     public function __construct()
     {
         if (!session_id()) {
@@ -128,7 +136,6 @@ class Install
     public function listRequirementTableRows()
     {
         $gdInfo = function_exists('gd_info') ? gd_info() : [];
-        $extensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', 'sockets', 'posix'];
         $tableRows = [];
         $tableRows[] = [
             'label' => 'PHP version',
@@ -136,7 +143,8 @@ class Install
             'current' => PHP_VERSION,
             'result' => $this->yesOrNo(version_compare(PHP_VERSION, $this->minimumPhpVersion, '>=')),
         ];
-        foreach ($extensions as $extension) {
+
+        foreach ($this->requiredExtensions as $extension) {
             $tableRows[] = [
                 'label' => "PHP extension $extension",
                 'required' => 'enabled',
@@ -144,12 +152,6 @@ class Install
                 'result' => $this->yesOrNo(extension_loaded($extension)),
             ];
         }
-        $tableRows[] = [
-            'label' => 'PHP extension pcntl',
-            'required' => 'true',
-            'current' => (int)extension_loaded('pcntl'),
-            'result' => "If 'current' showing 0, make sure it's on php -m",
-        ];
 
         $tableRows[] = [
             'label' => 'PHP extension gd JPEG Support',
@@ -169,6 +171,17 @@ class Install
             'current' => $gdInfo['GIF Read Support'] ?? '',
             'result' => $this->yesOrNo($gdInfo['GIF Read Support'] ?? ''),
         ];
+
+        foreach ($this->optionalExtensions as $extension) {
+            $tableRows[] = [
+                'label' => "PHP extension " . $extension['name'],
+                'required' => 'enabled',
+                'current' => (int)extension_loaded($extension['name']),
+                'result' => $extension['desc'],
+            ];
+        }
+
+
 
         $fails = array_filter($tableRows, function ($value) {return in_array($value['required'], ['true', 'enabled']) && $value['result'] == 'NO';});
         $pass = empty($fails);
@@ -608,6 +621,15 @@ class Install
         $utc = array_pop($results);
         array_unshift($results, $utc);
         return $results;
+    }
+
+    public function getMysqlVersionInfo(): array
+    {
+        $res = mysql_query('select version() as v');
+        $result = mysql_fetch_assoc($res);
+        $version = $result['v'];
+        $match = version_compare($version, '5.7.7', '>=');
+        return compact('version', 'match');
     }
 
 }

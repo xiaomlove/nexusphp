@@ -79,6 +79,9 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::resource('medals', \App\Http\Controllers\MedalController::class);
         Route::resource('user-medals', \App\Http\Controllers\UserMedalController::class);
         Route::resource('tags', \App\Http\Controllers\TagController::class);
+        Route::resource('hr', \App\Http\Controllers\HitAndRunController::class);
+        Route::get('hr-status', [\App\Http\Controllers\HitAndRunController::class, 'listStatus']);
+        Route::put('hr-pardon/{id}', [\App\Http\Controllers\HitAndRunController::class, 'pardon']);
 
 
     });

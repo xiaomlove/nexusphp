@@ -103,6 +103,7 @@ if ($currentStep == 4) {
     $symbolicLinks = $settingTableRows['symbolic_links'];
     $tableRows = $settingTableRows['table_rows'];
     $pass = $settingTableRows['pass'];
+    $mysqlInfo = $install->getMysqlVersionInfo();
     while ($isPost) {
         set_time_limit(300);
         try {
@@ -135,7 +136,7 @@ if ($currentStep == 5) {
     ];
 }
 
-if (!empty($error)) {
+if (!empty($error) || (isset($mysqlInfo) && !$mysqlInfo['match'])) {
     $pass = false;
 }
 ?>
@@ -180,6 +181,9 @@ if (!empty($error)) {
                     echo '<div class="text-blue-500 pt-10">';
                     echo sprintf('This step will merge <code>%s</code> to <code>%s</code>, then insert into database', $tableRows[1]['label'], $tableRows[0]['label']);
                     echo '</div>';
+                    if (!$mysqlInfo['match']) {
+                        echo sprintf('<div class="text-red-700 pt-10">MySQL version: %s is too low, please use the newest version of 5.7 or above.</div>', $mysqlInfo['version']);
+                    }
                 } elseif ($currentStep == 5) {
                     echo $install->renderForm($userFormControls, '1/2', '1/4', '3/4');
                 } elseif ($currentStep > $maxStep) {

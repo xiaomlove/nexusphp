@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SnatchResource extends PeerResource
+class SnatchResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,10 +20,10 @@ class SnatchResource extends PeerResource
             'upload_text' => $this->upload_text,
             'download_text' => $this->download_text,
             'share_ratio' => $this->share_ratio,
-            'seed_time' => $this->seed_time,
-            'leech_time' => $this->leech_time,
-            'completed_at_human' => $this->completed_at_human,
-            'last_action_human' => $this->last_action_human,
+            'seed_time' => mkprettytime($this->seedtime),
+            'leech_time' => mkprettytime($this->leechtime),
+            'completed_at_human' => $this->completedat ? $this->completedat->diffForHumans() : '',
+            'last_action_human' => $this->last_action ? $this->last_action->diffForHumans() : '',
             'user' => new UserResource($this->whenLoaded('user')),
         ];
     }
