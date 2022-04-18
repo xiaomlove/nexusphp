@@ -326,7 +326,13 @@ class AttendanceRepository extends BaseRepository
                 'date' => $date,
                 'is_retroactive' => 1,
             ];
-            return AttendanceLog::query()->create($insert);
+            $attendanceLog = AttendanceLog::query()->create($insert);
+            //Increment total days and update days.
+            $attendance->update([
+                'total_days' => NexusDB::raw('total_days + 1'),
+                'days' => $this->getContinuousDays($attendance, Carbon::today()),
+            ]);
+            return $attendanceLog;
         });
     }
 }
