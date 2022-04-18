@@ -157,14 +157,16 @@ if(get_user_class()>=$torrentsticky_class && isset($_POST['sel_posstate']) && is
 
 $pick_info = "";
 $place_info = "";
-if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
+if(get_user_class()>=$torrentmanage_class && ($CURUSER['picker'] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
 {
+    $doRecommend = false;
 	if(intval($_POST["sel_recmovie"] ?? 0) == 0)
 	{
 		if($row["picktype"] != 'normal')
 			$pick_info = ", recomendation canceled!";
 		$updateset[] = "picktype = 'normal'";
 		$updateset[] = "picktime = null";
+        $doRecommend = true;
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 1)
 	{
@@ -172,6 +174,7 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 			$pick_info = ", recommend as hot movie";
 		$updateset[] = "picktype = 'hot'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
+        $doRecommend = true;
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 2)
 	{
@@ -179,6 +182,7 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 			$pick_info = ", recommend as classic movie";
 		$updateset[] = "picktype = 'classic'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
+        $doRecommend = true;
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 3)
 	{
@@ -186,7 +190,12 @@ if(get_user_class()>=$torrentmanage_class && $CURUSER['picker'] == 'yes')
 			$pick_info = ", recommend as recommended movie";
 		$updateset[] = "picktype = 'recommended'";
 		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
+        $doRecommend = true;
 	}
+    if ($doRecommend) {
+        \Nexus\Database\NexusDB::cache_del("hot_resources");
+        \Nexus\Database\NexusDB::cache_del("classic_resources");
+    }
 }
 
 

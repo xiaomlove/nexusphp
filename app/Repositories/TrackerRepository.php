@@ -783,6 +783,7 @@ class TrackerRepository extends BaseRepository
 
         if ($peer->exists) {
             $update['prev_action'] = $peer->last_action;
+            $update['started'] = $peer->started;
             if ($queries['event'] == 'completed') {
                 $update['finishedat'] = time();
             }

@@ -211,7 +211,7 @@ if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"])
 	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo, 1);
 }
 
-$res = sql_query("SELECT agent, peer_id, ip, port FROM peers WHERE userid = {$user['id']} GROUP BY agent") or sqlerr();
+$res = sql_query("SELECT agent, peer_id, ip, port FROM peers WHERE userid = {$user['id']} GROUP BY agent,ip") or sqlerr();
     $clientselect = "";
 if (mysql_num_rows($res) > 0)
 {
