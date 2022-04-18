@@ -216,7 +216,7 @@ class ExamRepository extends BaseRepository
         if (!is_null($isDiscovered)) {
             $query->where('is_discovered', $isDiscovered);
         }
-        return $query->orderBy('priority', 'desc')->orderBy('id', 'asc');
+        return $query->orderBy('priority', 'desc')->orderBy('id', 'asc')->get();
     }
 
     /**
