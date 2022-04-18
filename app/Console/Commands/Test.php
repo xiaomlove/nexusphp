@@ -126,8 +126,11 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $r = json_decode('http://www.imdb.com/title/tt0468569', true);
-        dd($r);
+        $data = DB::select('SHOW INDEX FROM peers');
+        $array = [];
+        foreach($data as $key =>  $item){
+            dump($item);
+        }
     }
 
 

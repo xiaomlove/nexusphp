@@ -5384,18 +5384,46 @@ function get_ip_location_from_geoip($ip)
         'en' => 'en',
     ];
     $locale = $langMap[$lang] ?? $lang;
-    try {
-        $record = $reader->city($ip);
-        $countryName =  $record->country->names[$locale] ?? $record->country->names['en'];
-        $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
-    } catch (\Exception $exception) {
-        do_log($exception->getMessage() . "\n" .  $exception->getTraceAsString(), 'error');
-        $countryName = '';
-        $cityName = '';
+    $result = [];
+    foreach (explode(',', $ip) as $__ip) {
+        $locationInfo = \Nexus\Database\NexusDB::remember("locations_{$__ip}", 3600, function () use ($locale, $__ip, $reader) {
+            $info = [
+                'ip' => $__ip,
+                'version' => '',
+                'country' => '',
+                'city' => '',
+            ];
+            try {
+                $record = $reader->city($__ip);
+                $countryName =  $record->country->names[$locale] ?? $record->country->names['en'] ?? '';
+                $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
+                if (isIPV4($__ip)) {
+                    $info['version'] = 4;
+                } elseif (isIPV6($__ip)) {
+                    $info['version'] = 6;
+                }
+                $info['country'] = $countryName;
+                $info['city'] = $cityName;
+            } catch (\Exception $exception) {
+                do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
+            }
+            return $info;
+        });
+        $result[] = $locationInfo;
     }
-    do_log("ip: $ip, locale: $locale, city: $cityName, country: $countryName");
+    usort($result, function ($a, $b) {
+        if ($a['version'] == $b['version']) {
+            return 0;
+        }
+        return $a['version'] > $b['version'] ? 1 : -1;
+    });
+    do_log("ip: $ip, locale: $locale, result: " . nexus_json_encode($result));
+    $names = [];
+    foreach ($result as $item) {
+        $names[] = sprintf('%s[v%s]', $item['city'] ? ($item['city'] . "·" . $item['country']) : $item['country'], $item['version']);
+    }
     return [
-        'name' => sprintf('%s·%s', $cityName, $countryName),
+        'name' => implode(" + ", $names),
         'location_main' => '',
         'location_sub' => '',
         'flagpic' => '',

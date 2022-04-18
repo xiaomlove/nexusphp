@@ -38,6 +38,11 @@
                         </el-radio-group>
                     </el-form-item>
 
+                    <el-form-item label="Priority" prop="priority">
+                        <el-input v-model="formData.priority" type="number" placeholder=""></el-input>
+                        <div style="color: #aaa">The higher the value, the higher the priority, and when multiple exam match the same user, the one with the highest priority is assigned.</div>
+                    </el-form-item>
+
                     <el-form-item label="Begin" prop="begin">
                         <el-date-picker
                             v-model="formData.begin"
@@ -131,7 +136,8 @@ export default {
                     donate_status: []
                 },
                 status: '',
-                is_discovered: ''
+                is_discovered: '',
+                priority: ''
             },
             rules: {
                 name: [
@@ -162,6 +168,7 @@ export default {
                     state.formData.filters = res.data.filters
                     state.formData.status = res.data.status
                     state.formData.is_discovered = res.data.is_discovered
+                    state.formData.priority = res.data.priority
                 })
             }
         })

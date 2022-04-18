@@ -364,7 +364,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 			usercpmenu ("tracker");
 $brsectiontype = $browsecatmode;
 $spsectiontype = $specialcatmode;
-if ($enablespecial == 'yes')
+if ($enablespecial == 'yes' && get_user_class() >= get_setting('authority.view_special_torrent'))
 	$allowspecial = true;
 else $allowspecial = false;
 $showsubcat = (get_searchbox_value($brsectiontype, 'showsubcat') || ($allowspecial && get_searchbox_value($spsectiontype, 'showsubcat')));

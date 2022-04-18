@@ -69,6 +69,13 @@
             <el-table-column
                 prop="is_discovered_text"
                 label="Discovered"
+                width="110"
+            >
+            </el-table-column>
+
+            <el-table-column
+                prop="priority"
+                label="Priority"
             >
             </el-table-column>
 
@@ -80,7 +87,7 @@
 
             <el-table-column
                 label="Action"
-                width="100"
+                width="120"
             >
                 <template #default="scope">
                     <a style="cursor: pointer; margin-right: 10px" @click="handleEdit(scope.row.id)">Edit</a>

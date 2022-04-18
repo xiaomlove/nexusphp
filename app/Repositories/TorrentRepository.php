@@ -193,7 +193,13 @@ class TorrentRepository extends BaseRepository
     public function listPeers($torrentId)
     {
         $seederList = $leecherList = collect();
-        $peers = Peer::query()->where('torrent', $torrentId)->with(['user', 'relative_torrent'])->get()->groupBy('seeder');
+        $peers = Peer::query()
+            ->where('torrent', $torrentId)
+            ->groupBy('peer_id')
+            ->with(['user', 'relative_torrent'])
+            ->get()
+            ->groupBy('seeder')
+        ;
         if ($peers->has(Peer::SEEDER_YES)) {
             $seederList = $peers->get(Peer::SEEDER_YES)->sort(function ($a, $b) {
                 $x = $a->uploaded;

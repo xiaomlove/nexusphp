@@ -1,6 +1,12 @@
 <?php
 require_once("../include/bittorrent.php");
 dbconn();
+function denyDownload()
+{
+    require_once ROOT_PATH . get_langfile_path("functions.php");
+    require_once(get_langfile_path());
+    permissiondenied();
+}
 $torrentRep = new \App\Repositories\TorrentRepository();
 if (!empty($_REQUEST['downhash'])) {
     $params = explode('|', $_REQUEST['downhash']);
@@ -75,8 +81,7 @@ if (@ini_get('output_handler') == 'ob_gzhandler' AND @ob_get_length() !== false)
 */
 
 if ($CURUSER['downloadpos']=="no") {
-    require_once(get_langfile_path());
-    permissiondenied();
+    denyDownload();
 }
 
 $trackerSchemaAndHost = get_tracker_schema_and_host();
@@ -103,8 +108,7 @@ if (filesize($fn) == 0) {
     httperr();
 }
 if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {
-    require_once(get_langfile_path());
-    permissiondenied();
+    denyDownload();
 }
 
 sql_query("UPDATE torrents SET hits = hits + 1 WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);

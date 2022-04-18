@@ -36,7 +36,7 @@ class CreatePeersTable extends Migration
             $table->unsignedBigInteger('downloadoffset')->default(0);
             $table->unsignedBigInteger('uploadoffset')->default(0);
             $table->char('passkey', 32)->default('');
-            $table->unique(['torrent', 'peer_id']);
+            $table->unique(['torrent', 'peer_id', 'ip']);
         });
     }
 

@@ -23,8 +23,7 @@ class ExamRepository extends BaseRepository
     public function getList(array $params)
     {
         $query = Exam::query();
-        list($sortField, $sortType) = $this->getSortFieldAndType($params);
-        $query->orderBy($sortField, $sortType);
+        $query->orderBy('priority', 'desc')->orderBy('id', 'asc');
         return $query->paginate();
     }
 
@@ -70,6 +69,9 @@ class ExamRepository extends BaseRepository
         }
         if (isset($params['end']) && $params['end'] == '') {
             $params['end'] = null;
+        }
+        if (isset($params['priority'])) {
+            $params['priority'] = intval($params['priority']);
         }
         return $params;
     }
@@ -214,7 +216,7 @@ class ExamRepository extends BaseRepository
         if (!is_null($isDiscovered)) {
             $query->where('is_discovered', $isDiscovered);
         }
-        return $query->orderBy('id', 'asc')->get();
+        return $query->orderBy('priority', 'desc')->orderBy('id', 'asc');
     }
 
     /**

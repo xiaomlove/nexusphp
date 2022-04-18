@@ -694,3 +694,13 @@ function site_info()
     ];
     return $siteInfo;
 }
+
+function isIPV4 ($ip)
+{
+    return filter_var($ip,FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+}
+
+function isIPV6 ($ip)
+{
+    return filter_var($ip,FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+}

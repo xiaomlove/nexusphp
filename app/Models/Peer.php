@@ -77,32 +77,4 @@ class Peer extends NexusModel
     {
         return $this->belongsTo(Torrent::class, 'torrent');
     }
-
-    /**
-     *
-     */
-    public function updateConnectableStateIfNeeded()
-    {
-        $tmp_ip = $this->ip;
-        // IPv6 Check
-        if (filter_var($tmp_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            $tmp_ip = '['.$tmp_ip.']';
-        }
-        $cacheKey = 'peers:connectable:'.$tmp_ip.'-'.$this->port.'-'.$this->agent;
-        $log = "cacheKey: $cacheKey";
-        if (!Cache::has($cacheKey)) {
-            $con = @fsockopen($tmp_ip, $this->port, $error_code, $error_message, 1);
-            if (is_resource($con)) {
-                $this->connectable = self::CONNECTABLE_YES;
-                fclose($con);
-            } else {
-                $this->connectable = self::CONNECTABLE_NO;
-            }
-            Cache::put($cacheKey, $this->connectable, 3600);
-            $log .= ", do check, connectable: " . $this->connectable;
-        } else {
-            $log .= ", don't do check";
-        }
-        do_log($log);
-    }
 }
