@@ -33,7 +33,9 @@ if ($currentStep == 2) {
         'published_at' => '---',
     ];
     try {
-        $versions = $update->listVersions();
+        //Unnecessary
+//        $versions = $update->listVersions();
+        $versions = [];
     } catch (\Exception $exception) {
         $update->doLog("can not fetch versions from github: " . $exception->getMessage());
     }

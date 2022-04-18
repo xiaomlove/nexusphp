@@ -1,10 +1,10 @@
 <?php
 require_once("../include/bittorrent.php");
 dbconn();
+require_once ROOT_PATH . get_langfile_path("functions.php");
+require_once(get_langfile_path());
 function denyDownload()
 {
-    require_once ROOT_PATH . get_langfile_path("functions.php");
-    require_once(get_langfile_path());
     permissiondenied();
 }
 $torrentRep = new \App\Repositories\TorrentRepository();
