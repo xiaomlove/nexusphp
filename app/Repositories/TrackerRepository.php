@@ -735,15 +735,19 @@ class TrackerRepository extends BaseRepository
             do_log("no event, return", 'debug');
             return;
         }
-        $torrent->seeders = Peer::query()
+        $seederResult = Peer::query()
             ->where('torrent', $torrent->id)
             ->where('to_go', '=',0)
-            ->count();
+            ->selectRaw("count(distinct(peer_id)) as counts")
+            ->first();
+        $torrent->seeders = $seederResult ? $seederResult->counts : 0;
 
-        $torrent->leechers = Peer::query()
+        $leecherResult = Peer::query()
             ->where('torrent', $torrent->id)
             ->where('to_go', '>', 0)
-            ->count();
+            ->selectRaw("count(distinct(peer_id)) as counts")
+            ->first();
+        $torrent->leechers = $leecherResult ? $leecherResult->counts : 0;
 
         $torrent->visible = Torrent::VISIBLE_YES;
         $torrent->last_action = Carbon::now();
