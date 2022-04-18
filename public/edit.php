@@ -174,7 +174,7 @@ else {
             }
 			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"sel_posstate\" style=\"width: 100px;\">" . implode('', $options) . "</select>&nbsp;&nbsp;&nbsp;";
 		}
-		if(get_user_class()>=$torrentmanage_class && $CURUSER["picker"] == 'yes')
+		if(get_user_class()>=$torrentmanage_class && ($CURUSER["picker"] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
 		{
             if ($pickcontent) $pickcontent .= '<br />';
 			$pickcontent .= "<b>".$lang_edit['row_recommended_movie'].":&nbsp;</b>"."<select name=\"sel_recmovie\" style=\"width: 100px;\">" .
