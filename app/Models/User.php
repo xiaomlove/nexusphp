@@ -434,7 +434,11 @@ class User extends Authenticatable
 
     public function isDonating()
     {
-        if ($this->donor == 'yes' && $this->donoruntil && $this->donoruntil->gte(Carbon::now())) {
+        $rawDonorUntil = $this->getRawOriginal('donoruntil');
+        if (
+            $this->donor == 'yes'
+            && ($rawDonorUntil === null || $rawDonorUntil == '0000-00-00 00:00:00' || $this->donoruntil->gte(Carbon::now()))
+        ) {
             return true;
         }
         return false;

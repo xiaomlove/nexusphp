@@ -149,6 +149,6 @@ $lang_userdetails = array
     'text_user_id'=> "User ID",
     'row_medal' => 'Medal',
     'row_donoruntil' => 'Donated until',
-    'text_donoruntil_note' => "Time format is YYYY-MM-DD hh:mm:ss. To be valid, the donation status must be 'Yes' and the deadline is greater than the current time.",
+    'text_donoruntil_note' => "Time format is YYYY-MM-DD hh:mm:ss. Leave blank permanently.",
 );
 ?>

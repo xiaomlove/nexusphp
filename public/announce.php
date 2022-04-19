@@ -452,7 +452,7 @@ elseif(isset($self))
             if (
                 $event == 'completed'
                 && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS
-                && ($az['donor'] == 'no' || empty($az['donoruntil']) || $az['donoruntil'] === null || $az['donoruntil'] < date("Y-m-d H:i:s"))
+                && ($az['donor'] == 'no' ||  (!empty($az['donoruntil']) && $az['donoruntil'] != '0000-00-00 00:00:00' && $az['donoruntil'] < date("Y-m-d H:i:s")))
             ) {
                 //think about H&R
                 $hrMode = get_setting('hr.mode');
