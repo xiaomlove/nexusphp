@@ -264,41 +264,42 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$res = sql_query("SELECT DISTINCT userid FROM peers WHERE seeder = 'yes'") or sqlerr(__FILE__, __LINE__);
 	if (mysql_num_rows($res) > 0)
 	{
-		$sqrtof2 = sqrt(2);
-		$logofpointone = log(0.1);
-		$valueone = $logofpointone / $tzero_bonus;
-		$pi = 3.141592653589793;
-		$valuetwo = $bzero_bonus * ( 2 / $pi);
-		$valuethree = $logofpointone / ($nzero_bonus - 1);
-		$timenow = TIMENOW;
-		$sectoweek = 7*24*60*60;
-		$examRep = new \App\Repositories\ExamRepository();
+//		$sqrtof2 = sqrt(2);
+//		$logofpointone = log(0.1);
+//		$valueone = $logofpointone / $tzero_bonus;
+//		$pi = 3.141592653589793;
+//		$valuetwo = $bzero_bonus * ( 2 / $pi);
+//		$valuethree = $logofpointone / ($nzero_bonus - 1);
+//		$timenow = TIMENOW;
+//		$sectoweek = 7*24*60*60;
 		while ($arr = mysql_fetch_assoc($res))	//loop for different users
 		{
-			$A = 0;
-			$count = 0;
-			$all_bonus = 0;
-			$torrentres = sql_query("select torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = {$arr['userid']} AND peers.seeder ='yes'")  or sqlerr(__FILE__, __LINE__);
-			while ($torrent = mysql_fetch_array($torrentres))
-			{
-				$weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
-				$gb_size = $torrent['size'] / 1073741824;
-				$temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
-				$A += $temp;
-				$count++;
-			}
-			if ($count > $maxseeding_bonus)
-				$count = $maxseeding_bonus;
-			$all_bonus = $seedPoints = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
-			$is_donor = get_single_value("users","donor","WHERE id=".$arr['userid']);
-			$log = "[UPDATE_BONUS], user: {$arr['userid']}, original bonus: $all_bonus, is_donor: $is_donor, donortimes_bonus: $donortimes_bonus";
-			if ($is_donor == 'yes' && $donortimes_bonus > 0) {
-                $all_bonus = $all_bonus * $donortimes_bonus;
-                $log .= ", do multiple, all_bonus: $all_bonus";
-            }
-			do_log($log);
-			KPS("+",$all_bonus,$arr["userid"]);
-			sql_query("update users set seed_points = ifnull(seed_points, 0) + $seedPoints where id = {$arr["userid"]}");
+//			$A = 0;
+//			$count = 0;
+//			$all_bonus = 0;
+//			$torrentres = sql_query("select torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = {$arr['userid']} AND peers.seeder ='yes' group by torrents.id")  or sqlerr(__FILE__, __LINE__);
+//			while ($torrent = mysql_fetch_array($torrentres))
+//			{
+//				$weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
+//				$gb_size = $torrent['size'] / 1073741824;
+//				$temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
+//				$A += $temp;
+//				$count++;
+//			}
+//			if ($count > $maxseeding_bonus)
+//				$count = $maxseeding_bonus;
+//			$all_bonus = $seedPoints = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
+//            $is_donor = get_single_value("users","donor","WHERE id=".$arr['userid']);
+//			$log = "[UPDATE_BONUS], user: {$arr['userid']}, original bonus: $all_bonus, is_donor: $is_donor, donortimes_bonus: $donortimes_bonus";
+//			if ($is_donor == 'yes' && $donortimes_bonus > 0) {
+//                $all_bonus = $all_bonus * $donortimes_bonus;
+//                $log .= ", do multiple, all_bonus: $all_bonus";
+//            }
+//			do_log($log);
+            $seedBonusResult = calculate_seed_bonus($arr['userid']);
+            $all_bonus = $seedBonusResult['all_bonus'];
+            $seed_points = $seedBonusResult['seed_points'];
+			sql_query("update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}");
 		}
 	}
 	$log = 'calculate seeding bonus';
@@ -316,7 +317,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		do_log($log);
 		return $log;
 	}
-	$ts = $row[0];
+	$ts = $row[0] ?? 0;
 	if ($ts + $autoclean_interval_two > $now && !$forceAll) {
 		$log = 'Cleanup ends at Priority Class 1';
 		do_log($log . ", $ts + $autoclean_interval_two > $now");
@@ -342,7 +343,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		do_log($log);
 		return $log;
 	}
-	$ts = $row[0];
+	$ts = $row[0] ?? 0;
 	if ($ts + $autoclean_interval_three > $now && !$forceAll) {
 		$log = 'Cleanup ends at Priority Class 2';
 		do_log($log . ", $ts + $autoclean_interval_three > $now");
@@ -353,21 +354,26 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
 	//4.update count of seeders, leechers, comments for torrents
 	$torrents = array();
-	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
-	while ($row = mysql_fetch_assoc($res)) {
-		if ($row["seeder"] == "yes")
-		$key = "seeders";
-		else
-		$key = "leechers";
-		$torrents[$row["torrent"]][$key] = $row["c"];
-	}
+    /**
+     * move to announce request to do this
+     * @since 1.7.4
+     */
+//	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
+//	while ($row = mysql_fetch_assoc($res)) {
+//		if ($row["seeder"] == "yes")
+//		$key = "seeders";
+//		else
+//		$key = "leechers";
+//		$torrents[$row["torrent"]][$key] = $row["c"];
+//	}
 
 	$res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
 	while ($row = mysql_fetch_assoc($res)) {
 		$torrents[$row["torrent"]]["comments"] = $row["c"];
 	}
 
-	$fields = explode(":", "comments:leechers:seeders");
+//	$fields = explode(":", "comments:leechers:seeders");
+	$fields = explode(":", "comments");
 	$res = sql_query("SELECT id, seeders, leechers, comments FROM torrents") or sqlerr(__FILE__, __LINE__);
 	while ($row = mysql_fetch_assoc($res)) {
 		$id = $row["id"];
@@ -502,7 +508,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		do_log($log);
 		return $log;
 	}
-	$ts = $row[0];
+	$ts = $row[0] ?? 0;
 	if ($ts + $autoclean_interval_four > $now && !$forceAll) {
 		$log = 'Cleanup ends at Priority Class 3';
 		do_log($log . ", $ts + $autoclean_interval_four > $now");
@@ -830,7 +836,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		do_log($log);
 		return $log;
 	}
-	$ts = $row[0];
+	$ts = $row[0] ?? 0;
 	if ($ts + $autoclean_interval_five > $now && !$forceAll) {
 		$log = 'Cleanup ends at Priority Class 4';
 		do_log($log . ", $ts + $autoclean_interval_five > $now");

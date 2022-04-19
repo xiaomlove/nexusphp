@@ -5500,4 +5500,48 @@ function get_smile($num)
     return $all[$num] ?? null;
 }
 
+function calculate_seed_bonus($uid): array
+{
+    global $autoclean_interval_one;
+    global $donortimes_bonus, $perseeding_bonus, $maxseeding_bonus, $tzero_bonus, $nzero_bonus, $bzero_bonus, $l_bonus;
+
+    $sqrtof2 = sqrt(2);
+    $logofpointone = log(0.1);
+    $valueone = $logofpointone / $tzero_bonus;
+    $pi = 3.141592653589793;
+    $valuetwo = $bzero_bonus * ( 2 / $pi);
+    $valuethree = $logofpointone / ($nzero_bonus - 1);
+    $timenow = TIMENOW;
+    $sectoweek = 7*24*60*60;
+
+    $A = 0;
+    $count = $torrent_count = 0;
+
+    $torrentres = sql_query("select torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by torrents.id");
+    while ($torrent = mysql_fetch_array($torrentres))
+    {
+        $weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
+        $gb_size = $torrent['size'] / 1073741824;
+        $temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
+        $A += $temp;
+        $count++;
+        $torrent_count++;
+    }
+    if ($count > $maxseeding_bonus)
+        $count = $maxseeding_bonus;
+    $all_bonus = $seed_bonus = $seed_points = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
+    $is_donor_info = \Nexus\Database\NexusDB::getOne('users', "id = $uid", "donor, donoruntil");
+    $is_donor_until = $is_donor_info['donoruntil'];
+    $is_donor = $is_donor_info['donor'] == 'yes' && ($is_donor_until === null || $is_donor_until == '0000-00-00 00:00:00' || $is_donor_until >= date('Y-m-d H:i:s'));
+    $is_donor = intval($is_donor);
+    $log = "[CALCULATE_SEED_BONUS], user: $uid, original bonus: $all_bonus, is_donor: $is_donor, donortimes_bonus: $donortimes_bonus";
+    if ($is_donor && $donortimes_bonus > 0) {
+        $all_bonus = $all_bonus * $donortimes_bonus;
+        $log .= ", do multiple, all_bonus: $all_bonus";
+    }
+    $result = compact('seed_points','seed_bonus', 'all_bonus', 'A', 'count', 'torrent_count');
+    do_log("$log, result: " . json_encode($result));
+    return $result;
+}
+
 ?>

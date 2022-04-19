@@ -393,28 +393,33 @@ if ($donortimes_bonus)
 	print("<li>".$lang_mybonus['text_donors_always_get'].$donortimes_bonus.$lang_mybonus['text_times_of_bonus']."</li>");
 print("</ul>");
 
-		$sqrtof2 = sqrt(2);
-		$logofpointone = log(0.1);
-		$valueone = $logofpointone / $tzero_bonus;
-		$pi = 3.141592653589793;
-		$valuetwo = $bzero_bonus * ( 2 / $pi);
-		$valuethree = $logofpointone / ($nzero_bonus - 1);
-		$timenow = strtotime(date("Y-m-d H:i:s"));
-		$sectoweek = 7*24*60*60;
-		$A = 0;
-		$count = 0;
-		$torrentres = sql_query("select torrents.id, torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $CURUSER[id] AND peers.seeder ='yes' GROUP BY torrents.id")  or sqlerr(__FILE__, __LINE__);
-		while ($torrent = mysql_fetch_array($torrentres))
-		{
-			$weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
-			$gb_size = $torrent['size'] / 1073741824;
-			$temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
-			$A += $temp;
-			$count++;
-		}
-		if ($count > $maxseeding_bonus)
-			$count = $maxseeding_bonus;
-		$all_bonus = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
+//		$sqrtof2 = sqrt(2);
+//		$logofpointone = log(0.1);
+//		$valueone = $logofpointone / $tzero_bonus;
+//		$pi = 3.141592653589793;
+//		$valuetwo = $bzero_bonus * ( 2 / $pi);
+//		$valuethree = $logofpointone / ($nzero_bonus - 1);
+//		$timenow = strtotime(date("Y-m-d H:i:s"));
+//		$sectoweek = 7*24*60*60;
+//		$A = 0;
+//		$count = 0;
+//		$torrentres = sql_query("select torrents.id, torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $CURUSER[id] AND peers.seeder ='yes' GROUP BY torrents.id")  or sqlerr(__FILE__, __LINE__);
+//		while ($torrent = mysql_fetch_array($torrentres))
+//		{
+//			$weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
+//			$gb_size = $torrent['size'] / 1073741824;
+//			$temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
+//			$A += $temp;
+//			$count++;
+//		}
+//		if ($count > $maxseeding_bonus)
+//			$count = $maxseeding_bonus;
+//		$all_bonus = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
+
+$seedBonusResult = calculate_seed_bonus($CURUSER['id']);
+$all_bonus = $seedBonusResult['all_bonus'];
+$A = $seedBonusResult['A'];
+
 		$percent = $all_bonus * 100 / ($bzero_bonus + $perseeding_bonus * $maxseeding_bonus);
 	print("<div align=\"center\">".$lang_mybonus['text_you_are_currently_getting'].round($all_bonus,3).$lang_mybonus['text_point'].add_s($all_bonus).$lang_mybonus['text_per_hour']." (A = ".round($A,1).")</div><table align=\"center\" border=\"0\" width=\"400\"><tr><td class=\"loadbarbg\" style='border: none; padding: 0px;'>");
 

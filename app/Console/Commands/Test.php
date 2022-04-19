@@ -126,11 +126,10 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $data = DB::select('SHOW INDEX FROM peers');
-        $array = [];
-        foreach($data as $key =>  $item){
-            dump($item);
-        }
+        $rep = new ExamRepository();
+        $exam = Exam::query()->find(6);
+        $r = $rep->fetchUserAndDoAssign($exam);
+        dd($r);
     }
 
 

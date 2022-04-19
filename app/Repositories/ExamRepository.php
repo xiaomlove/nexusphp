@@ -778,7 +778,7 @@ class ExamRepository extends BaseRepository
 
     }
 
-    private function fetchUserAndDoAssign(Exam $exam): bool|int
+    public function fetchUserAndDoAssign(Exam $exam): bool|int
     {
         $filters = $exam->filters;
         do_log("exam: {$exam->id}, filters: " . nexus_json_encode($filters));
@@ -800,10 +800,16 @@ class ExamRepository extends BaseRepository
         if (!empty($filters->$filter) && count($filters->$filter) == 1) {
             $donateStatus = $filters->$filter[0];
             if ($donateStatus == User::DONATE_YES) {
-                $baseQuery->where('donor', 'yes')->where("$userTable.donoruntil", ">=", Carbon::now()->toDateTimeString());
+                $baseQuery->where(function (Builder $query) {
+                    $query->where('donor', 'yes')->where(function (Builder $query) {
+                        $query->where('donoruntil', '0000-00-00 00:00:00')->orWhereNull('donoruntil')->orWhere('donoruntil', '>=', Carbon::now());
+                    });
+                });
             } elseif ($donateStatus == User::DONATE_NO) {
-                $baseQuery->where(function (Builder $query) use ($userTable) {
-                    $query->where('donor', 'no')->orWhereNull("$userTable.donoruntil")->orWhere("$userTable.donoruntil", '<', Carbon::now()->toDateTimeString());
+                $baseQuery->where(function (Builder $query) {
+                    $query->where('donor', 'no')->orWhere(function (Builder $query) {
+                        $query->where('donoruntil', '!=','0000-00-00 00:00:00')->whereNotNull('donoruntil')->where('donoruntil', '<', Carbon::now());
+                    });
                 });
             } else {
                 do_log("{$exam->id} filter $filter: $donateStatus invalid.", "error");
