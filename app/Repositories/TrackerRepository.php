@@ -763,7 +763,7 @@ class TrackerRepository extends BaseRepository
     private function updatePeer(Peer $peer, $queries)
     {
         if ($queries['event'] == 'stopped') {
-            Peer::query()->where('peer_id', $queries['peer_id'])->delete();
+            Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->delete();
             do_log(last_query());
             return;
         }
