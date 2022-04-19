@@ -2553,12 +2553,12 @@ else {
 	//// check every 60 seconds //////////////////
 	$activeseed = $Cache->get_value('user_'.$CURUSER["id"].'_active_seed_count');
 	if ($activeseed == ""){
-		$activeseed = count_peer(sprintf("userid = %s and seeder = 'yes'", $CURUSER['id']));
+		$activeseed = count_peer(sprintf("userid = %s and seeder = 'yes'", $CURUSER['id']), 'torrent');
 		$Cache->cache_value('user_'.$CURUSER["id"].'_active_seed_count', $activeseed, 60);
 	}
 	$activeleech = $Cache->get_value('user_'.$CURUSER["id"].'_active_leech_count');
 	if ($activeleech == ""){
-		$activeleech = count_peer(sprintf("userid = %s and seeder = 'no'", $CURUSER['id']));
+		$activeleech = count_peer(sprintf("userid = %s and seeder = 'no'", $CURUSER['id']), 'torrent');
 		$Cache->cache_value('user_'.$CURUSER["id"].'_active_leech_count', $activeleech, 60);
 	}
 	$unread = $Cache->get_value('user_'.$CURUSER["id"].'_unread_message_count');
