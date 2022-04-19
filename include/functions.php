@@ -1883,7 +1883,7 @@ function get_user_row($id)
 {
 	global $Cache, $CURUSER;
 	static $curuserRowUpdated = false;
-	static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
+	static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'donoruntil', 'leechwarn', 'warned', 'title');
 	if ($CURUSER && $id == $CURUSER['id']) {
 		$row = array();
 		foreach($neededColumns as $column) {
@@ -3588,7 +3588,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 			$disabledpic = "disabled";
 			$style = "style='margin-left: 2pt'";
 		}
-		$pics = $arr["donor"] == "yes" ? "<img class=\"".$donorpic."\" src=\"pic/trans.gif\" alt=\"Donor\" ".$style." />" : "";
+		$pics = $arr["donor"] == "yes" && $arr['donoruntil'] !== null && $arr['donoruntil'] >= date('Y-m-d H:i:s') ? "<img class=\"".$donorpic."\" src=\"pic/trans.gif\" alt=\"Donor\" ".$style." />" : "";
 
 		if ($arr["enabled"] == "yes")
 			$pics .= ($arr["leechwarn"] == "yes" ? "<img class=\"".$leechwarnpic."\" src=\"pic/trans.gif\" alt=\"Leechwarned\" ".$style." />" : "") . ($arr["warned"] == "yes" ? "<img class=\"".$warnedpic."\" src=\"pic/trans.gif\" alt=\"Warned\" ".$style." />" : "");

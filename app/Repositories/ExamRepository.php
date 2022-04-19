@@ -800,10 +800,10 @@ class ExamRepository extends BaseRepository
         if (!empty($filters->$filter) && count($filters->$filter) == 1) {
             $donateStatus = $filters->$filter[0];
             if ($donateStatus == User::DONATE_YES) {
-                $baseQuery->where("$userTable.donoruntil", ">=", Carbon::now()->toDateTimeString());
+                $baseQuery->where('donor', 'yes')->where("$userTable.donoruntil", ">=", Carbon::now()->toDateTimeString());
             } elseif ($donateStatus == User::DONATE_NO) {
                 $baseQuery->where(function (Builder $query) use ($userTable) {
-                    $query->whereNull("$userTable.donoruntil")->orWhere("$userTable.donoruntil", '<', Carbon::now()->toDateTimeString());
+                    $query->where('donor', 'no')->orWhereNull("$userTable.donoruntil")->orWhere("$userTable.donoruntil", '<', Carbon::now()->toDateTimeString());
                 });
             } else {
                 do_log("{$exam->id} filter $filter: $donateStatus invalid.", "error");

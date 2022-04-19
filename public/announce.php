@@ -92,7 +92,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = mysql_fetch_array($res);
 	do_log("[check passkey], currentUser: " . nexus_json_encode($az), 'error');
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
@@ -452,7 +452,7 @@ elseif(isset($self))
             if (
                 $event == 'completed'
                 && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS
-                && (empty($az['donoruntil']) || $az['donoruntil'] === '0000-00-00 00:00:00' || $az['donoruntil'] < date("Y-m-d H:i:s"))
+                && ($az['donor'] == 'no' || empty($az['donoruntil']) || $az['donoruntil'] === null || $az['donoruntil'] < date("Y-m-d H:i:s"))
             ) {
                 //think about H&R
                 $hrMode = get_setting('hr.mode');

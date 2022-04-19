@@ -161,8 +161,8 @@ if ($action == "edituser")
 			$updateset[] = "donated = " . sqlesc($donated);
 			$updateset[] = "donated_cny = " . sqlesc($donated_cny);
 		}
-
 		$updateset[] = "donor = " . sqlesc($donor);
+		$updateset[] = "donoruntil = " . sqlesc($_POST['donoruntil']);
 	}
 
 	if ($chpassword != "" AND $passagain != "") {

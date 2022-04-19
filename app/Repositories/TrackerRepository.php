@@ -1013,7 +1013,7 @@ class TrackerRepository extends BaseRepository
         if ($user->class >= \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
             return;
         }
-        if ($user->donoruntil && $user->donoruntil->gte($now)) {
+        if ($user->isDonating()) {
             return;
         }
         $hrMode = Setting::get('hr.mode');

@@ -434,7 +434,7 @@ class User extends Authenticatable
 
     public function isDonating()
     {
-        if ($this->donoruntil && $this->donoruntil >= Carbon::now()->toDateTimeString()) {
+        if ($this->donor == 'yes' && $this->donoruntil && $this->donoruntil->gte(Carbon::now())) {
             return true;
         }
         return false;

@@ -148,5 +148,7 @@ $lang_userdetails = array
     'disable_user_migrated' => 'Enable or disable use please go to the new management system.',
     'text_user_id'=> "User ID",
     'row_medal' => 'Medal',
+    'row_donoruntil' => 'Donated until',
+    'text_donoruntil_note' => "Time format is YYYY-MM-DD hh:mm:ss. To be valid, the donation status must be 'Yes' and the deadline is greater than the current time.",
 );
 ?>

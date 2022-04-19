@@ -148,5 +148,7 @@ $lang_userdetails = array
     'disable_user_migrated' => '啟用或禁用用戶請到管理後臺操作',
     'text_user_id'=> "用戶ID/UID",
     'row_medal' => '勛章',
+    'row_donoruntil' => '捐贈狀態截止時間',
+    'text_donoruntil_note' => "時間格式為'年年年年-月月-日日 時時:分分:秒秒'。損贈有效需要捐贈狀態為'是'且截止時間大於當前時間同時滿足。",
 );
 ?>
