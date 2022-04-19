@@ -23,7 +23,11 @@ class Install
         'searchbox', 'secondicons', 'sources', 'standards', 'stylesheets', 'sysoppanel', 'teams', 'torrents_state', 'uploadspeed',
     ];
 
-    protected $envNames = ['TIMEZONE', 'DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB'];
+    protected $envNames = [
+        'TIMEZONE',
+        'DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE',
+        'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB', 'REDIS_PASSWORD',
+    ];
 
     protected array $requiredExtensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', ];
     protected array $optionalExtensions = [
@@ -468,6 +472,9 @@ class Install
         mysql_connect($newData['DB_HOST'], $newData['DB_USERNAME'], $newData['DB_PASSWORD'], $newData['DB_DATABASE'], $newData['DB_PORT']);
         $redis = new \Redis();
         $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
+        if (!empty($data['REDIS_PASSWORD'])) {
+            $redis->auth($data['REDIS_PASSWORD']);
+        }
         if (isset($newData['REDIS_DB'])) {
             if (!ctype_digit($newData['REDIS_DB']) || $newData['REDIS_DB'] < 0 || $newData['REDIS_DB'] > 15) {
                 throw new \InvalidArgumentException("invalid redis database: " . $newData['REDIS_DB']);

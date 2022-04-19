@@ -243,7 +243,7 @@ if (!empty($error) || (isset($mysqlInfo) && !$mysqlInfo['match'])) {
                 unset($copy);
             }
             ?>
-            <div class="mt-10 text-center">
+            <div class="mt-2 text-center">
                 <button class="bg-blue-500 p-2 m-4 text-white rounded" type="button" onclick="goBack()">Prev</button>
                 <?php if ($currentStep <= $maxStep) {?>
                     <button class="bg-blue-<?php echo $pass ? 500 : 200;?> p-2 m-4 text-white rounded" type="submit" <?php echo $pass ? '' : 'disabled';?>>Next</button>
@@ -254,7 +254,7 @@ if (!empty($error) || (isset($mysqlInfo) && !$mysqlInfo['match'])) {
         </form>
     </div>
 </div>
-<div class="m-10 text-center">
+<div class="m-2 text-center">
     Welcome to the NexusPHP updater, if you have any questions, click<a href="https://nexusphp.org/" target="_blank" class="text-blue-500 p-1">here</a>for help.
 </div>
 </body>
