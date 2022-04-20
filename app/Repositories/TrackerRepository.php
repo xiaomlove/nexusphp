@@ -34,6 +34,10 @@ class TrackerRepository extends BaseRepository
     const MUST_BE_CHEATER_SPEED = 1024 * 1024 * 1024; //1024 MB/s
     const MAY_BE_CHEATER_SPEED = 1024 * 1024 * 100; //100 MB/s
 
+    const ANNOUNCE_FIRST = 0;
+    const ANNOUNCE_DUAL = 1;
+    const ANNOUNCE_DUPLICATE = 2;
+
     // Port Blacklist
     protected const BLACK_PORTS = [
         22,  // SSH Port
@@ -63,8 +67,8 @@ class TrackerRepository extends BaseRepository
             $user = $this->checkUser($request);
             $clientAllow = $this->checkClient($request);
             $torrent = $this->checkTorrent($queries, $user);
-            if ($this->isReAnnounce($request, $queries['ip']) === false) {
-                $withPeers = true;
+            $isReAnnounce = $this->isReAnnounce($request);
+            if ($isReAnnounce < self::ANNOUNCE_DUPLICATE) {
                 /** @var Peer $peerSelf */
                 $peerSelf = $this->checkMinInterval($torrent, $queries, $user);
                 $isPeerExists = true;
@@ -92,31 +96,35 @@ class TrackerRepository extends BaseRepository
                 }
 
                 /**
-                 * Note: Must update snatch first, otherwise peer `last_action` already change
-                 */
-                $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic);
-                if ($queries['event'] == 'completed') {
-                    $this->handleHitAndRun($user, $torrent, $snatch);
-                }
-
-                /**
                  * Note: Must update peer first, otherwise updateTorrent() count peer not correct
+                 * Update: Will not change $peerSelf any more
                  */
                 $this->updatePeer($peerSelf, $queries);
 
-                $this->updateTorrent($torrent, $queries, $isPeerExists);
+                if ($isReAnnounce === self::ANNOUNCE_FIRST) {
+                    $withPeers = true;
+                    /**
+                     * Note: Must update snatch first, otherwise peer `last_action` already change
+                     */
+                    $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic);
+                    if ($queries['event'] == 'completed') {
+                        $this->handleHitAndRun($user, $torrent, $snatch);
+                    }
 
-                if ($dataTraffic['uploaded_increment_for_user'] > 0) {
-                    $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
-                }
-                if ($dataTraffic['downloaded_increment_for_user'] > 0) {
-                    $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
-                }
-                if ($user->clientselect != $clientAllow->id) {
-                    $this->userUpdates['clientselect'] = $clientAllow->id;
-                }
-                if ($user->showclienterror == 'yes') {
-                    $this->userUpdates['showclienterror'] = 'no';
+                    $this->updateTorrent($torrent, $queries, $isPeerExists);
+
+                    if ($dataTraffic['uploaded_increment_for_user'] > 0) {
+                        $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
+                    }
+                    if ($dataTraffic['downloaded_increment_for_user'] > 0) {
+                        $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
+                    }
+                    if ($user->clientselect != $clientAllow->id) {
+                        $this->userUpdates['clientselect'] = $clientAllow->id;
+                    }
+                    if ($user->showclienterror == 'yes') {
+                        $this->userUpdates['showclienterror'] = 'no';
+                    }
                 }
             }
             $repDict = $this->generateSuccessAnnounceResponse($torrent, $queries, $user, $withPeers);
@@ -133,15 +141,8 @@ class TrackerRepository extends BaseRepository
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
-            if (isset($user) && count($this->userUpdates)) {
-                $user->fill($this->userUpdates);
-                $willBeUpdate = "[USER_ACTUAL_UPDATE] user: " . $user->id;
-                foreach ($user->getDirty() as $key => $value) {
-                    $willBeUpdate .= ", $key = $value";
-                }
-                do_log($willBeUpdate);
-                $user->save();
-                do_log(last_query());
+            if (isset($user)) {
+                $this->updateUser($user);
             }
             return $this->sendFinalAnnounceResponse($repDict);
         }
@@ -548,21 +549,29 @@ class TrackerRepository extends BaseRepository
         }
     }
 
-    protected function isReAnnounce(Request $request, $ip): bool
+    protected function isReAnnounce(Request $request): int
     {
         $key = $request->query->get('key');
         $queryString = $request->getQueryString();
         $lockKeyOriginal = str_replace($key, '', $queryString);
-        $lockKeyOriginal .= "&__ip=" . $ip;
         $lockKey = md5($lockKeyOriginal);
         $startTimestamp = nexus()->getStartTimestamp();
         do_log("key: $key, queryString: $queryString, lockKeyOriginal: $lockKeyOriginal, startTimestamp: $startTimestamp");
         $redis = Redis::connection()->client();
-        if (!$redis->set($lockKey, $startTimestamp, ['nx', 'ex' => 5])) {
-            do_log('[RE_ANNOUNCE]');
-            return true;
+        $cache = $redis->get($lockKey);
+        if ($cache === false) {
+            //new request
+            $redis->set($lockKey, $startTimestamp, ['ex' => self::MIN_ANNOUNCE_WAIT_SECOND]);
+            return self::ANNOUNCE_FIRST;
+        } else {
+            if (bcsub($startTimestamp, $cache, 3) < 0.5) {
+                do_log('[DUAL]');
+                return self::ANNOUNCE_DUAL;
+            } else {
+                do_log('[RE_ANNOUNCE]');
+                return self::ANNOUNCE_DUPLICATE;
+            }
         }
-        return false;
     }
 
     private function generateSuccessAnnounceResponse($torrent, $queries, $user, $withPeers = true): array
@@ -728,6 +737,7 @@ class TrackerRepository extends BaseRepository
      *
      * @param Torrent $torrent
      * @param $queries
+     * @param bool $isPeerExists
      */
     private function updateTorrent(Torrent $torrent, $queries, bool $isPeerExists)
     {
@@ -940,15 +950,8 @@ class TrackerRepository extends BaseRepository
             do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
-            if (isset($user) && count($this->userUpdates)) {
-                $user->fill($this->userUpdates);
-                $willBeUpdate = "[USER_ACTUAL_UPDATE] user: " . $user->id;
-                foreach ($user->getDirty() as $key => $value) {
-                    $willBeUpdate .= ", $key = $value";
-                }
-                do_log($willBeUpdate);
-                $user->save();
-                do_log(last_query());
+            if (isset($user)) {
+                $this->updateUser($user);
             }
             return $this->sendFinalAnnounceResponse($repDict);
         }
@@ -1028,6 +1031,15 @@ class TrackerRepository extends BaseRepository
             $user->id, $torrent->id, $snatch->id, $now->toDateTimeString()
         );
         DB::insert($sql);
+    }
+
+    private function updateUser(User $user)
+    {
+        if (count($this->userUpdates) === 0) {
+            return;
+        }
+        $user->save($this->userUpdates);
+        do_log(last_query());
     }
 
 }
