@@ -52,15 +52,13 @@ class TrackerRepository extends BaseRepository
         6699,  // Port used by p2p software, such as WinMX, Napster.
     ];
 
-    private array $userUpdates = [];
-
     public function announce(Request $request): \Illuminate\Http\Response
     {
         do_log("queryString: " . $request->getQueryString());
         /**
-         * Note: In Octane this class will be reused, must reset this property !!!
+         * Note: In Octane this class will be reused, use variable is better !!!
          */
-        $this->userUpdates = [];
+        $userUpdates = [];
         try {
             $withPeers = false;
             $queries = $this->checkAnnounceFields($request);
@@ -117,16 +115,16 @@ class TrackerRepository extends BaseRepository
                     $this->updateTorrent($torrent, $queries, $isPeerExists);
 
                     if ($dataTraffic['uploaded_increment_for_user'] > 0) {
-                        $this->userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
+                        $userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
                     }
                     if ($dataTraffic['downloaded_increment_for_user'] > 0) {
-                        $this->userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
+                        $userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
                     }
                     if ($user->clientselect != $clientAllow->id) {
-                        $this->userUpdates['clientselect'] = $clientAllow->id;
+                        $userUpdates['clientselect'] = $clientAllow->id;
                     }
                     if ($user->showclienterror == 'yes') {
-                        $this->userUpdates['showclienterror'] = 'no';
+                        $userUpdates['showclienterror'] = 'no';
                     }
                 }
             }
@@ -134,7 +132,7 @@ class TrackerRepository extends BaseRepository
         } catch (ClientNotAllowedException $exception) {
             do_log("[ClientNotAllowedException] " . $exception->getMessage());
             if (isset($user) && $user->showclienterror == 'no') {
-                $this->userUpdates['showclienterror'] = 'yes';
+                $userUpdates['showclienterror'] = 'yes';
             }
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (TrackerException $exception) {
@@ -145,7 +143,7 @@ class TrackerRepository extends BaseRepository
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
             if (isset($user)) {
-                $this->updateUser($user);
+                $this->updateUser($user, $userUpdates);
             }
             return $this->sendFinalAnnounceResponse($repDict);
         }
@@ -955,25 +953,25 @@ class TrackerRepository extends BaseRepository
     {
         do_log("queryString: " . $request->getQueryString());
         /**
-         * Note: In Octane this class will be reused, must reset this property !!!
+         * Note: In Octane this class will be reused, use variable is better !!!
          */
-        $this->userUpdates = [];
+        $userUpdates = [];
         try {
             $infoHashArr = $this->checkScrapeFields($request);
             $user = $this->checkUser($request);
             $clientAllow = $this->checkClient($request);
 
             if ($user->clientselect != $clientAllow->id) {
-                $this->userUpdates['clientselect'] = $clientAllow->id;
+                $userUpdates['clientselect'] = $clientAllow->id;
             }
             if ($user->showclienterror == 'yes') {
-                $this->userUpdates['showclienterror'] = 'no';
+                $userUpdates['showclienterror'] = 'no';
             }
             $repDict = $this->generateScrapeResponse($infoHashArr);
         } catch (ClientNotAllowedException $exception) {
             do_log("[ClientNotAllowedException] " . $exception->getMessage());
             if (isset($user) && $user->showclienterror == 'no') {
-                $this->userUpdates['showclienterror'] = 'yes';
+                $userUpdates['showclienterror'] = 'yes';
             }
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (TrackerException $exception) {
@@ -984,7 +982,7 @@ class TrackerRepository extends BaseRepository
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
             if (isset($user)) {
-                $this->updateUser($user);
+                $this->updateUser($user, $userUpdates);
             }
             return $this->sendFinalAnnounceResponse($repDict);
         }
@@ -1066,13 +1064,13 @@ class TrackerRepository extends BaseRepository
         DB::insert($sql);
     }
 
-    private function updateUser(User $user)
+    private function updateUser(User $user, array $update)
     {
-        $log = "update: " . json_encode($this->userUpdates);
-        if (count($this->userUpdates) === 0) {
+        $log = "update: " . json_encode($update);
+        if (empty($update)) {
             $log .= ", no update...";
         } else {
-            $user->fill($this->userUpdates);
+            $user->fill($update);
             $log .= ", dirty: " . json_encode($user->getDirty());
             $user->save();
             $log .= ", query: " . last_query();
