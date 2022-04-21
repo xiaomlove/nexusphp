@@ -1069,9 +1069,7 @@ class TrackerRepository extends BaseRepository
         if (empty($update)) {
             $log .= ", no update...";
         } else {
-            $user->fill($update);
-            $log .= ", dirty: " . json_encode($user->getDirty());
-            $user->save();
+            $user->update($update);
             $log .= ", query: " . last_query();
         }
         do_log($log, 'alert');

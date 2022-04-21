@@ -150,6 +150,9 @@ class NexusDB
 
     public static function insert($table, $data)
     {
+        if (!IN_NEXUS) {
+            return DB::table($table)->insertGetId($data);
+        }
         if (empty($table) || empty($data) || !is_array($data)) {
             throw new DatabaseException("require table and data(array).");
         }
@@ -162,6 +165,9 @@ class NexusDB
 
     public static function update($table, $data, $whereStr)
     {
+        if (!IN_NEXUS) {
+            return DB::table($table)->whereRaw($whereStr)->update($data);
+        }
         $updateArr = [];
         foreach ($data as $field => $value) {
             $updateArr[] = "`$field` = " . sqlesc($value);
@@ -173,6 +179,13 @@ class NexusDB
 
     public static function delete($table, $whereStr, $limit = null)
     {
+        if (!IN_NEXUS) {
+            $query = DB::table($table)->whereRaw($whereStr);
+            if ($limit !== null) {
+                $query->limit($limit);
+            }
+            return $query->delete();
+        }
         $sql = "delete from $table where $whereStr";
         if (!is_null($limit)) {
             $sql .= " limit $limit";
@@ -183,6 +196,10 @@ class NexusDB
 
     public static function getOne($table, $whereStr, $fields = '*')
     {
+        if (!IN_NEXUS) {
+            $result = DB::table($table)->whereRaw($whereStr)->selectRaw($fields)->first();
+            return $result ? json_decode(json_encode($result), true) : null;
+        }
         if ($fields != '*') {
             if (is_array($fields)) {
                 $fields = implode(', ', $fields);
@@ -199,6 +216,13 @@ class NexusDB
 
     public static function getAll($table, $whereStr, $fields = '*')
     {
+        if (!IN_NEXUS) {
+            $result = DB::table($table)->whereRaw($whereStr)->selectRaw($fields)->get();
+            if ($result->isEmpty()) {
+                return [];
+            }
+            return json_decode(json_encode($result), true);
+        }
         if ($fields != '*') {
             if (is_array($fields)) {
                 $fields = implode(', ', $fields);
@@ -209,6 +233,15 @@ class NexusDB
             throw new DatabaseException("empty fields.");
         }
         $sql = "select $fields from $table where $whereStr";
+        return self::select($sql);
+    }
+
+    public static function select(string $sql)
+    {
+        if (!IN_NEXUS) {
+            $result = DB::select($sql);
+            return json_decode(json_encode($result), true);
+        }
         $res = sql_query($sql);
         $result = [];
         while ($row = mysql_fetch_assoc($res)) {

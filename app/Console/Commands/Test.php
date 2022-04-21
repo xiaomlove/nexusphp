@@ -126,9 +126,7 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $rep = new ExamRepository();
-        $exam = Exam::query()->find(6);
-        $r = $rep->fetchUserAndDoAssign($exam);
+        $r = NexusDB::getAll('users', 'id = 1');
         dd($r);
     }
 
