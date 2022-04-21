@@ -470,10 +470,14 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
     global $SITENAME;
 	static $en_lang_functions;
 	static $current_user_lang_functions;
+	static $settingAccount;
 	if (!$en_lang_functions) {
 		require(get_langfile_path("functions.php",false,"en"));
 		$en_lang_functions = $lang_functions;
 	}
+	if (!$settingAccount) {
+	    $settingAccount = get_setting('account');
+    }
 
 	if(!$I18N) {
 		$this_lang_functions = $en_lang_functions;
@@ -506,6 +510,12 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_SYSOP: {$class_name = $this_lang_functions['text_sysops']; break;}
 		case UC_STAFFLEADER: {$class_name = $this_lang_functions['text_staff_leader']; break;}
 	}
+	if ($class < UC_VIP) {
+	    $alias = trim($settingAccount["{$class}_alias"]);
+	    if (!empty($alias)) {
+	        $class_name = sprintf('%s(%s)', $class_name, $alias);
+        }
+    }
 
 	switch ($class)
 	{
@@ -5393,6 +5403,9 @@ function get_ip_location_from_geoip($ip)
     $locale = $langMap[$lang] ?? $lang;
     $result = [];
     foreach (explode(',', $ip) as $__ip) {
+        if (empty($__ip)) {
+            continue;
+        }
         $locationInfo = \Nexus\Database\NexusDB::remember("locations_{$__ip}", 3600, function () use ($locale, $__ip, $reader) {
             $info = [
                 'ip' => $__ip,

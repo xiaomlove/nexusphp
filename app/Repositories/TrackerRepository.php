@@ -68,6 +68,7 @@ class TrackerRepository extends BaseRepository
             $clientAllow = $this->checkClient($request);
             $torrent = $this->checkTorrent($queries, $user);
             $isReAnnounce = $this->isReAnnounce($request);
+            do_log("[IS_RE_ANNOUNCE] $isReAnnounce");
             if ($isReAnnounce < self::ANNOUNCE_DUPLICATE) {
                 /** @var Peer $peerSelf */
                 $peerSelf = $this->checkMinInterval($torrent, $queries, $user);
@@ -99,7 +100,9 @@ class TrackerRepository extends BaseRepository
                  * Note: Must update peer first, otherwise updateTorrent() count peer not correct
                  * Update: Will not change $peerSelf any more
                  */
-                $this->updatePeer($peerSelf, $queries);
+                if ($isReAnnounce == self::ANNOUNCE_FIRST || ($isReAnnounce == self::ANNOUNCE_DUPLICATE && $queries['event'] !== 'stopped')) {
+                    $this->updatePeer($peerSelf, $queries);
+                }
 
                 if ($isReAnnounce === self::ANNOUNCE_FIRST) {
                     $withPeers = true;
@@ -293,7 +296,25 @@ class TrackerRepository extends BaseRepository
         }
 
         // Part.4 Get User Ip Address
-        $queries['ip'] = nexus()->getRequestIp();
+        $ip = nexus()->getRequestIp();
+        $ipv4 = $ipv6 = '';
+        $ipv4Temp = $request->query->get('ipv4', '');
+        $ipv6Temp = $request->query->get('ipv6', '');
+        //use the real ip first, ip from parameter second
+        if (isIPV4($ip)) {
+            $ipv4 = $ip;
+        } elseif (isIPV4($ipv4Temp)) {
+            $ipv4 = $ipv4Temp;
+        }
+        if (isIPV6($ip)) {
+            $ipv6 = $ip;
+        } elseif (isIPV6($ipv6Temp)) {
+            $ipv6 = $ipv6Temp;
+        }
+
+        $queries['ip'] = $ip;
+        $queries['ipv4'] = $ipv4;
+        $queries['ipv6'] = $ipv6;
 
         // Part.5 Get Users Agent
         $queries['user_agent'] = $request->headers->get('user-agent');
@@ -445,8 +466,6 @@ class TrackerRepository extends BaseRepository
         $peer = Peer::query()
             ->where('torrent', $torrent->id)
             ->where('peer_id', $queries['peer_id'])
-            ->groupBy('peer_id')
-            ->selectRaw("*, group_concat(id order by id) as ids, group_concat(ip order by id) as ips")
             ->first();
 
         if ($peer) {
@@ -596,7 +615,7 @@ class TrackerRepository extends BaseRepository
         if (\strtolower($queries['event']) !== 'stopped' && $withPeers) {
             $limit = ($queries['numwant'] <= self::MAX_PEER_NUM_WANT ? $queries['numwant'] : self::MAX_PEER_NUM_WANT);
             $baseQuery = Peer::query()
-                ->select(['peer_id', 'ip', 'port'])
+                ->select(['peer_id', 'ip', 'port', 'ipv4', 'ipv6'])
                 ->where('torrent', $torrent->id)
                 ->where('userid', '!=', $user->id)
                 ->limit($limit)
@@ -689,17 +708,26 @@ class TrackerRepository extends BaseRepository
         return $result;
     }
 
-    private function givePeers($peers, $compact, $noPeerId, int $filterFlag = FILTER_FLAG_IPV4): string|array
+    private function givePeers($originalPeers, $compact, $noPeerId, int $filterFlag = FILTER_FLAG_IPV4): string|array
     {
+        $peers = [];
+        foreach ($originalPeers as $value) {
+            $ipKey = $filterFlag == FILTER_FLAG_IPV4 ? 'ipv4' : 'ipv6';
+            if (!empty($value[$ipKey]) && filter_var($value[$ipKey], FILTER_VALIDATE_IP, $filterFlag)) {
+                $peers[] = [
+                    'peer_id' => $value['peer_id'],
+                    'ip' => $value[$ipKey],
+                    'port' => $value['port']
+                ];
+            }
+        }
+
         if ($compact) {
             $pcomp = '';
             foreach ($peers as $p) {
-                if (isset($p['ip'], $p['port']) && \filter_var($p['ip'], FILTER_VALIDATE_IP, $filterFlag)) {
-                    $pcomp .= \inet_pton($p['ip']);
-                    $pcomp .= \pack('n', (int) $p['port']);
-                }
+                $pcomp .= \inet_pton($p['ip']);
+                $pcomp .= \pack('n', (int) $p['port']);
             }
-
             return $pcomp;
         }
 
@@ -745,27 +773,15 @@ class TrackerRepository extends BaseRepository
             do_log("no event, return", 'debug');
             return;
         }
-        $seederResult = Peer::query()
-            ->where('torrent', $torrent->id)
-            ->where('to_go', '=',0)
-            ->selectRaw("count(distinct(peer_id)) as counts")
-            ->first();
-        $torrent->seeders = $seederResult ? $seederResult->counts : 0;
-
-        $leecherResult = Peer::query()
-            ->where('torrent', $torrent->id)
-            ->where('to_go', '>', 0)
-            ->selectRaw("count(distinct(peer_id)) as counts")
-            ->first();
-        $torrent->leechers = $leecherResult ? $leecherResult->counts : 0;
-
+        $torrentId = $torrent->id;
+        $torrent->seeders = count_peer("torrent = $torrentId and to_go = 0");
+        $torrent->leechers = count_peer("torrent = $torrentId and to_go > 0");
         $torrent->visible = Torrent::VISIBLE_YES;
         $torrent->last_action = Carbon::now();
 
         if ($isPeerExists && $queries['event'] == 'completed') {
             $torrent->times_completed = DB::raw("times_completed + 1");
         }
-
         $torrent->save();
         do_log(last_query());
     }
@@ -790,6 +806,12 @@ class TrackerRepository extends BaseRepository
             'agent' => $queries['user_agent'],
             'connectable' => $this->getConnectable($queries['ip'], $queries['port'], $queries['user_agent'])
         ];
+        if (!empty($queries['ipv4'])) {
+            $update['ipv4'] = $queries['ipv4'];
+        }
+        if (!empty($queries['ipv6'])) {
+            $update['ipv6'] = $queries['ipv6'];
+        }
 
         if ($peer->exists) {
             $update['prev_action'] = $peer->last_action;
@@ -809,36 +831,47 @@ class TrackerRepository extends BaseRepository
         $update['uploaded'] = $queries['uploaded'];
         $update['downloaded'] = $queries['downloaded'];
 
-        $idArr = explode(',', $peer->ids);
-        $ipArr = explode(',', $peer->ips);
-        $logPrefix = "update: " . json_encode($update);
-        $doUpdate = false;
+        $logData = json_encode(Arr::except($update, ['peer_id']));
         if ($peer->exists) {
-            $logPrefix .= ", [EXISTS]";
-            foreach ($idArr as $key => $id) {
-                $ip = $ipArr[$key];
-                if (isIPV4($ip) && isIPV4($queries['ip'])) {
-                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
-                    $doUpdate = true;
-                    $logPrefix .= ", v4, id = $id";
-                } elseif (isIPV6($ip) && isIPV6($queries['ip'])) {
-                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
-                    $doUpdate = true;
-                    $logPrefix .= ", v6, id = $id";
-                }
-            }
-            if ($doUpdate) {
-                $affected = Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->update($update);
-                do_log("$logPrefix, [UPDATE], affected: $affected");
-            } else {
-                Peer::query()->insert($update);
-                do_log("$logPrefix, [INSERT]");
-            }
+            $affected = Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->update($update);
+            do_log("[UPDATE], affected: $affected, data: $logData");
         } else {
-            $logPrefix .= ", [NOT_EXISTS]";
             Peer::query()->insert($update);
-            do_log("$logPrefix, [INSERT]");
+            do_log("[INSERT], data: $logData");
         }
+
+
+
+//        $idArr = explode(',', $peer->ids);
+//        $ipArr = explode(',', $peer->ips);
+//        $logPrefix = "update: " . json_encode($update);
+//        $doUpdate = false;
+//        if ($peer->exists) {
+//            $logPrefix .= ", [EXISTS]";
+//            foreach ($idArr as $key => $id) {
+//                $ip = $ipArr[$key];
+//                if (isIPV4($ip) && isIPV4($queries['ip'])) {
+//                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
+//                    $doUpdate = true;
+//                    $logPrefix .= ", v4, id = $id";
+//                } elseif (isIPV6($ip) && isIPV6($queries['ip'])) {
+//                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
+//                    $doUpdate = true;
+//                    $logPrefix .= ", v6, id = $id";
+//                }
+//            }
+//            if ($doUpdate) {
+//                $affected = Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->update($update);
+//                do_log("$logPrefix, [UPDATE], affected: $affected");
+//            } else {
+//                Peer::query()->insert($update);
+//                do_log("$logPrefix, [INSERT]");
+//            }
+//        } else {
+//            $logPrefix .= ", [NOT_EXISTS]";
+//            Peer::query()->insert($update);
+//            do_log("$logPrefix, [INSERT]");
+//        }
     }
 
     private function getConnectable($ip, $port, $agent)
@@ -913,7 +946,7 @@ class TrackerRepository extends BaseRepository
         $snatch->last_action = $nowStr;
 
         $snatch->save();
-        do_log(last_query());
+        do_log(last_query(), 'alert');
 
         return $snatch;
     }
@@ -1035,11 +1068,16 @@ class TrackerRepository extends BaseRepository
 
     private function updateUser(User $user)
     {
+        $log = "update: " . json_encode($this->userUpdates);
         if (count($this->userUpdates) === 0) {
-            return;
+            $log .= ", no update...";
+        } else {
+            $user->fill($this->userUpdates);
+            $log .= ", dirty: " . json_encode($user->getDirty());
+            $user->save();
+            $log .= ", query: " . last_query();
         }
-        $user->save($this->userUpdates);
-        do_log(last_query());
+        do_log($log, 'alert');
     }
 
 }

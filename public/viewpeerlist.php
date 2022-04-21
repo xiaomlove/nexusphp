@@ -54,12 +54,12 @@ function dltable($name, $arr, $torrent)
 
 		 $secs = max(1, ($e["la"] - $e["st"]));
 		if ($enablelocation_tweak == 'yes'){
-			list($loc_pub, $loc_mod) = get_ip_location($e["ips"]);
+			list($loc_pub, $loc_mod) = get_ip_location(sprintf('%s,%s', $e['ipv4'], $e['ipv6']));
 			$location = get_user_class() >= $userprofile_class ? "<div title='" . $loc_mod . "'>" . $loc_pub . "</div>" : $loc_pub;
 			$s .= "<td class=rowfollow align=center width=1%><nobr>" . $location . "</nobr></td>\n";
 		}
 		elseif (get_user_class() >= $userprofile_class){
-			$location = $e["ips"];
+			$location = implode(', ', array_filter([$e['ipv4'], $e['ipv6']]));
 			$s .= "<td class=rowfollow align=center width=1%><nobr>" . $location . "</nobr></td>\n";
 		}
 
@@ -93,7 +93,7 @@ function dltable($name, $arr, $torrent)
 }
 	$downloaders = array();
 	$seeders = array();
-	$subres = sql_query("SELECT seeder, finishedat, downloadoffset, uploadoffset, group_concat(ip) as ips, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id group by peer_id ") or sqlerr();
+	$subres = sql_query("SELECT seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id group by peer_id ") or sqlerr();
 	while ($subrow = mysql_fetch_array($subres)) {
 	if ($subrow["seeder"] == "yes")
 		$seeders[] = $subrow;

@@ -739,6 +739,9 @@ $lang_settings = array
     'row_site_language_enabled' => '站点启用语言',
     'text_site_language_enabled_note' => '选择站点启用的语言',
     'keep_at_least_one' => '至少保留一个',
+    'text_alias' => '等级别名：',
+    'row_default_user_one' => '默认为',
+    'row_default_user_two' => '',
 );
 
 ?>

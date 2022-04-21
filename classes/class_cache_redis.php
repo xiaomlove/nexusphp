@@ -19,21 +19,12 @@ class class_cache_redis {
     public $redis;
 
     function __construct() {
-        $success = $this->connect(); // Connect to Redis
-        if ($success) {
-            $this->isEnabled = 1;
-        } else {
-            do_log("Redis is disabled!");
-            $this->isEnabled = 0;
-        }
+        $this->connect(); // Connect to Redis
     }
 
     private function connect()
     {
         $config = nexus_config('nexus.redis');
-        if (empty($config['host'])) {
-            return false;
-        }
         $redis = new Redis();
         $params = [
             $config['host'],
@@ -45,21 +36,17 @@ class class_cache_redis {
             $params[] = $config['timeout'];
         }
         $connectResult = $redis->connect(...$params);
-        $auth = [];
         if (!empty($config['password'])) {
-            $auth['pass'] = $config['password'];
-            if (!empty($config['username'])) {
-                $auth['user'] = $config['username'];
-            }
-            $connectResult = $connectResult && $redis->auth($auth);
+            $connectResult = $connectResult && $redis->auth($config['password']);
         }
         if ($connectResult) {
             $this->redis = $redis;
             if (is_numeric($config['database'])) {
                 $redis->select($config['database']);
             }
+        } else {
+            throw new \RuntimeException("Redis connect fail.");
         }
-        return $connectResult;
     }
 
     function getIsEnabled() {

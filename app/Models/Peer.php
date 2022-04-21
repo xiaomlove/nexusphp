@@ -11,6 +11,7 @@ class Peer extends NexusModel
     protected $fillable = [
         'torrent', 'peer_id', 'ip', 'port', 'uploaded', 'downloaded', 'to_go', 'seeder', 'started', 'last_action',
         'prev_action', 'connectable', 'userid', 'agent', 'finishedat', 'downloadoffset', 'uploadedoffset', 'passkey',
+        'ipv4', 'ipv6',
     ];
 
     const CONNECTABLE_YES = 'yes';

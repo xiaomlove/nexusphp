@@ -28,7 +28,7 @@ return new class extends Migration
         }
 
         Schema::table($tableName, function (Blueprint $table) {
-            $table->unique(['torrent', 'peer_id', 'ip']);
+            $table->unique(['torrent', 'peer_id']);
             $table->index('peer_id');
         });
     }

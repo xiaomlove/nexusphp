@@ -119,15 +119,16 @@ elseif ($action == 'savesettings_account') 	// save account
 
 	$validConfig = array(
 	    'neverdelete', 'neverdeletepacked', 'deletepacked', 'deleteunpacked', 'deletenotransfer', 'deletenotransfertwo', 'deletepeasant',
-        'psdlone', 'psratioone', 'psdltwo', 'psratiotwo', 'psdlthree', 'psratiothree', 'psdlfour', 'psratiofour', 'psdlfive', 'psratiofive',
-        'putime', 'pudl', \App\Models\User::CLASS_POWER_USER . '_min_seed_points', 'puprratio', 'puderatio',
-        'eutime', 'eudl', \App\Models\User::CLASS_ELITE_USER . '_min_seed_points', 'euprratio', 'euderatio',
-        'cutime', 'cudl', \App\Models\User::CLASS_CRAZY_USER . '_min_seed_points', 'cuprratio', 'cuderatio',
-        'iutime', 'iudl', \App\Models\User::CLASS_INSANE_USER . '_min_seed_points', 'iuprratio', 'iuderatio',
-        'vutime', 'vudl', \App\Models\User::CLASS_VETERAN_USER . '_min_seed_points', 'vuprratio', 'vuderatio',
-        'exutime', 'exudl', \App\Models\User::CLASS_EXTREME_USER . '_min_seed_points', 'exuprratio', 'exuderatio',
-        'uutime', 'uudl', \App\Models\User::CLASS_ULTIMATE_USER . '_min_seed_points', 'uuprratio', 'uuderatio',
-        'nmtime', 'nmdl', \App\Models\User::CLASS_NEXUS_MASTER . '_min_seed_points', 'nmprratio', 'nmderatio',
+        'psdlone', 'psratioone', 'psdltwo', 'psratiotwo', 'psdlthree', 'psratiothree', 'psdlfour', 'psratiofour', 'psdlfive', 'psratiofive', \App\Models\User::CLASS_PEASANT . '_alias',
+        \App\Models\User::CLASS_USER . '_alias',
+        'putime', 'pudl', \App\Models\User::CLASS_POWER_USER . '_min_seed_points', 'puprratio', 'puderatio', \App\Models\User::CLASS_POWER_USER . '_alias',
+        'eutime', 'eudl', \App\Models\User::CLASS_ELITE_USER . '_min_seed_points', 'euprratio', 'euderatio', \App\Models\User::CLASS_ELITE_USER . '_alias',
+        'cutime', 'cudl', \App\Models\User::CLASS_CRAZY_USER . '_min_seed_points', 'cuprratio', 'cuderatio', \App\Models\User::CLASS_CRAZY_USER . '_alias',
+        'iutime', 'iudl', \App\Models\User::CLASS_INSANE_USER . '_min_seed_points', 'iuprratio', 'iuderatio', \App\Models\User::CLASS_INSANE_USER . '_alias',
+        'vutime', 'vudl', \App\Models\User::CLASS_VETERAN_USER . '_min_seed_points', 'vuprratio', 'vuderatio', \App\Models\User::CLASS_VETERAN_USER . '_alias',
+        'exutime', 'exudl', \App\Models\User::CLASS_EXTREME_USER . '_min_seed_points', 'exuprratio', 'exuderatio', \App\Models\User::CLASS_EXTREME_USER . '_alias',
+        'uutime', 'uudl', \App\Models\User::CLASS_ULTIMATE_USER . '_min_seed_points', 'uuprratio', 'uuderatio', \App\Models\User::CLASS_ULTIMATE_USER . '_alias',
+        'nmtime', 'nmdl', \App\Models\User::CLASS_NEXUS_MASTER . '_min_seed_points', 'nmprratio', 'nmderatio', \App\Models\User::CLASS_NEXUS_MASTER . '_alias',
         'getInvitesByPromotion'
     );
 	GetVar($validConfig);
@@ -138,6 +139,7 @@ elseif ($action == 'savesettings_account') 	// save account
 	saveSetting('account', $ACCOUNT);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker account settings updated by {$CURUSER['username']}. $actiontime",'mod');
+	\Nexus\Database\NexusDB::cache_del('stats_classes');
 	go_back();
 }
 elseif($action == 'savesettings_torrent') 	// save account
@@ -583,14 +585,22 @@ elseif ($action == 'accountsettings'){
 	tr($lang_settings['row_delete_no_transfer'],$lang_settings['text_delete_transfer_note_one']."<input type='text' style=\"width: 50px\" name=deletenotransfer value='".(isset($ACCOUNT["deletenotransfer"]) ? $ACCOUNT["deletenotransfer"] : 60 )."'>".$lang_settings['text_delete_transfer_note_two']."<input type='text' style=\"width: 50px\" name=deletenotransfertwo value='".(isset($ACCOUNT["deletenotransfertwo"]) ? $ACCOUNT["deletenotransfertwo"] : 0 )."'>".$lang_settings['text_delete_transfer_note_three'], 1);
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_user_promotion_demotion']."</b></td></tr>");
 	tr($lang_settings['row_ban_peasant_one'].get_user_class_name(UC_PEASANT,false,false,true).$lang_settings['row_ban_peasant_two'],get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_ban_peasant_note_one']."<input type='text' style=\"width: 50px\" name=deletepeasant value='".(isset($ACCOUNT["deletepeasant"]) ? $ACCOUNT["deletepeasant"] : 30 )."'>".$lang_settings['text_ban_peasant_note_two'], 1);
-	tr($lang_settings['row_demoted_to_peasant_one'].get_user_class_name(UC_PEASANT,false,false,true).$lang_settings['row_demoted_to_peasant_two'],$lang_settings['text_demoted_peasant_note_one'].get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_demoted_peasant_note_two']."<br /><ul>
+    $inputAlias = "0_alias";
+	tr($lang_settings['row_demoted_to_peasant_one'].get_user_class_name(UC_PEASANT,false,false,true).$lang_settings['row_demoted_to_peasant_two'],
+        $lang_settings['text_alias'] . "<input type='text' style=\"width: 60px\" name='".$inputAlias."' value='".(isset($ACCOUNT[$inputAlias]) ? $ACCOUNT[$inputAlias] : '' )."'><br/>"
+        .$lang_settings['text_demoted_peasant_note_one'].get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_demoted_peasant_note_two']."<br /><ul>
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdlone value='".(isset($ACCOUNT["psdlone"]) ? $ACCOUNT["psdlone"] : 50 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratioone value='".(isset($ACCOUNT["psratioone"]) ? $ACCOUNT["psratioone"] : 0.4 )."'>".$lang_settings['text_demote_peasant_default_one']."</li>
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdltwo value='".(isset($ACCOUNT["psdltwo"]) ? $ACCOUNT["psdltwo"] : 100 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratiotwo value='".(isset($ACCOUNT["psratiotwo"]) ? $ACCOUNT["psratiotwo"] : 0.5 )."'>".$lang_settings['text_demote_peasant_default_two']."</li>
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdlthree value='".(isset($ACCOUNT["psdlthree"]) ? $ACCOUNT["psdlthree"] : 200 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratiothree value='".(isset($ACCOUNT["psratiothree"]) ? $ACCOUNT["psratiothree"] : 0.6 )."'>".$lang_settings['text_demote_peasant_default_three']."</li>
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdlfour value='".(isset($ACCOUNT["psdlfour"]) ? $ACCOUNT["psdlfour"] : 400 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratiofour value='".(isset($ACCOUNT["psratiofour"]) ? $ACCOUNT["psratiofour"] : 0.7 )."'>".$lang_settings['text_demote_peasant_default_four']."</li>
 		<li>".$lang_settings['text_downloaded_amount_larger_than']."<input type='text' style=\"width: 50px\" name=psdlfive value='".(isset($ACCOUNT["psdlfive"]) ? $ACCOUNT["psdlfive"] : 800 )."'>".$lang_settings['text_and_ratio_below']."<input type='text' style=\"width: 50px\" name=psratiofive value='".(isset($ACCOUNT["psratiofive"]) ? $ACCOUNT["psratiofive"] : 0.8 )."'>".$lang_settings['text_demote_peasant_default_five']."</li>
 		</ul><br />".$lang_settings['text_demote_peasant_note'], 1);
-	function promotion_criteria($class, $input, $time, $dl, $prratio, $deratio, $defaultInvites=0, $defaultSeedPoints = 0){
+
+    $inputAlias = "1_alias";
+    tr($lang_settings['row_default_user_one'].get_user_class_name(UC_USER,false,false,true).$lang_settings['row_default_user_two'],
+        $lang_settings['text_alias'] . "<input type='text' style=\"width: 60px\" name='".$inputAlias."' value='".(isset($ACCOUNT[$inputAlias]) ? $ACCOUNT[$inputAlias] : '' )."'>", 1);
+
+	function promotion_criteria($class, $input, $time, $dl, $prratio, $deratio, $defaultInvites=0, $defaultSeedPoints = 0, $defaultAlias = ''){
 		global $lang_settings;
 		global $ACCOUNT;
 		$inputtime = $input."time";
@@ -598,10 +608,12 @@ elseif ($action == 'accountsettings'){
 		$inputprratio = $input."prratio";
 		$inputderatio = $input."deratio";
 		$inputSeedPoints = $class . "_min_seed_points";
+		$inputAlias = $class . "_alias";
 		if (!isset($class))
 			return;
 		$x = $lang_settings['row_promote_to_one'].get_user_class_name($class,false,false,true).$lang_settings['row_promote_to_two'];
-		$y = $lang_settings['text_member_longer_than']."<input type='text' style=\"width: 50px\" name='".$inputtime."' value='".(isset($ACCOUNT[$inputtime]) ? $ACCOUNT[$inputtime] : $time )."'>"
+		$y = $lang_settings['text_alias'] . "<input type='text' style=\"width: 60px\" name='".$inputAlias."' value='".(isset($ACCOUNT[$inputAlias]) ? $ACCOUNT[$inputAlias] : $defaultAlias )."'><br/>"
+		    .$lang_settings['text_member_longer_than']."<input type='text' style=\"width: 50px\" name='".$inputtime."' value='".(isset($ACCOUNT[$inputtime]) ? $ACCOUNT[$inputtime] : $time )."'>"
             .$lang_settings['text_downloaded_more_than']."<input type='text' style=\"width: 50px\" name='".$inputdl."' value='".(isset($ACCOUNT[$inputdl]) ? $ACCOUNT[$inputdl] : $dl )."'>"
             .$lang_settings['text_seed_points_more_than']."<input type='text' style=\"width: 60px\" name='".$inputSeedPoints."' value='".(isset($ACCOUNT[$inputSeedPoints]) ? $ACCOUNT[$inputSeedPoints] : $defaultSeedPoints )."'>"
             .$lang_settings['text_with_ratio_above']."<input type='text' style=\"width: 50px\" name='".$inputprratio."' value='".(isset($ACCOUNT[$inputprratio]) ? $ACCOUNT[$inputprratio] : $prratio )."'>"
