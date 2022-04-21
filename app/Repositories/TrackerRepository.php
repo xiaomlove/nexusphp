@@ -704,7 +704,7 @@ class TrackerRepository extends BaseRepository
             'downloaded_increment' => $realDownloaded,
             'downloaded_increment_for_user' => $realDownloaded * $downRatio,
         ];
-        do_log("$log, result: " . json_encode($result));
+        do_log("$log, result: " . json_encode($result), 'alert');
         return $result;
     }
 

@@ -5530,7 +5530,7 @@ function calculate_seed_bonus($uid): array
     $A = 0;
     $count = $torrent_count = 0;
 
-    $torrentres = sql_query("select torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by torrents.id");
+    $torrentres = sql_query("select torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by torrents.id, peers.peer_id");
     while ($torrent = mysql_fetch_array($torrentres))
     {
         $weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
