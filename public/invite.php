@@ -7,6 +7,7 @@ parked();
 $id = intval($_GET["id"] ?? 0);
 $type = unesc($_GET["type"] ?? '');
 $menuSelected = $_REQUEST['menu'] ?? 'invitee';
+$pageSize = 20;
 
 registration_check('invitesystem',true,false);
 
@@ -71,17 +72,17 @@ if ($type == 'new'){
         $rel = sql_query("SELECT COUNT(*) FROM users WHERE invited_by = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
         $arro = mysql_fetch_row($rel);
         $number = $arro[0];
-        list($pagertop, $pagerbottom, $limit) = pager(1, $number, "?id=$id&menu=$menuSelected&");
-
-        $ret = sql_query("SELECT id, username, email, uploaded, downloaded, status, warned, enabled, donor, email FROM users WHERE invited_by = ".mysql_real_escape_string($id) . " $limit") or sqlerr();
-        $num = mysql_num_rows($ret);
 
         print("<table border=1 width=100% cellspacing=0 cellpadding=5>".
             "<form method=post action=takeconfirm.php?id=".htmlspecialchars($id).">");
 
-        if(!$num){
+        if(!$number){
             print("<tr><td colspan=7 align=center>".$lang_invite['text_no_invites']."</tr>");
         } else {
+            list($pagertop, $pagerbottom, $limit) = pager($pageSize, $number, "?id=$id&menu=$menuSelected&");
+
+            $ret = sql_query("SELECT id, username, email, uploaded, downloaded, status, warned, enabled, donor, email FROM users WHERE invited_by = ".mysql_real_escape_string($id) . " $limit") or sqlerr();
+            $num = mysql_num_rows($ret);
 
             print("<tr><td class=colhead><b>".$lang_invite['text_username']."</b></td><td class=colhead><b>".$lang_invite['text_email']."</b></td><td class=colhead><b>".$lang_invite['text_uploaded']."</b></td><td class=colhead><b>".$lang_invite['text_downloaded']."</b></td><td class=colhead><b>".$lang_invite['text_ratio']."</b></td><td class=colhead><b>".$lang_invite['text_status']."</b></td>");
             if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP)
@@ -137,16 +138,15 @@ if ($type == 'new'){
         $arre = mysql_fetch_row($rul);
         $number1 = $arre[0];
 
-        list($pagertop, $pagerbottom, $limit) = pager(1, $number1, "?id=$id&menu=$menuSelected&");
-
-        $rer = sql_query("SELECT * FROM invites WHERE inviter = ".mysql_real_escape_string($id) . " $limit") or sqlerr();
-        $num1 = mysql_num_rows($rer);
-
         print("<table border=1 width=100% cellspacing=0 cellpadding=5>");
 
-        if(!$num1){
+        if(!$number1){
             print("<tr align=center><td colspan=6>".$lang_invite['text_no_invitation_sent']."</tr>");
         } else {
+            list($pagertop, $pagerbottom, $limit) = pager($pageSize, $number1, "?id=$id&menu=$menuSelected&");
+
+            $rer = sql_query("SELECT * FROM invites WHERE inviter = ".mysql_real_escape_string($id) . " $limit") or sqlerr();
+            $num1 = mysql_num_rows($rer);
 
             print("<tr><td class=colhead>".$lang_invite['text_email']."</td><td class=colhead>".$lang_invite['text_hash']."</td><td class=colhead>".$lang_invite['text_send_date']."</td><td class='colhead'>".$lang_invite['text_hash_status']."</td><td class='colhead'>".$lang_invite['text_invitee_user']."</td></tr>");
             for ($i = 0; $i < $num1; ++$i)

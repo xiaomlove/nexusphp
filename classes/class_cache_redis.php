@@ -19,10 +19,15 @@ class class_cache_redis {
     public $redis;
 
     function __construct() {
-        $this->connect(); // Connect to Redis
+        $connectResult = $this->connect(); // Connect to Redis
+        if ($connectResult) {
+            $this->isEnabled = true;
+        } else {
+            $this->isEnabled = false;
+        }
     }
 
-    private function connect()
+    private function connect(): bool
     {
         $config = nexus_config('nexus.redis');
         $redis = new Redis();
@@ -47,6 +52,7 @@ class class_cache_redis {
         } else {
             throw new \RuntimeException("Redis connect fail.");
         }
+        return true;
     }
 
     function getIsEnabled() {

@@ -11,7 +11,7 @@ class Setting extends NexusModel
 
     public static function get($name = null, $default = null)
     {
-        $settings = NexusDB::remember("nexus_settings_in_laravel", 10, function () {
+        $settings = NexusDB::remember("nexus_settings_in_laravel", 600, function () {
             return self::getFromDb();
         });
         if (is_null($name)) {

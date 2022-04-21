@@ -284,7 +284,7 @@ function get_setting($name = null, $default = null): mixed
 {
 	static $settings;
 	if (is_null($settings)) {
-        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus", 10, function () {
+        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus", 600, function () {
             //get all settings from database
             return \App\Models\Setting::getFromDb();
         });
