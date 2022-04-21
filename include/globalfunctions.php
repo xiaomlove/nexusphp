@@ -704,22 +704,3 @@ function isIPV6 ($ip)
 {
     return filter_var($ip,FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 }
-
-function count_peer($whereStr, $field = 'peer_id')
-{
-    if (empty($whereStr)) {
-        throw new \InvalidArgumentException("require whereStr");
-    }
-    if (IN_NEXUS) {
-        $sql = "select count(distinct($field)) as counts from peers where $whereStr";
-        $res = sql_query($sql);
-        $count = mysql_fetch_assoc($res);
-        return $count['counts'];
-    } else {
-        $res = \Illuminate\Support\Facades\DB::table('peers')
-            ->whereRaw($whereStr)
-            ->selectRaw("count(distinct($field)) as counts")
-            ->first();
-        return $res->counts;
-    }
-}

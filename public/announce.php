@@ -512,8 +512,8 @@ else
 }
 
 if (isset($event) && !empty($event)) {
-    $updateset[] = 'seeders = ' . count_peer("torrent = $torrentid and to_go = 0");
-    $updateset[] = 'leechers = ' . count_peer("torrent = $torrentid and to_go > 0");
+    $updateset[] = 'seeders = ' . get_row_count("peers", "where torrent = $torrentid and to_go = 0");
+    $updateset[] = 'leechers = ' . get_row_count("peers", "where torrent = $torrentid and to_go > 0");
 }
 
 if (count($updateset)) // Update only when there is change in peer counts
