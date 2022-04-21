@@ -342,9 +342,8 @@ class TrackerRepository extends BaseRepository
         /**
          * @var $user User
          */
-        $user = Cache::remember("user:$field:$value:" . __METHOD__, 60, function () use ($field, $value) {
-            return User::query()->where($field, $value)->first();
-        });
+       $user = User::query()->where($field, $value)->first();
+
         if (!$user) {
             throw new TrackerException("Invalid user $field: $value.");
         }
