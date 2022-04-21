@@ -5513,11 +5513,16 @@ function get_smile($num)
     return $all[$num] ?? null;
 }
 
+/**
+ * Calculate user seed bonus per hour
+ *
+ * @param $uid
+ * @return array
+ * @throws \Nexus\Database\DatabaseException
+ */
 function calculate_seed_bonus($uid): array
 {
     $settingBonus = \App\Models\Setting::get('bonus');
-    $settingMain = \App\Models\Setting::get('main');
-    $autoclean_interval_one = $settingMain['autoclean_interval_one'];
     $donortimes_bonus = $settingBonus['donortimes'];
     $perseeding_bonus = $settingBonus['perseeding'];
     $maxseeding_bonus = $settingBonus['maxseeding'];
@@ -5557,7 +5562,7 @@ function calculate_seed_bonus($uid): array
     }
     if ($count > $maxseeding_bonus)
         $count = $maxseeding_bonus;
-    $all_bonus = $seed_bonus = $seed_points = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
+    $all_bonus = $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
     $is_donor_info = \Nexus\Database\NexusDB::getOne('users', "id = $uid", "donor, donoruntil");
     $is_donor_until = $is_donor_info['donoruntil'];
     $is_donor = $is_donor_info['donor'] == 'yes' && ($is_donor_until === null || $is_donor_until == '0000-00-00 00:00:00' || $is_donor_until >= date('Y-m-d H:i:s'));

@@ -297,8 +297,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //            }
 //			do_log($log);
             $seedBonusResult = calculate_seed_bonus($arr['userid']);
-            $all_bonus = $seedBonusResult['all_bonus'];
-            $seed_points = $seedBonusResult['seed_points'];
+            $dividend = 3600 / $autoclean_interval_one;
+            $all_bonus = $seedBonusResult['all_bonus'] / $dividend;
+            $seed_points = $seedBonusResult['seed_points'] / $dividend;
 			sql_query("update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}");
 		}
 	}
