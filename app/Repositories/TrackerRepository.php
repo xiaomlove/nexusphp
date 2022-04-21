@@ -573,9 +573,9 @@ class TrackerRepository extends BaseRepository
         $lockKeyOriginal = str_replace($key, '', $queryString);
         $lockKey = md5($lockKeyOriginal);
         $startTimestamp = nexus()->getStartTimestamp();
-        do_log("key: $key, queryString: $queryString, lockKeyOriginal: $lockKeyOriginal, startTimestamp: $startTimestamp");
         $redis = Redis::connection()->client();
         $cache = $redis->get($lockKey);
+        do_log("key: $key, queryString: $queryString, lockKeyOriginal: $lockKeyOriginal, startTimestamp: $startTimestamp, cache: $cache");
         if ($cache === false) {
             //new request
             $redis->set($lockKey, $startTimestamp, ['ex' => self::MIN_ANNOUNCE_WAIT_SECOND]);
