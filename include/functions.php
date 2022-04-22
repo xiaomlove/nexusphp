@@ -4614,9 +4614,13 @@ function get_user_class_image($class){
 		"User" => "pic/user.gif",
 		"Peasant" => "pic/peasant.gif"
 	);
-	if (isset($class))
-		$uclass = $UC[get_user_class_name($class,false,false,false)];
-	else $uclass = "pic/banned.gif";
+	if (isset($class)) {
+	    $className = get_user_class_name($class,false,false,false);
+	    $className = strstr($className, '(', true);
+        $uclass = $UC[$className];
+    } else {
+        $uclass = "pic/banned.gif";
+    }
 	return $uclass;
 }
 
