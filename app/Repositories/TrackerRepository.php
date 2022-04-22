@@ -791,6 +791,7 @@ class TrackerRepository extends BaseRepository
         }
         if (!$peer->exists && $isReAnnounce == self::ANNOUNCE_DUAL) {
             do_log('[ANNOUNCE_DUAL_AND_PEER_NOT_EXISTS], return');
+            return;
         }
 
         $nowStr = Carbon::now()->toDateTimeString();
