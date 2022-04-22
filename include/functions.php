@@ -510,7 +510,7 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_SYSOP: {$class_name = $this_lang_functions['text_sysops']; break;}
 		case UC_STAFFLEADER: {$class_name = $this_lang_functions['text_staff_leader']; break;}
 	}
-	if ($class < UC_VIP) {
+	if ($class < UC_VIP && isset($settingAccount["{$class}_alias"])) {
 	    $alias = trim($settingAccount["{$class}_alias"]);
 	    if (!empty($alias)) {
 	        $class_name = sprintf('%s(%s)', $class_name, $alias);

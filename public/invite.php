@@ -7,7 +7,7 @@ parked();
 $id = intval($_GET["id"] ?? 0);
 $type = unesc($_GET["type"] ?? '');
 $menuSelected = $_REQUEST['menu'] ?? 'invitee';
-$pageSize = 20;
+$pageSize = 50;
 
 registration_check('invitesystem',true,false);
 
@@ -132,7 +132,8 @@ if ($type == 'new'){
             }
             print("</form>");
         }
-        print("</table>$pagertop");
+        print("</table>");
+        print("</td></tr></table>$pagertop");
     } elseif ($menuSelected == 'sent') {
         $rul = sql_query("SELECT COUNT(*) FROM invites WHERE inviter =".mysql_real_escape_string($id)) or sqlerr();
         $arre = mysql_fetch_row($rul);
