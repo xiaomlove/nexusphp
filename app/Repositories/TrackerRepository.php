@@ -104,7 +104,7 @@ class TrackerRepository extends BaseRepository
                  * Update: Will not change $peerSelf any more
                  */
                 if ($isReAnnounce == self::ANNOUNCE_FIRST || ($isReAnnounce == self::ANNOUNCE_DUAL && $queries['event'] !== 'stopped')) {
-                    $this->updatePeer($peerSelf, $queries);
+                    $this->updatePeer($peerSelf, $queries, $isReAnnounce);
                 }
 
                 if ($isReAnnounce === self::ANNOUNCE_FIRST) {
@@ -782,12 +782,15 @@ class TrackerRepository extends BaseRepository
         do_log(last_query());
     }
 
-    private function updatePeer(Peer $peer, $queries)
+    private function updatePeer(Peer $peer, $queries, $isReAnnounce)
     {
         if ($queries['event'] == 'stopped') {
             Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->delete();
             do_log(last_query());
             return;
+        }
+        if (!$peer->exists && $isReAnnounce == self::ANNOUNCE_DUAL) {
+            do_log('[ANNOUNCE_DUAL_AND_PEER_NOT_EXISTS], return');
         }
 
         $nowStr = Carbon::now()->toDateTimeString();
