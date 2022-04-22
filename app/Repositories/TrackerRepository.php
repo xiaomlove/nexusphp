@@ -68,9 +68,12 @@ class TrackerRepository extends BaseRepository
             $isReAnnounce = $this->isReAnnounce($request);
             do_log("[IS_RE_ANNOUNCE] $isReAnnounce");
             if ($isReAnnounce < self::ANNOUNCE_DUPLICATE) {
-                /** @var Peer $peerSelf */
-                $peerSelf = $this->checkMinInterval($torrent, $queries, $user);
                 $isPeerExists = true;
+                /** @var Peer $peerSelf */
+                $peerSelf = Peer::query()
+                    ->where('torrent', $torrent->id)
+                    ->where('peer_id', $queries['peer_id'])
+                    ->first();
                 if (!$peerSelf) {
                     $isPeerExists = false;
                     $this->checkPeer($torrent, $queries, $user);
@@ -81,6 +84,8 @@ class TrackerRepository extends BaseRepository
                         'userid' => $user->id,
                         'passkey' => $user->passkey,
                     ]);
+                } elseif ($isReAnnounce == self::ANNOUNCE_FIRST) {
+                    $this->checkMinInterval($peerSelf, $queries);
                 }
                 /**
                  * Note: Must get before update peer!
@@ -98,7 +103,7 @@ class TrackerRepository extends BaseRepository
                  * Note: Must update peer first, otherwise updateTorrent() count peer not correct
                  * Update: Will not change $peerSelf any more
                  */
-                if ($isReAnnounce == self::ANNOUNCE_FIRST || ($isReAnnounce == self::ANNOUNCE_DUPLICATE && $queries['event'] !== 'stopped')) {
+                if ($isReAnnounce == self::ANNOUNCE_FIRST || ($isReAnnounce == self::ANNOUNCE_DUAL && $queries['event'] !== 'stopped')) {
                     $this->updatePeer($peerSelf, $queries);
                 }
 
@@ -451,34 +456,25 @@ class TrackerRepository extends BaseRepository
 
     }
 
+
     /**
-     * @param Torrent $torrent
+     * @param Peer $peer
      * @param $queries
-     * @param User $user
-     * @return \Illuminate\Database\Eloquent\Builder|Model|object|null
      * @throws TrackerException
      */
-    protected function checkMinInterval(Torrent $torrent, $queries, User $user)
+    protected function checkMinInterval(Peer $peer, $queries)
     {
-        $peer = Peer::query()
-            ->where('torrent', $torrent->id)
-            ->where('peer_id', $queries['peer_id'])
-            ->first();
-
-        if ($peer) {
-            $lastAction = $peer->last_action;
-            $isLastActionValidDate = $peer->isValidDate('last_action');
-            $diffInSeconds = Carbon::now()->diffInSeconds($peer->last_action);
-            $min = self::MIN_ANNOUNCE_WAIT_SECOND;
-            do_log(sprintf(
-                'event: %s, last_action: %s, isLastActionValidDate: %s, diffInSeconds: %s',
-                $queries['event'], $lastAction, var_export($isLastActionValidDate, true), $diffInSeconds
-            ));
-            if ($queries['event'] == '' && $isLastActionValidDate && $diffInSeconds < $min) {
-                throw new TrackerException('There is a minimum announce time of ' . $min . ' seconds');
-            }
+        $lastAction = $peer->last_action;
+        $isLastActionValidDate = $peer->isValidDate('last_action');
+        $diffInSeconds = Carbon::now()->diffInSeconds($peer->last_action);
+        $min = self::MIN_ANNOUNCE_WAIT_SECOND;
+        do_log(sprintf(
+            'event: %s, last_action: %s, isLastActionValidDate: %s, diffInSeconds: %s',
+            $queries['event'], $lastAction, var_export($isLastActionValidDate, true), $diffInSeconds
+        ));
+        if ($queries['event'] == '' && $isLastActionValidDate && $diffInSeconds < $min) {
+            throw new TrackerException('There is a minimum announce time of ' . $min . ' seconds');
         }
-        return $peer;
     }
 
     protected function checkCheater(Torrent $torrent, $dataTraffic, User $user, Peer $peer)
