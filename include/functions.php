@@ -1736,7 +1736,7 @@ function get_ip_location($ip)
      * @since 1.7.4
      */
 	$arr = get_ip_location_from_geoip($ip);
-    $result = array($arr["name"], $lang_functions['text_user_ip'] . ":&nbsp;" . $ip);
+    $result = array($arr["name"], $lang_functions['text_user_ip'] . ":&nbsp;" . trim($ip, ','));
 	return $locations[$ip] = $result;
 
 	$cacheKey = "location_$ip";
