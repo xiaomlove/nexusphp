@@ -766,23 +766,19 @@ class TrackerRepository extends BaseRepository
      */
     private function updateTorrent(Torrent $torrent, $queries, bool $isPeerExists)
     {
-        if (empty($queries['event'])) {
-            do_log("no event, return", 'debug');
-            return;
+        if (!empty($queries['event'])) {
+            $torrent->seeders = Peer::query()
+                ->where('torrent', $torrent->id)
+                ->where('to_go', '=',0)
+                ->count();
+
+            $torrent->leechers = Peer::query()
+                ->where('torrent', $torrent->id)
+                ->where('to_go', '>', 0)
+                ->count();
         }
-        $torrent->seeders = Peer::query()
-            ->where('torrent', $torrent->id)
-            ->where('to_go', '=',0)
-            ->count();
-
-        $torrent->leechers = Peer::query()
-            ->where('torrent', $torrent->id)
-            ->where('to_go', '>', 0)
-            ->count();
-
         $torrent->visible = Torrent::VISIBLE_YES;
         $torrent->last_action = Carbon::now();
-
         if ($isPeerExists && $queries['event'] == 'completed') {
             $torrent->times_completed = DB::raw("times_completed + 1");
         }
