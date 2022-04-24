@@ -5,7 +5,6 @@ require ROOT_PATH . 'nexus/Install/install_update_start.php';
 
 $isPost = $_SERVER['REQUEST_METHOD'] == 'POST';
 $update = new \Nexus\Install\Update();
-$update->checkLock(__DIR__);
 $currentStep = $update->currentStep();
 $maxStep = $update->maxStep();
 if (!$update->canAccessStep($currentStep)) {
@@ -230,7 +229,7 @@ if (!empty($error) || (isset($mysqlInfo) && !$mysqlInfo['match'])) {
                 echo '<div class="mb-6">For questions, consult the upgrade log at: <code>' . $update->getLogFile() . '</code></div>';
                 echo '<div class="text-red-500">For security reasons, please delete the following directories</div>';
                 echo '<div class="text-red-500"><code>' . $update->getUpdateDirectory() . '</code></div>';
-                $update->setLock(__DIR__);
+                $update->setLock();
             }
             echo'</div>';
 

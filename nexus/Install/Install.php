@@ -37,11 +37,14 @@ class Install
         ['name' => 'swoole', 'desc' => "If use swoole for Octane, make sure 'current' shows 1"],
     ];
 
+    protected string $lockFile = 'install.lock';
+
     public function __construct()
     {
         if (!session_id()) {
             session_start();
         }
+        $this->checkLock();
         $this->currentStep = min(intval($_REQUEST['step'] ?? 1) ?: 1, count($this->steps) + 1);
     }
 
@@ -639,16 +642,19 @@ class Install
         return compact('version', 'match');
     }
 
-    public function checkLock($path)
+    public function checkLock()
     {
-        if (file_exists("$path/.lock")) {
+        $fullFilename = ROOT_PATH . $this->lockFile;
+        if (file_exists($fullFilename)) {
             die("Locked! Delete .lock file first");
         }
     }
 
-    public function setLock($path)
+    public function setLock()
     {
-        file_put_contents("$path/.lock", "Lock at: " . date('Y-m-d H:i:s'));
+        $fullFilename = ROOT_PATH . $this->lockFile;
+        $res = file_put_contents($fullFilename, "Lock at: " . date('Y-m-d H:i:s'));
+        $this->doLog("set lock at: $fullFilename, result: " . var_export($res, true));
     }
 
 }

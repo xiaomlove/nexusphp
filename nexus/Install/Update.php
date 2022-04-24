@@ -29,6 +29,8 @@ class Update extends Install
 
     protected $steps = ['Env check', 'Get files', 'Update .env',  'Perform updates'];
 
+    protected string $lockFile = 'update.lock';
+
 
     public function getLogFile()
     {
