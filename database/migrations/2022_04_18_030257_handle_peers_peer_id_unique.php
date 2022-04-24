@@ -27,10 +27,12 @@ return new class extends Migration
             DB::statement($sql);
         }
 
-        Schema::table($tableName, function (Blueprint $table) {
-            $table->index(['torrent', 'peer_id']);
-            $table->index('peer_id');
-        });
+        $sql = "alter table peers add index idx_torrent_peer(`torrent`, `peer_id`(20))";
+        DB::statement($sql);
+
+        $sql = "alter table peers add index idx_peer(`peer_id`(20))";
+        DB::statement($sql);
+
     }
 
     /**

@@ -99,6 +99,13 @@ $lang_index = array
 	'row_active_browsing_users' => "当前访问用户数",
 	'row_tracker_active_users' => "当前Tracker用户数",
 	'text_detail' => "详情",
+    'top_uploader_title' => '最多上传(种子数)',
+    'col_counts' => '数量',
+    'col_ranking' => '排名',
+    'top_uploader_toggle_time_range_tab' => '点击切换时间范围',
+    'top_uploader_toggle_time_range_recently' => '最近 30 天',
+    'top_uploader_toggle_time_range_all' => '全部时间',
+
 );
 
 ?>

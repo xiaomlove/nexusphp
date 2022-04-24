@@ -210,20 +210,23 @@ if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"])
 	else $locationinfo = "";
 	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo, 1);
 }
-
-$res = sql_query("SELECT agent, peer_id, ip, port FROM peers WHERE userid = {$user['id']} GROUP BY agent,ip") or sqlerr();
-    $clientselect = "";
+$clientselect = '';
+$res = sql_query("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = {$user['id']} GROUP BY agent") or sqlerr();
 if (mysql_num_rows($res) > 0)
 {
-	$first = true;
+    $clientselect .= "<table border='1' cellspacing='0' cellpadding='5'><tr><td class='colhead'>Agent</td><td class='colhead'>IPV4</td><td class='colhead'>IPV6</td><td class='colhead'>Port</td></tr>";
 	while($arr = mysql_fetch_assoc($res))
 	{
-		$clientselect .= ($first == true ? "" : " ; ") . get_agent($arr["peer_id"], $arr["agent"]);
-		$first = false;
-
-		if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"])
-		$clientselect .= " (" . $arr["ip"] . ":" . $arr["port"] . ")";
+	    $clientselect .= "<tr>";
+		$clientselect .= sprintf('<td>%s</td>', get_agent($arr['peer_id'], $arr['agent']));
+		if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"]) {
+            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'], $arr['ipv6'], $arr['port']);
+        } else {
+            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', '---', '---', '---');
+        }
+        $clientselect .= "</tr>";
 	}
+	$clientselect .= '</table>';
 }
 if ($clientselect)
 	tr_small($lang_userdetails['row_bt_client'], $clientselect, 1);

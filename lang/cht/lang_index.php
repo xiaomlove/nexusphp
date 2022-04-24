@@ -98,6 +98,12 @@ $lang_index = array
 	'row_active_browsing_users' => "當前訪問用戶數",
 	'row_tracker_active_users' => "當前Tracker用戶數",
 	'text_detail' => "詳情",
+    'top_uploader_title' => '最多上傳(種子數)',
+    'col_counts' => '數量',
+    'col_ranking' => '排名',
+    'top_uploader_toggle_time_range_tab' => '點擊切換時間範圍',
+    'top_uploader_toggle_time_range_recently' => '最近 30 天',
+    'top_uploader_toggle_time_range_all' => '全部時間',
 );
 
 ?>

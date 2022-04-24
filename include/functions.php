@@ -2546,7 +2546,7 @@ else {
 		$Cache->cache_value('user_'.$CURUSER["id"].'_outbox_count', $outmessages, 900);
 	}
 	if (!$connect = $Cache->get_value('user_'.$CURUSER["id"].'_connect')){
-		$res3 = sql_query("SELECT connectable FROM peers WHERE userid=" . sqlesc($CURUSER["id"]) . " LIMIT 1");
+		$res3 = sql_query("SELECT connectable FROM peers WHERE userid=" . sqlesc($CURUSER["id"]) . " order by id desc LIMIT 1");
 		if($row = mysql_fetch_row($res3))
 			$connect = $row[0];
 		else $connect = 'unknown';
@@ -3164,9 +3164,9 @@ function writecomment($userid, $comment, $oldModcomment = null) {
     if (is_null($oldModcomment)) {
         $res = sql_query("SELECT modcomment FROM users WHERE id = '$userid'") or sqlerr(__FILE__, __LINE__);
         $arr = mysql_fetch_assoc($res);
-        $modcomment = date("d-m-Y") . " - " . $comment . "" . ($arr['modcomment'] != "" ? "\n" : "") . $arr['modcomment'];
+        $modcomment = date("Y-m-d") . " - " . $comment . "" . ($arr['modcomment'] != "" ? "\n" : "") . $arr['modcomment'];
     } else {
-        $modcomment = date("d-m-Y") . " - " . $comment . "" . ($oldModcomment != "" ? "\n" : "") .$oldModcomment;
+        $modcomment = date("Y-m-d") . " - " . $comment . "" . ($oldModcomment != "" ? "\n" : "") .$oldModcomment;
     }
 	$modcom = sqlesc($modcomment);
     do_log("update user: $userid prepend modcomment: $comment, with oldModcomment: $oldModcomment");

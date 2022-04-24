@@ -107,7 +107,15 @@ class User extends Authenticatable
 
     public function getClassTextAttribute(): string
     {
-        return self::$classes[$this->class]['text'] ?? '';
+        if (!isset(self::$classes[$this->class]['text'])) {
+            return '';
+        }
+        $classText = self::$classes[$this->class]['text'];
+        $alias = Setting::get("account.{$this->class}_alias");
+        if (!empty($alias)) {
+            $classText .= "({$alias})";
+        }
+        return $classText;
     }
 
     public function getDonateStatusAttribute()

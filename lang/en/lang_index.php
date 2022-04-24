@@ -98,6 +98,12 @@ $lang_index = array
 	'row_active_browsing_users' => "Active Browsing Users",
 	'row_tracker_active_users' => "Tracker Active Users",
 	'text_detail' => "Detail",
+    'top_uploader_title' => 'Top Uploader(Torrent count)',
+    'col_counts' => 'Counts',
+    'col_ranking' => 'Ranking',
+    'top_uploader_toggle_time_range_tab' => 'Click to toggle the time range',
+    'top_uploader_toggle_time_range_recently' => 'Last 30 days',
+    'top_uploader_toggle_time_range_all' => 'All time',
 );
 
 ?>

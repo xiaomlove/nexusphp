@@ -607,8 +607,10 @@ function nexus_trans($key, $replace = [], $locale = null)
     $getKey = $locale . "." . $key;
     $result = arr_get($translations, $getKey);
     if (empty($result) && $locale != 'en') {
-        $getKey = "en.$key";
+        $getKey = "en." . $key;
         $result = arr_get($translations, $getKey);
+    } else {
+        do_log("original getKey: $getKey can not get any translations", 'error');
     }
     if (!empty($replace)) {
         $search = array_map(function ($value) {return ":$value";}, array_keys($replace));

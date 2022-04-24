@@ -89,6 +89,7 @@ return array (
     'enable_pt_gen_system' => 'no',
     'enable_technical_info' => 'no',
       'site_language_enabled' => \App\Models\Language::DEFAULT_ENABLED,
+      'show_top_uploader' => 'no',
   ),
   'smtp' =>
   array (
