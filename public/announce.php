@@ -71,6 +71,25 @@ if (!$port || $port > 0xffff)
 if (!ip2long($ip)) //Disable compact announce with IPv6
 	$compact = 0;
 
+$ipv4 = $ipv6 = '';
+if (isIPV4($ip)) {
+    $ipv4 = $ip;
+} elseif (isset($_GET['ipv4']) && isIPV4($_GET['ipv4'])) {
+    $ipv4 = $_GET['ipv4'];
+}
+if (isIPV6($ip)) {
+    $ipv6 = $ip;
+} elseif (isset($_GET['ipv6']) && isIPV6($_GET['ipv6'])) {
+    $ipv6 = $_GET['ipv6'];
+}
+$peerIPV46 = "";
+if ($ipv4) {
+    $peerIPV46 .= ", ipv4 = " . sqlesc($ipv4);
+}
+if ($ipv6) {
+    $peerIPV46 .= ", ipv6 = " . sqlesc($ipv6);
+}
+
 // check port and connectable
 if (portblacklisted($port))
 	err("Port $port is blacklisted.");
@@ -249,7 +268,7 @@ if (!isset($self))
 }
 
 // min announce time
-if(isset($self) && $self['prevts'] > (TIMENOW - $announce_wait)) {
+if(isset($self) && empty($_GET['event']) && $self['prevts'] > (TIMENOW - $announce_wait)) {
     do_log(sprintf(
         'timezone: %s, self prevts(%s, %s) > now(%s, %s) - announce_wait(%s)',
         ini_get('date.timezone'), $self['prevts'], date('Y-m-d H:i:s', $self['prevts']), TIMENOW, date('Y-m-d H:i:s', TIMENOW), $announce_wait
@@ -421,7 +440,7 @@ if (isset($self) && $event == "stopped")
 	sql_query("DELETE FROM peers WHERE $selfwhere") or err("D Err");
 	if (mysql_affected_rows())
 	{
-		$updateset[] = ($self["seeder"] == "yes" ? "seeders = seeders - 1" : "leechers = leechers - 1");
+//		$updateset[] = ($self["seeder"] == "yes" ? "seeders = seeders - 1" : "leechers = leechers - 1");
 		sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 1");
 	}
 }
@@ -436,12 +455,13 @@ elseif(isset($self))
 		$updateset[] = "times_completed = times_completed + 1";
 	}
 
-	sql_query("UPDATE peers SET ip = ".sqlesc($ip).", port = $port, uploaded = $uploaded, downloaded = $downloaded, to_go = $left, prev_action = last_action, last_action = $dt, seeder = '$seeder', agent = ".sqlesc($agent)." $finished WHERE $selfwhere") or err("PL Err 1");
+	sql_query("UPDATE peers SET ip = ".sqlesc($ip).", port = $port, uploaded = $uploaded, downloaded = $downloaded, to_go = $left, prev_action = last_action, last_action = $dt, seeder = '$seeder', agent = ".sqlesc($agent)." $finished $peerIPV46 WHERE $selfwhere") or err("PL Err 1");
 
 	if (mysql_affected_rows())
 	{
 		if ($seeder <> $self["seeder"])
-		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1, leechers = leechers - 1" : "seeders = seeders - 1, leechers = leechers + 1");
+		    //count directly since 1.7.4
+//		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1, leechers = leechers - 1" : "seeders = seeders - 1, leechers = leechers + 1");
 		$snatchInfo = \App\Models\Snatch::query()
             ->where('torrentid', $torrentid)
             ->where('userid', $userid)
@@ -484,14 +504,14 @@ else
                 $connectable = "yes";
                 @fclose($sockres);
             }
-            $insertPeerSql = "INSERT INTO peers (torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey) VALUES ($torrentid, $userid, ".sqlesc($peer_id).", ".sqlesc($ip).", $port, '$connectable', $uploaded, $downloaded, $left, $dt, $dt, '$seeder', ".sqlesc($agent).", $downloaded, $uploaded, ".sqlesc($passkey).")";
+            $insertPeerSql = "INSERT INTO peers (torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey, ipv4, ipv6) VALUES ($torrentid, $userid, ".sqlesc($peer_id).", ".sqlesc($ip).", $port, '$connectable', $uploaded, $downloaded, $left, $dt, $dt, '$seeder', ".sqlesc($agent).", $downloaded, $uploaded, ".sqlesc($passkey).",".sqlesc($ipv4).",".sqlesc($ipv6).")";
             do_log("[INSERT PEER] peer not exists for $selfwhere, do insert with $insertPeerSql");
 
             try {
                 sql_query($insertPeerSql) or err("PL Err 2");
                 if (mysql_affected_rows())
                 {
-                    $updateset[] = ($seeder == "yes" ? "seeders = seeders + 1" : "leechers = leechers + 1");
+//                    $updateset[] = ($seeder == "yes" ? "seeders = seeders + 1" : "leechers = leechers + 1");
 
                     $check = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM snatched WHERE torrentid = $torrentid AND userid = $userid"));
                     if (!$check['0'])

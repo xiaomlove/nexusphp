@@ -682,6 +682,13 @@ function get_hr_ratio($uped, $downed)
     return $ratio;
 }
 
+function get_row_count($table, $suffix = "")
+{
+    $r = sql_query("SELECT COUNT(*) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
+    $a = mysql_fetch_row($r);
+    return $a[0];
+}
+
 function nexus()
 {
     return \Nexus\Nexus::instance();

@@ -33,13 +33,6 @@ function get_langfile_path($script_name ="", $target = false, $lang_folder = "")
 	return "lang/" . ($target == false ? $lang_folder : "_target") ."/lang_". ( $script_name == "" ? substr(strrchr($_SERVER['SCRIPT_NAME'],'/'),1) : $script_name);
 }
 
-function get_row_count($table, $suffix = "")
-{
-	$r = sql_query("SELECT COUNT(*) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
-	$a = mysql_fetch_row($r);
-	return $a[0];
-}
-
 function get_row_sum($table, $field, $suffix = "")
 {
 	$r = sql_query("SELECT SUM($field) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
@@ -1736,7 +1729,7 @@ function get_ip_location($ip)
      * @since 1.7.4
      */
 	$arr = get_ip_location_from_geoip($ip);
-    $result = array($arr["name"], $lang_functions['text_user_ip'] . ":&nbsp;" . trim($ip, ','));
+    $result = array($arr["name"] ?? $lang_functions['text_unknown'], $lang_functions['text_user_ip'] . ":&nbsp;" . trim($ip, ','));
 	return $locations[$ip] = $result;
 
 	$cacheKey = "location_$ip";
