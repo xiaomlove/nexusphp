@@ -93,6 +93,7 @@ function dltable($name, $arr, $torrent)
 }
 	$downloaders = array();
 	$seeders = array();
+	$torrent = \App\Models\Torrent::query()->findOrFail($id, ['id', 'seeders', 'leechers']);
 	$subres = sql_query("SELECT seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id") or sqlerr();
 	while ($subrow = mysql_fetch_array($subres)) {
 	if ($subrow["seeder"] == "yes")
@@ -100,7 +101,16 @@ function dltable($name, $arr, $torrent)
 	else
 		$downloaders[] = $subrow;
 	}
-
+	$seedersCount = count($seeders);
+	$leechersCount = count($downloaders);
+    if ($torrent->seeders != $seedersCount || $torrent->leechers != $leechersCount) {
+        $update = [
+            'seeders' => $seedersCount,
+            'leechers' => $leechersCount,
+        ];
+        $torrent->update($update);
+        do_log("[UPDATE_TORRENT_SEEDERS_LEECHERS], torrent: $id, original: " . $torrent->toJson() . ", update: " . json_encode($update));
+    }
 	function leech_sort($a,$b) {
 		$x = $a["to_go"];
 		$y = $b["to_go"];

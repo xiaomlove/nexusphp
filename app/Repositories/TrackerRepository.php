@@ -758,11 +758,12 @@ class TrackerRepository extends BaseRepository
      *
      * @param Torrent $torrent
      * @param $queries
+     * @param Peer $peer
      * @param bool $isPeerExists
      */
     private function updateTorrent(Torrent $torrent, $queries, bool $isPeerExists)
     {
-        if (!empty($queries['event'])) {
+        if (!empty($queries['event']) || !$isPeerExists) {
             $torrent->seeders = Peer::query()
                 ->where('torrent', $torrent->id)
                 ->where('to_go', '=',0)
