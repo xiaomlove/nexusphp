@@ -3,7 +3,6 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 0);
 require_once __DIR__ . '/constants.php';
 require_once $rootpath . 'vendor/autoload.php';
-ini_set('date.timezone', nexus_config('nexus.timezone'));
 \Nexus\Nexus::boot();
 if (!file_exists($rootpath . '.env')) {
     $installScriptRelativePath = 'install/install.php';
@@ -15,7 +14,7 @@ if (!file_exists($rootpath . '.env')) {
 require $rootpath . 'nexus/Database/helpers.php';
 require $rootpath . 'classes/class_cache_redis.php';
 require $rootpath . 'include/eloquent.php';
-
+ini_set('date.timezone', nexus_config('nexus.timezone'));
 $Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
 require $rootpath . 'include/config.php';
