@@ -126,7 +126,8 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $r = NexusDB::getAll('users', 'id = 1');
+        $today = Carbon::today();
+        $r = $today->endOfMonth();
         dd($r);
     }
 

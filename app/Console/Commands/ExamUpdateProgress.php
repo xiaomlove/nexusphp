@@ -13,7 +13,7 @@ class ExamUpdateProgress extends Command
      *
      * @var string
      */
-    protected $signature = 'exam:update_progress {--uid} {--bulk}';
+    protected $signature = 'exam:update_progress {--uid=} {--bulk=}';
 
     /**
      * The console command description.

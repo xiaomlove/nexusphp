@@ -70,7 +70,7 @@ foreach ($period as $value) {
     }
 }
 $eventStr = json_encode($events);
-$validRangeStr = json_encode(['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')]);
+$validRangeStr = json_encode(['start' => $start->format('Y-m-d'), 'end' => $end->clone()->addDays(1)->format('Y-m-d')]);
 
 $js = <<<EOP
 let events = JSON.parse('$eventStr')
