@@ -95,6 +95,7 @@ class HitAndRunRepository extends BaseRepository
             $query->where('created_at', '<', Carbon::now()->subHours($setting['inspect_time']));
         }
         $successCounts = 0;
+        $disabledUsers = [];
         while (true) {
             $logPrefix = "page: $page, size: $size";
             $rows = $query->forPage($page, $size)->get();
@@ -154,9 +155,10 @@ class HitAndRunRepository extends BaseRepository
 
                 //unreached
                 if ($row->created_at->addHours($setting['inspect_time'])->lte(Carbon::now())) {
-                    $result = $this->unreached($row);
+                    $result = $this->unreached($row, !isset($disabledUsers[$row->uid]));
                     if ($result) {
                         $successCounts++;
+                        $disabledUsers[$row->uid] = true;
                     }
                 }
             }
@@ -239,10 +241,9 @@ class HitAndRunRepository extends BaseRepository
         return true;
     }
 
-    private function unreached(HitAndRun $hitAndRun): bool
+    private function unreached(HitAndRun $hitAndRun, $disableUser = true): bool
     {
-        do_log(__METHOD__);
-
+        do_log(sprintf('hitAndRun: %s, disableUser: %s', $hitAndRun->toJson(), var_export($disableUser, true)));
         $comment = nexus_trans('hr.unreached_comment', [
             'now' => Carbon::now()->toDateTimeString(),
             'seed_time' => bcdiv($hitAndRun->snatch->seedtime, 3600, 1),
@@ -276,6 +277,10 @@ class HitAndRunRepository extends BaseRepository
         ];
         Message::query()->insert($message);
 
+        if (!$disableUser) {
+            do_log("[DO_NOT_DISABLE_USER], return");
+            return true;
+        }
         //disable user
         /** @var User $user */
         $user = $hitAndRun->user;

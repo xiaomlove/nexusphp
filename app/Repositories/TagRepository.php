@@ -72,7 +72,7 @@ class TagRepository extends BaseRepository
                     $value->color, $value->font_color, $value->border_radius, $value->font_size, $value->margin, $value->padding, $value->name
                 );
                 if ($withFilterLink) {
-                    $html .= sprintf('<a href="torrents.php?tag_id=%s">%s</a>', $tagId, $item);
+                    $html .= sprintf('<a href="?tag_id=%s">%s</a>', $tagId, $item);
                 } else {
                     $html .= $item;
                 }
