@@ -2952,6 +2952,7 @@ function deletetorrent($id) {
 	foreach(array("peers", "files", "comments") as $x) {
 		sql_query("DELETE FROM $x WHERE torrent = ".mysql_real_escape_string($id));
 	}
+    sql_query("DELETE FROM hit_and_runs WHERE torrent_id = ".mysql_real_escape_string($id));
 	unlink(getFullDirectory("$torrent_dir/$id.torrent"));
 }
 

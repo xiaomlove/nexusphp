@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Nexus\Database\NexusDB;
 
 class SettingRepository extends BaseRepository
 {
@@ -49,6 +50,8 @@ class SettingRepository extends BaseRepository
         );
         $result = DB::insert($sql);
         do_log("sql: $sql, result: $result");
+        NexusDB::cache_del("nexus_settings_in_laravel");
+        NexusDB::cache_del("nexus_settings_in_nexus");
         return $result;
     }
 

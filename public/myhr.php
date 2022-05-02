@@ -38,7 +38,8 @@ begin_main_frame("", true);
 
 print $filterForm;
 
-$rescount = \App\Models\HitAndRun::query()->where('uid', $userid)->where('status', $status)->count();
+$baseQuery = \App\Models\HitAndRun::query()->where('uid', $userid)->where('status', $status);
+$rescount = (clone $baseQuery)->count();
 list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, "?status=$status");
 print("<table width='100%'>");
 print("<tr>
@@ -54,9 +55,7 @@ print("<tr>
 				</tr>");
 if ($rescount) {
 
-    $query = \App\Models\HitAndRun::query()
-        ->where('uid', $userid)
-        ->where('status', $status)
+    $query = (clone $baseQuery)
         ->with([
             'torrent' => function ($query) {$query->select(['id', 'size', 'name']);},
             'snatch',
@@ -74,12 +73,12 @@ if ($rescount) {
    foreach($list as $row) {
         print("<tr>
 				<td class='rowfollow nowrap' align='center'>" . $row->id . "</td>
-				<td class='rowfollow' align='left'><a href='details.php?id=" . $row->torrent_id . "'>" . $row->torrent->name . "</a></td>
+				<td class='rowfollow' align='left'><a href='details.php?id=" . $row->torrent_id . "'>" . optional($row->torrent)->name . "</a></td>
 				<td class='rowfollow nowrap' align='center'>" . mksize($row->snatch->uploaded) . "</td>
 				<td class='rowfollow nowrap' align='center'>" . mksize($row->snatch->downloaded) . "</td>
 				<td class='rowfollow nowrap' align='center'>" . get_hr_ratio($row->snatch->uploaded, $row->snatch->downloaded) . "</td>
 				<td class='rowfollow nowrap' align='center'>" . ($row->status == \App\Models\HitAndRun::STATUS_INSPECTING ? mkprettytime(3600 * get_setting('hr.seed_time_minimum') - $row->snatch->seedtime) : '---') . "</td>
-				<td class='rowfollow nowrap' align='center'>" . $row->snatch->completedat->toDateTimeString() . "</td>
+				<td class='rowfollow nowrap' align='center'>" . format_datetime($row->snatch->completedat) . "</td>
 				<td class='rowfollow nowrap' align='center' >" . ($row->status == \App\Models\HitAndRun::STATUS_INSPECTING ? mkprettytime(\Carbon\Carbon::now()->diffInSeconds($row->snatch->completedat->addHours(get_setting('hr.inspect_time')))) : '---') . "</td>
                 <td class='rowfollow nowrap' align='left' style='padding-left: 10px'>" . nl2br($row->comment) . "</td>
 				</tr>");
