@@ -187,7 +187,8 @@ class ToolRepository extends BaseRepository
             $smtp['smtpaddress'],
             $smtp['accountname'] ?? null,
             $smtp['accountpassword'] ?? null,
-            $smtp['smtpport'] ?? null
+            $smtp['smtpport'] ?? null,
+            ['verify_peer' => false]
         ));
 
         // Create the Mailer using your created Transport
