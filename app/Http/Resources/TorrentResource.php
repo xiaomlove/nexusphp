@@ -49,9 +49,17 @@ class TorrentResource extends JsonResource
             'thanks' => ThankResource::collection($this->whenLoaded('thanks')),
             'reward_logs' => RewardResource::collection($this->whenLoaded('reward_logs')),
         ];
-        $descriptionArr = format_description($this->descr);
-        $out['cover'] = get_image_from_description($descriptionArr, true);
+        if ($this->cover) {
+            $cover = $this->cover;
+        } else {
+            $descriptionArr = format_description($this->descr);
+            $cover = get_image_from_description($descriptionArr, true);
+        }
+        $out['cover'] = resize_image($cover, 100, 100);
         if ($request->routeIs('torrents.show')) {
+            if (!isset($descriptionArr)) {
+                $descriptionArr = format_description($this->descr);
+            }
             $baseInfo = [
                 ['label' => nexus_trans('torrent.show.size'), 'value' => mksize($this->size)],
             ];

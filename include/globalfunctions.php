@@ -250,12 +250,16 @@ function getLogFile()
 
 function nexus_config($key, $default = null)
 {
+    if (!IN_NEXUS) {
+        return config($key, $default);
+    }
     static $configs;
     if (is_null($configs)) {
         //get all configuration from config file
 //		$files = glob(ROOT_PATH . 'config/*.php');
         $files = [
             ROOT_PATH . 'config/nexus.php',
+            ROOT_PATH . 'config/emoji.php',
         ];
         foreach ($files as $file) {
             $basename = basename($file);

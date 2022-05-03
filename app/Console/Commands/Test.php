@@ -126,8 +126,7 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $today = Carbon::today();
-        $r = $today->endOfMonth();
+        $r = parse_url('https://img9.doubanio.com/view/photo/l_ratio_poster/public/p2867903173.jpg', PHP_URL_SCHEME);
         dd($r);
     }
 

@@ -1195,7 +1195,7 @@ function parse_imdb_id($url)
 	if ($url != "" && preg_match("/[0-9]+/i", $url, $matches)) {
 		return $matches[0];
 	}
-	return false;
+	return '';
 }
 
 function build_imdb_url($imdb_id)
@@ -5046,7 +5046,7 @@ function displayHotAndClassic()
 {
     global $showextinfo, $showmovies, $Cache, $lang_functions;
 
-    if (($showextinfo['imdb'] == 'yes' || get_setting('main.enable_pt_gen_system')) && ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes"))
+    if ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes")
     {
         $imdb = new \Nexus\Imdb\Imdb();
         $type = array('hot', 'classic');
@@ -5059,17 +5059,20 @@ function displayHotAndClassic()
                 {
                     $Cache->add_whole_row();
 
-                    $res = sql_query("SELECT sp_state, url, id, name, small_descr FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND url != '' ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
+                    $res = sql_query("SELECT sp_state, url, id, name, small_descr, cover FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND (url != '' OR cover != '') ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
                     if (mysql_num_rows($res) > 0)
                     {
                         $movies_list = "";
                         $count = 0;
                         $allImdb = array();
+                        $width = 101;
+                        $height = 140;
                         while($array = mysql_fetch_array($res))
                         {
                             $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word');
-                            if ($imdb_id = parse_imdb_id($array["url"]))
-                            {
+                            if (!empty($array['cover'])) {
+                                $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".resize_image($array['cover'], $width, $height)."\" border=\"0\" alt=\"poster\" />";
+                            } elseif ($imdb_id = parse_imdb_id($array["url"])) {
                                 if (array_search($imdb_id, $allImdb) !== false) { //a torrent with the same IMDb url already exists
                                     continue;
                                 }
@@ -5079,13 +5082,14 @@ function displayHotAndClassic()
                                     if (empty($photo_url)) {
                                         do_log("torrent: {$array['id']}, url: {$array['url']}, imdb_id: $imdb_id can not get photo", 'error');
                                     }
-                                    $thumbnail = "<img width=\"101\" height=\"140\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
+                                    $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".resize_image($photo_url, $width, $height)."\" border=\"0\" alt=\"poster\" />";
                                 } catch (\Exception $exception) {
                                     do_log($exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
                                     continue;
                                 }
+                            } else {
+                                continue;
                             }
-                            else continue;
                             $thumbnail = "<a style=\"margin-right: 2px\" href=\"details.php?id=" . $array['id'] . "&amp;hit=1\" onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class=\'big\'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class=\'medium\'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">" . $thumbnail . "</a>";
                             $movies_list .= $thumbnail;
                             $count++;
@@ -5189,7 +5193,7 @@ function strip_all_tags($text)
     //去掉表情
     static $emoji = null;
     if (is_null($emoji)) {
-        $emoji = config('emoji');
+        $emoji = nexus_config('emoji');
     }
 //    $text = preg_replace("/\[em([1-9][0-9]*)\]/isU", "", $text);
     $text = preg_replace_callback("/\[em([1-9][0-9]*)\]/isU", function ($matches) use ($emoji) {
@@ -5306,7 +5310,7 @@ function format_description(string $description)
     return $results;
 }
 
-function get_image_from_description(array $descriptionArr, $first = false)
+function get_image_from_description(array $descriptionArr, $first = false, $useDefault = true)
 {
     $imageType = ['attachment', 'image'];
     $images = [];
@@ -5325,9 +5329,30 @@ function get_image_from_description(array $descriptionArr, $first = false)
         }
     }
     if ($first) {
-        return getSchemeAndHttpHost() . "/pic/imdb_pic/nophoto.gif";
+        if ($useDefault) {
+            return getSchemeAndHttpHost() . "/pic/imdb_pic/nophoto.gif";
+        } else {
+            return '';
+        }
     }
     return $images;
+}
+
+function resize_image($url, $with = null, $height = null, $fit = "cover")
+{
+    $scheme = parse_url($url, PHP_URL_SCHEME);
+    if ($scheme === false) {
+        return $url;
+    }
+    $url = "$scheme://images.weserv.nl/?url=$url";
+    if ($with !== null) {
+        $url .= "&w=$with";
+    }
+    if ($height !== null) {
+        $url .= "&h=$height";
+    }
+    $url .= "&fit=$fit";
+    return $url;
 }
 
 function get_share_ratio($uploaded, $downloaded)

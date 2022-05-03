@@ -302,15 +302,55 @@ if (!is_writable($torrentSavePath)) {
     bark("torrent save path: $torrentSavePath not writeable.");
 }
 
-$ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
-", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc($_POST['pt_gen']) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
-if (!$ret) {
-	if (mysql_errno() == 1062)
-	bark($lang_takeupload['std_torrent_existed']);
-	bark("mysql puked: ".mysql_error());
-	//bark("mysql puked: ".preg_replace_callback('/./s', "hex_esc2", mysql_error()));
-}
-$id = mysql_insert_id();
+/**
+ * get cover
+ * @since 1.7.8
+ */
+$descriptionArr = format_description($descr);
+$cover = get_image_from_description($descriptionArr, true, false);
+$insert = [
+    'filename' => $fname,
+    'owner' => $CURUSER['id'],
+    'visible' => 'yes',
+    'anonymous' => $anonymous,
+    'name' => $torrent,
+    'size' => $totallen,
+    'numfiles' => count($filelist),
+    'type' => $type,
+    'url' => $url,
+    'small_descr' => $small_descr,
+    'descr' => $descr,
+    'ori_descr' => $descr,
+    'category' => $catid,
+    'source' => $sourceid,
+    'medium' => $mediumid,
+    'codec' => $codecid,
+    'audiocodec' => $audiocodecid,
+    'standard' => $standardid,
+    'processing' => $processingid,
+    'team' => $teamid,
+    'save_as' => $dname,
+    'sp_state' => $sp_state,
+    'added' => $dateTimeStringNow,
+    'last_action' => $dateTimeStringNow,
+    'nfo' => $nfo,
+    'info_hash' => $infohash,
+    'pt_gen' => $_POST['pt_gen'] ?? '',
+    'technical_info' => $_POST['technical_info'] ?? '',
+    'cover' => $cover,
+];
+$id = \Nexus\Database\NexusDB::insert('torrents', $insert);
+
+//$ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
+//", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc($_POST['pt_gen']) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
+//if (!$ret) {
+//	if (mysql_errno() == 1062)
+//	bark($lang_takeupload['std_torrent_existed']);
+//	bark("mysql puked: ".mysql_error());
+//	//bark("mysql puked: ".preg_replace_callback('/./s', "hex_esc2", mysql_error()));
+//}
+//$id = mysql_insert_id();
+
 $torrentFilePath = "$torrentSavePath/$id.torrent";
 $saveResult = \Rhilip\Bencode\Bencode::dump($torrentFilePath, $dict);
 if ($saveResult === false) {

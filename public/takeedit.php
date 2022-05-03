@@ -193,11 +193,19 @@ if(get_user_class()>=$torrentmanage_class && ($CURUSER['picker'] == 'yes' || get
         $doRecommend = true;
 	}
     if ($doRecommend) {
+        do_log("[DEL_HOT_CLASSIC_RESOURCES]");
         \Nexus\Database\NexusDB::cache_del("hot_resources");
         \Nexus\Database\NexusDB::cache_del("classic_resources");
     }
 }
 
+/**
+ * get cover
+ * @since 1.7.8
+ */
+$descriptionArr = format_description($descr);
+$cover = get_image_from_description($descriptionArr, true, false);
+$updateset[] = "cover = " . sqlesc($cover);
 
 sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 

@@ -13,7 +13,7 @@ class Torrent extends NexusModel
         'category', 'source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec',
         'size', 'added', 'type', 'numfiles', 'owner', 'nfo', 'sp_state', 'promotion_time_type',
         'promotion_until', 'anonymous', 'url', 'pos_state', 'cache_stamp', 'picktype', 'picktime',
-        'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders',
+        'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders', 'cover',
     ];
 
     private static $globalPromotionState;
@@ -31,7 +31,7 @@ class Torrent extends NexusModel
 
     public static $commentFields = [
         'id', 'name', 'added', 'visible', 'banned', 'owner', 'sp_state', 'pos_state', 'hr', 'picktype', 'picktime',
-        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size'
+        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover'
     ];
 
     public static $basicRelations = [

@@ -150,11 +150,11 @@ class NexusDB
 
     public static function insert($table, $data)
     {
-        if (!IN_NEXUS) {
-            return DB::table($table)->insertGetId($data);
-        }
         if (empty($table) || empty($data) || !is_array($data)) {
             throw new DatabaseException("require table and data(array).");
+        }
+        if (!IN_NEXUS) {
+            return DB::table($table)->insertGetId($data);
         }
         $fields = array_map(function ($value) {return "`$value`";}, array_keys($data));
         $values = array_map(function ($value) {return sqlesc($value);}, array_values($data));
