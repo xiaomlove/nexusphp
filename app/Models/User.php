@@ -69,7 +69,7 @@ class User extends Authenticatable
         self::DONATE_NO => ['text' => 'No'],
     ];
 
-    public static $cardTitles = [
+    public static array $cardTitles = [
         'uploaded_human' => '上传量',
         'downloaded_human' => '下载量',
         'share_ratio' => '分享率',
@@ -78,32 +78,6 @@ class User extends Authenticatable
         'seed_points' => '做种积分',
         'invites' => '邀请',
     ];
-
-    public function mappableAs(): array
-    {
-        return [
-            'id' => 'long',
-            'username' => [
-                'type' => 'text',
-                'analyzer' => 'ik_max_word',
-            ],
-            'email' => [
-                'type' => 'text',
-                'analyzer' => 'ik_max_word',
-            ],
-            'added' => 'date',
-        ];
-    }
-
-    public function toSearchableArray()
-    {
-        return [
-            'id' => $this->id,
-            'username' => $this->username,
-            'email' => $this->email,
-            'added' => $this->added,
-        ];
-    }
 
     public function getClassTextAttribute(): string
     {
@@ -117,20 +91,6 @@ class User extends Authenticatable
         }
         return $classText;
     }
-
-    public function getDonateStatusAttribute()
-    {
-        if (empty($this->donoruntil) || $this->donoruntil == '0000-00-00 00:00:00') {
-            return self::DONATE_NO;
-        }
-        return self::DONATE_YES;
-    }
-
-    public function getSeedPointsAttribute(): string
-    {
-        return $this->seed_points ?? 0;
-    }
-
 
     /**
      * 为数组 / JSON 序列化准备日期。

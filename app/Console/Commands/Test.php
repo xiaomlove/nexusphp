@@ -126,7 +126,10 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $r = parse_url('https://img9.doubanio.com/view/photo/l_ratio_poster/public/p2867903173.jpg', PHP_URL_SCHEME);
+        $database = nexus_env('GEOIP2_DATABASE');
+        $reader = new \GeoIp2\Database\Reader($database);
+        $city = $reader->city("95.211.156.168");
+        $r = $city->country;
         dd($r);
     }
 

@@ -5071,7 +5071,7 @@ function displayHotAndClassic()
                         {
                             $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word');
                             if (!empty($array['cover'])) {
-                                $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".resize_image($array['cover'], $width, $height)."\" border=\"0\" alt=\"poster\" />";
+                                $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".$array['cover']."\" border=\"0\" alt=\"poster\" />";
                             } elseif ($imdb_id = parse_imdb_id($array["url"])) {
                                 if (array_search($imdb_id, $allImdb) !== false) { //a torrent with the same IMDb url already exists
                                     continue;
@@ -5082,7 +5082,7 @@ function displayHotAndClassic()
                                     if (empty($photo_url)) {
                                         do_log("torrent: {$array['id']}, url: {$array['url']}, imdb_id: $imdb_id can not get photo", 'error');
                                     }
-                                    $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".resize_image($photo_url, $width, $height)."\" border=\"0\" alt=\"poster\" />";
+                                    $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
                                 } catch (\Exception $exception) {
                                     do_log($exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
                                     continue;
