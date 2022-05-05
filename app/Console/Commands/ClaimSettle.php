@@ -13,14 +13,14 @@ class ClaimSettle extends Command
      *
      * @var string
      */
-    protected $signature = 'claim:settle {--uid=} {--force=}';
+    protected $signature = 'claim:settle {--uid=} {--force=} {--test=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Claim settle, options: --uid, --force';
+    protected $description = 'Claim settle, options: --uid, --force, --test';
 
     /**
      * Create a new command instance.
