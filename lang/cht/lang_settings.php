@@ -738,6 +738,19 @@ $lang_settings = array
     'row_site_language_enabled' => '站點啟用語言',
     'text_site_language_enabled_note' => '選擇站點啟用的語言',
     'keep_at_least_one' => '至少保留一個',
+    'text_alias' => '等級別名：',
+    'row_default_user_one' => '默認為',
+    'row_default_user_two' => '',
+    'row_show_top_uploader' => '顯示最多上傳(種子數)',
+    'text_show_top_uploader_note' => "默認'否'。在首頁顯示最多上傳的用戶(按種子數計算)。",
+    'claim_label' => '種子認領',
+    'claim_torrent_ttl' => '種子發布 %s 天後可以認領。',
+    'claim_torrent_user_counts_up_limit' => '一個種子最多可以被 %s 個用戶認領。',
+    'claim_user_torrent_counts_up_limit' => '一個用戶最多可以認領 %s 個種子。',
+    'claim_remove_deduct_user_bonus' => '種子不達標時將被刪除並扣除用戶 %s 魔力(非認領首月)。',
+    'claim_give_up_deduct_user_bonus' => '用戶主動放棄認領扣除用戶 %s 魔力。',
+    'claim_reach_standard' => '達標標準：每月做種時間大於等於 %s 小時, 或上傳量大於等於其體積 %s 倍。',
+    'claim_bonus_multiplier' => '計算達標種子魔力獎勵是正常魔力值的 %s 倍。',
 );
 
 ?>

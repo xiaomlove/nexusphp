@@ -150,7 +150,8 @@ elseif($action == 'savesettings_torrent') 	// save account
         'expirefree','expiretwoup','expiretwoupfree','expiretwouphalfleech', 'expirenormal','hotdays','hotseeder','halfleechbecome','freebecome',
         'twoupbecome','twoupfreebecome', 'twouphalfleechbecome','normalbecome','uploaderdouble','deldeadtorrent', 'randomthirtypercentdown',
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
-        'download_support_passkey'
+        'download_support_passkey', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
+        'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded'
     );
 	GetVar($validConfig);
 	$TORRENT = [];
@@ -663,6 +664,17 @@ elseif ($action == 'torrentsettings')
 <li>".$lang_settings['text_normal_will_become']."<select name=normalbecome>".promotion_selection((isset($TORRENT['normalbecome']) ? $TORRENT['normalbecome'] : 1), 0)."</select>".$lang_settings['text_after']."<input type='text' style=\"width: 50px\" name=expirenormal value='".(isset($TORRENT["expirenormal"]) ? $TORRENT["expirenormal"] : 0 )."'>".$lang_settings['text_normal_timeout_default']."</li>
 
 </ul>".$lang_settings['text_promotion_timeout_note_two'], 1);
+
+    tr($lang_settings['claim_label'], "<ul>
+<li>".sprintf($lang_settings['claim_torrent_ttl'], sprintf('<input type="number" name="claim_torrent_ttl" value="%s" style="width: 50px"/>', $TORRENT['claim_torrent_ttl'] ?? \App\Models\Claim::TORRENT_TTL))."</li>
+<li>".sprintf($lang_settings['claim_torrent_user_counts_up_limit'], sprintf('<input type="number" name="claim_torrent_user_counts_up_limit" value="%s" style="width: 50px"/>', $TORRENT['claim_torrent_user_counts_up_limit'] ?? \App\Models\Claim::USER_UP_LIMIT))."</li>
+<li>".sprintf($lang_settings['claim_user_torrent_counts_up_limit'], sprintf('<input type="number" name="claim_user_torrent_counts_up_limit" value="%s" style="width: 50px"/>', $TORRENT['claim_user_torrent_counts_up_limit'] ?? \App\Models\Claim::TORRENT_UP_LIMIT))."</li>
+<li>".sprintf($lang_settings['claim_remove_deduct_user_bonus'], sprintf('<input type="number" name="claim_remove_deduct_user_bonus" value="%s" style="width: 50px"/>', $TORRENT['claim_remove_deduct_user_bonus'] ?? \App\Models\Claim::REMOVE_DEDUCT))."</li>
+<li>".sprintf($lang_settings['claim_give_up_deduct_user_bonus'], sprintf('<input type="number" name="claim_give_up_deduct_user_bonus" value="%s" style="width: 50px"/>', $TORRENT['claim_give_up_deduct_user_bonus'] ?? \App\Models\Claim::GIVE_UP_DEDUCT))."</li>
+<li>".sprintf($lang_settings['claim_bonus_multiplier'], sprintf('<input type="number" name="claim_bonus_multiplier" value="%s" style="width: 50px"/>', $TORRENT['claim_bonus_multiplier'] ?? \App\Models\Claim::BONUS_MULTIPLIER))."</li>
+<li>".sprintf($lang_settings['claim_reach_standard'], sprintf('<input type="number" name="claim_reach_standard_seed_time" value="%s" style="width: 50px"/>', $TORRENT['claim_reach_standard_seed_time'] ?? \App\Models\Claim::STANDARD_SEED_TIME_HOURS), sprintf('<input type="number" name="claim_reach_standard_uploaded" value="%s" style="width: 50px"/>', $TORRENT['claim_reach_standard_uploaded'] ?? \App\Models\Claim::STANDARD_UPLOADED_TIMES))."</li>
+</ul>", 1);
+
 	tr($lang_settings['row_auto_pick_hot'], $lang_settings['text_torrents_uploaded_within']."<input type='text' style=\"width: 50px\" name=hotdays value='".(isset($TORRENT["hotdays"]) ? $TORRENT["hotdays"] : 7 )."'>".$lang_settings['text_days_with_more_than']."<input type='text' style=\"width: 50px\" name=hotseeder value='".(isset($TORRENT["hotseeder"]) ? $TORRENT["hotseeder"] : 10 )."'>".$lang_settings['text_be_picked_as_hot']."<br />".$lang_settings['text_auto_pick_hot_default'], 1);
 	tr($lang_settings['row_uploader_get_double'], $lang_settings['text_torrent_uploader_gets']."<input type='text' style=\"width: 50px\" name=uploaderdouble value='".(isset($TORRENT["uploaderdouble"]) ? $TORRENT["uploaderdouble"] : 1 )."'>".$lang_settings['text_times_uploading_credit'].$lang_settings['text_uploader_get_double_default'], 1);
 	tr($lang_settings['row_delete_dead_torrents'], $lang_settings['text_torrents_being_dead_for']."<input type='text' style=\"width: 50px\" name=deldeadtorrent value='".(isset($TORRENT["deldeadtorrent"]) ? $TORRENT["deldeadtorrent"] : 0 )."'>".$lang_settings['text_days_be_deleted']."<br />".$lang_settings['row_delete_dead_torrents_note'], 1);

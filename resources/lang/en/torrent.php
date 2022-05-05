@@ -38,4 +38,8 @@ return [
         'classic' => 'Classic',
         'recommended' => 'Recommend',
     ],
+    'claim_already' => 'Claimed already',
+    'no_snatch' => 'Never download this torrent yet',
+    'can_no_be_claimed_yet' => 'Can not be claimed yet',
+    'claim_number_reach_maximum' => 'The maximum number of torrent claimed is reached',
 ];

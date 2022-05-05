@@ -297,8 +297,8 @@ $lang_functions = array
 	'text_thirty_percent_down' => "30%",
 	'text_please_download_something_within' => "Please download something within ",
 	'text_inactive_account_be_deleted' => ". Inactive accounts (with no transfer amount) will be deleted.",
-	'text_attendance' => 'Attend get bouns',
-	'text_attended' => '(Attend got bouns %u, card:%d)',
+	'text_attendance' => '[Attend get bouns]',
+	'text_attended' => '[Attend got bouns %u, card:%d]',
 	'row_pt_gen_douban_url' => "PT-Gen douban link",
 	'text_pt_gen_douban_url_note' => "(URL taken from <strong><a href=\"https://www.douban.com/\">douban</a></strong>. e.g.&nbsp;for movie <b>Transformers</b> the URL is <b> https://movie.douban.com/subject/1794171//</b>)",
 	'row_pt_gen_imdb_url' => "PT-Gen imdb link",
@@ -324,6 +324,7 @@ $lang_functions = array
     'text_seed_points' => 'Seed points',
     'spoiler_expand_collapse' => 'Click to expand/collapse',
     'spoiler_default_title' => 'Collapse content',
+    'menu_claim' => 'Claim: ',
 );
 
 ?>

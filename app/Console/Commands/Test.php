@@ -126,11 +126,9 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $database = nexus_env('GEOIP2_DATABASE');
-        $reader = new \GeoIp2\Database\Reader($database);
-        $city = $reader->city("95.211.156.168");
-        $r = $city->country;
-        dd($r);
+        $arr = [1,2];
+        $r = collect($arr)->map(fn($item) => $item * 2)->implode(',');
+        dd($r, $arr);
     }
 
 

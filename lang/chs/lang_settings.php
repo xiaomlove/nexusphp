@@ -744,6 +744,14 @@ $lang_settings = array
     'row_default_user_two' => '',
     'row_show_top_uploader' => '显示最多上传(种子数)',
     'text_show_top_uploader_note' => "默认'否'。在首页显示最多上传的用户(按种子数计算)。",
+    'claim_label' => '种子认领',
+    'claim_torrent_ttl' => '种子发布 %s 天后可以认领。',
+    'claim_torrent_user_counts_up_limit' => '一个种子最多可以被 %s 个用户认领。',
+    'claim_user_torrent_counts_up_limit' => '一个用户最多可以认领 %s 个种子。',
+    'claim_remove_deduct_user_bonus' => '种子不达标时将被删除并扣除用户 %s 魔力(非认领首月)。',
+    'claim_give_up_deduct_user_bonus' => '用户主动放弃认领扣除用户 %s 魔力。',
+    'claim_reach_standard' => '达标标准：每月做种时间大于等于 %s 小时, 或上传量大于等于其体积 %s 倍。',
+    'claim_bonus_multiplier' => '计算达标种子魔力奖励是正常魔力值的 %s 倍。',
 );
 
 ?>

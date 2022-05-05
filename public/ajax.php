@@ -47,3 +47,17 @@ function getPtGen($params)
     }
 }
 
+function addClaim($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\ClaimRepository();
+    return $rep->store($CURUSER['id'], $params['torrent_id']);
+}
+
+function removeClaim($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\ClaimRepository();
+    return $rep->delete($params['id'], $CURUSER['id']);
+}
+

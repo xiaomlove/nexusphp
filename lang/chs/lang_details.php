@@ -231,6 +231,12 @@ $lang_details = array
     'magic_show_all_description' => '查看详单',
     'magic_haveGotBonus' => '目前发布人已获得Number个魔力值奖励。',
     'magic_have_no_enough_bonus_value' => '需要更多魔力值。',
+    'claim_already' => '已认领',
+    'claim_now' => '认领',
+    'claim_info' => '已被 <b>%s</b> 个用户认领，剩余 <b>%s</b> 个名额。',
+    'claim_detail' => '认领详情',
+    'claim_label' => '认领种子',
+    'claim_confirm' => '确定要认领此种子吗？',
 );
 
 ?>

@@ -132,7 +132,52 @@ if (!$row) {
 			$download = "<a title=\"".$lang_details['title_download_torrent']."\" href=\"download.php?id=".$id."\"><img class=\"dt_download\" src=\"pic/trans.gif\" alt=\"download\" />&nbsp;<b><font class=\"small\">".$lang_details['text_download_torrent']."</font></b></a>&nbsp;|&nbsp;";
 		else $download = "";
 
-		tr($lang_details['row_action'], $download. ($owned == 1 ? "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_details['text_edit_torrent'] . "</font></b></a>&nbsp;|&nbsp;" : "").  (get_user_class() >= $askreseed_class && $row['seeders'] == 0 ? "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>&nbsp;|&nbsp;" : "") . "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>", 1);
+		tr(
+		    $lang_details['row_action'],
+            $download.($owned == 1 ? "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_details['text_edit_torrent'] . "</font></b></a>&nbsp;|&nbsp;" : "")
+            .(get_user_class() >= $askreseed_class && $row['seeders'] == 0 ? "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>&nbsp;|&nbsp;" : "")
+            ."<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>"
+            , 1
+        );
+
+        // ------------- start claim block ------------------//
+        $claimTorrentTTL = \App\Models\Claim::getConfigTorrentTTL();
+        if (\Carbon\Carbon::parse($row['added'])->addDays($claimTorrentTTL)->lte(\Carbon\Carbon::now())) {
+            $baseClaimQuery = \App\Models\Claim::query()->where('torrent_id', $id);
+            $claimCounts = (clone $baseClaimQuery)->count();
+            $isClaimed = (clone $baseClaimQuery)->where('uid', $CURUSER['id'])->exists();
+            if ($isClaimed) {
+                $inputValue = $lang_details['claim_already'];
+                $disabled = ' disabled';
+            } else {
+                $inputValue = $lang_details['claim_now'];
+                $disabled = '';
+                $claimJs = <<<JS
+jQuery('#add-claim').on('click', function () {
+    if (!window.confirm('{$lang_details['claim_confirm']}')) {
+        return
+    }
+    let params = {action: "addClaim", params: {"torrent_id": jQuery(this).attr('data-torrent_id')}}
+    jQuery.post("ajax.php", params, function (response) {
+        console.log(response)
+        if (response.ret != 0) {
+            alert(response.msg)
+        } else {
+            window.location.reload()
+        }
+    }, 'json')
+})
+JS;
+                \Nexus\Nexus::js($claimJs, 'footer', false);
+            }
+            $maxUserCounts = get_setting('torrent.claim_torrent_user_counts_up_limit', \App\Models\Claim::USER_UP_LIMIT);
+            $y = sprintf('<input type="button" value="%s" id="add-claim" data-torrent_id="%s"%s>', $inputValue, $id, $disabled);
+            $y .= sprintf('&nbsp;' . $lang_details['claim_info'], $claimCounts, bcsub($maxUserCounts, $claimCounts));
+            $y .= sprintf('&nbsp;<b><a href="claim.php?torrent_id=%s">'.$lang_details['claim_detail'].'</a></b>', $id);
+            tr($lang_details['claim_label'], $y, 1);
+        }
+        // ------------- end claim block ------------------//
+
         tr($lang_details['torrent_dl_url'],sprintf('<a title="%s" href="%s/download.php?downhash=%s|%s">%s</a>',$lang_details['torrent_dl_url_notice'], getSchemeAndHttpHost(), $CURUSER['id'], $torrentRep->encryptDownHash($row['id'], $CURUSER), $lang_details['torrent_dl_url_text']),1);
 
 		// ---------------- start subtitle block -------------------//

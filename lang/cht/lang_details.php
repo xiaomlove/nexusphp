@@ -230,6 +230,12 @@ $lang_details = array
     'magic_show_all_description' => '查看詳單',
     'magic_haveGotBonus' => '目前發佈人已獲得Number個魔力值獎勵。',
     'magic_have_no_enough_bonus_value' => '需要更多魔力值。',
+    'claim_already' => '已認領',
+    'claim_now' => '認領',
+    'claim_info' => '已被 <b>%s</b> 個用戶認領，剩余 <b>%s</b> 個名額。',
+    'claim_detail' => '認領詳情',
+    'claim_label' => '認領種子',
+    'claim_confirm' => '確定要認領此種子嗎？',
 );
 
 ?>

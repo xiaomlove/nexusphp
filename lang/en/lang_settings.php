@@ -738,6 +738,19 @@ $lang_settings = array
     'row_site_language_enabled' => 'Site enabled language',
     'text_site_language_enabled_note' => 'Select site enabled language',
     'keep_at_least_one' => 'Keep at least one',
+    'text_alias' => 'Class alias: ',
+    'row_default_user_one' => 'Default is',
+    'row_default_user_two' => '',
+    'row_show_top_uploader' => 'Show top uploaded(Torrent count)',
+    'text_show_top_uploader_note' => "Default 'No'. Show top upload user(Torrent count) at homepage.",
+    'claim_label' => 'Torrent claim',
+    'claim_torrent_ttl' => 'Torrent can be claimed after %s of days of release.',
+    'claim_torrent_user_counts_up_limit' => 'A Torrent can be claimed by up to %s of users.',
+    'claim_user_torrent_counts_up_limit' => 'A user can claim up to %s of torrents.',
+    'claim_remove_deduct_user_bonus' => "Claimed torrent will be deleted and %s of the user's bonus will be deducted if they do not meet the standard (not the first month of claiming).",
+    'claim_give_up_deduct_user_bonus' => 'User actively gives up claiming deduct user %s bonus.',
+    'claim_reach_standard' => 'Standard: Monthly seeding time greater than or equal to %s of hours, or uploaded greater than or equal to %s times its size.',
+    'claim_bonus_multiplier' => 'Calculate %s times the normal bonus value of the attained seed bonus.',
 );
 
 ?>

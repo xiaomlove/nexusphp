@@ -230,6 +230,12 @@ $lang_details = array
     'magic_show_all_description' => 'View details of a single',
     'magic_haveGotBonus' => 'Publisher now has been got Number Bonus of award.',
     'magic_have_no_enough_bonus_value' => 'more points needed',
+    'claim_already' => 'Claimed',
+    'claim_now' => 'Claim',
+    'claim_info' => 'Already claimed by <b>%s</b> users, <b>%s</b> place left.',
+    'claim_detail' => 'Claim detail',
+    'claim_label' => 'Claim torrent',
+    'claim_confirm' => 'Are you sure to claim this torrent?',
 
 );
 

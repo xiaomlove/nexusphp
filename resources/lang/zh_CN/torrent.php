@@ -38,4 +38,8 @@ return [
         'classic' => '经典',
         'recommended' => '推荐',
     ],
+    'claim_already' => '此种子已经认领',
+    'no_snatch' => '没有下载过此种子',
+    'can_no_be_claimed_yet' => '还不能被认领',
+    'claim_number_reach_maximum' => '认领种子数达到上限',
 ];

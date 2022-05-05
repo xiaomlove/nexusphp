@@ -295,8 +295,8 @@ $lang_functions = array
 	'text_thirty_percent_down' => "30%",
 	'text_please_download_something_within' => "请在",
 	'text_inactive_account_be_deleted' => "内做些下载。没有流量的用户会被删除账号。",
-	'text_attendance' => '签到得魔力',
-	'text_attended' => '(签到已得%u, 补签卡:%d)',
+	'text_attendance' => '[签到得魔力]',
+	'text_attended' => '[签到已得%u, 补签卡:%d]',
 	'imdb_cache_dir_can_not_create' => 'imdb 缓存目录无法创建',
 	'imdb_cache_dir_is_not_writeable' => 'imdb 缓存目录不可写',
 	'imdb_photo_dir_can_not_create' => 'imdb 图片目录无法创建',
@@ -316,6 +316,7 @@ $lang_functions = array
     'text_seed_points' => '做种积分',
     'spoiler_expand_collapse' => '点击展开/收缩',
     'spoiler_default_title' => '折叠内容',
+    'menu_claim' => '认领: ',
 );
 
 ?>

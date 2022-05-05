@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Exceptions\NexusException;
 use App\Models\AudioCodec;
 use App\Models\Category;
+use App\Models\Claim;
 use App\Models\Codec;
 use App\Models\HitAndRun;
 use App\Models\Media;

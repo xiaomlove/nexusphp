@@ -322,6 +322,14 @@ return array (
     'minvotes' => '10',
     'sticky_first_level_background_color' => '#89c9e6',
     'sticky_second_level_background_color' => '#aadbf3',
+      'claim_torrent_ttl' => \App\Models\Claim::TORRENT_TTL,
+      'claim_torrent_user_counts_up_limit' => \App\Models\Claim::USER_UP_LIMIT,
+      'claim_user_torrent_counts_up_limit' => \App\Models\Claim::TORRENT_UP_LIMIT,
+      'claim_remove_deduct_user_bonus' => \App\Models\Claim::REMOVE_DEDUCT,
+      'claim_give_up_deduct_user_bonus' => \App\Models\Claim::GIVE_UP_DEDUCT,
+      'claim_bonus_multiplier' => \App\Models\Claim::BONUS_MULTIPLIER,
+      'claim_reach_standard_seed_time' => \App\Models\Claim::STANDARD_SEED_TIME_HOURS,
+      'claim_reach_standard_uploaded' => \App\Models\Claim::STANDARD_UPLOADED_TIMES,
   ),
   'attachment' =>
   array (

@@ -2598,6 +2598,7 @@ else {
                 <font class='color_active'><?php echo $lang_functions['text_active_torrents'] ?></font> <img class="arrowup" alt="Torrents seeding" title="<?php echo $lang_functions['title_torrents_seeding'] ?>" src="pic/trans.gif" /><?php echo $activeseed?>  <img class="arrowdown" alt="Torrents leeching" title="<?php echo $lang_functions['title_torrents_leeching'] ?>" src="pic/trans.gif" /><?php echo $activeleech?>&nbsp;&nbsp;
                 <font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?>
                 <?php if(\App\Models\HitAndRun::getIsEnabled()) { ?><font class='color_bonus'>H&R: </font> <?php echo sprintf('[<a href="myhr.php">%s</a>]', (new \App\Repositories\HitAndRunRepository())->getStatusStats($CURUSER['id']))?><?php }?>
+                <font class='color_bonus'><?php echo $lang_functions['menu_claim']?></font> <?php echo sprintf('[<a href="claim.php?uid=%s">%s</a>]', $CURUSER['id'], (new \App\Repositories\ClaimRepository())->getStats($CURUSER['id']))?>
                 <?php if(get_user_class() >= UC_SYSOP) { ?> [<a href="/admin" target="_blank"><?php echo $lang_functions['text_management_system'] ?></a>]<?php }?>
             </span>
         </td>
@@ -2953,6 +2954,7 @@ function deletetorrent($id) {
 		sql_query("DELETE FROM $x WHERE torrent = ".mysql_real_escape_string($id));
 	}
     sql_query("DELETE FROM hit_and_runs WHERE torrent_id = ".mysql_real_escape_string($id));
+    sql_query("DELETE FROM claims WHERE torrent_id = ".mysql_real_escape_string($id));
 	unlink(getFullDirectory("$torrent_dir/$id.torrent"));
 }
 
@@ -5542,10 +5544,11 @@ function get_smile($num)
  * Calculate user seed bonus per hour
  *
  * @param $uid
+ * @param $torrentIdArr
  * @return array
  * @throws \Nexus\Database\DatabaseException
  */
-function calculate_seed_bonus($uid): array
+function calculate_seed_bonus($uid, $torrentIdArr = null): array
 {
     $settingBonus = \App\Models\Setting::get('bonus');
     $donortimes_bonus = $settingBonus['donortimes'];
@@ -5567,9 +5570,15 @@ function calculate_seed_bonus($uid): array
 
     $A = 0;
     $count = $torrent_peer_count = 0;
-    $logPrefix = "[CALCULATE_SEED_BONUS], uid: $uid";
-
-    $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
+    $logPrefix = "[CALCULATE_SEED_BONUS], uid: $uid, torrentIdArr: " . json_encode($torrentIdArr);
+    $whereTorrent = '';
+    if ($torrentIdArr !== null) {
+        if (empty($torrentIdArr)) {
+            $torrentIdArr = [-1];
+        }
+        $whereTorrent = sprintf("and peers.torrent in (%s)", implode(',', $torrentIdArr));
+    }
+    $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' $whereTorrent group by peers.torrent, peers.peer_id";
     $torrentResult = \Nexus\Database\NexusDB::select($sql);
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult));
     foreach ($torrentResult as $torrent)
