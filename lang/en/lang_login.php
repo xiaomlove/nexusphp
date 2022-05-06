@@ -34,6 +34,7 @@ $lang_login = array
 	'head_login' => "Login",
     'rowhead_two_step_code' => 'Two-Factor Authentication',
     'two_step_code_tooltip' => 'If enabled must be filled in',
+    'text_complain' => 'Complaint Channel',
 );
 
 ?>

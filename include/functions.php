@@ -455,7 +455,7 @@ function highlight($search,$subject,$hlstart='<b><font class="striking">',$hlend
 function get_user_class()
 {
 	global $CURUSER;
-	return $CURUSER["class"];
+	return $CURUSER["class"] ?? '';
 }
 
 function get_user_class_name($class, $compact = false, $b_colored = false, $I18N = false)
@@ -1692,7 +1692,7 @@ function check_code ($imagehash, $imagestring, $where = 'signup.php',$maxattempt
 		mysql_real_escape_string($imagehash));
 		sql_query($delete);
 		if (!$maxattemptlog)
-		bark($lang_functions['std_invalid_image_code']."<a href=\"".htmlspecialchars($where)."\">".$lang_functions['std_here_to_request_new']);
+		stderr('Error',$lang_functions['std_invalid_image_code']."<a href=\"".htmlspecialchars($where)."\">".$lang_functions['std_here_to_request_new'], false);
 		else
 		failedlogins($lang_functions['std_invalid_image_code']."<a href=\"".htmlspecialchars($where)."\">".$lang_functions['std_here_to_request_new'],true,$head);
 	}else{
@@ -2706,6 +2706,12 @@ if ($msgalert)
 
 	if (get_user_class() >= $staffmem_class)
 	{
+        if(($complaints = $Cache->get_value('COMPLAINTS_COUNT_CACHE')) === false){
+            $complaints = get_row_count('complains', 'WHERE answered = 0');
+            $Cache->cache_value('COMPLAINTS_COUNT_CACHE', $complaints, 600);
+        }
+        if($complaints) msgalert('complains.php?action=list', sprintf($lang_functions['text_complains'], is_or_are($complaints), $complaints, add_s($complaints)), 'darkred');
+
 		$numreports = $Cache->get_value('staff_new_report_count');
 		if ($numreports == ""){
 			$numreports = get_row_count("reports","WHERE dealtwith=0");
@@ -3970,7 +3976,7 @@ function permissiondenied(){
 
 function gettime($time, $withago = true, $twoline = false, $forceago = false, $oneunit = false, $isfuturetime = false){
 	global $lang_functions, $CURUSER;
-	if ($CURUSER['timetype'] != 'timealive' && !$forceago){
+	if (isset($CURUSER) && $CURUSER['timetype'] != 'timealive' && !$forceago){
 		$newtime = $time;
 		if ($twoline){
 		$newtime = str_replace(" ", "<br />", $newtime);
@@ -5368,6 +5374,17 @@ function get_share_ratio($uploaded, $downloaded)
         $ratio = '---';
     }
     return $ratio;
+}
+
+function EchoRow($class = ''){
+    if(func_num_args() < 2) return '<tr></tr>';
+    $args = func_get_args();
+    $cells = array_splice($args, 1);
+    $class = empty($class) ? '' : sprintf(' class="%s"', $class);
+    $s = '<tr>';
+    foreach($cells as $cell) $s .= sprintf('<td%s>%s</td>', $class, $cell);
+    $s .= "</tr>\n";
+    return $s;
 }
 
 function list_require_search_box_id()

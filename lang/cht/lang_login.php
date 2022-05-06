@@ -34,5 +34,6 @@ $lang_login = array
 	'head_login' => "登錄",
     'rowhead_two_step_code' => '兩步驗證',
     'two_step_code_tooltip' => '如有設置必須填寫',
+    'text_complain' => '申訴通道',
 );
 ?>

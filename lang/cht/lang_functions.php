@@ -324,6 +324,7 @@ $lang_functions = array
     'spoiler_expand_collapse' => '點擊展開/收縮',
     'spoiler_default_title' => '折疊內容',
     'menu_claim' => '認領: ',
+    'text_complains' => '有%s%u個待處理的申述%s',
 );
 
 ?>

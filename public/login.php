@@ -86,6 +86,7 @@ if (isset($returnto))
 
 ?>
 </form>
+<p>[<b><a href="complains.php"><?= $lang_login['text_complain'] ?></a></b>]</p>
 <p><?php echo $lang_login['p_no_account_signup']?></p>
 <?php
 if ($smtptype != 'none'){
