@@ -5588,14 +5588,15 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $A = 0;
     $count = $torrent_peer_count = 0;
     $logPrefix = "[CALCULATE_SEED_BONUS], uid: $uid, torrentIdArr: " . json_encode($torrentIdArr);
-    $whereTorrent = '';
     if ($torrentIdArr !== null) {
         if (empty($torrentIdArr)) {
             $torrentIdArr = [-1];
         }
-        $whereTorrent = sprintf("and peers.torrent in (%s)", implode(',', $torrentIdArr));
+        $idStr = implode(',', \Illuminate\Support\Arr::wrap($torrentIdArr));
+        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID from torrents  WHERE id in ($idStr)";
+    } else {
+        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
     }
-    $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' $whereTorrent group by peers.torrent, peers.peer_id";
     $torrentResult = \Nexus\Database\NexusDB::select($sql);
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult));
     foreach ($torrentResult as $torrent)

@@ -134,7 +134,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     <tr><td class="rowhead"><?php echo $lang_complains['text_new_email']?></td><td class="rowfollow" align="left"><input type="email" name="email" style="width: 180px; border: 1px solid gray" /></td></tr>
                     <tr><td class="rowhead"><?php echo $lang_complains['text_new_body']?></td><td class="rowfollow" align="left"><textarea name="body" style="width: 200px; height: 250px" placeholder="<?= $lang_complains['text_new_body_placeholder'] ?>"></textarea></td></tr>
                     <?php show_image_code (); ?>
-                    <tr><td class="toolbox" colspan="2" align="right"><input type="submit" value="<?= $lang_complains['text_new_submit']?>" class="btn" /></td></tr>
+                    <tr><td class="toolbox" colspan="2" align="center"><input type="submit" value="<?= $lang_complains['text_new_submit']?>" class="btn" /></td></tr>
                 </table>
             </form>
             <?php
