@@ -142,7 +142,7 @@ if (!$row) {
 
         // ------------- start claim block ------------------//
         $claimTorrentTTL = \App\Models\Claim::getConfigTorrentTTL();
-        if (\Carbon\Carbon::parse($row['added'])->addDays($claimTorrentTTL)->lte(\Carbon\Carbon::now())) {
+        if (\App\Models\Claim::getConfigIsEnabled() && \Carbon\Carbon::parse($row['added'])->addDays($claimTorrentTTL)->lte(\Carbon\Carbon::now())) {
             $baseClaimQuery = \App\Models\Claim::query()->where('torrent_id', $id);
             $claimCounts = (clone $baseClaimQuery)->count();
             $isClaimed = (clone $baseClaimQuery)->where('uid', $CURUSER['id'])->exists();

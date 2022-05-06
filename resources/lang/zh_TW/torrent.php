@@ -41,5 +41,7 @@ return [
     'claim_already' => '此種子已經認領',
     'no_snatch' => '沒有下載過此種子',
     'can_no_be_claimed_yet' => '還不能被認領',
-    'claim_number_reach_maximum' => '認領種子數達到上限',
+    'claim_number_reach_user_maximum' => '認領達到人數上限',
+    'claim_number_reach_torrent_maximum' => '認領達到種子數上限',
+    'claim_disabled' => '認領未啟用',
 ];

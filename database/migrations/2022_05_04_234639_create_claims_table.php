@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('claims')) {
+            return;
+        }
         Schema::create('claims', function (Blueprint $table) {
             $table->id();
             $table->integer('uid');
@@ -20,7 +23,7 @@ return new class extends Migration
             $table->integer('snatched_id')->index();
             $table->bigInteger('seed_time_begin')->default(0);
             $table->bigInteger('uploaded_begin')->default(0);
-            $table->dateTime('last_settle_at')->nullable();
+            $table->dateTime('last_settle_at')->nullable()->index();
             $table->timestamps();
             $table->unique(['uid', 'torrent_id']);
         });

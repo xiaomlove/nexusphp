@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Repositories\ClaimRepository;
-use App\Repositories\ExamRepository;
 use Illuminate\Console\Command;
 
 class ClaimSettle extends Command

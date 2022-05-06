@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,14 +25,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('exam:assign_cronjob')->everyMinute();
-        $schedule->command('exam:checkout_cronjob')->everyMinute();
-        $schedule->command('exam:update_progress --bulk=1')->hourly();
-        $schedule->command('backup:cronjob')->everyMinute();
-        $schedule->command('hr:update_status')->everyMinute();
-        $schedule->command('hr:update_status --ignore_time=1')->hourly();
+        $schedule->command('exam:assign_cronjob')->everyMinute()->withoutOverlapping();
+        $schedule->command('exam:checkout_cronjob')->everyMinute()->withoutOverlapping();
+        $schedule->command('exam:update_progress --bulk=1')->hourly()->withoutOverlapping();
+        $schedule->command('backup:cronjob')->everyMinute()->withoutOverlapping();
+        $schedule->command('hr:update_status')->everyMinute()->withoutOverlapping();
+        $schedule->command('hr:update_status --ignore_time=1')->hourly()->withoutOverlapping();
         $schedule->command('user:delete_expired_token')->dailyAt('04:00');
-        $schedule->command('claim:settle')->monthlyOn();
+        $schedule->command('claim:settle')->hourly()->between("00:00", "12:00")
+            ->when(function () {Carbon::now()->format('d') == '01';})->withoutOverlapping();
     }
 
     /**

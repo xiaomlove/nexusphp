@@ -322,6 +322,8 @@ return array (
     'minvotes' => '10',
     'sticky_first_level_background_color' => '#89c9e6',
     'sticky_second_level_background_color' => '#aadbf3',
+      'download_support_passkey' => 'yes',
+      'claim_enabled' => 'no',
       'claim_torrent_ttl' => \App\Models\Claim::TORRENT_TTL,
       'claim_torrent_user_counts_up_limit' => \App\Models\Claim::USER_UP_LIMIT,
       'claim_user_torrent_counts_up_limit' => \App\Models\Claim::TORRENT_UP_LIMIT,
@@ -363,7 +365,6 @@ return array (
     'watermarkquality' => '85',
     'altthumbwidth' => '180',
     'altthumbheight' => '135',
-      'download_support_passkey' => 'yes',
   ),
   'advertisement' =>
   array (

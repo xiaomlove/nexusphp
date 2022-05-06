@@ -744,6 +744,7 @@ $lang_settings = array
     'row_show_top_uploader' => 'Show top uploaded(Torrent count)',
     'text_show_top_uploader_note' => "Default 'No'. Show top upload user(Torrent count) at homepage.",
     'claim_label' => 'Torrent claim',
+    'claim_enabled' => 'Claim enabled',
     'claim_torrent_ttl' => 'Torrent can be claimed after %s of days of release.',
     'claim_torrent_user_counts_up_limit' => 'A Torrent can be claimed by up to %s of users.',
     'claim_user_torrent_counts_up_limit' => 'A user can claim up to %s of torrents.',

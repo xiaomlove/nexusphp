@@ -150,7 +150,7 @@ elseif($action == 'savesettings_torrent') 	// save account
         'expirefree','expiretwoup','expiretwoupfree','expiretwouphalfleech', 'expirenormal','hotdays','hotseeder','halfleechbecome','freebecome',
         'twoupbecome','twoupfreebecome', 'twouphalfleechbecome','normalbecome','uploaderdouble','deldeadtorrent', 'randomthirtypercentdown',
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
-        'download_support_passkey', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
+        'download_support_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
         'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded'
     );
 	GetVar($validConfig);
@@ -666,6 +666,7 @@ elseif ($action == 'torrentsettings')
 </ul>".$lang_settings['text_promotion_timeout_note_two'], 1);
 
     tr($lang_settings['claim_label'], "<ul>
+<li>".$lang_settings['claim_enabled'] . sprintf('&nbsp;<label><input type="radio" name="claim_enabled" value="yes"%s/>Yes</label><label><input type="radio" name="claim_enabled" value="no"%s/>No</label>', $TORRENT['claim_enabled'] == 'yes' ? ' checked' : '', $TORRENT['claim_enabled'] == 'no' ? ' checked' : '')."</li>
 <li>".sprintf($lang_settings['claim_torrent_ttl'], sprintf('<input type="number" name="claim_torrent_ttl" value="%s" style="width: 50px"/>', $TORRENT['claim_torrent_ttl'] ?? \App\Models\Claim::TORRENT_TTL))."</li>
 <li>".sprintf($lang_settings['claim_torrent_user_counts_up_limit'], sprintf('<input type="number" name="claim_torrent_user_counts_up_limit" value="%s" style="width: 50px"/>', $TORRENT['claim_torrent_user_counts_up_limit'] ?? \App\Models\Claim::USER_UP_LIMIT))."</li>
 <li>".sprintf($lang_settings['claim_user_torrent_counts_up_limit'], sprintf('<input type="number" name="claim_user_torrent_counts_up_limit" value="%s" style="width: 50px"/>', $TORRENT['claim_user_torrent_counts_up_limit'] ?? \App\Models\Claim::TORRENT_UP_LIMIT))."</li>

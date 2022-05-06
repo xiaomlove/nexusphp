@@ -294,8 +294,8 @@ tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["
 tr_small($lang_userdetails['row_forum_posts'], ($forumposts && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewposts&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_posts']."\">".$forumposts."</a>" : $forumposts), 1);
 
 if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) {
-    tr_small($lang_userdetails['row_karma_points'], htmlspecialchars($user['seedbonus']), 1);
-    tr_small($lang_functions['text_seed_points'], htmlspecialchars($user['seed_points']), 1);
+    tr_small($lang_userdetails['row_karma_points'], number_format($user['seedbonus'], 1), 1);
+    tr_small($lang_functions['text_seed_points'], number_format($user['seed_points'], 1), 1);
 }
 
 
@@ -485,7 +485,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	{
 		tr($lang_userdetails['row_amount_uploaded'], "<input type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" />", 1);
 		tr($lang_userdetails['row_amount_downloaded'], "<input type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" />", 1);
-		tr($lang_userdetails['row_seeding_karma'], "<input type=\"text\" size=\"60\" name=\"bonus\" value=\"" .htmlspecialchars($user['seedbonus']) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .htmlspecialchars($user['seedbonus']) . "\" />", 1);
+		tr($lang_userdetails['row_seeding_karma'], "<input type=\"text\" size=\"60\" name=\"bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" />", 1);
 		tr($lang_userdetails['row_invites'], "<input type=\"text\" size=\"60\" name=\"invites\" value=\"" .htmlspecialchars($user['invites']) . "\" />", 1);
 	}
 	tr($lang_userdetails['row_passkey'], "<input name=\"resetkey\" value=\"yes\" type=\"checkbox\" />".$lang_userdetails['checkbox_reset_passkey'], 1);

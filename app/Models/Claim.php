@@ -37,6 +37,11 @@ class Claim extends NexusModel
         return $this->belongsTo(Snatch::class, 'snatched_id');
     }
 
+    public static function getConfigIsEnabled(): bool
+    {
+        return Setting::get('torrent.claim_enabled', 'no') == 'yes';
+    }
+
     public static function getConfigTorrentTTL()
     {
         return Setting::get('torrent.claim_torrent_ttl', self::TORRENT_TTL);

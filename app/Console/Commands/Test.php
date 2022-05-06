@@ -127,7 +127,7 @@ class Test extends Command
 //        $r = $rep->getContinuousPoints(11);
 
         $arr = [1,2];
-        $r = collect($arr)->map(fn($item) => $item * 2)->implode(',');
+        $r = Carbon::now()->format('d');
         dd($r, $arr);
     }
 

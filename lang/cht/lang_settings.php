@@ -744,6 +744,7 @@ $lang_settings = array
     'row_show_top_uploader' => '顯示最多上傳(種子數)',
     'text_show_top_uploader_note' => "默認'否'。在首頁顯示最多上傳的用戶(按種子數計算)。",
     'claim_label' => '種子認領',
+    'claim_enabled' => '啟用認領',
     'claim_torrent_ttl' => '種子發布 %s 天後可以認領。',
     'claim_torrent_user_counts_up_limit' => '一個種子最多可以被 %s 個用戶認領。',
     'claim_user_torrent_counts_up_limit' => '一個用戶最多可以認領 %s 個種子。',

@@ -41,5 +41,7 @@ return [
     'claim_already' => '此种子已经认领',
     'no_snatch' => '没有下载过此种子',
     'can_no_be_claimed_yet' => '还不能被认领',
-    'claim_number_reach_maximum' => '认领种子数达到上限',
+    'claim_number_reach_user_maximum' => '认领达到人数上限',
+    'claim_number_reach_torrent_maximum' => '认领达到种子数上限',
+    'claim_disabled' => '认领未启用',
 ];
