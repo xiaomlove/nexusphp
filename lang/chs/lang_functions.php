@@ -317,7 +317,7 @@ $lang_functions = array
     'spoiler_expand_collapse' => '点击展开/收缩',
     'spoiler_default_title' => '折叠内容',
     'menu_claim' => '认领: ',
-    'text_complains' => '有%s%u个待处理的申述%s',
+    'text_complains' => '有%s%u个待处理的申诉%s',
 );
 
 ?>

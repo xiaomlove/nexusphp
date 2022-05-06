@@ -39,7 +39,7 @@ else
 	print("<table width=100%>");
 	print("<tr><td colspan=2 class=text align=left>".$lang_donate['text_donation_note']."</td></tr>");
 	if ($custom) {
-	    echo sprintf('<tr><td class="text" align="left">%s</td></tr>', format_comment($custom));
+	    echo sprintf('<tr><td class="text" align="left" colspan="2">%s</td></tr>', format_comment($custom));
     }
 	print("<tr>");
 	if ($showpaypal){

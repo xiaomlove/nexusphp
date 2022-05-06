@@ -55,7 +55,7 @@ JS;
 begin_main_frame();
 $total = (clone $query)->count();
 list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $total, $pagerParam);
-$list = (clone $query)->with(['user', 'torrent', 'snatch'])->get();
+$list = (clone $query)->with(['user', 'torrent', 'snatch'])->offset($offset)->limit($pageSize)->orderBy('id', 'desc')->get();
 print("<table id='claim-table' width='100%'>");
 print("<tr>
     <td class='colhead' align='center'>".nexus_trans('claim.th_id')."</td>
