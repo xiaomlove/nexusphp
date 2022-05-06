@@ -4938,17 +4938,17 @@ function torrentTags($tags = 0, $type = 'checkbox')
     return $html;
 }
 
-function saveSetting($prefix, $nameAndValue)
+function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
 {
     $prefix = strtolower($prefix);
     $datetimeNow = date('Y-m-d H:i:s');
-    $sql = "insert into settings (name, value, created_at, updated_at) values ";
+    $sql = "insert into settings (name, value, created_at, updated_at, autoload) values ";
     $data = [];
     foreach ($nameAndValue as $name => $value) {
         if (is_array($value)) {
             $value = json_encode($value);
         }
-        $data[] = sprintf("(%s, %s, %s, %s)", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow));
+        $data[] = sprintf("(%s, %s, %s, %s, '%s')", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow), $autoload);
     }
     $sql .= implode(",", $data) . " on duplicate key update value = values(value)";
     sql_query($sql) or sqlerr(__FILE__, __LINE__);

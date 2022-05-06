@@ -10,8 +10,9 @@ $do = $_GET['do'] ?? '';
 if ($do == 'thanks') {
 	stderr($lang_donate['std_success'], $lang_donate['std_donation_success_note_one']."<a href=\"sendmessage.php?receiver=".$ACCOUNTANTID."\"><b>".$lang_donate['std_here']."</b></a>".$lang_donate['std_donation_success_note_two'], false);
 }
-else 
+else
 {
+    $custom = trim(\App\Models\Setting::getByName('misc.donation_custom'));
 	$paypal = safe_email($PAYPALACCOUNT);
 	if ($paypal && check_email($paypal))
 		$showpaypal = true;
@@ -27,14 +28,19 @@ else
 		$tdattr = "width=\"50%\"";
 	elseif ($showpaypal || $showalipay)
 		$tdattr = "colspan=\"2\" width=\"100%\"";
-	else
-		stderr($lang_donate['std_error'], $lang_donate['std_no_donation_account_available'], false);
+
+	if (!$showpaypal && !$showalipay && !$custom) {
+        stderr($lang_donate['std_error'], $lang_donate['std_no_donation_account_available'], false);
+    }
 
 	stdhead($lang_donate['head_donation']);
 	begin_main_frame();
 	print("<h2>".$lang_donate['text_donate']."</h2>");
-	print("<table width=100%><tr>");
-	print("<td colspan=2 class=text align=left>".$lang_donate['text_donation_note']."</td></tr>");
+	print("<table width=100%>");
+	print("<tr><td colspan=2 class=text align=left>".$lang_donate['text_donation_note']."</td></tr>");
+	if ($custom) {
+	    echo sprintf('<tr><td class="text" align="left">%s</td></tr>', format_comment($custom));
+    }
 	print("<tr>");
 	if ($showpaypal){
 ?>

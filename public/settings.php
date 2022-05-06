@@ -23,7 +23,7 @@ function yesorno($title, $name, $value, $note="")
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : 'showmenu';
-$allowed_actions = array('basicsettings','mainsettings','smtpsettings','securitysettings','authoritysettings','tweaksettings', 'botsettings','codesettings','bonussettings','accountsettings','torrentsettings', 'attachmentsettings', 'advertisementsettings', 'savesettings_basic', 'savesettings_main','savesettings_smtp','savesettings_security','savesettings_authority','savesettings_tweak','savesettings_bot','savesettings_code','savesettings_bonus', 'savesettings_account','savesettings_torrent', 'savesettings_attachment', 'savesettings_advertisement', 'showmenu');
+$allowed_actions = array('basicsettings','mainsettings','smtpsettings','securitysettings','authoritysettings','tweaksettings', 'botsettings','codesettings','bonussettings','accountsettings','torrentsettings', 'attachmentsettings', 'advertisementsettings', 'savesettings_basic', 'savesettings_main','savesettings_smtp','savesettings_security','savesettings_authority','savesettings_tweak','savesettings_bot','savesettings_code','savesettings_bonus', 'savesettings_account','savesettings_torrent', 'savesettings_attachment', 'savesettings_advertisement', 'showmenu', 'miscsettings', 'savesettings_misc');
 if (!in_array($action, $allowed_actions))
 $action = 'showmenu';
 $notice = "<h1 align=\"center\"><a class=\"faqlink\" href=\"settings.php\">".$lang_settings['text_website_settings']."</a></h1><table cellspacing=\"0\" cellpadding=\"10\" width=\"97%\"><tr><td colspan=\"2\" style='padding: 10px; background: black' align=\"center\">
@@ -266,6 +266,20 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker ADVERTISEMENT settings updated by {$CURUSER['username']}. $actiontime",'mod');
 	go_back();
+}
+elseif ($action == 'savesettings_misc')
+{
+    stdhead($lang_settings['row_misc_settings']);
+    $validConfig = array('donation_custom', );
+    GetVar($validConfig);
+    $data = [];
+    foreach($validConfig as $config) {
+        $data[$config] = $$config ?? null;
+    }
+    saveSetting('misc', $data, 'no');
+    $actiontime = date("F j, Y, g:i a");
+    write_log("Misc settings updated by {$CURUSER['username']}. $actiontime",'mod');
+    go_back();
 }
 elseif ($action == 'tweaksettings')		// tweak settings
 {
@@ -817,6 +831,17 @@ JS;
 	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
 	print ("</form>");
 }
+elseif ($action == 'miscsettings')
+{
+    $result = \App\Models\Setting::getByWhereRaw("name like 'misc.%'");
+    $misc = $result['misc'] ?? [];
+    stdhead($lang_settings['head_torrent_settings']);
+    print ($notice);
+    print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_misc'>");
+    tr($lang_settings['row_misc_donation_custom'],"<textarea cols=\"100\"  rows=\"10\" name='donation_custom'>".($misc['donation_custom'] ?? '')."</textarea><br/>".$lang_settings['text_donation_custom_note'], 1);
+    tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
+    print ("</form>");
+}
 elseif ($action == 'showmenu')	// settings main page
 {
 	stdhead($lang_settings['head_website_settings']);
@@ -832,6 +857,7 @@ elseif ($action == 'showmenu')	// settings main page
 	tr($lang_settings['row_torrents_settings'], "<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='torrentsettings'><input type='submit' value=\"".$lang_settings['submit_torrents_settings']."\"> ".$lang_settings['text_torrents_settings_note']."</form>", 1);
 	tr($lang_settings['row_attachment_settings'], "<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='attachmentsettings'><input type='submit' value=\"".$lang_settings['submit_attachment_settings']."\"> ".$lang_settings['text_attachment_settings_note']."</form>", 1);
 	tr($lang_settings['row_advertisement_settings'], "<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='advertisementsettings'><input type='submit' value=\"".$lang_settings['submit_advertisement_settings']."\"> ".$lang_settings['text_advertisement_settings_note']."</form>", 1);
+	tr($lang_settings['row_misc_settings'], "<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='miscsettings'><input type='submit' value=\"".$lang_settings['submit_misc_settings']."\"> ".$lang_settings['text_misc_settings_note']."</form>", 1);
 //	tr($lang_settings['row_code_settings'], "<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='codesettings'><input type='submit' value=\"".$lang_settings['submit_code_settings']."\"> ".$lang_settings['text_code_settings_note']."</form>", 1);
 }
 print("</table>");

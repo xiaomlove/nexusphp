@@ -25,7 +25,7 @@ class ClaimRepository extends BaseRepository
     public function store($uid, $torrentId)
     {
         $isEnabled = Claim::getConfigIsEnabled();
-        if ($isEnabled) {
+        if (!$isEnabled) {
             throw new \RuntimeException(nexus_trans("torrent.claim_disabled"));
         }
         $exists = Claim::query()->where('uid', $uid)->where('torrent_id', $torrentId)->exists();

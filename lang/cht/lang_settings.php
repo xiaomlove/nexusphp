@@ -752,6 +752,11 @@ $lang_settings = array
     'claim_give_up_deduct_user_bonus' => '用戶主動放棄認領扣除用戶 %s 魔力。',
     'claim_reach_standard' => '達標標準：每月做種時間大於等於 %s 小時, 或上傳量大於等於其體積 %s 倍。',
     'claim_bonus_multiplier' => '計算達標種子魔力獎勵是正常魔力值的 %s 倍。',
+    'row_misc_settings' => '其他設定',
+    'submit_misc_settings' => '其他設定',
+    'text_misc_settings_note' => '配置其他雜項。',
+    'row_misc_donation_custom' => '捐贈自定義內容',
+    'text_donation_custom_note' => '捐贈頁自定義的內容，展示於支付寶、PayPal上面。支持&nbsp;<b><a href="tags.php" target="_blank">bbcode 標簽</a></b>',
 );
 
 ?>

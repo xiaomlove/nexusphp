@@ -753,6 +753,11 @@ $lang_settings = array
     'claim_give_up_deduct_user_bonus' => '用户主动放弃认领扣除用户 %s 魔力。',
     'claim_reach_standard' => '达标标准：每月做种时间大于等于 %s 小时, 或上传量大于等于其体积 %s 倍。',
     'claim_bonus_multiplier' => '计算达标种子魔力奖励是正常魔力值的 %s 倍。',
+    'row_misc_settings' => '其他设定',
+    'submit_misc_settings' => '其他设定',
+    'text_misc_settings_note' => '配置其他杂项。',
+    'row_misc_donation_custom' => '捐赠自定义内容',
+    'text_donation_custom_note' => '捐赠页自定义的内容，展示于支付宝、PayPal上面。支持&nbsp;<b><a href="tags.php" target="_blank">bbcode 标签</a></b>',
 );
 
 ?>

@@ -752,6 +752,11 @@ $lang_settings = array
     'claim_give_up_deduct_user_bonus' => 'User actively gives up claiming deduct user %s bonus.',
     'claim_reach_standard' => 'Standard: Monthly seeding time greater than or equal to %s of hours, or uploaded greater than or equal to %s times its size.',
     'claim_bonus_multiplier' => 'Calculate %s times the normal bonus value of the attained seed bonus.',
+    'row_misc_settings' => 'Misc settings',
+    'submit_misc_settings' => 'Misc settings',
+    'text_misc_settings_note' => 'Misc settings',
+    'row_misc_donation_custom' => 'Donation custom',
+    'text_donation_custom_note' => 'Donation page custom content, displayed above Alipay, PayPal. Support&nbsp;<b><a href="tags.php" target="_blank">bbcode tag</a></b>',
 );
 
 ?>
