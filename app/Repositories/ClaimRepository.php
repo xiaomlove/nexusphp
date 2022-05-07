@@ -77,7 +77,7 @@ class ClaimRepository extends BaseRepository
     public function delete($id, $uid)
     {
         $isEnabled = Claim::getConfigIsEnabled();
-        if ($isEnabled) {
+        if (!$isEnabled) {
             throw new \RuntimeException(nexus_trans("torrent.claim_disabled"));
         }
         $model = Claim::query()->findOrFail($id);

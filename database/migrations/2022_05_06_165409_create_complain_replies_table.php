@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('complain_replies')) {
+            return;
+        }
         Schema::create('complain_replies', function (Blueprint $table) {
             $table->id();
             $table->integer('complain');
