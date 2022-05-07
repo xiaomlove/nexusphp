@@ -644,7 +644,7 @@ if ($action == "viewtopic")
 		{
 			if ($Advertisement->enable_ad()){
 				if (!empty($forumpostad[$pn-1]))
-				echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"ad_forumpost_".$pn."\">".$forumpostad[$pn-1]."</div>";
+				echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"\">".$forumpostad[$pn-1]."</div>";
 			}
 		}
 		++$pn;
@@ -1458,7 +1458,7 @@ foreach ($overforums as $a)
 	if ($count>=1)
 	if ($Advertisement->enable_ad()){
 		if (!empty($interoverforumsad[$count-1]))
-			echo "<tr><td colspan=\"5\" align=\"center\" id=\"ad_interoverforums_".($count-1)."\">".$interoverforumsad[$count-1]."</td></tr>";
+			echo "<tr><td colspan=\"5\" align=\"center\" id=\"\">".$interoverforumsad[$count-1]."</td></tr>";
 	}
 	$forid = $a["id"];
 	$overforumname = $a["name"];

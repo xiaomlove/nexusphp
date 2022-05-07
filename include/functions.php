@@ -2500,7 +2500,7 @@ else
 <?php if ($Advertisement->enable_ad()){
 		$headerad=$Advertisement->get_ad('header');
 		if ($headerad){
-			echo "<span id=\"ad_header\">".$headerad[0]."</span>";
+			echo "<span>".$headerad[0]."</span>";
 		}
 }
 if ($enabledonation == 'yes'){?>
@@ -2640,7 +2640,7 @@ else {
 	if ($Advertisement->enable_ad()){
 			$belownavad=$Advertisement->get_ad('belownav');
 			if ($belownavad)
-			echo "<div align=\"center\" style=\"margin-bottom: 10px\" id=\"ad_belownav\">".$belownavad[0]."</div>";
+			echo "<div align=\"center\" style=\"margin-bottom: 10px\" id=\"\">".$belownavad[0]."</div>";
 	}
 if ($msgalert)
 {
@@ -2765,7 +2765,7 @@ function stdfoot() {
 	if ($Advertisement->enable_ad()){
 			$footerad=$Advertisement->get_ad('footer');
 			if ($footerad)
-			echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"ad_footer\">".$footerad[0]."</div>";
+			echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"\">".$footerad[0]."</div>";
 	}
 	print("<div style=\"margin-top: 10px; margin-bottom: 30px;\" align=\"center\">");
 	if ($CURUSER){
@@ -3071,7 +3071,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 		{
 			if ($Advertisement->enable_ad()){
 				if (!empty($commentad[$count-1]))
-				echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"ad_comment_".$count."\">".$commentad[$count-1]."</div>";
+				echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"\">".$commentad[$count-1]."</div>";
 			}
 		}
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");

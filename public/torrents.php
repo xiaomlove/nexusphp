@@ -1040,7 +1040,7 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 								<tr>
 									<td class="embedded">
 										<input id="searchinput" name="search" type="text" value="<?php echo  $searchstr_ori ?>" autocomplete="off" style="width: 200px" ondblclick="suggest(event.keyCode,this.value);" onkeyup="suggest(event.keyCode,this.value);" onkeypress="return noenter(event.keyCode);"/>
-										<script src="suggest.js" type="text/javascript"></script>
+										<script src="js/suggest.js" type="text/javascript"></script>
 										<div id="suggcontainer" style="text-align: left; width:100px;  display: none;">
 											<div id="suggestions" style="width:204px; border: 1px solid rgb(119, 119, 119); cursor: default; position: absolute; color: rgb(0,0,0); background-color: rgb(255, 255, 255);"></div>
 										</div>
@@ -1121,7 +1121,7 @@ if ($tagKeyById->isNotEmpty()) {
 	if ($Advertisement->enable_ad()){
         $belowsearchboxad = $Advertisement->get_ad('belowsearchbox');
         if (!empty($belowsearchboxad[0])) {
-            echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"ad_belowsearchbox\">".$belowsearchboxad[0]."</div>";
+            echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"\">".$belowsearchboxad[0]."</div>";
         }
 	}
 if($inclbookmarked == 1)
