@@ -228,7 +228,7 @@
     <DialogDisableUser ref="disableUser" :reload="fetchPageData" />
     <DialogModComment ref="modComment" />
     <DialogResetPassword ref="resetPassword" />
-    <DialogIncrementDecrement ref="incrementDecrement" :reload="fetchPageData" :title="dialogTitle" />
+    <DialogIncrementDecrement ref="incrementDecrement" :reload="fetchPageData" :title="dialogTitle" :valuePlaceholder="valuePlaceholder" />
 </template>
 
 <script>
@@ -266,7 +266,7 @@ export default {
             baseInfo: {},
             examInfo: null,
             dialogTitle: '',
-            toChangeField: '',
+            valuePlaceholder: '',
         })
         onMounted(() => {
             fetchPageData()
@@ -310,7 +310,11 @@ export default {
         }
         const handleIncrementDecrement = async (field) => {
             state.dialogTitle = 'Change ' + field
-            state.toChangeField = field
+            if (['uploaded', 'downloaded'].includes(field)) {
+                state.valuePlaceholder = 'Unit: GB'
+            } else {
+                state.valuePlaceholder = ''
+            }
             incrementDecrement.value.open(id, field)
         }
         const handleEnableUser = async () => {

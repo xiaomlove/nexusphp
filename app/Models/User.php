@@ -152,7 +152,8 @@ class User extends Authenticatable
     public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
-        'invited_by', 'enabled', 'seed_points', 'last_access', 'invites'
+        'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
+        'lang',
     ];
 
     public static function getDefaultUserAttributes(): array

@@ -7,5 +7,12 @@ return [
         'list' => [
             'page_title' => '用戶列表'
         ]
-    ]
+    ],
+    'labels' => [
+        'seedbonus' => '魔力',
+        'seed_points' => '做種積分',
+        'uploaded' => '上傳量',
+        'downloaded' => '下載量',
+        'invites' => '邀請',
+    ],
 ];

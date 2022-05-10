@@ -5,9 +5,11 @@ use App\Exceptions\NexusException;
 use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
 use App\Models\ExamUser;
+use App\Models\Message;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserBanLog;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
@@ -221,30 +223,60 @@ class UserRepository extends BaseRepository
         $sourceField = $fieldMap[$field];
         $targetUser = User::query()->findOrFail($uid, User::$commonFields);
         $old = $targetUser->{$sourceField};
+        $valueAtomic = $value;
+        if (in_array($field, ['uploaded', 'downloaded'])) {
+            //Frontend unit: GB
+            $valueAtomic = $value * 1024 * 1024 * 1024;
+        }
         if ($action == 'Increment') {
-            $new = $old + abs($value);
+            $new = $old + abs($valueAtomic);
         } elseif ($action == 'Decrement') {
-            $new = $old - abs($value);
+            $new = $old - abs($valueAtomic);
         } else {
             throw new \InvalidArgumentException("Invalid action: $action.");
         }
-        $modCommentText = sprintf(
-            "%s - %s change from %s to %s by %s, reason: %s.",
-            date('Y-m-d'), $field, $old, $new, $operator->username, $reason
-        );
+        //for administrator, use english
+        $modCommentText = nexus_trans('message.field_value_change_message_body', [
+            'field' => nexus_trans("user.labels.$sourceField", [], 'en'),
+            'operator' => $operator->username,
+            'old' => $old,
+            'new' => $new,
+            'reason' => $reason,
+        ], 'en');
+        $modCommentText = date('Y-m-d') . " - $modCommentText";
         do_log("user: $uid, $modCommentText");
         $update = [
             $sourceField => $new,
             'modcomment' => NexusDB::raw("if(modcomment = '', '$modCommentText', concat_ws('\n', '$modCommentText', modcomment))"),
         ];
-        $affectedRows = User::query()
-            ->where('id', $uid)
-            ->where($sourceField, $old)
-            ->update($update)
-        ;
-        if ($affectedRows != 1) {
-            throw new \RuntimeException("Change fail, affected rows != 1($affectedRows)");
-        }
+
+        $locale = $targetUser->locale;
+        $fieldLabel = nexus_trans("user.labels.$sourceField", [], $locale);
+        $msg = nexus_trans('message.field_value_change_message_body', [
+            'field' => $fieldLabel,
+            'operator' => $operator->username,
+            'old' => $old,
+            'new' => $new,
+            'reason' => $reason,
+        ], $locale);
+        $message = [
+            'sender' => 0,
+            'receiver' => $targetUser->id,
+            'subject' => nexus_trans("message.field_value_change_message_subject", ['field' =>  $fieldLabel], $locale),
+            'msg' => $msg,
+            'added' => Carbon::now(),
+        ];
+        NexusDB::transaction(function () use ($uid, $sourceField, $old, $new, $update, $message) {
+            $affectedRows = User::query()
+                ->where('id', $uid)
+                ->where($sourceField, $old)
+                ->update($update)
+            ;
+            if ($affectedRows != 1) {
+                throw new \RuntimeException("Change fail, affected rows != 1($affectedRows)");
+            }
+            Message::query()->insert($message);
+        });
         return true;
     }
 

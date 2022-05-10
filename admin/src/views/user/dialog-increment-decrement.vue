@@ -18,7 +18,7 @@
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="Value" prop="value">
-                <el-input v-model="formData.value" type="number" />
+                <el-input v-model="formData.value" type="number" :placeholder="valuePlaceholder" />
             </el-form-item>
             <el-form-item label="Reason" prop="reason">
                 <el-input type="textarea" v-model="formData.reason"></el-input>
@@ -43,7 +43,8 @@ export default {
     name: "DialogIncrementDecrement",
     props: {
         reload: Function,
-        title: String
+        title: String,
+        valuePlaceholder: String
     },
     setup(props, context) {
         const formRef = ref(null)

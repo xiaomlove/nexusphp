@@ -7,5 +7,12 @@ return [
         'list' => [
             'page_title' => 'User list'
         ]
-    ]
+    ],
+    'labels' => [
+        'seedbonus' => 'Bonus',
+        'seed_points' => 'Seed points',
+        'uploaded' => 'Uploaded',
+        'downloaded' => 'Downloaded',
+        'invites' => 'Invites',
+    ],
 ];
