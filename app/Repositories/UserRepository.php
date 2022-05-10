@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserBanLog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Nexus\Database\NexusDB;
 
 class UserRepository extends BaseRepository
 {
@@ -204,6 +205,47 @@ class UserRepository extends BaseRepository
     {
         $user = User::query()->findOrFail($id, ['modcomment']);
         return $user->modcomment;
+    }
+
+    public function incrementDecrement(User $operator, $uid, $action, $field, $value, $reason = ''): bool
+    {
+        $fieldMap = [
+            'uploaded' => 'uploaded',
+            'downloaded' => 'downloaded',
+            'bonus' => 'seedbonus',
+            'invites' => 'invites',
+        ];
+        if (!isset($fieldMap[$field])) {
+            throw new \InvalidArgumentException("Invalid field: $field, only support: " . implode(', ', array_keys($fieldMap)));
+        }
+        $sourceField = $fieldMap[$field];
+        $targetUser = User::query()->findOrFail($uid, User::$commonFields);
+        $old = $targetUser->{$sourceField};
+        if ($action == 'Increment') {
+            $new = $old + abs($value);
+        } elseif ($action == 'Decrement') {
+            $new = $old - abs($value);
+        } else {
+            throw new \InvalidArgumentException("Invalid action: $action.");
+        }
+        $modCommentText = sprintf(
+            "%s - %s change from %s to %s by %s, reason: %s.",
+            date('Y-m-d'), $field, $old, $new, $operator->username, $reason
+        );
+        do_log("user: $uid, $modCommentText");
+        $update = [
+            $sourceField => $new,
+            'modcomment' => NexusDB::raw("if(modcomment = '', '$modCommentText', concat_ws('\n', '$modCommentText', modcomment))"),
+        ];
+        $affectedRows = User::query()
+            ->where('id', $uid)
+            ->where($sourceField, $old)
+            ->update($update)
+        ;
+        if ($affectedRows != 1) {
+            throw new \RuntimeException("Change fail, affected rows != 1($affectedRows)");
+        }
+        return true;
     }
 
 

@@ -274,4 +274,17 @@ class UserController extends Controller
 
     }
 
+    public function incrementDecrement(Request $request): array
+    {
+        $user = Auth::user();
+        $request->validate([
+            'uid' => 'required',
+            'action' => 'required',
+            'field' => 'required',
+            'value' => 'required|numeric',
+        ]);
+        $result = $this->repository->incrementDecrement($user, $request->uid, $request->action, $request->field, $request->value, $request->reason);
+        return $this->success(['success' => $result]);
+    }
+
 }

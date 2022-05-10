@@ -150,5 +150,6 @@ $lang_userdetails = array
     'row_medal' => '勛章',
     'row_donoruntil' => '捐贈狀態截止時間',
     'text_donoruntil_note' => "時間格式為'年年年年-月月-日日 時時:分分:秒秒'。留空永久有效。",
+    'change_field_value_migrated' => '修改請到管理後臺操作',
 );
 ?>

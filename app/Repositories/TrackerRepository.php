@@ -697,7 +697,7 @@ class TrackerRepository extends BaseRepository
             'downloaded_increment' => $realDownloaded,
             'downloaded_increment_for_user' => $realDownloaded * $downRatio,
         ];
-        do_log("$log, result: " . json_encode($result), 'alert');
+        do_log("$log, result: " . json_encode($result), 'info');
         return $result;
     }
 
@@ -947,7 +947,7 @@ class TrackerRepository extends BaseRepository
         $snatch->last_action = $nowStr;
 
         $snatch->save();
-        do_log(last_query(), 'alert');
+        do_log(last_query(), 'info');
 
         return $snatch;
     }
@@ -1076,7 +1076,7 @@ class TrackerRepository extends BaseRepository
             $user->update($update);
             $log .= ", query: " . last_query();
         }
-        do_log($log, 'alert');
+        do_log($log, 'info');
     }
 
 }

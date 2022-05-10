@@ -61,6 +61,7 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::post('user-disable', [\App\Http\Controllers\UserController::class, 'disable']);
         Route::post('user-enable', [\App\Http\Controllers\UserController::class, 'enable']);
         Route::post('user-reset-password', [\App\Http\Controllers\UserController::class, 'resetPassword']);
+        Route::put('user-increment-decrement', [\App\Http\Controllers\UserController::class, 'incrementDecrement']);
 
         Route::resource('exams', \App\Http\Controllers\ExamController::class);
         Route::get('exams-all', [\App\Http\Controllers\ExamController::class, 'all']);

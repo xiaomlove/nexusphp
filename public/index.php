@@ -234,7 +234,7 @@ JS;
             return (clone $topUploaderBaseQuery)->where('added', '>=', \Carbon\Carbon::today()->subDays(30))->get();
         });
         $userTorrentCounts = $userStatResult->pluck('counts', 'owner');
-        $uidArr = $userStatResult->pluck('owner')->toArray();
+        $uidArr = $userStatResult->pluck('owner')->toArray() ?: [0];
         $result = \App\Models\User::query()->whereIn('id', $uidArr)->orderByRaw(sprintf("field(id,%s)", implode(',', $uidArr)))->get(['id', 'username']);
         print ("<table class='top-uploader top-uploader-recently' width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"colhead\" width=\"\">".$lang_index['col_author']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_counts']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_ranking']."</td></tr>");
         foreach ($result as $ranking => $row)

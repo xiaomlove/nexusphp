@@ -37,11 +37,9 @@ export default {
         }
         const open = (uid) => {
             state.uid = uid
-            if (!state.modComment) {
-                state.loading = true
-                getUserModComment()
-                state.loading = false
-            }
+            state.loading = true
+            getUserModComment()
+            state.loading = false
             state.visible = true
 
         }

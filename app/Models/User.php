@@ -152,7 +152,7 @@ class User extends Authenticatable
     public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
-        'invited_by', 'enabled', 'seed_points', 'last_access'
+        'invited_by', 'enabled', 'seed_points', 'last_access', 'invites'
     ];
 
     public static function getDefaultUserAttributes(): array
@@ -378,7 +378,7 @@ class User extends Authenticatable
 
     }
 
-    public function updateWithModComment(array $update, $modComment)
+    public function updateWithModComment(array $update, $modComment): bool
     {
         if (!$this->exists) {
             throw new \RuntimeException('This method only works when user exists!');

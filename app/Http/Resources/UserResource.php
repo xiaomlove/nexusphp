@@ -25,6 +25,7 @@ class UserResource extends JsonResource
             'class' => $this->class,
             'class_text' => $this->class_text,
             'avatar' => $this->avatar,
+            'invites' => $this->invites,
             'uploaded' => $this->uploaded,
             'uploaded_text' => mksize($this->uploaded),
             'downloaded' => $this->downloaded,
@@ -44,7 +45,6 @@ class UserResource extends JsonResource
             $out['seed_time'] = mkprettytime($this->seedtime);
             $out['leech_time'] = mkprettytime($this->leechtime);
             $out['share_ratio'] = get_share_ratio($this->uploaded, $this->downloaded);
-            $out['invites'] = $this->invites;
             $out['comments_count'] = $this->comments_count;
             $out['posts_count'] = $this->posts_count;
             $out['torrents_count'] = $this->torrents_count;

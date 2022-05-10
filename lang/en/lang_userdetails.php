@@ -150,5 +150,6 @@ $lang_userdetails = array
     'row_medal' => 'Medal',
     'row_donoruntil' => 'Donated until',
     'text_donoruntil_note' => "Time format is YYYY-MM-DD hh:mm:ss. Leave blank permanently.",
+    'change_field_value_migrated' => 'Modification please go to the background management system.',
 );
 ?>

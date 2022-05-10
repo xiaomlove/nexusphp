@@ -69,6 +69,9 @@ const api = {
     enableUser: (params = {}) => {
         return axios.post('user-enable', params);
     },
+    incrementDecrementUserField: (params = {}) => {
+        return axios.put('user-increment-decrement', params);
+    },
     resetPassword: (params = {}) => {
         return axios.post('user-reset-password', params);
     },

@@ -29,7 +29,7 @@
                 <tr>
                     <td>Email</td>
                     <td>{{baseInfo.email}}</td>
-                    <td><el-button size="small">Change</el-button></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td>Enabled</td>
@@ -68,23 +68,28 @@
                     <td><el-button size="small" @click="handleViewInviteInfo">View</el-button></td>
                 </tr>
                 <tr>
-                    <td>Uploaded</td>
-                    <td>{{baseInfo.uploaded_text}}</td>
-                    <td><el-button size="small">Add</el-button></td>
-                </tr>
-                <tr>
-                    <td>Downloaded</td>
-                    <td>{{baseInfo.downloaded_text}}</td>
-                    <td><el-button size="small">Add</el-button></td>
-                </tr>
-                <tr>
                     <td>Seed points</td>
                     <td>{{baseInfo.seed_points}}</td>
                 </tr>
                 <tr>
+                    <td>Invites</td>
+                    <td>{{baseInfo.invites}}</td>
+                    <td><el-button size="small" @click="handleIncrementDecrement('invites')">Change</el-button></td>
+                </tr>
+                <tr>
+                    <td>Uploaded</td>
+                    <td>{{baseInfo.uploaded_text}}</td>
+                    <td><el-button size="small" @click="handleIncrementDecrement('uploaded')">Change</el-button></td>
+                </tr>
+                <tr>
+                    <td>Downloaded</td>
+                    <td>{{baseInfo.downloaded_text}}</td>
+                    <td><el-button size="small" @click="handleIncrementDecrement('downloaded')">Change</el-button></td>
+                </tr>
+                <tr>
                     <td>Bonus</td>
                     <td>{{baseInfo.bonus}}</td>
-                    <td><el-button size="small">Add</el-button></td>
+                    <td><el-button size="small" @click="handleIncrementDecrement('bonus')">Change</el-button></td>
                 </tr>
             </table>
         </el-card>
@@ -223,6 +228,7 @@
     <DialogDisableUser ref="disableUser" :reload="fetchPageData" />
     <DialogModComment ref="modComment" />
     <DialogResetPassword ref="resetPassword" />
+    <DialogIncrementDecrement ref="incrementDecrement" :reload="fetchPageData" :title="dialogTitle" />
 </template>
 
 <script>
@@ -236,11 +242,13 @@ import DialogDisableUser from './dialog-disable-user.vue'
 import DialogModComment from './dialog-mod-comment.vue'
 import DialogResetPassword from './dialog-reset-password.vue'
 import DialogGrantMedal from './dialog-grant-medal.vue'
+import DialogIncrementDecrement from './dialog-increment-decrement.vue'
 
 export default {
     name: "UserDetail",
     components: {
-        DialogAssignExam, DialogViewInviteInfo, DialogDisableUser, DialogModComment, DialogResetPassword, DialogGrantMedal
+        DialogAssignExam, DialogViewInviteInfo, DialogDisableUser, DialogModComment, DialogResetPassword, DialogGrantMedal,
+        DialogIncrementDecrement
     },
     setup() {
         const route = useRoute()
@@ -252,10 +260,13 @@ export default {
         const disableUser = ref(null)
         const modComment = ref(null)
         const resetPassword = ref(null)
+        const incrementDecrement = ref(null)
         const state = reactive({
             loading: false,
             baseInfo: {},
             examInfo: null,
+            dialogTitle: '',
+            toChangeField: '',
         })
         onMounted(() => {
             fetchPageData()
@@ -297,6 +308,11 @@ export default {
         const handleDisableUser = async () => {
             disableUser.value.open(id)
         }
+        const handleIncrementDecrement = async (field) => {
+            state.dialogTitle = 'Change ' + field
+            state.toChangeField = field
+            incrementDecrement.value.open(id, field)
+        }
         const handleEnableUser = async () => {
             let res = await api.enableUser({uid: id})
             ElMessage.success(res.msg)
@@ -328,13 +344,14 @@ export default {
             handleResetPassword,
             fetchPageData,
             handleRemoveUserMedal,
+            handleIncrementDecrement,
             assignExam,
             grantMedal,
             viewInviteInfo,
             disableUser,
             modComment,
             resetPassword,
-
+            incrementDecrement,
         }
     }
 }
