@@ -224,9 +224,11 @@ class UserRepository extends BaseRepository
         $targetUser = User::query()->findOrFail($uid, User::$commonFields);
         $old = $targetUser->{$sourceField};
         $valueAtomic = $value;
+        $formatSize = false;
         if (in_array($field, ['uploaded', 'downloaded'])) {
             //Frontend unit: GB
             $valueAtomic = $value * 1024 * 1024 * 1024;
+            $formatSize = true;
         }
         if ($action == 'Increment') {
             $new = $old + abs($valueAtomic);
@@ -239,12 +241,12 @@ class UserRepository extends BaseRepository
         $modCommentText = nexus_trans('message.field_value_change_message_body', [
             'field' => nexus_trans("user.labels.$sourceField", [], 'en'),
             'operator' => $operator->username,
-            'old' => $old,
-            'new' => $new,
+            'old' => $formatSize ? mksize($old) : $old,
+            'new' => $formatSize ?  mksize($new) : $new,
             'reason' => $reason,
         ], 'en');
         $modCommentText = date('Y-m-d') . " - $modCommentText";
-        do_log("user: $uid, $modCommentText");
+        do_log("user: $uid, $modCommentText", 'alert');
         $update = [
             $sourceField => $new,
             'modcomment' => NexusDB::raw("if(modcomment = '', '$modCommentText', concat_ws('\n', '$modCommentText', modcomment))"),
@@ -255,8 +257,8 @@ class UserRepository extends BaseRepository
         $msg = nexus_trans('message.field_value_change_message_body', [
             'field' => $fieldLabel,
             'operator' => $operator->username,
-            'old' => $old,
-            'new' => $new,
+            'old' => $formatSize ? mksize($old) : $old,
+            'new' => $formatSize ?  mksize($new) : $new,
             'reason' => $reason,
         ], $locale);
         $message = [

@@ -40,7 +40,7 @@ print $filterForm;
 
 $baseQuery = \App\Models\HitAndRun::query()->where('uid', $userid)->where('status', $status);
 $rescount = (clone $baseQuery)->count();
-list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, "?status=$status");
+list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, "?status=$status&");
 print("<table width='100%'>");
 print("<tr>
 				<td class='colhead' align='center'>{$lang_myhr['th_hr_id']}</td>
