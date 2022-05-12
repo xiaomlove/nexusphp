@@ -106,4 +106,16 @@ class ExamUserController extends Controller
         return $this->success($result, 'Recover user exam success!');
     }
 
+    public function bulkAvoid(Request $request): array
+    {
+        $result = $this->repository->avoidExamUserBulk($request->all(), Auth::user());
+        return $this->success(['result' => $result],"Affected: " . intval($result));
+    }
+
+    public function bulkDelete(Request $request): array
+    {
+        $result = $this->repository->removeExamUserBulk($request->all(), Auth::user());
+        return $this->success(['result' => $result],"Affected: " . intval($result));
+    }
+
 }

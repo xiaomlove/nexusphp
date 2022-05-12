@@ -130,6 +130,12 @@ const api = {
     avoidExamUser: (id) => {
         return axios.put('exam-users-avoid', {id});
     },
+    avoidExamUserBulk: (params = {}) => {
+        return axios.put('exam-users-avoid-bulk', params);
+    },
+    deleteExamUserBulk: (params = {}) => {
+        return axios.put('exam-users-delete-bulk', params);
+    },
     recoverExamUser: (id) => {
         return axios.put('exam-users-recover', {id});
     },
@@ -195,6 +201,12 @@ const api = {
     },
     pardonHr: (id) => {
         return axios.put('hr-pardon/' + id);
+    },
+    deleteHrBulk: (params = {}) => {
+        return axios.put('hr-delete', params);
+    },
+    pardonHrBulk: (params = {}) => {
+        return axios.put('hr-pardon', params);
     },
 
 }

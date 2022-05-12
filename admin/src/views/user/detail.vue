@@ -72,6 +72,28 @@
                     <td>{{baseInfo.seed_points}}</td>
                 </tr>
                 <tr>
+                    <td>H&R inspecting</td>
+                    <td>{{baseInfo.invites}}</td>
+                    <td>
+                        <el-popconfirm
+                            title="Confirm Remove ?"
+                            @confirm="handleRemoveHitAndRun"
+                        >
+                            <template #reference>
+                                <el-button size="small">Remove</el-button>
+                            </template>
+                        </el-popconfirm>
+                        <el-popconfirm
+                            title="Confirm Pardon ?"
+                            @confirm="handlePardonHitAndRun"
+                        >
+                            <template #reference>
+                                <el-button size="small">Pardon</el-button>
+                            </template>
+                        </el-popconfirm>
+                    </td>
+                </tr>
+                <tr>
                     <td>Invites</td>
                     <td>{{baseInfo.invites}}</td>
                     <td><el-button size="small" @click="handleIncrementDecrement('invites')">Change</el-button></td>
@@ -330,6 +352,12 @@ export default {
         }
 
         const handleRemoveUserMedal = async (id) => {
+            let res = await api.removeUserMedal(id)
+            ElMessage.success(res.msg)
+            await fetchPageData()
+        }
+
+        const handleRemoveHitAndRun = async (id) => {
             let res = await api.removeUserMedal(id)
             ElMessage.success(res.msg)
             await fetchPageData()

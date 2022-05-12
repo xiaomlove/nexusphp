@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class HitAndRunRepository extends BaseRepository
@@ -57,6 +58,33 @@ class HitAndRunRepository extends BaseRepository
         $model = HitAndRun::query()->findOrFail($id);
         $result = $model->delete();
         return $result;
+    }
+
+    public function bulkDelete(array $params, User $user)
+    {
+        $result = $this->getBulkQuery($params)->delete();
+        do_log(sprintf(
+            'user: %s bulk delete by filter: %s, result: %s',
+            $user->id, json_encode($params), json_encode($result)
+        ), 'alert');
+        return $result;
+    }
+
+    private function getBulkQuery(array $params): Builder
+    {
+        $query = HitAndRun::query();
+        $hasWhere = false;
+        $validFilter = ['uid', 'id'];
+        foreach ($validFilter as $item) {
+            if (!empty($params[$item])) {
+                $hasWhere = true;
+                $query->whereIn($item, Arr::wrap($params[$item]));
+            }
+        }
+        if (!$hasWhere) {
+            throw new \InvalidArgumentException("No filter.");
+        }
+        return $query;
     }
 
     public function cronjobUpdateStatus($uid = null, $torrentId = null, $ignoreTime = false): bool|int
@@ -330,7 +358,7 @@ class HitAndRunRepository extends BaseRepository
 
     }
 
-    public function listStatus()
+    public function listStatus(): array
     {
         $results = [];
         foreach (HitAndRun::$status as $key => $value) {
@@ -346,8 +374,28 @@ class HitAndRunRepository extends BaseRepository
             throw new \LogicException("Can't be pardoned due to status is: " . $model->status_text . " !");
         }
         $model->status = HitAndRun::STATUS_PARDONED;
-        $model->comment = DB::raw(sprintf("concat_ws('\n', comment, '%s')", addslashes('Pardon by ' . $user->username)));
+        $model->comment = $this->getCommentUpdateRaw(addslashes('Pardon by ' . $user->username));
         $model->save();
         return true;
+    }
+
+    public function bulkPardon(array $params, User $user): int
+    {
+        $query = $this->getBulkQuery($params)->where('status', HitAndRun::STATUS_INSPECTING);
+        $update = [
+            'status' => HitAndRun::STATUS_PARDONED,
+            'comment' => $this->getCommentUpdateRaw(addslashes('Pardon by ' . $user->username)),
+        ];
+        $affected =  $query->update($update);
+        do_log(sprintf(
+            'user: %s bulk pardon by filter: %s, affected: %s',
+            $user->id, json_encode($params), $affected
+        ), 'alert');
+        return $affected;
+    }
+
+    private function getCommentUpdateRaw($comment): \Illuminate\Database\Query\Expression
+    {
+        return DB::raw(sprintf("if (comment = '', '%s', concat('\n', '%s', comment))", $comment, $comment));
     }
 }

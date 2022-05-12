@@ -70,6 +70,8 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::resource('exam-users', \App\Http\Controllers\ExamUserController::class);
         Route::put('exam-users-avoid', [\App\Http\Controllers\ExamUserController::class, 'avoid']);
         Route::put('exam-users-recover', [\App\Http\Controllers\ExamUserController::class, 'recover']);
+        Route::put('exam-users-avoid-bulk', [\App\Http\Controllers\ExamUserController::class, 'bulkAvoid']);
+        Route::put('exam-users-delete-bulk', [\App\Http\Controllers\ExamUserController::class, 'bulkDelete']);
 
         Route::get('dashboard/system-info', [\App\Http\Controllers\DashboardController::class, 'systemInfo']);
         Route::get('dashboard/stat-data', [\App\Http\Controllers\DashboardController::class, 'statData']);
@@ -83,8 +85,8 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::resource('hr', \App\Http\Controllers\HitAndRunController::class);
         Route::get('hr-status', [\App\Http\Controllers\HitAndRunController::class, 'listStatus']);
         Route::put('hr-pardon/{id}', [\App\Http\Controllers\HitAndRunController::class, 'pardon']);
-
-
+        Route::put('hr-delete', [\App\Http\Controllers\HitAndRunController::class, 'bulkDelete']);
+        Route::put('hr-pardon', [\App\Http\Controllers\HitAndRunController::class, 'bulkPardon']);
     });
 
 });

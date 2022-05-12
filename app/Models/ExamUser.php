@@ -12,7 +12,7 @@ class ExamUser extends NexusModel
     const STATUS_FINISHED = 1;
     const STATUS_AVOIDED = -1;
 
-    public static $status = [
+    public static array $status = [
         self::STATUS_NORMAL => ['text' => 'Normal'],
         self::STATUS_FINISHED => ['text' => 'Finished'],
         self::STATUS_AVOIDED => ['text' => 'Avoided'],
@@ -21,7 +21,7 @@ class ExamUser extends NexusModel
     const IS_DONE_YES = 1;
     const IS_DONE_NO = 0;
 
-    public static $isDoneInfo = [
+    public static array $isDoneInfo = [
         self::IS_DONE_YES => ['text' => 'Yes'],
         self::IS_DONE_NO => ['text' => 'No'],
     ];

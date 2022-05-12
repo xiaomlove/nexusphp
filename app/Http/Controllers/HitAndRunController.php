@@ -107,4 +107,16 @@ class HitAndRunController extends Controller
         $result = $this->repository->pardon($id, Auth::user());
         return $this->success($result);
     }
+
+    public function bulkPardon(Request $request): array
+    {
+        $result = $this->repository->bulkPardon($request->all(), Auth::user());
+        return $this->success(['result' => $result],"Affected: " . intval($result));
+    }
+
+    public function bulkDelete(Request $request): array
+    {
+        $result = $this->repository->bulkDelete($request->all(), Auth::user());
+        return $this->success(['result' => $result],"Affected: " . intval($result));
+    }
 }

@@ -17,6 +17,8 @@ class User extends Authenticatable
 
     public $timestamps = false;
 
+    protected $perPage = 50;
+
     const STATUS_CONFIRMED = 'confirmed';
     const STATUS_PENDING = 'pending';
 

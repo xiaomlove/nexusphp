@@ -740,6 +740,47 @@ class ExamRepository extends BaseRepository
         return $result;
     }
 
+    public function removeExamUserBulk(array $params, User $user)
+    {
+        $result = $this->getExamUserBulkQuery($params)->delete();
+        do_log(sprintf(
+            'user: %s bulk delete by filter: %s, result: %s',
+            $user->id, json_encode($params), json_encode($result)
+        ), 'alert');
+        return $result;
+    }
+
+    public function avoidExamUserBulk(array $params, User $user): int
+    {
+        $query = $this->getExamUserBulkQuery($params)->where('status', ExamUser::STATUS_NORMAL);
+        $update = [
+            'status' => ExamUser::STATUS_AVOIDED,
+        ];
+        $affected =  $query->update($update);
+        do_log(sprintf(
+            'user: %s bulk avoid by filter: %s, affected: %s',
+            $user->id, json_encode($params), $affected
+        ), 'alert');
+        return $affected;
+    }
+
+    private function getExamUserBulkQuery(array $params): Builder
+    {
+        $query = ExamUser::query();
+        $hasWhere = false;
+        $validFilter = ['uid', 'id', 'exam_id'];
+        foreach ($validFilter as $item) {
+            if (!empty($params[$item])) {
+                $hasWhere = true;
+                $query->whereIn($item, Arr::wrap($params[$item]));
+            }
+        }
+        if (!$hasWhere) {
+            throw new \InvalidArgumentException("No filter.");
+        }
+        return $query;
+    }
+
     public function recoverExamUser(int $examUserId)
     {
         $examUser = ExamUser::query()->where('status',ExamUser::STATUS_AVOIDED)->findOrFail($examUserId);

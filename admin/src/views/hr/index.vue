@@ -4,6 +4,25 @@
             <div class="nexus-table-header">
                 <div class="left">
                     <el-form :inline="true" :model="query">
+                        <el-form-item>
+                            <el-popconfirm
+                                title="Confirm Remove ?"
+                                @confirm="handleDeleteBulk"
+                            >
+                                <template #reference>
+                                    <el-button type="default">Remove</el-button>
+                                </template>
+                            </el-popconfirm>
+                            <el-popconfirm
+                                title="Confirm Pardon ?"
+                                @confirm="handlePardonBulk"
+                            >
+                                <template #reference>
+                                    <el-button type="default">Pardon</el-button>
+                                </template>
+                            </el-popconfirm>
+                        </el-form-item>
+
                         <el-form-item label="">
                             <el-select v-model="query.status" filterable placeholder="Status">
                                 <el-option
@@ -152,11 +171,11 @@ export default {
 
         onMounted(() => {
             console.log('MedalTable onMounted')
+            listHrStatus()
             fetchTableData()
         })
         const fetchTableData = async () => {
             state.loading = true
-            await listHrStatus()
             let res = await api.listHr(state.query)
             renderTableData(res, state)
             state.loading = false
@@ -164,11 +183,35 @@ export default {
         const handlePardon = () => {
             router.push({ name: 'agent-deny-form' })
         }
+        const handlePardonBulk = async () => {
+            let ids = state.multipleSelection.map(item => item.id)
+            if (ids.length == 0) {
+                ElMessage.error("No data selected !")
+                return
+            }
+            console.log(ids)
+            let res = await api.pardonHrBulk({id: ids})
+            ElMessage.success(res.msg)
+            state.query.page = 1;
+            await fetchTableData()
+        }
         const handleDetail = (id) => {
             router.push({ path: '/hr-detail', query: { id } })
         }
         const handleDelete = async (id) => {
             let res = await api.deleteHr(id)
+            ElMessage.success(res.msg)
+            state.query.page = 1;
+            await fetchTableData()
+        }
+        const handleDeleteBulk = async () => {
+            let ids = state.multipleSelection.map(item => item.id)
+            if (ids.length == 0) {
+                ElMessage.error("No data selected !")
+                return
+            }
+            console.log(ids)
+            let res = await api.deleteHrBulk({id: ids})
             ElMessage.success(res.msg)
             state.query.page = 1;
             await fetchTableData()
@@ -221,6 +264,8 @@ export default {
             handlePardon,
             handleDetail,
             handleDelete,
+            handlePardonBulk,
+            handleDeleteBulk,
             fetchTableData,
             changePage,
             handleReset,

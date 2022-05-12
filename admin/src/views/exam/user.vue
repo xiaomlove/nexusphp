@@ -4,6 +4,24 @@
             <div class="nexus-table-header">
                 <div class="left">
                     <el-form :inline="true" :model="query">
+                        <el-form-item>
+                            <el-popconfirm
+                                title="Confirm Remove ?"
+                                @confirm="handleDeleteBulk"
+                            >
+                                <template #reference>
+                                    <el-button type="default">Remove</el-button>
+                                </template>
+                            </el-popconfirm>
+                            <el-popconfirm
+                                title="Confirm Avoid ?"
+                                @confirm="handleAvoidBulk"
+                            >
+                                <template #reference>
+                                    <el-button type="default">Avoid</el-button>
+                                </template>
+                            </el-popconfirm>
+                        </el-form-item>
                         <el-form-item label="">
                             <el-select v-model="query.exam_id" filterable placeholder="Exam" clearable>
                                 <el-option
@@ -159,6 +177,30 @@ export default {
             state.query.page = 1;
             await fetchTableData()
         }
+        const handleAvoidBulk = async () => {
+            let ids = state.multipleSelection.map(item => item.id)
+            if (ids.length == 0) {
+                ElMessage.error("No data selected !")
+                return
+            }
+            console.log(ids)
+            let res = await api.avoidExamUserBulk({id: ids})
+            ElMessage.success(res.msg)
+            state.query.page = 1;
+            await fetchTableData()
+        }
+        const handleDeleteBulk = async () => {
+            let ids = state.multipleSelection.map(item => item.id)
+            if (ids.length == 0) {
+                ElMessage.error("No data selected !")
+                return
+            }
+            console.log(ids)
+            let res = await api.deleteExamUserBulk({id: ids})
+            ElMessage.success(res.msg)
+            state.query.page = 1;
+            await fetchTableData()
+        }
         // 选择项
         const handleSelectionChange = (val) => {
             state.multipleSelection = val
@@ -204,6 +246,8 @@ export default {
             handleEdit,
             handleDelete,
             handleDetail,
+            handleAvoidBulk,
+            handleDeleteBulk,
             fetchTableData,
             changePage,
             handleSortChange,
