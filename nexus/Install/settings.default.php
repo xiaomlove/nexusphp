@@ -394,6 +394,8 @@ return array (
     'google_drive_client_secret' => '',
     'google_drive_refresh_token' => '',
     'google_drive_folder_id' => '',
+      'via_ftp' => 'no',
+      'via_sftp' => 'no',
   ),
      'hr' => [
          'mode' => HitAndRun::MODE_DISABLED,

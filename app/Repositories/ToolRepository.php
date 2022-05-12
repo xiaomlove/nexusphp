@@ -136,6 +136,8 @@ class ToolRepository extends BaseRepository
 
         do_log("[BACKUP_ALL_DONE]: " . json_encode($backupResult));
 
+        return $backupResult;
+
     }
 
     private function saveToGoogleDrive(array $setting, $filename): bool|string
