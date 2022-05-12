@@ -8,6 +8,7 @@ use App\Models\PollAnswer;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mailer\Transport\Dsn;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
 use Symfony\Component\Mailer\Mailer;
@@ -119,6 +120,26 @@ class ToolRepository extends BaseRepository
         if ($backupResult['result_code'] != 0) {
             throw new \RuntimeException("Backup all fail.");
         }
+        $filename = $backupResult['filename'];
+
+        $saveResult = $this->saveToGoogleDrive($setting, $filename);
+        do_log("[BACKUP_GOOGLE_DRIVE]: $saveResult");
+        $backupResult['google_drive'] = $saveResult;
+
+        $saveResult = $this->saveToFtp($setting, $filename);
+        do_log("[BACKUP_FTP]: $saveResult");
+        $backupResult['ftp'] = $saveResult;
+
+        $saveResult = $this->saveToSftp($setting, $filename);
+        do_log("[BACKUP_SFTP]: $saveResult");
+        $backupResult['sftp'] = $saveResult;
+
+        do_log("[BACKUP_ALL_DONE]: " . json_encode($backupResult));
+
+    }
+
+    private function saveToGoogleDrive(array $setting, $filename): bool|string
+    {
         $clientId = $setting['google_drive_client_id'] ?? '';
         $clientSecret = $setting['google_drive_client_secret'] ?? '';
         $refreshToken = $setting['google_drive_refresh_token'] ?? '';
@@ -144,25 +165,70 @@ class ToolRepository extends BaseRepository
         $client->refreshToken($refreshToken);
         $service = new \Google\Service\Drive($client);
         $adapter = new \Masbug\Flysystem\GoogleDriveAdapter($service, $folderId);
-
         $filesystem = new \League\Flysystem\Filesystem($adapter);
+        $disk = new \Illuminate\Filesystem\FilesystemAdapter($filesystem, $adapter);
+        return $this->doTransfer($disk, $filename);
+    }
 
+    private function saveToFtp(array $setting, $filename): bool|string
+    {
+        if ($setting['via_ftp'] !== 'yes') {
+            do_log("via_ftp !== 'yes', via_ftp: " . $setting['via_ftp'] ?? '');
+            return false;
+        }
+        $config = config('filesystems.disks.ftp');
+        if (empty($config)) {
+            do_log("No ftp config.");
+            return false;
+        }
+        foreach (['host', 'username', 'password', 'root'] as $item) {
+            if (empty($config[$item])) {
+                do_log("No ftp $item.");
+                return false;
+            }
+        }
+        $disk = Storage::disk('ftp');
+        return $this->doTransfer($disk, $filename);
+
+    }
+
+    public function saveToSftp(array $setting, $filename): bool|string
+    {
+        if ($setting['via_sftp'] !== 'yes') {
+            do_log("via_sftp !== 'yes', via_sftp: " . $setting['via_sftp'] ?? '');
+            return false;
+        }
+        $config = config('filesystems.disks.sftp');
+        if (empty($config)) {
+            do_log("No sftp config.");
+            return false;
+        }
+        foreach (['host', 'username', 'password', 'root'] as $item) {
+            if (empty($config[$item])) {
+                do_log("No sftp $item.");
+                return false;
+            }
+        }
+        $disk = Storage::disk('sftp');
+        return $this->doTransfer($disk, $filename);
+    }
+
+    private function doTransfer(\Illuminate\Filesystem\FilesystemAdapter $remoteFilesystem, $filename): bool|string
+    {
         $localAdapter = new \League\Flysystem\Local\LocalFilesystemAdapter('/');
         $localFilesystem = new \League\Flysystem\Filesystem($localAdapter);
-
-        $filename = $backupResult['filename'];
         $start = Carbon::now();
         try {
-            $filesystem->writeStream(basename($filename), $localFilesystem->readStream($filename));
+            $remoteFilesystem->writeStream(basename($filename), $localFilesystem->readStream($filename));
             $speed = !(float)$start->diffInSeconds() ? 0 :filesize($filename) / (float)$start->diffInSeconds();
             $log =  'Elapsed time: '.$start->diffForHumans(null, true);
             $log .= ', Speed: '. number_format($speed/1024,2) . ' KB/s';
             do_log($log);
-            $backupResult['upload_result'] = 'success: '  .$log;
+            return true;
         } catch (\Throwable $exception) {
-            $backupResult['upload_result'] = 'fail: ' . $exception->getMessage();
+            do_log("Transfer error: " . $exception->getMessage(), 'error');
+            return $exception->getMessage();
         }
-        return $backupResult;
     }
 
     /**

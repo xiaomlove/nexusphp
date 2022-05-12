@@ -23,6 +23,7 @@ use App\Repositories\HitAndRunRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\SearchRepository;
 use App\Repositories\TagRepository;
+use App\Repositories\ToolRepository;
 use App\Repositories\TorrentRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use JeroenG\Explorer\Domain\Syntax\Matching;
 use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
+use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
 use Rhilip\Bencode\Bencode;
@@ -126,9 +128,14 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $arr = [1,2];
-        $r = Carbon::now()->format('d');
-        dd($r, $arr);
+        $rep = new ToolRepository();
+        $filename = resource_path('lang/zh_CN.json');
+        $setting = [
+            'via_sftp' => 'yes',
+        ];
+//        $r = $rep->saveToSftp($setting, $filename);
+        $r = strval(true);
+        dd($r);
     }
 
 

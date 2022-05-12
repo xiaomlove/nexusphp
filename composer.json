@@ -40,6 +40,8 @@
         "laravel/octane": "^1.2",
         "laravel/sanctum": "^2.10",
         "laravel/tinker": "^2.5",
+        "league/flysystem-ftp": "^3.0",
+        "league/flysystem-sftp-v3": "^3.0",
         "masbug/flysystem-google-drive-ext": "^2.0",
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",

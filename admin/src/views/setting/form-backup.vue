@@ -72,6 +72,22 @@
             </div>
         </el-form-item>
 
+        <el-form-item label="Via ftp" prop="backup.via_ftp">
+            <el-radio v-model="formData.backup.via_ftp" label="yes">Yes</el-radio>
+            <el-radio v-model="formData.backup.via_ftp" label="no">No</el-radio>
+            <div class="nexus-help-text">
+                Via ftp or not. If yes, add configuration to .env, refer to <a href="https://laravel.com/docs/master/filesystem#ftp-driver-configuration">Laravel doc.</a>
+            </div>
+        </el-form-item>
+
+        <el-form-item label="Via sftp" prop="backup.via_sftp">
+            <el-radio v-model="formData.backup.via_sftp" label="yes">Yes</el-radio>
+            <el-radio v-model="formData.backup.via_sftp" label="no">No</el-radio>
+            <div class="nexus-help-text">
+                Via sftp or not. If yes, add configuration to .env, refer to <a href="https://laravel.com/docs/master/filesystem#sftp-driver-configuration">Laravel doc.</a>
+            </div>
+        </el-form-item>
+
         <el-form-item>
             <el-button type="primary" @click="submitAdd()">Submit</el-button>
         </el-form-item>

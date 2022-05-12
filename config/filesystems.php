@@ -58,7 +58,35 @@ return [
             'refreshToken' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
             'folderId' => env('GOOGLE_DRIVE_FOLDER_ID'),
         ],
+        'ftp' => [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
 
+            // Optional FTP Settings...
+            'port' => (int)env('FTP_PORT', 21),
+            'root' => env('FTP_ROOT'),
+            'passive' => (bool)env('FTP_PASSIVE', false),
+            'ssl' => (bool)env('FTP_SSL', false),
+            'timeout' => (int)env('FTP_TIMEOUT', 30),
+        ],
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_HOST'),
+
+            // Settings for basic authentication...
+            'username' => env('SFTP_USERNAME'),
+            'password' => env('SFTP_PASSWORD'),
+
+            // Settings for SSH key based authentication with encryption password...
+            'privateKey' => env('SFTP_PRIVATE_KEY'),
+
+            // Optional SFTP Settings...
+            'port' => (int)env('SFTP_PORT', 22),
+            'root' => env('SFTP_ROOT', ''),
+            'timeout' => (int)env('SFTP_TIMEOUT', 30),
+        ],
     ],
 
     /*
