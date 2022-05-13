@@ -99,7 +99,7 @@ class Update extends Install
             $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
         }
         //since beta8
-        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('categories', 'icon_id')) {
+        if (WITH_LARAVEL && !NexusDB::hasColumn('categories', 'icon_id')) {
             $this->doLog('[INIT CATEGORY ICON_ID]');
             $this->runMigrate('database/migrations/2022_03_08_040415_add_icon_id_to_categories_table.php');
             $icon = Icon::query()->orderBy('id', 'asc')->first();
@@ -108,7 +108,7 @@ class Update extends Install
             }
         }
         //fix base url, since beta8
-        if (WITH_LARAVEL && NexusDB::schema()->hasTable('settings')) {
+        if (WITH_LARAVEL && NexusDB::hasTable('settings')) {
             $settingBasic = get_setting('basic');
             if (isset($settingBasic['BASEURL']) && Str::startsWith($settingBasic['BASEURL'], 'localhost')) {
                 $this->doLog('[RESET CONFIG basic.BASEURL]');
@@ -137,11 +137,11 @@ class Update extends Install
          * attendance change, do migrate
          */
         if (WITH_LARAVEL) {
-            if (!NexusDB::schema()->hasTable('attendance')) {
+            if (!NexusDB::hasTable('attendance')) {
                 //no table yet, no need to migrate
                 $this->runMigrate('database/migrations/2021_06_08_113437_create_attendance_table.php');
             }
-            if (!NexusDB::schema()->hasColumn('attendance', 'total_days')) {
+            if (!NexusDB::hasColumn('attendance', 'total_days')) {
                 $this->runMigrate('database/migrations/2021_06_13_215440_add_total_days_to_attendance_table.php');
                 $attendanceRep = new AttendanceRepository();
                 $count = $attendanceRep->migrateAttendance();
@@ -154,7 +154,7 @@ class Update extends Install
          *
          * add seed points to user
          */
-        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('users', 'seed_points')) {
+        if (WITH_LARAVEL && !NexusDB::hasColumn('users', 'seed_points')) {
             $this->runMigrate('database/migrations/2021_06_24_013107_add_seed_points_to_users_table.php');
             //Don't do this, initial seed points = 0;
 //            $result = $this->initSeedPoints();
@@ -166,7 +166,7 @@ class Update extends Install
          *
          * add id to agent_allowed_exception
          */
-        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('agent_allowed_exception', 'id')) {
+        if (WITH_LARAVEL && !NexusDB::hasColumn('agent_allowed_exception', 'id')) {
             $this->runMigrate('database/migrations/2022_02_25_021356_add_id_to_agent_allowed_exception_table.php');
             $this->doLog("[ADD_ID_TO_AGENT_ALLOWED_EXCEPTION]");
         }
@@ -176,7 +176,7 @@ class Update extends Install
          *
          * init tag
          */
-        if (WITH_LARAVEL && !NexusDB::schema()->hasTable('tags')) {
+        if (WITH_LARAVEL && !NexusDB::hasTable('tags')) {
             $this->runMigrate('database/migrations/2022_03_07_012545_create_tags_table.php');
             $this->initTag();
             $this->doLog("[INIT_TAG]");
@@ -205,7 +205,7 @@ class Update extends Install
          *
          * add attendance_card to users
          */
-        if (WITH_LARAVEL && !NexusDB::schema()->hasColumn('users', 'attendance_card')) {
+        if (WITH_LARAVEL && !NexusDB::hasColumn('users', 'attendance_card')) {
             $this->runMigrate('database/migrations/2022_04_02_163930_create_attendance_logs_table.php');
             $this->runMigrate('database/migrations/2022_04_03_041642_add_attendance_card_to_users_table.php');
             $rep = new AttendanceRepository();
@@ -232,7 +232,7 @@ class Update extends Install
             $this->doLog(__METHOD__ . ", laravel is not available");
             return;
         }
-        if (NexusDB::schema()->hasColumn('torrents', 'tags')) {
+        if (NexusDB::hasColumn('torrents', 'tags')) {
             if (Torrent::query()->where('tags', '>', 0)->count() > 0 && TorrentTag::query()->count() == 0) {
                 $this->doLog("[MIGRATE_TORRENT_TAG]...");
                 $tagRep = new TagRepository();

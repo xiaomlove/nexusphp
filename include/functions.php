@@ -4951,7 +4951,7 @@ function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
         $data[] = sprintf("(%s, %s, %s, %s, '%s')", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow), $autoload);
     }
     $sql .= implode(",", $data) . " on duplicate key update value = values(value)";
-    sql_query($sql) or sqlerr(__FILE__, __LINE__);
+    \Nexus\Database\NexusDB::statement($sql);
 }
 
 function getFullDirectory($dir)

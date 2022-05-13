@@ -2,6 +2,7 @@
 
 namespace Nexus\Database;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
@@ -262,12 +263,28 @@ class NexusDB
         $connection->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
     }
 
-    public static function schema(): \Illuminate\Database\Schema\Builder
+    private static function schema(): \Illuminate\Database\Schema\Builder
     {
         if (IN_NEXUS) {
             return Capsule::schema(self::ELOQUENT_CONNECTION_NAME);
         }
         throw new \RuntimeException('can not call this when not in nexus.');
+    }
+
+    public static function hasTable($table): bool
+    {
+        if (IN_NEXUS) {
+            return self::schema()->hasTable($table);
+        }
+        return Schema::hasTable($table);
+    }
+
+    public static function hasColumn($table, $column): bool
+    {
+        if (IN_NEXUS) {
+            return self::schema()->hasColumn($table, $column);
+        }
+        return Schema::hasColumn($table, $column);
     }
 
     public static function table($table): \Illuminate\Database\Query\Builder

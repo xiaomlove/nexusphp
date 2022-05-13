@@ -2,6 +2,7 @@
 
 namespace Nexus\Install;
 
+use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Str;
@@ -44,7 +45,9 @@ class Install
         if (!session_id()) {
             session_start();
         }
-        $this->checkLock();
+        if (!$this->runningInConsole()) {
+            $this->checkLock();
+        }
         $this->currentStep = min(intval($_REQUEST['step'] ?? 1) ?: 1, count($this->steps) + 1);
     }
 
@@ -56,6 +59,11 @@ class Install
     public function currentStep()
     {
         return $this->currentStep;
+    }
+
+    public function runningInConsole(): bool
+    {
+        return php_sapi_name() == 'cli';
     }
 
     public function canAccessStep($step)
@@ -144,9 +152,10 @@ class Install
     {
         $gdInfo = function_exists('gd_info') ? gd_info() : [];
         $tableRows = [];
+        $phpVersionRequire = '>= ' . $this->minimumPhpVersion;
         $tableRows[] = [
             'label' => 'PHP version',
-            'required' => '>= ' . $this->minimumPhpVersion,
+            'required' => $phpVersionRequire,
             'current' => PHP_VERSION,
             'result' => $this->yesOrNo(version_compare(PHP_VERSION, $this->minimumPhpVersion, '>=')),
         ];
@@ -188,13 +197,13 @@ class Install
             ];
         }
 
-
-
-        $fails = array_filter($tableRows, function ($value) {return in_array($value['required'], ['true', 'enabled']) && $value['result'] == 'NO';});
+        $fails = array_filter($tableRows, function ($value) use ($phpVersionRequire) {
+            return in_array($value['required'], ['true', 'enabled', $phpVersionRequire]) && $value['result'] == 'NO';
+        });
         $pass = empty($fails);
-
         return [
             'table_rows' => $tableRows,
+            'fails' => $fails,
             'pass' => $pass,
         ];
     }
@@ -231,7 +240,7 @@ class Install
         require $originalConfigFile;
         $settings = require $defaultSettingsFile;
         $settingsFromDb = [];
-        if (NexusDB::schema()->hasTable('settings') && get_row_count('settings') > 0) {
+        if (NexusDB::hasTable('settings') && Setting::query()->count() > 0) {
             $settingsFromDb = get_setting();
         }
         $this->doLog("settings form db: " . json_encode($settingsFromDb));
@@ -278,6 +287,7 @@ class Install
             'table_rows' => $tableRows,
             'symbolic_links' => $symbolicLinks,
             'settings' => $settings,
+            'fails' => $fails,
             'pass' => $pass,
         ];
     }
@@ -290,8 +300,13 @@ class Install
 
     public function gotoStep($step)
     {
-        nexus_redirect(getBaseUrl() . "?step=$step");
-        die(0);
+        if ($this->runningInConsole()) {
+            $this->currentStep = $step;
+        } else {
+            nexus_redirect(getBaseUrl() . "?step=$step");
+            die(0);
+        }
+
     }
 
     public function maxStep()
@@ -524,7 +539,7 @@ class Install
 
     public function saveSettings($settings)
     {
-        if (!NexusDB::schema()->hasTable('settings')) {
+        if (!NexusDB::hasTable('settings')) {
             $this->runMigrate('database/migrations/2021_06_08_113437_create_settings_table.php');
         }
         foreach ($settings as $prefix => $group) {
@@ -635,9 +650,9 @@ class Install
 
     public function getMysqlVersionInfo(): array
     {
-        $res = mysql_query('select version() as v');
-        $result = mysql_fetch_assoc($res);
-        $version = $result['v'];
+        $sql = 'select version() as v';
+        $result = NexusDB::select($sql);
+        $version = $result[0]['v'];
         $match = version_compare($version, '5.7.7', '>=');
         return compact('version', 'match');
     }
