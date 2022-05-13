@@ -287,4 +287,14 @@ class UserController extends Controller
         return $this->success(['success' => $result]);
     }
 
+    public function removeTwoStepAuthentication(Request $request): array
+    {
+        $user = Auth::user();
+        $request->validate([
+            'uid' => 'required',
+        ]);
+        $result = $this->repository->removeTwoStepAuthentication($user, $request->uid, );
+        return $this->success(['success' => $result]);
+    }
+
 }

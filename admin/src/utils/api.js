@@ -208,7 +208,9 @@ const api = {
     pardonHrBulk: (params = {}) => {
         return axios.put('hr-pardon', params);
     },
-
+    removeTwoStepAuthentication: (params = {}) => {
+        return axios.put('user-remove-two-step', params);
+    },
 }
 
 export default api

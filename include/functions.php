@@ -1503,10 +1503,10 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 
 		@mail($to,"=?".$hdr_encoding."?B?".base64_encode($subject)."?=",$body,$headers) or stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail']);
 
-		ini_restore(SMTP);
-		ini_restore(smtp_port);
+		ini_restore('SMTP');
+		ini_restore('smtp_port');
 		if ($windows)
-		ini_restore(sendmail_from);
+		ini_restore('sendmail_from');
 	}
 	elseif ($smtptype == 'external') {
 	    /*

@@ -7,13 +7,13 @@
         :close-on-click-modal="false"
     >
         <el-table :data="inviteInfo" v-loading="loading">
-            <el-table-column prop="id" label="ID" width="55"></el-table-column>
+            <el-table-column prop="id" label="ID" width="80"></el-table-column>
             <el-table-column prop="inviter_user.username" label="Inviter" width="150"></el-table-column>
             <el-table-column prop="invitee" label="Receive email"></el-table-column>
-            <el-table-column prop="hash" label="Hash"></el-table-column>
+            <el-table-column prop="hash" label="Hash" width="300"></el-table-column>
             <el-table-column prop="valid_text" label="Hash valid" width="100"></el-table-column>
             <el-table-column prop="invitee_register_email" label="Register email"></el-table-column>
-            <el-table-column prop="time_invited" label="Time invited" width="160"></el-table-column>
+            <el-table-column prop="time_invited" label="Time invited" width="180"></el-table-column>
         </el-table>
 
     </el-dialog>

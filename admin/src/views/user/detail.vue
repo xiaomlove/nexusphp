@@ -68,30 +68,23 @@
                     <td><el-button size="small" @click="handleViewInviteInfo">View</el-button></td>
                 </tr>
                 <tr>
-                    <td>Seed points</td>
-                    <td>{{baseInfo.seed_points}}</td>
-                </tr>
-                <tr>
-                    <td>H&R inspecting</td>
-                    <td>{{baseInfo.invites}}</td>
+                    <td>Two-step authentication</td>
+                    <td>{{baseInfo.two_step_secret ? 'Enabled' : 'Disabled'}}</td>
                     <td>
                         <el-popconfirm
-                            title="Confirm Remove ?"
-                            @confirm="handleRemoveHitAndRun"
+                            v-if="baseInfo.two_step_secret"
+                            title="Confirm Disable Two-step authentication ?"
+                            @confirm="handleRemoveTwoStepAuthentication"
                         >
                             <template #reference>
-                                <el-button size="small">Remove</el-button>
-                            </template>
-                        </el-popconfirm>
-                        <el-popconfirm
-                            title="Confirm Pardon ?"
-                            @confirm="handlePardonHitAndRun"
-                        >
-                            <template #reference>
-                                <el-button size="small">Pardon</el-button>
+                                <el-button type="default" size="small">Disable</el-button>
                             </template>
                         </el-popconfirm>
                     </td>
+                </tr>
+                <tr>
+                    <td>Seed points</td>
+                    <td>{{baseInfo.seed_points}}</td>
                 </tr>
                 <tr>
                     <td>Invites</td>
@@ -356,12 +349,12 @@ export default {
             ElMessage.success(res.msg)
             await fetchPageData()
         }
-
-        const handleRemoveHitAndRun = async (id) => {
-            let res = await api.removeUserMedal(id)
+        const handleRemoveTwoStepAuthentication = async () => {
+            let res = await api.removeTwoStepAuthentication({uid: id})
             ElMessage.success(res.msg)
             await fetchPageData()
         }
+
         return {
             ...toRefs(state),
             handleRemoveExam,
@@ -377,6 +370,7 @@ export default {
             fetchPageData,
             handleRemoveUserMedal,
             handleIncrementDecrement,
+            handleRemoveTwoStepAuthentication,
             assignExam,
             grantMedal,
             viewInviteInfo,

@@ -48,7 +48,7 @@ class UserRepository extends BaseRepository
             'inviter' => function ($query) {return $query->select(User::$commonFields);},
             'valid_medals'
         ];
-        $user = User::query()->with($with)->findOrFail($id, User::$commonFields);
+        $user = User::query()->with($with)->findOrFail($id);
         $userResource = new UserResource($user);
         $baseInfo = $userResource->response()->getData(true)['data'];
 
@@ -60,9 +60,6 @@ class UserRepository extends BaseRepository
         } else {
             $examInfo = null;
         }
-
-
-
         return [
             'base_info' => $baseInfo,
             'exam_info' => $examInfo,
@@ -284,9 +281,7 @@ class UserRepository extends BaseRepository
 
     public function removeLeechWarn($operator, $uid): bool
     {
-        if (!$operator instanceof User) {
-            $operator = User::query()->findOrFail(intval($operator), User::$commonFields);
-        }
+        $operator = $this->getOperator($operator);
         $classRequire = Setting::get('authority.prfmanage');
         if ($operator->class < $classRequire) {
             throw new \RuntimeException("No permission.");
@@ -296,6 +291,25 @@ class UserRepository extends BaseRepository
         $user->leechwarn = 'no';
         $user->leechwarnuntil = null;
         return $user->save();
+    }
+
+    public function removeTwoStepAuthentication($operator, $uid): bool
+    {
+        $operator = $this->getOperator($operator);
+        if (!$operator->canAccessAdmin()) {
+            throw new \RuntimeException("No permission.");
+        }
+        $user = User::query()->findOrFail($uid, User::$commonFields);
+        $user->two_step_secret = '';
+        return $user->save();
+    }
+
+    private function getOperator($operator)
+    {
+        if (!$operator instanceof User) {
+            $operator = User::query()->findOrFail(intval($operator), User::$commonFields);
+        }
+        return $operator;
     }
 
 

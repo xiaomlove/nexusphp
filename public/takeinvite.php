@@ -47,8 +47,6 @@ $hash  = md5(mt_rand(1,10000).$CURUSER['username'].TIMENOW.$CURUSER['passhash'])
 
 $title = $SITENAME.$lang_takeinvite['mail_tilte'];
 
-sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
-sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
 $signupUrl = getSchemeAndHttpHost() . "/signup.php?type=invite&invitenumber=$hash";
 $message = <<<EOD
 {$lang_takeinvite['mail_one']}{$arr['username']}{$lang_takeinvite['mail_two']}
@@ -59,8 +57,12 @@ $body
 <br /><br />{$lang_takeinvite['mail_six']}
 EOD;
 
-sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
+$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
 //this email is sent only when someone give out an invitation
+if ($sendResult === true) {
+    sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
+    sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
+}
 
 header("Refresh: 0; url=invite.php?id=".htmlspecialchars($id)."&sent=1");
 ?>

@@ -53,6 +53,11 @@ class UserResource extends JsonResource
             $out['completed_torrents_count'] = $this->completed_torrents_count;
             $out['incomplete_torrents_count'] = $this->incomplete_torrents_count;
         }
+
+        if (nexus()->isPlatformAdmin() && $request->routeIs('users.show')) {
+            $out['two_step_secret'] = $this->two_step_secret;
+        }
+
         return $out;
     }
 }
