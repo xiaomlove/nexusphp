@@ -247,8 +247,10 @@ $lang_usercp = array
 	'text_update_promotion_link' => "Update Promotion Link",
 	'text_read_more' => "Read More",
     'row_two_step_secret' => 'Two step authentication',
-    'text_two_step_secret_bind_note' => '',
-    'text_two_step_secret_remove_note' => '',
+    'text_two_step_secret_bind_by_qrdoe_note' => 'You can use Google Authenticator or Authy to scan the QR code on the left<br/><br/>If the QR code on the left does not load successfully, you can try to open this link to load: ',
+    'text_two_step_secret_bind_manually_note' => 'Or manually enter the following key in the APP: ',
+    'text_two_step_secret_bind_complete_note' => 'Enter code to complete the two-step authentication',
+    'text_two_step_secret_unbind_note' => 'Enter code to cancel two-step authentication',
 );
 
 ?>

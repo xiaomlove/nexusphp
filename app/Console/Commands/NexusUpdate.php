@@ -45,7 +45,7 @@ class NexusUpdate extends Command
         require ROOT_PATH . 'nexus/Database/helpers.php';
         //Step 1
         $step = $this->update->currentStep();
-        $log = "Step 1, Checking environment...";
+        $log = sprintf('Step %s, %s...', $step, $this->update->getStepName($step));
         $this->doLog($log);
         $requirements = $this->update->listRequirementTableRows();
         $fails = $requirements['fails'];
@@ -58,17 +58,17 @@ class NexusUpdate extends Command
         $this->update->gotoStep(++$step);
 
         //Step 2
-        $log = "Step 2, get files, cli skip...";
+        $log = sprintf('Step %s, %s, cli skip...', $step, $this->update->getStepName($step));
         $this->doLog($log);
         $this->update->gotoStep(++$step);
 
         //Step 3
-        $log = "Step 3, update .env, cli skip...";
+        $log = sprintf('Step %s, %s, cli skip...', $step, $this->update->getStepName($step));
         $this->doLog($log);
         $this->update->gotoStep(++$step);
 
         //Step 4
-        $log = "Step 4, perform update...";
+        $log = sprintf('Step %s, %s...', $step, $this->update->getStepName($step));
         $this->doLog($log);
         $settingTableRows = $this->update->listSettingTableRows();
         $settings = $settingTableRows['settings'];

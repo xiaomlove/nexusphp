@@ -61,3 +61,10 @@ function removeClaim($params)
     return $rep->delete($params['id'], $CURUSER['id']);
 }
 
+function removeUserLeechWarn($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\UserRepository();
+    return $rep->removeLeechWarn($CURUSER['id'], $params['uid']);
+}
+

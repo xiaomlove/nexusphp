@@ -243,7 +243,12 @@ $lang_usercp = array
 	'text_show_advertisement_note' => "我想看到廣告",
 	'row_promotion_link' => "宣傳鏈結",
 	'text_update_promotion_link' => "更新宣傳鏈結",
-	'text_read_more' => "了解更多"
+	'text_read_more' => "了解更多",
+    'row_two_step_secret' => '兩步驗證',
+    'text_two_step_secret_bind_by_qrdoe_note' => '你可以使用 Google Authenticator 或 Authy 掃描左側二維碼<br/><br/>如果左側二維碼沒有加載成功，可以嘗試打開此鏈接進行加載：',
+    'text_two_step_secret_bind_manually_note' => '或者在 APP 中手動輸入以下 Key：',
+    'text_two_step_secret_bind_complete_note' => '輸入 code 完成兩步驗證',
+    'text_two_step_secret_unbind_note' => '輸入 code 取消兩步驗證',
 );
 
 ?>

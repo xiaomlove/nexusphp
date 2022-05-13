@@ -672,4 +672,9 @@ class Install
         $this->doLog("set lock at: $fullFilename, result: " . var_export($res, true));
     }
 
+    public function getStepName($step): string
+    {
+        return $this->steps[$step - 1] ?? '';
+    }
+
 }

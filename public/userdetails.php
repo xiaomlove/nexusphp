@@ -279,6 +279,20 @@ tr_small($lang_userdetails['row_avatar'], return_avatar_image(htmlspecialchars(t
 
 if ($userInfo->valid_medals->isNotEmpty()) {
     tr_small($lang_userdetails['row_medal'], build_medal_image($userInfo->valid_medals, 200, $CURUSER['id'] == $user['id']), 1);
+    $warnMedalJs = <<<JS
+jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
+    let input = jQuery(this);
+    let checked = input.prop("checked")
+    jQuery.post('ajax.php', {params: {id: this.value}, action: 'toggleUserMedalStatus'}, function (response) {
+        console.log(response)
+        if (response.ret != 0) {
+            input.prop("checked", !checked)
+            alert(response.msg)
+        }
+    }, 'json')
+})
+JS;
+    \Nexus\Nexus::js($warnMedalJs, 'footer', false);
 }
 
 $uclass = get_user_class_image($user["class"]);
@@ -456,6 +470,24 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 		{
 			print($lang_userdetails['text_until'].$leechwarnuntil);
 			print("<br />(" . mkprettytime(strtotime($leechwarnuntil) - strtotime(date("Y-m-d H:i:s"))) .$lang_userdetails['text_to_go'].")");
+			printf('&nbsp;<input id="remove-leech-warn" type="button" class="btn" value="Remove" data-uid="%s" />', $user['id']);
+			$removeLeechWarnJs = <<<JS
+jQuery('#remove-leech-warn').on('click', function () {
+    if (!window.confirm('{$lang_userdetails['sure_to_remove_leech_warn']}')) {
+        return
+    }
+    let params = {action: 'removeUserLeechWarn', params: {uid: jQuery(this).attr('data-uid')}}
+    jQuery.post('ajax.php', params, function (response) {
+        console.log(response)
+        if (response.ret == 0) {
+            location.reload()
+        } else {
+            alert(response.msg)
+        }
+    }, 'json')
+})
+JS;
+            \Nexus\Nexus::js($removeLeechWarnJs, 'footer', false);
 		}else{
 			print("<i>".$lang_userdetails['text_for_unlimited_time']."</i>");
 		}
@@ -504,21 +536,5 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	}
 }
 end_main_frame();
-
-echo <<<EOT
-<script>
-jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
-    let input = jQuery(this);
-    let checked = input.prop("checked")
-    jQuery.post('ajax.php', {params: {id: this.value}, action: 'toggleUserMedalStatus'}, function (response) {
-        console.log(response)
-        if (response.ret != 0) {
-            input.prop("checked", !checked)
-            alert(response.msg)
-        }
-    }, 'json')
-})
-</script>
-EOT;
 stdfoot();
 ?>

@@ -282,6 +282,22 @@ class UserRepository extends BaseRepository
         return true;
     }
 
+    public function removeLeechWarn($operator, $uid): bool
+    {
+        if (!$operator instanceof User) {
+            $operator = User::query()->findOrFail(intval($operator), User::$commonFields);
+        }
+        $classRequire = Setting::get('authority.prfmanage');
+        if ($operator->class < $classRequire) {
+            throw new \RuntimeException("No permission.");
+        }
+        $user = User::query()->findOrFail($uid, User::$commonFields);
+        NexusDB::cache_del('user_'.$uid.'_content');
+        $user->leechwarn = 'no';
+        $user->leechwarnuntil = null;
+        return $user->save();
+    }
+
 
 
 }
