@@ -210,15 +210,16 @@ if (get_user_class() >= $delownsub_class)
 				if ($sure == 1)
 				{
 					$reason = $_POST["reason"];
-					sql_query("DELETE FROM subs WHERE id=$delete") or sqlerr(__FILE__, __LINE__);
-					if (!@unlink("$SUBSPATH/$a[torrent_id]/$a[id].$a[ext]"))
-					{
+					$filename = getFullDirectory("$SUBSPATH/$a[torrent_id]/$a[id].$a[ext]");
+					do_log("Going to delete subtitle: $filename ...");
+					if (!@unlink($filename)) {
+					    do_log("Delete subtitle: $filename fail.", 'error');
 						stdmsg($lang_subtitles['std_error'], $lang_subtitles['std_this_file']."$a[filename]".$lang_subtitles['std_is_invalid']);
 						stdfoot();
 						die;
-					}
-					else {
-					KPS("-",$uploadsubtitle_bonus,$a["uppedby"]); //subtitle uploader loses bonus for deleted subtitle
+					} else {
+                        sql_query("DELETE FROM subs WHERE id=$delete") or sqlerr(__FILE__, __LINE__);
+					    KPS("-",$uploadsubtitle_bonus,$a["uppedby"]); //subtitle uploader loses bonus for deleted subtitle
 					}
 					if ($CURUSER['id'] != $a['uppedby']){
 						$msg = $CURUSER['username'].$lang_subtitles_target[get_user_lang($a['uppedby'])]['msg_deleted_your_sub']. $a['title'].($reason != "" ? $lang_subtitles_target[get_user_lang($a['uppedby'])]['msg_reason_is'].$reason : "");
