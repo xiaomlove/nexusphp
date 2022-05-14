@@ -12,14 +12,14 @@ class BackuAll extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:all';
+    protected $signature = 'backup:all {--method=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Backup all data, include web root and database.';
+    protected $description = 'Backup all data, include web root and database. options: --method';
 
     /**
      * Create a new command instance.
@@ -38,8 +38,10 @@ class BackuAll extends Command
      */
     public function handle()
     {
+        $method = $this->option('method');
+        $this->info("method: $method");
         $rep = new ToolRepository();
-        $result = $rep->backupAll();
+        $result = $rep->backupAll($method);
         $log = sprintf(
             '[%s], %s, result: %s',
             nexus()->getRequestId(), __METHOD__, var_export($result, true)

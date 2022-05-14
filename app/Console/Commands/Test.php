@@ -128,13 +128,7 @@ class Test extends Command
 //        $r = $rep->getContinuousDays($attendance);
 //        $r = $rep->getContinuousPoints(11);
 
-        $rep = new ToolRepository();
-        $filename = resource_path('lang/zh_CN.json');
-        $setting = [
-            'via_sftp' => 'yes',
-        ];
-//        $r = $rep->saveToSftp($setting, $filename);
-        $r = strval(true);
+        $r = trim(exec('command -v 7z.exe'));
         dd($r);
     }
 

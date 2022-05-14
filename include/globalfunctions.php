@@ -628,6 +628,16 @@ function isRunningInConsole(): bool
     return !RUNNING_IN_OCTANE && php_sapi_name() == 'cli';
 }
 
+function isRunningOnWindows(): bool
+{
+    return !RUNNING_IN_OCTANE && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+}
+
+function command_exists($command): bool
+{
+    return !(trim(exec("command -v $command")) == '');
+}
+
 function get_tracker_schema_and_host($combine = false): array|string
 {
     global $https_announce_urls, $announce_urls;

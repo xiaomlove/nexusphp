@@ -26,7 +26,7 @@
                 </el-option>
             </el-select>
             <div class="nexus-help-text">
-                Do backup at this hour, If frequency  = 'hourly', this value will be ignore.
+                Do backup at this hour.
             </div>
         </el-form-item>
 
@@ -40,7 +40,7 @@
                 </el-option>
             </el-select>
             <div class="nexus-help-text">
-                Do backup at this minute.
+                Do backup at this minute, If frequency  = 'hourly', this value will be ignore.
             </div>
         </el-form-item>
 

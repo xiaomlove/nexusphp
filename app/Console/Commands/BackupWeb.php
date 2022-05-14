@@ -12,14 +12,14 @@ class BackupWeb extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:web';
+    protected $signature = 'backup:web {--method=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'BackupWeb web data';
+    protected $description = 'BackupWeb web data, options: --method';
 
     /**
      * Create a new command instance.
@@ -38,8 +38,10 @@ class BackupWeb extends Command
      */
     public function handle()
     {
+        $method = $this->option('method');
+        $this->info("method: $method");
         $rep = new ToolRepository();
-        $result = $rep->backupWeb();
+        $result = $rep->backupWeb($method);
         $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);

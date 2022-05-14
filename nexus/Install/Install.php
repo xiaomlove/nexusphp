@@ -241,7 +241,10 @@ class Install
         $settings = require $defaultSettingsFile;
         $settingsFromDb = [];
         if (NexusDB::hasTable('settings') && Setting::query()->count() > 0) {
-            $settingsFromDb = get_setting();
+            if (!NexusDB::hasColumn('settings', 'autoload')) {
+                $this->runMigrate('database/migrations/2022_05_06_191830_add_autoload_to_settings_table.php');
+            }
+            $settingsFromDb = Setting::getFromDb();
         }
         $this->doLog("settings form db: " . json_encode($settingsFromDb));
         foreach ($settings as $prefix => &$group) {
@@ -541,6 +544,9 @@ class Install
     {
         if (!NexusDB::hasTable('settings')) {
             $this->runMigrate('database/migrations/2021_06_08_113437_create_settings_table.php');
+        }
+        if (!NexusDB::hasColumn('settings', 'autoload')) {
+            $this->runMigrate('database/migrations/2022_05_06_191830_add_autoload_to_settings_table.php');
         }
         foreach ($settings as $prefix => $group) {
             $this->doLog("[SAVE SETTING], prefix: $prefix, nameAndValues: " . json_encode($group));

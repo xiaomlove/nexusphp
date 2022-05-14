@@ -17,24 +17,62 @@ use Symfony\Component\Mime\Email;
 
 class ToolRepository extends BaseRepository
 {
-    public function backupWeb(): array
+    public function backupWeb($method = null): array
     {
         $webRoot = base_path();
         $dirName = basename($webRoot);
-        $filename = sprintf('%s/%s.web.%s.tar.gz', sys_get_temp_dir(), $dirName, date('Ymd.His'));
-        $command = sprintf(
-            'tar --exclude=vendor --exclude=.git -czf %s -C %s %s',
-            $filename, dirname($webRoot), $dirName
-        );
-        $result = exec($command, $output, $result_code);
-        do_log(sprintf(
-            "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
-            $command, json_encode($output), $result_code, $result, $filename
-        ));
+        $excludes = ['vendor', 'node_modules', '.git', '.idea', '.settings', '.DS_Store'];
+        $baseFilename = sprintf('%s/%s.web.%s', sys_get_temp_dir(), $dirName, date('Ymd.His'));
+        if (command_exists('tar') && ($method === 'tar' || $method === null)) {
+            $filename = $baseFilename . ".tar.gz";
+            $command = "tar";
+            foreach ($excludes as $item) {
+                $command .= " --exclude=$item";
+            }
+            $command .= sprintf(
+                ' -czf %s -C %s %s',
+                $filename, dirname($webRoot), $dirName
+            );
+            $result = exec($command, $output, $result_code);
+            do_log(sprintf(
+                "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
+                $command, json_encode($output), $result_code, $result, $filename
+            ));
+        } else {
+            //use php zip
+            $filename = $baseFilename . ".zip";
+            $zip = new \ZipArchive();
+            $zipOpen = $zip->open($filename, \ZipArchive::CREATE);
+            if ($zipOpen !== true) {
+                throw new \RuntimeException("Can not open $filename, error: $zipOpen");
+            }
+            // create recursive directory iterator
+            $files = new \RecursiveIteratorIterator (new \RecursiveDirectoryIterator($webRoot, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::LEAVES_ONLY);
+            // let's iterate
+            foreach ($files as $name => $file) {
+                $localeName = substr($name, strlen($webRoot) + 1);
+                $start = strstr($localeName, DIRECTORY_SEPARATOR, true) ?: $localeName;
+                //add a directory
+                $localeName = $dirName . DIRECTORY_SEPARATOR . $localeName;
+                if (!in_array($start, $excludes)) {
+                    if (is_file($name)) {
+                        $zip->addFile($name, $localeName);
+                    } elseif (is_dir($name)) {
+                        do_log("Is dir: $name.");
+                        $zip->addEmptyDir($localeName);
+                    } else {
+                        do_log("Not file or dir $name.", 'error');
+                    }
+                }
+            }
+            $zip->close();
+            $result_code = 0;
+            do_log("No tar command, use zip.");
+        }
         return compact('result_code', 'filename');
     }
 
-    public function backupDatabase()
+    public function backupDatabase(): array
     {
         $connectionName = config('database.default');
         $config = config("database.connections.$connectionName");
@@ -51,9 +89,9 @@ class ToolRepository extends BaseRepository
         return compact('result_code', 'filename');
     }
 
-    public function backupAll(): array
+    public function backupAll($method = null): array
     {
-        $backupWeb = $this->backupWeb();
+        $backupWeb = $this->backupWeb($method);
         if ($backupWeb['result_code'] != 0) {
             throw new \RuntimeException("backup web fail: " . json_encode($backupWeb));
         }
@@ -61,18 +99,34 @@ class ToolRepository extends BaseRepository
         if ($backupDatabase['result_code'] != 0) {
             throw new \RuntimeException("backup database fail: " . json_encode($backupDatabase));
         }
-        $filename = sprintf('%s/%s.%s.tar.gz', sys_get_temp_dir(), basename(base_path()), date('Ymd.His'));
-        $command = sprintf(
-            'tar -czf %s -C %s %s -C %s %s',
-            $filename,
-            dirname($backupWeb['filename']), basename($backupWeb['filename']),
-            dirname($backupDatabase['filename']), basename($backupDatabase['filename'])
-        );
-        $result = exec($command, $output, $result_code);
-        do_log(sprintf(
-            "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
-            $command, json_encode($output), $result_code, $result, $filename
-        ));
+        $baseFilename = sprintf('%s/%s.%s', sys_get_temp_dir(), basename(base_path()), date('Ymd.His'));
+        if (command_exists('tar') && ($method === 'tar' || $method === null)) {
+            $filename = $baseFilename . ".tar.gz";
+            $command = sprintf(
+                'tar -czf %s -C %s %s -C %s %s',
+                $filename,
+                dirname($backupWeb['filename']), basename($backupWeb['filename']),
+                dirname($backupDatabase['filename']), basename($backupDatabase['filename'])
+            );
+            $result = exec($command, $output, $result_code);
+            do_log(sprintf(
+                "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
+                $command, json_encode($output), $result_code, $result, $filename
+            ));
+        } else {
+            //use php zip
+            $filename = $baseFilename . ".zip";
+            $zip = new \ZipArchive();
+            $zipOpen = $zip->open($filename, \ZipArchive::CREATE);
+            if ($zipOpen !== true) {
+                throw new \RuntimeException("Can not open $filename, error: $zipOpen");
+            }
+            $zip->addFile($backupWeb['filename'], basename($backupWeb['filename']));
+            $zip->addFile($backupDatabase['filename'], basename($backupDatabase['filename']));
+            $zip->close();
+            $result_code = 0;
+            do_log("No tar command, use zip.");
+        }
         return compact('result_code', 'filename');
 
     }
@@ -303,4 +357,6 @@ class ToolRepository extends BaseRepository
 
         return $result;
     }
+
+
 }
