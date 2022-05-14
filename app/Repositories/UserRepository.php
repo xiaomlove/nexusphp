@@ -90,6 +90,9 @@ class UserRepository extends BaseRepository
         if (User::query()->where('email', $email)->exists()) {
             throw new \InvalidArgumentException("The email address: $email is already in use");
         }
+        if (User::query()->where('username', $username)->exists()) {
+            throw new \InvalidArgumentException("The username: $username is already in use");
+        }
         if (mb_strlen($password) < 6 || mb_strlen($password) > 40) {
             throw new \InvalidArgumentException("Innvalid password: $password, it should be more than 6 character and less than 40 character");
         }

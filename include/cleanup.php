@@ -300,7 +300,9 @@ function docleanup($forceAll = 0, $printProgress = false) {
             $dividend = 3600 / $autoclean_interval_one;
             $all_bonus = $seedBonusResult['all_bonus'] / $dividend;
             $seed_points = $seedBonusResult['seed_points'] / $dividend;
-			sql_query("update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}");
+            $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
+            do_log("[CLEANUP_CALCULATE_SEED_BONUS], result: " . nexus_json_encode($seedBonusResult) . ", query: $sql");
+			sql_query($sql);
 		}
 	}
 	$log = 'calculate seeding bonus';
