@@ -113,7 +113,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = mysql_fetch_array($res);
-	do_log("[check passkey], currentUser: " . nexus_json_encode($az), 'error');
+	do_log("[check passkey], currentUser: " . nexus_json_encode($az));
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
@@ -459,7 +459,7 @@ elseif(isset($self))
 
 	if (mysql_affected_rows())
 	{
-		if ($seeder <> $self["seeder"])
+//		if ($seeder <> $self["seeder"])
 		    //count directly since 1.7.4
 //		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1, leechers = leechers - 1" : "seeders = seeders - 1, leechers = leechers + 1");
 		$snatchInfo = \App\Models\Snatch::query()
