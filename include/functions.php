@@ -2014,8 +2014,11 @@ function autoclean($printProgress = false) {
 		return false;
 	}
 	$ts = $row[0];
-	if ($ts + $autoclean_interval_one > $now) {
-	    do_log("ts: {$ts} + autoclean_interval_one: $autoclean_interval_one > now: $now");
+	if ($ts + $autoclean_interval_one > $now + 60) {
+		//The cronjob is not always triggered on time. If the cronjob is 1 second earlier, 
+		//it will be skipped and can only wait for the next trigger, thus missing a lot of cronjobs. 
+		//Set a grace period of 1 minute here.
+	    do_log("ts: {$ts} + autoclean_interval_one: $autoclean_interval_one > now: $now + 60");
 		return false;
 	}
 	sql_query("UPDATE avps SET value_u=$now WHERE arg='lastcleantime' AND value_u = $ts") or sqlerr(__FILE__, __LINE__);
