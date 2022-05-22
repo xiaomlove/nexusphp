@@ -5397,6 +5397,7 @@ function list_require_search_box_id()
         'getrss' => [$setting['browsecat'], $setting['specialcat']],
         'userdetails' => [$setting['browsecat'], $setting['specialcat']],
         'offers' => [$setting['browsecat'], $setting['specialcat']],
+        'details' => [$setting['browsecat'], $setting['specialcat']],
     ];
     return $maps[nexus()->getScript()] ?? [];
 }
