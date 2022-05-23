@@ -154,9 +154,12 @@ class UserRepository extends BaseRepository
 
     public function disableUser(User $operator, $uid, $reason)
     {
-        $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username']);
+        $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username', 'class']);
         if ($targetUser->enabled == User::ENABLED_NO) {
-            throw new NexusException('Already disabled!');
+            throw new NexusException('Already disabled !');
+        }
+        if ($targetUser->class >= $operator->class) {
+            throw new NexusException('No Permission !');
         }
         $banLog = [
             'uid' => $uid,
@@ -164,7 +167,7 @@ class UserRepository extends BaseRepository
             'reason' => $reason,
             'operator' => $operator->id,
         ];
-        $modCommentText = sprintf("Disable by %s, reason: %s.", $operator->username, $reason);
+        $modCommentText = sprintf("%s - Disable by %s, reason: %s.", now()->format('Y-m-d'), $operator->username, $reason);
         DB::transaction(function () use ($targetUser, $banLog, $modCommentText) {
             $targetUser->updateWithModComment(['enabled' => User::ENABLED_NO], $modCommentText);
             UserBanLog::query()->insert($banLog);
@@ -177,7 +180,7 @@ class UserRepository extends BaseRepository
     {
         $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username', 'class']);
         if ($targetUser->enabled == User::ENABLED_YES) {
-            throw new NexusException('Already enabled!');
+            throw new NexusException('Already enabled !');
         }
         $update = [
             'enabled' => User::ENABLED_YES
@@ -191,7 +194,7 @@ class UserRepository extends BaseRepository
             $update['leechwarn'] = 'no';
             $update['leechwarnuntil'] = null;
         }
-        $modCommentText = sprintf("Enable by %s.", $operator->username);
+        $modCommentText = sprintf("%s - Enable by %s.", now()->format('Y-m-d'), $operator->username);
         $targetUser->updateWithModComment($update, $modCommentText);
         do_log("user: $uid, $modCommentText, update: " . nexus_json_encode($update));
         return true;
