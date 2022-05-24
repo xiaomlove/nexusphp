@@ -149,6 +149,28 @@ stdhead($lang_upload['head_upload']);
 						$offer .= "<option value=\"" . $offerrow["id"] . "\">" . htmlspecialchars($offerrow["name"]) . "</option>";
 					$offer .= "</select>";
 					tr($lang_upload['row_your_offer']. (!$uploadfreely && !$allowspecial ? "<font color=red>*</font>" : ""), $offer.$lang_upload['text_please_select_offer'] , 1);
+					$getOfferJs = <<<JS
+jQuery('select[name="offer"]').on("change", function () {
+    let id = this.value
+    if (id == 0) {
+        return
+    }
+    let params = {action: "getOffer", params: {id: id}}
+    jQuery.post("ajax.php", params, function (response) {
+        console.log(response)
+        if (response.ret != 0) {
+            alert(response.msg)
+            return
+        }
+        jQuery("#name").val(response.data.name)
+        clearContent()
+        doInsert(response.data.descr, '', false)
+        jQuery("#browsecat").val(response.data.category)
+    }, 'json')
+})
+JS;
+					\Nexus\Nexus::js($getOfferJs, 'footer', false);
+
 				}
 				//===end
 

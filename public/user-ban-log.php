@@ -6,11 +6,10 @@ $q = $_REQUEST['q'] ?? '';
 if (!empty($q)) {
     $query->where('username', 'like', "%{$q}%");
 }
-$total = $query->toBase()->getCountForPagination();
-$page = $_REQUEST['page'] ?? 1;
-$perPage = 20;
-$rows = $query->forPage($page, $perPage)->orderBy('id', 'desc')->get()->toArray();
-list($paginationTop, $paginationBottom, $limit) = pager($perPage, $total, "?");
+$total = (clone $query)->count();
+$perPage = 50;
+list($paginationTop, $paginationBottom, $limit, $offset) = pager($perPage, $total, "?");
+$rows = (clone $query)->offset($offset)->take($perPage)->orderBy('id', 'desc')->get()->toArray();
 $header = [
     'id' => 'ID',
     'uid' => 'UID',

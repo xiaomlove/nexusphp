@@ -68,3 +68,9 @@ function removeUserLeechWarn($params)
     return $rep->removeLeechWarn($CURUSER['id'], $params['uid']);
 }
 
+function getOffer($params)
+{
+    $offer = \App\Models\Offer::query()->findOrFail($params['id']);
+    return $offer->toArray();
+}
+

@@ -893,6 +893,11 @@ function doInsert(ibTag, ibClsTag, isSingle)
 	return isClose;
 }
 
+function clearContent()
+{
+    document.<?php echo $form?>.<?php echo $text?>.value = '';
+}
+
 function winop()
 {
 	windop = window.open("moresmilies.php?form=<?php echo $form?>&text=<?php echo $text?>","mywin","height=500,width=500,resizable=no,scrollbars=yes");
@@ -1682,6 +1687,10 @@ function image_code () {
 
 function check_code ($imagehash, $imagestring, $where = 'signup.php',$maxattemptlog=false,$head=true) {
 	global $lang_functions;
+    global $iv;
+    if ($iv !== 'yes') {
+        return true;
+    }
 	$query = sprintf("SELECT * FROM regimages WHERE imagehash='%s' AND imagestring='%s'",
 	mysql_real_escape_string($imagehash),
 	mysql_real_escape_string($imagestring));
