@@ -318,6 +318,7 @@ $lang_functions = array
     'spoiler_default_title' => '折叠内容',
     'menu_claim' => '认领: ',
     'text_complains' => '有%s%u个待处理的申诉%s',
+    'text_contactstaff' => '联系管理组',
 );
 
 ?>

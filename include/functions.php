@@ -2266,8 +2266,10 @@ function menu ($selected = "home") {
 		$selected = "rules";
 	}elseif (preg_match("/faq/i", $script_name)) {
 		$selected = "faq";
-	}elseif (preg_match("/staff/i", $script_name)) {
-		$selected = "staff";
+    }elseif (preg_match("/contactstaff/i", $script_name)) {
+        $selected = "contactstaff";
+    }elseif (preg_match("/staff/i", $script_name)) {
+        $selected = "staff";
 	}else
 	$selected = "";
 	print ("<div id=\"nav\"><ul id=\"mainmenu\" class=\"menu\">");
@@ -2291,6 +2293,7 @@ function menu ($selected = "home") {
 	print ("<li" . ($selected == "rules" ? " class=\"selected\"" : "") . "><a href=\"rules.php\">".$lang_functions['text_rules']."</a></li>");
 	print ("<li" . ($selected == "faq" ? " class=\"selected\"" : "") . "><a href=\"faq.php\">".$lang_functions['text_faq']."</a></li>");
 	print ("<li" . ($selected == "staff" ? " class=\"selected\"" : "") . "><a href=\"staff.php\">".$lang_functions['text_staff']."</a></li>");
+	print ("<li" . ($selected == "contactstaff" ? " class=\"selected\"" : "") . "><a href=\"contactstaff.php\">".$lang_functions['text_contactstaff']."</a></li>");
 	print ("</ul></div>");
 
 	if ($CURUSER){

@@ -884,6 +884,24 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
+    //delete old cheaters
+    $until = date("Y-m-d H:i:s",(TIMENOW - $length));
+    sql_query("DELETE FROM cheaters WHERE added < ".sqlesc($until)) or sqlerr(__FILE__, __LINE__);
+    $log = "delete old cheaters";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
+    //delete old shoutbox
+    $until = TIMENOW - $length;
+    sql_query("DELETE FROM shoutbox WHERE `date` < ".sqlesc($until)) or sqlerr(__FILE__, __LINE__);
+    $log = "delete old shoutbox";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
 	//delete old ip log
 	$length = 365*86400; //a year
 	$until = date("Y-m-d H:i:s",(TIMENOW - $length));
@@ -895,7 +913,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//delete old general log
-	$secs = 365*86400; //a year
 	$until = date("Y-m-d H:i:s",(TIMENOW - $length));
 	sql_query("DELETE FROM sitelog WHERE added < ".sqlesc($until)) or sqlerr(__FILE__, __LINE__);
 	$log = "delete old general log";

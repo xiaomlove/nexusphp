@@ -326,6 +326,7 @@ $lang_functions = array
     'spoiler_default_title' => 'Collapse content',
     'menu_claim' => 'Claim: ',
     'text_complains' => 'There %s %u pending complaint%s.',
+    'text_contactstaff' => 'Contact staff',
 );
 
 ?>
