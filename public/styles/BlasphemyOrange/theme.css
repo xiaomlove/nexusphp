@@ -96,12 +96,12 @@ h2
 	padding-right: 4px;
 	background-position: left top;
 	padding-left: 4px;
-	background-image: url(./shade.gif);
+	/* background-image: url(./shade.gif); */
 	margin-bottom: 0px;
 	padding-bottom: 3px;
 	padding-top: 3px;
 	background-repeat: repeat-x;
-	background-color: #ff9718;
+	background-color: #ff6347;
 }
 h2.transparentbg
 {
