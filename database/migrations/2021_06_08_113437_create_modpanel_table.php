@@ -17,7 +17,7 @@ class CreateModpanelTable extends Migration
             return;
         }
         Schema::create('modpanel', function (Blueprint $table) {
-            $table->tinyIncrements('id');
+            $table->id();
             $table->string('name', 128)->default('');
             $table->string('url')->default('');
             $table->string('info')->default('');

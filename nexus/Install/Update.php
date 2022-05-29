@@ -85,6 +85,16 @@ class Update extends Install
 
     public function runExtraQueries()
     {
+        /**
+         * @since 1.7.13
+         */
+        foreach (['adminpanel', 'modpanel', 'sysoppanel'] as $table) {
+            $columnInfo = NexusDB::getMysqlColumnInfo($table, 'id');
+            if ($columnInfo['DATA_TYPE'] == 'tinyint') {
+                sql_query("alter table $table modify id int(11) unsigned not null AUTO_INCREMENT");
+            }
+        }
+
         //custom field menu
         $url = 'fields.php';
         $table = 'adminpanel';
@@ -225,6 +235,8 @@ class Update extends Install
         $this->removeMenu('sysoppanel', $menuToDel);
         $this->removeMenu('adminpanel', $menuToDel);
         $this->removeMenu('modpanel', $menuToDel);
+
+
     }
 
     public function runExtraMigrate()

@@ -17,7 +17,7 @@ class CreateAdminpanelTable extends Migration
             return;
         }
         Schema::create('adminpanel', function (Blueprint $table) {
-            $table->tinyIncrements('id');
+            $table->id();
             $table->string('name', 128)->default('');
             $table->string('url')->default('');
             $table->string('info')->default('');
