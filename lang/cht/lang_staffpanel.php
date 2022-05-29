@@ -75,4 +75,6 @@ $lang_staffpanel = [
     'Confirm user' => '確認用戶',
     'Add Attendance card' => '增加補簽卡',
     'Add Attendance card to certain classes' => '為特定等級用戶增加補簽卡',
+    'Add Bonus/Attend card/Invite/upload' => '增加魔力/補簽卡/邀請/上傳量',
+    'Add Bonus/Attend card/Invite/upload to certain classes' => '為特定等級用戶增加魔力/補簽卡/邀請/上傳量',
 ];

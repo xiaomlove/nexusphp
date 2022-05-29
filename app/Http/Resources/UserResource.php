@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'class_text' => $this->class_text,
             'avatar' => $this->avatar,
             'invites' => $this->invites,
+            'attendance_card' => $this->attendance_card,
             'uploaded' => $this->uploaded,
             'uploaded_text' => mksize($this->uploaded),
             'downloaded' => $this->downloaded,

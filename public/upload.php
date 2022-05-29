@@ -165,7 +165,8 @@ jQuery('select[name="offer"]').on("change", function () {
         jQuery("#name").val(response.data.name)
         clearContent()
         doInsert(response.data.descr, '', false)
-        jQuery("#browsecat").val(response.data.category)
+        jQuery("#specialcat").prop('disabled', false).val(0)
+        jQuery("#browsecat").prop('disabled', false).val(response.data.category)
     }, 'json')
 })
 JS;

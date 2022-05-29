@@ -14,5 +14,6 @@ return [
         'uploaded' => 'Uploaded',
         'downloaded' => 'Downloaded',
         'invites' => 'Invites',
+        'attendance_card' => 'Attend card',
     ],
 ];

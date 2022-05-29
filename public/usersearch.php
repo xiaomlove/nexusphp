@@ -12,7 +12,7 @@ if (get_user_class() < UC_MODERATOR)
 stdhead("Administrative User Search");
 echo "<h1>Administrative User Search</h1>\n";
 
-if ($_GET['h'])
+if (!empty($_GET['h']))
 {
 	echo "<table width=65% border=0 align=center><tr><td class=embedded bgcolor='#F5F4EA'><div align=left>\n
 	Fields left blank will be ignored;\n
@@ -76,7 +76,7 @@ $highlight = " bgcolor=#BBAF9B";
 <tr><td valign="middle" class=rowhead>Email:</td>
   <td<?php echo $_GET['em']?$highlight:""?>><input name="em" type="text" value="<?php echo htmlspecialchars($_GET['em'])?>" size="35"></td>
   <td valign="middle" class=rowhead>IP:</td>
-  <td<?php echo $_GET['ip']?$highlight:""?>><input name="ip" type="text" value="<?php echo htmlspecialchars($_GET['ip'])?>" maxlength="17"></td>
+  <td<?php echo $_GET['ip']?$highlight:""?>><input name="ip" type="text" value="<?php echo htmlspecialchars($_GET['ip'])?>" maxlength="64"></td>
 
   <td valign="middle" class=rowhead>Account status:</td>
   <td<?php echo $_GET['as']?$highlight:""?>><select name="as">
@@ -248,7 +248,7 @@ function haswildcard($text){
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
+$q = '';
 if (count($_GET) > 0 && !$_GET['h'])
 {
 	// name
@@ -343,7 +343,7 @@ if (count($_GET) > 0 && !$_GET['h'])
   if ($ip)
   {
   	$regex = "/^(((1?\d{1,2})|(2[0-4]\d)|(25[0-5]))(\.\b|$)){4}$/";
-    if (!preg_match($regex, $ip))
+  	if (!filter_var($ip, FILTER_VALIDATE_IP))
     {
     	stdmsg("Error", "Bad IP.");
     	stdfoot();
@@ -782,19 +782,19 @@ if (count($_GET) > 0 && !$_GET['h'])
       if ($user['last_access'] == '0000-00-00 00:00:00' || $user['last_access'] == null)
       	$user['last_access'] = '---';
 
-      if ($user['ip'])
-      {
-	    	$nip = ip2long($user['ip']);
-        $auxres = sql_query("SELECT COUNT(*) FROM bans WHERE $nip >= first AND $nip <= last") or sqlerr(__FILE__, __LINE__);
-        $array = mysql_fetch_row($auxres);
-    	  if ($array[0] == 0)
-      		$ipstr = $user['ip'];
-	  	  else
-	      	$ipstr = "<a href='testip.php?ip=" . $user['ip'] . "'><font color='#FF0000'><b>" . $user['ip'] . "</b></font></a>";
-			}
-			else
-      	$ipstr = "---";
-
+      if ($user['ip']) {
+          $ipstr = $user['ip'];
+          if (filter_var($user['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+              $nip = ip2long($user['ip']);
+              $auxres = sql_query("SELECT COUNT(*) FROM bans WHERE $nip >= first AND $nip <= last") or sqlerr(__FILE__, __LINE__);
+              $array = mysql_fetch_row($auxres);
+              if ($array[0] > 0) {
+                  $ipstr = "<a href='testip.php?ip=" . $user['ip'] . "'><font color='#FF0000'><b>" . $user['ip'] . "</b></font></a>";
+              }
+          }
+      } else {
+          $ipstr = "---";
+      }
       $auxres = sql_query("SELECT SUM(uploaded) AS pul, SUM(downloaded) AS pdl FROM peers WHERE userid = " . $user['id']) or sqlerr(__FILE__, __LINE__);
       $array = mysql_fetch_array($auxres);
 

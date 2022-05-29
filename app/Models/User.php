@@ -155,7 +155,7 @@ class User extends Authenticatable
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
-        'lang',
+        'lang', 'attendance_card',
     ];
 
     public static function getDefaultUserAttributes(): array

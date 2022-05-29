@@ -214,16 +214,17 @@ class Update extends Install
         }
 
         /**
-         * @since 1.7.0
-         *
-         * add amountattendancecard.php
+         * @since 1.7.12
          */
         $menus = [
-            ['name' => 'Add Attendance card', 'url' => 'amountattendancecard.php', 'info' => 'Add Attendance card to certain classes'],
+            ['name' => 'Add Bonus/Attend card/Invite/upload', 'url' => 'increment-bulk.php', 'info' => 'Add Bonus/Attend card/Invite/upload to certain classes'],
         ];
         $table = 'sysoppanel';
         $this->addMenu($table, $menus);
-
+        $menuToDel = ['amountupload.php', 'amountattendancecard.php', 'amountbonus.php'];
+        $this->removeMenu('sysoppanel', $menuToDel);
+        $this->removeMenu('adminpanel', $menuToDel);
+        $this->removeMenu('modpanel', $menuToDel);
     }
 
     public function runExtraMigrate()
@@ -256,6 +257,13 @@ class Update extends Install
                 $id = NexusDB::insert($table, $menu);
                 $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
             }
+        }
+    }
+
+    private function removeMenu($table, array $menus)
+    {
+        foreach ($menus as $menu) {
+            NexusDB::delete($table, "url = " . sqlesc($menu));
         }
     }
 

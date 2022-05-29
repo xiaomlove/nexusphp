@@ -87,6 +87,11 @@
                     <td>{{baseInfo.seed_points}}</td>
                 </tr>
                 <tr>
+                    <td>Attendance card</td>
+                    <td>{{baseInfo.attendance_card}}</td>
+                    <td><el-button size="small" @click="handleIncrementDecrement('attendance_card')">Change</el-button></td>
+                </tr>
+                <tr>
                     <td>Invites</td>
                     <td>{{baseInfo.invites}}</td>
                     <td><el-button size="small" @click="handleIncrementDecrement('invites')">Change</el-button></td>

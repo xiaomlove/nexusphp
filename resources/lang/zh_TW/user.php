@@ -14,5 +14,6 @@ return [
         'uploaded' => '上傳量',
         'downloaded' => '下載量',
         'invites' => '邀請',
+        'attendance_card' => '補簽卡',
     ],
 ];

@@ -12,7 +12,7 @@ else
 	if ($ip)
 	{
 		$regex = "/^(((1?\d{1,2})|(2[0-4]\d)|(25[0-5]))(\.\b|$)){4}$/";
-		if (!preg_match($regex, $ip))
+		if (!filter_var($ip, FILTER_VALIDATE_IP))
 		{
 			stderr($lang_ipsearch['std_error'], $lang_ipsearch['std_invalid_ip']);
 		}

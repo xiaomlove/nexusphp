@@ -219,6 +219,7 @@ class UserRepository extends BaseRepository
             'downloaded' => 'downloaded',
             'bonus' => 'seedbonus',
             'invites' => 'invites',
+            'attendance_card' => 'attendance_card',
         ];
         if (!isset($fieldMap[$field])) {
             throw new \InvalidArgumentException("Invalid field: $field, only support: " . implode(', ', array_keys($fieldMap)));
@@ -239,6 +240,9 @@ class UserRepository extends BaseRepository
             $new = $old - abs($valueAtomic);
         } else {
             throw new \InvalidArgumentException("Invalid action: $action.");
+        }
+        if ($new < 0) {
+            throw new NexusException("New value($new) lte 0");
         }
         //for administrator, use english
         $modCommentText = nexus_trans('message.field_value_change_message_body', [
