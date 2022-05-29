@@ -26,7 +26,6 @@ class BonusRepository extends BaseRepository
         $requireBonus = BonusLogs::getBonusForCancelHitAndRun();
         NexusDB::transaction(function () use ($user, $hitAndRun, $requireBonus) {
             $comment = nexus_trans('hr.bonus_cancel_comment', [
-                'now' => Carbon::now()->toDateTimeString(),
                 'bonus' => $requireBonus,
             ], $user->locale);
             $comment = addslashes($comment);
@@ -85,7 +84,7 @@ class BonusRepository extends BaseRepository
             ], $user->locale);
             $comment = addslashes($comment);
             do_log("comment: $comment");
-            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_ATTENDANCE_CARD, "$comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_ATTENDANCE_CARD, $comment);
             User::query()->where('id', $user->id)->increment('attendance_card');
         });
 
@@ -100,6 +99,7 @@ class BonusRepository extends BaseRepository
             throw new \LogicException("User bonus point not enough.");
         }
         NexusDB::transaction(function () use ($user, $requireBonus, $logBusinessType, $logComment) {
+            $bonusComment = date('Y-m-d') . " - $logComment";
             $oldUserBonus = $user->seedbonus;
             $newUserBonus = bcsub($oldUserBonus, $requireBonus);
             $log = "user: {$user->id}, requireBonus: $requireBonus, oldUserBonus: $oldUserBonus, newUserBonus: $newUserBonus, logBusinessType: $logBusinessType, logComment: $logComment";
@@ -107,7 +107,10 @@ class BonusRepository extends BaseRepository
             $affectedRows = NexusDB::table($user->getTable())
                 ->where('id', $user->id)
                 ->where('seedbonus', $oldUserBonus)
-                ->update(['seedbonus' => $newUserBonus]);
+                ->update([
+                    'seedbonus' => $newUserBonus,
+                    'bonuscomment' => NexusDB::raw("if(bonuscomment = '', '$bonusComment', concat_ws('\n', '$bonusComment', bonuscomment))")
+                ]);
             if ($affectedRows != 1) {
                 do_log("update user seedbonus affected rows != 1, query: " . last_query(), 'error');
                 throw new \RuntimeException("Update user seedbonus fail.");

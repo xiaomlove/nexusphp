@@ -23,5 +23,5 @@ return [
     'unreached_disable_comment' => 'H&R 数量达上限被系统禁用。',
     'unreached_disable_message_content' => '由于累计 H&R 数量已达系统上限：:ban_user_when_counts_reach，你的账号已被禁用。',
 
-    'bonus_cancel_comment' => ':now 花费 :bonus 魔力进行了消除',
+    'bonus_cancel_comment' => '花费 :bonus 魔力进行了消除',
 ];

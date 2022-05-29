@@ -23,5 +23,5 @@ return [
     'unreached_disable_comment' => 'H&R quantity reached the upper limit and account was disabled by the system',
     'unreached_disable_message_content' => 'Your account has been disabled because the cumulative H&R count has been reached the system limit: :ban_user_when_counts_reach',
 
-    'bonus_cancel_comment' => ':now, spend :bonus canceled',
+    'bonus_cancel_comment' => 'spend :bonus canceled',
 ];

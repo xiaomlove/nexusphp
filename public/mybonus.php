@@ -508,7 +508,7 @@ if ($action == "exchange") {
 			}
 			$vip_until = date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + 28*86400));
 			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for 1 month VIP Status.\n " .htmlspecialchars($bonuscomment);
-			sql_query("UPDATE users SET class = '".UC_VIP."', vip_added = 'yes', vip_until = ".sqlesc($vip_until).", seedbonus = seedbonus - $points WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
+			sql_query("UPDATE users SET class = '".UC_VIP."', vip_added = 'yes', vip_until = ".sqlesc($vip_until).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=vip");
 		}
 		//=== trade for invites
@@ -518,7 +518,7 @@ if ($action == "exchange") {
 			$invites = $CURUSER['invites'];
 			$inv = $invites+$bonusarray['menge'];
 			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
-			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
+			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=invite");
 		}
 		//=== trade for special title
