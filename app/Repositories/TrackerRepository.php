@@ -879,9 +879,13 @@ class TrackerRepository extends BaseRepository
     {
         $cacheKey = 'peers:connectable:'.$ip.'-'.$port.'-'.$agent;
         $log = "cacheKey: $cacheKey";
+        $hostname = $ip;
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $hostname = '['.$ip.']';
+        }
         $connectable = Cache::get($cacheKey);
         if ($connectable === null) {
-            $con = @fsockopen($ip, $port, $error_code, $error_message, 1);
+            $con = @fsockopen($hostname, $port, $error_code, $error_message, 1);
             if (is_resource($con)) {
                 $connectable = Peer::CONNECTABLE_YES;
                 fclose($con);
