@@ -548,6 +548,17 @@ if($client_familyid != 0 && $client_familyid != $az['clientselect'])
 
 if(count($USERUPDATESET) && $userid)
 {
+    /**
+     * VIP do not calculate downloaded
+     * @since 1.7.13
+     */
+    if ($az['class'] == UC_VIP) {
+        foreach ($USERUPDATESET as $key => $value) {
+            if (str_contains($value, 'downloaded')) {
+                unset($USERUPDATESET[$key]);
+            }
+        }
+    }
 	sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid);
 }
 benc_resp($rep_dict);

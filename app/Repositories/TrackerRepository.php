@@ -678,8 +678,17 @@ class TrackerRepository extends BaseRepository
                 $upRatio = Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
                 $log .= ", [IS_NOT_UPLOADER], upRatio: $upRatio";
             }
-            $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
-            $log .= ", downRatio: $downRatio";
+            /**
+             * VIP do not calculate downloaded
+             * @since 1.7.13
+             */
+            if ($user->class == User::CLASS_VIP) {
+                $downRatio = 0;
+                $log .= ", [IS_VIP], downRatio: $downRatio";
+            } else {
+                $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
+                $log .= ", [IS_NOT_VIP], downRatio: $downRatio";
+            }
         } else {
             $realUploaded = $queries['uploaded'];
             $realDownloaded = $queries['downloaded'];
