@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Middleware\Locale;
+use App\Repositories\ExamRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -92,6 +93,19 @@ class User extends Authenticatable
             $classText .= "({$alias})";
         }
         return $classText;
+    }
+
+    /**
+     * @see ExamRepository::isExamMatchUser()
+     *
+     * @return string
+     */
+    public function getDonateStatusAttribute(): string
+    {
+        if ($this->isDonating()) {
+            return self::DONATE_YES;
+        }
+        return self::DONATE_NO;
     }
 
     /**

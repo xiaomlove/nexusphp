@@ -543,22 +543,22 @@ if (count($updateset)) // Update only when there is change in peer counts
 	sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $torrentid");
 }
 
-if($client_familyid != 0 && $client_familyid != $az['clientselect'])
-	$USERUPDATESET[] = "clientselect = ".sqlesc($client_familyid);
-
-if(count($USERUPDATESET) && $userid)
-{
-    /**
-     * VIP do not calculate downloaded
-     * @since 1.7.13
-     */
-    if ($az['class'] == UC_VIP) {
-        foreach ($USERUPDATESET as $key => $value) {
-            if (str_contains($value, 'downloaded')) {
-                unset($USERUPDATESET[$key]);
-            }
+if($client_familyid != 0 && $client_familyid != $az['clientselect']) {
+    $USERUPDATESET[] = "clientselect = ".sqlesc($client_familyid);
+}
+/**
+ * VIP do not calculate downloaded
+ * @since 1.7.13
+ */
+if ($az['class'] == UC_VIP) {
+    foreach ($USERUPDATESET as $key => $value) {
+        if (str_contains($value, 'downloaded')) {
+            unset($USERUPDATESET[$key]);
         }
     }
+}
+if(count($USERUPDATESET) && $userid)
+{
 	sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid);
 }
 benc_resp($rep_dict);
