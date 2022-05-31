@@ -10,7 +10,7 @@ return [
 
     'mysql' => [
         'host' => nexus_env('DB_HOST', '127.0.0.1'),
-        'port' => nexus_env('DB_PORT', 3306),
+        'port' => (int)nexus_env('DB_PORT', 3306),
         'username' => nexus_env('DB_USERNAME', 'root'),
         'password' => nexus_env('DB_PASSWORD', ''),
         'database' => nexus_env('DB_DATABASE', 'nexusphp'),
@@ -18,7 +18,7 @@ return [
 
     'redis' => [
         'host' => nexus_env('REDIS_HOST', '127.0.0.1'),
-        'port' => nexus_env('REDIS_PORT', 6379),
+        'port' => (int)nexus_env('REDIS_PORT', 6379),
         'database' => nexus_env('REDIS_DB', 0),
         'password' => nexus_env('REDIS_PASSWORD'),
     ],
@@ -27,7 +27,7 @@ return [
         'hosts' => [
             [
                 'host' => nexus_env('ELASTICSEARCH_HOST','localhost'),
-                'port' => nexus_env('ELASTICSEARCH_PORT','9200'),
+                'port' => (int)nexus_env('ELASTICSEARCH_PORT','9200'),
                 'scheme' => nexus_env('ELASTICSEARCH_SCHEME','https'),
                 'user' => nexus_env('ELASTICSEARCH_USER','elastic'),
                 'pass' => nexus_env('ELASTICSEARCH_PASS',''),
