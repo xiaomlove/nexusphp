@@ -25,7 +25,6 @@ function safe_query ($query,$id,$where = '') {
 }
 function searchform () {
 ?>
-<br />
 <form method=post name=search action=maxlogin.php?>
 <input type=hidden name=action value=searchip>
 <p class=success align=center>Search IP <input type=text name=ip size=25> <input type=submit name=submit value='Search IP' class=btn></p>
@@ -51,15 +50,18 @@ elseif ($order == 'status')
 else
 	$orderby = "attempts";
 
-$perpage = 5;
+$perpage = 50;
 list($pagertop, $pagerbottom, $limit) = pager($perpage, $countrows, "maxlogin.php?order=$order&");
 $msg = '';
+if ($update) {
+    $msg = "<h3><b>".htmlspecialchars($update)." Successful!</b></h3>";
+}
 if ($action == 'showlist') {
 stdhead ("Max. Login Attemps - Show List");
 print("<h1>Failed Login Attempts</h1>");
+print($msg);
 print("<table border=1 cellspacing=0 cellpadding=5 width=100%>\n");
-if ($update)
-	$msg = "<tr><td colspan=6><b>".htmlspecialchars($update)." Successful!</b></td></tr>\n";
+
 $res = sql_query("SELECT * FROM  loginattempts ORDER BY $orderby DESC $limit") or sqlerr(__FILE__,__LINE__);
 if (mysql_num_rows($res) == 0)
 	  print("<tr><td colspan=2><b>Nothing found</b></td></tr>\n");
@@ -76,10 +78,10 @@ else
   }
 
 }
-print($msg);
-print("</table>\n");
-if ($countrows > $perpage)
-	echo '<tr><td colspan=2>'.$pagerbottom.'</td></tr>';
+print("</table>");
+if ($countrows > $perpage) {
+    echo $pagerbottom;
+}
 searchform();
 stdfoot();
 }elseif ($action == 'ban') {
