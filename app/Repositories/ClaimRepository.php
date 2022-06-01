@@ -7,6 +7,7 @@ use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
 
@@ -106,7 +107,9 @@ class ClaimRepository extends BaseRepository
         $startOfThisMonth = Carbon::now()->startOfMonth();
         $query = Claim::query()
             ->select(['uid'])
-            ->where('last_settle_at', '<', $startOfThisMonth)
+            ->where(function (Builder $query) use ($startOfThisMonth) {
+                $query->where('last_settle_at', '<', $startOfThisMonth)->orWhereNull('last_settle_at');
+            })
             ->groupBy('uid')
         ;
         $size = 10000;

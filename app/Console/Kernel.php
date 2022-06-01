@@ -32,8 +32,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('hr:update_status')->everyMinute()->withoutOverlapping();
         $schedule->command('hr:update_status --ignore_time=1')->hourly()->withoutOverlapping();
         $schedule->command('user:delete_expired_token')->dailyAt('04:00');
-        $schedule->command('claim:settle')->hourly()->between("00:00", "12:00")
-            ->when(function () {return Carbon::now()->format('d') == '01';})->withoutOverlapping();
+        $schedule->command('claim:settle')->hourly()->when(function () {
+            return Carbon::now()->format('d') == '01';
+        })->withoutOverlapping();
     }
 
     /**
