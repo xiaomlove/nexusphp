@@ -726,3 +726,31 @@ function isIPV6 ($ip)
 {
     return filter_var($ip,FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 }
+
+function add_filter($name, $function, $priority = 10, $argc = 1)
+{
+    global $hook;
+    $hook->addFilter($name, $function, $priority, $argc);
+}
+
+function apply_filter($name, $value)
+{
+    global $hook;
+    do_log("[APPLY_FILTER]: $name");
+    return $hook->applyFilter($name, func_get_args());
+}
+
+function add_action($name, $function, $priority = 10, $argc = 1)
+{
+    global $hook;
+    $hook->addAction($name, $function, $priority, $argc);
+}
+
+function do_action($name, ...$args)
+{
+    global $hook;
+    do_log("[DO_ACTION]: $name");
+    return $hook->doAction($name, ...$args);
+}
+
+

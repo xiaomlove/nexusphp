@@ -46,6 +46,9 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
+        'nexus' => [
+            'driver' => 'nexus-cookie',
+        ],
     ],
 
     /*

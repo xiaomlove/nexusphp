@@ -4,7 +4,6 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-
 if ($enableextforum == 'yes') //check whether internal forum is disabled
 	permissiondenied();
 
@@ -635,7 +634,6 @@ if ($action == "viewtopic")
     $userInfoArr = \App\Models\User::query()->with(['wearing_medals'])->find($uidArr, $neededColumns)->keyBy('id');
 	$pn = 0;
 	$lpr = get_last_read_post_id($topicid);
-
 	if ($Advertisement->enable_ad())
 		$forumpostad=$Advertisement->get_ad('forumpost');
 	foreach ($allPosts as $arr)
@@ -727,6 +725,8 @@ if ($action == "viewtopic")
 		$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs))); // calculate date.
 		print("<tr><td class=\"rowfollow\" align=\"center\" valign=\"middle\">".("'".$arr2['last_access']."'">$dt?"<img class=\"f_online\" src=\"pic/trans.gif\" alt=\"Online\" title=\"".$lang_forums['title_online']."\" />":"<img class=\"f_offline\" src=\"pic/trans.gif\" alt=\"Offline\" title=\"".$lang_forums['title_offline']."\" />" )."<a href=\"sendmessage.php?receiver=".htmlspecialchars(trim($arr2["id"]))."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_forums['title_send_message_to'].htmlspecialchars($arr2["username"])."\" /></a><a href=\"report.php?forumpost=$postid\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_forums['title_report_this_post']."\" /></a></td>");
 		print("<td class=\"toolbox\" align=\"right\">");
+
+		do_action('post_toolbox', $arr, $allPosts, $CURUSER['id']);
 
 		if ($maypost)
 		print("<a href=\"".htmlspecialchars("?action=quotepost&postid=".$postid)."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_forums['title_reply_with_quote']."\" /></a>");
@@ -833,6 +833,7 @@ if ($action == "viewtopic")
 	else print($lang_forums['text_unpermitted_posting_here']);
 
 	print(key_shortcut($page,$pages-1));
+    do_action('page_forums_js');
 	stdfoot();
 	die;
 }

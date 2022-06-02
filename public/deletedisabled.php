@@ -7,6 +7,7 @@ if (get_user_class() < UC_SYSOP)
 	permissiondenied();
 
 $shownotice=false;
+stderr("Error", "Hard deletion of users is not recommended and can cause many problems.");
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 	if ($_POST['sure'])

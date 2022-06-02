@@ -231,11 +231,10 @@ class Update extends Install
         ];
         $table = 'sysoppanel';
         $this->addMenu($table, $menus);
-        $menuToDel = ['amountupload.php', 'amountattendancecard.php', 'amountbonus.php'];
+        $menuToDel = ['amountupload.php', 'amountattendancecard.php', 'amountbonus.php', 'deletedisabled.php'];
         $this->removeMenu('sysoppanel', $menuToDel);
         $this->removeMenu('adminpanel', $menuToDel);
         $this->removeMenu('modpanel', $menuToDel);
-
 
     }
 

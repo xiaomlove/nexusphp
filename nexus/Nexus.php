@@ -3,6 +3,7 @@ namespace Nexus;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Nexus\Plugin\Hook;
 
 final class Nexus
 {

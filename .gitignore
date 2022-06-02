@@ -25,3 +25,4 @@ yarn-error.log
 /imdb/images
 /resources/geoip
 .DS_Store
+/plugins

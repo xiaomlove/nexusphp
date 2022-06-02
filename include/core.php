@@ -46,3 +46,6 @@ define ("UC_SYSOP",15);
 define ("UC_STAFFLEADER",16);
 ignore_user_abort(1);
 @set_time_limit(60);
+
+$hook = new \Nexus\Plugin\Hook();
+$plugin = new \Nexus\Plugin\Plugin();

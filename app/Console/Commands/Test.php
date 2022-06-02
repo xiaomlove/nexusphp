@@ -39,6 +39,7 @@ use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
+use NexusPlugin\PostLike\PostLike;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -74,62 +75,9 @@ class Test extends Command
      */
     public function handle()
     {
-//        $searchRep = new SearchRepository();
-//        $r = $searchRep->deleteIndex();
-//        $r = $searchRep->createIndex();
-//        $r = $searchRep->import();
-//        dd($r);
-//
-//        $arr = [
-//            'cat' => 'category',
-//            'source' => 'source',
-//            'medium' => 'medium',
-//            'codec' => 'codec',
-//            'audiocodec' => 'audiocodec',
-//            'standard' => 'standard',
-//            'processing' => 'processing',
-//            'team' => 'team',
-//        ];
-        $queryString = 'cat401=1&cat404=1&source2=1&medium2=1&medium3=1&codec3=1&audiocodec3=1&standard2=1&standard3=1&processing2=1&team3=1&team4=1&incldead=1&spstate=0&inclbookmarked=0&search=&search_area=0&search_mode=0';
-        $userSetting = '[cat401][cat404][sou1][med1][cod1][sta2][sta3][pro2][tea2][aud2][incldead=0][spstate=3][inclbookmarked=2]';
-//        foreach ($arr as $queryField => $value) {
-////            $pattern = sprintf("/\[%s([\d]+)\]/", substr($queryField, 0, 3));
-//            $pattern = "/{$queryField}([\d]+)=/";
-//            if (preg_match_all($pattern, $queryString, $matches)) {
-//                dump($matches);
-//                echo '----------------------' . PHP_EOL;
-//            }
-//        }
-//        $r = preg_match("/\[incldead=([\d]+)\]/", $userSetting, $matches);
-//        dump($matches);
-
-        $params = [
-            'tag_id' => 1,
-//            'incldead' => 0,
-//            'spstate' => 0,
-//            'inclbookmarked' => 0,
-//            'search' => '5034',
-//            'search_area' => 4,
-//            'search_mode' => 0,
-        ];
-        $queryString = "cat401=1&cat404=1&cat405=1&cat402=1&cat403=1&cat406=1&cat407=1&cat409=1&cat408=1&incldead=0&spstate=0&inclbookmarked=0&search=5034838&search_area=4&search_mode=0";
-//        $r = $searchRep->listTorrentFromEs($params, 1, '');
-
-//        $r = $searchRep->updateTorrent(1);
-//        $r = $searchRep->updateUser(1);
-//        $r = $searchRep->addTorrent(1);
-//        $r = $searchRep->deleteBookmark(1);
-//        $r = $searchRep->addBookmark(1);
-
-//        $rep = new AttendanceRepository();
-//        $uid = 1;
-//        $attendance = $rep->getAttendance($uid);
-//        $r = $rep->migrateAttendanceLogs($uid);
-//        $r = $rep->getContinuousDays($attendance);
-//        $r = $rep->getContinuousPoints(11);
-
-        $r = trim(exec('command -v 7z.exe'));
-        dd($r);
+        $postLike = new PostLike();
+        $postLike->install();
+//        $postLike->uninstall();
     }
 
 

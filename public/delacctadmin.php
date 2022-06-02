@@ -18,9 +18,25 @@ $arr = mysql_fetch_assoc($res);
 
 $id = $arr['id'];
 $name = $arr['username'];
-$res = sql_query("DELETE FROM users WHERE id=$id") or sqlerr();
-if (mysql_affected_rows() != 1)
-  stderr("Error", "Unable to delete the account.");
+try {
+    \Nexus\Database\NexusDB::transaction(function () use ($id) {
+        $affectedRows = \Nexus\Database\NexusDB::table('users')->where('id', $id)->delete();
+        if ($affectedRows != 1) {
+            throw new \RuntimeException("Unable to delete the account.");
+        }
+        $tables = [
+            'hit_and_runs' => 'uid',
+            'claims' => 'uid',
+            'exam_users' => 'uid',
+            'exam_progress' => 'uid',
+        ];
+        foreach ($tables as $table => $key) {
+            \Nexus\Database\NexusDB::table($table)->where($key, $id)->delete();
+        }
+    });
+} catch (\Exception $exception) {
+    stderr("Error", $exception->getMessage());
+}
 stderr("Success", "The account <b>".htmlspecialchars($name)."</b> was deleted.",false);
 }
 stdhead("Delete account");
