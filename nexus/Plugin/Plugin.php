@@ -34,7 +34,9 @@ class Plugin
             $parts = explode('\\', $provider);
             if ($parts[0] == 'NexusPlugin') {
                 $className = str_replace('ServiceProvider', 'Repository', $provider);
-                call_user_func([new $className, 'boot']);
+                if (class_exists($className)) {
+                    call_user_func([new $className, 'boot']);
+                }
             }
         }
     }
