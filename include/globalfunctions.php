@@ -574,13 +574,13 @@ function last_query($all = false)
 
 function format_datetime($datetime, $format = 'Y-m-d H:i')
 {
-    if ($datetime instanceof \Carbon\Carbon) {
-        return $datetime->format($format);
+    try {
+        $carbonTime = \Carbon\Carbon::parse($datetime);
+        $carbonTime->format($format);
+    } catch (\Exception) {
+        do_log("Invalid datetime: $datetime", 'error');
+        return $datetime;
     }
-    if (is_numeric($datetime) && $datetime > strtotime('1970')) {
-        return date($format, $datetime);
-    }
-    return $datetime;
 }
 
 function nexus_trans($key, $replace = [], $locale = null)

@@ -41,6 +41,7 @@ use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
 use NexusPlugin\PostLike\PostLike;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
+use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -76,10 +77,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $torrent = Torrent::query()->find(2);
-        $torrent = apply_filter('torrent_detail', $torrent);
-        $user = \App\Models\User::query()->find(10001);
-        do_action('announced', $torrent->toArray(), $user->toArray());
+        $r = StickyPromotionParticipator::query()->first();
+        dd($r->created_at);
     }
 
 
