@@ -110,7 +110,7 @@ class HitAndRunRepository extends BaseRepository
             ->with([
                 'torrent' => function ($query) {$query->select(['id', 'size', 'name']);},
                 'snatch',
-                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class', 'donoruntil']);},
+                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class', 'donoruntil', 'enabled']);},
                 'user.language',
             ]);
         if (!is_null($uid)) {
@@ -309,6 +309,10 @@ class HitAndRunRepository extends BaseRepository
             do_log("[DO_NOT_DISABLE_USER], return");
             return true;
         }
+        if ($hitAndRun->user->enabled == 'no') {
+            do_log("[USER_ALREADY_DISABLED], return");
+            return true;
+        }
         //disable user
         /** @var User $user */
         $user = $hitAndRun->user;
@@ -370,7 +374,7 @@ class HitAndRunRepository extends BaseRepository
     public function pardon($id, User $user): bool
     {
         $model = HitAndRun::query()->findOrFail($id);
-        if (!in_array($model->status, [HitAndRun::STATUS_INSPECTING, HitAndRun::STATUS_UNREACHED])) {
+        if (!in_array($model->status, $this->getCanPardonStatus())) {
             throw new \LogicException("Can't be pardoned due to status is: " . $model->status_text . " !");
         }
         $model->status = HitAndRun::STATUS_PARDONED;
@@ -381,7 +385,7 @@ class HitAndRunRepository extends BaseRepository
 
     public function bulkPardon(array $params, User $user): int
     {
-        $query = $this->getBulkQuery($params)->where('status', HitAndRun::STATUS_INSPECTING);
+        $query = $this->getBulkQuery($params)->whereIn('status', $this->getCanPardonStatus());
         $update = [
             'status' => HitAndRun::STATUS_PARDONED,
             'comment' => $this->getCommentUpdateRaw(addslashes('Pardon by ' . $user->username)),
@@ -397,5 +401,10 @@ class HitAndRunRepository extends BaseRepository
     private function getCommentUpdateRaw($comment): \Illuminate\Database\Query\Expression
     {
         return DB::raw(sprintf("if (comment = '', '%s', concat('\n', '%s', comment))", $comment, $comment));
+    }
+
+    private function getCanPardonStatus(): array
+    {
+        return [HitAndRun::STATUS_INSPECTING, HitAndRun::STATUS_UNREACHED];
     }
 }

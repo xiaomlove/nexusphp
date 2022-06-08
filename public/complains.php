@@ -84,6 +84,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $res = sql_query(sprintf('SELECT * FROM complains WHERE uuid = %s', sqlesc($uuid))) or sqlerr(__FILE__, __LINE__);
             $complain = mysql_fetch_assoc($res);
             if(!$complain) permissiondenied();
+            $user = \App\Models\User::query()->where('email', $complain['email'])->first();
             stdhead($lang_complains['text_complain']);
             begin_main_frame();
             if(!$isLogin){
@@ -93,7 +94,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             }
             begin_frame($lang_complains['text_new_body']);
             printf('%s：%s<br />%s %s', $lang_complains['text_added'], gettime($complain['added']), $lang_complains['text_new_email'], htmlspecialchars($complain['email']));
-            if($isAdmin) printf(' [<a href="usersearch.php?em=%s" class="faqlink">%s</a>]', urlencode($complain['email']), $lang_complains['text_search_account']);
+            if($isAdmin) {
+                printf(' [<a href="usersearch.php?em=%s" class="faqlink" target="_blank">%s</a>]', urlencode($complain['email']), $lang_complains['text_search_account']);
+                if ($user) {
+                    printf(' [<a href="user-ban-log.php?q=%s" class="faqlink" target="_blank">%s</a>]', urlencode($user->username), $lang_complains['text_view_band_log']);
+                }
+            }
             echo '<hr />', format_comment($complain['body']);
             end_frame();
             // REPLIES

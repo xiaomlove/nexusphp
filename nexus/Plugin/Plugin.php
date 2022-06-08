@@ -8,9 +8,7 @@ class Plugin
     public function __construct()
     {
         $this->loadProviders();
-        if (!isRunningInConsole()) {
-            $this->bootPlugins();
-        }
+        $this->bootPlugins();
     }
 
     public function enabled($name): bool
@@ -22,7 +20,7 @@ class Plugin
     {
         if (isset(self::$providers[$name]['providers'][0])) {
             $className = self::$providers[$name]['providers'][0];
-            $className = str_replace('ServiceProvider', '', $className);
+            $className = str_replace('ServiceProvider', 'Repository', $className);
             if (class_exists($className)) {
                 return new $className;
             }
@@ -35,7 +33,7 @@ class Plugin
             $provider = $providers['providers'][0];
             $parts = explode('\\', $provider);
             if ($parts[0] == 'NexusPlugin') {
-                $className = str_replace('ServiceProvider', '', $provider);
+                $className = str_replace('ServiceProvider', 'Repository', $provider);
                 call_user_func([new $className, 'boot']);
             }
         }

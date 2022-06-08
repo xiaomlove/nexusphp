@@ -15,6 +15,7 @@ use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\User;
+use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -134,6 +135,9 @@ class TrackerRepository extends BaseRepository
                 }
             }
             $repDict = $this->generateSuccessAnnounceResponse($torrent, $queries, $user, $withPeers);
+            if ($isReAnnounce == self::ANNOUNCE_FIRST) {
+                do_action('announced', $torrent->toArray(), $user->toArray(), $queries);
+            }
         } catch (ClientNotAllowedException $exception) {
             do_log("[ClientNotAllowedException] " . $exception->getMessage());
             if (isset($user) && $user->showclienterror == 'no') {
@@ -368,7 +372,7 @@ class TrackerRepository extends BaseRepository
         return $user;
     }
 
-    protected function checkTorrent($queries, User $user)
+    protected function checkTorrent($queries, User $user): Torrent
     {
         // Check Info Hash Against Torrents Table
         $torrent = $this->getTorrentByInfoHash($queries['info_hash']);
@@ -381,8 +385,7 @@ class TrackerRepository extends BaseRepository
         if ($torrent->banned == 'yes' && $user->class < Setting::get('authority.seebanned')) {
             throw new TrackerException("torrent banned");
         }
-
-        return $torrent;
+        return array_filter('torrent_detail', $torrent);
     }
 
     protected function checkPeer(Torrent $torrent, array $queries, User $user): void
@@ -518,6 +521,12 @@ class TrackerRepository extends BaseRepository
             Cheater::query()->insert($data);
             $modComment = "We believe you're trying to cheat. And your account is disabled.";
             $user->updateWithModComment(['enabled' => User::ENABLED_NO], $modComment);
+            $userBanLog = [
+                'uid' => $user->id,
+                'username' => $user->username,
+                'reason' => "$comment(Upload speed:" . mksize($upSpeed) . "/s)"
+            ];
+            UserBanLog::query()->insert($userBanLog);
             throw new TrackerException($modComment);
         }
 

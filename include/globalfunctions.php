@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\Pure;
-
 function get_global_sp_state()
 {
 	global $Cache;
@@ -733,11 +731,11 @@ function add_filter($name, $function, $priority = 10, $argc = 1)
     $hook->addFilter($name, $function, $priority, $argc);
 }
 
-function apply_filter($name, $value)
+function apply_filter($name, ...$args)
 {
     global $hook;
     do_log("[APPLY_FILTER]: $name");
-    return $hook->applyFilter($name, func_get_args());
+    return $hook->applyFilter(...func_get_args());
 }
 
 function add_action($name, $function, $priority = 10, $argc = 1)
@@ -750,7 +748,7 @@ function do_action($name, ...$args)
 {
     global $hook;
     do_log("[DO_ACTION]: $name");
-    return $hook->doAction($name, ...$args);
+    return $hook->doAction(...func_get_args());
 }
 
 

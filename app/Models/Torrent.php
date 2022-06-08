@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Repositories\TagRepository;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use JeroenG\Explorer\Application\Explored;
 use Laravel\Scout\Searchable;
 
@@ -27,6 +28,7 @@ class Torrent extends NexusModel
     protected $casts = [
         'added' => 'datetime',
         'pt_gen' => 'array',
+        'promotion_until' => 'datetime',
     ];
 
     public static $commentFields = [
@@ -156,6 +158,10 @@ class Torrent extends NexusModel
         $spState = $this->sp_state;
         $global = self::getGlobalPromotionState();
         $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
+        if ($this->__ignore_global_sp_state) {
+            $log .= "[IGNORE_GLOBAL_SP_STATE]";
+            $global = self::PROMOTION_NORMAL;
+        }
         if ($global != self::PROMOTION_NORMAL) {
             $spState = $global;
             $log .= sprintf(", global != %s, set sp_state to global: %s", self::PROMOTION_NORMAL, $global);
@@ -168,6 +174,13 @@ class Torrent extends NexusModel
         return $spState;
     }
 
+    public function posStateText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => nexus_trans('torrent.pos_state_' . $attributes['pos_state'])
+        );
+    }
+
     public static function getGlobalPromotionState()
     {
         if (is_null(self::$globalPromotionState)) {
@@ -178,6 +191,18 @@ class Torrent extends NexusModel
             self::$globalPromotionState = $result->global_sp_state ?? false;
         }
         return self::$globalPromotionState;
+    }
+
+    public static function getFieldsForList($appendTableName = false): array|bool
+    {
+        $fields = 'id, sp_state, promotion_time_type, promotion_until, banned, picktype, pos_state, category, source, medium, codec, standard, processing, team, audiocodec, leechers, seeders, name, small_descr, times_completed, size, added, comments,anonymous,owner,url,cache_stamp, pt_gen, hr';
+        $fields = preg_split('/[,\s]+/', $fields);
+        if ($appendTableName) {
+            foreach ($fields as &$value) {
+                $value = "torrents." . $value;
+            }
+        }
+        return $fields;
     }
 
     public function getHrAttribute(): string

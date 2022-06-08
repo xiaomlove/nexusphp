@@ -6,7 +6,6 @@ require_once(get_langfile_path());
 loggedinorreturn();
 $id = intval($_GET["id"] ?? 0);
 $customField = new \Nexus\Field\Field();
-
 int_check($id);
 if (!isset($id) || !$id)
 die();
@@ -38,6 +37,7 @@ if (!$row) {
 ) {
     permissiondenied();
 } else {
+    $row = apply_filter('torrent_detail', $row);
     $owner = \App\Models\User::query()->with(['wearing_medals'])->find($row['owner']);
     if (!$owner) {
         $owner = \App\Models\User::defaultUser();
@@ -69,8 +69,8 @@ if (!$row) {
 			if (isset($_GET["returnto"]))
 				print("<p><b>".$lang_details['text_go_back'] . "<a href=\"".htmlspecialchars($_GET["returnto"])."\">" . $lang_details['text_whence_you_came']."</a></b></p>");
 		}
-		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word');
-		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until']);
+		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
+		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
         $hrImg = get_hr_img($row);
 		$s=htmlspecialchars($row["name"]).($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");
@@ -128,17 +128,20 @@ if (!$row) {
 			$audiocodec_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_audio_codec']."&nbsp;</b>".$row['audiocodec_name'];
 
 		tr($lang_details['row_basic_info'], $size_info.$type_info.$source_info . $medium_info. $codec_info . $audiocodec_info. $standard_info . $processing_info . $team_info, 1);
-		if ($CURUSER["downloadpos"] != "no")
-			$download = "<a title=\"".$lang_details['title_download_torrent']."\" href=\"download.php?id=".$id."\"><img class=\"dt_download\" src=\"pic/trans.gif\" alt=\"download\" />&nbsp;<b><font class=\"small\">".$lang_details['text_download_torrent']."</font></b></a>&nbsp;|&nbsp;";
-		else $download = "";
 
-		tr(
-		    $lang_details['row_action'],
-            $download.($owned == 1 ? "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_details['text_edit_torrent'] . "</font></b></a>&nbsp;|&nbsp;" : "")
-            .(get_user_class() >= $askreseed_class && $row['seeders'] == 0 ? "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>&nbsp;|&nbsp;" : "")
-            ."<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>"
-            , 1
-        );
+		$actions = [];
+        if ($CURUSER["downloadpos"] != "no") {
+            $actions[] = "<a title=\"".$lang_details['title_download_torrent']."\" href=\"download.php?id=".$id."\"><img class=\"dt_download\" src=\"pic/trans.gif\" alt=\"download\" />&nbsp;<b><font class=\"small\">".$lang_details['text_download_torrent']."</font></b></a>";
+        }
+        if ($owned == 1) {
+            $actions[] = "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_details['text_edit_torrent'] . "</font></b></a>";
+        }
+        if (get_user_class() >= $askreseed_class && $row['seeders'] == 0) {
+            $actions[] = "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>";
+        }
+        $actions[] = "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>";
+        $actions = apply_filter('torrent_detail_actions', $actions, $row);
+		tr($lang_details['row_action'], implode('&nbsp;|&nbsp;', $actions), 1);
 
         // ------------- start claim block ------------------//
         $claimTorrentTTL = \App\Models\Claim::getConfigTorrentTTL();
@@ -237,7 +240,9 @@ JS;
 
 		if ($CURUSER['showdescription'] != 'no' && !empty($row["descr"])){
             $torrentdetailad=$Advertisement->get_ad('torrentdetail');
-            tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"\">".$torrentdetailad[0]."</div>" : "").format_comment($row["descr"])."</div>", 1);
+            $desc = format_comment($row['descr']);
+            $desc = apply_filter('torrent_detail_description', $desc, $row['id'], $CURUSER['id']);
+            tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"\">".$torrentdetailad[0]."</div>" : "").$desc."</div>", 1);
 		}
 
 		if (get_user_class() >= $viewnfo_class && $CURUSER['shownfo'] != 'no' && $row["nfosz"] > 0){
@@ -356,7 +361,7 @@ JS;
 						$other_processing_info = $copy_row['processing_name'].", ";
 
 					$sphighlight = get_torrent_bg_color($copy_row['sp_state']);
-					$sp_info = get_torrent_promotion_append($copy_row['sp_state']);
+					$sp_info = get_torrent_promotion_append($copy_row['sp_state'], '', false, '', 0, '', $copy_row['__ignore_global_sp_state'] ?? false);
 					$hrImg = get_hr_img($copy_row);
 
 					$s .= "<tr". $sphighlight."><td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>".return_category_image($copy_row["catid"], "torrents.php?allsec=1&amp;")."</td><td class=\"rowfollow\" align=\"left\"><a href=\"" . htmlspecialchars(get_protocol_prefix() . $BASEURL . "/details.php?id=" . $copy_row["id"]. "&hit=1")."\">" . $dispname ."</a>". $sp_info. $hrImg ."</td>" .

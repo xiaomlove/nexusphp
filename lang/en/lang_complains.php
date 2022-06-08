@@ -26,4 +26,5 @@ $lang_complains = [
     'no_pending_complaints' => 'No pending complaints',
     'complaints_processed' => 'Complaints processed',
     'no_complaints_have_been_processed' => 'No complaints have been processed',
+    'text_view_band_log' => 'View ban log',
 ];

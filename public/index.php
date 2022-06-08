@@ -153,7 +153,7 @@ if ($showshoutbox_main == "yes") {
 }
 // ------------- end: shoutbox ------------------//
 // ------------- start: latest forum posts ------------------//
-/*
+
 if ($showlastxforumposts_main == "yes" && $CURUSER)
 {
 	$res = sql_query("SELECT posts.id AS pid, posts.userid AS userpost, posts.added, topics.id AS tid, topics.subject, topics.forumid, topics.views, forums.name FROM posts, topics, forums WHERE posts.topicid = topics.id AND topics.forumid = forums.id AND minclassread <=" . sqlesc(get_user_class()) . " ORDER BY posts.id DESC LIMIT 5") or sqlerr(__FILE__,__LINE__);
@@ -169,7 +169,7 @@ if ($showlastxforumposts_main == "yes" && $CURUSER)
 		print("</table>");
 	}
 }
-*/
+
 // ------------- end: latest forum posts ------------------//
 // ------------- start: latest torrents ------------------//
 

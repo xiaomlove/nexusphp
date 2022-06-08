@@ -53,4 +53,5 @@ class Controller extends BaseController
         }
         return Str::slug("$title.$action", '.');
     }
+
 }

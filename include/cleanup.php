@@ -357,18 +357,14 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
 	//4.update count of seeders, leechers, comments for torrents
 	$torrents = array();
-    /**
-     * move to announce request to do this
-     * @since 1.7.4
-     */
-//	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
-//	while ($row = mysql_fetch_assoc($res)) {
-//		if ($row["seeder"] == "yes")
-//		$key = "seeders";
-//		else
-//		$key = "leechers";
-//		$torrents[$row["torrent"]][$key] = $row["c"];
-//	}
+	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
+	while ($row = mysql_fetch_assoc($res)) {
+		if ($row["seeder"] == "yes")
+		$key = "seeders";
+		else
+		$key = "leechers";
+		$torrents[$row["torrent"]][$key] = $row["c"];
+	}
 
 	$res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
 	while ($row = mysql_fetch_assoc($res)) {

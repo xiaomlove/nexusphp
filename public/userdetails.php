@@ -496,8 +496,8 @@ JS;
 		print("<td class=\"rowfollow\">".$lang_userdetails['text_no_warned']."</td></tr>\n");
 	}
 	print("</table></td></tr>");
-//	tr($lang_userdetails['row_enabled'], "<input name=\"enabled\" value=\"yes\" type=\"radio\"" . ($enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input name=\"enabled\" value=\"no\" type=\"radio\"" . (!$enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
-	tr($lang_userdetails['row_enabled'], $lang_userdetails['disable_user_migrated'], 1);
+	tr($lang_userdetails['row_enabled'], "<input name=\"enabled\" value=\"yes\" type=\"radio\"" . ($enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input name=\"enabled\" value=\"no\" type=\"radio\"" . (!$enabled ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
+//	tr($lang_userdetails['row_enabled'], $lang_userdetails['disable_user_migrated'], 1);
 	tr($lang_userdetails['row_forum_post_possible'], "<input type=\"radio\" name=\"forumpost\" value=\"yes\"" .($user["forumpost"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"forumpost\" value=\"no\"" .($user["forumpost"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_upload_possible'], "<input type=\"radio\" name=\"uploadpos\" value=\"yes\"" .($user["uploadpos"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"uploadpos\" value=\"no\"" .($user["uploadpos"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_download_possible'], "<input type=\"radio\" name=\"downloadpos\" value=\"yes\"" .($user["downloadpos"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"downloadpos\" value=\"no\"" .($user["downloadpos"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
@@ -515,10 +515,15 @@ JS;
 
 	if (get_user_class() >= $cruprfmanage_class)
 	{
-		tr($lang_userdetails['row_amount_uploaded'], "<input disabled type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
-		tr($lang_userdetails['row_amount_downloaded'], "<input disabled type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
-		tr($lang_userdetails['row_seeding_karma'], "<input disabled type=\"text\" size=\"60\" name=\"bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
-		tr($lang_userdetails['row_invites'], "<input disabled type=\"text\" size=\"60\" name=\"invites\" value=\"" .htmlspecialchars($user['invites']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
+//		tr($lang_userdetails['row_amount_uploaded'], "<input disabled type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
+//		tr($lang_userdetails['row_amount_downloaded'], "<input disabled type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
+//		tr($lang_userdetails['row_seeding_karma'], "<input disabled type=\"text\" size=\"60\" name=\"bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
+//		tr($lang_userdetails['row_invites'], "<input disabled type=\"text\" size=\"60\" name=\"invites\" value=\"" .htmlspecialchars($user['invites']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
+
+        tr($lang_userdetails['row_amount_uploaded'], "<input type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" />", 1);
+        tr($lang_userdetails['row_amount_downloaded'], "<input type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" />", 1);
+        tr($lang_userdetails['row_seeding_karma'], "<input type=\"text\" size=\"60\" name=\"bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" /><input type=\"hidden\" name=\"ori_bonus\" value=\"" .number_format($user['seedbonus'], 1) . "\" />", 1);
+        tr($lang_userdetails['row_invites'], "<input type=\"text\" size=\"60\" name=\"invites\" value=\"" .htmlspecialchars($user['invites']) . "\" />", 1);
 	}
 	tr($lang_userdetails['row_passkey'], "<input name=\"resetkey\" value=\"yes\" type=\"checkbox\" />".$lang_userdetails['checkbox_reset_passkey'], 1);
 

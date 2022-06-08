@@ -15,11 +15,13 @@ class BonusLogs extends NexusModel
     const BUSINESS_TYPE_CANCEL_HIT_AND_RUN = 1;
     const BUSINESS_TYPE_BUY_MEDAL = 2;
     const BUSINESS_TYPE_BUY_ATTENDANCE_CARD = 3;
+    const BUSINESS_TYPE_STICKY_PROMOTION = 4;
 
     public static array $businessTypes = [
         self::BUSINESS_TYPE_CANCEL_HIT_AND_RUN => ['text' => 'Cancel H&R'],
         self::BUSINESS_TYPE_BUY_MEDAL => ['text' => 'Buy medal'],
         self::BUSINESS_TYPE_BUY_ATTENDANCE_CARD => ['text' => 'Buy attendance card'],
+        self::BUSINESS_TYPE_STICKY_PROMOTION => ['text' => 'Buy torrent sticky promotion'],
     ];
 
     public static function getBonusForCancelHitAndRun()

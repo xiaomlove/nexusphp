@@ -283,10 +283,10 @@ function formatTextAlign($text, $align): string
 function format_urls($text, $newWindow = false) {
 //	return preg_replace("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/ei", "formatUrl('\\1', ".($newWindow==true ? 1 : 0).", '', 'faqlink')", $text);
 	return preg_replace_callback("/((https?|ftp|gopher|news|telnet|mms|rtsp):\/\/[^()\[\]<>\s]+)/i", function ($matches) use ($newWindow) {
-	    return formatUrl($matches[1], ".($newWindow==true ? 1 : 0).", '', 'faqlink');
+	    return formatUrl($matches[1], $newWindow, '', 'faqlink');
     }, $text);
 }
-function format_comment($text, $strip_html = true, $xssclean = false, $newtab = false, $imageresizer = true, $image_max_width = 700, $enableimage = true, $enableflash = true , $imagenum = -1, $image_max_height = 0, $adid = 0)
+function format_comment($text, $strip_html = true, $xssclean = false, $newtab = true, $imageresizer = true, $image_max_width = 700, $enableimage = true, $enableflash = true , $imagenum = -1, $image_max_height = 0, $adid = 0)
 {
 	global $lang_functions;
 	global $CURUSER, $SITENAME, $BASEURL, $enableattach_attachment;
@@ -378,14 +378,14 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	} else {
 //		$s = preg_replace("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/ei", "formatUrl('\\1', ".($newtab==true ? 1 : 0).", '\\2', 'faqlink')", $s);
 		$s = preg_replace_callback("/\[url=([^\[\s]+?)\](.+?)\[\/url\]/i", function ($matches) use ($newtab) {
-		    return formatUrl($matches[1], ".($newtab==true ? 1 : 0).", $matches[2], 'faqlink');
+		    return formatUrl($matches[1], $newtab, $matches[2], 'faqlink');
         }, $s);
 	}
 
 	// [url]http://www.example.com[/url]
 //	$s = preg_replace("/\[url\]([^\[\s]+?)\[\/url\]/ei", "formatUrl('\\1', ".($newtab==true ? 1 : 0).", '', 'faqlink')", $s);
 	$s = preg_replace_callback("/\[url\]([^\[\s]+?)\[\/url\]/i", function ($matches) use ($newtab) {
-	    return formatUrl($matches[1], ".($newtab==true ? 1 : 0).", '', 'faqlink');
+	    return formatUrl($matches[1], $newtab, '', 'faqlink');
     }, $s);
 
     // [left]Left text[/left]
@@ -2481,6 +2481,7 @@ if ($CURUSER){
 <script type="text/javascript" src="js/domTT_drag.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript" src="js/fadomatic.js<?php echo $cssupdatedate?>"></script>
 <?php
+do_action('nexus_header');
 foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
     print($value);
 }
@@ -2816,6 +2817,7 @@ function stdfoot() {
 	print("</div>");
 	if ($analyticscode_tweak)
 		print("\n".$analyticscode_tweak."\n");
+    do_action('nexus_footer');
 	foreach (\Nexus\Nexus::getAppendFooters() as $value) {
 	    print($value);
     }
@@ -3055,7 +3057,7 @@ function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
 
 	$start = $page * $rpp;
 	$add_key_shortcut = key_shortcut($page,$pages-1);
-	return array($pagertop, $pagerbottom, "LIMIT $start,$rpp", $start, $rpp);
+	return array($pagertop, $pagerbottom, "LIMIT $start,$rpp", $start, $rpp, $page);
 }
 
 function commenttable($rows, $type, $parent_id, $review = false)
@@ -3412,7 +3414,8 @@ foreach ($rows as $row)
     } else {
         $stickyicon = "";
     }
-    $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until']);
+	$stickyicon = apply_filter('sticky_icon', $stickyicon, $row);
+    $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
 	$hrImg = get_hr_img($row);
 
 	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\"><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . "><td class=\"embedded\">".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>");
@@ -3429,8 +3432,10 @@ foreach ($rows as $row)
 		print("<b> (<font class='new'>".$lang_functions['text_new_uppercase']."</font>)</b>");
 
 	$banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
-	$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until']);
-	print($banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg);
+	$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
+	$titleSuffix = $banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg;
+	$titleSuffix = apply_filter('torrent_title_suffix', $titleSuffix, $row);
+	print($titleSuffix);
 	//$tags = torrentTags($row['tags'], 'span');
     /**
      * render tags
@@ -4127,15 +4132,20 @@ function get_torrent_bg_color($promotion = 1, $posState = "")
 	return (string)$sphighlight;
 }
 
-function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = ''){
+function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = '', $ignoreGlobal = false){
 	global $CURUSER,$lang_functions;
 	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
 
+	$globalSpState = get_global_sp_state();
 	$sp_torrent = "";
 	$onmouseover = "";
 	$log = "[GET_PROMOTION], promotion: $promotion, forcemode: $forcemode, showtimeleft: $showtimeleft, added: $added, promotionTimeType: $promotionTimeType, promotionUntil: $promotionUntil";
-    $log .= ", get_global_sp_state() == " . get_global_sp_state();
-	if (get_global_sp_state() == 1) {
+    if ($ignoreGlobal) {
+        $globalSpState = 1;
+        $log .= ", [IGNORE_GLOBAL]";
+    }
+	$log .= ", globalSpState == " . $globalSpState;
+	if ($globalSpState == 1) {
 	switch ($promotion){
 		case 2:
 		{
@@ -4237,54 +4247,54 @@ function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimele
 	}
 	if (($CURUSER['appendpromotion'] == 'word' && $forcemode == "" ) || $forcemode == 'word'){
         $log .= ", user appendpromotion = word";
-		if(($promotion==2 && get_global_sp_state() == 1) || get_global_sp_state() == 2){
+		if(($promotion==2 && $globalSpState == 1) || $globalSpState == 2){
 		    $log .= ", promotion or global_sp_state = 2";
 			$sp_torrent = " <b>[<font class='free' ".$onmouseover.">".$lang_functions['text_free']."</font>]</b>";
 		}
-		elseif(($promotion==3 && get_global_sp_state() == 1) || get_global_sp_state() == 3){
+		elseif(($promotion==3 && $globalSpState == 1) || $globalSpState == 3){
             $log .= ", promotion or global_sp_state = 3";
 			$sp_torrent = " <b>[<font class='twoup' ".$onmouseover.">".$lang_functions['text_two_times_up']."</font>]</b>";
 		}
-		elseif(($promotion==4 && get_global_sp_state() == 1) || get_global_sp_state() == 4){
+		elseif(($promotion==4 && $globalSpState == 1) || $globalSpState == 4){
             $log .= ", promotion or global_sp_state = 4";
 			$sp_torrent = " <b>[<font class='twoupfree' ".$onmouseover.">".$lang_functions['text_free_two_times_up']."</font>]</b>";
 		}
-		elseif(($promotion==5 && get_global_sp_state() == 1) || get_global_sp_state() == 5){
+		elseif(($promotion==5 && $globalSpState == 1) || $globalSpState == 5){
             $log .= ", promotion or global_sp_state = 5";
 			$sp_torrent = " <b>[<font class='halfdown' ".$onmouseover.">".$lang_functions['text_half_down']."</font>]</b>";
 		}
-		elseif(($promotion==6 && get_global_sp_state() == 1) || get_global_sp_state() == 6){
+		elseif(($promotion==6 && $globalSpState == 1) || $globalSpState == 6){
             $log .= ", promotion or global_sp_state = 6";
 			$sp_torrent = " <b>[<font class='twouphalfdown' ".$onmouseover.">".$lang_functions['text_half_down_two_up']."</font>]</b>";
 		}
-		elseif(($promotion==7 && get_global_sp_state() == 1) || get_global_sp_state() == 7){
+		elseif(($promotion==7 && $globalSpState == 1) || $globalSpState == 7){
             $log .= ", promotion or global_sp_state = 7";
 			$sp_torrent = " <b>[<font class='thirtypercent' ".$onmouseover.">".$lang_functions['text_thirty_percent_down']."</font>]</b>";
 		}
 	}
 	elseif (($CURUSER['appendpromotion'] == 'icon' && $forcemode == "") || $forcemode == 'icon'){
         $log .= ", user appendpromotion = icon";
-		if(($promotion==2 && get_global_sp_state() == 1) || get_global_sp_state() == 2) {
+		if(($promotion==2 && $globalSpState == 1) || $globalSpState == 2) {
             $log .= ", promotion or global_sp_state = 2";
             $sp_torrent = " <img class=\"pro_free\" src=\"pic/trans.gif\" alt=\"Free\" ".($onmouseover ? $onmouseover : "title=\"".$lang_functions['text_free']."\"")." />";
         }
-		elseif(($promotion==3 && get_global_sp_state() == 1) || get_global_sp_state() == 3) {
+		elseif(($promotion==3 && $globalSpState == 1) || $globalSpState == 3) {
             $log .= ", promotion or global_sp_state = 3";
             $sp_torrent = " <img class=\"pro_2up\" src=\"pic/trans.gif\" alt=\"2X\" ".($onmouseover ? $onmouseover : "title=\"".$lang_functions['text_two_times_up']."\"")." />";
         }
-		elseif(($promotion==4 && get_global_sp_state() == 1) || get_global_sp_state() == 4) {
+		elseif(($promotion==4 && $globalSpState == 1) || $globalSpState == 4) {
             $log .= ", promotion or global_sp_state = 4";
             $sp_torrent = " <img class=\"pro_free2up\" src=\"pic/trans.gif\" alt=\"2X Free\" ".($onmouseover ? $onmouseover : "title=\"".$lang_functions['text_free_two_times_up']."\"")." />";
         }
-		elseif(($promotion==5 && get_global_sp_state() == 1) || get_global_sp_state() == 5) {
+		elseif(($promotion==5 && $globalSpState == 1) || $globalSpState == 5) {
             $log .= ", promotion or global_sp_state = 5";
             $sp_torrent = " <img class=\"pro_50pctdown\" src=\"pic/trans.gif\" alt=\"50%\" ".($onmouseover ? $onmouseover : "title=\"".$lang_functions['text_half_down']."\"")." />";
         }
-		elseif(($promotion==6 && get_global_sp_state() == 1) || get_global_sp_state() == 6) {
+		elseif(($promotion==6 && $globalSpState == 1) || $globalSpState == 6) {
             $log .= ", promotion or global_sp_state = 6";
             $sp_torrent = " <img class=\"pro_50pctdown2up\" src=\"pic/trans.gif\" alt=\"2X 50%\" ".($onmouseover ? $onmouseover : "title=\"".$lang_functions['text_half_down_two_up']."\"")." />";
         }
-		elseif(($promotion==7 && get_global_sp_state() == 1) || get_global_sp_state() == 7) {
+		elseif(($promotion==7 && $globalSpState == 1) || $globalSpState == 7) {
             $log .= ", promotion or global_sp_state = 7";
             $sp_torrent = " <img class=\"pro_30pctdown\" src=\"pic/trans.gif\" alt=\"30%\" ".($onmouseover ? $onmouseover : "title=\"".$lang_functions['text_thirty_percent_down']."\"")." />";
         }
@@ -4293,15 +4303,20 @@ function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimele
 	return $sp_torrent;
 }
 
-function get_torrent_promotion_append_sub($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = ''){
+function get_torrent_promotion_append_sub($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = '', $ignoreGlobal = false){
 	global $CURUSER,$lang_functions;
 	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
 
+    $globalSpState = get_global_sp_state();
 	$sp_torrent = "";
 	$onmouseover = "";
 	$log = "[GET_PROMOTION], promotion: $promotion, forcemode: $forcemode, showtimeleft: $showtimeleft, added: $added, promotionTimeType: $promotionTimeType, promotionUntil: $promotionUntil";
-    $log .= ", get_global_sp_state() == " . get_global_sp_state();
-	if (get_global_sp_state() == 1) {
+    if ($ignoreGlobal) {
+        $globalSpState = 1;
+        $log .= ", [IGNORE_GLOBAL]";
+    }
+	$log .= ", globalSpState == " . $globalSpState;
+	if ($globalSpState == 1) {
 	switch ($promotion){
 		case 2:
 		{
@@ -4403,54 +4418,54 @@ function get_torrent_promotion_append_sub($promotion = 1,$forcemode = "",$showti
 	}
 	if (($CURUSER['appendpromotion'] == 'word' && $forcemode == "" ) || $forcemode == 'word'){
         $log .= ", user appendpromotion = word";
-		if(($promotion==2 && get_global_sp_state() == 1) || get_global_sp_state() == 2){
+		if(($promotion==2 && $globalSpState == 1) || $globalSpState == 2){
 		    $log .= ", promotion or global_sp_state = 2";
 			$sp_torrent = $onmouseover;
 		}
-		elseif(($promotion==3 && get_global_sp_state() == 1) || get_global_sp_state() == 3){
+		elseif(($promotion==3 && $globalSpState == 1) || $globalSpState == 3){
             $log .= ", promotion or global_sp_state = 3";
 			$sp_torrent = $onmouseover;
 		}
-		elseif(($promotion==4 && get_global_sp_state() == 1) || get_global_sp_state() == 4){
+		elseif(($promotion==4 && $globalSpState == 1) || $globalSpState == 4){
             $log .= ", promotion or global_sp_state = 4";
 			$sp_torrent = $onmouseover;
 		}
-		elseif(($promotion==5 && get_global_sp_state() == 1) || get_global_sp_state() == 5){
+		elseif(($promotion==5 && $globalSpState == 1) || $globalSpState == 5){
             $log .= ", promotion or global_sp_state = 5";
 			$sp_torrent = $onmouseover;
 		}
-		elseif(($promotion==6 && get_global_sp_state() == 1) || get_global_sp_state() == 6){
+		elseif(($promotion==6 && $globalSpState == 1) || $globalSpState == 6){
             $log .= ", promotion or global_sp_state = 6";
 			$sp_torrent = $onmouseover;
 		}
-		elseif(($promotion==7 && get_global_sp_state() == 1) || get_global_sp_state() == 7){
+		elseif(($promotion==7 && $globalSpState == 1) || $globalSpState == 7){
             $log .= ", promotion or global_sp_state = 7";
 			$sp_torrent = $onmouseover;
 		}
 	}
 	elseif (($CURUSER['appendpromotion'] == 'icon' && $forcemode == "") || $forcemode == 'icon'){
         $log .= ", user appendpromotion = icon";
-		if(($promotion==2 && get_global_sp_state() == 1) || get_global_sp_state() == 2) {
+		if(($promotion==2 && $globalSpState == 1) || $globalSpState == 2) {
             $log .= ", promotion or global_sp_state = 2";
             $sp_torrent = $onmouseover;
         }
-		elseif(($promotion==3 && get_global_sp_state() == 1) || get_global_sp_state() == 3) {
+		elseif(($promotion==3 && $globalSpState == 1) || $globalSpState == 3) {
             $log .= ", promotion or global_sp_state = 3";
             $sp_torrent = $onmouseover;
         }
-		elseif(($promotion==4 && get_global_sp_state() == 1) || get_global_sp_state() == 4) {
+		elseif(($promotion==4 && $globalSpState == 1) || $globalSpState == 4) {
             $log .= ", promotion or global_sp_state = 4";
             $sp_torrent = $onmouseover;
         }
-		elseif(($promotion==5 && get_global_sp_state() == 1) || get_global_sp_state() == 5) {
+		elseif(($promotion==5 && $globalSpState == 1) || $globalSpState == 5) {
             $log .= ", promotion or global_sp_state = 5";
             $sp_torrent = $onmouseover;
         }
-		elseif(($promotion==6 && get_global_sp_state() == 1) || get_global_sp_state() == 6) {
+		elseif(($promotion==6 && $globalSpState == 1) || $globalSpState == 6) {
             $log .= ", promotion or global_sp_state = 6";
             $sp_torrent = $onmouseover;
         }
-		elseif(($promotion==7 && get_global_sp_state() == 1) || get_global_sp_state() == 7) {
+		elseif(($promotion==7 && $globalSpState == 1) || $globalSpState == 7) {
             $log .= ", promotion or global_sp_state = 7";
             $sp_torrent = $onmouseover;
         }
@@ -5064,10 +5079,15 @@ function canDoLogin()
 
 function displayHotAndClassic()
 {
-    global $showextinfo, $showmovies, $Cache, $lang_functions;
+    global $showextinfo, $showmovies, $Cache, $lang_functions, $browsecatmode, $specialcatmode;
 
     if ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes")
     {
+        if (nexus()->getScript() == 'special') {
+            $mode = $specialcatmode;
+        } else {
+            $mode = $browsecatmode;
+        }
         $imdb = new \Nexus\Imdb\Imdb();
         $type = array('hot', 'classic');
         foreach($type as $type_each)
@@ -5079,7 +5099,7 @@ function displayHotAndClassic()
                 {
                     $Cache->add_whole_row();
 
-                    $res = sql_query("SELECT sp_state, url, id, name, small_descr, cover FROM torrents WHERE picktype = " . sqlesc($type_each) . " AND seeders > 0 AND (url != '' OR cover != '') ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
+                    $res = sql_query("SELECT torrents.sp_state, torrents.url, torrents.id, torrents.name, torrents.small_descr, torrents.cover FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE categories.mode = $mode AND picktype = " . sqlesc($type_each) . " AND seeders > 0 AND (url != '' OR cover != '') ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
                     if (mysql_num_rows($res) > 0)
                     {
                         $movies_list = "";
@@ -5089,7 +5109,7 @@ function displayHotAndClassic()
                         $height = 140;
                         while($array = mysql_fetch_array($res))
                         {
-                            $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word');
+                            $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word', false, '', 0, '', $array['__ignore_global_sp_state'] ?? false);
                             if (!empty($array['cover'])) {
                                 $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".$array['cover']."\" border=\"0\" alt=\"poster\" />";
                             } elseif ($imdb_id = parse_imdb_id($array["url"])) {
@@ -5225,7 +5245,7 @@ function strip_all_tags($text)
     return trim($text);
 }
 
-function format_description(string $description)
+function format_description($description)
 {
     //替换附件
     $pattern = '/(\[attach\](.*)\[\/attach\])/isU';

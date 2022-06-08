@@ -111,7 +111,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-	$res = sql_query("SELECT id, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$res = sql_query("SELECT id, username, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = mysql_fetch_array($res);
 	do_log("[check passkey], currentUser: " . nexus_json_encode($az));
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
@@ -173,6 +173,8 @@ elseif ($torrent['banned'] == 'yes' && $az['class'] < $seebanned_class) err("tor
 // select peers info from peers table for this torrent
 $torrentid = $torrent["id"];
 $numpeers = $torrent["seeders"]+$torrent["leechers"];
+
+$torrent = apply_filter('torrent_detail', $torrent);
 
 if ($seeder == 'yes'){ //Don't report seeds to other seeders
 	$only_leech_query = " AND seeder = 'no' ";
@@ -346,6 +348,10 @@ else // continue an existing session
 	if (!$is_cheater && ($trueupthis > 0 || $truedownthis > 0))
 	{
 		$global_promotion_state = get_global_sp_state();
+		if (isset($torrent['__ignore_global_sp_state']) && $torrent['__ignore_global_sp_state']) {
+		    do_log("[IGNORE_GLOBAL_SP_STATE], sp_state: {$torrent['sp_state']}");
+            $global_promotion_state = 1;
+        }
 		if($global_promotion_state == 1)// Normal, see individual torrent
 		{
 			if($torrent['sp_state']==3) //2X
@@ -469,6 +475,7 @@ elseif(isset($self))
             ->first();
 		if ($snatchInfo) {
             sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 2");
+            do_action('snatched_saved', $torrent, $snatchInfo->toArray());
             if (
                 $event == 'completed'
                 && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS
@@ -561,5 +568,6 @@ if(count($USERUPDATESET) && $userid)
 {
 	sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid);
 }
+do_action('announced', $torrent, $az, $_REQUEST);
 benc_resp($rep_dict);
 ?>

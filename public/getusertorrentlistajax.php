@@ -99,7 +99,7 @@ function maketable($res, $mode = 'seeding')
 		$catname = htmlspecialchars($arr["catname"]);
 
 		$sphighlight = get_torrent_bg_color($arr['sp_state']);
-		$sp_torrent = get_torrent_promotion_append($arr['sp_state']);
+		$sp_torrent = get_torrent_promotion_append($arr['sp_state'], '', false, '', 0, '', $arr['__ignore_global_sp_state'] ?? false);
         //Total size
         if ($showtotalsize){
 			$total_size += $arr['size'];

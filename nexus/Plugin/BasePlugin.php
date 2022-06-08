@@ -1,10 +1,11 @@
 <?php
 namespace Nexus\Plugin;
 
+use App\Repositories\BaseRepository;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 
-abstract class BasePlugin
+abstract class BasePlugin extends BaseRepository
 {
     abstract function install();
 

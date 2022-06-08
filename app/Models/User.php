@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
+use Nexus\Database\NexusDB;
 
 class User extends Authenticatable
 {
@@ -127,6 +128,7 @@ class User extends Authenticatable
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
         'leechwarn', 'leechwarnuntil', 'page', 'class', 'uploaded', 'downloaded', 'clientselect', 'showclienterror', 'last_home',
+        'seedbonus', 'bonuscomment',
     ];
 
     /**
@@ -397,14 +399,19 @@ class User extends Authenticatable
 
     public function updateWithModComment(array $update, $modComment): bool
     {
+        return $this->updateWithComment($update, $modComment, 'modcomment');
+    }
+
+    public function updateWithComment(array $update, $comment, $commentField): bool
+    {
         if (!$this->exists) {
-            throw new \RuntimeException('This method only works when user exists!');
+            throw new \RuntimeException('This method only works when user exists !');
         }
         //@todo how to do prepare bindings here ?
-        $modComment = addslashes($modComment);
-        $update['modcomment'] = DB::raw("concat_ws('\n', '$modComment', modcomment)");
-        do_log("update: " . json_encode($update) . ", modcomment: $modComment", 'notice');
-        return $this->update($update);
+        $comment = addslashes($comment);
+        do_log("update: " . json_encode($update) . ", $commentField: $comment", 'notice');
+        $update[$commentField] = NexusDB::raw("if($commentField = '', '$comment', concat_ws('\n', '$comment', $commentField))");
+       return $this->update($update);
     }
 
     public function canAccessAdmin()

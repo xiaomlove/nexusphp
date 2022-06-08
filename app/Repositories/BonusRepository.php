@@ -23,6 +23,9 @@ class BonusRepository extends BaseRepository
         if ($hitAndRun->uid != $uid) {
             throw new \LogicException("H&R: $hitAndRunId not belongs to user: $uid.");
         }
+        if ($hitAndRun->status == HitAndRun::STATUS_PARDONED) {
+            throw new \LogicException("H&R: $hitAndRunId already pardoned.");
+        }
         $requireBonus = BonusLogs::getBonusForCancelHitAndRun();
         NexusDB::transaction(function () use ($user, $hitAndRun, $requireBonus) {
             $comment = nexus_trans('hr.bonus_cancel_comment', [
@@ -92,8 +95,11 @@ class BonusRepository extends BaseRepository
 
     }
 
-    private function consumeUserBonus($user, $requireBonus, $logBusinessType, $logComment = '')
+    public function consumeUserBonus($user, $requireBonus, $logBusinessType, $logComment = '')
     {
+        if ($requireBonus <= 0) {
+            return;
+        }
         if ($user->seedbonus < $requireBonus) {
             do_log("user: {$user->id}, bonus: {$user->seedbonus} < requireBonus: $requireBonus", 'error');
             throw new \LogicException("User bonus point not enough.");

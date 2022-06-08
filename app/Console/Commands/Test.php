@@ -40,6 +40,7 @@ use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
 use NexusPlugin\PostLike\PostLike;
+use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -75,9 +76,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $postLike = new PostLike();
-        $postLike->install();
-//        $postLike->uninstall();
+        $torrent = Torrent::query()->find(2);
+        $torrent = apply_filter('torrent_detail', $torrent);
+        $user = \App\Models\User::query()->find(10001);
+        do_action('announced', $torrent->toArray(), $user->toArray());
     }
 
 

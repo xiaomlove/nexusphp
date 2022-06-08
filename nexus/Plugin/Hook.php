@@ -37,11 +37,11 @@ class Hook
     {
         if (!isset(self::$callbacks[$name])) {
             do_log("No this hook: $name");
-            return null;
+            return $value;
         }
         $args = func_get_args();
         reset(self::$callbacks[$name]);
-        do_log("name: $name, args: " . json_encode($args));
+        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
             foreach ((array)current(self::$callbacks[$name]) as $callback) {
                 $args[1] = $value;

@@ -26,4 +26,5 @@ $lang_complains = [
     'no_pending_complaints' => '暫無待處理的申訴',
     'complaints_processed' => '已處理申訴',
     'no_complaints_have_been_processed' => '暫無已處理的申訴',
+    'text_view_band_log' => '查看封禁記錄',
 ];
