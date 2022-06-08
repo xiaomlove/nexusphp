@@ -7,8 +7,8 @@ require dirname(__DIR__) . '/include/functions.php';
 if (!RUNNING_IN_OCTANE) {
     \Nexus\Nexus::boot();
 }
-$hook = new \Nexus\Plugin\Hook();
-$plugin = new \Nexus\Plugin\Plugin();
+$GLOBALS['hook'] = $hook = new \Nexus\Plugin\Hook();
+$GLOBALS['plugin'] = $plugin = new \Nexus\Plugin\Plugin();
 /*
 |--------------------------------------------------------------------------
 | Create The Application
