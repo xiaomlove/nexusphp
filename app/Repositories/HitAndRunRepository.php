@@ -136,7 +136,8 @@ class HitAndRunRepository extends BaseRepository
                 $currentLog = "$logPrefix, [HANDLING] " . $row->toJson();
                 do_log($logPrefix);
                 if (!$row->user) {
-                    do_log("$currentLog, user not exists, skip!", 'error');
+                    do_log("$currentLog, user not exists, remove it!", 'error');
+                    $row->delete();
                     continue;
                 }
                 if (!$row->snatch) {
@@ -144,7 +145,8 @@ class HitAndRunRepository extends BaseRepository
                     continue;
                 }
                 if (!$row->torrent) {
-                    do_log("$currentLog, torrent not exists, skip!", 'error');
+                    do_log("$currentLog, torrent not exists, remove it!", 'error');
+                    $row->delete();
                     continue;
                 }
 

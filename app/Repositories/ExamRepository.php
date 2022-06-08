@@ -948,6 +948,12 @@ class ExamRepository extends BaseRepository
                 $uid = $examUser->uid;
                 $exam = $examUser->exam;
                 $currentLogPrefix = sprintf("$logPrefix, user: %s, exam: %s, examUser: %s", $uid, $examUser->exam_id, $examUser->id);
+                if (!$examUser->user) {
+                    do_log("$currentLogPrefix, user not exists, remove it!", 'error');
+                    $examUser->progresses()->delete();
+                    $examUser->delete();
+                    continue;
+                }
                 $locale = $examUser->user->locale;
                 if ($examUser->is_done) {
                     do_log("$currentLogPrefix, [is_done]");
