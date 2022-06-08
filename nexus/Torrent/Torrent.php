@@ -74,7 +74,11 @@ class Torrent
         if (is_null($ptGen)) {
             $ptGen = new PTGen();
         }
-        $ptGenInfo = json_decode($torrentInfo['pt_gen'], true);
+        $ptGenInfo = $torrentInfo['pt_gen'];
+        if (!is_array($torrentInfo['pt_gen'])) {
+            $ptGenInfo = json_decode($ptGenInfo, true);
+        }
+
         $log = "torrent: " . $torrentInfo['id'];
         $siteIdAndRating = $ptGen->listRatings($ptGenInfo ?? [], $torrentInfo['url']);
         $log .= "siteIdAndRating: " . json_encode($siteIdAndRating);
