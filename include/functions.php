@@ -5094,7 +5094,7 @@ function displayHotAndClassic()
         {
             if($showmovies[$type_each] == 'yes' && (!isset($CURUSER) || $CURUSER['show' . $type_each] == 'yes'))
             {
-                $Cache->new_page($type_each.'_resources', 900, true);
+                $Cache->new_page("{$type_each}_{$mode}_resources", 900, true);
                 if (!$Cache->get_page())
                 {
                     $Cache->add_whole_row();
