@@ -148,7 +148,7 @@ class TrackerRepository extends BaseRepository
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (\Throwable $exception) {
             //other system exception
-            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
+            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
             if (isset($user)) {
@@ -385,7 +385,7 @@ class TrackerRepository extends BaseRepository
         if ($torrent->banned == 'yes' && $user->class < Setting::get('authority.seebanned')) {
             throw new TrackerException("torrent banned");
         }
-        return array_filter('torrent_detail', $torrent);
+        return apply_filter('torrent_detail', $torrent);
     }
 
     protected function checkPeer(Torrent $torrent, array $queries, User $user): void
@@ -1003,7 +1003,7 @@ class TrackerRepository extends BaseRepository
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (\Throwable $exception) {
             //other system exception
-            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . "\n" . $exception->getTraceAsString(), 'error');
+            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
             $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
         } finally {
             if (isset($user)) {

@@ -194,8 +194,10 @@ if(get_user_class()>=$torrentmanage_class && ($CURUSER['picker'] == 'yes' || get
 	}
     if ($doRecommend) {
         do_log("[DEL_HOT_CLASSIC_RESOURCES]");
-        \Nexus\Database\NexusDB::cache_del("hot_resources");
-        \Nexus\Database\NexusDB::cache_del("classic_resources");
+        foreach ([$browsecatmode, $specialcatmode] as $mode) {
+            \Nexus\Database\NexusDB::cache_del("hot_{$mode}_resources");
+            \Nexus\Database\NexusDB::cache_del("classic_{$mode}_resources");
+        }
     }
 }
 
