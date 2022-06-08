@@ -576,7 +576,7 @@ function format_datetime($datetime, $format = 'Y-m-d H:i')
 {
     try {
         $carbonTime = \Carbon\Carbon::parse($datetime);
-        $carbonTime->format($format);
+        return $carbonTime->format($format);
     } catch (\Exception) {
         do_log("Invalid datetime: $datetime", 'error');
         return $datetime;
