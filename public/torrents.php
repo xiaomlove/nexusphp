@@ -1142,7 +1142,7 @@ if ($count) {
             $rows[] = $row;
         }
     }
-    $rows = apply_filter('torrent_list', $rows, $page, 'list');
+    $rows = apply_filter('torrent_list', $rows, $page, $sectiontype);
 	print($pagertop);
 	if ($sectiontype == $browsecatmode)
 		torrenttable($rows, "torrents");

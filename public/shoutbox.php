@@ -127,7 +127,7 @@ else
 				$username .= $lang_shoutbox['text_to_guest'];
 			}
 		else $username = $lang_shoutbox['text_guest'];
-		if ($CURUSER['timetype'] != 'timealive')
+		if (isset($CURUSER) && $CURUSER['timetype'] != 'timealive')
 			$time = strftime("%m.%d %H:%M",$arr["date"]);
 		else $time = get_elapsed_time($arr["date"]).$lang_shoutbox['text_ago'];
 		print("<tr><td class=\"shoutrow\"><span class='date'>[".$time."]</span> ".
