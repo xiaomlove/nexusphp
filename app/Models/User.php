@@ -411,7 +411,7 @@ class User extends Authenticatable
         $comment = addslashes($comment);
         do_log("update: " . json_encode($update) . ", $commentField: $comment", 'notice');
         $update[$commentField] = NexusDB::raw("if($commentField = '', '$comment', concat_ws('\n', '$comment', $commentField))");
-       return $this->update($update);
+        return $this->update($update);
     }
 
     public function canAccessAdmin()

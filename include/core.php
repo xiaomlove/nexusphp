@@ -17,9 +17,12 @@ require $rootpath . 'include/eloquent.php';
 ini_set('date.timezone', nexus_config('nexus.timezone'));
 $Cache = new class_cache_redis(); //Load the caching class
 $Cache->setLanguageFolderArray(get_langfolder_list());
+$script = nexus()->getScript();
+if (!in_array($script, ['announce'])) {
+    require $rootpath . get_langfile_path("functions.php");
+}
 require $rootpath . 'include/config.php';
-require $rootpath . get_langfile_path("functions.php");
-if (!isRunningInConsole() && !in_array(nexus()->getScript(), ['announce', 'scrape', 'torrentrss', 'download'])) {
+if (!isRunningInConsole() && !in_array($script, ['announce', 'scrape', 'torrentrss', 'download'])) {
     checkGuestVisit();
 }
 
