@@ -385,7 +385,7 @@ class TrackerRepository extends BaseRepository
         if ($torrent->banned == 'yes' && $user->class < Setting::get('authority.seebanned')) {
             throw new TrackerException("torrent banned");
         }
-        return apply_filter('torrent_detail', $torrent);
+        return $torrent;
     }
 
     protected function checkPeer(Torrent $torrent, array $queries, User $user): void
@@ -677,6 +677,12 @@ class TrackerRepository extends BaseRepository
             $realDownloaded = max(bcsub($queries['downloaded'], $peer->downloaded), 0);
             $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded";
             $spStateReal = $torrent->spStateReal;
+            $log .= "[SP_STATE_REAL]: $spStateReal";
+            $promotionInfo = apply_filter('torrent_promotion', $torrent->toArray());
+            if ($promotionInfo) {
+                $spStateReal = $promotionInfo['sp_state'];
+                $log .= "[CHANGE_SP_STATE_BY_FILTER_TORRENT_PROMOTION]: $spStateReal";
+            }
             $uploaderRatio = Setting::get('torrent.uploaderdouble');
             $log .= ", spStateReal: $spStateReal, uploaderRatio: $uploaderRatio";
             if ($torrent->owner == $user->id) {
