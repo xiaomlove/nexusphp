@@ -6,8 +6,6 @@ class Hook
 {
     private static array $callbacks = [];
 
-    private bool $isDoingAction = false;
-
     public function addFilter($name, $function, $priority, $argc)
     {
         $id = $this->buildUniqueId($function);
@@ -43,20 +41,16 @@ class Hook
         }
         $args = func_get_args();
         reset(self::$callbacks[$name]);
-        do_log("name: $name, argc: " . (func_num_args() - 1));
+//        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
             foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
                 $args[1] = $value;
 //                do_log("name: $name, id: $id, before, params: " . json_encode(array_slice($args, 1, $callback['argc'])));
                 $value = call_user_func_array($callback['function'], array_slice($args, 1, $callback['argc']));
-                if ($this->isDoingAction) {
-                    $value = $args[1];
-                }
 //                do_log("name: $name, id: $id, after, value: " . var_export($value, true));
             }
         }
         while (next(self::$callbacks[$name]) !== false);
-        $this->isDoingAction = false;
         return $value;
     }
 
@@ -65,10 +59,22 @@ class Hook
         return $this->addFilter($name, $function, $priority, $argc);
     }
 
-    public function doAction($name, ...$args)
+    public function doAction($name, $value = '')
     {
-        $this->isDoingAction = true;
-        $this->applyFilter(...func_get_args());
+        if (!isset(self::$callbacks[$name])) {
+            do_log("No this hook: $name");
+            return;
+        }
+        $args = func_get_args();
+        reset(self::$callbacks[$name]);
+//        do_log("name: $name, argc: " . (func_num_args() - 1));
+        do {
+            foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
+//                do_log("name: $name, id: $id, before, params: " . json_encode(array_slice($args, 1, $callback['argc'])));
+                call_user_func_array($callback['function'], array_slice($args, 1, $callback['argc']));
+            }
+        }
+        while (next(self::$callbacks[$name]) !== false);
     }
 
     public function dump()

@@ -679,7 +679,7 @@ class TrackerRepository extends BaseRepository
             $spStateReal = $torrent->spStateReal;
             $log .= "[SP_STATE_REAL]: $spStateReal";
             $promotionInfo = apply_filter('torrent_promotion', $torrent->toArray());
-            do_log("promotionInfo from filter torrent_promotion by torrent: " . $torrent->toArray() . ", get : " . json_encode($promotionInfo));
+            do_log("promotionInfo from filter torrent_promotion by torrent: " . $torrent->id . ", get : " . json_encode($promotionInfo));
             if ($promotionInfo['sp_state'] != $spStateReal) {
                 $spStateReal = $promotionInfo['sp_state'];
                 $log .= "[CHANGE_SP_STATE_REAL_BY_FILTER_TORRENT_PROMOTION]: $spStateReal";
