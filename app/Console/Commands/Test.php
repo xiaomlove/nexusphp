@@ -77,9 +77,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $torrent = Torrent::query()->first();
-        $torrent->name = Carbon::now()->toDateTimeString();
-        $torrent->update(['seeders' => 100]);
+        $torrent = \App\Models\Torrent::query()->find(3);
+        $promotionInfo = apply_filter('torrent_promotion', $torrent->toArray());
+        dd($promotionInfo);
     }
 
 
