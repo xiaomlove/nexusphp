@@ -36,6 +36,8 @@ class Plugin
                 $className = str_replace('ServiceProvider', 'Repository', $provider);
                 if (class_exists($className)) {
                     call_user_func([new $className, 'boot']);
+                } else {
+                    do_log("Plugin: $className not exists.", "error");
                 }
             }
         }

@@ -14,7 +14,8 @@ class Torrent extends NexusModel
         'category', 'source', 'medium', 'codec', 'standard', 'processing', 'team', 'audiocodec',
         'size', 'added', 'type', 'numfiles', 'owner', 'nfo', 'sp_state', 'promotion_time_type',
         'promotion_until', 'anonymous', 'url', 'pos_state', 'cache_stamp', 'picktype', 'picktime',
-        'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders', 'cover',
+        'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders', 'cover', 'last_action',
+        'times_completed'
     ];
 
     private static $globalPromotionState;
@@ -157,10 +158,15 @@ class Torrent extends NexusModel
         }
         $spState = $this->sp_state;
         $global = self::getGlobalPromotionState();
-        $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
+        $log = sprintf('torrent: %s original sp_state: %s, original global_sp_state: %s', $this->id, $spState, $global);
+        if ($this->__sticky_promotion) {
+            //Cover original sp_state
+            $spState = $this->__sticky_promotion['promotion_type'];
+            $log .= "[SP_STATE_CHANGE] to __sticky_promotion: $spState]";
+        }
         if ($this->__ignore_global_sp_state) {
-            $log .= "[IGNORE_GLOBAL_SP_STATE]";
             $global = self::PROMOTION_NORMAL;
+            $log .= "[IGNORE_GLOBAL_SP_STATE], reset to: $global";
         }
         if ($global != self::PROMOTION_NORMAL) {
             $spState = $global;

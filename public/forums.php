@@ -703,18 +703,19 @@ if ($action == "viewtopic")
 
 		print("<table class=\"main\" width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
 
-		$body = "<div id=\"pid".$postid."body\">".format_comment($arr["body"]);
-
+		$body = "<div id=\"pid".$postid."body\">";
+        $bodyContent = format_comment($arr["body"]);
 		if ($highlight){
-			$body = highlight($highlight,$body);
+            $bodyContent = highlight($highlight,$body);
 		}
 
 		if (is_valid_id($arr['editedby']))
 		{
 			$lastedittime = gettime($arr['editdate'],true,false);
-			$body .= "<br /><p><font class=\"small\">".$lang_forums['text_last_edited_by'].get_username($arr['editedby']).$lang_forums['text_last_edit_at'].$lastedittime."</font></p>\n";
+            $bodyContent .= "<br /><p><font class=\"small\">".$lang_forums['text_last_edited_by'].get_username($arr['editedby']).$lang_forums['text_last_edit_at'].$lastedittime."</font></p>\n";
 		}
-		$body .= "</div>";
+		$bodyContent = apply_filter('post_body', $bodyContent, $arr, $allPosts);
+		$body .= $bodyContent . "</div>";
 		if ($signature)
 		$body .= "<p style='vertical-align:bottom'><br />____________________<br />" . format_comment($signature,false,false,false,true,500,true,false, 1,200) . "</p>";
 

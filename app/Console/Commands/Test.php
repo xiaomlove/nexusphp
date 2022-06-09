@@ -39,7 +39,7 @@ use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
-use NexusPlugin\PostLike\PostLike;
+use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
 use Rhilip\Bencode\Bencode;
@@ -77,8 +77,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = StickyPromotionParticipator::query()->first();
-        dd($r->created_at);
+        $torrent = Torrent::query()->first();
+        $torrent->name = Carbon::now()->toDateTimeString();
+        $torrent->update(['seeders' => 100]);
     }
 
 
