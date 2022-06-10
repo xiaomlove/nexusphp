@@ -495,3 +495,6 @@ img.hitandrun {
     overflow: hidden;
     transition: height 0.3s ease;
 }
+.layui-layer {
+    color: black;
+}
