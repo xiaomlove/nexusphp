@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Nexus\Database\NexusDB;
 
 class NexusModel extends Model
 {
@@ -12,6 +13,8 @@ class NexusModel extends Model
     public $timestamps = false;
 
     protected $perPage = 50;
+
+    protected $connection = NexusDB::ELOQUENT_CONNECTION_NAME;
 
     /**
      *

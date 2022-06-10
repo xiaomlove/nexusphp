@@ -47,7 +47,7 @@ $classStr = implode(",", $updateset);
 while (true) {
     $msgValues = $idArr = [];
     $offset = ($page - 1) * $size;
-    $query = sql_query("SELECT id FROM users WHERE class IN ($classStr) limit $offset, $size");
+    $query = sql_query("SELECT id FROM users WHERE class IN ($classStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size");
     while($dat=mysql_fetch_assoc($query))
     {
         $idArr[] = $dat['id'];

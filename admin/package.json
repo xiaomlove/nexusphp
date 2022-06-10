@@ -7,15 +7,15 @@
     "serve": "vite preview --mode preview"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^0.2.6",
-    "axios": "^0.21.1",
+    "@element-plus/icons-vue": "^2.0.5",
+    "axios": "^0.27.2",
     "dayjs": "^1.11.0",
-    "element-plus": "^1.3.0-beta.5",
-    "vue": "^3.0.5",
+    "element-plus": "^2.2.5",
+    "vue": "^3.2.37",
     "vue-router": "^4.0.6"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^1.2.1",
+    "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.0.5",
     "sass": "^1.32.11",
     "vite": "^2.1.5"

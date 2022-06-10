@@ -15,6 +15,7 @@
                     text-color="#fff"
                     :router="true"
                     :default-active='state.currentPath'
+                    :collapse="false"
                 >
                     <el-menu-item index="/"><i class="el-icon-odometer" />Dashboard</el-menu-item>
                     <el-sub-menu index="2">
@@ -213,7 +214,7 @@ a {
     text-decoration: none;
 }
 .el-pagination {
-    text-align: center;
+    justify-content: center;
     margin-top: 20px;
 }
 .el-popper__arrow {

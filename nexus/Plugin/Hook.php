@@ -9,11 +9,7 @@ class Hook
     public function addFilter($name, $function, $priority, $argc)
     {
         $id = $this->buildUniqueId($function);
-        $isPriorityExists = isset(self::$callbacks[$priority]);
         self::$callbacks[$name][$priority][$id] = ['function' => $function, 'argc' => $argc];
-        if (!$isPriorityExists && count(self::$callbacks) > 1) {
-            krsort(self::$callbacks, SORT_NUMERIC);
-        }
     }
 
     private function buildUniqueId($function): string
@@ -40,14 +36,15 @@ class Hook
             return $value;
         }
         $args = func_get_args();
+        ksort(self::$callbacks[$name]);
         reset(self::$callbacks[$name]);
-//        do_log("name: $name, argc: " . (func_num_args() - 1));
+        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
             foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
                 $args[1] = $value;
-//                do_log("name: $name, id: $id, before, params: " . json_encode(array_slice($args, 1, $callback['argc'])));
+//                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));
                 $value = call_user_func_array($callback['function'], array_slice($args, 1, $callback['argc']));
-//                do_log("name: $name, id: $id, after, value: " . var_export($value, true));
+//                do_log("name: $name, id: $id, after, value: " . nexus_json_encode($value));
             }
         }
         while (next(self::$callbacks[$name]) !== false);
@@ -66,11 +63,12 @@ class Hook
             return;
         }
         $args = func_get_args();
+        ksort(self::$callbacks[$name]);
         reset(self::$callbacks[$name]);
-//        do_log("name: $name, argc: " . (func_num_args() - 1));
+        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
             foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
-//                do_log("name: $name, id: $id, before, params: " . json_encode(array_slice($args, 1, $callback['argc'])));
+//                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));
                 call_user_func_array($callback['function'], array_slice($args, 1, $callback['argc']));
             }
         }

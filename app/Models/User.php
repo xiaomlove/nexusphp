@@ -21,6 +21,8 @@ class User extends Authenticatable
 
     protected $perPage = 50;
 
+    protected $connection = NexusDB::ELOQUENT_CONNECTION_NAME;
+
     const STATUS_CONFIRMED = 'confirmed';
     const STATUS_PENDING = 'pending';
 

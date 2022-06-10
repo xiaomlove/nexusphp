@@ -32,7 +32,7 @@ class NexusDB
 
     }
 
-    const ELOQUENT_CONNECTION_NAME = 'default';
+    const ELOQUENT_CONNECTION_NAME = 'mysql';
 
     public function setDriver(DBInterface $driver)
     {
