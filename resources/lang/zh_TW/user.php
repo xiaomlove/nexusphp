@@ -16,4 +16,13 @@ return [
         'invites' => '邀請',
         'attendance_card' => '補簽卡',
     ],
+    'class_name' => [
+        \App\Models\User::CLASS_VIP => '貴賓',
+        \App\Models\User::CLASS_RETIREE => '養老族',
+        \App\Models\User::CLASS_UPLOADER => '發布員',
+        \App\Models\User::CLASS_MODERATOR => '總版主',
+        \App\Models\User::CLASS_ADMINISTRATOR => '管理員',
+        \App\Models\User::CLASS_SYSOP => '維護開發員',
+        \App\Models\User::CLASS_STAFF_LEADER => '主管',
+    ],
 ];

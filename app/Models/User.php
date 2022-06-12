@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
@@ -173,7 +174,7 @@ class User extends Authenticatable
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
-        'lang', 'attendance_card',
+        'lang', 'attendance_card', 'privacy', 'noad',
     ];
 
     public static function getDefaultUserAttributes(): array
@@ -196,12 +197,28 @@ class User extends Authenticatable
         ];
     }
 
-    public static function defaultUser()
+    public static function defaultUser(): static
     {
         return new static(self::getDefaultUserAttributes());
     }
 
-    public function checkIsNormal(array $fields = ['status', 'enabled'])
+    public static function getClassName($class, $compact = false, $b_colored = false, $I18N = false)
+    {
+        $class_name = self::$classes[$class]['text'];
+        if ($class >= self::CLASS_VIP && $I18N) {
+            $class_name = nexus_trans("user.class_names.$class");
+        }
+        $class_name_color = self::$classes[$class]['text'];
+        if ($compact) {
+            $class_name = str_replace(" ", "",$class_name);
+        }
+        if ($b_colored) {
+            return "<b class='" . str_replace(" ", "",$class_name_color) . "_Name'>" . $class_name . "</b>";
+        }
+        return $class_name;
+    }
+
+    public function checkIsNormal(array $fields = ['status', 'enabled']): bool
     {
         if (in_array('status', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {
             throw new \InvalidArgumentException(sprintf('User: %s is not confirmed.', $this->id));
@@ -416,7 +433,7 @@ class User extends Authenticatable
         return $this->update($update);
     }
 
-    public function canAccessAdmin()
+    public function canAccessAdmin(): bool
     {
         $targetClass = self::CLASS_SYSOP;
         if (!$this->class || $this->class < $targetClass) {
@@ -426,7 +443,7 @@ class User extends Authenticatable
         return true;
     }
 
-    public function isDonating()
+    public function isDonating(): bool
     {
         $rawDonorUntil = $this->getRawOriginal('donoruntil');
         if (
@@ -437,5 +454,7 @@ class User extends Authenticatable
         }
         return false;
     }
+
+
 
 }

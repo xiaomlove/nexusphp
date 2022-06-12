@@ -77,9 +77,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $torrent = \App\Models\Torrent::query()->find(3);
-        $promotionInfo = apply_filter('torrent_promotion', $torrent->toArray());
-        dd($promotionInfo);
+        $end = Carbon::parse('2022-06-06 14:10');
+        $begin = Carbon::parse('2022-06-06 03:10');
+        $r = $end->diffInHours($begin);
+        dd($r);
     }
 
 

@@ -460,6 +460,9 @@ function get_user_class()
 
 function get_user_class_name($class, $compact = false, $b_colored = false, $I18N = false)
 {
+    if (!IN_NEXUS) {
+        return \App\Models\User::getClassName($class, $compact, $b_colored, $I18N);
+    }
     global $SITENAME;
 	static $en_lang_functions;
 	static $current_user_lang_functions;
@@ -1896,20 +1899,29 @@ function get_user_row($id)
 	global $Cache, $CURUSER;
 	static $curuserRowUpdated = false;
 	static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'donoruntil', 'leechwarn', 'warned', 'title');
-	if ($CURUSER && $id == $CURUSER['id']) {
-		$row = array();
-		foreach($neededColumns as $column) {
-			$row[$column] = $CURUSER[$column];
-		}
-		if (!$curuserRowUpdated) {
-			$Cache->cache_value('user_'.$CURUSER['id'].'_content', $row, 900);
-			$curuserRowUpdated = true;
-		}
-	} elseif (!$row = $Cache->get_value('user_'.$id.'_content')){
-		$res = sql_query("SELECT ".implode(',', $neededColumns)." FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
-		$Cache->cache_value('user_'.$id.'_content', $row, 900);
-	}
+	$cacheKey = 'user_'.$id.'_content';
+    $row = \Nexus\Database\NexusDB::remember($cacheKey, 900, function () use ($id, $neededColumns) {
+	    $user = \App\Models\User::query()->find($id, $neededColumns);
+	    if ($user) {
+	        return $user->toArray();
+        }
+	    return null;
+    });
+
+//	if ($CURUSER && $id == $CURUSER['id']) {
+//		$row = array();
+//		foreach($neededColumns as $column) {
+//			$row[$column] = $CURUSER[$column];
+//		}
+//		if (!$curuserRowUpdated) {
+//			$Cache->cache_value('user_'.$CURUSER['id'].'_content', $row, 900);
+//			$curuserRowUpdated = true;
+//		}
+//	} elseif (!$row = $Cache->get_value('user_'.$id.'_content')){
+//		$res = sql_query("SELECT ".implode(',', $neededColumns)." FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
+//		$row = mysql_fetch_array($res);
+//		$Cache->cache_value('user_'.$id.'_content', $row, 900);
+//	}
 
 	if (!$row)
 		return false;
@@ -3626,7 +3638,8 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 
 		$username = ($underline == true ? "<u>" . $arr['username'] . "</u>" : $arr['username']);
 		$username = ($bold == true ? "<b>" . $username . "</b>" : $username);
-		$username = ($link == true ? "<a ". $link_ext . " href=\"userdetails.php?id=" . $id . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true) : "<span class='".get_user_class_name($arr['class'],true) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
+		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
+		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true) : "<span class='".get_user_class_name($arr['class'],true) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
 
 		$username = "<span class=\"nowrap\">" . ( $bracket == true ? "(" . $username . ")" : $username) . "</span>";
 	}
@@ -5588,6 +5601,11 @@ function get_smile($num)
         }
     }
     return $all[$num] ?? null;
+}
+
+function username_under_torrent()
+{
+
 }
 
 /**

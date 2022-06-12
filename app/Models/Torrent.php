@@ -34,7 +34,7 @@ class Torrent extends NexusModel
 
     public static $commentFields = [
         'id', 'name', 'added', 'visible', 'banned', 'owner', 'sp_state', 'pos_state', 'hr', 'picktype', 'picktime',
-        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover'
+        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover', 'anonymous',
     ];
 
     public static $basicRelations = [
