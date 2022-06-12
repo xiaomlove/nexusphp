@@ -2669,6 +2669,10 @@ else {
 	}
 if ($msgalert)
 {
+    $spStateGlobal = get_global_sp_state();
+    if ($spStateGlobal != \App\Models\Torrent::PROMOTION_NORMAL) {
+        msgalert("torrents.php", sprintf($lang_functions['full_site_promotion_in_effect'], \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text']), "green");
+    }
 	if($CURUSER['leechwarn'] == 'yes')
 	{
 		$kicktimeout = gettime($CURUSER['leechwarnuntil'], false, false, true);

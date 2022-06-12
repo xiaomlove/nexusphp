@@ -77,10 +77,12 @@ class Test extends Command
      */
     public function handle()
     {
-        $end = Carbon::parse('2022-06-06 14:10');
-        $begin = Carbon::parse('2022-06-06 03:10');
-        $r = $end->diffInHours($begin);
-        dd($r);
+        $a  = [];
+        if ($a) {
+            echo 'Bad';
+        } else {
+            echo 'OK';
+        }
     }
 
 
