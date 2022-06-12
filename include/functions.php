@@ -4059,7 +4059,7 @@ function get_category_row($catid = NULL)
 {
 	global $Cache;
 	static $rows;
-	if (!$rows && !$rows = $Cache->get_value('category_content')){
+	if (!$rows && !$rows = (array)$Cache->get_value('category_content')){
 		$res = sql_query("SELECT categories.*, searchbox.name AS catmodename FROM categories LEFT JOIN searchbox ON categories.mode=searchbox.id");
 		while($row = mysql_fetch_array($res)) {
 			$rows[$row['id']] = $row;

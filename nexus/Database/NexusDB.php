@@ -290,7 +290,7 @@ class NexusDB
     public static function table($table): \Illuminate\Database\Query\Builder
     {
         if (IN_NEXUS) {
-            return Capsule::table($table);
+            return Capsule::table($table, null, self::ELOQUENT_CONNECTION_NAME);
         }
         return DB::table($table);
     }
