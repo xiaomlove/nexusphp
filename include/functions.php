@@ -2629,23 +2629,23 @@ else {
         </td>
 	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum['hours'].":".$datum['minutes']?><br />
 <?php
-	if (get_user_class() >= $staffmem_class){
-	$totalreports = $Cache->get_value('staff_report_count');
-	if ($totalreports == ""){
-		$totalreports = get_row_count("reports");
-		$Cache->cache_value('staff_report_count', $totalreports, 900);
-	}
-	$totalsm = $Cache->get_value('staff_message_count');
-	if ($totalsm == ""){
-		$totalsm = get_row_count("staffmessages");
-		$Cache->cache_value('staff_message_count', $totalsm, 900);
-	}
-	$totalcheaters = $Cache->get_value('staff_cheater_count');
-	if ($totalcheaters == ""){
-		$totalcheaters = get_row_count("cheaters");
-		$Cache->cache_value('staff_cheater_count', $totalcheaters, 900);
-	}
-	print("<a href=\"cheaterbox.php\"><img class=\"cheaterbox\" alt=\"cheaterbox\" title=\"".$lang_functions['title_cheaterbox']."\" src=\"pic/trans.gif\" />  </a>".$totalcheaters."  <a href=\"reports.php\"><img class=\"reportbox\" alt=\"reportbox\" title=\"".$lang_functions['title_reportbox']."\" src=\"pic/trans.gif\" />  </a>".$totalreports."  <a href=\"staffbox.php\"><img class=\"staffbox\" alt=\"staffbox\" title=\"".$lang_functions['title_staffbox']."\" src=\"pic/trans.gif\" />  </a>".$totalsm."  ");
+	if (get_user_class() >= $staffmem_class) {
+        $totalreports = $Cache->get_value('staff_report_count');
+        if ($totalreports == ""){
+            $totalreports = get_row_count("reports");
+            $Cache->cache_value('staff_report_count', $totalreports, 900);
+        }
+        $totalsm = $Cache->get_value('staff_message_count');
+        if ($totalsm == ""){
+            $totalsm = get_row_count("staffmessages");
+            $Cache->cache_value('staff_message_count', $totalsm, 900);
+        }
+        $totalcheaters = $Cache->get_value('staff_cheater_count');
+        if ($totalcheaters == ""){
+            $totalcheaters = get_row_count("cheaters");
+            $Cache->cache_value('staff_cheater_count', $totalcheaters, 900);
+        }
+        print("<a href=\"cheaterbox.php\"><img class=\"cheaterbox\" alt=\"cheaterbox\" title=\"".$lang_functions['title_cheaterbox']."\" src=\"pic/trans.gif\" />  </a>".$totalcheaters."  <a href=\"reports.php\"><img class=\"reportbox\" alt=\"reportbox\" title=\"".$lang_functions['title_reportbox']."\" src=\"pic/trans.gif\" />  </a>".$totalreports."  <a href=\"staffbox.php\"><img class=\"staffbox\" alt=\"staffbox\" title=\"".$lang_functions['title_staffbox']."\" src=\"pic/trans.gif\" />  </a>".$totalsm."  ");
 	}
 
 	print("<a href=\"messages.php\">".$inboxpic."</a> ".($messages ? $messages." (".$unread.$lang_functions['text_message_new'].")" : "0"));
@@ -4067,7 +4067,8 @@ function get_category_row($catid = NULL)
 {
 	global $Cache;
 	static $rows;
-	if (!$rows && !$rows = (array)$Cache->get_value('category_content')){
+	if (!$rows && !$rows = $Cache->get_value('category_content')){
+        $rows = [];
 		$res = sql_query("SELECT categories.*, searchbox.name AS catmodename FROM categories LEFT JOIN searchbox ON categories.mode=searchbox.id");
 		while($row = mysql_fetch_array($res)) {
 			$rows[$row['id']] = $row;

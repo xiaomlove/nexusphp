@@ -51,6 +51,7 @@ class ADVERTISEMENT{
 		global $Cache;
 		if (!$arr = $Cache->get_value('current_ad_array'))
 		{
+		    $arr = [];
 			$now = date("Y-m-d H:i:s");
 			$validpos = $this->get_validpos();
 			foreach ($validpos as $pos)

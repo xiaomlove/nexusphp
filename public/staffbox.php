@@ -143,7 +143,7 @@ if ($action == "answermessage") {
         ?>
 	<form method="post" id="compose" name="message" action="?action=takeanswer">
 <?php if ($_GET["returnto"] || $_SERVER["HTTP_REFERER"]) { ?>
-        <input type=hidden name=returnto value="<?php echo htmlspecialchars($_GET["returnto"]) ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"])?>">
+        <input type=hidden name=returnto value="<?php echo htmlspecialchars($_GET["returnto"] ?? '') ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"])?>">
 <?php } ?>
         <input type=hidden name=receiver value=<?php echo $receiver?>>
         <input type=hidden name=answeringto value=<?php echo $answeringto?>>

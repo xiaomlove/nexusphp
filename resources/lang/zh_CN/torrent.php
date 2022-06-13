@@ -44,4 +44,18 @@ return [
     'claim_number_reach_user_maximum' => '认领达到人数上限',
     'claim_number_reach_torrent_maximum' => '认领达到种子数上限',
     'claim_disabled' => '认领未启用',
+    'operation_log' => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_BAN => [
+            'type_text' => '禁止',
+            'notify_subject' => '种子被禁止',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 禁止，原因：:reason',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN => [
+            'type_text' => '取消禁止',
+            'notify_subject' => '种子取消禁止',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+        ]
+    ],
+    'owner_update_torrent_subject' => '被禁种子已更新',
+    'owner_update_torrent_msg' => '种子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以检查是否符合要求并取消禁止',
 ];

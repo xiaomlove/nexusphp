@@ -44,4 +44,18 @@ return [
     'claim_number_reach_user_maximum' => 'The maximum number of user is reached',
     'claim_number_reach_torrent_maximum' => 'The maximum number of torrent is reached',
     'claim_disabled' => 'Claim is disabled',
+    'operation_log' => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_BAN => [
+            'type_text' => 'Banned',
+            'notify_subject' => 'Torrent was banned',
+            'notify_msg' => 'Your torrent：[url=:detail_url]:torrent_name[/url] was banned by :operator, Reason: :reason',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN => [
+            'type_text' => 'Cancel banned',
+            'notify_subject' => 'Torrent was unbanned',
+            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] unbanned by :operator',
+        ]
+    ],
+    'owner_update_torrent_subject' => 'Banned torrent have been updated',
+    'owner_update_torrent_msg' => 'Torrent：[url=:detail_url]:torrent_name[/url] has been updated by the owner, you can check if it meets the requirements and cancel the ban',
 ];

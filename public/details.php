@@ -28,12 +28,11 @@ $owned = 1;
 else $owned = 0;
 
 $settingMain = get_setting('main');
-
 if (!$row) {
     stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
 } elseif (
-    ($row['banned'] == 'yes' && get_user_class() < $seebanned_class)
-    || !can_access_torrent($row)
+    ($row['banned'] == 'yes' && get_user_class() < $seebanned_class && $row['owner'] != $CURUSER['id'])
+    || (!can_access_torrent($row) && $row['owner'] != $CURUSER['id'])
 ) {
     permissiondenied();
 } else {
@@ -69,10 +68,11 @@ if (!$row) {
 			if (isset($_GET["returnto"]))
 				print("<p><b>".$lang_details['text_go_back'] . "<a href=\"".htmlspecialchars($_GET["returnto"])."\">" . $lang_details['text_whence_you_came']."</a></b></p>");
 		}
+        $banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
         $hrImg = get_hr_img($row);
-		$s=htmlspecialchars($row["name"]).($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg;
+		$s=htmlspecialchars($row["name"]).$banned_torrent.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");
 		print("<table width=\"97%\" cellspacing=\"0\" cellpadding=\"5\">\n");
 

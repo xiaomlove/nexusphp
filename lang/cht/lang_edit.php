@@ -66,7 +66,8 @@ $lang_edit = array
 	'row_check' => "勾選",
 	'text_team' => "製作組",
 	'text_audio_codec' => "音頻編碼",
-	'row_content' => "內容"
+	'row_content' => "內容",
+    'ban_reason_label' => '原因',
 );
 
 ?>

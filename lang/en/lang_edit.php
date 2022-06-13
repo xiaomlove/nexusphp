@@ -67,6 +67,7 @@ $lang_edit = array
 	'text_team' => "Group",
 	'text_audio_codec' => "Audio Codec",
 	'row_content' => "Content",
+    'ban_reason_label' => 'Reason',
 );
 
 ?>

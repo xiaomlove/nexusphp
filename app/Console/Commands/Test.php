@@ -15,6 +15,7 @@ use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
 use App\Models\Torrent;
+use App\Models\TorrentOperationLog;
 use App\Models\User;
 use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
@@ -77,12 +78,12 @@ class Test extends Command
      */
     public function handle()
     {
-        $a  = [];
-        if ($a) {
-            echo 'Bad';
-        } else {
-            echo 'OK';
-        }
+        $arr = [
+            'uid' => 1,
+            'torrent_id' => 1,
+            'action_type' => 'ban',
+        ];
+        TorrentOperationLog::query()->create($arr);
     }
 
 

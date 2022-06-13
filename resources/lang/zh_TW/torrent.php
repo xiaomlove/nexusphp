@@ -44,4 +44,18 @@ return [
     'claim_number_reach_user_maximum' => '認領達到人數上限',
     'claim_number_reach_torrent_maximum' => '認領達到種子數上限',
     'claim_disabled' => '認領未啟用',
+    'operation_log' => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_BAN => [
+            'type_text' => '禁止',
+            'notify_subject' => '種子被禁止',
+            'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 禁止，原因：:reason',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN => [
+            'type_text' => '取消禁止',
+            'notify_subject' => '種子取消禁止',
+            'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+        ]
+    ],
+    'owner_update_torrent_subject' => '被禁種子已更新',
+    'owner_update_torrent_msg' => '種子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以檢查是否符合要求並取消禁止',
 ];
