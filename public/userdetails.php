@@ -308,6 +308,10 @@ tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["
 tr_small($lang_userdetails['row_forum_posts'], ($forumposts && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewposts&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_posts']."\">".$forumposts."</a>" : $forumposts), 1);
 
 if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) {
+    if (\App\Models\HitAndRun::getIsEnabled()) {
+        $hrStatus = (new \App\Repositories\HitAndRunRepository())->getStatusStats($user['id']);
+        tr_small('H&R', sprintf('<a href="%s/myhr.php?userid=%s" target="_blank">%s</a>', getSchemeAndHttpHost(), $user['id'], $hrStatus), 1);
+    }
     tr_small($lang_userdetails['row_karma_points'], number_format($user['seedbonus'], 1), 1);
     tr_small($lang_functions['text_seed_points'], number_format($user['seed_points'], 1), 1);
 }

@@ -4003,9 +4003,13 @@ function classlist($selectname,$maxclass, $selected, $minClass = 0){
 	return $list;
 }
 
-function permissiondenied(){
+function permissiondenied($allowMinimumClass = null){
 	global $lang_functions;
-	stderr($lang_functions['std_error'], $lang_functions['std_permission_denied']);
+	if ($allowMinimumClass === null) {
+        stderr($lang_functions['std_error'], $lang_functions['std_permission_denied']);
+    } else {
+        stderr($lang_functions['std_sorry'],$lang_functions['std_permission_denied_only'].get_user_class_name($allowMinimumClass,false,true,true).$lang_functions['std_or_above_can_view'],false);
+    }
 }
 
 function gettime($time, $withago = true, $twoline = false, $forceago = false, $oneunit = false, $isfuturetime = false){

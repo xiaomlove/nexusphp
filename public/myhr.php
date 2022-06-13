@@ -5,8 +5,13 @@ dbconn();
 loggedinorreturn();
 require_once(get_langfile_path());
 $userid =  $CURUSER['id'];
-if (get_user_class() >= UC_ADMINISTRATOR && !empty($_GET['userid'])) {
+$pagerParams = [];
+if (!empty($_GET['userid'])) {
+    if (get_user_class() < $viewhistory_class && $_GET['userid'] != $CURUSER['id']) {
+        permissiondenied($viewhistory_class);
+    }
     $userid = $_GET['userid'];
+    $pagerParams['userid'] = $userid;
 }
 $userInfo = \App\Models\User::query()->find($userid);
 if (empty($userInfo)) {
@@ -20,8 +25,12 @@ print("<h1>$pageTitle</h1>");
 $status = $_GET['status'] ?? \App\Models\HitAndRun::STATUS_INSPECTING;
 $allStatus = \App\Models\HitAndRun::listStatus();
 $headerFilters = [];
+$pagerParams['status'] = $status;
+$filterParams = $pagerParams;
+$queryString = http_build_query($pagerParams);
 foreach ($allStatus as $key => $value) {
-    $headerFilters[] = sprintf('<a href="?status=%s" class="%s"><b>%s</b></a>', $key, $key == $status ? 'faqlink' : '', $value['text']);
+    $filterParams['status'] = $key;
+    $headerFilters[] = sprintf('<a href="?%s" class="%s"><b>%s</b></a>', http_build_query($filterParams), $key == $status ? 'faqlink' : '', $value['text']);
 }
 
 print("<p>" . implode(' | ', $headerFilters) . "</p>");
@@ -40,7 +49,7 @@ print $filterForm;
 
 $baseQuery = \App\Models\HitAndRun::query()->where('uid', $userid)->where('status', $status);
 $rescount = (clone $baseQuery)->count();
-list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, "?status=$status&");
+list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, sprintf('?%s&', $queryString));
 print("<table width='100%'>");
 print("<tr>
 				<td class='colhead' align='center'>{$lang_myhr['th_hr_id']}</td>

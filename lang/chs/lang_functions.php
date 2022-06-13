@@ -5,6 +5,8 @@ $lang_functions = array
 	'std_access_denied' => "访问拒绝！",
 	'std_fake_account' => "我们怀疑你在使用伪造账户，因此记录了本次行为！",
 	'std_permission_denied' => "你没有该权限！",
+    'std_permission_denied_only' => "你没有该权限。只有",
+    'std_or_above_can_view' => "及以上等级的用户才能查看。<br /><br />请查看"."<a class=\"faqlink\" href=\"faq.php#id22\"><b>常见问题</b></a>了解更多关于用户等级和权限的信息。<br /><br /><b></p>" .$SITENAME."管理组</b>",
 	'std_target_not_exists' => '目标不存在',
 	'std_already_logged_in' => "你已经登录！",
 	'text_page_last_updated' => "本页面最后更新于",
