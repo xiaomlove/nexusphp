@@ -1,4 +1,5 @@
 <?php
+
 function get_langfolder_cookie()
 {
 	global $deflang;
@@ -3256,6 +3257,7 @@ function torrenttable($rows, $variant = "torrent") {
 	$torrentTagCollection = \App\Models\TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->orderByRaw("field(tag_id,$tagIdStr)")->get();
 	$tagKeyById = $tagCollection->keyBy('id');
 	$torrentTagResult = $torrentTagCollection->groupBy('torrent_id');
+	$approvalStatusIconEnabled = \App\Models\Setting::get('torrent.approval_status_icon_enabled') == 'yes';
 
     $last_browse = $CURUSER['last_browse'];
 //	if ($variant == "torrent"){
@@ -3449,7 +3451,10 @@ foreach ($rows as $row)
 
 	$banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 	$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
-	$approvalStatusIcon = $torrent->renderApprovalStatus($row['approval_status']);
+    $approvalStatusIcon = '';
+	if ($approvalStatusIconEnabled) {
+        $approvalStatusIcon = $torrent->renderApprovalStatus($row['approval_status']);
+    }
 	$titleSuffix = $banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $approvalStatusIcon;
 	$titleSuffix = apply_filter('torrent_title_suffix', $titleSuffix, $row);
 	print($titleSuffix);

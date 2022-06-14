@@ -88,10 +88,7 @@ class Torrent
 
     public function renderApprovalStatus($status): string
     {
-        if (Setting::get('torrent.approval_status_icon_enabled') == 'yes') {
-            return sprintf('<span style="margin-left: 6px">%s</span>', \App\Models\Torrent::$approvalStatus[$status]['icon']);
-        }
-        return '';
+        return sprintf('<span style="margin-left: 6px">%s</span>', \App\Models\Torrent::$approvalStatus[$status]['icon']);
     }
 
 }
