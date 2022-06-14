@@ -58,4 +58,9 @@ return [
     ],
     'owner_update_torrent_subject' => 'Banned torrent have been updated',
     'owner_update_torrent_msg' => 'Torrent：[url=:detail_url]:torrent_name[/url] has been updated by the owner, you can check if it meets the requirements and cancel the ban',
+    'approval_status' => [
+        \App\Models\Torrent::APPROVAL_STATUS_NONE => 'None',
+        \App\Models\Torrent::APPROVAL_STATUS_YES => 'Allow',
+        \App\Models\Torrent::APPROVAL_STATUS_NO => 'Deny',
+    ],
 ];

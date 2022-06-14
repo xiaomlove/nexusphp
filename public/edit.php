@@ -154,28 +154,44 @@ else {
 	    $rowChecks[] = "<label><input type=\"checkbox\" name=\"anonymous\"" . ($row["anonymous"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_anonymous_note']."</label>";
     }
 	if (get_user_class() >= $torrentmanage_class) {
-	    array_unshift($rowChecks, "<label><input type=\"checkbox\" name=\"visible\"" . ($row["visible"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_visible']."</label>");
-	    $rowChecks[] = "<label><input type=\"checkbox\" name=\"banned\"" . (($row["banned"] == "yes") ? " checked=\"checked\"" : "" ) . " value=\"yes\" />".$lang_edit['checkbox_banned']."</label>";
+	    array_unshift($rowChecks, "<label><input id='visible' type=\"checkbox\" name=\"visible\"" . ($row["visible"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_visible']."</label>");
+	    $approvalStatusRadio = [];
+	    foreach (\App\Models\Torrent::$approvalStatus as $key => $value) {
+	        if ($row['approval_status'] == $key) {
+	            $checked = " checked";
+            } else {
+	            $checked = "";
+            }
+            $approvalStatusRadio[] = sprintf(
+                '<label><input type="radio" name="approval_status" value="%s"%s>%s</label>',
+                $key, $checked, nexus_trans("torrent.approval_status.$key")
+            );
+        }
+	    $rowChecks[] = sprintf('<span style="margin-left: 6px" id="approval-status-box">审核:%s</span>', implode('', $approvalStatusRadio));
+//	    $rowChecks[] = "<label><input type=\"checkbox\" name=\"banned\"" . (($row["banned"] == "yes") ? " checked=\"checked\"" : "" ) . " value=\"yes\" />".$lang_edit['checkbox_banned']."</label>";
 	    $banLog = \App\Models\TorrentOperationLog::query()->where('torrent_id', $row['id'])->where('action_type', \App\Models\TorrentOperationLog::ACTION_TYPE_BAN)->orderBy('id', 'desc')->first();
-	    $banReasonDisplay = "none";
+	    $banReasonDisplay = "hidden";
 	    $banReasonReadonly = "";
 	    if ($row['banned'] == 'yes') {
-            $banReasonDisplay = 'inline-block';
+            $banReasonDisplay = 'visible';
             $banReasonReadonly = " readonly disabled";
         }
         $rowChecks[] = sprintf(
-            '<span id="ban-reason-box" style="display: %s">%s：<input type="text" name="ban_reason" value="%s" style="width: 300px"%s/></span>',
+            '<span id="ban-reason-box" style="visibility: %s">%s：<input type="text" name="ban_reason" value="%s" style="width: 300px"%s/></span>',
             $banReasonDisplay, $lang_edit['ban_reason_label'], $row['banned'] == 'yes' && $banLog ? $banLog->comment : '', $banReasonReadonly
         );
 	    $js = <<<JS
 let banReasonBox = jQuery('#ban-reason-box')
-jQuery('input[name=banned]').on("change", function () {
+let visible = jQuery('#visible')
+jQuery('#approval-status-box').on("click", "input", function () {
     let _this = jQuery(this)
-    let checked = _this.prop('checked')
-    if (checked) {
-        banReasonBox.show()
+    let value = _this.val()
+    if (value == 2) {
+        banReasonBox.css({"visibility": "visible"})
+        visible.prop("checked", false)
     } else {
-        banReasonBox.hide()
+        banReasonBox.css({"visibility": "hidden"})
+        visible.prop("checked", true)
     }
 })
 JS;

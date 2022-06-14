@@ -758,6 +758,8 @@ $lang_settings = array
     'text_misc_settings_note' => '配置其他杂项。',
     'row_misc_donation_custom' => '捐赠自定义内容',
     'text_donation_custom_note' => '捐赠页自定义的内容，展示于支付宝、PayPal上面。支持&nbsp;<b><a href="tags.php" target="_blank">bbcode 标签</a></b>',
+    'row_approval_status_icon_enabled' => '审核状态图标',
+    'text_approval_status_icon_enabled_note' => "是否在种子列表展示审核状态图标，默认: '否'。"
 );
 
 ?>

@@ -332,6 +332,7 @@ return array (
       'claim_bonus_multiplier' => \App\Models\Claim::BONUS_MULTIPLIER,
       'claim_reach_standard_seed_time' => \App\Models\Claim::STANDARD_SEED_TIME_HOURS,
       'claim_reach_standard_uploaded' => \App\Models\Claim::STANDARD_UPLOADED_TIMES,
+      'approval_status_icon_enabled' => 'no',
   ),
   'attachment' =>
   array (

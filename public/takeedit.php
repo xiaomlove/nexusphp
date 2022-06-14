@@ -19,7 +19,7 @@ if (!$id)
 	die();
 
 
-$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen, banned FROM torrents WHERE id = ".mysql_real_escape_string($id));
+$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen, banned, approval_status FROM torrents WHERE id = ".mysql_real_escape_string($id));
 $row = mysql_fetch_array($res);
 $torrentAddedTimeString = $row['added'];
 if (!$row)
@@ -106,20 +106,22 @@ $updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"] ?? 0));
 $updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"] ?? 0));
 $updateset[] = "team = " . sqlesc(intval($_POST["team_sel"] ?? 0));
 $updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"] ?? 0));
-if (get_user_class() >= $torrentmanage_class) {
-	if (!empty($_POST["banned"])) {
-	    //Ban
-		$updateset[] = "banned = 'yes'";
-		$_POST['visible'] = 0;
-		if ($row['banned'] == 'no') {
-		    $torrentOperationLog['action_type'] = \App\Models\TorrentOperationLog::ACTION_TYPE_BAN;
-        }
-	} else {
-        //Cancel ban
+if (get_user_class() >= $torrentmanage_class && isset($_POST['approval_status']) && isset(\App\Models\Torrent::$approvalStatus[$_POST['approval_status']])) {
+    $approvalStatus = $_POST['approval_status'];
+    if ($approvalStatus == \App\Models\Torrent::APPROVAL_STATUS_YES) {
         $updateset[] = "banned = 'no'";
         if ($row['banned'] == 'yes') {
             $torrentOperationLog['action_type'] = \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN;
         }
+    } elseif ($approvalStatus == \App\Models\Torrent::APPROVAL_STATUS_NO) {
+        $updateset[] = "banned = 'yes'";
+        $_POST['visible'] = 0;
+        if ($row['banned'] == 'no') {
+            $torrentOperationLog['action_type'] = \App\Models\TorrentOperationLog::ACTION_TYPE_BAN;
+        }
+    }
+    if ($row['owner'] != $CURUSER['id'] && get_user_class() >= $staffmem_class) {
+        $updateset[] = "approval_status = $approvalStatus";
     }
 }
 $updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";

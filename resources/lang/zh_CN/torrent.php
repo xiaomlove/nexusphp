@@ -58,4 +58,9 @@ return [
     ],
     'owner_update_torrent_subject' => '被禁种子已更新',
     'owner_update_torrent_msg' => '种子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以检查是否符合要求并取消禁止',
+    'approval_status' => [
+        \App\Models\Torrent::APPROVAL_STATUS_NONE => '未审',
+        \App\Models\Torrent::APPROVAL_STATUS_YES => '通过',
+        \App\Models\Torrent::APPROVAL_STATUS_NO => '拒绝',
+    ],
 ];
