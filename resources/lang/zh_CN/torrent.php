@@ -54,6 +54,11 @@ return [
             'type_text' => '取消禁止',
             'notify_subject' => '种子取消禁止',
             'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE => [
+            'type_text' => '取消禁止',
+            'notify_subject' => '种子取消禁止',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
         ]
     ],
     'owner_update_torrent_subject' => '被禁种子已更新',

@@ -54,6 +54,11 @@ return [
             'type_text' => 'Cancel banned',
             'notify_subject' => 'Torrent was unbanned',
             'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] unbanned by :operator',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE => [
+            'type_text' => 'Cancel banned',
+            'notify_subject' => 'Torrent was unbanned',
+            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] unbanned by :operator',
         ]
     ],
     'owner_update_torrent_subject' => 'Banned torrent have been updated',

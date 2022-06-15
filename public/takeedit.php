@@ -259,7 +259,7 @@ if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
         'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
         'added' => now(),
     ]);
-    \Nexus\Database\NexusDB::cache_del("staff_message_count");
+    \Nexus\Database\NexusDB::cache_del("staff_new_message_count");
 }
 
 $returl = "details.php?id=$id&edited=1";
