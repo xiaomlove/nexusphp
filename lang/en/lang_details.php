@@ -236,7 +236,7 @@ $lang_details = array
     'claim_detail' => 'Claim detail',
     'claim_label' => 'Claim torrent',
     'claim_confirm' => 'Are you sure to claim this torrent?',
-
+    'action_approval' => 'Approval',
 );
 
 ?>
