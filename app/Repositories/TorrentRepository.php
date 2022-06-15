@@ -477,7 +477,7 @@ class TorrentRepository extends BaseRepository
             //No change
             return $params;
         }
-        $torrentUpdate = $torrentOperationLog = $staffMsg = [];
+        $torrentUpdate = $torrentOperationLog = [];
         $torrentUpdate['approval_status'] = $params['approval_status'];
         if ($params['approval_status'] == Torrent::APPROVAL_STATUS_ALLOW) {
             $torrentUpdate['banned'] = 'no';
@@ -506,18 +506,8 @@ class TorrentRepository extends BaseRepository
             $torrentOperationLog['comment'] = $params['comment'] ?? '';
         }
 
-        if ($torrent->banned == 'yes' && $torrent->owner == $user->id) {
-            $torrentUrl = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $torrent->id);
-            $staffMsg = [
-                'sender' => $user->id,
-                'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
-                'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
-                'added' => now(),
-            ];
-        }
-
-        NexusDB::transaction(function () use ($torrent, $torrentOperationLog, $torrentUpdate, $staffMsg) {
-            $log = "";
+        NexusDB::transaction(function () use ($torrent, $torrentOperationLog, $torrentUpdate) {
+            $log = "torrent: " . $torrent->id;
             if (!empty($torrentUpdate)) {
                 $log .= "[UPDATE_TORRENT]: " . nexus_json_encode($torrentUpdate);
                 $torrent->update($torrentUpdate);
@@ -525,11 +515,6 @@ class TorrentRepository extends BaseRepository
             if (!empty($torrentOperationLog)) {
                 $log .= "[ADD_TORRENT_OPERATION_LOG]: " . nexus_json_encode($torrentOperationLog);
                 TorrentOperationLog::add($torrentOperationLog);
-            }
-            if (!empty($staffMsg)) {
-                $log .= "[INSERT_STAFF_MESSAGE]: " . nexus_json_encode($staffMsg);
-                StaffMessage::query()->insert($staffMsg);
-                NexusDB::cache_del('staff_new_message_count');
             }
             do_log($log);
         });

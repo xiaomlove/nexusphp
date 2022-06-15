@@ -251,6 +251,16 @@ else
 $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->updateTorrent($id);
 
+if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
+    $torrentUrl = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $row['id']);
+    \App\Models\StaffMessage::query()->insert([
+        'sender' => $CURUSER['id'],
+        'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
+        'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
+        'added' => now(),
+    ]);
+}
+
 $returl = "details.php?id=$id&edited=1";
 if (isset($_POST["returnto"]))
 	$returl = $_POST["returnto"];
