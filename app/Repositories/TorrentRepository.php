@@ -492,6 +492,8 @@ class TorrentRepository extends BaseRepository
                 $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY;
             }
         } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_NONE) {
+            $torrentUpdate['banned'] = 'no';
+            $torrentUpdate['visible'] = 'yes';
             if ($torrent->approval_status != $params['approval_status']) {
                 $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE;
             }
