@@ -2501,6 +2501,7 @@ foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
 ?>
 <script type="text/javascript" src="js/jquery-1.12.4.min.js<?php echo $cssupdatedate?>"></script>
 <script type="text/javascript">jQuery.noConflict();</script>
+<script type="text/javascript" src="vendor/layer-v3.5.1/layer/layer.js<?php echo $cssupdatedate?>"></script>
 </head>
 <body>
 <table class="head" cellspacing="0" cellpadding="0" align="center">

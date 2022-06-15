@@ -36,4 +36,20 @@ class BaseRepository
         }
     }
 
+    /**
+     * @param $user
+     * @param null $fields
+     * @return User
+     */
+    protected function getUser($user, $fields = null): User
+    {
+        if ($user instanceof User) {
+            return $user;
+        }
+        if ($fields === null) {
+            $fields = User::$commonFields;
+        }
+        return User::query()->findOrFail(intval($user), $fields);
+    }
+
 }

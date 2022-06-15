@@ -16,9 +16,11 @@ use App\Models\SearchBox;
 use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Source;
+use App\Models\StaffMessage;
 use App\Models\Standard;
 use App\Models\Team;
 use App\Models\Torrent;
+use App\Models\TorrentOperationLog;
 use App\Models\TorrentSecret;
 use App\Models\User;
 use Carbon\Carbon;
@@ -419,6 +421,118 @@ class TorrentRepository extends BaseRepository
         TorrentSecret::query()->where('uid', $uid)->delete();
         TorrentSecret::query()->insert($insert);
         return $insert['secret'];
+
+    }
+
+    public function buildApprovalModal($user, $torrentId)
+    {
+        $user = $this->getUser($user);
+        if ($user->class < Setting::get('authority.torrentmanage')) {
+            throw new \RuntimeException("No permission !");
+        }
+        $torrent = Torrent::query()->findOrFail($torrentId, ['id', 'approval_status', 'banned']);
+        $radios = [];
+        foreach (Torrent::$approvalStatus as $key => $value) {
+            if ($torrent->approval_status == $key) {
+                $checked = " checked";
+            } else {
+                $checked = "";
+            }
+            $radios[] = sprintf(
+                '<label><input type="radio" name="params[approval_status]" value="%s"%s>%s</label>',
+                $key, $checked, nexus_trans("torrent.approval.status_text.$key")
+            );
+        }
+        $id = "torrent-approval";
+        $rows = [];
+        $rowStyle = "display: flex; padding: 10px; align-items: center";
+        $labelStyle = "width: 80px";
+        $formId = "$id-form";
+        $rows[] = sprintf(
+            '<div class="%s-row" style="%s"><div style="%s">%s: </div><div>%s</div></div>',
+            $id, $rowStyle, $labelStyle,nexus_trans('torrent.approval.status_label'), implode('', $radios)
+        );
+        $rows[] = sprintf(
+            '<div class="%s-row" style="%s"><div style="%s">%s: </div><div><textarea name="params[comment]" rows="4" cols="40"></textarea></div></div>',
+            $id, $rowStyle, $labelStyle, nexus_trans('torrent.approval.comment_label')
+        );
+        $rows[] = sprintf('<input type="hidden" name="params[torrent_id]" value="%s" />', $torrent->id);
+
+        $html = sprintf('<div id="%s-box" style="padding: 15px 30px"><form id="%s">%s</form></div>', $id, $formId, implode('', $rows));
+
+        return [
+            'id' => $id,
+            'form_id' => $formId,
+            'title' => nexus_trans('torrent.approval.modal_title'),
+            'content' => $html,
+        ];
+
+    }
+
+    public function approval($user, array $params): array
+    {
+        $user = $this->getUser($user);
+        $torrent = Torrent::query()->findOrFail($params['torrent_id'], ['id', 'banned', 'approval_status', 'visible', 'owner']);
+        if ($torrent->approval_status == $params['approval_status']) {
+            //No change
+            return $params;
+        }
+        $torrentUpdate = $torrentOperationLog = $staffMsg = [];
+        $torrentUpdate['approval_status'] = $params['approval_status'];
+        if ($params['approval_status'] == Torrent::APPROVAL_STATUS_ALLOW) {
+            $torrentUpdate['banned'] = 'no';
+            $torrentUpdate['visible'] = 'yes';
+            if ($torrent->approval_status != $params['approval_status']) {
+                $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW;
+            }
+        } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_DENY) {
+            $torrentUpdate['banned'] = 'yes';
+            $torrentUpdate['visible'] = 'no';
+            if ($torrent->approval_status != $params['approval_status']) {
+                $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY;
+            }
+        } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_NONE) {
+            if ($torrent->approval_status != $params['approval_status']) {
+                $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE;
+            }
+        } else {
+            throw new \InvalidArgumentException("Invalid approval_status: " . $params['approval_status']);
+        }
+        if (isset($torrentOperationLog['action_type'])) {
+            $torrentOperationLog['uid'] = $user->id;
+            $torrentOperationLog['torrent_id'] = $torrent->id;
+            $torrentOperationLog['comment'] = $params['comment'] ?? '';
+        }
+
+        if ($torrent->banned == 'yes' && $torrent->owner == $user->id) {
+            $torrentUrl = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $torrent->id);
+            $staffMsg = [
+                'sender' => $user->id,
+                'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
+                'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
+                'added' => now(),
+            ];
+        }
+
+        NexusDB::transaction(function () use ($torrent, $torrentOperationLog, $torrentUpdate, $staffMsg) {
+            $log = "";
+            if (!empty($torrentUpdate)) {
+                $log .= "[UPDATE_TORRENT]: " . nexus_json_encode($torrentUpdate);
+                $torrent->update($torrentUpdate);
+            }
+            if (!empty($torrentOperationLog)) {
+                $log .= "[ADD_TORRENT_OPERATION_LOG]: " . nexus_json_encode($torrentOperationLog);
+                TorrentOperationLog::add($torrentOperationLog);
+            }
+            if (!empty($staffMsg)) {
+                $log .= "[INSERT_STAFF_MESSAGE]: " . nexus_json_encode($staffMsg);
+                StaffMessage::query()->insert($staffMsg);
+                NexusDB::cache_del('staff_new_message_count');
+            }
+            do_log($log);
+        });
+
+        return $params;
 
     }
 

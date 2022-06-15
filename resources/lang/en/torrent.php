@@ -45,12 +45,12 @@ return [
     'claim_number_reach_torrent_maximum' => 'The maximum number of torrent is reached',
     'claim_disabled' => 'Claim is disabled',
     'operation_log' => [
-        \App\Models\TorrentOperationLog::ACTION_TYPE_BAN => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY => [
             'type_text' => 'Banned',
             'notify_subject' => 'Torrent was banned',
             'notify_msg' => 'Your torrent：[url=:detail_url]:torrent_name[/url] was banned by :operator, Reason: :reason',
         ],
-        \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW => [
             'type_text' => 'Cancel banned',
             'notify_subject' => 'Torrent was unbanned',
             'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] unbanned by :operator',
@@ -58,9 +58,15 @@ return [
     ],
     'owner_update_torrent_subject' => 'Banned torrent have been updated',
     'owner_update_torrent_msg' => 'Torrent：[url=:detail_url]:torrent_name[/url] has been updated by the owner, you can check if it meets the requirements and cancel the ban',
-    'approval_status' => [
-        \App\Models\Torrent::APPROVAL_STATUS_NONE => 'None',
-        \App\Models\Torrent::APPROVAL_STATUS_YES => 'Allow',
-        \App\Models\Torrent::APPROVAL_STATUS_NO => 'Deny',
+    'approval' => [
+        'modal_title' => 'Torrent approval',
+        'status_label' => 'Approval status',
+        'comment_label' => 'Comment(optional)',
+        'status_text' => [
+            \App\Models\Torrent::APPROVAL_STATUS_NONE => 'None',
+            \App\Models\Torrent::APPROVAL_STATUS_ALLOW => 'Allow',
+            \App\Models\Torrent::APPROVAL_STATUS_DENY => 'Deny',
+        ],
+        'deny_comment_show' => 'Denied, reason: reason',
     ],
 ];

@@ -155,48 +155,6 @@ else {
     }
 	if (get_user_class() >= $torrentmanage_class) {
 	    array_unshift($rowChecks, "<label><input id='visible' type=\"checkbox\" name=\"visible\"" . ($row["visible"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_visible']."</label>");
-	    $approvalStatusRadio = [];
-	    foreach (\App\Models\Torrent::$approvalStatus as $key => $value) {
-	        if ($row['approval_status'] == $key) {
-	            $checked = " checked";
-            } else {
-	            $checked = "";
-            }
-            $approvalStatusRadio[] = sprintf(
-                '<label><input type="radio" name="approval_status" value="%s"%s>%s</label>',
-                $key, $checked, nexus_trans("torrent.approval_status.$key")
-            );
-        }
-	    $rowChecks[] = sprintf('<span style="margin-left: 6px" id="approval-status-box">审核:%s</span>', implode('', $approvalStatusRadio));
-//	    $rowChecks[] = "<label><input type=\"checkbox\" name=\"banned\"" . (($row["banned"] == "yes") ? " checked=\"checked\"" : "" ) . " value=\"yes\" />".$lang_edit['checkbox_banned']."</label>";
-	    $banLog = \App\Models\TorrentOperationLog::query()->where('torrent_id', $row['id'])->where('action_type', \App\Models\TorrentOperationLog::ACTION_TYPE_BAN)->orderBy('id', 'desc')->first();
-	    $banReasonDisplay = "hidden";
-	    $banReasonReadonly = "";
-	    if ($row['banned'] == 'yes') {
-            $banReasonDisplay = 'visible';
-            $banReasonReadonly = " readonly disabled";
-        }
-        $rowChecks[] = sprintf(
-            '<span id="ban-reason-box" style="visibility: %s">%s：<input type="text" name="ban_reason" value="%s" style="width: 300px"%s/></span>',
-            $banReasonDisplay, $lang_edit['ban_reason_label'], $row['banned'] == 'yes' && $banLog ? $banLog->comment : '', $banReasonReadonly
-        );
-	    $js = <<<JS
-let banReasonBox = jQuery('#ban-reason-box')
-let visible = jQuery('#visible')
-jQuery('#approval-status-box').on("click", "input", function () {
-    let _this = jQuery(this)
-    let value = _this.val()
-    if (value == 2) {
-        banReasonBox.css({"visibility": "visible"})
-        visible.prop("checked", false)
-    } else {
-        banReasonBox.css({"visibility": "hidden"})
-        visible.prop("checked", true)
-    }
-})
-JS;
-	    \Nexus\Nexus::js($js, 'footer', false);
-
     }
 	if (!empty($rowChecks)) {
         tr($lang_edit['row_check'], implode('&nbsp;&nbsp;', $rowChecks), 1);

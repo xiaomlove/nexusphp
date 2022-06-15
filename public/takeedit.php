@@ -19,7 +19,7 @@ if (!$id)
 	die();
 
 
-$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen, banned, approval_status FROM torrents WHERE id = ".mysql_real_escape_string($id));
+$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen FROM torrents WHERE id = ".mysql_real_escape_string($id));
 $row = mysql_fetch_array($res);
 $torrentAddedTimeString = $row['added'];
 if (!$row)
@@ -106,24 +106,6 @@ $updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"] ?? 0));
 $updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"] ?? 0));
 $updateset[] = "team = " . sqlesc(intval($_POST["team_sel"] ?? 0));
 $updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"] ?? 0));
-if (get_user_class() >= $torrentmanage_class && isset($_POST['approval_status']) && isset(\App\Models\Torrent::$approvalStatus[$_POST['approval_status']])) {
-    $approvalStatus = $_POST['approval_status'];
-    if ($approvalStatus == \App\Models\Torrent::APPROVAL_STATUS_YES) {
-        $updateset[] = "banned = 'no'";
-        if ($row['banned'] == 'yes') {
-            $torrentOperationLog['action_type'] = \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN;
-        }
-    } elseif ($approvalStatus == \App\Models\Torrent::APPROVAL_STATUS_NO) {
-        $updateset[] = "banned = 'yes'";
-        $_POST['visible'] = 0;
-        if ($row['banned'] == 'no') {
-            $torrentOperationLog['action_type'] = \App\Models\TorrentOperationLog::ACTION_TYPE_BAN;
-        }
-    }
-    if ($row['owner'] != $CURUSER['id'] && get_user_class() >= $staffmem_class) {
-        $updateset[] = "approval_status = $approvalStatus";
-    }
-}
 $updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";
 if(get_user_class()>=$torrentonpromotion_class)
 {
@@ -268,22 +250,6 @@ else
 
 $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->updateTorrent($id);
-
-if (!empty($torrentOperationLog['action_type'])) {
-    $torrentOperationLog['uid'] = $CURUSER['id'];
-    $torrentOperationLog['torrent_id'] = $row['id'];
-    $torrentOperationLog['comment'] = $_POST['ban_reason'] ?? '';
-    \App\Models\TorrentOperationLog::add($torrentOperationLog);
-}
-if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
-    $torrentUrl = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $row['id']);
-    \App\Models\StaffMessage::query()->insert([
-        'sender' => $CURUSER['id'],
-        'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
-        'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
-        'added' => now(),
-    ]);
-}
 
 $returl = "details.php?id=$id&edited=1";
 if (isset($_POST["returnto"]))

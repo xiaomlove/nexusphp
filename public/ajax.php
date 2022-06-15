@@ -74,3 +74,22 @@ function getOffer($params)
     return $offer->toArray();
 }
 
+function approvalModal($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\TorrentRepository();
+    return $rep->buildApprovalModal($CURUSER['id'], $params['torrent_id']);
+}
+
+function approval($params)
+{
+    global $CURUSER;
+    foreach (['torrent_id', 'approval_status',] as $field) {
+        if (!isset($params[$field])) {
+            throw new \InvalidArgumentException("Require $field");
+        }
+    }
+    $rep = new \App\Repositories\TorrentRepository();
+    return $rep->approval($CURUSER['id'], $params);
+}
+

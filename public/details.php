@@ -10,7 +10,7 @@ int_check($id);
 if (!isset($id) || !$id)
 die();
 
-$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info, torrents.hr, torrents.promotion_until, torrents.promotion_time_type,
+$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status,
        categories.name AS cat_name, categories.mode as search_box_id, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name
 FROM torrents LEFT JOIN categories ON torrents.category = categories.id
     LEFT JOIN sources ON torrents.source = sources.id
@@ -55,7 +55,6 @@ if (!$row) {
 
 	if (!isset($_GET["cmtpage"])) {
 		stdhead($lang_details['head_details_for_torrent']. "\"" . $row["name"] . "\"");
-
 		if (!empty($_GET["uploaded"]))
 		{
 			print("<h1 align=\"center\">".$lang_details['text_successfully_uploaded']."</h1>");
@@ -74,6 +73,23 @@ if (!$row) {
         $hrImg = get_hr_img($row);
 		$s=htmlspecialchars($row["name"]).$banned_torrent.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");
+
+        //Banned reason
+        if ($row['approval_status'] == \App\Models\Torrent::APPROVAL_STATUS_DENY) {
+            $torrentOperationLog = \App\Models\TorrentOperationLog::query()
+                ->where('torrent_id', $row['id'])
+                ->where('action_type', \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY)
+                ->orderBy('id', 'desc')
+                ->first();
+            if ($torrentOperationLog) {
+                $dangerIcon = '<svg t="1655242121471" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="46590" width="16" height="16"><path d="M963.555556 856.888889a55.978667 55.978667 0 0 1-55.978667 56.007111c-0.284444 0-0.540444-0.085333-0.824889-0.085333l-0.056889 0.085333H110.734222l-0.654222-1.137778A55.409778 55.409778 0 0 1 56.888889 856.462222c0-9.756444 2.730667-18.773333 7.139555-26.737778l-3.726222-6.599111L453.461333 156.302222A59.335111 59.335111 0 0 1 510.236444 113.777778c26.936889 0 49.436444 18.005333 56.803556 42.552889l389.973333 661.447111-3.669333 6.997333c6.4 9.102222 10.211556 20.138667 10.211556 32.113778z m-497.777778-541.326222l16.014222 312.888889h56.888889l16.014222-312.888889h-88.917333z m44.458666 398.222222a56.888889 56.888889 0 1 0-0.028444 113.749333 56.888889 56.888889 0 0 0 0.028444-113.749333z" p-id="46591" fill="#d81e06" data-spm-anchor-id="a313x.7781069.0.i61" class="selected"></path></svg>';
+                printf(
+                    '<div style="display: flex; justify-content: center;margin-bottom: 10px"><div style="display: flex;background-color: black; color: white;font-weight: bold; padding: 10px 100px">%s&nbsp;%s</div></div>',
+                    $dangerIcon, nexus_trans('torrent.approval.deny_comment_show', ['reason' => $torrentOperationLog->comment])
+                );
+            }
+        }
+
 		print("<table width=\"97%\" cellspacing=\"0\" cellpadding=\"5\">\n");
 
 		$url = "edit.php?id=" . $row["id"];
@@ -139,8 +155,57 @@ if (!$row) {
         if (get_user_class() >= $askreseed_class && $row['seeders'] == 0) {
             $actions[] = "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>";
         }
-        $actions[] = "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>";
+        if (get_user_class() >= $torrentmanage_class) {
+            $approvalIcon = '<svg t="1655224943277" class="icon" viewBox="0 0 1397 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="45530" width="16" height="16"><path d="M1396.363636 121.018182c0 0-223.418182 74.472727-484.072727 372.363636-242.036364 269.963636-297.890909 381.672727-390.981818 530.618182C512 1014.690909 372.363636 744.727273 0 549.236364l195.490909-186.181818c0 0 176.872727 121.018182 297.890909 344.436364 0 0 307.2-474.763636 902.981818-707.490909L1396.363636 121.018182 1396.363636 121.018182zM1396.363636 121.018182" p-id="45531" fill="#e78d0f"></path></svg>';
+            $actions[] = sprintf(
+                '<a href="javascript:;"><b><font id="approval" class="small approval" data-torrent_id="%s">%s&nbsp;%s</font></b></a>',
+                $row['id'], $approvalIcon, $lang_details['action_approval']
+            );
+            $js = <<<JS
+jQuery('#approval').on("click", function () {
+    let loadingIndex1 = layer.load()
+    let torrentId = jQuery(this).attr('data-torrent_id')
+    let params = {
+        action: 'approvalModal',
+        params: {
+            torrent_id: torrentId
+        }
+    }
+    jQuery.post('ajax.php', params, function (response) {
+        layer.close(loadingIndex1)
+        console.log(response)
+        if (response.ret != 0) {
+            layer.alert(response.msg)
+            return
+        }
+        let formId = response.data.form_id;
+        layer.open({
+            type: 1,
+            title: response.data.title,
+            content: response.data.content,
+            btn: ["OK"],
+            btnAlign: 'c',
+            yes: function () {
+                let loadingIndex2 = layer.load()
+                let params = jQuery("#" + formId).serialize();
+                jQuery.post("ajax.php", params + "&action=approval", function (response) {
+                    layer.close(loadingIndex2)
+                    console.log(response)
+                    if (response.ret != 0) {
+                        layer.alert(response.msg)
+                        return
+                    }
+                    window.location.reload()
+                }, 'json')
+            }
+        })
+    }, 'json')
+})
+JS;
+            \Nexus\Nexus::js($js, 'footer', false);
+        }
         $actions = apply_filter('torrent_detail_actions', $actions, $row);
+        $actions[] = "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>";
 		tr($lang_details['row_action'], implode('&nbsp;|&nbsp;', $actions), 1);
 
         // ------------- start claim block ------------------//

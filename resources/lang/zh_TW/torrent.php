@@ -45,12 +45,12 @@ return [
     'claim_number_reach_torrent_maximum' => '認領達到種子數上限',
     'claim_disabled' => '認領未啟用',
     'operation_log' => [
-        \App\Models\TorrentOperationLog::ACTION_TYPE_BAN => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY => [
             'type_text' => '禁止',
             'notify_subject' => '種子被禁止',
             'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 禁止，原因：:reason',
         ],
-        \App\Models\TorrentOperationLog::ACTION_TYPE_CANCEL_BAN => [
+        \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW => [
             'type_text' => '取消禁止',
             'notify_subject' => '種子取消禁止',
             'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
@@ -58,9 +58,15 @@ return [
     ],
     'owner_update_torrent_subject' => '被禁種子已更新',
     'owner_update_torrent_msg' => '種子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以檢查是否符合要求並取消禁止',
-    'approval_status' => [
-        \App\Models\Torrent::APPROVAL_STATUS_NONE => '未審',
-        \App\Models\Torrent::APPROVAL_STATUS_YES => '通過',
-        \App\Models\Torrent::APPROVAL_STATUS_NO => '拒絕',
+    'approval' => [
+        'modal_title' => '種子審核',
+        'status_label' => '審核狀態',
+        'comment_label' => '備註(可選)',
+        'status_text' => [
+            \App\Models\Torrent::APPROVAL_STATUS_NONE => '未審',
+            \App\Models\Torrent::APPROVAL_STATUS_ALLOW => '通過',
+            \App\Models\Torrent::APPROVAL_STATUS_DENY => '拒絕',
+        ],
+        'deny_comment_show' => '審核不通過，原因：:reason',
     ],
 ];
