@@ -200,7 +200,7 @@ $descriptionArr = format_description($descr);
 $cover = get_image_from_description($descriptionArr, true, false);
 $updateset[] = "cover = " . sqlesc($cover);
 
-sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+$affectedRows = sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 
 $dateTimeStringNow = date("Y-m-d H:i:s");
 
@@ -251,7 +251,7 @@ else
 $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->updateTorrent($id);
 
-if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
+if ($affectedRows == 1 && $row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
     $torrentUrl = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $row['id']);
     \App\Models\StaffMessage::query()->insert([
         'sender' => $CURUSER['id'],
