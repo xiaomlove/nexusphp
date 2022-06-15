@@ -19,7 +19,7 @@ if (!$id)
 	die();
 
 
-$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen FROM torrents WHERE id = ".mysql_real_escape_string($id));
+$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, pt_gen, banned FROM torrents WHERE id = ".mysql_real_escape_string($id));
 $row = mysql_fetch_array($res);
 $torrentAddedTimeString = $row['added'];
 if (!$row)
@@ -259,6 +259,7 @@ if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
         'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
         'added' => now(),
     ]);
+    \Nexus\Database\NexusDB::cache_del("staff_message_count");
 }
 
 $returl = "details.php?id=$id&edited=1";
