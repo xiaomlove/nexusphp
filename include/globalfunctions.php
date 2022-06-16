@@ -574,6 +574,9 @@ function last_query($all = false)
 
 function format_datetime($datetime, $format = 'Y-m-d H:i')
 {
+    if (empty($datetime)) {
+        return '';
+    }
     try {
         $carbonTime = \Carbon\Carbon::parse($datetime);
         return $carbonTime->format($format);

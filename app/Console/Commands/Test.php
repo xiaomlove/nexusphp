@@ -78,12 +78,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $arr = [
-            'uid' => 1,
-            'torrent_id' => 1,
-            'action_type' => 'ban',
-        ];
-        TorrentOperationLog::query()->create($arr);
+        $r = Carbon::parse(null);
+        dd($r);
     }
 
 
