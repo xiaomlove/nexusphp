@@ -57,7 +57,7 @@ class TorrentOperationLog extends NexusModel
         $subject = nexus_trans("torrent.operation_log.$actionType.notify_subject", [], $locale);
         $msg = nexus_trans("torrent.operation_log.$actionType.notify_msg", [
             'torrent_name' => $torrentOperationLog->torrent->name,
-            'detail_url' => sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $torrentOperationLog->torrent_id),
+            'detail_url' => sprintf('details.php?id=%s', $torrentOperationLog->torrent_id),
             'operator' => $torrentOperationLog->user->username,
             'reason' => $torrentOperationLog->comment,
         ], $locale);
@@ -70,5 +70,6 @@ class TorrentOperationLog extends NexusModel
         ];
         Message::query()->insert($message);
         NexusDB::cache_del("user_{$receiver->id}_unread_message_count");
+        NexusDB::cache_del("user_{$receiver->id}_inbox_count");
     }
 }

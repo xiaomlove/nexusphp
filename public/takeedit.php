@@ -252,7 +252,7 @@ $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->updateTorrent($id);
 
 if ($affectedRows == 1 && $row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
-    $torrentUrl = sprintf('%s/details.php?id=%s', getSchemeAndHttpHost(), $row['id']);
+    $torrentUrl = sprintf('details.php?id=%s', $row['id']);
     \App\Models\StaffMessage::query()->insert([
         'sender' => $CURUSER['id'],
         'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
@@ -260,6 +260,7 @@ if ($affectedRows == 1 && $row['banned'] == 'yes' && $row['owner'] == $CURUSER['
         'added' => now(),
     ]);
     \Nexus\Database\NexusDB::cache_del("staff_new_message_count");
+    \Nexus\Database\NexusDB::cache_del("staff_message_count");
 }
 
 $returl = "details.php?id=$id&edited=1";

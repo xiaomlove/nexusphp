@@ -405,6 +405,24 @@ if ($action == "post")
 		sql_query("UPDATE posts SET body=".sqlesc($body).", editdate=".sqlesc($date).", editedby=".sqlesc($CURUSER['id'])." WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 		$postid = $id;
 		$Cache->delete_value('post_'.$postid.'_content');
+        //send pm
+        $topicInfo = \App\Models\Topic::query()->findOrFail($topicid);
+        $postInfo = \App\Models\Post::query()->findOrFail($id);
+        $postUrl = sprintf('[url=forums.php?action=viewtopic&topicid=%s&page=p%s#pid%s]%s[/url]', $topicid, $id, $id, $topicInfo->subject);
+        if ($postInfo->userid != $CURUSER['id']) {
+            $receiver = $postInfo->user;
+            $locale = $receiver->locale;
+            $notify = [
+                'sender' => 0,
+                'receiver' => $receiver->id,
+                'subject' => nexus_trans('forum.post.edited_notify_subject', [], $locale),
+                'msg' => nexus_trans('forum.post.edited_notify_body', ['topic_subject' => $postUrl, 'editor' => $CURUSER['username']], $locale),
+                'added' => now(),
+            ];
+            \App\Models\Message::query()->insert($notify);
+            \Nexus\Database\NexusDB::cache_del("user_{$postInfo->userid}_unread_message_count");
+            \Nexus\Database\NexusDB::cache_del("user_{$postInfo->userid}_inbox_count");
+        }
 	}
 	else
 	{
@@ -436,6 +454,24 @@ if ($action == "post")
 
 		sql_query("INSERT INTO posts (topicid, userid, added, body, ori_body) VALUES ($topicid, $userid, ".sqlesc($date).", ".sqlesc($body).", ".sqlesc($body).")") or sqlerr(__FILE__, __LINE__);
 		$postid = mysql_insert_id() or die($lang_forums['std_post_id_not_available']);
+		//send pm
+        $topicInfo = \App\Models\Topic::query()->findOrFail($topicid);
+        $postUrl = sprintf('[url=forums.php?action=viewtopic&topicid=%s&page=p%s#pid%s]%s[/url]', $topicid, $postid, $postid, $topicInfo->subject);
+        if ($type == 'reply' && $topicInfo->userid != $CURUSER['id']) {
+            $receiver = $topicInfo->user;
+            $locale = $receiver->locale;
+            $notify = [
+                'sender' => 0,
+                'receiver' => $receiver->id,
+                'subject' => nexus_trans('forum.topic.replied_notify_subject', [], $locale),
+                'msg' => nexus_trans('forum.topic.replied_notify_body', ['topic_subject' => $postUrl], $locale),
+                'added' => now(),
+            ];
+            \App\Models\Message::query()->insert($notify);
+            \Nexus\Database\NexusDB::cache_del("user_{$topicInfo->userid}_unread_message_count");
+            \Nexus\Database\NexusDB::cache_del("user_{$topicInfo->userid}_inbox_count");
+        }
+
 		$Cache->delete_value('forum_'.$forumid.'_post_'.$today_date.'_count');
 		$Cache->delete_value('today_'.$today_date.'_posts_count');
 		$Cache->delete_value('forum_'.$forumid.'_last_replied_topic_content');
@@ -473,7 +509,7 @@ if ($action == "viewtopic")
 
 	$topicid = intval($_GET["topicid"] ?? 0);
 	int_check($topicid,true);
-	$page = intval($_GET["page"] ?? 0);
+	$page = $_GET["page"] ?? 0;
 	$authorid = intval($_GET["authorid"] ?? 0);
 	if ($authorid)
 	{
