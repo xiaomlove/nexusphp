@@ -479,11 +479,15 @@ class TorrentRepository extends BaseRepository
         }
         $torrentUpdate = $torrentOperationLog = [];
         $torrentUpdate['approval_status'] = $params['approval_status'];
+        $notifyUser = false;
         if ($params['approval_status'] == Torrent::APPROVAL_STATUS_ALLOW) {
             $torrentUpdate['banned'] = 'no';
             $torrentUpdate['visible'] = 'yes';
             if ($torrent->approval_status != $params['approval_status']) {
                 $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW;
+            }
+            if ($torrent->approval_status == Torrent::APPROVAL_STATUS_DENY) {
+                $notifyUser = true;
             }
         } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_DENY) {
             $torrentUpdate['banned'] = 'yes';
@@ -491,11 +495,17 @@ class TorrentRepository extends BaseRepository
             if ($torrent->approval_status != $params['approval_status']) {
                 $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY;
             }
+            if ($torrent->approval_status == Torrent::APPROVAL_STATUS_ALLOW) {
+                $notifyUser = true;
+            }
         } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_NONE) {
             $torrentUpdate['banned'] = 'no';
             $torrentUpdate['visible'] = 'yes';
             if ($torrent->approval_status != $params['approval_status']) {
                 $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE;
+            }
+            if ($torrent->approval_status == Torrent::APPROVAL_STATUS_DENY) {
+                $notifyUser = true;
             }
         } else {
             throw new \InvalidArgumentException("Invalid approval_status: " . $params['approval_status']);
@@ -506,7 +516,7 @@ class TorrentRepository extends BaseRepository
             $torrentOperationLog['comment'] = $params['comment'] ?? '';
         }
 
-        NexusDB::transaction(function () use ($torrent, $torrentOperationLog, $torrentUpdate) {
+        NexusDB::transaction(function () use ($torrent, $torrentOperationLog, $torrentUpdate, $notifyUser) {
             $log = "torrent: " . $torrent->id;
             if (!empty($torrentUpdate)) {
                 $log .= "[UPDATE_TORRENT]: " . nexus_json_encode($torrentUpdate);
@@ -514,7 +524,7 @@ class TorrentRepository extends BaseRepository
             }
             if (!empty($torrentOperationLog)) {
                 $log .= "[ADD_TORRENT_OPERATION_LOG]: " . nexus_json_encode($torrentOperationLog);
-                TorrentOperationLog::add($torrentOperationLog);
+                TorrentOperationLog::add($torrentOperationLog, $notifyUser);
             }
             do_log($log);
         });

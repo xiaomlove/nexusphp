@@ -33,19 +33,12 @@ class TorrentOperationLog extends NexusModel
     }
 
 
-    public static function add(array $params)
+    public static function add(array $params, $notifyUser = false)
     {
         $log = self::query()->create($params);
-        $notifyActionTypes = [
-            self::ACTION_TYPE_APPROVAL_ALLOW,
-            self::ACTION_TYPE_APPROVAL_DENY,
-            self::ACTION_TYPE_APPROVAL_NONE,
-        ];
-        if (!in_array($params['action_type'], $notifyActionTypes)) {
-            do_log("actionType: {$params['action_type']}, do not notify");
-            return $log;
+        if ($notifyUser) {
+            self::notifyUser($log);
         }
-        self::notifyUser($log);
         return $log;
     }
 
