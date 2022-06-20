@@ -40,6 +40,7 @@ class BackupCronjob extends Command
     {
         $force = $this->option('force');
         $this->info("force: $force");
+        do_log("ENV: " . getenv('NEXUS_LOG_DIR', true) . ", logFile: " . getLogFile());
         $rep = new ToolRepository();
         $result = $rep->cronjobBackup($force);
         $log = sprintf(

@@ -177,7 +177,8 @@ function do_log($log, $level = 'info', $echo = false)
 
     $logFile = getLogFile();
 	if (($fd = fopen($logFile, 'a')) === false) {
-       $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
+	    $log .= "--------Can not open $logFile";
+        $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
 	}
 	$uid = 0;
     if (IN_NEXUS) {
@@ -235,7 +236,7 @@ function getLogFile()
         $fromEnv = false;
         $path = sys_get_temp_dir();
     }
-    $logFile = rtrim($path, '/') . '/nexus_' . date('Y-m-d') . '.log';
+    $logFile = rtrim($path, '/') . '/nexus.log';
     if (!$fromEnv && !empty($config['log_file'])) {
         $logFile = $config['log_file'];
     }
