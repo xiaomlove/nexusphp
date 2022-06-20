@@ -229,8 +229,14 @@ function getLogFile()
         return $logFile;
     }
     $config = nexus_config('nexus');
-    $logFile = sys_get_temp_dir() . '/nexus_' . date('Y-m-d') . '.log';
-    if (!empty($config['log_file'])) {
+    $path = getenv('NEXUS_LOG_DIR', true);
+    $fromEnv = true;
+    if ($path === false) {
+        $fromEnv = false;
+        $path = sys_get_temp_dir();
+    }
+    $logFile = rtrim($path, '/') . '/nexus_' . date('Y-m-d') . '.log';
+    if (!$fromEnv && !empty($config['log_file'])) {
         $logFile = $config['log_file'];
     }
     $lastDotPos = strrpos($logFile, '.');

@@ -68,13 +68,13 @@ class ModpanelTableSeeder extends Seeder
                 'url' => 'testip.php',
                 'info' => 'Test if IP is banned',
             ),
-            7 =>
-            array (
-                'id' => 8,
-                'name' => 'Add Bonus Points',
-                'url' => 'amountbonus.php',
-                'info' => 'Add Bonus Points to one or All Users.',
-            ),
+//            7 =>
+//            array (
+//                'id' => 8,
+//                'name' => 'Add Bonus Points',
+//                'url' => 'amountbonus.php',
+//                'info' => 'Add Bonus Points to one or All Users.',
+//            ),
             8 =>
             array (
                 'id' => 9,
