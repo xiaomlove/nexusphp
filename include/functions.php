@@ -2330,6 +2330,7 @@ function get_css_row() {
 }
 function get_css_uri($file = "")
 {
+    global $defcss;
 	$cssRow = get_css_row();
 	$ss_uri = $cssRow['uri'];
 	if (!$ss_uri)

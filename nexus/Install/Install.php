@@ -30,7 +30,7 @@ class Install
         'REDIS_HOST', 'REDIS_PORT', 'REDIS_DB', 'REDIS_PASSWORD',
     ];
 
-    protected array $requiredExtensions = ['ctype', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', ];
+    protected array $requiredExtensions = ['ctype', 'curl', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', ];
     protected array $optionalExtensions = [
         ['name' => 'pcntl', 'desc' => "If use Octane and 'Current' showing 0, make sure it's on php -m"],
         ['name' => 'posix', 'desc' => "If use Octane and 'Current' showing 0, make sure it's on php -m"],

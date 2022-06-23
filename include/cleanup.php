@@ -371,8 +371,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$torrents[$row["torrent"]]["comments"] = $row["c"];
 	}
 
-//	$fields = explode(":", "comments:leechers:seeders");
-	$fields = explode(":", "comments");
+	$fields = explode(":", "comments:leechers:seeders");
 	$res = sql_query("SELECT id, seeders, leechers, comments FROM torrents") or sqlerr(__FILE__, __LINE__);
 	while ($row = mysql_fetch_assoc($res)) {
 		$id = $row["id"];

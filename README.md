@@ -25,10 +25,20 @@
 - ....
 
 ## 系统要求
-- PHP: 8.0，必须扩展：bcmath, ctype, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix
+- PHP: 8.0，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix
 - Mysql: 5.7最新版或以上版本
 - Redis：1.0.0或以上版本
 
+## 快速开始
+安装 docker。  
+其中 DOMAIN 是你要使用的域名，先做好解析。 没有域名使用 IP 亦可。   
+端口按需要指定，如果本地 80 端口已经使用，请更换，保证端口对外开放。  
+第2步创建 .env 选择正确的时区 TIMEZONE，其他默认即可。
+```
+docker pull xiaomlove/nexusphp:latest
+docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:latest
+```
+**生产环境建议参考文档实机安装。**
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
 文档：[https://doc.nexusphp.org](http://doc.nexusphp.org/)  
