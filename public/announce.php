@@ -152,7 +152,7 @@ elseif ($az['showclienterror'] == 'yes'){
 }
 
 // check torrent based on info_hash
-$checkTorrentSql = "SELECT id, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned, hr FROM torrents WHERE " . hash_where("info_hash", $info_hash);
+$checkTorrentSql = "SELECT id, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned, hr, approval_status FROM torrents WHERE " . hash_where("info_hash", $info_hash);
 if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$res = sql_query($checkTorrentSql);
 	$torrent = mysql_fetch_array($res);
@@ -168,8 +168,13 @@ if (!$torrent) {
     do_log("[TORRENT NOT EXISTS] infoHashUrlEncode: $infoHashUrlEncode", 'error');
 
     err("torrent not registered with this tracker");
+} elseif ($az['class'] < $seebanned_class) {
+    if ($torrent['banned'] == 'yes') {
+        err("torrent banned");
+    } elseif ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no') {
+        err("torrent review not approved");
+    }
 }
-elseif ($torrent['banned'] == 'yes' && $az['class'] < $seebanned_class) err("torrent banned");
 // select peers info from peers table for this torrent
 $torrentid = $torrent["id"];
 $numpeers = $torrent["seeders"]+$torrent["leechers"];

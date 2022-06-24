@@ -806,6 +806,12 @@ if (isset($searchstr))
 	$addparam .= "search_mode=".$search_mode."&";
 }
 
+//approval status
+$approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
+if ($approvalStatusNoneVisible == 'no' && get_user_class() < $staffmem_class) {
+    $wherea[] = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
+}
+
 $where = implode(" AND ", $wherea);
 
 if ($wherecatin)

@@ -295,24 +295,24 @@ class Update extends Install
     public function requestGithub($url)
     {
         $client = new Client();
-        $logPrefix = "请求 github: $url";
+        $logPrefix = "Request github: $url";
         $response = $client->get($url, ['timeout' => 10,]);
         if (($statusCode = $response->getStatusCode()) != 200) {
-            throw new \RuntimeException("$logPrefix 失败，状态码：$statusCode");
+            throw new \RuntimeException("$logPrefix fail, status code：$statusCode");
         }
         if ($response->getBody()->getSize() <= 0) {
-            throw new \RuntimeException("$logPrefix 失败，结果为空");
+            throw new \RuntimeException("$logPrefix fail, response empty");
         }
         $bodyString = $response->getBody()->getContents();
         $this->doLog("[REQUEST_GITHUB_RESPONSE]: $bodyString");
         $results = json_decode($bodyString, true);
         if (empty($results) || !is_array($results)) {
-            throw new \RuntimeException("$logPrefix 结果异常");
+            throw new \RuntimeException("$logPrefix response invalid");
         }
         return $results;
     }
 
-    public function downAndExtractCode($url): bool
+    public function downAndExtractCode($url): string
     {
         $arr = explode('/', $url);
         $basename = last($arr);
@@ -329,16 +329,16 @@ class Update extends Install
         $client = new Client();
         $response = $client->request('GET', $url, ['sink' => $filename]);
         if (($statusCode = $response->getStatusCode()) != 200) {
-            throw new \RuntimeException("下载错误，状态码：$statusCode");
+            throw new \RuntimeException("Download fail, status code：$statusCode");
         }
         if (($bodySize = $response->getBody()->getSize()) <= 0) {
-            throw new \RuntimeException("下载错误，文件体积：$bodySize");
+            throw new \RuntimeException("Download fail, file size：$bodySize");
         }
         if (!file_exists($filename)) {
-            throw new \RuntimeException("下载错误，文件不存在：$filename");
+            throw new \RuntimeException("Download fail, file not exists：$filename");
         }
         if (filesize($filename) <= 0) {
-            throw new \RuntimeException("下载错误，文件大小为0");
+            throw new \RuntimeException("Download fail, file: $filename size = 0");
         }
         $this->doLog('SUCCESS_DOWNLOAD');
         $extractDir = str_replace($suffix, "", $filename);
@@ -346,7 +346,7 @@ class Update extends Install
         $this->executeCommand($command);
 
         if ($isZip) {
-            $command = "unzip $filename -d $extractDir";
+            $command = "unzip -q $filename -d $extractDir";
         } else {
             $command = "tar -xf $filename -C $extractDir";
         }
@@ -354,13 +354,18 @@ class Update extends Install
 
         foreach (glob("$extractDir/*") as $path) {
             if (is_dir($path)) {
-                $command = sprintf('cp -Rf %s/* %s', $path, ROOT_PATH);
+                $excludes = ['.git', 'composer.lock', 'composer.json', 'public/favicon.ico', '.env'];
+//                $command = sprintf('cp -raf %s/. %s', $path, ROOT_PATH);
+                $command = "rsync -rvq $path/ " . ROOT_PATH;
+                foreach ($excludes as $exclude) {
+                    $command .= " --exclude=$exclude";
+                }
                 $this->executeCommand($command);
                 break;
             }
         }
         $this->doLog('SUCCESS_EXTRACT');
-        return true;
+        return $extractDir;
     }
 
     public function initSeedPoints(): int

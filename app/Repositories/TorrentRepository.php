@@ -533,5 +533,36 @@ class TorrentRepository extends BaseRepository
 
     }
 
+    public function renderApprovalStatus($approvalStatus, $show = null): string
+    {
+        if ($show === null) {
+            $show = $this->shouldShowApprovalStatusIcon($approvalStatus);
+        }
+        if ($show) {
+            return sprintf(
+                '<span style="margin-left: 6px" title="%s">%s</span>',
+                nexus_trans("torrent.approval.status_text.$approvalStatus"),
+                \App\Models\Torrent::$approvalStatus[$approvalStatus]['icon']
+            );
+        }
+        return '';
+    }
+
+    public function shouldShowApprovalStatusIcon($approvalStatus): bool
+    {
+        if (get_setting('torrent.approval_status_icon_enabled') == 'yes') {
+            //启用审核状态图标，肯定显示
+            return true;
+        }
+        if (
+            $approvalStatus != \App\Models\Torrent::APPROVAL_STATUS_ALLOW
+            && get_setting('torrent.approval_status_none_visible') == 'no'
+        ) {
+            //不启用审核状态图标，尽量不显示。在种子不是审核通过状态，而审核不通过又不能被用户看到时，显示
+            return true;
+        }
+        return false;
+    }
+
 
 }

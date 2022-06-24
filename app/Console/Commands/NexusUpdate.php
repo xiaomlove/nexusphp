@@ -12,14 +12,14 @@ class NexusUpdate extends Command
      *
      * @var string
      */
-    protected $signature = 'nexus:update';
+    protected $signature = 'nexus:update {--tag=} {--keep_tmp}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update nexusphp after code updated, remember run `composer update` first.';
+    protected $description = 'Update nexusphp after code updated, remember run `composer update` first. Options: --tag=, --keep_tmp';
 
     private $update;
 
@@ -43,6 +43,17 @@ class NexusUpdate extends Command
     {
         define('WITH_LARAVEL', true);
         require ROOT_PATH . 'nexus/Database/helpers.php';
+        $tag = $this->option('tag');
+        $keepTmp = $this->option('keep_tmp');
+        if ($tag !== null) {
+            if ($tag === 'dev') {
+                $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
+            } else {
+                $url = "https://api.github.com/repos/xiaomlove/nexusphp/tarball/v$tag";
+            }
+            $this->doLog("Specific tag: '$tag', download from '$url' and extra code...");
+            $tmpPath = $this->update->downAndExtractCode($url);
+        }
         //Step 1
         $step = $this->update->currentStep();
         $log = sprintf('Step %s, %s...', $step, $this->update->getStepName($step));
@@ -107,6 +118,15 @@ class NexusUpdate extends Command
         $this->doLog("runExtraMigrate done!");
 
         $this->doLog("All done!");
+
+        if (isset($tmpPath)) {
+            if (!$keepTmp) {
+                $this->doLog("Delete tmp files in: $tmpPath");
+                $this->update->executeCommand("rm -rf " . rtrim($tmpPath, '/'));
+            } else {
+                $this->doLog("Keep tmp files in: $tmpPath");
+            }
+        }
 
         return 0;
     }

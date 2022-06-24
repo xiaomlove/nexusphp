@@ -86,9 +86,4 @@ class Torrent
         return $ptGen->buildRatingSpan($siteIdAndRating);
     }
 
-    public function renderApprovalStatus($status): string
-    {
-        return sprintf('<span style="margin-left: 6px">%s</span>', \App\Models\Torrent::$approvalStatus[$status]['icon']);
-    }
-
 }

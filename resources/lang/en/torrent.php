@@ -68,10 +68,10 @@ return [
         'status_label' => 'Approval status',
         'comment_label' => 'Comment(optional)',
         'status_text' => [
-            \App\Models\Torrent::APPROVAL_STATUS_NONE => 'None',
-            \App\Models\Torrent::APPROVAL_STATUS_ALLOW => 'Allow',
-            \App\Models\Torrent::APPROVAL_STATUS_DENY => 'Deny',
+            \App\Models\Torrent::APPROVAL_STATUS_NONE => 'Not reviewed',
+            \App\Models\Torrent::APPROVAL_STATUS_ALLOW => 'Review approved',
+            \App\Models\Torrent::APPROVAL_STATUS_DENY => 'Review not approved',
         ],
-        'deny_comment_show' => 'Denied, reason: reason',
+        'deny_comment_show' => 'Denied, reason: :reason',
     ],
 ];

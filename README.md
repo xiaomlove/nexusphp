@@ -33,7 +33,7 @@
 安装 docker。  
 其中 DOMAIN 是你要使用的域名，先做好解析。 没有域名使用 IP 亦可。   
 端口按需要指定，如果本地 80 端口已经使用，请更换，保证端口对外开放。  
-第2步创建 .env 选择正确的时区 TIMEZONE，其他默认即可。
+第 2 步创建 .env 选择正确的时区 TIMEZONE，其他默认即可。
 ```
 docker pull xiaomlove/nexusphp:latest
 docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:latest
@@ -46,8 +46,6 @@ docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:late
 QQ群: [764452568](https://jq.qq.com/?_wv=1027&k=IbltZcIx)  
 Telegram: [https://t.me/nexusphp](https://t.me/nexusphp)  
 B站: [xiaomlove](https://space.bilibili.com/1319303059)  
-微信公众号：  
-![扫码关注](https://nexusphp.org/wp-content/uploads/2022/03/wechat_official_account.png)
 
 ## Project supported by JetBrains
 Many thanks to Jetbrains for kindly providing a license for me to work on this and other open-source projects.  

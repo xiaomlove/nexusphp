@@ -88,7 +88,7 @@ $trackerSchemaAndHost = get_tracker_schema_and_host();
 $ssl_torrent = $trackerSchemaAndHost['ssl_torrent'];
 $base_announce_url = $trackerSchemaAndHost['base_announce_url'];
 
-$res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+$res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, torrents.approval_status, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
 if (!$row) {
     do_log("[TORRENT_NOT_EXISTS_IN_DATABASE] $id", 'error');
@@ -107,7 +107,8 @@ if (filesize($fn) == 0) {
     do_log("[TORRENT_NOT_VALID_SIZE_ZERO] $fn",'error');
     httperr();
 }
-if (($row['banned'] == 'yes' && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {
+$approvalNotAllowed = $row['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no';
+if ((($row['banned'] == 'yes' || $approvalNotAllowed) && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {
     denyDownload();
 }
 

@@ -77,6 +77,13 @@ if($showrows < 1 || $showrows > 50)
 	$showrows = 10;
 $limit .= $showrows;
 
+$where = '';
+//approval status
+$approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
+if ($approvalStatusNoneVisible == 'no' && get_user_class() < $staffmem_class) {
+    $where = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
+}
+
 function get_where($tablename = "sources", $itemname = "source", $getname = "sou")
 {
 	global $where;

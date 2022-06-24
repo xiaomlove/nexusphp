@@ -382,8 +382,13 @@ class TrackerRepository extends BaseRepository
             throw new TrackerException('Torrent not registered with this tracker.');
         }
 
-        if ($torrent->banned == 'yes' && $user->class < Setting::get('authority.seebanned')) {
-            throw new TrackerException("torrent banned");
+        if ($user->class < Setting::get('authority.seebanned')) {
+            if ($torrent->banned == 'yes') {
+                throw new TrackerException("torrent banned");
+            }
+            if ($torrent->approval_status != Torrent::APPROVAL_STATUS_ALLOW && Setting::get('torrent.approval_status_none_visible') == 'no') {
+                throw new TrackerException("torrent review not approved");
+            }
         }
         return $torrent;
     }
@@ -1066,7 +1071,7 @@ class TrackerRepository extends BaseRepository
     {
         $cacheKey = __METHOD__ . bin2hex($infoHash);
         return Cache::remember($cacheKey, 60, function () use ($infoHash, $cacheKey) {
-            $fieldRaw = 'id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed';
+            $fieldRaw = 'id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed, approval_status';
             $torrent = Torrent::query()->where('info_hash', $infoHash)->selectRaw($fieldRaw)->first();
             do_log("[getTorrentByInfoHash] cache miss [$cacheKey], from database, and get: " . ($torrent->id ?? ''));
             return $torrent;
