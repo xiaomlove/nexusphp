@@ -16,3 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('https://nexusphp.org');
 });
+
+Route::get('test', function () {
+    dd(request()->cookie());
+});

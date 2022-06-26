@@ -115,7 +115,7 @@ class UserRepository extends BaseRepository
             'class' => $class
         ];
         $user = new User($data);
-        if ($params['id']) {
+        if (!empty($params['id'])) {
             if (User::query()->where('id', $params['id'])->exists()) {
                 throw new \InvalidArgumentException("uid: {$params['id']} already exists.");
             }

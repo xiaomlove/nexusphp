@@ -41,6 +41,21 @@ class ExamUser extends NexusModel
         return self::$isDoneInfo[$this->is_done]['text'] ?? '';
     }
 
+    public static function listStatus($onlyKeyValue = false): array
+    {
+        $result = self::$status;
+        $keyValues = [];
+        foreach ($result as $key => &$value) {
+            $text = nexus_trans('exam-user.status.' . $key);
+            $value['text'] = $text;
+            $keyValues[$key] = $text;
+        }
+        if ($onlyKeyValue) {
+            return $keyValues;
+        }
+        return $result;
+    }
+
     public function getBeginAttribute()
     {
         $begin = $this->getRawOriginal('begin');

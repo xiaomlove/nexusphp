@@ -49,6 +49,9 @@ return [
         'nexus' => [
             'driver' => 'nexus-cookie',
         ],
+        'nexus-web' => [
+            'driver' => 'nexus-web',
+        ],
     ],
 
     /*

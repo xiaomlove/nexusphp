@@ -12,6 +12,11 @@ class EncryptCookies extends Middleware
      * @var array
      */
     protected $except = [
-        //
+        'c_secure_pass',
+        'c_secure_uid',
+        'c_secure_login',
+        'c_secure_ssl',
+        'c_secure_tracker_ssl',
+
     ];
 }

@@ -23,6 +23,7 @@
     "require": {
         "php": "^8.0",
         "ext-bcmath": "*",
+        "ext-curl": "*",
         "ext-gd": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
@@ -32,6 +33,8 @@
         "ext-xml": "*",
         "doctrine/dbal": "^3.1",
         "elasticsearch/elasticsearch": "^7.16",
+        "filament/filament": "^2.0",
+        "flowframe/laravel-trend": "^0.1.1",
         "fruitcake/laravel-cors": "^2.0",
         "geoip2/geoip2": "~2.0",
         "hashids/hashids": "^4.1",

@@ -78,13 +78,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $a = 2;
-        $b = 2;
-        if ($a != 1 && $b == 2) {
-            echo "OK";
-        } else {
-            echo 'Bad';
-        }
+        $r = 'MTAwNDI%3D';
+        $r = 'MTAwNDI%3D';
+        $r = 'MTAwMDM%3D';
+        dd(base64_decode($r));
     }
 
 

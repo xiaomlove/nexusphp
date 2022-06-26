@@ -6,6 +6,7 @@ use App\Http\Middleware\Locale;
 use App\Repositories\ExamRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,8 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasFactory, Notifiable, HasApiTokens;
 
@@ -99,6 +102,17 @@ class User extends Authenticatable
         return $classText;
     }
 
+    public function canAccessFilament(): bool
+    {
+        return true;
+//        return str_ends_with($this->email, '@yourdomain.com') && $this->hasVerifiedEmail();
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->username;
+    }
+
     /**
      * @see ExamRepository::isExamMatchUser()
      *
@@ -120,7 +134,7 @@ class User extends Authenticatable
      */
     protected function serializeDate(\DateTimeInterface $date): string
     {
-        return $date->format($this->dateFormat ?: 'Y-m-d H:i:s');
+        return $date->format($this->dateFormat ?: 'Y-m-d H:i');
     }
 
     /**
@@ -242,6 +256,20 @@ class User extends Authenticatable
             return $result;
         }
         return 'en';
+    }
+
+    protected function uploadedText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => mksize($attributes['uploaded'])
+        );
+    }
+
+    protected function downloadedText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => mksize($attributes['downloaded'])
+        );
     }
 
     public static function getMinSeedPoints($class)

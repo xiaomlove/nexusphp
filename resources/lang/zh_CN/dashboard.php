@@ -52,6 +52,12 @@ return [
     ],
     'latest_torrent' => [
         'page_title' => '最新种子',
-    ]
+    ],
+    'torrent_trend' => [
+        'page_title' => '种子趋势',
+    ],
+    'user_trend' => [
+        'page_title' => '用户趋势',
+    ],
 
 ];

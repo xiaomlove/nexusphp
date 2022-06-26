@@ -52,6 +52,12 @@ return [
     ],
     'latest_torrent' => [
         'page_title' => 'Torrent latest',
-    ]
+    ],
+    'torrent_trend' => [
+        'page_title' => 'Torrent trend',
+    ],
+    'user_trend' => [
+        'page_title' => 'User trend',
+    ],
 
 ];

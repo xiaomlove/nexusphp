@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Exam extends NexusModel
@@ -76,6 +77,53 @@ class Exam extends NexusModel
             return $this->duration . ' Days';
         }
         return '';
+    }
+
+    public function getIndexFormattedAttribute(): string
+    {
+        $indexes = $this->indexes;
+        $arr = [];
+        foreach ($indexes as $index) {
+            if (isset($index['checked']) && $index['checked']) {
+                $arr[] = sprintf(
+                    '%s: %s %s',
+                    self::$indexes[$index['index']]['name'] ?? '',
+                    $index['require_value'],
+                    self::$indexes[$index['index']]['unit'] ?? ''
+                );
+            }
+        }
+        return implode("<br/>", $arr);
+    }
+
+    public function getFilterFormattedAttribute(): string
+    {
+        $currentFilters = $this->filters;
+        $arr = [];
+        $filter = self::FILTER_USER_CLASS;
+        if (!empty($currentFilters->{$filter})) {
+            $classes = collect(User::$classes)->only($currentFilters->{$filter});
+            $arr[] = sprintf('%s: %s', self::$filters[$filter]['name'], $classes->pluck('text')->implode(', '));
+        }
+
+        $filter = self::FILTER_USER_REGISTER_TIME_RANGE;
+        if (!empty($currentFilters->{$filter})) {
+            $range = $currentFilters->{$filter};
+            $arr[] = sprintf(
+                "%s: \n%s ~ %s",
+                self::$filters[$filter]['name'],
+                $range[0] ? Carbon::parse($range[0])->toDateTimeString() : '-',
+                $range[1] ? Carbon::parse($range[1])->toDateTimeString() : '-'
+            );
+        }
+
+        $filter = self::FILTER_USER_DONATE;
+        if (!empty($currentFilters->{$filter})) {
+            $donateStatus = $classes = collect(User::$donateStatus)->only($currentFilters->{$filter});
+            $arr[] = sprintf('%s: %s', self::$filters[$filter]['name'], $donateStatus->pluck('text')->implode(', '));
+        }
+
+        return implode("<br/>", $arr);
     }
 
 }

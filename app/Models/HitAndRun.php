@@ -55,11 +55,17 @@ class HitAndRun extends NexusModel
         return nexus_trans('hr.status_' . $this->status);
     }
 
-    public static function listStatus(): array
+    public static function listStatus($onlyKeyValue = false): array
     {
         $result = self::$status;
+        $keyValues = [];
         foreach ($result as $key => &$value) {
-            $value['text'] = nexus_trans('hr.status_' . $key);
+            $text = nexus_trans('hr.status_' . $key);
+            $value['text'] = $text;
+            $keyValues[$key] = $text;
+        }
+        if ($onlyKeyValue) {
+            return $keyValues;
         }
         return $result;
     }
