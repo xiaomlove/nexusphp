@@ -104,8 +104,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessFilament(): bool
     {
-        return true;
-//        return str_ends_with($this->email, '@yourdomain.com') && $this->hasVerifiedEmail();
+        return $this->class >= self::CLASS_ADMINISTRATOR;
     }
 
     public function getFilamentName(): string
