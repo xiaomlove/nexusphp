@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Nexus\Nexus;
 use Filament\Facades\Filament;
+use Illuminate\Contracts\View\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +40,11 @@ class AppServiceProvider extends ServiceProvider
                 'System',
             ]);
         });
+
+//        Filament::registerRenderHook(
+//            'content.end',
+//            fn (): View => view('filament.footer'),
+//        );
 
     }
 }

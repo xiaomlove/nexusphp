@@ -330,7 +330,7 @@ $lang_functions = array
     'text_complains' => 'There %s %u pending complaint%s.',
     'text_contactstaff' => 'Contact staff',
     'full_site_promotion_in_effect' => 'Full site [%s] in effect!',
-
+    'text_torrent_to_approval' => 'There %s%u not approval torrent%s.',
 );
 
 ?>

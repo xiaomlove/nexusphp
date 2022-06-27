@@ -2738,11 +2738,26 @@ if ($msgalert)
 
 	if (get_user_class() >= $staffmem_class)
 	{
+	    //torrent approval
+        if (get_setting('torrent.approval_status_none_visible') == 'no') {
+            $cacheKey = 'TORRENT_APPROVAL_NONE';
+            $toApprovalCounts = $Cache->get_value($cacheKey);
+            if ($toApprovalCounts === false) {
+                $toApprovalCounts = get_row_count('torrents', 'where approval_status = 0');
+                $Cache->cache_value($cacheKey, $toApprovalCounts, 60);
+            }
+            if ($toApprovalCounts) {
+                msgalert('torrents.php?approval_status=0', sprintf($lang_functions['text_torrent_to_approval'], is_or_are($toApprovalCounts), $toApprovalCounts, add_s($toApprovalCounts)), 'darkred');
+            }
+        }
+
         if(($complaints = $Cache->get_value('COMPLAINTS_COUNT_CACHE')) === false){
             $complaints = get_row_count('complains', 'WHERE answered = 0');
             $Cache->cache_value('COMPLAINTS_COUNT_CACHE', $complaints, 600);
         }
-        if($complaints) msgalert('complains.php?action=list', sprintf($lang_functions['text_complains'], is_or_are($complaints), $complaints, add_s($complaints)), 'darkred');
+        if($complaints) {
+            msgalert('complains.php?action=list', sprintf($lang_functions['text_complains'], is_or_are($complaints), $complaints, add_s($complaints)), 'darkred');
+        }
 
 		$numreports = $Cache->get_value('staff_new_report_count');
 		if ($numreports == ""){

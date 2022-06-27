@@ -32,14 +32,14 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema(Forms\Components\Card::make()->schema([
+            ->schema([
                 Forms\Components\TextInput::make('username')->required(),
                 Forms\Components\TextInput::make('email')->required(),
-                Forms\Components\TextInput::make('password')->password()->required(),
-                Forms\Components\TextInput::make('password_confirmation')->password()->required()->same('password'),
+                Forms\Components\TextInput::make('password')->password()->required()->visibleOn(Pages\CreateUser::class),
+                Forms\Components\TextInput::make('password_confirmation')->password()->required()->same('password')->visibleOn(Pages\CreateUser::class),
                 Forms\Components\TextInput::make('id')->integer(),
                 Forms\Components\Select::make('class')->options(array_column(User::$classes, 'text')),
-            ]));
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -90,6 +90,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
 //            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'view' => Pages\ViewUser::route('/{record}'),
         ];
     }
 

@@ -329,6 +329,7 @@ $lang_functions = array
     'text_complains' => '有%s%u個待處理的申诉%s',
     'text_contactstaff' => '聯系管理組',
     'full_site_promotion_in_effect' => '全站 [%s] 生效中！',
+    'text_torrent_to_approval' => '有 %s%u 個待審核的種子%s',
 );
 
 ?>

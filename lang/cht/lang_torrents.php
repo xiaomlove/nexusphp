@@ -58,6 +58,7 @@ $lang_torrents = array
 	'text_tv' => "電視:",
 	'text_music' => "音樂:",
 	'text_software' => "軟件:",
+    'text_approval_status' => '審核狀態：',
 );
 
 ?>

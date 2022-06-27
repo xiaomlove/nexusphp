@@ -473,7 +473,12 @@ class TorrentRepository extends BaseRepository
     {
         $user = $this->getUser($user);
         $torrent = Torrent::query()->findOrFail($params['torrent_id'], ['id', 'banned', 'approval_status', 'visible', 'owner']);
-        if ($torrent->approval_status == $params['approval_status']) {
+        $lastLog = TorrentOperationLog::query()
+            ->where('torrent_id', $params['torrent_id'])
+            ->where('uid', $user->id)
+            ->orderBy('id', 'desc')
+            ->first();
+        if ($torrent->approval_status == $params['approval_status'] && $lastLog && $lastLog->comment == $params['comment']) {
             //No change
             return $params;
         }
@@ -492,12 +497,9 @@ class TorrentRepository extends BaseRepository
         } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_DENY) {
             $torrentUpdate['banned'] = 'yes';
             $torrentUpdate['visible'] = 'no';
-            if ($torrent->approval_status != $params['approval_status']) {
-                $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY;
-            }
-            if ($torrent->approval_status == Torrent::APPROVAL_STATUS_ALLOW) {
-                $notifyUser = true;
-            }
+            //Deny, record and notify all the time
+            $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY;
+            $notifyUser = true;
         } elseif ($params['approval_status'] == Torrent::APPROVAL_STATUS_NONE) {
             $torrentUpdate['banned'] = 'no';
             $torrentUpdate['visible'] = 'yes';

@@ -24,6 +24,8 @@ class SettingResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.settings');

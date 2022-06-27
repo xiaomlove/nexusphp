@@ -11,9 +11,16 @@ header("Pragma: no-cache" );
 
 $torrentRep = new \App\Repositories\TorrentRepository();
 
+$id = intval($_GET['userid'] ?? 0);
+$type = $_GET['type'];
+if (!in_array($type,array('uploaded','seeding','leeching','completed','incomplete')))
+    die;
+if(get_user_class() < $torrenthistory_class && $id != $CURUSER["id"])
+    permissiondenied();
+
 function maketable($res, $mode = 'seeding')
 {
-	global $lang_getusertorrentlistajax,$CURUSER,$smalldescription_main, $lang_functions;
+	global $lang_getusertorrentlistajax,$CURUSER,$smalldescription_main, $lang_functions, $id;
 	global $torrentRep;
 	switch ($mode)
 	{
@@ -94,11 +101,31 @@ function maketable($res, $mode = 'seeding')
 		}
 		default: break;
 	}
+	$results = $torrentIdArr = [];
+	while ($row = mysql_fetch_assoc($res)) {
+	    $results[] = $row;
+	    $torrentIdArr[] = $row['torrent'];
+    }
+    if ($mode == 'uploaded') {
+        //get seedtime, uploaded from snatch
+        $seedTimeAndUploaded = \App\Models\Snatch::query()
+            ->where('userid', $id)
+            ->whereIn('torrentid', $torrentIdArr)
+            ->select(['seedtime', 'uploaded', 'torrentid'])
+            ->get()
+            ->keyBy('torrentid');
+    }
+
 	$ret = "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"800\"><tr><td class=\"colhead\" style=\"padding: 0px\">".$lang_getusertorrentlistajax['col_type']."</td><td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_name']."</td>".
 	($showsize ? "<td class=\"colhead\" align=\"center\"><img class=\"size\" src=\"pic/trans.gif\" alt=\"size\" title=\"".$lang_getusertorrentlistajax['title_size']."\" /></td>" : "").($showsenum ? "<td class=\"colhead\" align=\"center\"><img class=\"seeders\" src=\"pic/trans.gif\" alt=\"seeders\" title=\"".$lang_getusertorrentlistajax['title_seeders']."\" /></td>" : "").($showlenum ? "<td class=\"colhead\" align=\"center\"><img class=\"leechers\" src=\"pic/trans.gif\" alt=\"leechers\" title=\"".$lang_getusertorrentlistajax['title_leechers']."\" /></td>" : "").($showuploaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_uploaded']."</td>" : "") . ($showdownloaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_downloaded']."</td>" : "").($showratio ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_ratio']."</td>" : "").($showsetime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_se_time']."</td>" : "").($showletime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_le_time']."</td>" : "").($showcotime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_time_completed']."</td>" : "").($showanonymous ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_anonymous']."</td>" : "")."</tr>\n";
 	$total_size = 0;
-	while ($arr = mysql_fetch_assoc($res))
+	foreach ($results as $arr)
 	{
+	    if ($mode == 'uploaded') {
+	        $seedTimeAndUploadedData = $seedTimeAndUploaded->get($arr['torrent']);
+	        $arr['seedtime'] = $seedTimeAndUploadedData ? $seedTimeAndUploadedData->seedtime : 0;
+	        $arr['uploaded'] = $seedTimeAndUploadedData ? $seedTimeAndUploadedData->uploaded : 0;
+        }
 		$catimage = htmlspecialchars($arr["image"]);
 		$catname = htmlspecialchars($arr["catname"]);
 
@@ -178,18 +205,12 @@ function maketable($res, $mode = 'seeding')
 	return [$ret, $total_size];
 }
 
-$id = intval($_GET['userid'] ?? 0);
-$type = $_GET['type'];
-if (!in_array($type,array('uploaded','seeding','leeching','completed','incomplete')))
-die;
-if(get_user_class() < $torrenthistory_class && $id != $CURUSER["id"])
-permissiondenied();
-
 switch ($type)
 {
 	case 'uploaded':
 	{
-		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, snatched.seedtime, snatched.uploaded FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id AND snatched.userid=$id " . (($CURUSER["id"] != $id)?((get_user_class() < $viewanonymous_class) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
+//		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, snatched.seedtime, snatched.uploaded FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id AND snatched.userid=$id " . (($CURUSER["id"] != $id)?((get_user_class() < $viewanonymous_class) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
+		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id " . (($CURUSER["id"] != $id)?((get_user_class() < $viewanonymous_class) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
 		$count = mysql_num_rows($res);
 		if ($count > 0)
 		{

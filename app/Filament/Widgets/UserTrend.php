@@ -14,6 +14,8 @@ class UserTrend extends LineChartWidget
 
     protected static ?int $sort = 3;
 
+    protected static ?string $pollingInterval = null;
+
     protected function getHeading(): ?string
     {
         return __('dashboard.user_trend.page_title');

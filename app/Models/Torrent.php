@@ -221,6 +221,21 @@ class Torrent extends NexusModel
         return $fields;
     }
 
+    public static function listApprovalStatus($onlyKeyValue = false): array
+    {
+        $result = self::$approvalStatus;
+        $keyValue = [];
+        foreach ($result as $status => &$info) {
+            $text = nexus_trans("torrent.approval.status_text.$status");
+            $info['text'] = $text;
+            $keyValue[$status] = $text;
+        }
+        if ($onlyKeyValue) {
+            return $keyValue;
+        }
+        return $result;
+    }
+
     public function getHrAttribute(): string
     {
         $hrMode = Setting::get('hr.mode');

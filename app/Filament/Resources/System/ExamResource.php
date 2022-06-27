@@ -77,7 +77,7 @@ class ExamResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+//                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -95,8 +95,8 @@ class ExamResource extends Resource
     {
         return [
             'index' => Pages\ListExams::route('/'),
-            'create' => Pages\CreateExam::route('/create'),
-            'edit' => Pages\EditExam::route('/{record}/edit'),
+//            'create' => Pages\CreateExam::route('/create'),
+//            'edit' => Pages\EditExam::route('/{record}/edit'),
         ];
     }
 }

@@ -808,7 +808,19 @@ if (isset($searchstr))
 
 //approval status
 $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
-if ($approvalStatusNoneVisible == 'no' && get_user_class() < $staffmem_class) {
+$approvalStatusIconEnabled = get_setting('torrent.approval_status_icon_enabled');
+$approvalStatus = null;
+$showApprovalStatusFilter = false;
+//when enable approval status icon, all user can use this filter, otherwise only staff member can use
+if ($approvalStatusIconEnabled == 'yes' || get_user_class() >= $staffmem_class) {
+    $showApprovalStatusFilter = true;
+}
+//when user can use approval status filter, and pass `approval_status` parameter, will affect
+//OR if [not approval can not be view] and not staff member, force to view  approval allowed
+if ($showApprovalStatusFilter && isset($_REQUEST['approval_status']) && is_numeric($_REQUEST['approval_status'])) {
+    $approvalStatus = intval($_REQUEST['approval_status']);
+    $wherea[] = "torrents.approval_status = $approvalStatus";
+} elseif ($approvalStatusNoneVisible == 'no' && get_user_class() < $staffmem_class) {
     $wherea[] = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
 
@@ -1029,6 +1041,30 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 							</select>
 						</td>
 					</tr>
+                    <?php if ($showApprovalStatusFilter) {?>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['text_approval_status'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <select class="med" name="approval_status" style="width: 100px;">
+                                <option value="0"><?php echo $lang_torrents['select_all'] ?></option>
+                                <?php
+                                foreach (\App\Models\Torrent::listApprovalStatus(true) as $key => $value) {
+                                    printf('<option value="%s"%s>%s</option>', $key, isset($approvalStatus) && $approvalStatus == $key ? ' selected' : '', $value);
+                                }
+                                ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <?php }?>
 				</table>
 			</td>
 		</tr>
