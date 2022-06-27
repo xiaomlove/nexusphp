@@ -8,6 +8,7 @@ defined('NEXUSWIKIURL') || define("NEXUSWIKIURL","https://doc.nexusphp.org");
 defined('VERSION') || define("VERSION","Powered by <a href=\"aboutnexus.php\">".PROJECTNAME."</a>");
 defined('THISTRACKER') || define("THISTRACKER","General");
 defined('ROOT_PATH') || define('ROOT_PATH', dirname(__DIR__) . '/');
+defined('DEFAULT_TRACKER_URI') || define('DEFAULT_TRACKER_URI', '/announce.php');
 if (!defined('RUNNING_IN_OCTANE')) {
     $runningInOctane = false;
     foreach (($_SERVER['argv'] ?? []) as $command) {

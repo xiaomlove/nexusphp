@@ -25,7 +25,7 @@ return [
     |
     */
 
-    'path' => env('FILAMENT_PATH', 'filament'),
+    'path' => env('FILAMENT_PATH', 'nexusphp'),
 
 
     /*

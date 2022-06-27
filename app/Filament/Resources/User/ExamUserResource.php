@@ -21,7 +21,7 @@ class ExamUserResource extends Resource
 {
     protected static ?string $model = ExamUser::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
     protected static ?string $navigationGroup = 'User';
 
