@@ -46,6 +46,7 @@ return [
         'os' => '操作系統',
         'server_software' => 'Web 軟件',
         'load_average' => '服務器平均負載',
+        'filament_version' => 'Filament 版本',
     ],
     'latest_user' => [
         'page_title' => '最新用戶',

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
@@ -245,7 +246,20 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function getLocaleAttribute()
     {
-        return Locale::$languageMaps[$this->language->site_lang_folder] ?? 'en';
+        $log = "";
+        if (IN_NEXUS) {
+            $lang = get_langfolder_cookie();
+            $log .= ", IN_NEXUS, get_langfolder_cookie(): $lang";
+        } else {
+            $lang = Cookie::get('c_lang_folder');
+            $log .= ", Cookie::get(): $lang";
+        }
+        if (!$lang) {
+            $lang = $this->language->site_lang_folder;
+            $log .= ", [NO_DATA], from database: $lang";
+        }
+        do_log($log);
+        return Locale::$languageMaps[$lang] ?? 'en';
     }
 
     public function getSiteLangFolderAttribute()

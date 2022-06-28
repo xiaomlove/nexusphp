@@ -30,7 +30,7 @@ class LatestTorrents extends BaseWidget
     protected function getTableColumns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('name')->limit(40),
+            Tables\Columns\TextColumn::make('name')->limit(30),
             Tables\Columns\TextColumn::make('user.username'),
             Tables\Columns\TextColumn::make('size')->formatStateUsing(fn ($state) => mksize($state)),
             Tables\Columns\TextColumn::make('added')->dateTime(),

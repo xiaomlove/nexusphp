@@ -46,6 +46,7 @@ return [
         'os' => 'OS',
         'server_software' => 'Web software',
         'load_average' => 'Server load average',
+        'filament_version' => 'Filament version',
     ],
     'latest_user' => [
         'page_title' => 'User latest',

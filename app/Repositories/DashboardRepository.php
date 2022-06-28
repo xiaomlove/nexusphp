@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;
 
 class DashboardRepository extends BaseRepository
@@ -32,6 +33,12 @@ class DashboardRepository extends BaseRepository
             'text' => nexus_trans("dashboard.system_info.$name"),
             'value' => \Illuminate\Foundation\Application::VERSION,
         ];
+        $name = 'filament_version';
+        $result[$name] = [
+            'name' => $name,
+            'text' => nexus_trans("dashboard.system_info.$name"),
+            'value' => '2.13.11',
+        ];
         $name = 'php_version';
         $result[$name] = [
             'name' => $name,
@@ -44,12 +51,12 @@ class DashboardRepository extends BaseRepository
             'text' => nexus_trans("dashboard.system_info.$name"),
             'value' => DB::select(DB::raw('select version() as info'))[0]->info,
         ];
-//        $name = 'os';
-//        $result[$name] = [
-//            'name' => $name,
-//            'text' => nexus_trans("dashboard.system_info.$name"),
-//            'value' => PHP_OS,
-//        ];
+        $name = 'os';
+        $result[$name] = [
+            'name' => $name,
+            'text' => nexus_trans("dashboard.system_info.$name"),
+            'value' => PHP_OS,
+        ];
         $name = 'server_software';
         $result[$name] = [
             'name' => $name,
@@ -100,9 +107,9 @@ class DashboardRepository extends BaseRepository
                 break;
             }
             $result[$class] = [
-                'class' => $class,
-                'class_text' => $value['text'],
-                'counts' => $userClasses->has($class) ? $userClasses->get($class) : 0,
+                'name' => $class,
+                'text' => $value['text'],
+                'value' => $userClasses->has($class) ? $userClasses->get($class) : 0,
             ];
         }
         return $result;

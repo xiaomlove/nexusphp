@@ -28,9 +28,8 @@ class Locale
     {
         $user = $request->user();
         if ($user) {
-            $language = $user->language;
-            $locale = self::$languageMaps[$language->site_lang_folder] ?? 'en';
-            do_log("user: {$user->id}, language: {$language->id}, set locale: $locale");
+            $locale = $user->locale;
+            do_log("user: {$user->id}, set locale: $locale");
             App::setLocale($locale);
             Carbon::setLocale($locale);
         }

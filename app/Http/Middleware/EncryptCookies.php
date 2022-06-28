@@ -17,6 +17,6 @@ class EncryptCookies extends Middleware
         'c_secure_login',
         'c_secure_ssl',
         'c_secure_tracker_ssl',
-
+        'c_lang_folder',
     ];
 }
