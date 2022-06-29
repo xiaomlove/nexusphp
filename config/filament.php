@@ -199,7 +199,7 @@ return [
         ],
         'max_content_width' => null,
         'notifications' => [
-            'vertical_alignment' => 'center',
+            'vertical_alignment' => 'top',
             'alignment' => 'center',
         ],
         'sidebar' => [

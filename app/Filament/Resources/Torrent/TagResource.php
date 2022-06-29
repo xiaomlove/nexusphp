@@ -26,6 +26,11 @@ class TagResource extends Resource
         return __('admin.sidebar.tags_list');
     }
 
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
     public static function form(Form $form): Form
     {
         return $form

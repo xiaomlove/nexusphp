@@ -26,6 +26,11 @@ class MedalResource extends Resource
         return __('admin.sidebar.medals_list');
     }
 
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
     public static function form(Form $form): Form
     {
         return $form

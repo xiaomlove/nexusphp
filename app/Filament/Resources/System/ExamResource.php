@@ -27,6 +27,11 @@ class ExamResource extends Resource
         return __('admin.sidebar.exams_list');
     }
 
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
     public static function form(Form $form): Form
     {
         $userRep = new UserRepository();

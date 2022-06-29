@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\System;
 
-use App\Filament\NexusOptionsTrait;
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\SettingResource\Pages;
 use App\Filament\Resources\System\SettingResource\RelationManagers;
 use App\Models\Setting;
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SettingResource extends Resource
 {
-    use NexusOptionsTrait;
+    use OptionsTrait;
 
     protected static ?string $model = Setting::class;
 
@@ -24,12 +24,18 @@ class SettingResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.settings');
     }
+
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
 
     public static function form(Form $form): Form
     {
@@ -77,10 +83,9 @@ class SettingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSettings::route('/'),
+//            'index' => Pages\ListSettings::route('/'),
 //            'create' => Pages\CreateSetting::route('/create'),
-            'edit' => Pages\EditSetting::route('/{record}/edit'),
-            'hit-and-run' => Pages\EditHitAndRun::route('/hit-and-run'),
+            'index' => Pages\EditSetting::route('/'),
         ];
     }
 }

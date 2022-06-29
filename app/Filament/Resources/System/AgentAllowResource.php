@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\System;
 
-use App\Filament\NexusOptionsTrait;
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\AgentAllowResource\Pages;
 use App\Filament\Resources\System\AgentAllowResource\RelationManagers;
 use App\Models\AgentAllow;
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AgentAllowResource extends Resource
 {
-    use NexusOptionsTrait;
+    use OptionsTrait;
 
     protected static ?string $model = AgentAllow::class;
 
@@ -28,6 +28,16 @@ class AgentAllowResource extends Resource
     {
         return __('admin.sidebar.agent_allows');
     }
+
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
+//    public static function getModelLabel(): string
+//    {
+//
+//    }
 
 
     public static function form(Form $form): Form

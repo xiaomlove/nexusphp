@@ -29,6 +29,11 @@ class HitAndRunResource extends Resource
         return __('admin.sidebar.hit_and_runs');
     }
 
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
     public static function form(Form $form): Form
     {
         return $form

@@ -78,10 +78,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = 'MTAwNDI%3D';
-        $r = 'MTAwNDI%3D';
-        $r = 'MTAwMDM%3D';
-        dd(base64_decode($r));
+       $r = range(0, 23);
+       dd($r);
     }
 
 

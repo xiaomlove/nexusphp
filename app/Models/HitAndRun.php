@@ -70,11 +70,17 @@ class HitAndRun extends NexusModel
         return $result;
     }
 
-    public static function listModes(): array
+    public static function listModes($onlyKeyValue = false): array
     {
         $result = self::$modes;
+        $keyValues = [];
         foreach ($result as $key => &$value) {
-            $value['text'] = nexus_trans('hr.mode_' . $key);
+            $text = nexus_trans('hr.mode_' . $key);
+            $value['text'] = $text;
+            $keyValues[$key] = $text;
+        }
+        if ($onlyKeyValue) {
+            return $keyValues;
         }
         return $result;
     }

@@ -2,7 +2,7 @@
 
 namespace App\Filament;
 
-trait NexusOptionsTrait
+trait OptionsTrait
 {
     private static array $matchTypes = ['dec' => 'dec', 'hex' => 'hex'];
 

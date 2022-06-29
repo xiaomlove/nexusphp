@@ -30,6 +30,11 @@ class ExamUserResource extends Resource
         return __('admin.sidebar.exam_users');
     }
 
+    public static function getBreadcrumb(): string
+    {
+        return self::getNavigationLabel();
+    }
+
     public static function form(Form $form): Form
     {
         return $form

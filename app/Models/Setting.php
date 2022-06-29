@@ -7,7 +7,9 @@ use Nexus\Database\NexusDB;
 
 class Setting extends NexusModel
 {
-    protected $fillable = ['name', 'value'];
+    protected $fillable = ['name', 'value', 'autoload'];
+
+    public $timestamps = true;
 
     /**
      * get setting autoload = yes with cache
