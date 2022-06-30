@@ -44,20 +44,20 @@ class AgentAllowResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('family')->required(),
-                Forms\Components\TextInput::make('start_name')->required(),
-                Forms\Components\TextInput::make('peer_id_start')->required(),
-                Forms\Components\TextInput::make('peer_id_pattern')->required(),
-                Forms\Components\Radio::make('peer_id_matchtype')->options(self::$matchTypes)->required(),
-                Forms\Components\TextInput::make('peer_id_match_num')->integer()->required(),
-                Forms\Components\TextInput::make('agent_start')->required(),
-                Forms\Components\TextInput::make('agent_pattern')->required(),
-                Forms\Components\Radio::make('agent_matchtype')->options(self::$matchTypes)->required(),
-                Forms\Components\TextInput::make('agent_match_num')->required(),
-                Forms\Components\Radio::make('exception')->options(self::$yesOrNo)->required(),
-                Forms\Components\Radio::make('allowhttps')->options(self::$yesOrNo)->required(),
+                Forms\Components\TextInput::make('family')->required()->label(__('label.agent_allow.family')),
+                Forms\Components\TextInput::make('start_name')->required()->label(__('label.agent_allow.start_name')),
+                Forms\Components\TextInput::make('peer_id_start')->required()->label(__('label.agent_allow.peer_id_start')),
+                Forms\Components\TextInput::make('peer_id_pattern')->required()->label(__('label.agent_allow.peer_id_pattern')),
+                Forms\Components\Radio::make('peer_id_matchtype')->options(self::$matchTypes)->required()->label(__('label.agent_allow.peer_id_matchtype')),
+                Forms\Components\TextInput::make('peer_id_match_num')->integer()->required()->label(__('label.agent_allow.peer_id_match_num')),
+                Forms\Components\TextInput::make('agent_start')->required()->label(__('label.agent_allow.agent_start')),
+                Forms\Components\TextInput::make('agent_pattern')->required()->label(__('label.agent_allow.agent_pattern')),
+                Forms\Components\Radio::make('agent_matchtype')->options(self::$matchTypes)->required()->label(__('label.agent_allow.agent_matchtype')),
+                Forms\Components\TextInput::make('agent_match_num')->required()->label(__('label.agent_allow.agent_match_num')),
+                Forms\Components\Radio::make('exception')->options(self::$yesOrNo)->required()->label(__('label.agent_allow.exception')),
+                Forms\Components\Radio::make('allowhttps')->options(self::$yesOrNo)->required()->label(__('label.agent_allow.allowhttps')),
 
-                Forms\Components\Textarea::make('comment'),
+                Forms\Components\Textarea::make('comment')->label(__('label.comment')),
             ]);
     }
 
@@ -66,10 +66,10 @@ class AgentAllowResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('family')->searchable(),
-                Tables\Columns\TextColumn::make('start_name')->searchable(),
-                Tables\Columns\TextColumn::make('peer_id_start'),
-                Tables\Columns\TextColumn::make('agent_start'),
+                Tables\Columns\TextColumn::make('family')->searchable()->label(__('label.agent_allow.family')),
+                Tables\Columns\TextColumn::make('start_name')->searchable()->label(__('label.agent_allow.start_name')),
+                Tables\Columns\TextColumn::make('peer_id_start')->label(__('label.agent_allow.peer_id_start')),
+                Tables\Columns\TextColumn::make('agent_start')->label(__('label.agent_allow.agent_start')),
             ])
             ->filters([
                 //

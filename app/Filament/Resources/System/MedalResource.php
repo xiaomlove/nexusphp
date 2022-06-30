@@ -35,13 +35,22 @@ class MedalResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('price')->required()->integer(),
-                Forms\Components\TextInput::make('image_large')->required(),
-                Forms\Components\TextInput::make('image_small')->required(),
-                Forms\Components\Radio::make('get_type')->options(Medal::listGetTypes(true))->inline()->columnSpan(['sm' => 2])->required(),
-                Forms\Components\TextInput::make('duration')->integer()->columnSpan(['sm' => 2])->helperText('Unit: day, if empty, belongs to user forever.'),
-                Forms\Components\Textarea::make('description')->columnSpan(['sm' => 2]),
+                Forms\Components\TextInput::make('name')->required()->label(__('label.name')),
+                Forms\Components\TextInput::make('price')->required()->integer()->label(__('label.price')),
+                Forms\Components\TextInput::make('image_large')->required()->label(__('label.medal.image_large')),
+                Forms\Components\TextInput::make('image_small')->required()->label(__('label.medal.image_small')),
+                Forms\Components\Radio::make('get_type')
+                    ->options(Medal::listGetTypes(true))
+                    ->inline()
+                    ->columnSpan(['sm' => 2])
+                    ->label(__('label.medal.get_type'))
+                    ->required(),
+                Forms\Components\TextInput::make('duration')
+                    ->integer()
+                    ->columnSpan(['sm' => 2])
+                    ->label(__('label.medal.duration'))
+                    ->helperText(__('label.medal.duration_help')),
+                Forms\Components\Textarea::make('description')->columnSpan(['sm' => 2])->label(__('label.description')),
             ]);
     }
 
@@ -50,12 +59,12 @@ class MedalResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\ImageColumn::make('image_large')->height(120),
-                Tables\Columns\ImageColumn::make('image_small')->height(120),
-                Tables\Columns\TextColumn::make('getTypeText')->label('Get type'),
-                Tables\Columns\TextColumn::make('price'),
-                Tables\Columns\TextColumn::make('duration'),
+                Tables\Columns\TextColumn::make('name')->label(__('label.name')),
+                Tables\Columns\ImageColumn::make('image_large')->height(120)->label(__('label.medal.image_large')),
+                Tables\Columns\ImageColumn::make('image_small')->height(120)->label(__('label.medal.image_small')),
+                Tables\Columns\TextColumn::make('getTypeText')->label('Get type')->label(__('label.medal.get_type')),
+                Tables\Columns\TextColumn::make('price')->label(__('label.price')),
+                Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
             ])
             ->filters([
                 //

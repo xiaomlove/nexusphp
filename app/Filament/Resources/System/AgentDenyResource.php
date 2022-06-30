@@ -36,11 +36,11 @@ class AgentDenyResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('family_id')->label('Allow family')
-                    ->relationship('family', 'family')->required(),
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('peer_id')->required(),
-                Forms\Components\TextInput::make('agent')->required(),
-                Forms\Components\Textarea::make('comment'),
+                    ->relationship('family', 'family')->required()->label(__('label.agent_allow.family')),
+                Forms\Components\TextInput::make('name')->required()->label(__('label.name')),
+                Forms\Components\TextInput::make('peer_id')->required()->label(__('label.agent_deny.peer_id')),
+                Forms\Components\TextInput::make('agent')->required()->label(__('label.agent_deny.agent')),
+                Forms\Components\Textarea::make('comment')->label(__('label.comment')),
             ]);
     }
 
@@ -49,10 +49,10 @@ class AgentDenyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('family.family')->label('Family'),
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('peer_id')->searchable(),
-                Tables\Columns\TextColumn::make('agent')->searchable(),
+                Tables\Columns\TextColumn::make('family.family')->label(__('label.agent_allow.family')),
+                Tables\Columns\TextColumn::make('name')->searchable()->label(__('label.name')),
+                Tables\Columns\TextColumn::make('peer_id')->searchable()->label(__('label.agent_deny.peer_id')),
+                Tables\Columns\TextColumn::make('agent')->searchable()->label(__('label.agent_deny.agent')),
             ])
             ->filters([
                 //

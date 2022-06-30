@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\User;
 
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\User\UserResource\Pages;
 use App\Filament\Resources\User\UserResource\RelationManagers;
 use App\Models\User;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
+    use OptionsTrait;
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -51,27 +54,27 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('username')->searchable(),
-                Tables\Columns\TextColumn::make('email')->searchable(),
+                Tables\Columns\TextColumn::make('username')->searchable()->label(__("label.user.username")),
+                Tables\Columns\TextColumn::make('email')->searchable()->label(__("label.email")),
                 Tables\Columns\TextColumn::make('class')->label('Class')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->classText)
-                    ->sortable(),
+                    ->sortable()->label(__("label.user.class")),
                 Tables\Columns\TextColumn::make('uploaded')->label('Uploaded')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->uploadedText)
-                    ->sortable(),
+                    ->sortable()->label(__("label.uploaded")),
                 Tables\Columns\TextColumn::make('downloaded')->label('Downloaded')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->downloadedText)
-                    ->sortable(),
-                Tables\Columns\BadgeColumn::make('status')->colors(['success' => 'confirmed', 'warning' => 'pending']),
-                Tables\Columns\BadgeColumn::make('enabled')->colors(['success' => 'yes', 'danger' => 'no']),
-                Tables\Columns\TextColumn::make('added')->sortable()->dateTime('Y-m-d H:i'),
-                Tables\Columns\TextColumn::make('last_access')->dateTime('Y-m-d H:i'),
+                    ->sortable()->label(__("label.downloaded")),
+                Tables\Columns\BadgeColumn::make('status')->colors(['success' => 'confirmed', 'warning' => 'pending'])->label(__("label.user.status")),
+                Tables\Columns\BadgeColumn::make('enabled')->colors(['success' => 'yes', 'danger' => 'no'])->label(__("label.user.enabled")),
+                Tables\Columns\TextColumn::make('added')->sortable()->dateTime('Y-m-d H:i')->label(__("label.added")),
+                Tables\Columns\TextColumn::make('last_access')->dateTime('Y-m-d H:i')->label(__("label.last_access")),
             ])
             ->defaultSort('added', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('class')->options(array_column(User::$classes, 'text')),
-                Tables\Filters\SelectFilter::make('status')->options(['confirmed' => 'confirmed', 'pending' => 'pending']),
-                Tables\Filters\SelectFilter::make('enabled')->options(['enabled' => 'enabled', 'disabled' => 'disabled']),
+                Tables\Filters\SelectFilter::make('class')->options(array_column(User::$classes, 'text'))->label(__('label.user.class')),
+                Tables\Filters\SelectFilter::make('status')->options(['confirmed' => 'confirmed', 'pending' => 'pending'])->label(__('label.user.status')),
+                Tables\Filters\SelectFilter::make('enabled')->options(self::$yesOrNo)->label(__('label.user.enabled')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -84,7 +87,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+//            RelationManagers\MedalsRelationManager::class,
         ];
     }
 

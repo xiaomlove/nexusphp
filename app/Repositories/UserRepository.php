@@ -176,7 +176,7 @@ class UserRepository extends BaseRepository
         return true;
     }
 
-    public function enableUser(User $operator, $uid)
+    public function enableUser(User $operator, $uid, $reason = '')
     {
         $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username', 'class']);
         if ($targetUser->enabled == User::ENABLED_YES) {
@@ -194,7 +194,7 @@ class UserRepository extends BaseRepository
             $update['leechwarn'] = 'no';
             $update['leechwarnuntil'] = null;
         }
-        $modCommentText = sprintf("%s - Enable by %s.", now()->format('Y-m-d'), $operator->username);
+        $modCommentText = sprintf("%s - Enable by %s, reason: %s", now()->format('Y-m-d'), $operator->username, $reason);
         $targetUser->updateWithModComment($update, $modCommentText);
         do_log("user: $uid, $modCommentText, update: " . nexus_json_encode($update));
         return true;
@@ -217,7 +217,7 @@ class UserRepository extends BaseRepository
         $fieldMap = [
             'uploaded' => 'uploaded',
             'downloaded' => 'downloaded',
-            'bonus' => 'seedbonus',
+            'seedbonus' => 'seedbonus',
             'invites' => 'invites',
             'attendance_card' => 'attendance_card',
         ];

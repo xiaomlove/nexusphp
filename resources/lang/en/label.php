@@ -36,6 +36,66 @@ return [
         ]
     ],
     'user' => [
+        'uploaded' => 'Uploaded',
+        'downloaded' => 'Downloaded',
+        'invites' => 'Invites',
+        'seedbonus' => 'Bonus',
+        'attendance_card' => 'Attendance ard',
+        'class' => 'Class',
+        'status' => 'Status',
+        'enabled' => 'Enabled',
+        'username' => 'Username',
+    ],
+    'medal' => [
+        'label' => 'Medal',
+        'image_large' => 'Image large',
+        'image_small' => 'Image small',
+        'get_type' => 'Get type',
+        'duration' => 'Duration',
+        'duration_help' => 'Unit: days. If left blank, the user has permanent possession',
+    ],
+    'exam' => [
+        'label' => 'Exam',
+        'is_done' => 'Is done',
+        'is_discovered' => 'Discovered',
+        'register_time_range' => [
+            'begin' => 'Register time begin',
+            'end' => 'Register time end',
+        ],
+        'donated' => 'Donated',
+        'index_formatted' => 'Exam indexes',
+        'filter_formatted' => 'Target users',
+    ],
+    'torrent' => [
+        'label' => 'Torrent',
+    ],
+    'hit_and_run' => [
 
-    ]
+    ],
+    'tag' => [
+        'color' => 'Background color',
+        'font_color' => 'Font color',
+        'font_size' => 'Font size',
+        'margin' => 'Margin',
+        'padding' => 'Padding',
+        'border_radius' => 'Border radius',
+    ],
+    'agent_allow' => [
+        'family' => 'Family',
+        'start_name' => 'Start name',
+        'peer_id_start' => 'Peer ID start',
+        'peer_id_pattern' => 'Peer ID pattern',
+        'peer_id_matchtype' => 'Peer ID match type',
+        'peer_id_match_num' => 'Peer ID match num',
+        'agent_start' => 'Agent start',
+        'agent_pattern' => 'Agent pattern',
+        'agent_matchtype' => 'Agent match type',
+        'agent_match_num' => 'Agent match num',
+        'exception' => 'Exception',
+        'allowhttps' => 'Allow https',
+    ],
+    'agent_deny' => [
+        'peer_id' => 'Peer ID',
+        'agent' => 'Agent',
+    ],
 ];

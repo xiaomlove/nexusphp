@@ -11,7 +11,7 @@ class StatTable extends Widget
 
     protected function getHeader(): string
     {
-        return nulll;
+
     }
 
     protected function getTableRows(): array

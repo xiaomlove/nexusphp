@@ -33,7 +33,7 @@ class ExamUser extends NexusModel
 
     public function getStatusTextAttribute(): string
     {
-        return self::$status[$this->status]['text'] ?? '';
+        return nexus_trans('exam-user.status.' . $this->status);
     }
 
     public function getIsDoneTextAttribute(): string

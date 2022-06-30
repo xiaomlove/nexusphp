@@ -35,14 +35,14 @@ class TagResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('color')->required()->label('Background color'),
-                Forms\Components\TextInput::make('font_color')->required(),
-                Forms\Components\TextInput::make('font_size')->required(),
-                Forms\Components\TextInput::make('margin')->required(),
-                Forms\Components\TextInput::make('padding')->required(),
-                Forms\Components\TextInput::make('border_radius')->required(),
-                Forms\Components\TextInput::make('priority')->integer(),
+                Forms\Components\TextInput::make('name')->required()->label(__('label.name')),
+                Forms\Components\TextInput::make('color')->required()->label(__('label.tag.color')),
+                Forms\Components\TextInput::make('font_color')->required()->label(__('label.tag.font_color')),
+                Forms\Components\TextInput::make('font_size')->required()->label(__('label.tag.font_size')),
+                Forms\Components\TextInput::make('margin')->required()->label(__('label.tag.margin')),
+                Forms\Components\TextInput::make('padding')->required()->label(__('label.tag.padding')),
+                Forms\Components\TextInput::make('border_radius')->required()->label(__('label.tag.border_radius')),
+                Forms\Components\TextInput::make('priority')->integer()->label(__('label.priority')),
             ]);
     }
 
@@ -51,15 +51,15 @@ class TagResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('color')->label('Background color'),
-                Tables\Columns\TextColumn::make('font_color'),
-                Tables\Columns\TextColumn::make('font_size'),
-                Tables\Columns\TextColumn::make('margin'),
-                Tables\Columns\TextColumn::make('padding'),
-                Tables\Columns\TextColumn::make('border_radius'),
-                Tables\Columns\TextColumn::make('priority'),
-                Tables\Columns\TextColumn::make('updated_at')->dateTime('Y-m-d H:i'),
+                Tables\Columns\TextColumn::make('name')->label(__('label.name')),
+                Tables\Columns\TextColumn::make('color')->label(__('label.tag.color')),
+                Tables\Columns\TextColumn::make('font_color')->label(__('label.tag.font_color')),
+                Tables\Columns\TextColumn::make('font_size')->label(__('label.tag.font_size')),
+                Tables\Columns\TextColumn::make('margin')->label(__('label.tag.margin')),
+                Tables\Columns\TextColumn::make('padding')->label(__('label.tag.padding')),
+                Tables\Columns\TextColumn::make('border_radius')->label(__('label.tag.border_radius')),
+                Tables\Columns\TextColumn::make('priority')->label(__('label.priority')),
+                Tables\Columns\TextColumn::make('updated_at')->dateTime()->label(__('label.updated_at')),
             ])
             ->filters([
                 //

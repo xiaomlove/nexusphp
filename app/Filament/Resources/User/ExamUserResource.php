@@ -48,15 +48,17 @@ class ExamUserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('user.username')->label('User')->searchable(),
-                Tables\Columns\TextColumn::make('exam.name')->label('Exam'),
-                Tables\Columns\BooleanColumn::make('is_done')->label('Is done'),
-                Tables\Columns\TextColumn::make('statusText')->label('Status'),
-                Tables\Columns\TextColumn::make('created_at')->dateTime('Y-m-d H:i'),
+                Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
+                Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
+                Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),
+                Tables\Columns\TextColumn::make('end')->label(__('label.end'))->dateTime(),
+                Tables\Columns\BooleanColumn::make('is_done')->label(__('label.exam.is_done')),
+                Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->label(__('label.created_at')),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')->options(ExamUser::listStatus(true)),
-                Tables\Filters\SelectFilter::make('is_done')->options(['0' => 'No', '1' => 'yes']),
+                Tables\Filters\SelectFilter::make('status')->options(ExamUser::listStatus(true))->label(__("label.status")),
+                Tables\Filters\SelectFilter::make('is_done')->options(['0' => 'No', '1' => 'yes'])->label(__('label.exam.is_done')),
             ])
             ->actions([
 //                Tables\Actions\ViewAction::make(),
@@ -68,6 +70,8 @@ class ExamUserResource extends Resource
                     $rep->avoidExamUserBulk(['id' => $idArr], Auth::user());
                 })
                 ->deselectRecordsAfterCompletion()
+                ->label(__('admin.resources.exam_user.bulk_action_avoid_label'))
+                ->icon('heroicon-o-x')
             ]);
     }
 

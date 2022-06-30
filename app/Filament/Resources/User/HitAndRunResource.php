@@ -52,17 +52,17 @@ class HitAndRunResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('user.username')->searchable(),
-                Tables\Columns\TextColumn::make('torrent.name')->limit(50),
-                Tables\Columns\TextColumn::make('snatch.uploadText')->label('Uploaded'),
-                Tables\Columns\TextColumn::make('snatch.downloadText')->label('Downloaded'),
-                Tables\Columns\TextColumn::make('snatch.shareRatio')->label('Ratio'),
-                Tables\Columns\TextColumn::make('seedTimeRequired'),
-                Tables\Columns\TextColumn::make('inspectTimeLeft'),
-                Tables\Columns\TextColumn::make('statusText')->label('Status'),
+                Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
+                Tables\Columns\TextColumn::make('torrent.name')->limit(50)->label(__('label.torrent.label')),
+                Tables\Columns\TextColumn::make('snatch.uploadText')->label(__('label.uploaded')),
+                Tables\Columns\TextColumn::make('snatch.downloadText')->label(__('label.downloaded')),
+                Tables\Columns\TextColumn::make('snatch.shareRatio')->label(__('label.ratio')),
+                Tables\Columns\TextColumn::make('seedTimeRequired')->label(__('label.seed_time_required')),
+                Tables\Columns\TextColumn::make('inspectTimeLeft')->label(__('label.inspect_time_left')),
+                Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')->options(HitAndRun::listStatus(true)),
+                Tables\Filters\SelectFilter::make('status')->options(HitAndRun::listStatus(true))->label(__('label.status')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

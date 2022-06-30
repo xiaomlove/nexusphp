@@ -1,6 +1,28 @@
 <?php
 
 return [
+    'name' => '名稱',
+    'email' => '郵箱',
+    'image' => '圖片',
+    'expire_at' => '過期時間',
+    'username' => '用戶',
+    'status' => '狀態',
+    'created_at' => '創建時間',
+    'updated_at' => '更新時間',
+    'begin' => '開始時間',
+    'end' => '結束時間',
+    'uploaded' => '上傳量',
+    'downloaded' => '下載量',
+    'ratio' => '分享率',
+    'seed_time_required' => '還需做種時間',
+    'inspect_time_left' => '考察剩余時間',
+    'added' => '添加時間',
+    'last_access' => '最後訪問時間',
+    'priority' => '優先級',
+    'comment' => '備註',
+    'duration' => '時長',
+    'description' => '描述',
+    'price' => '價格',
     'setting' => [
         'nav_text' => '設置',
         'backup' => [
@@ -36,6 +58,66 @@ return [
         ]
     ],
     'user' => [
+        'uploaded' => '上傳量',
+        'downloaded' => '下載量',
+        'invites' => '邀請',
+        'seedbonus' => '魔力',
+        'attendance_card' => '補簽卡',
+        'class' => '等級',
+        'status' => '狀態',
+        'enabled' => '啟用',
+        'username' => '用戶名',
+    ],
+    'medal' => [
+        'label' => '勛章',
+        'image_large' => '大圖',
+        'image_small' => '小圖',
+        'get_type' => '獲取方式',
+        'duration' => '有效時長',
+        'duration_help' => '單位：天。如果留空，用戶永久擁有',
+    ],
+    'exam' => [
+        'label' => '考核',
+        'is_done' => '是否完成',
+        'is_discovered' => '自動發現',
+        'register_time_range' => [
+            'begin' => '註冊時間開始',
+            'end' => '註冊時間結束',
+        ],
+        'donated' => '是否捐贈',
+        'index_formatted' => '考核指標',
+        'filter_formatted' => '目標用戶',
+    ],
+    'torrent' => [
+        'label' => '種子',
+    ],
+    'hit_and_run' => [
 
-    ]
+    ],
+    'tag' => [
+        'color' => '背景顏色',
+        'font_color' => '字體顏色',
+        'font_size' => '字體大小',
+        'margin' => '外邊距',
+        'padding' => '內邊距',
+        'border_radius' => '邊框圓角',
+    ],
+    'agent_allow' => [
+        'family' => '系列',
+        'start_name' => '起始名稱',
+        'peer_id_start' => 'Peer ID 超始',
+        'peer_id_pattern' => 'Peer ID 正則',
+        'peer_id_matchtype' => 'Peer ID 匹配類型',
+        'peer_id_match_num' => 'Peer ID 匹配次數',
+        'agent_start' => 'Agent 起始',
+        'agent_pattern' => 'Agent 正則',
+        'agent_matchtype' => 'Agent 匹配類型',
+        'agent_match_num' => 'Agent 匹配次數',
+        'exception' => '排除',
+        'allowhttps' => '允許 https',
+    ],
+    'agent_deny' => [
+        'peer_id' => 'Peer ID',
+        'agent' => 'Agent',
+    ],
 ];
