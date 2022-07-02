@@ -35,6 +35,10 @@ class Snatch extends NexusModel
 
     const FINISHED_NO = 'no';
 
+    /**
+     * @deprecated Use uploadedText instead
+     * @return Attribute
+     */
     protected function uploadText(): Attribute
     {
         return new Attribute(
@@ -42,7 +46,25 @@ class Snatch extends NexusModel
         );
     }
 
+    /**
+     * @deprecated Use downloadedText instead
+     * @return Attribute
+     */
     protected function downloadText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())
+        );
+    }
+
+    protected function uploadedText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['uploaded']), $this->getUploadSpeed())
+        );
+    }
+
+    protected function downloadedText(): Attribute
     {
         return new Attribute(
             get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())

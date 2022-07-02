@@ -11,7 +11,8 @@ return [
         'exams_list' => '考核',
         'medals_list' => '勋章',
         'settings' => '设置',
-        'users_medal' => '用户勋章',
+        'users_medals' => '用户勋章',
+        'claims' => '用户认领',
     ],
     'resources' => [
         'agent_allow' => [
@@ -52,6 +53,16 @@ return [
         ],
         'exam_user' => [
             'bulk_action_avoid_label' => '批量免除',
+            'action_avoid' => '免除',
+            'result_passed' => '通过！',
+            'result_not_passed' => '未通过！',
+        ],
+        'exam' => [
+            'index_duplicate' => '指标：:index 重复！',
+        ],
+        'hit_and_run' => [
+            'bulk_action_pardon' => '批量免罪',
+            'action_pardon' => '免罪',
         ],
     ]
 ];

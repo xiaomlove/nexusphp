@@ -11,6 +11,8 @@ return [
         'exams_list' => 'Exams',
         'medals_list' => 'Medals',
         'settings' => 'Settings',
+        'users_medals' => 'User medals',
+        'claims' => 'User claims',
     ],
     'resources' => [
         'agent_allow' => [
@@ -51,6 +53,16 @@ return [
         ],
         'exam_user' => [
             'bulk_action_avoid_label' => 'Bulk avoid',
+            'action_avoid' => 'Avoid',
+            'result_passed' => 'Passed!',
+            'result_not_passed' => 'Not passed!',
+        ],
+        'exam' => [
+            'index_duplicate' => 'Index：:index duplicate !',
+        ],
+        'hit_and_run' => [
+            'bulk_action_pardon' => 'Bulk pardon',
+            'action_pardon' => 'Pardon',
         ],
     ]
 ];

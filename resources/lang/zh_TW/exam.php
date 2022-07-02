@@ -8,6 +8,11 @@ return [
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => '平均做種時間',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => '下載增量',
     'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => '魔力增量',
+    'filters' => [
+        \App\Models\Exam::FILTER_USER_CLASS => '用戶等級',
+        \App\Models\Exam::FILTER_USER_REGISTER_TIME_RANGE => '註冊時間範圍',
+        \App\Models\Exam::FILTER_USER_DONATE => '是否捐贈',
+    ],
     'require_value' => '要求',
     'current_value' => '當前',
     'result' => '結果',

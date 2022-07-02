@@ -24,6 +24,8 @@ class HitAndRunResource extends Resource
 
     protected static ?string $navigationGroup = 'User';
 
+    protected static ?int $navigationSort = 3;
+
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.hit_and_runs');
@@ -34,18 +36,18 @@ class HitAndRunResource extends Resource
         return self::getNavigationLabel();
     }
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema(Forms\Components\Card::make()->schema([
-//                Forms\Components\Select::make('user')->relationship('user', 'username')->required(),
-//                Forms\Components\Select::make('torrent_id')->relationship('torrent', 'name')->required(),
-                Forms\Components\Radio::make('status')->options(HitAndRun::listStatus(true))->inline()->required(),
-//                Forms\Components\Select::make('snatch_id')->relationship('snatch', 'uploaded'),
-                Forms\Components\Textarea::make('comment'),
-                Forms\Components\DateTimePicker::make('created_at')->displayFormat('Y-m-d H:i:s'),
-            ]));
-    }
+//    public static function form(Form $form): Form
+//    {
+//        return $form
+//            ->schema(Forms\Components\Card::make()->schema([
+////                Forms\Components\Select::make('user')->relationship('user', 'username')->required(),
+////                Forms\Components\Select::make('torrent_id')->relationship('torrent', 'name')->required(),
+//                Forms\Components\Radio::make('status')->options(HitAndRun::listStatus(true))->inline()->required(),
+////                Forms\Components\Select::make('snatch_id')->relationship('snatch', 'uploaded'),
+//                Forms\Components\Textarea::make('comment'),
+//                Forms\Components\DateTimePicker::make('created_at')->displayFormat('Y-m-d H:i:s'),
+//            ]));
+//    }
 
     public static function table(Table $table): Table
     {
@@ -74,6 +76,8 @@ class HitAndRunResource extends Resource
                     $rep->bulkPardon(['id' => $idArr], Auth::user());
                 })
                 ->deselectRecordsAfterCompletion()
+                ->label(__('admin.resources.hit_and_run.bulk_action_pardon'))
+                    ->icon('heroicon-o-x')
             ]);
     }
 

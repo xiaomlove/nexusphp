@@ -1,6 +1,6 @@
 中文 | [English](/README-EN.md)
 
-完整的 PT 建站解决方案。基于 NexusPHP + Laravel Framework + Element Plus。
+完整的 PT 建站解决方案。基于 NexusPHP + Laravel Framework + Filament。
 
 ## 功能特性
 - 发种

@@ -78,8 +78,8 @@ class Test extends Command
      */
     public function handle()
     {
-       $r = range(0, 23);
-       dd($r);
+       $r = User::query()->find(10003, ['id', 'added', 'donoruntil']);
+       dd($r->donoruntil->toDateTimeString() < '1978');
     }
 
 

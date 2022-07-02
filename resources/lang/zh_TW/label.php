@@ -7,6 +7,8 @@ return [
     'expire_at' => '過期時間',
     'username' => '用戶',
     'status' => '狀態',
+    'enabled' => '啟用',
+    'disabled' => '禁用',
     'created_at' => '創建時間',
     'updated_at' => '更新時間',
     'begin' => '開始時間',
@@ -58,6 +60,7 @@ return [
         ]
     ],
     'user' => [
+        'label' => '用戶',
         'uploaded' => '上傳量',
         'downloaded' => '下載量',
         'invites' => '邀請',
@@ -67,6 +70,9 @@ return [
         'status' => '狀態',
         'enabled' => '啟用',
         'username' => '用戶名',
+        'invite_by' => '邀請人',
+        'two_step_authentication' => '兩步驗證',
+        'seed_points' => '做種積分',
     ],
     'medal' => [
         'label' => '勛章',
@@ -87,9 +93,24 @@ return [
         'donated' => '是否捐贈',
         'index_formatted' => '考核指標',
         'filter_formatted' => '目標用戶',
+        'section_base_info' => '基本信息',
+        'priority_help' => '值越大，優先級越高。當用戶匹配多個考核時，優先級高的優先分配。',
+        'section_time' => '時間',
+        'duration_help' => '單位：天。分配給用戶時，如果指定了開始/結束時間，用戶考核的時間範圍就是這個範圍。否則，用戶考核的開始時間是分配時間，結束時間是開始時間加上時長。',
+        'section_target_user' => '目標用戶',
+        'index_required_value' => '要求量',
+        'index_required_label' => '指標',
+        'index_placeholder' => '上傳增量/下載增量單位為：GB，平均做種時間單位為：小時',
+        'index_current_value' => '當前量',
+        'index_result' => '結果',
+    ],
+    'exam_user' => [
+        'is_done' => '是否完成',
     ],
     'torrent' => [
         'label' => '種子',
+        'size' => '體積',
+        'ttl' => '存活時間',
     ],
     'hit_and_run' => [
 
@@ -119,5 +140,11 @@ return [
     'agent_deny' => [
         'peer_id' => 'Peer ID',
         'agent' => 'Agent',
+    ],
+    'claim' => [
+        'last_settle_at' => '上次結算時間',
+        'seed_time_this_month' => '本月做種時間',
+        'uploaded_this_month' => '本月上傳量',
+        'is_reached_this_month' => '本月是否達標',
     ],
 ];

@@ -37,7 +37,7 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.system_info.$name"),
-            'value' => '2.13.11',
+            'value' => "2.13.14",
         ];
         $name = 'php_version';
         $result[$name] = [
@@ -285,8 +285,6 @@ class DashboardRepository extends BaseRepository
     {
         return Torrent::query()->with(['user'])->orderBy('id', 'desc')->limit(5)->get();
     }
-
-
 
 
 }

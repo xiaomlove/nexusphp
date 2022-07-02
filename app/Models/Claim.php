@@ -22,6 +22,30 @@ class Claim extends NexusModel
         'last_settle_at' => 'datetime',
     ];
 
+    public function getSeedTimeThisMonthAttribute()
+    {
+        return mkprettytime($this->snatch->seedtime - $this->seed_time_begin);
+    }
+
+    public function getUploadedThisMonthAttribute()
+    {
+        return mksize($this->snatch->uploaded - $this->uploaded_begin);
+    }
+
+    public function getIsReachedThisMonthAttribute(): bool
+    {
+        $seedTimeRequiredHours = self::getConfigStandardSeedTimeHours();
+        $uploadedRequiredTimes = self::getConfigStandardUploadedTimes();
+        if (
+            bcsub($this->snatch->seedtime, $this->seed_time_begin) >= $seedTimeRequiredHours * 3600
+            || bcsub($this->snatch->uploaded, $this->uploaded_begin) >= $uploadedRequiredTimes * $this->torrent->size
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'uid');

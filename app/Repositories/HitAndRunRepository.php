@@ -380,7 +380,7 @@ class HitAndRunRepository extends BaseRepository
             throw new \LogicException("Can't be pardoned due to status is: " . $model->status_text . " !");
         }
         $model->status = HitAndRun::STATUS_PARDONED;
-        $model->comment = $this->getCommentUpdateRaw(addslashes('Pardon by ' . $user->username));
+        $model->comment = $this->getCommentUpdateRaw(addslashes(date('Y-m-d') . ' - Pardon by ' . $user->username));
         $model->save();
         return true;
     }

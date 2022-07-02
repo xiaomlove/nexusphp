@@ -14,6 +14,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rule;
 
 class ExamResource extends Resource
 {
@@ -25,9 +26,9 @@ class ExamResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
-    const IS_DISCOVERED_OPTIONS = ['0' => 'No', '1' => 'Yes'];
+    protected static ?int $navigationSort = 1;
 
-    const STATUS_OPTIONS = ['0' => 'Enabled', '1' => 'Disabled'];
+    const IS_DISCOVERED_OPTIONS = ['0' => 'No', '1' => 'Yes'];
 
     protected static function getNavigationLabel(): string
     {
@@ -44,46 +45,67 @@ class ExamResource extends Resource
         $userRep = new UserRepository();
         return $form
             ->schema([
-                Forms\Components\Section::make('Base info')->schema([
+                Forms\Components\Section::make(__('label.exam.section_base_info'))->schema([
                     Forms\Components\TextInput::make('name')->required()->columnSpan(['sm' => 2])->label(__('label.name')),
-                    Forms\Components\TextInput::make('priority')
-                        ->columnSpan(['sm' => 2])
-                        ->label(__("label.priority"))
-                        ->helperText('The higher the value, the higher the priority, and when multiple exam match the same user, the one with the highest priority is assigned.'),
+                    Forms\Components\Repeater::make('indexes')->schema([
+                        Forms\Components\Select::make('index')
+                            ->options(Exam::listIndex(true))
+                            ->label(__('label.exam.index_required_label'))
+                            ->rules([Rule::in(array_keys(Exam::$indexes))])
+                            ->required(),
+                        Forms\Components\TextInput::make('require_value')
+                            ->label(__('label.exam.index_required_value'))
+                            ->placeholder(__('label.exam.index_placeholder'))
+                            ->integer()
+                            ->required(),
+                        Forms\Components\Hidden::make('checked')->default(true),
+                    ])
+                        ->label(__('label.exam.index_formatted'))
+                        ->required(),
+
                     Forms\Components\Radio::make('status')
-                        ->options(self::STATUS_OPTIONS)
+                        ->options(self::getEnableDisableOptions())
                         ->inline()
+                        ->required()
                         ->label(__('label.status'))
                         ->columnSpan(['sm' => 2]),
                     Forms\Components\Radio::make('is_discovered')
                         ->options(self::IS_DISCOVERED_OPTIONS)
                         ->label(__('label.exam.is_discovered'))
                         ->inline()
+                        ->required()
                         ->columnSpan(['sm' => 2]),
+                    Forms\Components\TextInput::make('priority')
+                        ->columnSpan(['sm' => 2])
+                        ->integer()
+                        ->label(__("label.priority"))
+                        ->helperText(__('label.exam.priority_help')),
                 ])->columns(2),
 
-                Forms\Components\Section::make('Time')->schema([
+                Forms\Components\Section::make(__('label.exam.section_time'))->schema([
                     Forms\Components\DateTimePicker::make('begin')->label(__('label.begin')),
                     Forms\Components\DateTimePicker::make('end')->label(__('label.begin')),
                     Forms\Components\TextInput::make('duration')
                         ->integer()
                         ->columnSpan(['sm' => 2])
                         ->label(__('label.duration'))
-                        ->helperText('Unit: days. When assign to user, begin and end are used if they are specified. Otherwise begin time is the time at assignment, and the end time is the time at assignment plus the duration.'),
+                        ->helperText(__('label.exam.duration_help')),
                 ])->columns(2),
 
-                Forms\Components\Section::make('Select user')->schema([
+                Forms\Components\Section::make(__('label.exam.section_target_user'))->schema([
                     Forms\Components\CheckboxList::make('filters.classes')
                         ->options($userRep->listClass())->columnSpan(['sm' => 2])
                         ->columns(4)
                         ->label(__('label.user.class')),
                     Forms\Components\DateTimePicker::make('filters.register_time_range.0')->label(__("label.exam.register_time_range.begin")),
                     Forms\Components\DateTimePicker::make('filters.register_time_range.1')->label(__("label.exam.register_time_range.end")),
-                    Forms\Components\Toggle::make('filters.donate_status')->label(__('label.exam.donated')),
+                    Forms\Components\CheckboxList::make('filters.donate_status')
+                        ->options(self::$yesOrNo)
+                        ->label(__('label.exam.donated')),
                 ])->columns(2),
 
 
-                Forms\Components\Textarea::make('description')->columnSpan(['sm' => 2]),
+                Forms\Components\Textarea::make('description')->columnSpan(['sm' => 2])->label(__('label.description')),
             ]);
     }
 
@@ -104,10 +126,10 @@ class ExamResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('is_discovered')->options(self::IS_DISCOVERED_OPTIONS)->label(__("label.exam.is_discovered")),
-                Tables\Filters\SelectFilter::make('status')->options(self::STATUS_OPTIONS)->label(__("label.status")),
+                Tables\Filters\SelectFilter::make('status')->options(self::getEnableDisableOptions())->label(__("label.status")),
             ])
             ->actions([
-//                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -125,8 +147,8 @@ class ExamResource extends Resource
     {
         return [
             'index' => Pages\ListExams::route('/'),
-//            'create' => Pages\CreateExam::route('/create'),
-//            'edit' => Pages\EditExam::route('/{record}/edit'),
+            'create' => Pages\CreateExam::route('/create'),
+            'edit' => Pages\EditExam::route('/{record}/edit'),
         ];
     }
 }

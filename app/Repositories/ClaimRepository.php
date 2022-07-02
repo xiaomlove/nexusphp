@@ -185,7 +185,7 @@ class ClaimRepository extends BaseRepository
                 if ($startOfThisMonth->diffInMonths($targetStartOfMonth) > 1) {
                     do_log("[UNREACHED_REMOVE], uid: $uid, torrent: " . $row->torrent_id);
                     $unReachedIdArr[] = $row->id;
-                    $unReachedTorrentIdArr = $row->torrent_id;
+                    $unReachedTorrentIdArr[] = $row->torrent_id;
                 } else {
                     do_log("[UNREACHED_FIRST_MONTH], uid: $uid, torrent: " . $row->torrent_id);
                     $seedTimeCaseWhen[] = sprintf('when %s then %s', $row->id, $row->snatch->seedtime);
@@ -290,9 +290,9 @@ class ClaimRepository extends BaseRepository
         if ($deductTotal) {
             $msg[] = nexus_trans(
                 "claim.claim_unreached_summary", [
-                'deduct_per_torrent '=> number_format($deductPerTorrent, 2),
-                'deduct_total' => number_format($deductTotal, 2)
-            ], $locale
+                    'deduct_per_torrent' => number_format($deductPerTorrent, 2),
+                    'deduct_total' => number_format($deductTotal, 2)
+                ], $locale
             );
         }
         return [

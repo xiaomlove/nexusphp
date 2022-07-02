@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'name' => 'Name',
+    'email' => 'Email',
+    'image' => 'Image',
+    'expire_at' => 'Expire at',
+    'username' => 'User',
+    'status' => 'Status',
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
+    'created_at' => 'Created at',
+    'updated_at' => 'Updated at',
+    'begin' => 'Begin time',
+    'end' => 'End time',
+    'uploaded' => 'Uploaded',
+    'downloaded' => 'Downloaded',
+    'ratio' => 'Share ratio',
+    'seed_time_required' => 'Seed time required',
+    'inspect_time_left' => 'Inspect time left',
+    'added' => 'Add time',
+    'last_access' => 'Last access time',
+    'priority' => 'Priority',
+    'comment' => 'Comment',
+    'duration' => 'Duration',
+    'description' => 'Description',
+    'price' => 'Price',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [
@@ -36,6 +60,7 @@ return [
         ]
     ],
     'user' => [
+        'label' => 'User',
         'uploaded' => 'Uploaded',
         'downloaded' => 'Downloaded',
         'invites' => 'Invites',
@@ -45,6 +70,9 @@ return [
         'status' => 'Status',
         'enabled' => 'Enabled',
         'username' => 'Username',
+        'invite_by' => 'Inviter',
+        'two_step_authentication' => 'Two-step authentication',
+        'seed_points' => 'Seed points',
     ],
     'medal' => [
         'label' => 'Medal',
@@ -65,9 +93,24 @@ return [
         'donated' => 'Donated',
         'index_formatted' => 'Exam indexes',
         'filter_formatted' => 'Target users',
+        'section_base_info' => 'Base info',
+        'priority_help' => 'The higher the value, the higher the priority, and when multiple exam match the same user, the one with the highest priority is assigned.',
+        'section_time' => 'Time',
+        'duration_help' => 'Unit: days. When assign to user, begin and end are used if they are specified. Otherwise begin time is the time at assignment, and the end time is the time at assignment plus the duration.',
+        'section_target_user' => 'Target user',
+        'index_required_value' => 'Require value',
+        'index_required_label' => 'Index',
+        'index_placeholder' => 'Upload/Download increment in GB and seed time average in hour',
+        'index_current_value' => 'Current value',
+        'index_result' => 'Result',
+    ],
+    'exam_user' => [
+        'is_done' => 'Is done',
     ],
     'torrent' => [
         'label' => 'Torrent',
+        'size' => 'Size',
+        'ttl' => 'TTL',
     ],
     'hit_and_run' => [
 
@@ -97,5 +140,11 @@ return [
     'agent_deny' => [
         'peer_id' => 'Peer ID',
         'agent' => 'Agent',
+    ],
+    'claim' => [
+        'last_settle_at' => 'Last settle at',
+        'seed_time_this_month' => 'St. this month',
+        'uploaded_this_month' => 'Up. this month',
+        'is_reached_this_month' => 'Reached',
     ],
 ];

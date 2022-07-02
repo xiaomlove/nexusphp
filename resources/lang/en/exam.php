@@ -8,6 +8,11 @@ return [
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => 'Seed time average',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => 'Download increment',
     'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => 'Bonus increment',
+    'filters' => [
+        \App\Models\Exam::FILTER_USER_CLASS => 'User class',
+        \App\Models\Exam::FILTER_USER_REGISTER_TIME_RANGE => 'Register time range',
+        \App\Models\Exam::FILTER_USER_DONATE => 'Donated',
+    ],
     'require_value' => 'Require',
     'current_value' => 'Current',
     'result' => 'Result',

@@ -105,7 +105,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessFilament(): bool
     {
-        return $this->class >= self::CLASS_ADMINISTRATOR;
+        return $this->canAccessAdmin();
     }
 
     public function getFilamentName(): string

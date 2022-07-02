@@ -70,9 +70,7 @@ class ExamRepository extends BaseRepository
         if (isset($params['end']) && $params['end'] == '') {
             $params['end'] = null;
         }
-        if (isset($params['priority'])) {
-            $params['priority'] = intval($params['priority']);
-        }
+        $params['priority'] = intval($params['priority'] ?? 0);
         return $params;
     }
 
@@ -86,12 +84,15 @@ class ExamRepository extends BaseRepository
             if (isset($index['checked']) && !$index['checked']) {
                 continue;
             }
+            if (isset($validIndex[$index['index']])) {
+                throw new \InvalidArgumentException(nexus_trans('admin.resources.exam.index_duplicate', ['index' => nexus_trans("exam.index_text_{$index['index']}")]));
+            }
             if (isset($index['require_value']) && !ctype_digit((string)$index['require_value'])) {
                 throw new \InvalidArgumentException(sprintf(
                     'Invalid require value for index: %s.', $index['index']
                 ));
             }
-            $validIndex[] = $index;
+            $validIndex[$index['index']] = $index;
         }
         if (empty($validIndex)) {
             throw new \InvalidArgumentException("Require valid index.");
@@ -861,12 +862,12 @@ class ExamRepository extends BaseRepository
         $filter = Exam::FILTER_USER_REGISTER_TIME_RANGE;
         $range = $filters->$filter;
         if (!empty($range)) {
-            /**
-             * begin and end will be exists at the same time
-             * @see checkBeginEnd()
-             */
-            $baseQuery->where("$userTable.added", ">=", Carbon::parse($range[0])->toDateTimeString())
-                ->where("$userTable.added", '<=', Carbon::parse($range[1])->toDateTimeString());
+            if (!empty($range[0])) {
+                $baseQuery->where("$userTable.added", ">=", Carbon::parse($range[0])->toDateTimeString());
+            }
+            if (!empty($range[1])) {
+                $baseQuery->where("$userTable.added", '<=', Carbon::parse($range[1])->toDateTimeString());
+            }
         }
         //Does not has this exam
         $baseQuery->whereDoesntHave('exams', function (Builder $query) use ($exam) {

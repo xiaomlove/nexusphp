@@ -28,7 +28,7 @@ if ($action == "edituser")
 	$userid = $_POST["userid"];
 	$class = intval($_POST["class"] ?? 0);
 	$vip_added = ($_POST["vip_added"] == 'yes' ? 'yes' : 'no');
-	$vip_until = ($_POST["vip_until"] ? $_POST["vip_until"] : null);
+	$vip_until = !empty($_POST["vip_until"]) ? $_POST['vip_until'] : null;
 
 	$warned = $_POST["warned"] ?? '';
 	$warnlength = intval($_POST["warnlength"] ?? 0);
@@ -162,7 +162,7 @@ if ($action == "edituser")
 			$updateset[] = "donated_cny = " . sqlesc($donated_cny);
 		}
 		$updateset[] = "donor = " . sqlesc($donor);
-		$updateset[] = "donoruntil = " . sqlesc($_POST['donoruntil']);
+		$updateset[] = "donoruntil = " . sqlesc(!empty($_POST['donoruntil']) ? $_POST['donoruntil'] : null);
 	}
 
 	if ($chpassword != "" AND $passagain != "") {
@@ -339,11 +339,11 @@ if ($action == "edituser")
 	}
 
 	$updateset[] = "modcomment = " . sqlesc($modcomment);
-
 	sql_query("UPDATE users SET  " . implode(", ", $updateset) . " WHERE id=$userid") or sqlerr(__FILE__, __LINE__);
     if (!empty($banLog)) {
         \App\Models\UserBanLog::query()->insert($banLog);
     }
+    \Nexus\Database\NexusDB::cache_del("user_{$userid}_content");
 	$returnto = htmlspecialchars($_POST["returnto"]);
 	header("Location: " . get_protocol_prefix() . "$BASEURL/$returnto");
 	die;

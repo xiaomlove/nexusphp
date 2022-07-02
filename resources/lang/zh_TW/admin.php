@@ -11,7 +11,8 @@ return [
         'exams_list' => '考核',
         'medals_list' => '勛章',
         'settings' => '設置',
-        'users_medal' => '用戶勛章',
+        'users_medals' => '用戶勛章',
+        'claims' => '用戶認領',
     ],
     'resources' => [
         'agent_allow' => [
@@ -52,6 +53,16 @@ return [
         ],
         'exam_user' => [
             'bulk_action_avoid_label' => '批量免除',
+            'action_avoid' => '免除',
+            'result_passed' => '通過！',
+            'result_not_passed' => '未通過！',
+        ],
+        'exam' => [
+            'index_duplicate' => '指標：:index 重復！',
+        ],
+        'hit_and_run' => [
+            'bulk_action_pardon' => '批量免罪',
+            'action_pardon' => '免罪',
         ],
     ]
 ];

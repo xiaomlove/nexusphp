@@ -21,9 +21,11 @@ class UserMedalResource extends Resource
 
     protected static ?string $navigationGroup = 'User';
 
+    protected static ?int $navigationSort = 5;
+
     protected static function getNavigationLabel(): string
     {
-        return __('admin.sidebar.users_medal');
+        return __('admin.sidebar.users_medals');
     }
 
     public static function getBreadcrumb(): string

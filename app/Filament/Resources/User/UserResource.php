@@ -26,6 +26,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationGroup = 'User';
 
+    protected static ?int $navigationSort = 1;
+
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.users_list');

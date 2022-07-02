@@ -1,23 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\User\HitAndRunResource\Pages;
+namespace App\Filament\Resources\User\ExamUserResource\Pages;
 
-use App\Filament\Resources\User\HitAndRunResource;
-use App\Models\HitAndRun;
-use App\Repositories\HitAndRunRepository;
+use App\Filament\Resources\User\ExamUserResource;
+use App\Repositories\ExamRepository;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Forms;
-use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Table;
 
-class ViewHitAndRun extends ViewRecord
+class ViewExamUser extends ViewRecord
 {
-    protected static string $resource = HitAndRunResource::class;
+    protected static string $resource = ExamUserResource::class;
 
-    protected static string $view = 'filament.detail-card';
+    protected static string $view = 'filament.resources.user.exam-user-resource.pages.detail';
 
     private function getDetailCardData(): array
     {
+//        dd($this->record->progressFormatted);
         $data = [];
         $record = $this->record;
         $data[] = [
@@ -33,32 +32,20 @@ class ViewHitAndRun extends ViewRecord
             'value' => $record->user->username,
         ];
         $data[] = [
-            'label' => __('label.torrent.label'),
-            'value' => $record->torrent->name,
+            'label' => __('label.exam.label'),
+            'value' => $record->exam->name,
         ];
         $data[] = [
-            'label' => __('label.uploaded'),
-            'value' => $record->snatch->uploadedText,
+            'label' => __('label.begin'),
+            'value' => $record->begin,
         ];
         $data[] = [
-            'label' => __('label.downloaded'),
-            'value' => $record->snatch->downloadedText,
+            'label' => __('label.end'),
+            'value' => $record->end,
         ];
         $data[] = [
-            'label' => __('label.ratio'),
-            'value' => $record->snatch->shareRatio,
-        ];
-        $data[] = [
-            'label' => __('label.seed_time_required'),
-            'value' => $record->seedTimeRequired,
-        ];
-        $data[] = [
-            'label' => __('label.inspect_time_left'),
-            'value' => $record->inspectTimeLeft,
-        ];
-        $data[] = [
-            'label' => __('label.comment'),
-            'value' => nl2br($record->comment),
+            'label' => __('label.exam_user.is_done'),
+            'value' => $record->isDoneText,
         ];
         $data[] = [
             'label' => __('label.created_at'),
@@ -81,22 +68,26 @@ class ViewHitAndRun extends ViewRecord
     protected function getActions(): array
     {
         return [
-            Actions\Action::make('Pardon')
+            Actions\Action::make('Avoid')
                 ->requiresConfirmation()
                 ->action(function () {
-                    $hitAndRunRep = new HitAndRunRepository();
+                    $examRep = new ExamRepository();
                     try {
-                        $hitAndRunRep->pardon($this->record->id, Auth::user());
+                        $examRep->avoidExamUser($this->record->id);
                         $this->notify('success', 'Success !');
                         $this->record = $this->resolveRecord($this->record->id);
                     } catch (\Exception $exception) {
                         $this->notify('danger', $exception->getMessage());
                     }
                 })
-                ->label(__('admin.resources.hit_and_run.action_pardon')),
+                ->label(__('admin.resources.exam_user.action_avoid')),
 
             Actions\DeleteAction::make(),
         ];
     }
 
+    private function getProgress()
+    {
+
+    }
 }

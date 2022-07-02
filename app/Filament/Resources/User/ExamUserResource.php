@@ -25,6 +25,8 @@ class ExamUserResource extends Resource
 
     protected static ?string $navigationGroup = 'User';
 
+    protected static ?int $navigationSort = 2;
+
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.exam_users');
@@ -61,7 +63,7 @@ class ExamUserResource extends Resource
                 Tables\Filters\SelectFilter::make('is_done')->options(['0' => 'No', '1' => 'yes'])->label(__('label.exam.is_done')),
             ])
             ->actions([
-//                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->prependBulkActions([
                 Tables\Actions\BulkAction::make('Avoid')->action(function (Collection $records) {
@@ -86,8 +88,9 @@ class ExamUserResource extends Resource
     {
         return [
             'index' => Pages\ListExamUsers::route('/'),
-            'create' => Pages\CreateExamUser::route('/create'),
-            'edit' => Pages\EditExamUser::route('/{record}/edit'),
+//            'create' => Pages\CreateExamUser::route('/create'),
+//            'edit' => Pages\EditExamUser::route('/{record}/edit'),
+            'view' => Pages\ViewExamUser::route('/{record}'),
         ];
     }
 }

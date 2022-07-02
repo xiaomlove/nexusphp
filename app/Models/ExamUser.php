@@ -41,6 +41,41 @@ class ExamUser extends NexusModel
         return self::$isDoneInfo[$this->is_done]['text'] ?? '';
     }
 
+    public function getProgressFormattedAttribute(): array
+    {
+        $result = [];
+        $progress = $this->progress;
+        foreach ($this->exam->indexes as $key => $index) {
+            if (!isset($index['checked']) || !$index['checked']) {
+                continue;
+            }
+            $currentValue = $progress[$index['index']] ?? 0;
+            $requireValue = $index['require_value'];
+            switch ($index['index']) {
+                case Exam::INDEX_UPLOADED:
+                case Exam::INDEX_DOWNLOADED:
+                    $currentValueFormatted = mksize($currentValue);
+                    $requireValueAtomic = $requireValue * 1024 * 1024 * 1024;
+                    break;
+                case Exam::INDEX_SEED_TIME_AVERAGE:
+                    $currentValueFormatted = number_format($currentValue / 3600, 2) . " {$index['unit']}";
+                    $requireValueAtomic = $requireValue * 3600;
+                    break;
+                default:
+                    $currentValueFormatted = $currentValue;
+                    $requireValueAtomic = $requireValue;
+            }
+            $index['name'] = Exam::$indexes[$index['index']]['name'] ?? '';
+            $index['index_formatted'] = nexus_trans('exam.index_text_' . $index['index']);
+            $index['require_value_formatted'] = "$requireValue " . ($index['unit'] ?? '');
+            $index['current_value'] = $currentValue;
+            $index['current_value_formatted'] = $currentValueFormatted;
+            $index['passed'] = $currentValue >= $requireValueAtomic;
+            $result[] = $index;
+        }
+        return $result;
+    }
+
     public static function listStatus($onlyKeyValue = false): array
     {
         $result = self::$status;

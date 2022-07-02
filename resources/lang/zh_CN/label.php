@@ -7,6 +7,8 @@ return [
     'expire_at' => '过期时间',
     'username' => '用户',
     'status' => '状态',
+    'enabled' => '启用',
+    'disabled' => '禁用',
     'created_at' => '创建时间',
     'updated_at' => '更新时间',
     'begin' => '开始时间',
@@ -58,6 +60,7 @@ return [
         ]
     ],
     'user' => [
+        'label' => '用户',
         'uploaded' => '上传量',
         'downloaded' => '下载量',
         'invites' => '邀请',
@@ -67,6 +70,9 @@ return [
         'status' => '状态',
         'enabled' => '启用',
         'username' => '用户名',
+        'invite_by' => '邀请人',
+        'two_step_authentication' => '两步验证',
+        'seed_points' => '做种积分',
     ],
     'medal' => [
         'label' => '勋章',
@@ -78,7 +84,6 @@ return [
     ],
     'exam' => [
         'label' => '考核',
-        'is_done' => '是否完成',
         'is_discovered' => '自动发现',
         'register_time_range' => [
             'begin' => '注册时间开始',
@@ -87,9 +92,24 @@ return [
         'donated' => '是否捐赠',
         'index_formatted' => '考核指标',
         'filter_formatted' => '目标用户',
+        'section_base_info' => '基本信息',
+        'priority_help' => '值越大，优先级越高。当用户匹配多个考核时，优先级高的优先分配。',
+        'section_time' => '时间',
+        'duration_help' => '单位：天。分配给用户时，如果指定了开始/结束时间，用户考核的时间范围就是这个范围。否则，用户考核的开始时间是分配时间，结束时间是开始时间加上时长。',
+        'section_target_user' => '目标用户',
+        'index_required_value' => '要求量',
+        'index_required_label' => '指标',
+        'index_placeholder' => '上传增量/下载增量单位为：GB，平均做种时间单位为：小时',
+        'index_current_value' => '当前量',
+        'index_result' => '结果',
+    ],
+    'exam_user' => [
+        'is_done' => '是否完成',
     ],
     'torrent' => [
         'label' => '种子',
+        'size' => '体积',
+        'ttl' => '存活时间',
     ],
     'hit_and_run' => [
 
@@ -119,5 +139,11 @@ return [
     'agent_deny' => [
         'peer_id' => 'Peer ID',
         'agent' => 'Agent',
+    ],
+    'claim' => [
+        'last_settle_at' => '上次结算时间',
+        'seed_time_this_month' => '本月做种时间',
+        'uploaded_this_month' => '本月上传量',
+        'is_reached_this_month' => '本月是否达标',
     ],
 ];

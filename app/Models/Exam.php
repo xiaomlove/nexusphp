@@ -39,8 +39,8 @@ class Exam extends NexusModel
 
     public static $indexes = [
         self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB', 'source_user_field' => 'uploaded'],
-        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour', 'source_user_field' => 'seedtime'],
         self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB', 'source_user_field' => 'downloaded'],
+        self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour', 'source_user_field' => 'seedtime'],
         self::INDEX_SEED_BONUS => ['name' => 'Bonus', 'unit' => '', 'source_user_field' => 'seedbonus'],
     ];
 
@@ -61,9 +61,24 @@ class Exam extends NexusModel
         });
     }
 
+    public static function listIndex($onlyKeyValue = false): array
+    {
+        $result = self::$indexes;
+        $keyValues = [];
+        foreach ($result as $key => &$value) {
+            $text = nexus_trans("exam.index_text_$key");
+            $value['text'] = $text;
+            $keyValues[$key] = $text;
+        }
+        if ($onlyKeyValue) {
+            return $keyValues;
+        }
+        return $result;
+    }
+
     public function getStatusTextAttribute(): string
     {
-        return self::$status[$this->status]['text'] ?? '';
+        return $this->status == self::STATUS_ENABLED ? nexus_trans('label.enabled') : nexus_trans('label.disabled');
     }
 
     public function getIsDiscoveredTextAttribute(): string
@@ -87,7 +102,7 @@ class Exam extends NexusModel
             if (isset($index['checked']) && $index['checked']) {
                 $arr[] = sprintf(
                     '%s: %s %s',
-                    self::$indexes[$index['index']]['name'] ?? '',
+                    nexus_trans("exam.index_text_{$index['index']}"),
                     $index['require_value'],
                     self::$indexes[$index['index']]['unit'] ?? ''
                 );
@@ -103,24 +118,24 @@ class Exam extends NexusModel
         $filter = self::FILTER_USER_CLASS;
         if (!empty($currentFilters->{$filter})) {
             $classes = collect(User::$classes)->only($currentFilters->{$filter});
-            $arr[] = sprintf('%s: %s', self::$filters[$filter]['name'], $classes->pluck('text')->implode(', '));
+            $arr[] = sprintf('%s: %s', nexus_trans("exam.filters.$filter"), $classes->pluck('text')->implode(', '));
         }
 
         $filter = self::FILTER_USER_REGISTER_TIME_RANGE;
         if (!empty($currentFilters->{$filter})) {
             $range = $currentFilters->{$filter};
             $arr[] = sprintf(
-                "%s: \n%s ~ %s",
-                self::$filters[$filter]['name'],
-                $range[0] ? Carbon::parse($range[0])->toDateTimeString() : '-',
-                $range[1] ? Carbon::parse($range[1])->toDateTimeString() : '-'
+                "%s: <br/>%s ~ %s",
+                nexus_trans("exam.filters.$filter"),
+                $range[0] ? Carbon::parse($range[0])->toDateTimeString() : '--',
+                $range[1] ? Carbon::parse($range[1])->toDateTimeString() : '--'
             );
         }
 
         $filter = self::FILTER_USER_DONATE;
         if (!empty($currentFilters->{$filter})) {
             $donateStatus = $classes = collect(User::$donateStatus)->only($currentFilters->{$filter});
-            $arr[] = sprintf('%s: %s', self::$filters[$filter]['name'], $donateStatus->pluck('text')->implode(', '));
+            $arr[] = sprintf('%s: %s', nexus_trans("exam.filters.$filter"), $donateStatus->pluck('text')->implode(', '));
         }
 
         return implode("<br/>", $arr);

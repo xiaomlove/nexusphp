@@ -1,6 +1,6 @@
 English | [中文](/)
 
-Complete PT website building solution. Based on NexusPHP + Laravel Framework + Element Plus.
+Complete PT website building solution. Based on NexusPHP + Laravel Framework + Filament.
 
 ## Functional Features
 
