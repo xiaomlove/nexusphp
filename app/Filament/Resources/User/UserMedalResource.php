@@ -45,12 +45,13 @@ class UserMedalResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
                 Tables\Columns\TextColumn::make('medal.name')->label(__('label.medal.label'))->searchable(),
                 Tables\Columns\ImageColumn::make('medal.image_large')->label(__('label.image')),
                 Tables\Columns\TextColumn::make('expire_at')->label(__('label.expire_at'))->dateTime(),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
 
             ])

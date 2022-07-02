@@ -49,7 +49,7 @@ class ExamUserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
                 Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),
@@ -58,6 +58,7 @@ class ExamUserResource extends Resource
                 Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label(__('label.created_at')),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options(ExamUser::listStatus(true))->label(__("label.status")),
                 Tables\Filters\SelectFilter::make('is_done')->options(['0' => 'No', '1' => 'yes'])->label(__('label.exam.is_done')),

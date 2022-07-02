@@ -67,12 +67,13 @@ class AgentAllowResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('family')->searchable()->label(__('label.agent_allow.family')),
                 Tables\Columns\TextColumn::make('start_name')->searchable()->label(__('label.agent_allow.start_name')),
                 Tables\Columns\TextColumn::make('peer_id_start')->label(__('label.agent_allow.peer_id_start')),
                 Tables\Columns\TextColumn::make('agent_start')->label(__('label.agent_allow.agent_start')),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])

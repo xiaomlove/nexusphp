@@ -53,7 +53,7 @@ class HitAndRunResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
                 Tables\Columns\TextColumn::make('torrent.name')->limit(50)->label(__('label.torrent.label')),
                 Tables\Columns\TextColumn::make('snatch.uploadText')->label(__('label.uploaded')),
@@ -63,6 +63,7 @@ class HitAndRunResource extends Resource
                 Tables\Columns\TextColumn::make('inspectTimeLeft')->label(__('label.inspect_time_left')),
                 Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options(HitAndRun::listStatus(true))->label(__('label.status')),
             ])

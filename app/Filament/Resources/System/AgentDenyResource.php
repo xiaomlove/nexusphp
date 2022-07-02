@@ -50,12 +50,13 @@ class AgentDenyResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('family.family')->label(__('label.agent_allow.family')),
                 Tables\Columns\TextColumn::make('name')->searchable()->label(__('label.name')),
                 Tables\Columns\TextColumn::make('peer_id')->searchable()->label(__('label.agent_deny.peer_id')),
                 Tables\Columns\TextColumn::make('agent')->searchable()->label(__('label.agent_deny.agent')),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])

@@ -60,7 +60,7 @@ class MedalResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('name')->label(__('label.name')),
                 Tables\Columns\ImageColumn::make('image_large')->height(120)->label(__('label.medal.image_large')),
                 Tables\Columns\ImageColumn::make('image_small')->height(120)->label(__('label.medal.image_small')),
@@ -68,6 +68,7 @@ class MedalResource extends Resource
                 Tables\Columns\TextColumn::make('price')->label(__('label.price')),
                 Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])

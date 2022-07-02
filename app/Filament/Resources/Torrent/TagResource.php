@@ -60,9 +60,10 @@ class TagResource extends Resource
                 Tables\Columns\TextColumn::make('margin')->label(__('label.tag.margin')),
                 Tables\Columns\TextColumn::make('padding')->label(__('label.tag.padding')),
                 Tables\Columns\TextColumn::make('border_radius')->label(__('label.tag.border_radius')),
-                Tables\Columns\TextColumn::make('priority')->label(__('label.priority')),
+                Tables\Columns\TextColumn::make('priority')->label(__('label.priority'))->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->label(__('label.updated_at')),
             ])
+            ->defaultSort('priority', 'desc')
             ->filters([
                 //
             ])

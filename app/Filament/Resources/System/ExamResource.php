@@ -113,7 +113,7 @@ class ExamResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('name')->searchable()->label(__('label.name')),
                 Tables\Columns\TextColumn::make('indexFormatted')->label(__('label.exam.index_formatted'))->html(),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin')),
@@ -124,6 +124,7 @@ class ExamResource extends Resource
                 Tables\Columns\TextColumn::make('priority')->label(__('label.priority')),
                 Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('is_discovered')->options(self::IS_DISCOVERED_OPTIONS)->label(__("label.exam.is_discovered")),
                 Tables\Filters\SelectFilter::make('status')->options(self::getEnableDisableOptions())->label(__("label.status")),
