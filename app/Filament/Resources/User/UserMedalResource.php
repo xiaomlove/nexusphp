@@ -63,6 +63,11 @@ class UserMedalResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user', 'medal']);
+    }
+
     public static function getRelations(): array
     {
         return [

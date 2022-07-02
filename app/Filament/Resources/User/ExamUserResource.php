@@ -78,6 +78,11 @@ class ExamUserResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user', 'exam']);
+    }
+
     public static function getRelations(): array
     {
         return [

@@ -82,6 +82,11 @@ class HitAndRunResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user', 'torrent', 'snatch']);
+    }
+
     public static function getRelations(): array
     {
         return [
