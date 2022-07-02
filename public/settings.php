@@ -43,7 +43,7 @@ if ($action == 'savesettings_main')	// save main
 		'showpolls','showstats','showlastxtorrents', 'showtrackerload','showshoutbox','showfunbox','showoffer','sptime','showhelpbox','enablebitbucket',
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
-		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader',
+		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language',
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -728,6 +728,14 @@ elseif ($action == 'mainsettings')	// main settings
 	yesorno($lang_settings['row_show_classic'],'showclassicmovies', $MAIN['showclassicmovies'], $lang_settings['text_show_classic_note']);
 	yesorno($lang_settings['row_show_top_uploader'],'show_top_uploader', $MAIN['show_top_uploader'], $lang_settings['text_show_top_uploader_note']);
 	yesorno($lang_settings['row_enable_imdb_system'],'showimdbinfo', $MAIN['showimdbinfo'], $lang_settings['text_imdb_system_note']);
+
+    $imdbLanguages = "<select name=imdb_language>";
+    foreach (\Nexus\Imdb\Imdb::listSupportLanguages() as $key => $value) {
+        $imdbLanguages .= sprintf('<option value="%s"%s>%s</option>', $key, $key == $MAIN['imdb_language'] ? ' selected' : '', $value);
+    }
+    $imdbLanguages .= "</select>";
+    tr($lang_settings['row_imdb_language'], $imdbLanguages."<br />".$lang_settings['text_imdb_language_note'], 1);
+
 	yesorno($lang_settings['row_enable_pt_gen_system'],'enable_pt_gen_system', $MAIN['enable_pt_gen_system'], $lang_settings['text_enable_pt_gen_system_note']);
 	tr($lang_settings['row_pt_gen_api_point'],"<input type='text' name=\"pt_gen_api_point\" style=\"width: 300px\" value={$MAIN['pt_gen_api_point']}> ".$lang_settings['text_pt_gen_api_point_note'], 1);
 	yesorno($lang_settings['row_enable_nfo'],'enablenfo', $MAIN['enablenfo'], $lang_settings['text_enable_nfo_note']);

@@ -1055,10 +1055,10 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
                     <tr>
                         <td class="bottom" style="padding: 1px;padding-left: 10px">
                             <select class="med" name="approval_status" style="width: 100px;">
-                                <option value="0"><?php echo $lang_torrents['select_all'] ?></option>
+                                <option value=""><?php echo $lang_torrents['select_all'] ?></option>
                                 <?php
                                 foreach (\App\Models\Torrent::listApprovalStatus(true) as $key => $value) {
-                                    printf('<option value="%s"%s>%s</option>', $key, isset($approvalStatus) && $approvalStatus == $key ? ' selected' : '', $value);
+                                    printf('<option value="%s"%s>%s</option>', $key, isset($approvalStatus) && (string)$approvalStatus === (string)$key ? ' selected' : '', $value);
                                 }
                                 ?>
                             </select>

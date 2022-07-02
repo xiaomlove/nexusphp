@@ -1,20 +1,29 @@
 <?php
 
-function get_langfolder_cookie()
+function get_langfolder_cookie($transToLocale = false)
 {
 	global $deflang;
+	$lang = "";
 	if (!isset($_COOKIE["c_lang_folder"])) {
-		return $deflang;
+		$lang = $deflang;
 	} else {
 		$langfolder_array = get_langfolder_list();
 		$enabled = \App\Models\Language::listEnabled();
 		foreach($langfolder_array as $lf)
 		{
-			if($lf == $_COOKIE["c_lang_folder"] && in_array($lf, $enabled))
-			return $_COOKIE["c_lang_folder"];
+			if($lf == $_COOKIE["c_lang_folder"] && in_array($lf, $enabled)) {
+                $lang = $_COOKIE["c_lang_folder"];
+                break;
+            }
 		}
-		return $deflang;
 	}
+	if (!$lang) {
+	    $lang = $deflang;
+    }
+	if (!$transToLocale) {
+	    return $lang;
+    }
+	return \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
 }
 
 function get_user_lang($user_id)

@@ -762,6 +762,8 @@ $lang_settings = array
     'text_approval_status_icon_enabled_note' => "是否在種子列表展示審核狀態圖標，默認: '否'。",
     'row_approval_status_none_visible' => '未審核種子是否可見',
     'text_approval_status_none_visible_note' => "默認：'是'。若改為'否'，審核不為[通過]狀態時強製顯示審核狀態圖標。",
+    'row_imdb_language' => 'IMDB 語言',
+    'text_imdb_language_note' => '抓取 IMDB 數據使用的語言。',
 );
 
 ?>

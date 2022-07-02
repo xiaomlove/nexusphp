@@ -762,6 +762,8 @@ $lang_settings = array
     'text_approval_status_icon_enabled_note' => "是否在种子列表展示审核状态图标，默认: '否'。",
     'row_approval_status_none_visible' => '未审核种子是否可见',
     'text_approval_status_none_visible_note' => "默认：'是'。若改为'否'，审核不为[通过]状态时强制显示审核状态图标。",
+    'row_imdb_language' => 'IMDB 语言',
+    'text_imdb_language_note' => '抓取 IMDB 数据使用的语言。',
 );
 
 ?>

@@ -28,7 +28,14 @@ class Imdb
         $config->cachedir = $cacheDir;
         $config->photodir = $photoDir;
         $config->photoroot = $photoRoot;
+        $config->language = get_setting('main.imdb_language', 'en-US');
         $this->config = $config;
+    }
+
+    public static function listSupportLanguages(): array
+    {
+        $data = require_once sprintf('%s/resources/lang/%s/imdb.php', ROOT_PATH, get_langfolder_cookie(true));
+        return $data['languages'];
     }
 
     public function setDebug($debug)

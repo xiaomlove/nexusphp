@@ -762,6 +762,8 @@ $lang_settings = array
     'text_approval_status_icon_enabled_note' => "Whether to show the approval status icon in the torrent list, default: 'No'.",
     'row_approval_status_none_visible' => 'Visibility of not reviewed torrents',
     'text_approval_status_none_visible_note' => "Default: 'Yes'. If change to 'No', force to show approval status icon when audit is not [allow] status.",
+    'row_imdb_language' => 'IMDB Language',
+    'text_imdb_language_note' => 'Languages used to crawl IMDB data.',
 );
 
 ?>

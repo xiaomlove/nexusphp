@@ -90,6 +90,7 @@ return array (
     'enable_technical_info' => 'no',
       'site_language_enabled' => \App\Models\Language::DEFAULT_ENABLED,
       'show_top_uploader' => 'no',
+      'imdb_language' => 'en-US',
   ),
   'smtp' =>
   array (
