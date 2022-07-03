@@ -55,24 +55,18 @@ class TorrentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\BadgeColumn::make('basic_category.name')->label(__('label.torrent.category')),
+                Tables\Columns\TextColumn::make('basic_category.name')->label(__('label.torrent.category')),
                 Tables\Columns\TextColumn::make('name')->formatStateUsing(function (Torrent $record) {
-                    $sticky = sprintf(
-                        '<div class="px-2 py-0.5 space-x-1 rtl:space-x-reverse text-sm font-medium tracking-tight rounded-xl whitespace-normal text-gray-700 bg-gray-500/10"><span>%s</span></div>',
-                        $record->posStateText
-                    );
                     $name = sprintf(
                         '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="details.php?id=" target="_blank">%s</a></div>',
                         Str::limit($record->name, 40)
                     );
-                    $promotion = sprintf(
-                        '<div class="px-2 py-0.5 space-x-1 rtl:space-x-reverse text-sm font-medium tracking-tight rounded-xl whitespace-normal text-gray-700 bg-gray-500/10"><span>%s</span></div>',
-                        $record->spStateText
-                    );
                     $tags = sprintf('<div>%s</div>', $record->tagsFormatted);
 
-                    return new HtmlString('<div class="flex">' . $sticky . $name . $promotion . $tags . '</div>');
+                    return new HtmlString('<div class="flex">' . $name . $tags . '</div>');
                 }),
+                Tables\Columns\TextColumn::make('posStateText')->label(__('label.torrent.pos_state')),
+                Tables\Columns\TextColumn::make('spStateText')->label(__('label.torrent.sp_state')),
                 Tables\Columns\TextColumn::make('size')->label(__('label.torrent.size'))->formatStateUsing(fn ($state) => mksize($state)),
                 Tables\Columns\TextColumn::make('seeders')->label(__('label.torrent.seeders')),
                 Tables\Columns\TextColumn::make('leechers')->label(__('label.torrent.leechers')),
