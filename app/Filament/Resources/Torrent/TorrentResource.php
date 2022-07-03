@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class TorrentResource extends Resource
 {
@@ -54,18 +56,27 @@ class TorrentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\BadgeColumn::make('basic_category.name')->label(__('label.torrent.category')),
-                Tables\Columns\TextColumn::make('name')
-                    ->label(__('label.name'))
-                    ->limit(30)
-                    ->url(fn ($record) => sprintf('/details.php?id=%s', $record->id))
-                    ->openUrlInNewTab(true)
-                ,
-                Tables\Columns\BadgeColumn::make('posStateText')->label(__('label.torrent.pos_state')),
-                Tables\Columns\BadgeColumn::make('spStateText')->label(__('label.torrent.sp_state')),
-                Tables\Columns\TextColumn::make('tagsFormatted')->label(__('label.tag.label'))->html(),
+                Tables\Columns\TextColumn::make('name')->formatStateUsing(function (Torrent $record) {
+                    $sticky = sprintf(
+                        '<div class="px-2 py-0.5 space-x-1 rtl:space-x-reverse text-sm font-medium tracking-tight rounded-xl whitespace-normal text-gray-700 bg-gray-500/10"><span>%s</span></div>',
+                        $record->posStateText
+                    );
+                    $name = sprintf(
+                        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="details.php?id=" target="_blank">%s</a></div>',
+                        Str::limit($record->name, 40)
+                    );
+                    $promotion = sprintf(
+                        '<div class="px-2 py-0.5 space-x-1 rtl:space-x-reverse text-sm font-medium tracking-tight rounded-xl whitespace-normal text-gray-700 bg-gray-500/10"><span>%s</span></div>',
+                        $record->spStateText
+                    );
+                    $tags = sprintf('<div>%s</div>', $record->tagsFormatted);
+
+                    return new HtmlString('<div class="flex">' . $sticky . $name . $promotion . $tags . '</div>');
+                }),
                 Tables\Columns\TextColumn::make('size')->label(__('label.torrent.size'))->formatStateUsing(fn ($state) => mksize($state)),
                 Tables\Columns\TextColumn::make('seeders')->label(__('label.torrent.seeders')),
                 Tables\Columns\TextColumn::make('leechers')->label(__('label.torrent.leechers')),
+//                Tables\Columns\TextColumn::make('times_completed')->label(__('label.torrent.times_completed')),
                 Tables\Columns\BadgeColumn::make('approval_status')
                     ->label(__('label.torrent.approval_status'))
                     ->colors(array_flip(Torrent::listApprovalStatus(true, 'badge_color')))
@@ -104,8 +115,6 @@ class TorrentResource extends Resource
                         ,
                         Forms\Components\Textarea::make('comment')->label(__('label.comment')),
                     ])
-                    ->icon('heroicon-o-check')
-                    ->color('success')
                     ->action(function (Torrent $record, array $data) {
                         $torrentRep = new TorrentRepository();
                         try {
@@ -195,4 +204,5 @@ class TorrentResource extends Resource
             'edit' => Pages\EditTorrent::route('/{record}/edit'),
         ];
     }
+
 }

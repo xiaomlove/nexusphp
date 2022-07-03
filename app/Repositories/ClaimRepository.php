@@ -235,12 +235,14 @@ class ClaimRepository extends BaseRepository
             }
 
             //Update claim `last_settle_at` and init `seed_time_begin` & `uploaded_begin`
-            $sql = sprintf(
-                "update claims set uploaded_begin = case id %s end, seed_time_begin = case id %s end, last_settle_at = '%s', updated_at = '%s' where id in (%s)",
-                implode(' ', $uploadedCaseWhen), implode(' ', $seedTimeCaseWhen), $now->toDateTimeString(), $now->toDateTimeString(), implode(',', $toUpdateIdArr)
-            );
-            $affectedRows = DB::update($sql);
-            do_log("query: $sql, affectedRows: $affectedRows");
+            if (!empty($toUpdateIdArr)) {
+                $sql = sprintf(
+                    "update claims set uploaded_begin = case id %s end, seed_time_begin = case id %s end, last_settle_at = '%s', updated_at = '%s' where id in (%s)",
+                    implode(' ', $uploadedCaseWhen), implode(' ', $seedTimeCaseWhen), $now->toDateTimeString(), $now->toDateTimeString(), implode(',', $toUpdateIdArr)
+                );
+                $affectedRows = DB::update($sql);
+                do_log("query: $sql, affectedRows: $affectedRows");
+            }
 
             //Send message
             Message::query()->insert($message);
