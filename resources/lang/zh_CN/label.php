@@ -108,13 +108,21 @@ return [
     ],
     'torrent' => [
         'label' => '种子',
-        'size' => '体积',
+        'size' => '大小',
         'ttl' => '存活时间',
+        'seeders' => '做种',
+        'leechers' => '下载',
+        'times_completed' => '完成次数',
+        'category' => '类型',
+        'approval_status' => '审核状态',
+        'pos_state' => '置顶',
+        'sp_state' => '优惠',
     ],
     'hit_and_run' => [
 
     ],
     'tag' => [
+        'label' => '标签',
         'color' => '背景颜色',
         'font_color' => '字体颜色',
         'font_size' => '字体大小',

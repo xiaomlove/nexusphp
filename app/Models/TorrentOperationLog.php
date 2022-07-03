@@ -64,5 +64,6 @@ class TorrentOperationLog extends NexusModel
         Message::query()->insert($message);
         NexusDB::cache_del("user_{$receiver->id}_unread_message_count");
         NexusDB::cache_del("user_{$receiver->id}_inbox_count");
+        do_log("notify user: {$receiver->id}, $subject");
     }
 }

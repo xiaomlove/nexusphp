@@ -109,13 +109,21 @@ return [
     ],
     'torrent' => [
         'label' => '種子',
-        'size' => '體積',
+        'size' => '大小',
         'ttl' => '存活時間',
+        'seeders' => '做种',
+        'leechers' => '下载',
+        'times_completed' => '完成次數',
+        'category' => '類型',
+        'approval_status' => '審核狀態',
+        'pos_state' => '置頂',
+        'sp_state' => '優惠',
     ],
     'hit_and_run' => [
 
     ],
     'tag' => [
+        'label' => '標簽',
         'color' => '背景顏色',
         'font_color' => '字體顏色',
         'font_size' => '字體大小',

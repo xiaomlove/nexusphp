@@ -13,6 +13,7 @@ return [
         'settings' => '設置',
         'users_medals' => '用戶勛章',
         'claims' => '用戶認領',
+        'torrent_list' => '種子',
     ],
     'resources' => [
         'agent_allow' => [
@@ -63,6 +64,12 @@ return [
         'hit_and_run' => [
             'bulk_action_pardon' => '批量免罪',
             'action_pardon' => '免罪',
+        ],
+        'torrent' => [
+            'bulk_action_pos_state' => '置頂',
+            'bulk_action_remove_tag' => '清除標簽',
+            'bulk_action_attach_tag' => '設置標簽',
+            'action_approval' => '審核',
         ],
     ]
 ];

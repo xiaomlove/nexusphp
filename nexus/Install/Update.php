@@ -312,7 +312,7 @@ class Update extends Install
         return $results;
     }
 
-    public function downAndExtractCode($url): string
+    public function downAndExtractCode($url, array $includes = []): string
     {
         $arr = explode('/', $url);
         $basename = last($arr);
@@ -354,7 +354,11 @@ class Update extends Install
 
         foreach (glob("$extractDir/*") as $path) {
             if (is_dir($path)) {
-                $excludes = ['.git', 'composer.lock', 'composer.json', 'public/favicon.ico', '.env'];
+                $excludes = ['.git', 'public/favicon.ico', '.env'];
+                if (!in_array('composer', $includes)) {
+                    $excludes[] = 'composer.lock';
+                    $excludes[] = 'composer.json';
+                }
 //                $command = sprintf('cp -raf %s/. %s', $path, ROOT_PATH);
                 $command = "rsync -rvq $path/ " . ROOT_PATH;
                 foreach ($excludes as $exclude) {

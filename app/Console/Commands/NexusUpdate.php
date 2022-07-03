@@ -12,14 +12,14 @@ class NexusUpdate extends Command
      *
      * @var string
      */
-    protected $signature = 'nexus:update {--tag=} {--keep_tmp}';
+    protected $signature = 'nexus:update {--tag=} {--keep_tmp} {--include_composer}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update nexusphp after code updated, remember run `composer update` first. Options: --tag=, --keep_tmp';
+    protected $description = 'Update nexusphp after code updated, remember run `composer update` first. Options: --tag=, --keep_tmp, --include_composer';
 
     private $update;
 
@@ -45,14 +45,19 @@ class NexusUpdate extends Command
         require ROOT_PATH . 'nexus/Database/helpers.php';
         $tag = $this->option('tag');
         $keepTmp = $this->option('keep_tmp');
+        $includeComposer = $this->option('include_composer');
+        $includes = [];
+        if ($includeComposer) {
+            $includes[] = 'composer';
+        }
         if ($tag !== null) {
             if ($tag === 'dev') {
                 $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
             } else {
                 $url = "https://api.github.com/repos/xiaomlove/nexusphp/tarball/v$tag";
             }
-            $this->doLog("Specific tag: '$tag', download from '$url' and extra code...");
-            $tmpPath = $this->update->downAndExtractCode($url);
+            $this->doLog("Specific tag: '$tag', download from '$url' and extra code, includes: " . implode(', ', $includes));
+            $tmpPath = $this->update->downAndExtractCode($url, $includes);
         }
         //Step 1
         $step = $this->update->currentStep();

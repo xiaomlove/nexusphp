@@ -111,11 +111,19 @@ return [
         'label' => 'Torrent',
         'size' => 'Size',
         'ttl' => 'TTL',
+        'seeders' => 'Seeders',
+        'leechers' => 'Leechers',
+        'times_completed' => 'Complete',
+        'category' => 'Category',
+        'approval_status' => 'Approval status',
+        'pos_state' => 'Pos state',
+        'sp_state' => 'Promotion',
     ],
     'hit_and_run' => [
 
     ],
     'tag' => [
+        'label' => 'Tag',
         'color' => 'Background color',
         'font_color' => 'Font color',
         'font_size' => 'Font size',

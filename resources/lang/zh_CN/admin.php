@@ -13,6 +13,7 @@ return [
         'settings' => '设置',
         'users_medals' => '用户勋章',
         'claims' => '用户认领',
+        'torrent_list' => '种子',
     ],
     'resources' => [
         'agent_allow' => [
@@ -63,6 +64,12 @@ return [
         'hit_and_run' => [
             'bulk_action_pardon' => '批量免罪',
             'action_pardon' => '免罪',
+        ],
+        'torrent' => [
+            'bulk_action_pos_state' => '置顶',
+            'bulk_action_remove_tag' => '清除标签',
+            'bulk_action_attach_tag' => '设置标签',
+            'action_approval' => '审核',
         ],
     ]
 ];

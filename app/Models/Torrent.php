@@ -138,14 +138,17 @@ class Torrent extends NexusModel
     public static array $approvalStatus = [
         self::APPROVAL_STATUS_NONE => [
             'text' => 'None',
+            'badge_color' => 'primary',
             'icon' => '<svg t="1655184824967" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="34118" width="16" height="16"><path d="M450.267 772.245l0 92.511 92.511 0 0-92.511L450.267 772.245zM689.448 452.28c13.538-24.367 20.311-50.991 20.311-79.875 0-49.938-19.261-92.516-57.765-127.713-38.517-35.197-90.114-52.8-154.797-52.8-61.077 0-110.191 16.4-147.342 49.188-37.16 32.798-59.497 80.032-67.014 141.703l83.486 9.927c7.218-46.025 22.41-79.875 45.576-101.533 23.166-21.665 52.047-32.494 86.647-32.494 35.802 0 66.038 11.957 90.711 35.874 24.667 23.92 37.01 51.675 37.01 83.266 0 17.451-4.222 33.55-12.642 48.284-8.425 14.747-26.698 34.526-54.83 59.346s-47.607 43.701-58.442 56.637c-14.741 17.754-25.424 35.354-32.037 52.797-9.028 23.172-13.537 50.701-13.537 82.584 0 5.418 0.146 13.539 0.45 24.374l78.069 0c0.599-32.495 2.855-55.966 6.772-70.4 3.903-14.44 9.926-27.229 18.047-38.363 8.127-11.123 25.425-28.43 51.901-51.895C649.43 506.288 675.908 476.656 689.448 452.28L689.448 452.28z" p-id="34119" fill="#e78d0f"></path></svg>',
         ],
         self::APPROVAL_STATUS_ALLOW => [
             'text' => 'Allow',
+            'badge_color' => 'success',
             'icon' => '<svg t="1655145688503" class="icon" viewBox="0 0 1413 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="16225" width="16" height="16"><path d="M1381.807797 107.47394L1274.675044 0.438669 465.281736 809.880718l-322.665524-322.714266L35.434718 594.152982l430.041982 430.041982 107.084012-107.035271-0.243705-0.292446z" fill="#1afa29" p-id="16226"></path></svg>',
         ],
         self::APPROVAL_STATUS_DENY => [
             'text' => 'Deny',
+            'badge_color' => 'danger',
             'icon' => '<svg t="1655184952662" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="35029" width="16" height="16"><path d="M220.8 812.8l22.4 22.4 272-272 272 272 48-44.8-275.2-272 275.2-272-48-48-272 275.2-272-275.2-22.4 25.6-22.4 22.4 272 272-272 272z" fill="#d81e06" p-id="35030"></path></svg>',
         ],
     ];
@@ -190,10 +193,24 @@ class Torrent extends NexusModel
         return $spState;
     }
 
-    public function posStateText(): Attribute
+    protected function posStateText(): Attribute
     {
         return new Attribute(
             get: fn($value, $attributes) => nexus_trans('torrent.pos_state_' . $attributes['pos_state'])
+        );
+    }
+
+    protected function approvalStatusText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => nexus_trans('torrent.approval.status_text.' . $attributes['approval_status'])
+        );
+    }
+
+    protected function spStateText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => self::$promotionTypes[$this->sp_state]['text'] ?? ''
         );
     }
 
@@ -221,14 +238,29 @@ class Torrent extends NexusModel
         return $fields;
     }
 
-    public static function listApprovalStatus($onlyKeyValue = false): array
+    public static function listApprovalStatus($onlyKeyValue = false, $valueField = 'text'): array
     {
         $result = self::$approvalStatus;
         $keyValue = [];
         foreach ($result as $status => &$info) {
             $text = nexus_trans("torrent.approval.status_text.$status");
             $info['text'] = $text;
-            $keyValue[$status] = $text;
+            $keyValue[$status] = $info[$valueField];
+        }
+        if ($onlyKeyValue) {
+            return $keyValue;
+        }
+        return $result;
+    }
+
+    public static function listPromotionTypes($onlyKeyValue = false, $valueField = 'text'): array
+    {
+        $result = self::$promotionTypes;
+        $keyValue = [];
+        foreach ($result as $status => &$info) {
+            $text = $info['text'];
+            $info['text'] = $text;
+            $keyValue[$status] = $info[$valueField];
         }
         if ($onlyKeyValue) {
             return $keyValue;
@@ -253,6 +285,18 @@ class Torrent extends NexusModel
         return self::$hrStatus[$this->hr] ?? '';
     }
 
+    public function getTagsFormattedAttribute(): string
+    {
+        $html = [];
+        foreach ($this->tags as $tag) {
+            $html[] = sprintf(
+                '<span style="color: %s;background-color: %s;border-radius: %s;font-size: %s;padding: %s;margin: %s">%s</span>',
+                $tag->font_color, $tag->color, $tag->border_radius, $tag->font_size, $tag->padding, $tag->margin, $tag->name
+            );
+        }
+        return implode('', $html);
+    }
+
     public static function getBasicInfo(): array
     {
         $result = [];
@@ -262,11 +306,16 @@ class Torrent extends NexusModel
         return $result;
     }
 
-    public static function listPosStates(): array
+    public static function listPosStates($onlyKeyValue = false, $valueField = 'text'): array
     {
         $result = self::$posStates;
+        $keyValues = [];
         foreach ($result as $key => &$value) {
             $value['text'] = nexus_trans('torrent.pos_state_' . $key);
+            $keyValues[$key] = $value[$valueField];
+        }
+        if ($onlyKeyValue) {
+            return $keyValues;
         }
         return $result;
     }

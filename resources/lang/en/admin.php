@@ -13,6 +13,7 @@ return [
         'settings' => 'Settings',
         'users_medals' => 'User medals',
         'claims' => 'User claims',
+        'torrent_list' => 'Torrents',
     ],
     'resources' => [
         'agent_allow' => [
@@ -63,6 +64,12 @@ return [
         'hit_and_run' => [
             'bulk_action_pardon' => 'Bulk pardon',
             'action_pardon' => 'Pardon',
+        ],
+        'torrent' => [
+            'bulk_action_pos_state' => 'Sticky',
+            'bulk_action_remove_tag' => 'Remove tag',
+            'bulk_action_attach_tag' => 'Attach tag',
+            'action_approval' => 'Approval',
         ],
     ]
 ];

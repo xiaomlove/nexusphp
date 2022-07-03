@@ -521,11 +521,11 @@ class TorrentRepository extends BaseRepository
         NexusDB::transaction(function () use ($torrent, $torrentOperationLog, $torrentUpdate, $notifyUser) {
             $log = "torrent: " . $torrent->id;
             if (!empty($torrentUpdate)) {
-                $log .= "[UPDATE_TORRENT]: " . nexus_json_encode($torrentUpdate);
+                $log .= ", [UPDATE_TORRENT]: " . nexus_json_encode($torrentUpdate);
                 $torrent->update($torrentUpdate);
             }
             if (!empty($torrentOperationLog)) {
-                $log .= "[ADD_TORRENT_OPERATION_LOG]: " . nexus_json_encode($torrentOperationLog);
+                $log .= ", [ADD_TORRENT_OPERATION_LOG]: " . nexus_json_encode($torrentOperationLog);
                 TorrentOperationLog::add($torrentOperationLog, $notifyUser);
             }
             do_log($log);

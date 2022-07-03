@@ -16,5 +16,7 @@ $lang_getusertorrentlistajax = array
 	'col_le_time' => "下載時間",
 	'text_record' => "條記錄",
 	'text_no_record' => "沒有記錄",
+    'text_total_size' => " | 總大小：",
+    'col_added' => "發布時間",
 );
 ?>

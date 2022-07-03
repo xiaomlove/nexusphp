@@ -78,8 +78,8 @@ class Test extends Command
      */
     public function handle()
     {
-       $r = User::query()->find(10003, ['id', 'added', 'donoruntil']);
-       dd($r->donoruntil->toDateTimeString() < '1978');
+       $r = Carbon::parse('2022-07-03 04:00:00')->diffInSeconds();
+       dd($r);
     }
 
 
