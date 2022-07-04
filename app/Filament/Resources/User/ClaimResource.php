@@ -48,7 +48,7 @@ class ClaimResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.user.label'))->searchable(),
-                Tables\Columns\TextColumn::make('torrent.name')->limit(50)->label(__('label.torrent.label'))->searchable(),
+                Tables\Columns\TextColumn::make('torrent.name')->limit(40)->label(__('label.torrent.label'))->searchable(),
                 Tables\Columns\TextColumn::make('torrent.size')->label(__('label.torrent.size'))->formatStateUsing(fn (Model $record) => mksize($record->torrent->size)),
                 Tables\Columns\TextColumn::make('torrent.added')->label(__('label.torrent.ttl'))->formatStateUsing(fn (Model $record) => mkprettytime($record->torrent->added->diffInSeconds())),
                 Tables\Columns\TextColumn::make('created_at')->label(__('label.created_at'))->dateTime(),

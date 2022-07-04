@@ -42,7 +42,13 @@ class NexusWebGuard implements Guard
         if (! is_null($this->user)) {
             return $this->user;
         }
-        return $this->user = $this->provider->retrieveByCredentials($this->request->cookie());
+        $credentials = $this->request->cookie();
+        if ($this->validate($credentials)) {
+            $user = $this->user;
+            if ($this->provider->validateCredentials($user, $credentials)) {
+                return $user;
+            }
+        }
     }
 
 
@@ -65,7 +71,9 @@ class NexusWebGuard implements Guard
         if (!$id || !is_valid_id($id) || strlen($credentials["c_secure_pass"]) != 32) {
             return false;
         }
-        if ($this->provider->retrieveById($id)) {
+        $user = $this->provider->retrieveById($id);
+        if ($user) {
+            $this->user = $user;
             return true;
         }
         return false;

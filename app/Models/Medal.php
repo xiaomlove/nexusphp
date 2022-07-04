@@ -36,7 +36,7 @@ class Medal extends NexusModel
 
     public function getGetTypeTextAttribute($value): string
     {
-        return self::$getTypeText[$this->get_type]['text'] ?? '';
+        return nexus_trans("medal.get_types." . $this->get_type);
     }
 
     public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

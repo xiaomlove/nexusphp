@@ -109,6 +109,7 @@ return [
     ],
     'torrent' => [
         'label' => '種子',
+        'owner' => '發布者',
         'size' => '大小',
         'ttl' => '存活時間',
         'seeders' => '做种',

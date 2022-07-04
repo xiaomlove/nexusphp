@@ -70,7 +70,7 @@ class UserResource extends Resource
                 Tables\Columns\BadgeColumn::make('status')->colors(['success' => 'confirmed', 'warning' => 'pending'])->label(__("label.user.status")),
                 Tables\Columns\BadgeColumn::make('enabled')->colors(['success' => 'yes', 'danger' => 'no'])->label(__("label.user.enabled")),
                 Tables\Columns\TextColumn::make('added')->sortable()->dateTime('Y-m-d H:i')->label(__("label.added")),
-                Tables\Columns\TextColumn::make('last_access')->dateTime('Y-m-d H:i')->label(__("label.last_access")),
+                Tables\Columns\TextColumn::make('last_access')->dateTime()->label(__("label.last_access")),
             ])
             ->defaultSort('added', 'desc')
             ->filters([

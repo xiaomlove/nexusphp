@@ -33,7 +33,7 @@ class TorrentTrend extends LineChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Torrent',
+                    'label' => __('label.torrent.label'),
                     'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
                 ],
             ],

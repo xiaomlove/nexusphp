@@ -35,7 +35,7 @@ class UserTrend extends LineChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'User',
+                    'label' => __('label.user.label'),
                     'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
                 ],
             ],

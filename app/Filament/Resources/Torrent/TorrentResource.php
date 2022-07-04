@@ -61,10 +61,10 @@ class TorrentResource extends Resource
                         '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="details.php?id=" target="_blank">%s</a></div>',
                         Str::limit($record->name, 40)
                     );
-                    $tags = sprintf('<div>%s</div>', $record->tagsFormatted);
+                    $tags = sprintf('&nbsp;<div>%s</div>', $record->tagsFormatted);
 
                     return new HtmlString('<div class="flex">' . $name . $tags . '</div>');
-                }),
+                })->label(__('label.name')),
                 Tables\Columns\TextColumn::make('posStateText')->label(__('label.torrent.pos_state')),
                 Tables\Columns\TextColumn::make('spStateText')->label(__('label.torrent.sp_state')),
                 Tables\Columns\TextColumn::make('size')->label(__('label.torrent.size'))->formatStateUsing(fn ($state) => mksize($state)),
@@ -77,7 +77,7 @@ class TorrentResource extends Resource
                     ->formatStateUsing(fn ($record) => $record->approvalStatusText),
                 Tables\Columns\TextColumn::make('added')->label(__('label.added'))->dateTime(),
                 Tables\Columns\TextColumn::make('user.username')
-                    ->label(__('label.user.label'))
+                    ->label(__('label.torrent.owner'))
                     ->url(fn ($record) => sprintf('/userdetails.php?id=%s', $record->owner))
                     ->openUrlInNewTab(true)
                 ,

@@ -30,10 +30,10 @@ class LatestUsers extends BaseWidget
     protected function getTableColumns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('username'),
-            Tables\Columns\TextColumn::make('email'),
-            Tables\Columns\BadgeColumn::make('status')->colors(['success' => 'confirmed', 'danger' => 'pending']),
-            Tables\Columns\TextColumn::make('added')->dateTime(),
+            Tables\Columns\TextColumn::make('username')->label(__('label.user.username')),
+            Tables\Columns\TextColumn::make('email')->label(__('label.email')),
+            Tables\Columns\BadgeColumn::make('status')->colors(['success' => 'confirmed', 'danger' => 'pending'])->label(__('label.status')),
+            Tables\Columns\TextColumn::make('added')->dateTime()->label(__('label.added')),
         ];
     }
 }

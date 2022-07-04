@@ -109,6 +109,7 @@ return [
     ],
     'torrent' => [
         'label' => 'Torrent',
+        'owner' => 'Owner',
         'size' => 'Size',
         'ttl' => 'TTL',
         'seeders' => 'Seeders',
