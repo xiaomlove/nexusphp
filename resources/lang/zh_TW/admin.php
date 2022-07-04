@@ -50,6 +50,7 @@ return [
                 'grant_medal_medal_label' => '選擇勛章',
                 'grant_medal_duration_label' => '有效時長',
                 'grant_medal_duration_help' => '單位：天。如果留空，用戶永久擁有',
+                'confirm_btn' => '確認',
             ]
         ],
         'exam_user' => [

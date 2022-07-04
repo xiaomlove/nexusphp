@@ -45,6 +45,9 @@ class UserProfile extends Page
         if ($this->record->two_step_secret) {
             $actions[] = $this->buildDisableTwoStepAuthenticationAction();
         }
+        if ($this->record->status == User::STATUS_PENDING) {
+            $actions[] = $this->buildConfirmAction();
+        }
         $actions[] = $this->buildResetPasswordAction();
         $actions[] = $this->buildAssignExamAction();
         $actions[] = $this->buildGrantMedalAction();
@@ -201,6 +204,20 @@ class UserProfile extends Page
                 } catch (\Exception $exception) {
                     $this->notify('danger', $exception->getMessage());
                 }
+            });
+    }
+
+    private function buildConfirmAction()
+    {
+        return Actions\Action::make(__('admin.resources.user.actions.confirm_btn'))
+            ->modalHeading(__('admin.resources.user.actions.confirm_btn'))
+            ->requiresConfirmation()
+            ->action(function () {
+                $this->record->status = User::STATUS_CONFIRMED;
+                $this->record->info= null;
+                $this->record->save();
+                $this->notify('success', 'Success!');
+                $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
             });
     }
 

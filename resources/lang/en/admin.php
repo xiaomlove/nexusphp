@@ -50,6 +50,7 @@ return [
                 'grant_medal_medal_label' => 'Select medal',
                 'grant_medal_duration_label' => 'Duration',
                 'grant_medal_duration_help' => 'Unit: days. If left blank, the user has permanent possession',
+                'confirm_btn' => 'Confirm',
             ]
         ],
         'exam_user' => [

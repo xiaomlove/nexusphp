@@ -151,7 +151,8 @@ class TechnicalInformation
         $subtitles = $this->getSubtitles();
 //        dd($videos, $audios, $subtitles);
         if (empty($videos) && empty($audios) && empty($subtitles)) {
-            return '';
+//            return '';
+            return sprintf('<div style="padding: 0 0.5rem"><pre>%s</pre></div>', $this->mediaInfo);
         }
 
         $result = '<table style="border: none;width: 100%"><tbody><tr>';

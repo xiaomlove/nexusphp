@@ -12,7 +12,7 @@ class Install
 {
     protected $currentStep;
 
-    protected $minimumPhpVersion = '8.0.2';
+    protected $minimumPhpVersion = '8.0.3';
 
     protected $progressKeyPrefix = '__step';
 
@@ -71,7 +71,7 @@ class Install
         for ($i = 1; $i < $step; $i++) {
             $progressKey = $this->getProgressKey($i);
             if (!isset($_SESSION[$progressKey])) {
-                $this->doLog("check step: $i, session doesn't have" );
+                $this->doLog("check step: $i, session doesn't have: " . json_encode($_SESSION));
                 return false;
             }
         }
