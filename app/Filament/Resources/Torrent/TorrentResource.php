@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Torrent;
 
 use App\Filament\Resources\Torrent\TorrentResource\Pages;
 use App\Filament\Resources\Torrent\TorrentResource\RelationManagers;
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
@@ -52,6 +53,7 @@ class TorrentResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $showApproval = Setting::get('torrent.approval_status_none_visible') == 'no';
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
@@ -72,6 +74,7 @@ class TorrentResource extends Resource
                 Tables\Columns\TextColumn::make('leechers')->label(__('label.torrent.leechers')),
 //                Tables\Columns\TextColumn::make('times_completed')->label(__('label.torrent.times_completed')),
                 Tables\Columns\BadgeColumn::make('approval_status')
+                    ->visible($showApproval)
                     ->label(__('label.torrent.approval_status'))
                     ->colors(array_flip(Torrent::listApprovalStatus(true, 'badge_color')))
                     ->formatStateUsing(fn ($record) => $record->approvalStatusText),
@@ -100,6 +103,7 @@ class TorrentResource extends Resource
 //                Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('approval')
                     ->label(__('admin.resources.torrent.action_approval'))
+                    ->visible($showApproval)
                     ->form([
                         Forms\Components\Radio::make('approval_status')
                             ->label(__('label.torrent.approval_status'))
@@ -176,6 +180,7 @@ class TorrentResource extends Resource
                     })
                     ->deselectRecordsAfterCompletion(),
             ]);
+
     }
 
     public static function getEloquentQuery(): Builder

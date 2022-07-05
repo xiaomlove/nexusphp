@@ -811,8 +811,8 @@ $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible')
 $approvalStatusIconEnabled = get_setting('torrent.approval_status_icon_enabled');
 $approvalStatus = null;
 $showApprovalStatusFilter = false;
-//when enable approval status icon, all user can use this filter, otherwise only staff member can use
-if ($approvalStatusIconEnabled == 'yes' || get_user_class() >= $staffmem_class) {
+//when enable approval status icon, all user can use this filter, otherwise only staff member and approval none visible is 'no' can use
+if ($approvalStatusIconEnabled == 'yes' || (get_user_class() >= $staffmem_class && $approvalStatusNoneVisible == 'no')) {
     $showApprovalStatusFilter = true;
 }
 //when user can use approval status filter, and pass `approval_status` parameter, will affect
