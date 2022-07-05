@@ -53,7 +53,7 @@ class TagResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('name')->label(__('label.name')),
+                Tables\Columns\TextColumn::make('name')->label(__('label.name'))->searchable(),
                 Tables\Columns\TextColumn::make('color')->label(__('label.tag.color')),
                 Tables\Columns\TextColumn::make('font_color')->label(__('label.tag.font_color')),
                 Tables\Columns\TextColumn::make('font_size')->label(__('label.tag.font_size')),

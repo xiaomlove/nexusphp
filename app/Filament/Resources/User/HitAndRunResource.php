@@ -55,7 +55,7 @@ class HitAndRunResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
-                Tables\Columns\TextColumn::make('torrent.name')->limit(40)->label(__('label.torrent.label')),
+                Tables\Columns\TextColumn::make('torrent.name')->limit(30)->label(__('label.torrent.label')),
                 Tables\Columns\TextColumn::make('snatch.uploadText')->label(__('label.uploaded')),
                 Tables\Columns\TextColumn::make('snatch.downloadText')->label(__('label.downloaded')),
                 Tables\Columns\TextColumn::make('snatch.shareRatio')->label(__('label.ratio')),

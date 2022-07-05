@@ -61,7 +61,7 @@ class MedalResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('name')->label(__('label.name')),
+                Tables\Columns\TextColumn::make('name')->label(__('label.name'))->searchable(),
                 Tables\Columns\ImageColumn::make('image_large')->height(120)->label(__('label.medal.image_large')),
                 Tables\Columns\ImageColumn::make('image_small')->height(120)->label(__('label.medal.image_small')),
                 Tables\Columns\TextColumn::make('getTypeText')->label('Get type')->label(__('label.medal.get_type')),

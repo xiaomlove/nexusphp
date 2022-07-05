@@ -69,7 +69,7 @@ class TorrentResource extends Resource
                     $tags = sprintf('&nbsp;<div>%s</div>', $record->tagsFormatted);
 
                     return new HtmlString('<div class="flex">' . $name . $tags . '</div>');
-                })->label(__('label.name')),
+                })->label(__('label.name'))->searchable(),
                 Tables\Columns\TextColumn::make('posStateText')->label(__('label.torrent.pos_state')),
                 Tables\Columns\TextColumn::make('spStateText')->label(__('label.torrent.sp_state')),
                 Tables\Columns\TextColumn::make('size')->label(__('label.torrent.size'))->formatStateUsing(fn ($state) => mksize($state)),
@@ -139,6 +139,7 @@ class TorrentResource extends Resource
                         Forms\Components\Select::make('pos_state')
                             ->label(__('label.torrent.pos_state'))
                             ->options(Torrent::listPosStates(true))
+                            ->required()
                     ])
                     ->icon('heroicon-o-arrow-circle-up')
                     ->action(function (Collection $records, array $data) {
@@ -163,7 +164,8 @@ class TorrentResource extends Resource
                         Forms\Components\CheckboxList::make('tags')
                             ->label(__('label.tag.label'))
                             ->columns(4)
-                            ->options(TagRepository::createBasicQuery()->pluck('name', 'id')->toArray()),
+                            ->options(TagRepository::createBasicQuery()->pluck('name', 'id')->toArray())
+                            ->required(),
                     ])
                     ->icon('heroicon-o-tag')
                     ->action(function (Collection $records, array $data) {
