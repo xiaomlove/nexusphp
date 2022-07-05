@@ -119,6 +119,7 @@ return [
         'approval_status' => 'Approval status',
         'pos_state' => 'Pos state',
         'sp_state' => 'Promotion',
+        'visible' => 'Visible',
     ],
     'hit_and_run' => [
 

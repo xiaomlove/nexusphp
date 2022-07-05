@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Torrent;
 
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\Torrent\TorrentResource\Pages;
 use App\Filament\Resources\Torrent\TorrentResource\RelationManagers;
 use App\Models\Setting;
@@ -25,6 +26,8 @@ use Illuminate\Support\Str;
 
 class TorrentResource extends Resource
 {
+    use OptionsTrait;
+
     protected static ?string $model = Torrent::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
@@ -87,9 +90,9 @@ class TorrentResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('approval_status')
-                    ->options(Torrent::listApprovalStatus(true))
-                    ->label(__('label.torrent.approval_status')),
+                Tables\Filters\SelectFilter::make('visible')
+                    ->options(self::$yesOrNo)
+                    ->label(__('label.torrent.visible')),
 
                 Tables\Filters\SelectFilter::make('pos_state')
                     ->options(Torrent::listPosStates(true))
@@ -98,6 +101,11 @@ class TorrentResource extends Resource
                 Tables\Filters\SelectFilter::make('sp_state')
                     ->options(Torrent::listPromotionTypes(true))
                     ->label(__('label.torrent.sp_state')),
+
+                Tables\Filters\SelectFilter::make('approval_status')
+                    ->options(Torrent::listApprovalStatus(true))
+                    ->visible($showApproval)
+                    ->label(__('label.torrent.approval_status')),
             ])
             ->actions([
 //                Tables\Actions\EditAction::make(),

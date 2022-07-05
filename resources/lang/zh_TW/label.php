@@ -119,6 +119,7 @@ return [
         'approval_status' => '審核狀態',
         'pos_state' => '置頂',
         'sp_state' => '優惠',
+        'visible' => '活種',
     ],
     'hit_and_run' => [
 

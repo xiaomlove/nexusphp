@@ -118,6 +118,7 @@ return [
         'approval_status' => '审核状态',
         'pos_state' => '置顶',
         'sp_state' => '优惠',
+        'visible' => '活种',
     ],
     'hit_and_run' => [
 
