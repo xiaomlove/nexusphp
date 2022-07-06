@@ -699,7 +699,8 @@ $lang_settings = array
 	'text_login_type_warning' => "When 'Guest visit' != Normal, user can only login through the 'Secret' way",
 	'row_login_secret' => 'Login secret',
 	'text_login_secret_current' => 'Current secret',
-	'text_login_url_with_secret' => 'Login URL',
+	'text_login_url_with_secret' => 'Secret login URL',
+	'text_login_url_with_passkey' => 'Passkey login URL',
 	'text_login_secret_regenerate_yes' => "Re-generate(will update secret and extend it's lifetime after save)",
 	'text_login_secret_regenerate_no' => "Remain(won't change secret and it's lifetime after save)",
 	'text_login_secret_lifetime' => 'Deadline',
@@ -764,6 +765,7 @@ $lang_settings = array
     'text_approval_status_none_visible_note' => "Default: 'Yes'. If change to 'No', force to show approval status icon when audit is not [allow] status.",
     'row_imdb_language' => 'IMDB Language',
     'text_imdb_language_note' => 'Languages used to crawl IMDB data.',
+    'text_login_type_passkey' => 'passkey',
 );
 
 ?>

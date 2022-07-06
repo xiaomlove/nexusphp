@@ -381,13 +381,15 @@ elseif ($action == 'securitysettings')	//security settings
 
 	$loginTypeRadio = '<label><input type="radio" name="login_type" value="normal"' . (empty($SECURITY['login_type']) || $SECURITY['login_type'] == 'normal' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_login_secret\').style.display=\'none\';">' . $lang_settings['text_login_type_normal'] . '</label>';
 	$loginTypeRadio .= '<label><input type="radio" name="login_type" value="secret"' . ($SECURITY['login_type'] == 'secret' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_login_secret\').style.display=\'table-row-group\';">' . $lang_settings['text_login_type_secret'] . '</label>';
+	$loginTypeRadio .= '<label><input type="radio" name="login_type" value="passkey"' . ($SECURITY['login_type'] == 'passkey' ? ' checked' : '') . ' onclick="document.getElementById(\'tbody_login_secret\').style.display=\'table-row-group\';">' . $lang_settings['text_login_type_passkey'] . '</label>';
 	$loginTypeRadio .= sprintf('<b style="color: #DC143C; margin-left: 20px">%s</b>', $lang_settings['text_login_type_warning']);
 	tr($lang_settings['row_login_type'], $loginTypeRadio, 1);
 
-	print '</tbody><tbody id="tbody_login_secret" style="display: ' . ($SECURITY['login_type'] == 'secret' ? 'table-row-group' : 'none') . '">';
+	print '</tbody><tbody id="tbody_login_secret" style="display: ' . (in_array($SECURITY['login_type'], ['secret', 'passkey']) ? 'table-row-group' : 'none') . '">';
 	$loginSecret = sprintf('%s：%s', $lang_settings['text_login_secret_current'], $SECURITY['login_secret'] ?? '');
 	if (!empty($SECURITY['login_secret'])) {
 		$loginSecret .= sprintf('<br/>%s: %s/login.php?secret=%s', $lang_settings['text_login_url_with_secret'], getSchemeAndHttpHost(), $SECURITY['login_secret']);
+		$loginSecret .= sprintf('<br/>%s: %s/%s/{passkey}', $lang_settings['text_login_url_with_passkey'], getSchemeAndHttpHost(), $SECURITY['login_secret']);
 	}
 	$loginSecret .= sprintf('<br/><label><input type="radio" name="login_secret_regenerate" value="no"%s />%s</label>', !empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_no']);
 	$loginSecret .= sprintf('<br/><label><input type="radio" name="login_secret_regenerate" value="yes"%s />%s</label>', empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_yes']);

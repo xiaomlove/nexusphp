@@ -699,7 +699,8 @@ $lang_settings = array
 	'text_login_type_warning' => '当游客访问方式不为正常时，必须使用秘密登录才能登录',
 	'row_login_secret' => '登录密钥',
 	'text_login_secret_current' => '当前密钥',
-	'text_login_url_with_secret' => '登录链接',
+	'text_login_url_with_secret' => '秘密登录链接',
+	'text_login_url_with_passkey' => 'passkey 登录链接',
 	'text_login_secret_regenerate_yes' => '重新生成(保存后会更新并延长有效期)',
 	'text_login_secret_regenerate_no' => '保持当前(保存后不变)',
 	'text_login_secret_lifetime' => '有效期',
@@ -764,6 +765,7 @@ $lang_settings = array
     'text_approval_status_none_visible_note' => "默认：'是'。若改为'否'，审核不为[通过]状态时强制显示审核状态图标。",
     'row_imdb_language' => 'IMDB 语言',
     'text_imdb_language_note' => '抓取 IMDB 数据使用的语言。',
+    'text_login_type_passkey' => 'passkey',
 );
 
 ?>

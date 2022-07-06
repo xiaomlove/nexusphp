@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardRepository extends BaseRepository
 {
-    const FILAMENT_VERSION = '2.13.15';
-
     public function getSystemInfo(): array
     {
         $result = [];
@@ -39,7 +37,7 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.system_info.$name"),
-            'value' => self::FILAMENT_VERSION,
+            'value' => \Composer\InstalledVersions::getPrettyVersion('filament/filament'),
         ];
         $name = 'php_version';
         $result[$name] = [

@@ -17,3 +17,9 @@ Route::get('/', function () {
     return redirect('index.php');
 });
 
+$passkeyLoginUri = get_setting('security.login_secret');
+if (!empty($passkeyLoginUri) && get_setting('security.login_type') == 'passkey') {
+    Route::get("$passkeyLoginUri/{passkey}", [\App\Http\Controllers\AuthenticateController::class, 'passkeyLogin']);
+}
+
+

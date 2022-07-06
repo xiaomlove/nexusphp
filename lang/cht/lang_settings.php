@@ -699,7 +699,8 @@ $lang_settings = array
 	'text_login_type_warning' => '當遊客訪問方式不為正常時，必須使用秘密登錄才能登錄',
 	'row_login_secret' => '登錄密鑰',
 	'text_login_secret_current' => '當前密鑰',
-	'text_login_url_with_secret' => '登錄鏈接',
+	'text_login_url_with_secret' => '秘密登錄鏈接',
+	'text_login_url_with_passkey' => 'passkey 登錄鏈接',
 	'text_login_secret_regenerate_yes' => '重新生成(保存後會更新並延長有效期)',
 	'text_login_secret_regenerate_no' => '保持當前(保存後不變)',
 	'text_login_secret_lifetime' => '有效期',
@@ -764,6 +765,7 @@ $lang_settings = array
     'text_approval_status_none_visible_note' => "默認：'是'。若改為'否'，審核不為[通過]狀態時強製顯示審核狀態圖標。",
     'row_imdb_language' => 'IMDB 語言',
     'text_imdb_language_note' => '抓取 IMDB 數據使用的語言。',
+    'text_login_type_passkey' => 'passkey',
 );
 
 ?>
