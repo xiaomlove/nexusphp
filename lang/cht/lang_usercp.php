@@ -249,6 +249,7 @@ $lang_usercp = array
     'text_two_step_secret_bind_manually_note' => '或者在 APP 中手動輸入以下 Key：',
     'text_two_step_secret_bind_complete_note' => '輸入 code 完成兩步驗證',
     'text_two_step_secret_unbind_note' => '輸入 code 取消兩步驗證',
+    'row_passkey_login_url' => 'Passkey 登錄鏈接',
 );
 
 ?>

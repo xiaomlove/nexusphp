@@ -933,6 +933,9 @@ else{
 if ($CURUSER["avatar"])
 	tr_small($lang_usercp['row_avatar'], "<img src=\"" . $CURUSER["avatar"] . "\" border=0>", 1);
 tr_small($lang_usercp['row_passkey'], $CURUSER["passkey"], 1);
+if (get_setting('security.login_type') == 'passkey' && get_setting('security.login_secret_deadline') > date('Y-m-d H:i:s')) {
+    tr_small($lang_usercp['row_passkey_login_url'], sprintf('%s/%s/%s', getSchemeAndHttpHost(), get_setting('security.login_secret'), $CURUSER['passkey']), 1);
+}
 if ($prolinkpoint_bonus)
 {
 	$prolinkclick=get_row_count("prolinkclicks", "WHERE userid=".$CURUSER['id']);

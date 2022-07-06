@@ -46,12 +46,15 @@ class AuthenticateController extends Controller
 
     public function passkeyLogin($passkey)
     {
-        $user = User::query()->where('passkey', $passkey)->first(['id', 'passhash']);
-        if ($user) {
-            $passhash = md5($user->passhash . $_SERVER["REMOTE_ADDR"]);
-            logincookie($user->id, $passhash,false,0x7fffffff, true, true, true);
-            $user->last_login = now();
-            $user->save();
+        $deadline = Setting::get('security.login_secret_deadline');
+        if ($deadline && $deadline > now()->toDateTimeString()) {
+            $user = User::query()->where('passkey', $passkey)->first(['id', 'passhash']);
+            if ($user) {
+                $passhash = md5($user->passhash . $_SERVER["REMOTE_ADDR"]);
+                logincookie($user->id, $passhash,false,0x7fffffff, true, true, true);
+                $user->last_login = now();
+                $user->save();
+            }
         }
         return redirect('index.php');
     }

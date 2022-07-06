@@ -251,6 +251,7 @@ $lang_usercp = array
     'text_two_step_secret_bind_manually_note' => 'Or manually enter the following key in the APP: ',
     'text_two_step_secret_bind_complete_note' => 'Enter code to complete the two-step authentication',
     'text_two_step_secret_unbind_note' => 'Enter code to cancel two-step authentication',
+    'row_passkey_login_url' => 'Passkey login URL',
 );
 
 ?>
