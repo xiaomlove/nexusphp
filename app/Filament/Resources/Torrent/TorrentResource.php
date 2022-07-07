@@ -63,8 +63,8 @@ class TorrentResource extends Resource
                 Tables\Columns\TextColumn::make('basic_category.name')->label(__('label.torrent.category')),
                 Tables\Columns\TextColumn::make('name')->formatStateUsing(function (Torrent $record) {
                     $name = sprintf(
-                        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="details.php?id=" target="_blank">%s</a></div>',
-                        Str::limit($record->name, 40)
+                        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank">%s</a></div>',
+                        $record->id, Str::limit($record->name, 40)
                     );
                     $tags = sprintf('&nbsp;<div>%s</div>', $record->tagsFormatted);
 
