@@ -1939,6 +1939,7 @@ function get_user_row($id)
 }
 
 function userlogin() {
+    do_log("COOKIE:" . json_encode($_COOKIE) . ", uid: " . (isset($_COOKIE['c_secure_uid']) ? base64($_COOKIE["c_secure_uid"],false) : ''));
     static $loginResult;
     if (!is_null($loginResult)) {
         return $loginResult;
