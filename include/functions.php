@@ -3008,6 +3008,7 @@ function loggedinorreturn($mainpage = false) {
 		}
 		exit();
 	}
+	do_log("[USER]: " . $CURUSER['id']);
 }
 
 function deletetorrent($id) {
