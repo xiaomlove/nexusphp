@@ -23,7 +23,7 @@ class EditExam extends EditRecord
         $data = $this->form->getState();
         $examRep = new ExamRepository();
         try {
-            $examRep->update($data, $this->record->id);
+            $this->record = $examRep->update($data, $this->record->id);
             $this->notify('success', $this->getSavedNotificationMessage());
             $this->redirect($this->getResource()::getUrl('index'));
         } catch (\Exception $exception) {

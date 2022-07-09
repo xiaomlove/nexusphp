@@ -17,7 +17,7 @@ class CreateExam extends CreateRecord
 //        dd($data);
         $examRep = new ExamRepository();
         try {
-            $examRep->store($data);
+            $this->record = $examRep->store($data);
             $this->notify('success', $this->getCreatedNotificationMessage());
             if ($another) {
                 // Ensure that the form record is anonymized so that relationships aren't loaded.

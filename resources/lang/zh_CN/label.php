@@ -25,6 +25,7 @@ return [
     'duration' => '时长',
     'description' => '描述',
     'price' => '价格',
+    'deadline' => '截止时间',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [
@@ -155,5 +156,8 @@ return [
         'seed_time_this_month' => '本月做种时间',
         'uploaded_this_month' => '本月上传量',
         'is_reached_this_month' => '本月是否达标',
+    ],
+    'torrent_state' => [
+        'global_sp_state' => '全站优惠',
     ],
 ];

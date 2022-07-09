@@ -6,6 +6,7 @@ use App\Filament\Resources\User\UserResource;
 use App\Models\Medal;
 use App\Models\User;
 use App\Repositories\ExamRepository;
+use App\Repositories\MedalRepository;
 use App\Repositories\UserRepository;
 use Filament\Resources\Pages\Concerns\HasRelationManagers;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
@@ -36,7 +37,12 @@ class UserProfile extends Page
 
     public function mount($record)
     {
-        $this->updateRecord($record);
+        static::authorizeResourceAccess();
+
+        $this->record = $this->resolveRecord($record);
+
+        abort_unless(static::getResource()::canView($this->getRecord()), 403);
+
     }
 
     protected function getActions(): array
@@ -196,9 +202,9 @@ class UserProfile extends Page
 
             ])
             ->action(function ($data) {
-                $examRep = new ExamRepository();
+                $medalRep = new MedalRepository();
                 try {
-                    $examRep->assignToUser($this->record->id, $data['exam_id'], $data['begin'], $data['end']);
+                    $medalRep->grantToUser($this->record->id, $data['medal_id'], $data['duration']);
                     $this->notify('success', 'Success!');
                     $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
                 } catch (\Exception $exception) {

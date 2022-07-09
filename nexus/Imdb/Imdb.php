@@ -102,6 +102,10 @@ class Imdb
     public function purgeSingle($id)
     {
         $mainCacheFile =  $this->getCacheFilePath($id);
+        if (!is_file($mainCacheFile)) {
+            do_log("mainCacheFile: $mainCacheFile not exists, return");
+            return true;
+        }
         foreach (glob("$mainCacheFile*") as $file) {
             if (file_exists($file)) {
                 do_log("unlink: $file");

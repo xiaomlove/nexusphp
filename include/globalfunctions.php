@@ -8,8 +8,14 @@ function get_global_sp_state()
 		if (!$global_promotion_state = $Cache->get_value('global_promotion_state')){
 			$res = mysql_query("SELECT * FROM torrents_state");
 			$row = mysql_fetch_assoc($res);
-			$global_promotion_state = $row["global_sp_state"];
-			$Cache->cache_value('global_promotion_state', $global_promotion_state, 57226);
+			if (isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
+			    //expired
+                $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
+            } else {
+                $global_promotion_state = $row["global_sp_state"];
+            }
+			$Cache->cache_value('global_promotion_state', $global_promotion_state, 600);
+			$Cache->cache_value('global_promotion_state_deadline', $row['deadline'], 600);
 		}
 	}
 	return $global_promotion_state;

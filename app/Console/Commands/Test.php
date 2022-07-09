@@ -78,7 +78,7 @@ class Test extends Command
      */
     public function handle()
     {
-       $r = \Composer\InstalledVersions::getPrettyVersion('filament/filament');
+       $r = NexusDB::cache_get('ssbb');
        dd($r);
     }
 

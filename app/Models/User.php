@@ -17,10 +17,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     public $timestamps = false;
 
@@ -476,7 +477,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessAdmin(): bool
     {
-        $targetClass = self::CLASS_SYSOP;
+        $targetClass = Setting::get('authority.staffmem');
         if (!$this->class || $this->class < $targetClass) {
             do_log(sprintf('user: %s, no class or class < %s, can not access admin.', $this->id, $targetClass));
             return false;

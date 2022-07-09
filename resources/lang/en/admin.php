@@ -14,6 +14,7 @@ return [
         'users_medals' => 'User medals',
         'claims' => 'User claims',
         'torrent_list' => 'Torrents',
+        'torrent_state' => 'Free leach',
     ],
     'resources' => [
         'agent_allow' => [

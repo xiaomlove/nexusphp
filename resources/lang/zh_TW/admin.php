@@ -14,6 +14,7 @@ return [
         'users_medals' => '用戶勛章',
         'claims' => '用戶認領',
         'torrent_list' => '種子',
+        'torrent_state' => '全站優惠',
     ],
     'resources' => [
         'agent_allow' => [

@@ -329,7 +329,7 @@ $lang_functions = array
     'menu_claim' => 'Claim: ',
     'text_complains' => 'There %s %u pending complaint%s.',
     'text_contactstaff' => 'Contact staff',
-    'full_site_promotion_in_effect' => 'Full site [%s] in effect!',
+    'full_site_promotion_in_effect' => 'Full site [%s] in effect! Deadline: %s',
     'text_torrent_to_approval' => 'There %s%u not approval torrent%s.',
 );
 

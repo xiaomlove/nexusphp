@@ -1939,7 +1939,7 @@ function get_user_row($id)
 }
 
 function userlogin() {
-    do_log("COOKIE:" . json_encode($_COOKIE) . ", uid: " . (isset($_COOKIE['c_secure_uid']) ? base64($_COOKIE["c_secure_uid"],false) : ''));
+//    do_log("COOKIE:" . json_encode($_COOKIE) . ", uid: " . (isset($_COOKIE['c_secure_uid']) ? base64($_COOKIE["c_secure_uid"],false) : ''));
     static $loginResult;
     if (!is_null($loginResult)) {
         return $loginResult;
@@ -2637,7 +2637,7 @@ else {
                 <font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?>
                 <?php if(\App\Models\HitAndRun::getIsEnabled()) { ?><font class='color_bonus'>H&R: </font> <?php echo sprintf('[<a href="myhr.php">%s</a>]', (new \App\Repositories\HitAndRunRepository())->getStatusStats($CURUSER['id']))?><?php }?>
                 <?php if(\App\Models\Claim::getConfigIsEnabled()) { ?><font class='color_bonus'><?php echo $lang_functions['menu_claim']?></font> <?php echo sprintf('[<a href="claim.php?uid=%s">%s</a>]', $CURUSER['id'], (new \App\Repositories\ClaimRepository())->getStats($CURUSER['id']))?><?php }?>
-                <?php if(get_user_class() >= UC_SYSOP) printf('[<a href="%s" target="_blank">%s</a>]', nexus_env('FILAMENT_PATH', 'nexusphp'), $lang_functions['text_management_system'])?>
+                <?php if(get_user_class() >= get_setting('authority.staffmem')) printf('[<a href="%s" target="_blank">%s</a>]', nexus_env('FILAMENT_PATH', 'nexusphp'), $lang_functions['text_management_system'])?>
             </span>
         </td>
 	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum['hours'].":".$datum['minutes']?><br />
@@ -2684,7 +2684,11 @@ if ($msgalert)
 {
     $spStateGlobal = get_global_sp_state();
     if ($spStateGlobal != \App\Models\Torrent::PROMOTION_NORMAL) {
-        msgalert("torrents.php", sprintf($lang_functions['full_site_promotion_in_effect'], \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text']), "green");
+        $deadline = \Nexus\Database\NexusDB::cache_get('global_promotion_state_deadline');
+        if (!$deadline) {
+            $deadline = \App\Models\TorrentState::query()->first(['deadline'])->deadline ?? '';
+        }
+        msgalert("torrents.php", sprintf($lang_functions['full_site_promotion_in_effect'], \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text'], $deadline), "green");
     }
 	if($CURUSER['leechwarn'] == 'yes')
 	{
@@ -3008,7 +3012,7 @@ function loggedinorreturn($mainpage = false) {
 		}
 		exit();
 	}
-	do_log("[USER]: " . $CURUSER['id']);
+//	do_log("[USER]: " . $CURUSER['id']);
 }
 
 function deletetorrent($id) {

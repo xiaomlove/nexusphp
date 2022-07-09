@@ -328,7 +328,7 @@ $lang_functions = array
     'menu_claim' => '認領: ',
     'text_complains' => '有%s%u個待處理的申诉%s',
     'text_contactstaff' => '聯系管理組',
-    'full_site_promotion_in_effect' => '全站 [%s] 生效中！',
+    'full_site_promotion_in_effect' => '全站 [%s] 生效中！截止時間：%s',
     'text_torrent_to_approval' => '有 %s%u 個待審核的種子%s',
 );
 

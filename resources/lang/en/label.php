@@ -25,6 +25,7 @@ return [
     'duration' => 'Duration',
     'description' => 'Description',
     'price' => 'Price',
+    'deadline' => 'Deadline',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [
@@ -156,5 +157,8 @@ return [
         'seed_time_this_month' => 'St. this month',
         'uploaded_this_month' => 'Up. this month',
         'is_reached_this_month' => 'Reached',
+    ],
+    'torrent_state' => [
+        'global_sp_state' => 'Global promotion state',
     ],
 ];
