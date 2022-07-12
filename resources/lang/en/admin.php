@@ -15,6 +15,8 @@ return [
         'claims' => 'User claims',
         'torrent_list' => 'Torrents',
         'torrent_state' => 'Free leach',
+        'roles_list' => 'Roles',
+        'ability_list' => 'Permissions',
     ],
     'resources' => [
         'agent_allow' => [

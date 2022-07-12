@@ -83,6 +83,9 @@ return [
         'duration' => '有效時長',
         'duration_help' => '單位：天。如果留空，用戶永久擁有',
     ],
+    'user_medal' => [
+        'label' => '用戶勛章',
+    ],
     'exam' => [
         'label' => '考核',
         'is_done' => '是否完成',
@@ -106,6 +109,7 @@ return [
         'index_result' => '結果',
     ],
     'exam_user' => [
+        'label' => '用戶考核',
         'is_done' => '是否完成',
     ],
     'torrent' => [
@@ -123,7 +127,7 @@ return [
         'visible' => '活種',
     ],
     'hit_and_run' => [
-
+        'label' => '用戶 H&R',
     ],
     'tag' => [
         'label' => '標簽',
@@ -135,6 +139,7 @@ return [
         'border_radius' => '邊框圓角',
     ],
     'agent_allow' => [
+        'label' => '允許客戶端',
         'family' => '系列',
         'start_name' => '起始名稱',
         'peer_id_start' => 'Peer ID 超始',
@@ -149,16 +154,22 @@ return [
         'allowhttps' => '允許 https',
     ],
     'agent_deny' => [
+        'label' => '拒絕客戶端',
         'peer_id' => 'Peer ID',
         'agent' => 'Agent',
     ],
     'claim' => [
+        'label' => '用戶認領',
         'last_settle_at' => '上次結算時間',
         'seed_time_this_month' => '本月做種時間',
         'uploaded_this_month' => '本月上傳量',
         'is_reached_this_month' => '本月是否達標',
     ],
     'torrent_state' => [
+        'label' => '全站優惠',
         'global_sp_state' => '全站優惠',
+    ],
+    'role' => [
+        'class' => '關聯用户等級',
     ],
 ];

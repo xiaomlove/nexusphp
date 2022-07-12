@@ -19,7 +19,7 @@ class TorrentStatePolicy extends BasePolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return true;
     }
 
     /**
@@ -31,7 +31,7 @@ class TorrentStatePolicy extends BasePolicy
      */
     public function view(User $user, TorrentState $torrentState)
     {
-        //
+        return true;
     }
 
     /**
@@ -42,7 +42,7 @@ class TorrentStatePolicy extends BasePolicy
      */
     public function create(User $user)
     {
-        //
+        return false;
     }
 
     /**
@@ -54,7 +54,7 @@ class TorrentStatePolicy extends BasePolicy
      */
     public function update(User $user, TorrentState $torrentState)
     {
-        //
+        return $this->can($user);
     }
 
     /**
@@ -66,7 +66,7 @@ class TorrentStatePolicy extends BasePolicy
      */
     public function delete(User $user, TorrentState $torrentState)
     {
-        //
+
     }
 
     /**
@@ -78,7 +78,7 @@ class TorrentStatePolicy extends BasePolicy
      */
     public function restore(User $user, TorrentState $torrentState)
     {
-        //
+
     }
 
     /**
@@ -91,5 +91,13 @@ class TorrentStatePolicy extends BasePolicy
     public function forceDelete(User $user, TorrentState $torrentState)
     {
         //
+    }
+
+    private function can(User $user)
+    {
+        if ($user->class >= User::CLASS_ADMINISTRATOR) {
+            return true;
+        }
+        return false;
     }
 }

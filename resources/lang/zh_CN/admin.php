@@ -15,6 +15,8 @@ return [
         'claims' => '用户认领',
         'torrent_list' => '种子',
         'torrent_state' => '全站优惠',
+        'roles_list' => '角色',
+        'ability_list' => '权限',
     ],
     'resources' => [
         'agent_allow' => [

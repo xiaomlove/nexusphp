@@ -55,7 +55,7 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->sortable(),
+                Tables\Columns\TextColumn::make('id')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('username')->searchable()->label(__("label.user.username")),
                 Tables\Columns\TextColumn::make('email')->searchable()->label(__("label.email")),
                 Tables\Columns\TextColumn::make('class')->label('Class')

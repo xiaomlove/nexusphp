@@ -17,11 +17,10 @@ use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasFactory, Notifiable, HasApiTokens, HasRoles;
+    use HasFactory, Notifiable, HasApiTokens;
 
     public $timestamps = false;
 
@@ -90,6 +89,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'seed_points' => '做种积分',
         'invites' => '邀请',
     ];
+
 
     public function getClassTextAttribute(): string
     {

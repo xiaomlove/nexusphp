@@ -83,6 +83,9 @@ return [
         'duration' => 'Duration',
         'duration_help' => 'Unit: days. If left blank, the user has permanent possession',
     ],
+    'user_medal' => [
+        'label' => 'User medal',
+    ],
     'exam' => [
         'label' => 'Exam',
         'is_done' => 'Is done',
@@ -106,6 +109,7 @@ return [
         'index_result' => 'Result',
     ],
     'exam_user' => [
+        'label' => 'Exam user',
         'is_done' => 'Is done',
     ],
     'torrent' => [
@@ -123,7 +127,7 @@ return [
         'visible' => 'Visible',
     ],
     'hit_and_run' => [
-
+        'label' => 'User H&R',
     ],
     'tag' => [
         'label' => 'Tag',
@@ -135,6 +139,7 @@ return [
         'border_radius' => 'Border radius',
     ],
     'agent_allow' => [
+        'label' => 'Agent allow',
         'family' => 'Family',
         'start_name' => 'Start name',
         'peer_id_start' => 'Peer ID start',
@@ -149,16 +154,22 @@ return [
         'allowhttps' => 'Allow https',
     ],
     'agent_deny' => [
+        'label' => 'Agent deny',
         'peer_id' => 'Peer ID',
         'agent' => 'Agent',
     ],
     'claim' => [
+        'label' => 'User claim',
         'last_settle_at' => 'Last settle at',
         'seed_time_this_month' => 'St. this month',
         'uploaded_this_month' => 'Up. this month',
         'is_reached_this_month' => 'Reached',
     ],
     'torrent_state' => [
+        'label' => 'Global promotion',
         'global_sp_state' => 'Global promotion state',
+    ],
+    'role' => [
+        'class' => 'Relate user class',
     ],
 ];

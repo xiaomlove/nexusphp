@@ -49,7 +49,6 @@
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",
         "rhilip/bencode": "^2.0",
-        "spatie/laravel-permission": "^5.5",
         "spiral/roadrunner": "^2.8"
     },
     "require-dev": {

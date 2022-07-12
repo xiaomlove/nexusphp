@@ -36,8 +36,10 @@ function dltable($name, $arr, $torrent)
 	"<td class=colhead align=center width=1%>".$lang_viewpeerlist['col_client']."</td></tr>\n";
 	$now = time();
 	$num = 0;
+    $privacyData = \App\Models\User::query()->whereIn('id', array_column($arr, 'userid'))->get(['id', 'privacy'])->keyBy('id');
 	foreach ($arr as $e) {
-		$privacy = get_single_value("users", "privacy","WHERE id=".sqlesc($e['userid']));
+//		$privacy = get_single_value("users", "privacy","WHERE id=".sqlesc($e['userid']));
+        $privacy = $privacyData->get($e['userid'])->privacy ?? '';
 		++$num;
 
 		$highlight = $CURUSER["id"] == $e['userid'] ? " bgcolor=#BBAF9B" : "";

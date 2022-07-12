@@ -93,7 +93,7 @@ class UserPolicy extends BasePolicy
 
     private function can(User $user)
     {
-        if ($user->class >= User::CLASS_SYSOP) {
+        if ($user->class >= User::CLASS_ADMINISTRATOR) {
             return true;
         }
         return false;

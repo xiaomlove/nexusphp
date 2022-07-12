@@ -56,7 +56,7 @@ class TorrentResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $showApproval = Setting::get('torrent.approval_status_none_visible') == 'no';
+        $showApproval = Setting::get('torrent.approval_status_none_visible') == 'no' || Setting::get('torrent.approval_status_icon_enabled') == 'yes';
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),

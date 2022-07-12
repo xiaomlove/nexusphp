@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Events\TorrentUpdated;
 use App\Http\Resources\TagResource;
+use App\Models\Ability;
 use App\Models\Attendance;
 use App\Models\Exam;
 use App\Models\ExamProgress;
@@ -11,6 +12,7 @@ use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Peer;
+use App\Models\Role;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
@@ -44,6 +46,7 @@ use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
 use Rhilip\Bencode\Bencode;
+use Silber\Bouncer\Bouncer;
 
 class Test extends Command
 {
@@ -78,8 +81,7 @@ class Test extends Command
      */
     public function handle()
     {
-       $r = NexusDB::cache_get('ssbb');
-       dd($r);
+        Ability::initDefaults();
     }
 
 

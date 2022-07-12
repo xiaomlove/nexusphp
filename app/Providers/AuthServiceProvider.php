@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Auth\NexusWebGuard;
 use App\Auth\NexusWebUserProvider;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -36,8 +38,12 @@ class AuthServiceProvider extends ServiceProvider
 
         Auth::extend('nexus-web', function ($app, $name, array $config) {
             // 返回 Illuminate\Contracts\Auth\Guard 的实例 ...
-            return new NexusWebGuard($app->make('request'), new NexusWebUserProvider());
+            return new NexusWebGuard($app['request'], new NexusWebUserProvider());
         });
+
+//        Bouncer::useAbilityModel(Permission::class);
+//        Bouncer::useRoleModel(Role::class);
+//        Bouncer::useUserModel(User::class);
     }
 
     private function getUserByCookie($cookie)

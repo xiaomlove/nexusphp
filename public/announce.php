@@ -443,6 +443,7 @@ else // continue an existing session
 
 $dt = sqlesc(date("Y-m-d H:i:s"));
 $updateset = array();
+$hasChangeSeederLeecher = false;
 // set non-type event
 if (!isset($event))
 	$event = "";
@@ -452,6 +453,7 @@ if (isset($self) && $event == "stopped")
 	if (mysql_affected_rows())
 	{
 //		$updateset[] = ($self["seeder"] == "yes" ? "seeders = seeders - 1" : "leechers = leechers - 1");
+        $hasChangeSeederLeecher = true;
 		sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 1");
 	}
 }
@@ -470,9 +472,10 @@ elseif(isset($self))
 
 	if (mysql_affected_rows())
 	{
-//		if ($seeder <> $self["seeder"])
-		    //count directly since 1.7.4
-//		$updateset[] = ($seeder == "yes" ? "seeders = seeders + 1, leechers = leechers - 1" : "seeders = seeders - 1, leechers = leechers + 1");
+		if ($seeder <> $self["seeder"]) {
+//            $updateset[] = ($seeder == "yes" ? "seeders = seeders + 1, leechers = leechers - 1" : "seeders = seeders - 1, leechers = leechers + 1");
+            $hasChangeSeederLeecher = true;
+        }
 		$snatchInfo = \App\Models\Snatch::query()
             ->where('torrentid', $torrentid)
             ->where('userid', $userid)
@@ -524,7 +527,7 @@ else
                 if (mysql_affected_rows())
                 {
 //                    $updateset[] = ($seeder == "yes" ? "seeders = seeders + 1" : "leechers = leechers + 1");
-
+                    $hasChangeSeederLeecher = true;
                     $check = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM snatched WHERE torrentid = $torrentid AND userid = $userid"));
                     if (!$check['0'])
                         sql_query("INSERT INTO snatched (torrentid, userid, ip, port, uploaded, downloaded, to_go, startdat, last_action) VALUES ($torrentid, $userid, ".sqlesc($ip).", $port, $uploaded, $downloaded, $left, $dt, $dt)") or err("SL Err 4");
@@ -548,11 +551,13 @@ if (isset($event) && !empty($event)) {
     $updateset[] = 'leechers = ' . get_row_count("peers", "where torrent = $torrentid and to_go > 0");
 }
 
-if (count($updateset)) // Update only when there is change in peer counts
+if (count($updateset) || $hasChangeSeederLeecher) // Update only when there is change in peer counts
 {
 	$updateset[] = "visible = 'yes'";
 	$updateset[] = "last_action = $dt";
-	sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $torrentid");
+	$sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $torrentid";
+	sql_query($sql);
+	do_log("[ANNOUNCE_UPDATE_TORRENT], $sql");
 }
 
 if($client_familyid != 0 && $client_familyid != $az['clientselect']) {
@@ -571,7 +576,9 @@ if ($az['class'] == UC_VIP) {
 }
 if(count($USERUPDATESET) && $userid)
 {
-	sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid);
+    $sql = "UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$userid;
+    sql_query($sql);
+    do_log("[ANNOUNCE_UPDATE_USER], $sql");
 }
 do_action('announced', $torrent, $az, $_REQUEST);
 benc_resp($rep_dict);

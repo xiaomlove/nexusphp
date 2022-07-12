@@ -83,6 +83,9 @@ return [
         'duration' => '有效时长',
         'duration_help' => '单位：天。如果留空，用户永久拥有',
     ],
+    'user_medal' => [
+        'label' => '用户勋章',
+    ],
     'exam' => [
         'label' => '考核',
         'is_discovered' => '自动发现',
@@ -105,6 +108,7 @@ return [
         'index_result' => '结果',
     ],
     'exam_user' => [
+        'label' => '用户考核',
         'is_done' => '是否完成',
     ],
     'torrent' => [
@@ -122,7 +126,7 @@ return [
         'visible' => '活种',
     ],
     'hit_and_run' => [
-
+        'label' => '用户 H&R',
     ],
     'tag' => [
         'label' => '标签',
@@ -134,6 +138,7 @@ return [
         'border_radius' => '边框圆角',
     ],
     'agent_allow' => [
+        'label' => '允许客户端',
         'family' => '系列',
         'start_name' => '起始名称',
         'peer_id_start' => 'Peer ID 超始',
@@ -148,16 +153,26 @@ return [
         'allowhttps' => '允许 https',
     ],
     'agent_deny' => [
+        'label' => '拒绝客戶端',
         'peer_id' => 'Peer ID',
         'agent' => 'Agent',
     ],
     'claim' => [
+        'label' => '用户认领',
         'last_settle_at' => '上次结算时间',
         'seed_time_this_month' => '本月做种时间',
         'uploaded_this_month' => '本月上传量',
         'is_reached_this_month' => '本月是否达标',
     ],
     'torrent_state' => [
+        'label' => '全站优惠',
         'global_sp_state' => '全站优惠',
+    ],
+    'role' => [
+        'class' => '关联用户等级',
+    ],
+    'ability' => [
+        'name' => '标识',
+        'title' => '名称',
     ],
 ];
