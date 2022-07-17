@@ -48,17 +48,19 @@ class UserProfile extends Page
     protected function getActions(): array
     {
         $actions = [];
-        if ($this->record->two_step_secret) {
-            $actions[] = $this->buildDisableTwoStepAuthenticationAction();
+        if (Auth::user()->class > $this->record->class) {
+            $actions[] = $this->buildAssignExamAction();
+            $actions[] = $this->buildGrantMedalAction();
+            $actions[] = $this->buildChangeBonusEtcAction();
+            if ($this->record->two_step_secret) {
+                $actions[] = $this->buildDisableTwoStepAuthenticationAction();
+            }
+            if ($this->record->status == User::STATUS_PENDING) {
+                $actions[] = $this->buildConfirmAction();
+            }
+            $actions[] = $this->buildResetPasswordAction();
+            $actions[] = $this->buildEnableDisableAction();
         }
-        if ($this->record->status == User::STATUS_PENDING) {
-            $actions[] = $this->buildConfirmAction();
-        }
-        $actions[] = $this->buildResetPasswordAction();
-        $actions[] = $this->buildAssignExamAction();
-        $actions[] = $this->buildGrantMedalAction();
-        $actions[] = $this->buildChangeBonusEtcAction();
-        $actions[] = $this->buildEnableDisableAction();
         return $actions;
     }
 
@@ -219,6 +221,10 @@ class UserProfile extends Page
             ->modalHeading(__('admin.resources.user.actions.confirm_btn'))
             ->requiresConfirmation()
             ->action(function () {
+                if (Auth::user()->class <= $this->record->class) {
+                    $this->notify('danger', 'No permission!');
+                    return;
+                }
                 $this->record->status = User::STATUS_CONFIRMED;
                 $this->record->info= null;
                 $this->record->save();

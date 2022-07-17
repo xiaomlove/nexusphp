@@ -5,6 +5,7 @@ use App\Models\Medal;
 use App\Models\User;
 use App\Models\UserMedal;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Nexus\Database\NexusDB;
 
 class MedalRepository extends BaseRepository
@@ -56,6 +57,9 @@ class MedalRepository extends BaseRepository
     public function  grantToUser(int $uid, int $medalId, $duration = null)
     {
         $user = User::query()->findOrFail($uid, User::$commonFields);
+        if (Auth::user()->class <= $user->class) {
+            throw new \LogicException("No permission!");
+        }
         $medal = Medal::query()->findOrFail($medalId);
         $exists = $user->valid_medals()->where('medal_id', $medalId)->exists();
         do_log(last_query());

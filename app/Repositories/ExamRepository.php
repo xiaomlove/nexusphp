@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ExamRepository extends BaseRepository
@@ -292,6 +293,9 @@ class ExamRepository extends BaseRepository
         $logPrefix = "uid: $uid, examId: $examId, begin: $begin, end: $end";
         $exam = Exam::query()->find($examId);
         $user = User::query()->findOrFail($uid);
+        if (Auth::user()->Class <= $user->class) {
+            throw new NexusException("No permission !");
+        }
         if (!$this->isExamMatchUser($exam, $user)) {
             throw new NexusException("Exam: {$exam->id} no match this user.");
         }

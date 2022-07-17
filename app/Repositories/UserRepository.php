@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
 
@@ -132,7 +133,10 @@ class UserRepository extends BaseRepository
         if ($password != $passwordConfirmation) {
             throw new \InvalidArgumentException("password confirmation != password");
         }
-        $user = User::query()->findOrFail($id, ['id', 'username']);
+        $user = User::query()->findOrFail($id, ['id', 'username', 'class']);
+        if (Auth::user()->class <= $user->class) {
+            throw new \LogicException("Sorry, you don't have enough permission to reset this user's password.");
+        }
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
         $update = [
@@ -182,6 +186,9 @@ class UserRepository extends BaseRepository
         if ($targetUser->enabled == User::ENABLED_YES) {
             throw new NexusException('Already enabled !');
         }
+        if ($targetUser->class >= $operator->class) {
+            throw new NexusException('No Permission !');
+        }
         $update = [
             'enabled' => User::ENABLED_YES
         ];
@@ -226,6 +233,9 @@ class UserRepository extends BaseRepository
         }
         $sourceField = $fieldMap[$field];
         $targetUser = User::query()->findOrFail($uid, User::$commonFields);
+        if (Auth::user()->Class <= $targetUser->class) {
+            throw new NexusException("No permission !");
+        }
         $old = $targetUser->{$sourceField};
         $valueAtomic = $value;
         $formatSize = false;
@@ -310,6 +320,9 @@ class UserRepository extends BaseRepository
             throw new \RuntimeException("No permission.");
         }
         $user = User::query()->findOrFail($uid, User::$commonFields);
+        if ($operator->class <= $user->class) {
+            throw new \RuntimeException("No permission!");
+        }
         $user->two_step_secret = '';
         return $user->save();
     }
