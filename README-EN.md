@@ -28,7 +28,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel + Filament.
 ## System Requirements
 - PHP: 8.0, must have extensions: bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix
 - Mysql: 5.7 latest version or above
-- Redis：1.0.0 or above
+- Redis：2.0.0 or above
 
 ## Quick Start
 Install docker.  

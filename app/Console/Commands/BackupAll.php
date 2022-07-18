@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Repositories\ToolRepository;
 use Illuminate\Console\Command;
 
-class BackuAll extends Command
+class BackupAll extends Command
 {
     /**
      * The name and signature of the console command.

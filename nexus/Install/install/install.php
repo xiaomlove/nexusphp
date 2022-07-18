@@ -104,6 +104,7 @@ if ($currentStep == 4) {
     $tableRows = $settingTableRows['table_rows'];
     $pass = $settingTableRows['pass'];
     $mysqlInfo = $install->getMysqlVersionInfo();
+    $redisInfo = $install->getREdisVersionInfo();
     while ($isPost) {
         set_time_limit(300);
         try {
@@ -136,7 +137,11 @@ if ($currentStep == 5) {
     ];
 }
 
-if (!empty($error) || (isset($mysqlInfo) && !$mysqlInfo['match'])) {
+if (
+    !empty($error)
+    || (isset($mysqlInfo) && !$mysqlInfo['match'])
+    || (isset($redisInfo) && !$redisInfo['match'])
+) {
     $pass = false;
 }
 ?>
@@ -183,6 +188,9 @@ if (!empty($error) || (isset($mysqlInfo) && !$mysqlInfo['match'])) {
                     echo '</div>';
                     if (!$mysqlInfo['match']) {
                         echo sprintf('<div class="text-red-700 pt-10">MySQL version: %s is too low, please use the newest version of 5.7 or above.</div>', $mysqlInfo['version']);
+                    }
+                    if (!$redisInfo['match']) {
+                        echo sprintf('<div class="text-red-700 pt-10">Redis version: %s is too low, please use 2.0.0 or above.</div>', $redisInfo['version']);
                     }
                 } elseif ($currentStep == 5) {
                     echo $install->renderForm($userFormControls, '1/2', '1/4', '3/4');

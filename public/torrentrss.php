@@ -1,5 +1,17 @@
 <?php
 require "../include/bittorrent.php";
+$cacheKey = 'nexus_rss';
+$hashKey = md5(http_build_query($_GET));
+$redis = $Cache->getRedis();
+$cacheData = $redis->hGet($cacheKey, $hashKey);
+if ($cacheData) {
+    $cacheData = unserialize($cacheData);
+    if (isset($cacheData['deadline']) && $cacheData['deadline'] > time()) {
+        do_log("rss get from cache");
+        header ("Content-type: text/xml");
+        die($cacheData['data']);
+    }
+}
 dbconn();
 function hex_esc($matches) {
 	return sprintf("%02x", ord($matches[0]));
@@ -117,15 +129,12 @@ $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);
 $yearfounded = ($year ? $year : 2007);
 $copyright = "Copyright (c) ".$SITENAME." ".(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y").", all rights reserved";
-header ("Content-type: text/xml");
-print("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+$xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 //The commented version passed feed validator at http://www.feedvalidator.org
 /*print('
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">');*/
-print('
-<rss version="2.0">');
-print('
-	<channel>
+$xml .= '<rss version="2.0">';
+$xml .= '<channel>
 		<title>' . addslashes($SITENAME.' Torrents'). '</title>
 		<link><![CDATA[' . $url . ']]></link>
 		<description><![CDATA[' . addslashes('Latest torrents from '.$SITENAME.' - '.htmlspecialchars($SLOGAN)) . ']]></description>
@@ -144,11 +153,11 @@ print('
 			<width>100</width>
 			<height>100</height>
 			<description>' . addslashes($SITENAME.' Torrents') . '</description>
-		</image>');
+		</image>';
 /*print('
 		<atom:link href="'.$url.$_SERVER['REQUEST_URI'].'" rel="self" type="application/rss+xml" />');*/
-print('
-');
+//print('
+//');
 foreach ($list as $row)
 {
 	$title = "";
@@ -165,22 +174,25 @@ foreach ($list as $row)
 	if (!empty($_GET['isize'])) $title .= "[".mksize($row['size'])."]";
 	if (!empty($_GET['iuplder'])) $title .= "[".$author."]";
 	$content = format_comment($row['descr'], true, false, false, false);
-	print('		<item>
+	$xml .= '<item>
 			<title><![CDATA['.$title.']]></title>
 			<link>'.$itemurl.'</link>
 			<description><![CDATA['.$content.']]></description>
-');
+';
 //print('			<dc:creator>'.$author.'</dc:creator>');
-print('			<author>'.$author.'@'.$_SERVER['HTTP_HOST'].' ('.$author.')</author>');
-print('
-			<category domain="'.$url.'/torrents.php?cat='.$row['cat_id'].'">'.$row['cat_name'].'</category>
+$xml .= '<author>'.$author.'@'.$_SERVER['HTTP_HOST'].' ('.$author.')</author>';
+$xml .= '<category domain="'.$url.'/torrents.php?cat='.$row['cat_id'].'">'.$row['cat_name'].'</category>
 			<comments><![CDATA['.$url.'/details.php?id='.$row['id'].'&cmtpage=0#startcomments]]></comments>
 			<enclosure url="'.$itemdlurl.'" length="'.$row['size'].'" type="application/x-bittorrent" />
 			<guid isPermaLink="false">'.preg_replace_callback('/./s', 'hex_esc', hash_pad($row['info_hash'])).'</guid>
 			<pubDate>'.date('r',strtotime($row['added'])).'</pubDate>
 		</item>
-');
+';
 }
-print('	</channel>
-</rss>');
+$xml .= '</channel>
+</rss>';
+do_log("rss cache generated");
+$redis->hSet($cacheKey, $hashKey, serialize(['data' => $xml, 'deadline' => time() + 300]));
+header ("Content-type: text/xml");
+echo $xml;
 ?>

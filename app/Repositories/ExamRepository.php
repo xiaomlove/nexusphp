@@ -293,7 +293,7 @@ class ExamRepository extends BaseRepository
         $logPrefix = "uid: $uid, examId: $examId, begin: $begin, end: $end";
         $exam = Exam::query()->find($examId);
         $user = User::query()->findOrFail($uid);
-        if (Auth::user()->Class <= $user->class) {
+        if (Auth::user()->class <= $user->class) {
             throw new NexusException("No permission !");
         }
         if (!$this->isExamMatchUser($exam, $user)) {

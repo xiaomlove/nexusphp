@@ -663,6 +663,16 @@ class Install
         return compact('version', 'match');
     }
 
+    public function getRedisVersionInfo(): array
+    {
+        global $Cache;
+        $redis = $Cache->getRedis();
+        $result = $redis->info();
+        $version = $result['redis_version'];
+        $match = version_compare($version, '2.0.0', '>=');
+        return compact('version', 'match');
+    }
+
     public function checkLock()
     {
         $fullFilename = ROOT_PATH . $this->lockFile;

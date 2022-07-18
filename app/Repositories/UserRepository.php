@@ -233,7 +233,7 @@ class UserRepository extends BaseRepository
         }
         $sourceField = $fieldMap[$field];
         $targetUser = User::query()->findOrFail($uid, User::$commonFields);
-        if (Auth::user()->Class <= $targetUser->class) {
+        if (Auth::user()->class <= $targetUser->class) {
             throw new NexusException("No permission !");
         }
         $old = $targetUser->{$sourceField};
