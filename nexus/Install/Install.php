@@ -665,8 +665,7 @@ class Install
 
     public function getRedisVersionInfo(): array
     {
-        global $Cache;
-        $redis = $Cache->getRedis();
+        $redis = NexusDB::redis();
         $result = $redis->info();
         $version = $result['redis_version'];
         $match = version_compare($version, '2.0.0', '>=');

@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Events\TorrentUpdated;
+use App\Filament\Resources\System\AgentAllowResource;
 use App\Http\Resources\TagResource;
-use App\Models\Ability;
+use App\Models\AgentAllow;
 use App\Models\Attendance;
 use App\Models\Exam;
 use App\Models\ExamProgress;
@@ -12,7 +13,6 @@ use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Peer;
-use App\Models\Role;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use JeroenG\Explorer\Domain\Syntax\Matching;
 use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use League\Flysystem\StorageAttributes;
@@ -46,7 +47,6 @@ use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
 use Rhilip\Bencode\Bencode;
-use Silber\Bouncer\Bouncer;
 
 class Test extends Command
 {
@@ -81,7 +81,12 @@ class Test extends Command
      */
     public function handle()
     {
-        Ability::initDefaults();
+        $r = Str::of(class_basename(\App\Models\AgentAllow::class))
+            ->plural()
+            ->kebab()
+            ->slug();
+
+        dd($r);
     }
 
 

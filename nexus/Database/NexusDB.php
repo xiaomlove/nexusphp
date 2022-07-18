@@ -371,13 +371,16 @@ class NexusDB
         }
     }
 
+    /**
+     * @return mixed|\Redis|null
+     */
     public static function redis()
     {
         if (IN_NEXUS) {
             global $Cache;
-            $Cache->getRedis();
+            return $Cache->getRedis();
         } else {
-            Redis::connection()->client();
+            return Redis::connection()->client();
         }
     }
 
