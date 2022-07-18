@@ -36,4 +36,5 @@ class ListAgentAllows extends PageList
 
         ];
     }
+
 }

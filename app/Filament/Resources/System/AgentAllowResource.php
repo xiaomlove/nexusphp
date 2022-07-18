@@ -36,11 +36,6 @@ class AgentAllowResource extends Resource
         return self::getNavigationLabel();
     }
 
-//    public static function getModelLabel(): string
-//    {
-//
-//    }
-
 
     public static function form(Form $form): Form
     {

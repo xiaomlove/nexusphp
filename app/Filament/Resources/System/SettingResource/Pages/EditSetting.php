@@ -30,6 +30,8 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
 
     public function mount()
     {
+        static::authorizeResourceAccess();
+
         $settings = Setting::get();
         $this->form->fill($settings);
 
@@ -67,6 +69,8 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
 
     public function submit()
     {
+        static::authorizeResourceAccess();
+
         $formData = $this->form->getState();
         $notAutoloadNames = ['donation_custom'];
         $data = [];

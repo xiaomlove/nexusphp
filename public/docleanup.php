@@ -6,16 +6,18 @@ dbconn();
 if (get_user_class() < UC_SYSOP) {
 die('forbidden');
 }
-echo "<html><head><title>Do Clean-up</title></head><body>";
+require get_langfile_path();
+
+echo "<html><head><title>".$lang_docleanup['title']."</title></head><body>";
 echo "<p>";
-echo "clean-up in progress...please wait<br />";
+echo $lang_docleanup['running'] . "<br />";
 ob_flush();
 flush();
 if (isset($_GET['forceall']) && $_GET['forceall']) {
 	$forceall = 1;
 } else {
 	$forceall = 0;
-echo "you may force full clean-up by adding the parameter 'forceall=1' to URL<br />";
+    echo $lang_docleanup['force'] . '<br />';
 }
 echo "</p>";
 $tstart = getmicrotime();
@@ -23,6 +25,6 @@ require_once("include/cleanup.php");
 print("<p>".docleanup($forceall, 1)."</p>");
 $tend = getmicrotime();
 $totaltime = ($tend - $tstart);
-printf ("Time consumed:  %f sec<br />", $totaltime);
-echo "Done<br />";
+printf ($lang_docleanup['time_consumed']."<br />", $totaltime);
+echo $lang_docleanup['done']."<br />";
 echo "</body></html>";

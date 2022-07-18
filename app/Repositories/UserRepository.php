@@ -162,7 +162,7 @@ class UserRepository extends BaseRepository
         if ($targetUser->enabled == User::ENABLED_NO) {
             throw new NexusException('Already disabled !');
         }
-        if ($targetUser->class >= $operator->class) {
+        if ($operator->class <= $targetUser->class) {
             throw new NexusException('No Permission !');
         }
         $banLog = [
@@ -186,7 +186,7 @@ class UserRepository extends BaseRepository
         if ($targetUser->enabled == User::ENABLED_YES) {
             throw new NexusException('Already enabled !');
         }
-        if ($targetUser->class >= $operator->class) {
+        if ($operator->class <= $targetUser->class) {
             throw new NexusException('No Permission !');
         }
         $update = [
@@ -303,7 +303,7 @@ class UserRepository extends BaseRepository
     {
         $operator = $this->getOperator($operator);
         $classRequire = Setting::get('authority.prfmanage');
-        if ($operator->class < $classRequire) {
+        if ($operator->class <= $classRequire) {
             throw new \RuntimeException("No permission.");
         }
         $user = User::query()->findOrFail($uid, User::$commonFields);

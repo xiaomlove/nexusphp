@@ -18,7 +18,7 @@ class SettingPolicy extends BasePolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $this->can($user);
     }
 
     /**
@@ -30,7 +30,7 @@ class SettingPolicy extends BasePolicy
      */
     public function view(User $user, Setting $setting)
     {
-        //
+        return $this->can($user);
     }
 
     /**
@@ -53,7 +53,7 @@ class SettingPolicy extends BasePolicy
      */
     public function update(User $user, Setting $setting)
     {
-        //
+        return $this->can($user);
     }
 
     /**
@@ -65,7 +65,7 @@ class SettingPolicy extends BasePolicy
      */
     public function delete(User $user, Setting $setting)
     {
-        //
+
     }
 
     /**
