@@ -56,7 +56,7 @@ class TorrentResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $showApproval = Setting::get('torrent.approval_status_none_visible') == 'no' || Setting::get('torrent.approval_status_icon_enabled') == 'yes';
+        $showApproval = self::shouldShowApproval();
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
@@ -107,89 +107,8 @@ class TorrentResource extends Resource
                     ->visible($showApproval)
                     ->label(__('label.torrent.approval_status')),
             ])
-            ->actions([
-//                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('approval')
-                    ->label(__('admin.resources.torrent.action_approval'))
-                    ->visible($showApproval)
-                    ->form([
-                        Forms\Components\Radio::make('approval_status')
-                            ->label(__('label.torrent.approval_status'))
-                            ->inline()
-                            ->required()
-                            ->options(Torrent::listApprovalStatus(true))
-                        ,
-                        Forms\Components\Textarea::make('comment')->label(__('label.comment')),
-                    ])
-                    ->action(function (Torrent $record, array $data) {
-                        $torrentRep = new TorrentRepository();
-                        try {
-                            $data['torrent_id'] = $record->id;
-                            $torrentRep->approval(Auth::user(), $data);
-                        } catch (\Exception $exception) {
-                            do_log($exception->getMessage(), 'error');
-                        }
-                    })
-            ])
-            ->bulkActions([
-//                Tables\Actions\DeleteBulkAction::make(),
-                Tables\Actions\BulkAction::make('posState')
-                    ->label(__('admin.resources.torrent.bulk_action_pos_state'))
-                    ->form([
-                        Forms\Components\Select::make('pos_state')
-                            ->label(__('label.torrent.pos_state'))
-                            ->options(Torrent::listPosStates(true))
-                            ->required()
-                    ])
-                    ->icon('heroicon-o-arrow-circle-up')
-                    ->action(function (Collection $records, array $data) {
-                        $idArr = $records->pluck('id')->toArray();
-                        Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $data['pos_state']]);
-                    })
-                    ->deselectRecordsAfterCompletion(),
-
-                Tables\Actions\BulkAction::make('remove_tag')
-                    ->label(__('admin.resources.torrent.bulk_action_remove_tag'))
-                    ->requiresConfirmation()
-                    ->icon('heroicon-o-minus-circle')
-                    ->action(function (Collection $records) {
-                        $idArr = $records->pluck('id')->toArray();
-                        TorrentTag::query()->whereIn('torrent_id', $idArr)->delete();
-                    })
-                    ->deselectRecordsAfterCompletion(),
-
-                Tables\Actions\BulkAction::make('attach_tag')
-                    ->label(__('admin.resources.torrent.bulk_action_attach_tag'))
-                    ->form([
-                        Forms\Components\CheckboxList::make('tags')
-                            ->label(__('label.tag.label'))
-                            ->columns(4)
-                            ->options(TagRepository::createBasicQuery()->pluck('name', 'id')->toArray())
-                            ->required(),
-                    ])
-                    ->icon('heroicon-o-tag')
-                    ->action(function (Collection $records, array $data) {
-                        if (empty($data['tags'])) {
-                            return;
-                        }
-                        $insert = $torrentIdArr = [];
-                        $time = now()->toDateTimeString();
-                        foreach ($records as $torrent) {
-                            $torrentIdArr[] = $torrent->id;
-                            foreach ($data['tags'] as $tagId) {
-                                $insert[] = [
-                                    'torrent_id' => $torrent->id,
-                                    'tag_id' => $tagId,
-                                    'created_at' => $time,
-                                    'updated_at' => $time,
-                                ];
-                            }
-                        }
-                        TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->delete();
-                        TorrentTag::query()->insert($insert);
-                    })
-                    ->deselectRecordsAfterCompletion(),
-            ]);
+            ->actions(self::getActions())
+            ->bulkActions(self::getBulkActions());
 
     }
 
@@ -212,6 +131,111 @@ class TorrentResource extends Resource
             'create' => Pages\CreateTorrent::route('/create'),
             'edit' => Pages\EditTorrent::route('/{record}/edit'),
         ];
+    }
+
+    private static function getBulkActions(): array
+    {
+        $actions = [];
+        $userClass = Auth::user()->class;
+        if ($userClass >= Setting::get('authority.torrentsticky')) {
+            $actions[] = Tables\Actions\BulkAction::make('posState')
+                ->label(__('admin.resources.torrent.bulk_action_pos_state'))
+                ->form([
+                    Forms\Components\Select::make('pos_state')
+                        ->label(__('label.torrent.pos_state'))
+                        ->options(Torrent::listPosStates(true))
+                        ->required()
+                ])
+                ->icon('heroicon-o-arrow-circle-up')
+                ->action(function (Collection $records, array $data) {
+                    $idArr = $records->pluck('id')->toArray();
+                    Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $data['pos_state']]);
+                })
+                ->deselectRecordsAfterCompletion();
+        }
+
+        if ($userClass >= Setting::get('authority.torrentmanage')) {
+            $actions[] = Tables\Actions\BulkAction::make('remove_tag')
+                ->label(__('admin.resources.torrent.bulk_action_remove_tag'))
+                ->requiresConfirmation()
+                ->icon('heroicon-o-minus-circle')
+                ->action(function (Collection $records) {
+                    $idArr = $records->pluck('id')->toArray();
+                    TorrentTag::query()->whereIn('torrent_id', $idArr)->delete();
+                })
+                ->deselectRecordsAfterCompletion();
+
+            $actions[] = Tables\Actions\BulkAction::make('attach_tag')
+                ->label(__('admin.resources.torrent.bulk_action_attach_tag'))
+                ->form([
+                    Forms\Components\CheckboxList::make('tags')
+                        ->label(__('label.tag.label'))
+                        ->columns(4)
+                        ->options(TagRepository::createBasicQuery()->pluck('name', 'id')->toArray())
+                        ->required(),
+                ])
+                ->icon('heroicon-o-tag')
+                ->action(function (Collection $records, array $data) {
+                    if (empty($data['tags'])) {
+                        return;
+                    }
+                    $insert = $torrentIdArr = [];
+                    $time = now()->toDateTimeString();
+                    foreach ($records as $torrent) {
+                        $torrentIdArr[] = $torrent->id;
+                        foreach ($data['tags'] as $tagId) {
+                            $insert[] = [
+                                'torrent_id' => $torrent->id,
+                                'tag_id' => $tagId,
+                                'created_at' => $time,
+                                'updated_at' => $time,
+                            ];
+                        }
+                    }
+                    TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->delete();
+                    TorrentTag::query()->insert($insert);
+                })
+                ->deselectRecordsAfterCompletion();
+        }
+
+
+        return $actions;
+
+
+    }
+
+    private static function getActions()
+    {
+        $actions = [];
+        $userClass = Auth::user()->class;
+        if (self::shouldShowApproval() && $userClass >= Setting::get('authority.torrentmanage')) {
+            $actions[] = Tables\Actions\Action::make('approval')
+                ->label(__('admin.resources.torrent.action_approval'))
+                ->form([
+                    Forms\Components\Radio::make('approval_status')
+                        ->label(__('label.torrent.approval_status'))
+                        ->inline()
+                        ->required()
+                        ->options(Torrent::listApprovalStatus(true))
+                    ,
+                    Forms\Components\Textarea::make('comment')->label(__('label.comment')),
+                ])
+                ->action(function (Torrent $record, array $data) {
+                    $torrentRep = new TorrentRepository();
+                    try {
+                        $data['torrent_id'] = $record->id;
+                        $torrentRep->approval(Auth::user(), $data);
+                    } catch (\Exception $exception) {
+                        do_log($exception->getMessage(), 'error');
+                    }
+                });
+        }
+        return $actions;
+    }
+
+    private static function shouldShowApproval(): bool
+    {
+        return Setting::get('torrent.approval_status_none_visible') == 'no' || Setting::get('torrent.approval_status_icon_enabled') == 'yes';
     }
 
 }

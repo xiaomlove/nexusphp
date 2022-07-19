@@ -247,20 +247,15 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function getLocaleAttribute()
     {
-        $log = "";
-        if (IN_NEXUS) {
-            $lang = get_langfolder_cookie();
-            $log .= ", IN_NEXUS, get_langfolder_cookie(): $lang";
-        } else {
-            $lang = Cookie::get('c_lang_folder');
-            $log .= ", Cookie::get(): $lang";
-        }
-        if (!$lang) {
+        $locale = Locale::getLocaleFromCookie();
+        $log = "locale from cookie: $locale";
+        if (!$locale) {
             $lang = $this->language->site_lang_folder;
-            $log .= ", [NO_DATA], from database: $lang";
+            $locale = Locale::$languageMaps[$lang] ?? 'en';
+            $log .= ", [NO_DATA], lang from database: $lang, locale: $locale";
         }
         do_log($log);
-        return Locale::$languageMaps[$lang] ?? 'en';
+        return $locale;
     }
 
     public function getSiteLangFolderAttribute()
@@ -477,7 +472,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessAdmin(): bool
     {
-        $targetClass = Setting::get('authority.staffmem');
+        $targetClass = self::CLASS_ADMINISTRATOR;
         if (!$this->class || $this->class < $targetClass) {
             do_log(sprintf('user: %s, no class or class < %s, can not access admin.', $this->id, $targetClass));
             return false;

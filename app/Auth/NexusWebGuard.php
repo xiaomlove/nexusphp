@@ -1,11 +1,13 @@
 <?php
 namespace App\Auth;
 
+use Carbon\Carbon;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class NexusWebGuard implements Guard
 {
