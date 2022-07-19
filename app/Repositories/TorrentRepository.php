@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\InsufficientPermissionException;
 use App\Exceptions\NexusException;
 use App\Models\AudioCodec;
 use App\Models\Category;
@@ -22,10 +23,13 @@ use App\Models\Team;
 use App\Models\Torrent;
 use App\Models\TorrentOperationLog;
 use App\Models\TorrentSecret;
+use App\Models\TorrentTag;
 use App\Models\User;
 use Carbon\Carbon;
 use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
@@ -89,7 +93,7 @@ class TorrentRepository extends BaseRepository
         $with = ['user', 'tags'];
         $torrents = $query->with($with)->paginate();
         $userArr = $user->toArray();
-        foreach($torrents as &$item) {
+        foreach ($torrents as &$item) {
             $item->download_url = $this->getDownloadUrl($item->id, $userArr);
         }
         return $torrents;
@@ -99,8 +103,12 @@ class TorrentRepository extends BaseRepository
     {
         $with = [
             'user', 'basic_audio_codec', 'basic_category', 'basic_codec', 'basic_media', 'basic_source', 'basic_standard', 'basic_team',
-            'thanks' => function ($query) use ($user) {$query->where('userid', $user->id);},
-            'reward_logs' => function ($query) use ($user) {$query->where('userid', $user->id);},
+            'thanks' => function ($query) use ($user) {
+                $query->where('userid', $user->id);
+            },
+            'reward_logs' => function ($query) use ($user) {
+                $query->where('userid', $user->id);
+            },
         ];
         $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users', 'reward_logs'])->visible()->findOrFail($id);
         $result->download_url = $this->getDownloadUrl($id, $user->toArray());
@@ -201,8 +209,7 @@ class TorrentRepository extends BaseRepository
             ->groupBy('peer_id')
             ->with(['user', 'relative_torrent'])
             ->get()
-            ->groupBy('seeder')
-        ;
+            ->groupBy('seeder');
         if ($peers->has(Peer::SEEDER_YES)) {
             $seederList = $peers->get(Peer::SEEDER_YES)->sort(function ($a, $b) {
                 $x = $a->uploaded;
@@ -300,7 +307,7 @@ class TorrentRepository extends BaseRepository
     public function getSnatchUploadSpeed($snatch)
     {
         if ($snatch->seedtime <= 0) {
-            $speed =  mksize(0);
+            $speed = mksize(0);
         } else {
             $speed = mksize($snatch->uploaded / ($snatch->seedtime + $snatch->leechtime));
         }
@@ -450,7 +457,7 @@ class TorrentRepository extends BaseRepository
         $formId = "$id-form";
         $rows[] = sprintf(
             '<div class="%s-row" style="%s"><div style="%s">%s: </div><div>%s</div></div>',
-            $id, $rowStyle, $labelStyle,nexus_trans('torrent.approval.status_label'), implode('', $radios)
+            $id, $rowStyle, $labelStyle, nexus_trans('torrent.approval.status_label'), implode('', $radios)
         );
         $rows[] = sprintf(
             '<div class="%s-row" style="%s"><div style="%s">%s: </div><div><textarea name="params[comment]" rows="4" cols="40"></textarea></div></div>',
@@ -564,6 +571,43 @@ class TorrentRepository extends BaseRepository
             return true;
         }
         return false;
+    }
+
+    public function syncTags($id, array $tagIdArr = [])
+    {
+        if (Auth::user()->class < Setting::get('authority.torrentmanage')) {
+            throw new InsufficientPermissionException();
+        }
+        $idArr = Arr::wrap($id);
+        return NexusDB::transaction(function () use ($idArr, $tagIdArr) {
+            $insert = [];
+            $time = now()->toDateTimeString();
+            foreach ($idArr as $torrentId) {
+                foreach ($tagIdArr as $tagId) {
+                    $insert[] = [
+                        'torrent_id' => $torrentId,
+                        'tag_id' => $tagId,
+                        'created_at' => $time,
+                        'updated_at' => $time,
+                    ];
+                }
+            }
+            TorrentTag::query()->whereIn('torrent_id', $idArr)->delete();
+            if (!empty($insert)) {
+                TorrentTag::query()->insert($insert);
+            }
+            return count($insert);
+        });
+
+    }
+
+    public function setPosState($id, $posState): int
+    {
+        if (Auth::user()->class < Setting::get('authority.torrentsticky')) {
+            throw new InsufficientPermissionException();
+        }
+        $idArr = Arr::wrap($id);
+        return Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $posState]);
     }
 
 

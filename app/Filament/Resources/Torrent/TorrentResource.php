@@ -11,6 +11,7 @@ use App\Models\Torrent;
 use App\Models\TorrentTag;
 use App\Repositories\TagRepository;
 use App\Repositories\TorrentRepository;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
@@ -149,7 +150,12 @@ class TorrentResource extends Resource
                 ->icon('heroicon-o-arrow-circle-up')
                 ->action(function (Collection $records, array $data) {
                     $idArr = $records->pluck('id')->toArray();
-                    Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $data['pos_state']]);
+                    try {
+                        $torrentRep = new TorrentRepository();
+                        $torrentRep->setPosState($idArr, $data['pos_state']);
+                    } catch (\Exception $exception) {
+                        Filament::notify('danger', class_basename($exception));
+                    }
                 })
                 ->deselectRecordsAfterCompletion();
         }
@@ -161,7 +167,12 @@ class TorrentResource extends Resource
                 ->icon('heroicon-o-minus-circle')
                 ->action(function (Collection $records) {
                     $idArr = $records->pluck('id')->toArray();
-                    TorrentTag::query()->whereIn('torrent_id', $idArr)->delete();
+                    try {
+                        $torrentRep = new TorrentRepository();
+                        $torrentRep->syncTags($idArr);
+                    } catch (\Exception $exception) {
+                        Filament::notify('danger', class_basename($exception));
+                    }
                 })
                 ->deselectRecordsAfterCompletion();
 
@@ -179,32 +190,21 @@ class TorrentResource extends Resource
                     if (empty($data['tags'])) {
                         return;
                     }
-                    $insert = $torrentIdArr = [];
-                    $time = now()->toDateTimeString();
-                    foreach ($records as $torrent) {
-                        $torrentIdArr[] = $torrent->id;
-                        foreach ($data['tags'] as $tagId) {
-                            $insert[] = [
-                                'torrent_id' => $torrent->id,
-                                'tag_id' => $tagId,
-                                'created_at' => $time,
-                                'updated_at' => $time,
-                            ];
-                        }
+                    $idArr = $records->pluck('id')->toArray();
+                    try {
+                        $torrentRep = new TorrentRepository();
+                        $torrentRep->syncTags($idArr, $data['tags']);
+                    } catch (\Exception $exception) {
+                        Filament::notify('danger', class_basename($exception));
                     }
-                    TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->delete();
-                    TorrentTag::query()->insert($insert);
                 })
                 ->deselectRecordsAfterCompletion();
         }
 
-
         return $actions;
-
-
     }
 
-    private static function getActions()
+    private static function getActions(): array
     {
         $actions = [];
         $userClass = Auth::user()->class;
