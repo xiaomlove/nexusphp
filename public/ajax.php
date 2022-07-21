@@ -93,3 +93,18 @@ function approval($params)
     return $rep->approval($CURUSER['id'], $params);
 }
 
+function addSeedBoxRecord($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\SeedBoxRepository();
+    $params['uid'] = $CURUSER['id'];
+    $params['type'] = \App\Models\SeedBoxRecord::TYPE_USER;
+    return $rep->store($params);
+}
+
+function removeSeedBoxRecord($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\SeedBoxRepository();
+    return $rep->delete($params['id'], $CURUSER['id']);
+}

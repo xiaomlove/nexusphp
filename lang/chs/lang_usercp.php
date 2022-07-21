@@ -252,6 +252,8 @@ $lang_usercp = array
     'text_two_step_secret_bind_complete_note' => '输入 code 完成两步验证',
     'text_two_step_secret_unbind_note' => '输入 code 取消两步验证',
     'row_passkey_login_url' => 'Passkey 登录链接',
+    'row_seed_box' => 'SeedBox',
+    'add_seed_box_btn' => '登记',
 );
 
 ?>

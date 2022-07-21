@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('torrents_state', 'deadline')) {
+            return;
+        }
         Schema::table('torrents_state', function (Blueprint $table) {
             $table->id();
             $table->dateTime('deadline')->nullable();

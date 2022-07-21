@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('settings', 'autoload')) {
+            return;
+        }
         Schema::table('settings', function (Blueprint $table) {
             $table->enum('autoload', ['yes', 'no'])->default('yes');
         });

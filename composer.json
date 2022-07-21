@@ -49,6 +49,7 @@
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",
         "rhilip/bencode": "^2.0",
+        "rlanvin/php-ip": "^3.0",
         "spiral/roadrunner": "^2.8"
     },
     "require-dev": {

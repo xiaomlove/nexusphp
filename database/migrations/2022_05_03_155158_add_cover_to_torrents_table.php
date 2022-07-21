@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('torrents', 'cover')) {
+            return;
+        }
         Schema::table('torrents', function (Blueprint $table) {
             $table->string('cover')->default('')->after('save_as');
         });

@@ -331,6 +331,7 @@ $lang_functions = array
     'text_contactstaff' => 'Contact staff',
     'full_site_promotion_in_effect' => 'Full site [%s] in effect! Deadline: %s',
     'text_torrent_to_approval' => 'There %s%u not approval torrent%s.',
+    'std_confirm_remove' => 'Are you sure you want to delete it?',
 );
 
 ?>

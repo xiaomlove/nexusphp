@@ -232,9 +232,12 @@ class Update extends Install
         $table = 'sysoppanel';
         $this->addMenu($table, $menus);
         $menuToDel = ['amountupload.php', 'amountattendancecard.php', 'amountbonus.php', 'deletedisabled.php'];
-        $this->removeMenu('sysoppanel', $menuToDel);
-        $this->removeMenu('adminpanel', $menuToDel);
-        $this->removeMenu('modpanel', $menuToDel);
+        $this->removeMenu($menuToDel);
+
+        /**
+         * @since 1.7.19
+         */
+        $this->removeMenu(['freeleech.php']);
 
     }
 
@@ -271,10 +274,13 @@ class Update extends Install
         }
     }
 
-    private function removeMenu($table, array $menus)
+    private function removeMenu(array $menus, array $tables = ['sysoppanel', 'adminpanel', 'modpanel'])
     {
-        foreach ($menus as $menu) {
-            NexusDB::delete($table, "url = " . sqlesc($menu));
+        if (empty($menus)) {
+            return;
+        }
+        foreach ($tables as $table) {
+            NexusDB::table($table)->whereIn('url', $menus)->delete();
         }
     }
 

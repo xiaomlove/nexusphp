@@ -945,6 +945,124 @@ if ($prolinkpoint_bonus)
 tr_small($lang_usercp['row_invitations'],$CURUSER['invites']." [<a href=\"invite.php?id=".$CURUSER['id']."\" title=\"".$lang_usercp['link_send_invitation']."\">".$lang_usercp['text_send']."</a>]",1);
 tr_small($lang_usercp['row_karma_points'], $CURUSER['seedbonus']." [<a href=\"mybonus.php\" title=\"".$lang_usercp['link_use_karma_points']."\">".$lang_usercp['text_use']."</a>]", 1);
 tr_small($lang_usercp['row_written_comments'], $commentcount." [<a href=\"userhistory.php?action=viewcomments&id=".$CURUSER['id']."\" title=\"".$lang_usercp['link_view_comments']."\">".$lang_usercp['text_view']."</a>]", 1);
+
+//start seed box
+$seedBox = '';
+$columnOperator = nexus_trans('label.seedbox_record.operator');
+$columnBandwidth = nexus_trans('label.seedbox_record.bandwidth');
+$columnIPBegin = nexus_trans('label.seedbox_record.ip_begin');
+$columnIPEnd = nexus_trans('label.seedbox_record.ip_end');
+$columnIP = nexus_trans('label.seedbox_record.ip');
+$columnIPHelp = nexus_trans('label.seedbox_record.ip_help');
+$columnComment = nexus_trans('label.comment');
+$res = sql_query(sprintf("SELECT * from seedbox_records where type = %s and uid = %s", \App\Models\SeedBoxRecord::TYPE_USER, $CURUSER['id']));
+if (mysql_num_rows($res) > 0)
+{
+    $seedBox .= "<table border='1' cellspacing='0' cellpadding='5' id='seed-box-table'><tr><td class='colhead'>{$columnOperator}</td><td class='colhead'>{$columnBandwidth}</td><td class='colhead'>{$columnIP}</td><td class='colhead'>{$columnComment}</td><td class='colhead'></td></tr>";
+    while($arr = mysql_fetch_assoc($res))
+    {
+        $seedBox .= "<tr>";
+        $seedBox .= sprintf('<td>%s</td>', $arr['operator']);
+        $seedBox .= sprintf('<td>%s</td>', $arr['bandwidth'] ?: '');
+        $seedBox .= sprintf('<td>%s</td>', $arr['ip'] ?: sprintf('%s ~ %s', $arr['ip_begin'], $arr['ip_end']));
+        $seedBox .= sprintf('<td>%s</td>', $arr['comment']);
+        $seedBox .= sprintf('<td><img style="cursor: pointer" class="staff_delete remove-seed-box-btn" src="pic/trans.gif" alt="D" title="%s" data-id="%s"></td>', $lang_functions['text_delete'], $arr['id']);
+        $seedBox .= "</tr>";
+    }
+    $seedBox .= '</table>';
+}
+$seedBox .= sprintf('<div><input type="button" id="add-seed-box-btn" value="%s"/></div>', $lang_usercp['add_seed_box_btn']);
+tr_small($lang_usercp['row_seed_box'], $seedBox, 1);
+$seedBoxCss = <<<CSS
+.form-box {
+padding: 15px;
+}
+.form-control-row {
+display: flex;
+align-items: center;
+padding: 10px 0;
+}
+.form-control-row .label {
+width: 80px
+}
+.form-control-row .field {
+
+}
+.form-control-row input,textarea {
+width: 300px;
+padding: 4px;
+}
+CSS;
+
+$seedBoxForm = <<<FORM
+<div class="form-box">
+<form id="seed-box-form">
+    <div class="form-control-row">
+        <div class="label">{$columnOperator}</div>
+        <div class="field"><input type="text" name="params[operator]"></div>
+    </div>
+    <div class="form-control-row">
+        <div class="label">{$columnBandwidth}</div>
+        <div class="field"><input type="number" name="params[bandwidth]"></div>
+    </div>
+    <div class="form-control-row">
+        <div class="label">{$columnIPBegin}</div>
+        <div class="field"><input type="text" name="params[ip_begin]"></div>
+    </div>
+    <div class="form-control-row">
+        <div class="label">{$columnIPEnd}</div>
+        <div class="field"><input type="text" name="params[ip_end]"></div>
+    </div>
+    <div class="form-control-row">
+        <div class="label">{$columnIP}</div>
+        <div class="field"><input type="text" name="params[ip]"><div><small>{$columnIPHelp}</small></div></div>
+    </div>
+    <div class="form-control-row">
+        <div class="label">{$columnComment}</div>
+        <div class="field"><textarea name="params[comment]" rows="4"></textarea></div>
+    </div>
+</form>
+</div>
+FORM;
+$seedBoxJs = <<<JS
+jQuery('#add-seed-box-btn').on('click', function () {
+    layer.open({
+        type: 1,
+        title: "{$lang_usercp['row_seed_box']} {$lang_usercp['add_seed_box_btn']}",
+        content: `$seedBoxForm`,
+        btn: ['OK'],
+        btnAlign: 'c',
+        yes: function () {
+            let params = jQuery('#seed-box-form').serialize()
+            jQuery.post('ajax.php', params + "&action=addSeedBoxRecord", function (response) {
+                console.log(response)
+                if (response.ret != 0) {
+                    layer.alert(response.msg)
+                    return
+                }
+                window.location.reload()
+            }, 'json')
+        }
+    })
+});
+jQuery('#seed-box-table').on('click', '.remove-seed-box-btn', function () {
+    let params = {action: "removeSeedBoxRecord", params: {id: jQuery(this).attr("data-id")}}
+    layer.confirm("{$lang_functions['std_confirm_remove']}", {btnAlign: 'c'}, function (index) {
+        jQuery.post('ajax.php', params, function (response) {
+            console.log(response)
+            if (response.ret != 0) {
+                layer.alert(response.msg)
+                return
+            }
+            window.location.reload()
+        }, 'json')
+    })
+});
+JS;
+\Nexus\Nexus::js($seedBoxJs, 'footer', false);
+\Nexus\Nexus::css($seedBoxCss, 'footer', false);
+//end seed box
+
 if ($forumposts)
 	tr($lang_usercp['row_forum_posts'], $forumposts." [<a href=\"userhistory.php?action=viewposts&id=".$CURUSER['id']."\" title=\"".$lang_usercp['link_view_posts']."\">".$lang_usercp['text_view']."</a>] (".$dayposts.$lang_usercp['text_posts_per_day']."; ".$percentages.$lang_usercp['text_of_total_posts'].")", 1);
 ?>

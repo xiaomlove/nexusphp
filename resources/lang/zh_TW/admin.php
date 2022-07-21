@@ -17,6 +17,7 @@ return [
         'torrent_state' => '全站優惠',
         'roles_list' => '角色',
         'ability_list' => '權限',
+        'seedbox_records' => 'SeedBox',
     ],
     'resources' => [
         'agent_allow' => [

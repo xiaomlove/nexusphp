@@ -323,6 +323,7 @@ $lang_functions = array
     'text_contactstaff' => '联系管理组',
     'full_site_promotion_in_effect' => '全站 [%s] 生效中！截止时间：%s',
     'text_torrent_to_approval' => '有 %s%u 个待审核的种子%s',
+    'std_confirm_remove' => '确定要删除吗？',
 );
 
 ?>

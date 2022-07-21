@@ -172,4 +172,14 @@ return [
     'role' => [
         'class' => 'Relate user class',
     ],
+    'seedbox_record' => [
+        'label' => 'SeedBox Records',
+        'type' => 'Add type',
+        'operator' => 'Operator',
+        'bandwidth' => 'Bandwidth(Mbps)',
+        'ip' => 'IP(Block)',
+        'ip_begin' => 'Begin IP',
+        'ip_end' => 'End IP',
+        'ip_help' => 'Begin IP/End IP, IP(Block) Choose one',
+    ],
 ];

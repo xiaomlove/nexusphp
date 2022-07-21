@@ -17,6 +17,7 @@ return [
         'torrent_state' => 'Free leach',
         'roles_list' => 'Roles',
         'ability_list' => 'Permissions',
+        'seedbox_records' => 'SeedBox',
     ],
     'resources' => [
         'agent_allow' => [

@@ -46,6 +46,8 @@ use Nexus\Imdb\Imdb;
 use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
+use PhpIP\IP;
+use PhpIP\IPBlock;
 use Rhilip\Bencode\Bencode;
 
 class Test extends Command
@@ -81,11 +83,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = Str::of(class_basename(\App\Models\AgentAllow::class))
-            ->plural()
-            ->kebab()
-            ->slug();
-
+        $ip = '116.30.133.129';
+//        $ip = '240e:3a1:680c:bb11:211:32ff:fe2c:a603';
+        $ipObj = IPBlock::create($ip);
+        $r = $ipObj->getFirstIp();
         dd($r);
     }
 

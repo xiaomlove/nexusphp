@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('torrents', 'approval_status')) {
+            return;
+        }
         Schema::table('torrents', function (Blueprint $table) {
             $table->integer('approval_status')->default(0);
         });

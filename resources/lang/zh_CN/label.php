@@ -175,4 +175,14 @@ return [
         'name' => '标识',
         'title' => '名称',
     ],
+    'seedbox_record' => [
+        'label' => 'SeedBox 记录',
+        'type' => '添加类型',
+        'operator' => '运营商',
+        'bandwidth' => '带宽(Mbps)',
+        'ip' => 'IP(段)',
+        'ip_begin' => '起始 IP',
+        'ip_end' => '结束 IP',
+        'ip_help' => '起始 IP/结束 IP、IP(段) 二选一',
+    ],
 ];
