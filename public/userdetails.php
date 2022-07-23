@@ -201,14 +201,16 @@ if (get_user_class() >= $userprofile_class) {
 	tr_small($lang_userdetails['row_ip_history'], $lang_userdetails['text_user_earlier_used']."<b><a href=\"iphistory.php?id=" . $user['id'] . "\">" . $iphistory. $lang_userdetails['text_different_ips'].add_s($iphistory, true)."</a></b>", 1);
 
 }
+$seedBoxRep = new \App\Repositories\SeedBoxRepository();
 if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"])
 {
+    $seedBoxIcon = $seedBoxRep->renderIcon($CURUSER['ip'], $CURUSER['id']);
 	if ($enablelocation_tweak == 'yes'){
 		list($loc_pub, $loc_mod) = get_ip_location($user['ip']);
 		$locationinfo = "<span title=\"" . $loc_mod . "\">[" . $loc_pub . "]</span>";
 	}
 	else $locationinfo = "";
-	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo, 1);
+	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo.$seedBoxIcon, 1);
 }
 $clientselect = '';
 $res = sql_query("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = {$user['id']} GROUP BY agent") or sqlerr();
@@ -220,7 +222,7 @@ if (mysql_num_rows($res) > 0)
 	    $clientselect .= "<tr>";
 		$clientselect .= sprintf('<td>%s</td>', get_agent($arr['peer_id'], $arr['agent']));
 		if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"]) {
-            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'], $arr['ipv6'], $arr['port']);
+            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'].$seedBoxRep->renderIcon($arr['ipv4'], $CURUSER['id']), $arr['ipv6'].$seedBoxRep->renderIcon($arr['ipv6'], $CURUSER['id']), $arr['port']);
         } else {
             $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', '---', '---', '---');
         }

@@ -10,13 +10,15 @@ header("Pragma: no-cache" );
 header("Content-Type: text/xml; charset=utf-8");
 
 $id = intval($_GET['id'] ?? 0);
+$seedBoxRep = new \App\Repositories\SeedBoxRepository();
 if(isset($CURUSER))
 {
 function dltable($name, $arr, $torrent)
 {
 	global $lang_viewpeerlist,$viewanonymous_class,$userprofile_class,$enablelocation_tweak;
 	global $CURUSER;
-	global $lang_functions;
+	global $lang_functions, $seedBoxRep;
+
 	$s = "<b>" . count($arr) . " $name</b>\n";
 	if (!count($arr))
 		return $s;
@@ -56,8 +58,22 @@ function dltable($name, $arr, $torrent)
 
 		 $secs = max(1, ($e["la"] - $e["st"]));
 		if ($enablelocation_tweak == 'yes'){
-			list($loc_pub, $loc_mod) = get_ip_location(sprintf('%s,%s', $e['ipv4'], $e['ipv6']));
-			$location = get_user_class() >= $userprofile_class ? "<div title='" . $loc_mod . "'>" . $loc_pub . "</div>" : $loc_pub;
+		    $address = $ips = [];
+		    if (!empty($e['ipv4'])) {
+                list($loc_pub, $loc_mod) = get_ip_location($e['ipv4']);
+                $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv4'], $e['userid']);
+                $address[] = $loc_pub . $seedBoxIcon;
+                $ips[] = $e['ipv4'];
+            }
+            if (!empty($e['ipv6'])) {
+                list($loc_pub, $loc_mod) = get_ip_location($e['ipv6']);
+                $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv6'], $e['userid']);
+                $address[] = $loc_pub . $seedBoxIcon;
+                $ips[] = $e['ipv6'];
+            }
+            $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
+            $addressStr = implode(' + ', $address);
+			$location = get_user_class() >= $userprofile_class ? "<div title='" . $title . "'>" . $addressStr . "</div>" : $addressStr;
 			$s .= "<td class=rowfollow align=center width=1%><nobr>" . $location . "</nobr></td>\n";
 		}
 		elseif (get_user_class() >= $userprofile_class){

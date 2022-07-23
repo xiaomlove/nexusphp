@@ -767,4 +767,45 @@ function do_action($name, ...$args)
     return $hook->doAction(...func_get_args());
 }
 
-
+function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
+{
+    $redis = \Nexus\Database\NexusDB::redis();
+    $key = "nexus_is_ip_seed_box";
+    $hashKey = "ip:$ip:uid:$uid";
+    $cacheData = $redis->hGet($key, $hashKey);
+    if ($cacheData && !$withoutCache) {
+        $cacheDataOriginal = unserialize($cacheData);
+        if ($cacheDataOriginal['deadline'] > time()) {
+            do_log("$hashKey, get result from cache: " . json_encode($cacheDataOriginal));
+            return $cacheDataOriginal['data'];
+        }
+    }
+    $ipObject = \PhpIP\IP::create($ip);
+    $ipNumeric = $ipObject->numeric();
+    $ipVersion = $ipObject->getVersion();
+    $checkSeedBoxAdminSql = sprintf(
+        'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `type` = %s and `version` = %s and `status` = %s limit 1',
+        $ipNumeric, $ipNumeric, \App\Models\SeedBoxRecord::TYPE_ADMIN, $ipVersion, \App\Models\SeedBoxRecord::STATUS_ALLOWED
+    );
+    $res = \Nexus\Database\NexusDB::select($checkSeedBoxAdminSql);
+    if (!empty($res)) {
+        $redis->hSet($key, $hashKey, serialize(['data' => true, 'deadline' => time() + 3600]));
+        do_log("$hashKey, get result from admin, true");
+        return true;
+    }
+    if ($uid !== null) {
+        $checkSeedBoxUserSql = sprintf(
+            'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `uid` = %s and `type` = %s and `version` = %s and `status` = %s limit 1',
+            $ipNumeric, $ipNumeric, $uid, \App\Models\SeedBoxRecord::TYPE_USER, $ipVersion, \App\Models\SeedBoxRecord::STATUS_ALLOWED
+        );
+        $res = \Nexus\Database\NexusDB::select($checkSeedBoxUserSql);
+        if (!empty($res)) {
+            $redis->hSet($key, $hashKey, serialize(['data' => true, 'deadline' => time() + 3600]));
+            do_log("$hashKey, get result from user, true");
+            return true;
+        }
+    }
+    $redis->hSet($key, $hashKey, serialize(['data' => false, 'deadline' => time() + 3600]));
+    do_log("$hashKey, no result, false");
+    return false;
+}

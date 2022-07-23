@@ -85,8 +85,11 @@ class Test extends Command
     {
         $ip = '116.30.133.129';
 //        $ip = '240e:3a1:680c:bb11:211:32ff:fe2c:a603';
-        $ipObj = IPBlock::create($ip);
-        $r = $ipObj->getFirstIp();
+//        $ipObj = IPBlock::create($ip);
+//        $ipObj = IP::create($ip);
+//        $r = $ipObj->getVersion();
+        $r = get_ip_location('116.30.133.129');
+//        $r = get_ip_location_from_geoip('116.30.133.129');
         dd($r);
     }
 

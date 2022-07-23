@@ -52,7 +52,7 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                         ])->columns(2),
                     Forms\Components\Tabs\Tab::make(__('label.setting.backup.tab_header'))
                         ->schema([
-                            Forms\Components\Radio::make('backup.enabled')->options(self::$yesOrNo)->inline(true)->label(__('label.setting.backup.enabled'))->helperText(__('label.setting.backup.enabled_help')),
+                            Forms\Components\Radio::make('backup.enabled')->options(self::$yesOrNo)->inline(true)->label(__('label.enabled'))->helperText(__('label.setting.backup.enabled_help')),
                             Forms\Components\Radio::make('backup.frequency')->options(['daily' => 'daily', 'hourly' => 'hourly'])->inline(true)->label(__('label.setting.backup.frequency'))->helperText(__('label.setting.backup.frequency_help')),
                             Forms\Components\Select::make('backup.hour')->options(range(0, 23))->label(__('label.setting.backup.hour'))->helperText(__('label.setting.backup.hour_help')),
                             Forms\Components\Select::make('backup.minute')->options(range(0, 59))->label(__('label.setting.backup.minute'))->helperText(__('label.setting.backup.minute_help')),
@@ -62,6 +62,13 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                             Forms\Components\TextInput::make('backup.google_drive_folder_id')->label(__('label.setting.backup.google_drive_folder_id')),
                             Forms\Components\Radio::make('backup.via_ftp')->options(self::$yesOrNo)->inline(true)->label(__('label.setting.backup.via_ftp'))->helperText(__('label.setting.backup.via_ftp_help')),
                             Forms\Components\Radio::make('backup.via_sftp')->options(self::$yesOrNo)->inline(true)->label(__('label.setting.backup.via_sftp'))->helperText(__('label.setting.backup.via_sftp_help')),
+                        ])->columns(2),
+                    Forms\Components\Tabs\Tab::make(__('label.setting.seed_box.tab_header'))
+                        ->schema([
+                            Forms\Components\Radio::make('seed_box.enabled')->options(self::$yesOrNo)->inline(true)->label(__('label.enabled'))->helperText(__('label.setting.seed_box.enabled_help')),
+                            Forms\Components\TextInput::make('seed_box.not_seed_box_max_speed')->label(__('label.setting.seed_box.not_seed_box_max_speed'))->helperText(__('label.setting.seed_box.not_seed_box_max_speed_help'))->integer(),
+                            Forms\Components\Radio::make('seed_box.no_promotion')->options(self::$yesOrNo)->inline(true)->label(__('label.setting.seed_box.no_promotion'))->helperText(__('label.setting.seed_box.no_promotion_help')),
+                            Forms\Components\TextInput::make('seed_box.max_uploaded')->label(__('label.setting.seed_box.max_uploaded'))->helperText(__('label.setting.seed_box.max_uploaded_help'))->integer(),
                         ])->columns(2),
                 ])
         ];

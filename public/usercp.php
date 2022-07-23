@@ -923,12 +923,13 @@ if ($forumposts)
 <?php
 tr_small($lang_usercp['row_join_date'], $joindate, 1);
 tr_small($lang_usercp['row_email_address'], $CURUSER['email'], 1);
+$seedBoxIcon = (new \App\Repositories\SeedBoxRepository())->renderIcon($CURUSER['ip'], $CURUSER['id']);
 if ($enablelocation_tweak == 'yes'){
 	list($loc_pub, $loc_mod) = get_ip_location($CURUSER["ip"]);
-	tr_small($lang_usercp['row_ip_location'], $CURUSER["ip"]." <span title='" . $loc_mod . "'>[" . $loc_pub . "]</span>", 1);
+	tr_small($lang_usercp['row_ip_location'], $CURUSER["ip"]." <span title='" . $loc_mod . "'>[" . $loc_pub . "]</span>$seedBoxIcon", 1);
 }
 else{
-	tr_small($lang_usercp['row_ip_location'], $CURUSER["ip"], 1);
+	tr_small($lang_usercp['row_ip_location'], $CURUSER["ip"] . $seedBoxIcon, 1);
 }
 if ($CURUSER["avatar"])
 	tr_small($lang_usercp['row_avatar'], "<img src=\"" . $CURUSER["avatar"] . "\" border=0>", 1);
@@ -948,25 +949,28 @@ tr_small($lang_usercp['row_written_comments'], $commentcount." [<a href=\"userhi
 
 //start seed box
 $seedBox = '';
-$columnOperator = nexus_trans('label.seedbox_record.operator');
-$columnBandwidth = nexus_trans('label.seedbox_record.bandwidth');
-$columnIPBegin = nexus_trans('label.seedbox_record.ip_begin');
-$columnIPEnd = nexus_trans('label.seedbox_record.ip_end');
-$columnIP = nexus_trans('label.seedbox_record.ip');
-$columnIPHelp = nexus_trans('label.seedbox_record.ip_help');
+$columnOperator = nexus_trans('label.seed_box_record.operator');
+$columnBandwidth = nexus_trans('label.seed_box_record.bandwidth');
+$columnIPBegin = nexus_trans('label.seed_box_record.ip_begin');
+$columnIPEnd = nexus_trans('label.seed_box_record.ip_end');
+$columnIP = nexus_trans('label.seed_box_record.ip');
+$columnIPHelp = nexus_trans('label.seed_box_record.ip_help');
 $columnComment = nexus_trans('label.comment');
-$res = sql_query(sprintf("SELECT * from seedbox_records where type = %s and uid = %s", \App\Models\SeedBoxRecord::TYPE_USER, $CURUSER['id']));
-if (mysql_num_rows($res) > 0)
+$columnStatus = nexus_trans('label.seed_box_record.status');
+$res = \App\Models\SeedBoxRecord::query()->where('uid', $CURUSER['id'])->where('type', \App\Models\SeedBoxRecord::TYPE_USER)->get();
+if ($res->count() > 0)
 {
-    $seedBox .= "<table border='1' cellspacing='0' cellpadding='5' id='seed-box-table'><tr><td class='colhead'>{$columnOperator}</td><td class='colhead'>{$columnBandwidth}</td><td class='colhead'>{$columnIP}</td><td class='colhead'>{$columnComment}</td><td class='colhead'></td></tr>";
-    while($arr = mysql_fetch_assoc($res))
+    $seedBox .= "<table border='1' cellspacing='0' cellpadding='5' id='seed-box-table'><tr><td class='colhead'>ID</td><td class='colhead'>{$columnOperator}</td><td class='colhead'>{$columnBandwidth}</td><td class='colhead'>{$columnIP}</td><td class='colhead'>{$columnComment}</td><td class='colhead'>{$columnStatus}</td><td class='colhead'></td></tr>";
+    foreach ($res as $seedBoxRecord)
     {
         $seedBox .= "<tr>";
-        $seedBox .= sprintf('<td>%s</td>', $arr['operator']);
-        $seedBox .= sprintf('<td>%s</td>', $arr['bandwidth'] ?: '');
-        $seedBox .= sprintf('<td>%s</td>', $arr['ip'] ?: sprintf('%s ~ %s', $arr['ip_begin'], $arr['ip_end']));
-        $seedBox .= sprintf('<td>%s</td>', $arr['comment']);
-        $seedBox .= sprintf('<td><img style="cursor: pointer" class="staff_delete remove-seed-box-btn" src="pic/trans.gif" alt="D" title="%s" data-id="%s"></td>', $lang_functions['text_delete'], $arr['id']);
+        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->id);
+        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->operator);
+        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->bandwidth ?: '');
+        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->ip ?: sprintf('%s ~ %s', $seedBoxRecord->ip_begin, $seedBoxRecord->ip_end));
+        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->comment);
+        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->statusText);
+        $seedBox .= sprintf('<td><img style="cursor: pointer" class="staff_delete remove-seed-box-btn" src="pic/trans.gif" alt="D" title="%s" data-id="%s"></td>', $lang_functions['text_delete'], $seedBoxRecord->id);
         $seedBox .= "</tr>";
     }
     $seedBox .= '</table>';

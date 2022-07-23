@@ -172,7 +172,7 @@ return [
     'role' => [
         'class' => '關聯用户等級',
     ],
-    'seedbox_record' => [
+    'seed_box_record' => [
         'label' => 'SeedBox 記錄',
         'type' => '添加類型',
         'operator' => '運營商',
@@ -181,5 +181,6 @@ return [
         'ip_begin' => '起始 IP',
         'ip_end' => '結束 IP',
         'ip_help' => '起始 IP/結束 IP、IP(段) 二選一',
+        'status' => '狀態',
     ],
 ];

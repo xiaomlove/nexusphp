@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Nexus\Database\NexusDB;
+
 class Message extends NexusModel
 {
     protected $table = 'messages';
@@ -22,6 +24,13 @@ class Message extends NexusModel
     public function receive_user()
     {
         return $this->belongsTo(User::class, 'receiver');
+    }
+
+    public static function add(array $data): bool
+    {
+        NexusDB::cache_del('user_'.$data["receiver"].'_inbox_count');
+        NexusDB::cache_del('user_'.$data["receiver"].'_unread_message_count');
+        return self::query()->insert($data);
     }
 
 }

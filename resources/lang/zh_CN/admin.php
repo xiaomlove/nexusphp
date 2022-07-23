@@ -17,7 +17,7 @@ return [
         'torrent_state' => '全站优惠',
         'roles_list' => '角色',
         'ability_list' => '权限',
-        'seedbox_records' => 'SeedBox',
+        'seed_box_records' => 'SeedBox',
     ],
     'resources' => [
         'agent_allow' => [
@@ -75,6 +75,9 @@ return [
             'bulk_action_remove_tag' => '清除标签',
             'bulk_action_attach_tag' => '设置标签',
             'action_approval' => '审核',
+        ],
+        'seed_box_record' => [
+            'toggle_status' => '更改状态',
         ],
     ]
 ];

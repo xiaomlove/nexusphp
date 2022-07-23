@@ -407,4 +407,10 @@ return array (
          'ignore_when_ratio_reach' => '',
          'ban_user_when_counts_reach' => '',
      ],
+    'seed_box' => [
+        'enabled' => 'no',
+        'no_promotion' => 'yes',
+        'max_uploaded' => 3,
+        'not_seed_box_max_speed' => 10240,
+    ],
 );

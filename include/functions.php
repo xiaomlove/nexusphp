@@ -1751,7 +1751,13 @@ function get_ip_location($ip)
      * @since 1.7.4
      */
 	$arr = get_ip_location_from_geoip($ip);
-    $result = array($arr["name"] ?? $lang_functions['text_unknown'], $lang_functions['text_user_ip'] . ":&nbsp;" . trim($ip, ','));
+	$result = [];
+	if ($arr) {
+	    $result[] = $arr['name'];
+    } else {
+	    $result[] = $lang_functions['text_unknown'];
+    }
+	$result[] = $lang_functions['text_user_ip'] . ":&nbsp;" . trim($ip, ',');
 	return $locations[$ip] = $result;
 
 	$cacheKey = "location_$ip";
@@ -5513,7 +5519,7 @@ function can_access_torrent($torrent)
     return false;
 }
 
-function get_ip_location_from_geoip($ip)
+function get_ip_location_from_geoip($ip): bool|array
 {
     $database = nexus_env('GEOIP2_DATABASE');
     if (empty($database)) {
@@ -5535,49 +5541,33 @@ function get_ip_location_from_geoip($ip)
         'en' => 'en',
     ];
     $locale = $langMap[$lang] ?? $lang;
-    $result = [];
-    foreach (explode(',', $ip) as $__ip) {
-        if (empty($__ip)) {
-            continue;
-        }
-        $locationInfo = \Nexus\Database\NexusDB::remember("locations_{$__ip}", 3600, function () use ($locale, $__ip, $reader) {
-            $info = [
-                'ip' => $__ip,
-                'version' => '',
-                'country' => '',
-                'city' => '',
-            ];
-            try {
-                $record = $reader->city($__ip);
-                $countryName =  $record->country->names[$locale] ?? $record->country->names['en'] ?? '';
-                $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
-                if (isIPV4($__ip)) {
-                    $info['version'] = 4;
-                } elseif (isIPV6($__ip)) {
-                    $info['version'] = 6;
-                }
-                $info['country'] = $countryName;
-                $info['city'] = $cityName;
-            } catch (\Exception $exception) {
-                do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
+    $locationInfo = \Nexus\Database\NexusDB::remember("locations_{$ip}", 3600, function () use ($locale, $ip, $reader) {
+        $info = [
+            'ip' => $ip,
+            'version' => '',
+            'country' => '',
+            'city' => '',
+        ];
+        try {
+            $record = $reader->city($ip);
+            $countryName =  $record->country->names[$locale] ?? $record->country->names['en'] ?? '';
+            $cityName = $record->city->names[$locale] ?? $record->city->names['en'] ?? '';
+            if (isIPV4($ip)) {
+                $info['version'] = 4;
+            } elseif (isIPV6($ip)) {
+                $info['version'] = 6;
             }
-            return $info;
-        });
-        $result[] = $locationInfo;
-    }
-    usort($result, function ($a, $b) {
-        if ($a['version'] == $b['version']) {
-            return 0;
+            $info['country'] = $countryName;
+            $info['city'] = $cityName;
+        } catch (\Exception $exception) {
+            do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
         }
-        return $a['version'] > $b['version'] ? 1 : -1;
+        return $info;
     });
-    do_log("ip: $ip, locale: $locale, result: " . nexus_json_encode($result));
-    $names = [];
-    foreach ($result as $item) {
-        $names[] = sprintf('%s[v%s]', $item['city'] ? ($item['city'] . "·" . $item['country']) : $item['country'], $item['version']);
-    }
+    do_log("ip: $ip, locale: $locale, result: " . nexus_json_encode($locationInfo));
+    $name = sprintf('%s[v%s]', $locationInfo['city'] ? ($locationInfo['city'] . "·" . $locationInfo['country']) : $locationInfo['country'], $locationInfo['version']);
     return [
-        'name' => implode(" + ", $names),
+        'name' => $name,
         'location_main' => '',
         'location_sub' => '',
         'flagpic' => '',

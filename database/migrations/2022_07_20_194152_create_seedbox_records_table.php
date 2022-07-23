@@ -13,10 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('seedbox_records', function (Blueprint $table) {
+        Schema::create('seed_box_records', function (Blueprint $table) {
             $table->id();
             $table->integer('type');
             $table->integer('uid');
+            $table->integer('status')->default(0);
             $table->string('operator')->nullable();
             $table->integer('bandwidth')->nullable();
             $table->string('ip')->nullable();
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->string('ip_end')->nullable();
             $table->string('ip_begin_numeric', 128)->index();
             $table->string('ip_end_numeric', 128)->index();
+            $table->integer('version');
             $table->string('comment')->nullable();
             $table->timestamps();
         });
@@ -36,6 +38,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('seedbox_records');
+        Schema::dropIfExists('seed_box_records');
     }
 };

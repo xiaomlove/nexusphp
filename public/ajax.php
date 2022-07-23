@@ -99,6 +99,7 @@ function addSeedBoxRecord($params)
     $rep = new \App\Repositories\SeedBoxRepository();
     $params['uid'] = $CURUSER['id'];
     $params['type'] = \App\Models\SeedBoxRecord::TYPE_USER;
+    $params['status'] = \App\Models\SeedBoxRecord::STATUS_UNAUDITED;
     return $rep->store($params);
 }
 

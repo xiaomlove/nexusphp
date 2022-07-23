@@ -88,16 +88,23 @@ class TrackerRepository extends BaseRepository
                 } elseif ($isReAnnounce == self::ANNOUNCE_FIRST) {
                     $this->checkMinInterval($peerSelf, $queries);
                 }
+
+                $snatch = Snatch::query()
+                    ->where('torrentid', $torrent->id)
+                    ->where('userid', $user->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
                 /**
                  * Note: Must get before update peer!
                  */
-                $dataTraffic = $this->getDataTraffic($torrent, $queries, $user, $peerSelf);
+                $dataTraffic = $this->getDataTraffic($torrent, $queries, $user, $peerSelf, $snatch);
 
                 /**
                  * Note: Only check in old session
                  */
                 if ($peerSelf->exists) {
-                    $this->checkCheater($torrent, $dataTraffic, $user, $peerSelf);
+                    $this->checkCheater($torrent, $queries, $dataTraffic, $user, $peerSelf);
+                    $this->checkSeedBox($torrent, $queries, $dataTraffic, $user, $peerSelf);
                 }
 
                 /**
@@ -113,7 +120,7 @@ class TrackerRepository extends BaseRepository
                     /**
                      * Note: Must update snatch first, otherwise peer `last_action` already change
                      */
-                    $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic);
+                    $snatch = $this->updateSnatch($peerSelf, $queries, $dataTraffic, $snatch);
                     if ($queries['event'] == 'completed') {
                         $this->handleHitAndRun($user, $torrent, $snatch);
                     }
@@ -420,6 +427,7 @@ class TrackerRepository extends BaseRepository
         if ($user->class >= User::CLASS_VIP) {
             return;
         }
+
         $gigs = $user->downloaded / (1024*1024*1024);
         if ($gigs < 10) {
             return;
@@ -485,7 +493,7 @@ class TrackerRepository extends BaseRepository
         }
     }
 
-    protected function checkCheater(Torrent $torrent, $dataTraffic, User $user, Peer $peer)
+    protected function checkCheater(Torrent $torrent, $queries, $dataTraffic, User $user, Peer $peer)
     {
         $settingSecurity = Setting::get('security');
         $level = $settingSecurity['cheaterdet'];
@@ -558,6 +566,33 @@ class TrackerRepository extends BaseRepository
             }
         }
 
+    }
+
+    private function checkSeedBox(Torrent $torrent, $queries, $dataTraffic, User $user, Peer $peer)
+    {
+        if ($user->class >= User::CLASS_VIP || $user->isDonating()) {
+            return;
+        }
+        $isSeedBoxRuleEnabled = Setting::get('seed_box.enabled') == 'yes';
+        if (!$isSeedBoxRuleEnabled) {
+            return;
+        }
+        $isIPSeedBox = isIPSeedBox($queries['ip'], $user->id);
+        if ($isIPSeedBox) {
+            return;
+        }
+        if (!$peer->isValidDate('last_action')) {
+            //no last action
+            return;
+        }
+        $duration = Carbon::now()->diffInSeconds($peer->last_action);
+        $upSpeedMbps = ($dataTraffic['uploaded_increment'] / $duration) * 8;
+        $notSeedBoxMaxSpeedMbps = Setting::get('seed_box.not_seed_box_max_speed');
+        if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
+            $user->update(['downloadpos' => 'no']);
+            do_log("user: {$user->id} downloading privileges have been disabled! (over speed)", 'error');
+            throw new TrackerException("Your downloading privileges have been disabled! (over speed)");
+        }
     }
 
     private function createOrUpdateCheater(Torrent $torrent, User $user, array $createData)
@@ -671,7 +706,7 @@ class TrackerRepository extends BaseRepository
         return $real_annnounce_interval;
     }
 
-    private function getDataTraffic(Torrent $torrent, $queries, User $user, Peer $peer): array
+    private function getDataTraffic(Torrent $torrent, $queries, User $user, Peer $peer, $snatch): array
     {
         $log = sprintf(
             "torrent: %s, user: %s, peer: %s, queriesUploaded: %s, queriesDownloaded: %s",
@@ -720,12 +755,32 @@ class TrackerRepository extends BaseRepository
             $downRatio = 0;
             $log .= ", [PEER_NOT_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded, upRatio: $upRatio, downRatio: $downRatio";
         }
+        $uploadedIncrementForUser = $realUploaded * $upRatio;
+        $downloadedIncrementForUser = $realDownloaded * $downRatio;
+
+        /**
+         * check seed box rule
+         */
+        $isSeedBoxRuleEnabled = Setting::get('seed_box.enabled') == 'yes';
+        if ($isSeedBoxRuleEnabled) {
+            $isIPSeedBox = isIPSeedBox($queries['ip'], $user->id);
+            if ($isIPSeedBox) {
+                $uploadedIncrementForUser = $realUploaded;
+                $downloadedIncrementForUser = $realDownloaded;
+                $log .= ", isIPSeedBox, increment for user = real";
+                $maxUploadedTimes = Setting::get('seed_box.max_uploaded');
+                if ($snatch && $snatch->uploaded >= $torrent->size * $maxUploadedTimes) {
+                    $log .= ", uploaded >= torrentSize * times($maxUploadedTimes), uploadedIncrementForUser = 0";
+                    $uploadedIncrementForUser = 0;
+                }
+            }
+        }
 
         $result = [
             'uploaded_increment' => $realUploaded,
-            'uploaded_increment_for_user' => $realUploaded * $upRatio,
+            'uploaded_increment_for_user' => $uploadedIncrementForUser,
             'downloaded_increment' => $realDownloaded,
-            'downloaded_increment_for_user' => $realDownloaded * $downRatio,
+            'downloaded_increment_for_user' => $downloadedIncrementForUser,
         ];
         do_log("$log, result: " . json_encode($result), 'info');
         return $result;
@@ -938,14 +993,9 @@ class TrackerRepository extends BaseRepository
      * @param $queries
      * @param $dataTraffic
      */
-    private function updateSnatch(Peer $peer, $queries, $dataTraffic)
+    private function updateSnatch(Peer $peer, $queries, $dataTraffic, $snatch)
     {
         $nowStr = Carbon::now()->toDateTimeString();
-
-        $snatch = Snatch::query()
-            ->where('torrentid', $peer->torrent)
-            ->where('userid', $peer->userid)
-            ->first();
 
         //torrentid, userid, ip, port, uploaded, downloaded, to_go, ,seedtime, leechtime, last_action, startdat, completedat, finished
         if (!$snatch) {

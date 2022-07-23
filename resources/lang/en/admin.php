@@ -17,7 +17,7 @@ return [
         'torrent_state' => 'Free leach',
         'roles_list' => 'Roles',
         'ability_list' => 'Permissions',
-        'seedbox_records' => 'SeedBox',
+        'seed_box_records' => 'SeedBox',
     ],
     'resources' => [
         'agent_allow' => [
@@ -75,6 +75,9 @@ return [
             'bulk_action_remove_tag' => 'Remove tag',
             'bulk_action_attach_tag' => 'Attach tag',
             'action_approval' => 'Approval',
+        ],
+        'seed_box_record' => [
+            'toggle_status' => 'Change status',
         ],
     ]
 ];

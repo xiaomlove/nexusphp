@@ -58,7 +58,17 @@ return [
             'ignore_when_ratio_reach_help' => '达标的最小分享率',
             'ban_user_when_counts_reach' => 'H&R 数量上限',
             'ban_user_when_counts_reach_help' => 'H&R 数量达到此值，账号会被禁用',
-        ]
+        ],
+        'seed_box' => [
+            'tab_header' => 'SeedBox',
+            'enabled_help' => '是否启用 SeedBox 规则',
+            'no_promotion' => '无优惠',
+            'no_promotion_help' => '不享受任何优惠，上传量/下载量按实际值计算',
+            'max_uploaded' => '最大上传量倍数',
+            'max_uploaded_help' => '总上传量最多为其体积的多少倍',
+            'not_seed_box_max_speed' => '非 SeedBox 最高限速',
+            'not_seed_box_max_speed_help' => '单位：Mbps。若超过此值又不能匹配 SeedBox 记录，禁用下载权限',
+        ],
     ],
     'user' => [
         'label' => '用户',
@@ -175,7 +185,7 @@ return [
         'name' => '标识',
         'title' => '名称',
     ],
-    'seedbox_record' => [
+    'seed_box_record' => [
         'label' => 'SeedBox 记录',
         'type' => '添加类型',
         'operator' => '运营商',
@@ -184,5 +194,6 @@ return [
         'ip_begin' => '起始 IP',
         'ip_end' => '结束 IP',
         'ip_help' => '起始 IP/结束 IP、IP(段) 二选一',
+        'status' => '状态',
     ],
 ];

@@ -13,23 +13,28 @@ class CreateSeedBoxRecord extends CreateRecord
 {
     protected static string $resource = SeedBoxRecordResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    public function create(bool $another = false): void
     {
+        $data = $this->form->getState();
         $data['uid'] = auth()->id();
         $data['type'] = SeedBoxRecord::TYPE_ADMIN;
-
-        return $data;
-    }
-
-    protected function handleRecordCreation(array $data): Model
-    {
-        $seedBoxRep = new SeedBoxRepository();
+        $data['status'] = SeedBoxRecord::STATUS_ALLOWED;
+        $rep = new SeedBoxRepository();
         try {
-            return $seedBoxRep->store($data);
+            $this->record = $rep->store($data);
+            $this->notify('success', $this->getCreatedNotificationMessage());
+            if ($another) {
+                // Ensure that the form record is anonymized so that relationships aren't loaded.
+                $this->form->model($this->record::class);
+                $this->record = null;
+
+                $this->fillForm();
+
+                return;
+            }
+            $this->redirect($this->getResource()::getUrl('index'));
         } catch (\Exception $exception) {
-            //this wont work...
             $this->notify('danger', $exception->getMessage());
-            die();
         }
     }
 }
