@@ -84,6 +84,7 @@ return [
         'invite_by' => '邀请人',
         'two_step_authentication' => '两步验证',
         'seed_points' => '做种积分',
+        'downloadpos' => '下载权限',
     ],
     'medal' => [
         'label' => '勋章',

@@ -31,6 +31,7 @@
         "ext-pcntl": "*",
         "ext-redis": "*",
         "ext-xml": "*",
+        "ext-gmp": "*",
         "doctrine/dbal": "^3.1",
         "elasticsearch/elasticsearch": "^7.16",
         "filament/filament": "2.14.2",

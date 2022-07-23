@@ -55,6 +55,8 @@ return [
                 'grant_medal_duration_label' => '有效时长',
                 'grant_medal_duration_help' => '单位：天。如果留空，用户永久拥有',
                 'confirm_btn' => '确认',
+                'disable_download_privileges_btn' => '禁用下载权限',
+                'enable_download_privileges_btn' => '启用下载权限',
             ]
         ],
         'exam_user' => [

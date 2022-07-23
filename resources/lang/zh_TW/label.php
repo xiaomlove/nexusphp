@@ -74,6 +74,7 @@ return [
         'invite_by' => '邀請人',
         'two_step_authentication' => '兩步驗證',
         'seed_points' => '做種積分',
+        'downloadpos' => '下載權限',
     ],
     'medal' => [
         'label' => '勛章',

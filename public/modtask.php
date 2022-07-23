@@ -26,6 +26,7 @@ if ($action == "confirmuser")
 if ($action == "edituser")
 {
 	$userid = $_POST["userid"];
+	$userInfo = \App\Models\User::query()->findOrFail($userid, ['id', 'passkey']);
 	$class = intval($_POST["class"] ?? 0);
 	$vip_added = ($_POST["vip_added"] == 'yes' ? 'yes' : 'no');
 	$vip_until = !empty($_POST["vip_until"]) ? $_POST['vip_until'] : null;
@@ -344,6 +345,7 @@ if ($action == "edituser")
         \App\Models\UserBanLog::query()->insert($banLog);
     }
     \Nexus\Database\NexusDB::cache_del("user_{$userid}_content");
+    \Nexus\Database\NexusDB::cache_del('user_passkey_'.$userInfo->passkey.'_content');
 	$returnto = htmlspecialchars($_POST["returnto"]);
 	header("Location: " . get_protocol_prefix() . "$BASEURL/$returnto");
 	die;

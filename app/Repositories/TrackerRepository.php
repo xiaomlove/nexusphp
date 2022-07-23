@@ -586,8 +586,9 @@ class TrackerRepository extends BaseRepository
             return;
         }
         $duration = Carbon::now()->diffInSeconds($peer->last_action);
-        $upSpeedMbps = ($dataTraffic['uploaded_increment'] / $duration) * 8;
+        $upSpeedMbps = number_format(($dataTraffic['uploaded_increment'] / $duration / 1024 / 1024) * 8);
         $notSeedBoxMaxSpeedMbps = Setting::get('seed_box.not_seed_box_max_speed');
+        do_log("upSpeedMbps: $upSpeedMbps, notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps");
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
             $user->update(['downloadpos' => 'no']);
             do_log("user: {$user->id} downloading privileges have been disabled! (over speed)", 'error');
@@ -708,83 +709,25 @@ class TrackerRepository extends BaseRepository
 
     private function getDataTraffic(Torrent $torrent, $queries, User $user, Peer $peer, $snatch): array
     {
-        $log = sprintf(
-            "torrent: %s, user: %s, peer: %s, queriesUploaded: %s, queriesDownloaded: %s",
-            $torrent->id, $user->id, json_encode($peer->only(['uploaded', 'downloaded'])), $queries['uploaded'], $queries['downloaded']
-        );
+        $torrentInfo = $torrent->toArray();
+        $userInfo = $user->toArray();
+        $userInfo['__is_donor'] = $user->isDonating();
+
+        $peerInfo = [];
         if ($peer->exists) {
-            $realUploaded = max(bcsub($queries['uploaded'], $peer->uploaded), 0);
-            $realDownloaded = max(bcsub($queries['downloaded'], $peer->downloaded), 0);
-            $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded";
-            $spStateReal = $torrent->spStateReal;
-            $log .= "[SP_STATE_REAL]: $spStateReal";
-            $promotionInfo = apply_filter('torrent_promotion', $torrent->toArray());
-            do_log("promotionInfo from filter torrent_promotion by torrent: " . $torrent->id . ", get : " . json_encode($promotionInfo));
-            if (isset($promotionInfo['__ignore_global_sp_state']) && $promotionInfo['sp_state'] != $spStateReal) {
-                $spStateReal = $promotionInfo['sp_state'];
-                $log .= "[CHANGE_SP_STATE_REAL_BY_FILTER_TORRENT_PROMOTION]: $spStateReal";
-            }
-            $uploaderRatio = Setting::get('torrent.uploaderdouble');
-            $log .= ", spStateReal: $spStateReal, uploaderRatio: $uploaderRatio";
-            if ($torrent->owner == $user->id) {
-                //uploader, use the bigger one
-                $upRatio = max($uploaderRatio, Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
-                $log .= ", [IS_UPLOADER], upRatio: $upRatio";
-            } else {
-                $upRatio = Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
-                $log .= ", [IS_NOT_UPLOADER], upRatio: $upRatio";
-            }
-            /**
-             * VIP do not calculate downloaded
-             * @since 1.7.13
-             */
-            if ($user->class == User::CLASS_VIP) {
-                $downRatio = 0;
-                $log .= ", [IS_VIP], downRatio: $downRatio";
-            } else {
-                $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
-                $log .= ", [IS_NOT_VIP], downRatio: $downRatio";
-            }
-        } else {
-            $realUploaded = $queries['uploaded'];
-            $realDownloaded = $queries['downloaded'];
-            /**
-             * If peer not exits, user increment = 0;
-             */
-            $upRatio = 0;
-            $downRatio = 0;
-            $log .= ", [PEER_NOT_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded, upRatio: $upRatio, downRatio: $downRatio";
-        }
-        $uploadedIncrementForUser = $realUploaded * $upRatio;
-        $downloadedIncrementForUser = $realDownloaded * $downRatio;
-
-        /**
-         * check seed box rule
-         */
-        $isSeedBoxRuleEnabled = Setting::get('seed_box.enabled') == 'yes';
-        if ($isSeedBoxRuleEnabled) {
-            $isIPSeedBox = isIPSeedBox($queries['ip'], $user->id);
-            if ($isIPSeedBox) {
-                $uploadedIncrementForUser = $realUploaded;
-                $downloadedIncrementForUser = $realDownloaded;
-                $log .= ", isIPSeedBox, increment for user = real";
-                $maxUploadedTimes = Setting::get('seed_box.max_uploaded');
-                if ($snatch && $snatch->uploaded >= $torrent->size * $maxUploadedTimes) {
-                    $log .= ", uploaded >= torrentSize * times($maxUploadedTimes), uploadedIncrementForUser = 0";
-                    $uploadedIncrementForUser = 0;
-                }
-            }
+            $peerInfo = $peer->toArray();
         }
 
-        $result = [
-            'uploaded_increment' => $realUploaded,
-            'uploaded_increment_for_user' => $uploadedIncrementForUser,
-            'downloaded_increment' => $realDownloaded,
-            'downloaded_increment_for_user' => $downloadedIncrementForUser,
-        ];
-        do_log("$log, result: " . json_encode($result), 'info');
-        return $result;
+        $snatchInfo = [];
+        if ($snatch instanceof Snatch) {
+            $snatchInfo = $snatch->toArray();
+        }
+
+        $promotionInfo = apply_filter('torrent_promotion', $torrentInfo);
+
+        return \getDataTraffic($torrentInfo, $queries, $userInfo, $peerInfo, $snatchInfo, $promotionInfo);
     }
+
 
     private function givePeers($originalPeers, $compact, $noPeerId, int $filterFlag = FILTER_FLAG_IPV4): string|array
     {

@@ -55,6 +55,8 @@ return [
                 'grant_medal_duration_label' => 'Duration',
                 'grant_medal_duration_help' => 'Unit: days. If left blank, the user has permanent possession',
                 'confirm_btn' => 'Confirm',
+                'disable_download_privileges_btn' => 'Enable download',
+                'enable_download_privileges_btn' => 'Disable download',
             ]
         ],
         'exam_user' => [

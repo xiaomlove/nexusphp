@@ -60,6 +60,7 @@ class UserProfile extends Page
             }
             $actions[] = $this->buildResetPasswordAction();
             $actions[] = $this->buildEnableDisableAction();
+            $actions[] = $this->buildEnableDisableDownloadPrivilegesAction();
         }
         return $actions;
     }
@@ -234,13 +235,20 @@ class UserProfile extends Page
     }
 
 
-
-
-
-//    protected function getViewData(): array
-//    {
-//        return [
-//            'enableDisableAction' => $this->buildEnableDisableAction(),
-//        ];
-//    }
+    private function buildEnableDisableDownloadPrivilegesAction(): Actions\Action
+    {
+        return Actions\Action::make($this->record->downloadpos == 'yes' ? __('admin.resources.user.actions.disable_download_privileges_btn') : __('admin.resources.user.actions.enable_download_privileges_btn'))
+//            ->modalHeading($this->record->enabled == 'yes' ? __('admin.resources.user.actions.disable_modal_title') : __('admin.resources.user.actions.enable_modal_title'))
+            ->requiresConfirmation()
+            ->action(function () {
+                $userRep = new UserRepository();
+                try {
+                    $userRep->toggleDownloadPrivileges(Auth::user(), $this->record->id);
+                    $this->notify('success', 'Success!');
+                    $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
+                } catch (\Exception $exception) {
+                    $this->notify('danger', $exception->getMessage());
+                }
+            });
+    }
 }

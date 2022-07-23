@@ -72,9 +72,9 @@ function dltable($name, $arr, $torrent)
                 $ips[] = $e['ipv6'];
             }
             $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
-            $addressStr = implode(' + ', $address);
+            $addressStr = implode('<br/>', $address);
 			$location = get_user_class() >= $userprofile_class ? "<div title='" . $title . "'>" . $addressStr . "</div>" : $addressStr;
-			$s .= "<td class=rowfollow align=center width=1%><nobr>" . $location . "</nobr></td>\n";
+			$s .= "<td class=rowfollow align=left width=1%><nobr>" . $location . "</nobr></td>\n";
 		}
 		elseif (get_user_class() >= $userprofile_class){
 			$location = implode(', ', array_filter([$e['ipv4'], $e['ipv6']]));

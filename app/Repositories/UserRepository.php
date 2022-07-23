@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Exceptions\InsufficientPermissionException;
 use App\Exceptions\NexusException;
 use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
@@ -134,9 +135,7 @@ class UserRepository extends BaseRepository
             throw new \InvalidArgumentException("password confirmation != password");
         }
         $user = User::query()->findOrFail($id, ['id', 'username', 'class']);
-        if (Auth::user()->class <= $user->class) {
-            throw new \LogicException("Sorry, you don't have enough permission to reset this user's password.");
-        }
+        $this->checkPermission(Auth::user(), $user);
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
         $update = [
@@ -162,9 +161,7 @@ class UserRepository extends BaseRepository
         if ($targetUser->enabled == User::ENABLED_NO) {
             throw new NexusException('Already disabled !');
         }
-        if ($operator->class <= $targetUser->class) {
-            throw new NexusException('No Permission !');
-        }
+        $this->checkPermission($operator, $targetUser);
         $banLog = [
             'uid' => $uid,
             'username' => $targetUser->username,
@@ -186,9 +183,7 @@ class UserRepository extends BaseRepository
         if ($targetUser->enabled == User::ENABLED_YES) {
             throw new NexusException('Already enabled !');
         }
-        if ($operator->class <= $targetUser->class) {
-            throw new NexusException('No Permission !');
-        }
+        $this->checkPermission($operator, $targetUser);
         $update = [
             'enabled' => User::ENABLED_YES
         ];
@@ -233,9 +228,7 @@ class UserRepository extends BaseRepository
         }
         $sourceField = $fieldMap[$field];
         $targetUser = User::query()->findOrFail($uid, User::$commonFields);
-        if (Auth::user()->class <= $targetUser->class) {
-            throw new NexusException("No permission !");
-        }
+        $this->checkPermission($operator, $targetUser);
         $old = $targetUser->{$sourceField};
         $valueAtomic = $value;
         $formatSize = false;
@@ -301,12 +294,10 @@ class UserRepository extends BaseRepository
 
     public function removeLeechWarn($operator, $uid): bool
     {
-        $operator = $this->getOperator($operator);
+        $operator = $this->getUser($operator);
         $classRequire = Setting::get('authority.prfmanage');
-        if ($operator->class <= $classRequire) {
-            throw new \RuntimeException("No permission.");
-        }
         $user = User::query()->findOrFail($uid, User::$commonFields);
+        $this->checkPermission($operator, $user);
         NexusDB::cache_del('user_'.$uid.'_content');
         $user->leechwarn = 'no';
         $user->leechwarnuntil = null;
@@ -315,24 +306,50 @@ class UserRepository extends BaseRepository
 
     public function removeTwoStepAuthentication($operator, $uid): bool
     {
-        $operator = $this->getOperator($operator);
         if (!$operator->canAccessAdmin()) {
             throw new \RuntimeException("No permission.");
         }
         $user = User::query()->findOrFail($uid, User::$commonFields);
-        if ($operator->class <= $user->class) {
-            throw new \RuntimeException("No permission!");
-        }
+        $this->checkPermission($operator, $user);
         $user->two_step_secret = '';
         return $user->save();
     }
 
-    private function getOperator($operator)
+
+    public function toggleDownloadPrivileges($operator, $id)
     {
-        if (!$operator instanceof User) {
-            $operator = User::query()->findOrFail(intval($operator), User::$commonFields);
+        $targetUser = User::query()->findOrFail($id, User::$commonFields);
+        $operator = $this->getUser($operator);
+        $this->checkPermission($operator, $targetUser);
+        $message = [
+            'added' => now(),
+            'receiver' => $targetUser->id,
+        ];
+        if ($targetUser->downloadpos == 'yes') {
+            $update = ['downloadpos' => 'no'];
+            $modComment = date('Y-m-d') . " - Download disable by " . $operator->username;
+            $message['subject'] = nexus_trans('message.download_disable.subject', [], $targetUser->locale);
+            $message['msg'] = nexus_trans('message.download_disable.body', ['operator' => $operator->username], $targetUser->locale);
+        } else {
+            $update = ['downloadpos' => 'yes'];
+            $modComment = date('Y-m-d') . " - Download enable by " . $operator->username;
+            $message['subject'] = nexus_trans('message.download_enable.subject', [], $targetUser->locale);
+            $message['msg'] = nexus_trans('message.download_enable.body', ['operator' => $operator->username], $targetUser->locale);
         }
-        return $operator;
+        return NexusDB::transaction(function () use ($targetUser, $update, $modComment, $message) {
+            Message::add($message);
+            return $targetUser->updateWithModComment($update, $modComment);
+        });
+    }
+
+
+    private function checkPermission($operator, User $user, $minAuthClass = 'authority.prfmanage')
+    {
+        $operator = $this->getUser($operator);
+        $classRequire = Setting::get($minAuthClass);
+        if ($operator->class < $classRequire || $operator->class <= $user->class) {
+            throw new InsufficientPermissionException();
+        }
     }
 
 

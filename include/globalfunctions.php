@@ -2,20 +2,18 @@
 
 function get_global_sp_state()
 {
-	global $Cache;
 	static $global_promotion_state;
-	if (!$global_promotion_state){
-		if (!$global_promotion_state = $Cache->get_value('global_promotion_state')){
-			$res = mysql_query("SELECT * FROM torrents_state");
-			$row = mysql_fetch_assoc($res);
+	if (!$global_promotion_state) {
+		if (!$global_promotion_state = \Nexus\Database\NexusDB::cache_get('global_promotion_state')){
+			$row = \Nexus\Database\NexusDB::getOne('torrents_state', 1);
 			if (isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
 			    //expired
                 $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
             } else {
                 $global_promotion_state = $row["global_sp_state"];
             }
-			$Cache->cache_value('global_promotion_state', $global_promotion_state, 600);
-			$Cache->cache_value('global_promotion_state_deadline', $row['deadline'], 600);
+            \Nexus\Database\NexusDB::cache_put('global_promotion_state', $global_promotion_state, 600);
+            \Nexus\Database\NexusDB::cache_put('global_promotion_state_deadline', $row['deadline'], 600);
 		}
 	}
 	return $global_promotion_state;
@@ -808,4 +806,102 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
     $redis->hSet($key, $hashKey, serialize(['data' => false, 'deadline' => time() + 3600]));
     do_log("$hashKey, no result, false");
     return false;
+}
+
+function getDataTraffic(array $torrent, array $queries, array $user, $peer, $snatch, $promotionInfo)
+{
+    if (!isset($user['__is_donor'])) {
+        throw new \InvalidArgumentException("user no '__is_donor' field");
+    }
+    $log = sprintf(
+        "torrent: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s",
+        $torrent['id'], $user['id'], $peer['uploaded'] ?? '', $peer['downloaded'] ?? '', $queries['uploaded'], $queries['downloaded']
+    );
+    if (!empty($peer)) {
+        $realUploaded = max(bcsub($queries['uploaded'], $peer['uploaded']), 0);
+        $realDownloaded = max(bcsub($queries['downloaded'], $peer['downloaded']), 0);
+        $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded, [SP_STATE]";
+        $spStateGlobal = get_global_sp_state();
+        $spStateNormal = \App\Models\Torrent::PROMOTION_NORMAL;
+        if (!empty($promotionInfo) && isset($promotionInfo['__ignore_global_sp_state'])) {
+            $log .= ', use promotionInfo';
+            $spStateReal = $promotionInfo['sp_state'];
+        } elseif ($spStateGlobal != $spStateNormal) {
+            $log .= ", use global";
+            $spStateReal = $spStateGlobal;
+        } else {
+            $log .= ", use torrent individual";
+            $spStateReal = $torrent['sp_state'];
+        }
+        if (!isset(\App\Models\Torrent::$promotionTypes[$spStateReal])) {
+            $log .= ", spStateReal = $spStateReal, invalid, reset to: $spStateNormal";
+            $spStateReal = $spStateNormal;
+        }
+        $uploaderRatio = get_setting('torrent.uploaderdouble');
+        $log .= ", uploaderRatio: $uploaderRatio";
+        if ($torrent['owner'] == $user['id']) {
+            //uploader, use the bigger one
+            $upRatio = max($uploaderRatio, \App\Models\Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
+            $log .= ", [IS_UPLOADER], upRatio: $upRatio";
+        } else {
+            $upRatio = \App\Models\Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
+            $log .= ", [IS_NOT_UPLOADER], upRatio: $upRatio";
+        }
+        /**
+         * VIP do not calculate downloaded
+         * @since 1.7.13
+         */
+        if ($user['class'] == \App\Models\User::CLASS_VIP) {
+            $downRatio = 0;
+            $log .= ", [IS_VIP], downRatio: $downRatio";
+        } else {
+            $downRatio = \App\Models\Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
+            $log .= ", [IS_NOT_VIP], downRatio: $downRatio";
+        }
+    } else {
+        $realUploaded = $queries['uploaded'];
+        $realDownloaded = $queries['downloaded'];
+        /**
+         * If peer not exits, user increment = 0;
+         */
+        $upRatio = 0;
+        $downRatio = 0;
+        $log .= ", [PEER_NOT_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded, upRatio: $upRatio, downRatio: $downRatio";
+    }
+    $uploadedIncrementForUser = $realUploaded * $upRatio;
+    $downloadedIncrementForUser = $realDownloaded * $downRatio;
+    $log .= ", uploadedIncrementForUser: $uploadedIncrementForUser, downloadedIncrementForUser: $downloadedIncrementForUser";
+
+    /**
+     * check seed box rule
+     */
+    $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
+    $log .= ", isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, user class: {$user['class']}, __is_donor: {$user['__is_donor']}";
+    if ($isSeedBoxRuleEnabled && !($user['class'] >= \App\Models\User::CLASS_VIP || $user['__is_donor'])) {
+        $isIPSeedBox = isIPSeedBox($queries['ip'], $user['id']);
+        $log .= ", isIPSeedBox: $isIPSeedBox";
+        if ($isIPSeedBox) {
+            $isSeedBoxNoPromotion = get_setting('seed_box.no_promotion') == 'yes';
+            $log .= ", isSeedBoxNoPromotion: $isSeedBoxNoPromotion";
+            if ($isSeedBoxNoPromotion) {
+                $uploadedIncrementForUser = $realUploaded;
+                $downloadedIncrementForUser = $realDownloaded;
+                $log .= ", isIPSeedBox && isSeedBoxNoPromotion, increment for user = real";
+            }
+            $maxUploadedTimes = get_setting('seed_box.max_uploaded');
+            if (!empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
+                $log .= ", snatchUploaded >= torrentSize * times($maxUploadedTimes), uploadedIncrementForUser = 0";
+                $uploadedIncrementForUser = 0;
+            }
+        }
+    }
+
+    $result = [
+        'uploaded_increment' => $realUploaded,
+        'uploaded_increment_for_user' => $uploadedIncrementForUser,
+        'downloaded_increment' => $realDownloaded,
+        'downloaded_increment_for_user' => $downloadedIncrementForUser,
+    ];
+    do_log("$log, result: " . json_encode($result), 'info');
+    return $result;
 }

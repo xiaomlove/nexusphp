@@ -53,6 +53,11 @@
                 <td></td>
             </tr>
             <tr>
+                <th>{{__('label.user.downloadpos')}}</th>
+                <td>{{$record->downloadpos}}</td>
+                <td></td>
+            </tr>
+            <tr>
                 <th>{{__('label.user.seed_points')}}</th>
                 <td>{{$record->seed_points}}</td>
                 <td></td>

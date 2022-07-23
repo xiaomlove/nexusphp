@@ -74,6 +74,7 @@ return [
         'invite_by' => 'Inviter',
         'two_step_authentication' => 'Two-step authentication',
         'seed_points' => 'Seed points',
+        'downloadpos' => 'Download privileges',
     ],
     'medal' => [
         'label' => 'Medal',

@@ -146,7 +146,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
         'leechwarn', 'leechwarnuntil', 'page', 'class', 'uploaded', 'downloaded', 'clientselect', 'showclienterror', 'last_home',
-        'seedbonus', 'bonuscomment',
+        'seedbonus', 'bonuscomment', 'downloadpos'
     ];
 
     /**
@@ -189,7 +189,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
-        'lang', 'attendance_card', 'privacy', 'noad',
+        'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos',
     ];
 
     public static function getDefaultUserAttributes(): array
