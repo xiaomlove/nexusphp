@@ -179,7 +179,7 @@ class Torrent extends NexusModel
             throw new \RuntimeException('no select sp_state field');
         }
         $spState = $this->sp_state;
-        $global = self::getGlobalPromotionState();
+        $global = get_global_sp_state();
         $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
         if ($global != self::PROMOTION_NORMAL) {
             $spState = $global;
@@ -212,18 +212,6 @@ class Torrent extends NexusModel
         return new Attribute(
             get: fn($value, $attributes) => self::$promotionTypes[$this->sp_state]['text'] ?? ''
         );
-    }
-
-    public static function getGlobalPromotionState()
-    {
-        if (is_null(self::$globalPromotionState)) {
-            $result = TorrentState::query()->first(['global_sp_state']);
-            if (!$result) {
-                do_log("global sp state no value", 'error');
-            }
-            self::$globalPromotionState = $result->global_sp_state ?? false;
-        }
-        return self::$globalPromotionState;
     }
 
     public static function getFieldsForList($appendTableName = false): array|bool

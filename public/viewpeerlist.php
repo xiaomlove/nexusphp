@@ -11,6 +11,44 @@ header("Content-Type: text/xml; charset=utf-8");
 
 $id = intval($_GET['id'] ?? 0);
 $seedBoxRep = new \App\Repositories\SeedBoxRepository();
+
+function get_location_column($e, $isStrongPrivacy, $canView): string
+{
+    global $enablelocation_tweak, $seedBoxRep, $lang_functions, $lang_viewpeerlist;
+    if ($enablelocation_tweak == 'yes') {
+        $address = $ips = [];
+        if (!empty($e['ipv4'])) {
+            list($loc_pub, $loc_mod) = get_ip_location($e['ipv4']);
+            $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv4'], $e['userid']);
+            $address[] = $loc_pub . $seedBoxIcon;
+            $ips[] = $e['ipv4'];
+        }
+        if (!empty($e['ipv6'])) {
+            list($loc_pub, $loc_mod) = get_ip_location($e['ipv6']);
+            $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv6'], $e['userid']);
+            $address[] = $loc_pub . $seedBoxIcon;
+            $ips[] = $e['ipv6'];
+        }
+        $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
+        $addressStr = implode('<br/>', $address);
+        $location = "<div title='" . $title . "'>" . $addressStr . "</div>";
+    } else {
+        $location = implode(', ', array_filter([$e['ipv4'], $e['ipv6']]));
+    }
+
+    if ($isStrongPrivacy) {
+        $result = '<div style="margin-right: 6px"><i>'.$lang_viewpeerlist['text_anonymous'].'</i></div>';
+        if ($canView) {
+            $result .= $location;
+        }
+    } else {
+        $result = $location;
+    }
+
+    return "<td class=rowfollow align=left width=1%><div style='display: flex;white-space: nowrap;align-items: center'>" . $result . "</div></td>\n";
+}
+
+
 if(isset($CURUSER))
 {
 function dltable($name, $arr, $torrent)
@@ -20,12 +58,13 @@ function dltable($name, $arr, $torrent)
 	global $lang_functions, $seedBoxRep;
 
 	$s = "<b>" . count($arr) . " $name</b>\n";
+	$showLocationColumn = $enablelocation_tweak == 'yes' || get_user_class() >= $userprofile_class;
 	if (!count($arr))
 		return $s;
 	$s .= "\n";
 	$s .= "<table width=100% class=main border=1 cellspacing=0 cellpadding=3>\n";
 	$s .= "<tr><td class=colhead align=center width=1%>".$lang_viewpeerlist['col_user_ip']."</td>" .
-	($enablelocation_tweak == 'yes' || get_user_class() >= $userprofile_class ? "<td class=colhead align=center>".$lang_viewpeerlist['col_location']."</td>" : "").
+	($showLocationColumn ? "<td class=colhead align=center>".$lang_viewpeerlist['col_location']."</td>" : "").
 	"<td class=colhead align=center width=1%>".$lang_viewpeerlist['col_connectable']."</td>".
 	"<td class=colhead align=center width=1%>".$lang_viewpeerlist['col_uploaded']."</td>".
 	"<td class=colhead align=center width=1%>".$lang_viewpeerlist['col_rate']."</td>" .
@@ -40,46 +79,30 @@ function dltable($name, $arr, $torrent)
 	$num = 0;
     $privacyData = \App\Models\User::query()->whereIn('id', array_column($arr, 'userid'))->get(['id', 'privacy'])->keyBy('id');
 	foreach ($arr as $e) {
-//		$privacy = get_single_value("users", "privacy","WHERE id=".sqlesc($e['userid']));
         $privacy = $privacyData->get($e['userid'])->privacy ?? '';
 		++$num;
 
 		$highlight = $CURUSER["id"] == $e['userid'] ? " bgcolor=#BBAF9B" : "";
 		$s .= "<tr$highlight>\n";
-		if($privacy == "strong" || ($torrent['anonymous'] == 'yes' && $e['userid'] == $torrent['owner']))
-		{
-			if(get_user_class() >= $viewanonymous_class || $e['userid'] == $CURUSER['id'])
-				$s .= "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i><br />(" . get_username($e['userid']) . ")";
-			else
-				$s .= "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i></a></td>\n";
-		}
-		else
-			$s .= "<td class=rowfollow align=left width=1%>" . get_username($e['userid']);
-
-		 $secs = max(1, ($e["la"] - $e["st"]));
-		if ($enablelocation_tweak == 'yes'){
-		    $address = $ips = [];
-		    if (!empty($e['ipv4'])) {
-                list($loc_pub, $loc_mod) = get_ip_location($e['ipv4']);
-                $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv4'], $e['userid']);
-                $address[] = $loc_pub . $seedBoxIcon;
-                $ips[] = $e['ipv4'];
+        $secs = max(1, ($e["la"] - $e["st"]));
+		if ($privacy == "strong" || ($torrent['anonymous'] == 'yes' && $e['userid'] == $torrent['owner'])) {
+			if (get_user_class() >= $viewanonymous_class || $e['userid'] == $CURUSER['id']) {
+                $s .= "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i><br />(" . get_username($e['userid']) . ")";
+                if ($showLocationColumn) {
+                    $s .= get_location_column($e, true, true);
+                }
+            } else {
+                $s .= "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i></a></td>\n";
+                if ($showLocationColumn) {
+                    $s .= get_location_column($e, true, false);
+                }
             }
-            if (!empty($e['ipv6'])) {
-                list($loc_pub, $loc_mod) = get_ip_location($e['ipv6']);
-                $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv6'], $e['userid']);
-                $address[] = $loc_pub . $seedBoxIcon;
-                $ips[] = $e['ipv6'];
+		} else {
+            $s .= "<td class=rowfollow align=left width=1%>" . get_username($e['userid']);
+            if ($showLocationColumn) {
+                $s .= get_location_column($e, false, false);
             }
-            $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
-            $addressStr = implode('<br/>', $address);
-			$location = get_user_class() >= $userprofile_class ? "<div title='" . $title . "'>" . $addressStr . "</div>" : $addressStr;
-			$s .= "<td class=rowfollow align=left width=1%><nobr>" . $location . "</nobr></td>\n";
-		}
-		elseif (get_user_class() >= $userprofile_class){
-			$location = implode(', ', array_filter([$e['ipv4'], $e['ipv6']]));
-			$s .= "<td class=rowfollow align=center width=1%><nobr>" . $location . "</nobr></td>\n";
-		}
+        }
 
 		$s .= "<td class=rowfollow align=center width=1%><nobr>" . ($e['connectable'] == "yes" ? $lang_viewpeerlist['text_yes'] : "<font color=red>".$lang_viewpeerlist['text_no']."</font>") . "</nobr></td>\n";
 		$s .= "<td class=rowfollow align=center width=1%><nobr>" . mksize($e["uploaded"]) . "</nobr></td>\n";
