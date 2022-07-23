@@ -948,36 +948,37 @@ tr_small($lang_usercp['row_karma_points'], $CURUSER['seedbonus']." [<a href=\"my
 tr_small($lang_usercp['row_written_comments'], $commentcount." [<a href=\"userhistory.php?action=viewcomments&id=".$CURUSER['id']."\" title=\"".$lang_usercp['link_view_comments']."\">".$lang_usercp['text_view']."</a>]", 1);
 
 //start seed box
-$seedBox = '';
-$columnOperator = nexus_trans('label.seed_box_record.operator');
-$columnBandwidth = nexus_trans('label.seed_box_record.bandwidth');
-$columnIPBegin = nexus_trans('label.seed_box_record.ip_begin');
-$columnIPEnd = nexus_trans('label.seed_box_record.ip_end');
-$columnIP = nexus_trans('label.seed_box_record.ip');
-$columnIPHelp = nexus_trans('label.seed_box_record.ip_help');
-$columnComment = nexus_trans('label.comment');
-$columnStatus = nexus_trans('label.seed_box_record.status');
-$res = \App\Models\SeedBoxRecord::query()->where('uid', $CURUSER['id'])->where('type', \App\Models\SeedBoxRecord::TYPE_USER)->get();
-if ($res->count() > 0)
-{
-    $seedBox .= "<table border='1' cellspacing='0' cellpadding='5' id='seed-box-table'><tr><td class='colhead'>ID</td><td class='colhead'>{$columnOperator}</td><td class='colhead'>{$columnBandwidth}</td><td class='colhead'>{$columnIP}</td><td class='colhead'>{$columnComment}</td><td class='colhead'>{$columnStatus}</td><td class='colhead'></td></tr>";
-    foreach ($res as $seedBoxRecord)
+if (get_setting('seed_box.enabled') == 'yes') {
+    $seedBox = '';
+    $columnOperator = nexus_trans('label.seed_box_record.operator');
+    $columnBandwidth = nexus_trans('label.seed_box_record.bandwidth');
+    $columnIPBegin = nexus_trans('label.seed_box_record.ip_begin');
+    $columnIPEnd = nexus_trans('label.seed_box_record.ip_end');
+    $columnIP = nexus_trans('label.seed_box_record.ip');
+    $columnIPHelp = nexus_trans('label.seed_box_record.ip_help');
+    $columnComment = nexus_trans('label.comment');
+    $columnStatus = nexus_trans('label.seed_box_record.status');
+    $res = \App\Models\SeedBoxRecord::query()->where('uid', $CURUSER['id'])->where('type', \App\Models\SeedBoxRecord::TYPE_USER)->get();
+    if ($res->count() > 0)
     {
-        $seedBox .= "<tr>";
-        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->id);
-        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->operator);
-        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->bandwidth ?: '');
-        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->ip ?: sprintf('%s ~ %s', $seedBoxRecord->ip_begin, $seedBoxRecord->ip_end));
-        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->comment);
-        $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->statusText);
-        $seedBox .= sprintf('<td><img style="cursor: pointer" class="staff_delete remove-seed-box-btn" src="pic/trans.gif" alt="D" title="%s" data-id="%s"></td>', $lang_functions['text_delete'], $seedBoxRecord->id);
-        $seedBox .= "</tr>";
+        $seedBox .= "<table border='1' cellspacing='0' cellpadding='5' id='seed-box-table'><tr><td class='colhead'>ID</td><td class='colhead'>{$columnOperator}</td><td class='colhead'>{$columnBandwidth}</td><td class='colhead'>{$columnIP}</td><td class='colhead'>{$columnComment}</td><td class='colhead'>{$columnStatus}</td><td class='colhead'></td></tr>";
+        foreach ($res as $seedBoxRecord)
+        {
+            $seedBox .= "<tr>";
+            $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->id);
+            $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->operator);
+            $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->bandwidth ?: '');
+            $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->ip ?: sprintf('%s ~ %s', $seedBoxRecord->ip_begin, $seedBoxRecord->ip_end));
+            $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->comment);
+            $seedBox .= sprintf('<td>%s</td>', $seedBoxRecord->statusText);
+            $seedBox .= sprintf('<td><img style="cursor: pointer" class="staff_delete remove-seed-box-btn" src="pic/trans.gif" alt="D" title="%s" data-id="%s"></td>', $lang_functions['text_delete'], $seedBoxRecord->id);
+            $seedBox .= "</tr>";
+        }
+        $seedBox .= '</table>';
     }
-    $seedBox .= '</table>';
-}
-$seedBox .= sprintf('<div><input type="button" id="add-seed-box-btn" value="%s"/></div>', $lang_usercp['add_seed_box_btn']);
-tr_small($lang_usercp['row_seed_box'], $seedBox, 1);
-$seedBoxCss = <<<CSS
+    $seedBox .= sprintf('<div><input type="button" id="add-seed-box-btn" value="%s"/></div>', $lang_usercp['add_seed_box_btn']);
+    tr_small($lang_usercp['row_seed_box'], $seedBox, 1);
+    $seedBoxCss = <<<CSS
 .form-box {
 padding: 15px;
 }
@@ -998,7 +999,7 @@ padding: 4px;
 }
 CSS;
 
-$seedBoxForm = <<<FORM
+    $seedBoxForm = <<<FORM
 <div class="form-box">
 <form id="seed-box-form">
     <div class="form-control-row">
@@ -1028,7 +1029,7 @@ $seedBoxForm = <<<FORM
 </form>
 </div>
 FORM;
-$seedBoxJs = <<<JS
+    $seedBoxJs = <<<JS
 jQuery('#add-seed-box-btn').on('click', function () {
     layer.open({
         type: 1,
@@ -1063,8 +1064,9 @@ jQuery('#seed-box-table').on('click', '.remove-seed-box-btn', function () {
     })
 });
 JS;
-\Nexus\Nexus::js($seedBoxJs, 'footer', false);
-\Nexus\Nexus::css($seedBoxCss, 'footer', false);
+    \Nexus\Nexus::js($seedBoxJs, 'footer', false);
+    \Nexus\Nexus::css($seedBoxCss, 'footer', false);
+}
 //end seed box
 
 if ($forumposts)
