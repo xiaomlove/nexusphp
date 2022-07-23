@@ -15,6 +15,7 @@
 - 补签卡  
 - 勋章
 - 自定义标签
+- 盒子规则  
 - 论坛 
 - 申诉  
 - 多语言
@@ -25,7 +26,7 @@
 - ....
 
 ## 系统要求
-- PHP: 8.0，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix
+- PHP: 8.0，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp
 - Mysql: 5.7 最新版或以上版本
 - Redis：2.0.0 或以上版本
 
