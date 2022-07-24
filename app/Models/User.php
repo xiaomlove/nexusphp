@@ -146,7 +146,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
         'leechwarn', 'leechwarnuntil', 'page', 'class', 'uploaded', 'downloaded', 'clientselect', 'showclienterror', 'last_home',
-        'seedbonus', 'bonuscomment', 'downloadpos'
+        'seedbonus', 'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title',
     ];
 
     /**

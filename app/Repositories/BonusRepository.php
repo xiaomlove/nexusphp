@@ -95,28 +95,35 @@ class BonusRepository extends BaseRepository
 
     }
 
-    public function consumeUserBonus($user, $requireBonus, $logBusinessType, $logComment = '')
+    public function consumeUserBonus($user, $requireBonus, $logBusinessType, $logComment = '', array $userUpdates = [])
     {
+        if (!isset(BonusLogs::$businessTypes[$logBusinessType])) {
+            throw new \InvalidArgumentException("Invalid logBusinessType: $logBusinessType");
+        }
+        if (isset($userUpdates['seedbonus']) || isset($userUpdates['bonuscomment'])) {
+            throw new \InvalidArgumentException("Not support update seedbonus or bonuscomment");
+        }
         if ($requireBonus <= 0) {
             return;
         }
+        $user = $this->getUser($user);
         if ($user->seedbonus < $requireBonus) {
             do_log("user: {$user->id}, bonus: {$user->seedbonus} < requireBonus: $requireBonus", 'error');
             throw new \LogicException("User bonus point not enough.");
         }
-        NexusDB::transaction(function () use ($user, $requireBonus, $logBusinessType, $logComment) {
+        NexusDB::transaction(function () use ($user, $requireBonus, $logBusinessType, $logComment, $userUpdates) {
+            $logComment = addslashes($logComment);
             $bonusComment = date('Y-m-d') . " - $logComment";
             $oldUserBonus = $user->seedbonus;
             $newUserBonus = bcsub($oldUserBonus, $requireBonus);
             $log = "user: {$user->id}, requireBonus: $requireBonus, oldUserBonus: $oldUserBonus, newUserBonus: $newUserBonus, logBusinessType: $logBusinessType, logComment: $logComment";
             do_log($log);
+            $userUpdates['seedbonus'] = $newUserBonus;
+            $userUpdates['bonuscomment'] = NexusDB::raw("if(bonuscomment = '', '$bonusComment', concat_ws('\n', '$bonusComment', bonuscomment))");
             $affectedRows = NexusDB::table($user->getTable())
                 ->where('id', $user->id)
                 ->where('seedbonus', $oldUserBonus)
-                ->update([
-                    'seedbonus' => $newUserBonus,
-                    'bonuscomment' => NexusDB::raw("if(bonuscomment = '', '$bonusComment', concat_ws('\n', '$bonusComment', bonuscomment))")
-                ]);
+                ->update($userUpdates);
             if ($affectedRows != 1) {
                 do_log("update user seedbonus affected rows != 1, query: " . last_query(), 'error');
                 throw new \RuntimeException("Update user seedbonus fail.");
@@ -127,7 +134,7 @@ class BonusRepository extends BaseRepository
                 'old_total_value' => $oldUserBonus,
                 'value' => $requireBonus,
                 'new_total_value' => $newUserBonus,
-                'comment' => $logComment,
+                'comment' => sprintf('[%s] %s', BonusLogs::$businessTypes[$logBusinessType]['text'], $logComment),
             ];
             BonusLogs::query()->insert($bonusLog);
             do_log("bonusLog: " . nexus_json_encode($bonusLog));
