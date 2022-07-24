@@ -658,7 +658,6 @@ if ($action == "exchange") {
                 stderr("Error","Invalid Medal ID: " . ($_POST['medal_id'] ?? ''), false, false);
             }
             try {
-                $bonusRep = new \App\Repositories\BonusRepository();
                 $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
                 nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
             } catch (\Exception $exception) {
@@ -667,7 +666,6 @@ if ($action == "exchange") {
             }
         } elseif ($art == 'attendance_card') {
             try {
-                $bonusRep = new \App\Repositories\BonusRepository();
                 $bonusRep->consumeToBuyAttendanceCard($userid);
                 nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=attendance_card");
             } catch (\Exception $exception) {

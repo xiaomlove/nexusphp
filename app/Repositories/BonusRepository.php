@@ -31,7 +31,6 @@ class BonusRepository extends BaseRepository
             $comment = nexus_trans('hr.bonus_cancel_comment', [
                 'bonus' => $requireBonus,
             ], $user->locale);
-            $comment = addslashes($comment);
             do_log("comment: $comment");
 
             $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_CANCEL_HIT_AND_RUN, "$comment(H&R ID: {$hitAndRun->id})");
@@ -62,7 +61,6 @@ class BonusRepository extends BaseRepository
                 'bonus' => $requireBonus,
                 'medal_name' => $medal->name,
             ], $user->locale);
-            $comment = addslashes($comment);
             do_log("comment: $comment");
             $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_MEDAL, "$comment(medal ID: {$medal->id})");
             $expireAt = null;
@@ -85,7 +83,6 @@ class BonusRepository extends BaseRepository
             $comment = nexus_trans('bonus.comment_buy_attendance_card', [
                 'bonus' => $requireBonus,
             ], $user->locale);
-            $comment = addslashes($comment);
             do_log("comment: $comment");
             $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_ATTENDANCE_CARD, $comment);
             User::query()->where('id', $user->id)->increment('attendance_card');
