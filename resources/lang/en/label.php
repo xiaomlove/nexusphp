@@ -58,7 +58,17 @@ return [
             'ignore_when_ratio_reach_help' => 'The minimum sharing rate to meet the standard',
             'ban_user_when_counts_reach' => 'H&R counts limit',
             'ban_user_when_counts_reach_help' => 'The number of H&R reaches this value and the account will be disabled',
-        ]
+        ],
+        'seed_box' => [
+            'tab_header' => 'SeedBox',
+            'enabled_help' => 'Enable SeedBox rules or not',
+            'no_promotion' => 'No promotion',
+            'no_promotion_help' => 'No Promotion, uploaded/downloaded are calculated according to the actual value',
+            'max_uploaded' => 'Maximum upload volume multiplier',
+            'max_uploaded_help' => 'The total upload volume is at most a multiple of its volume',
+            'not_seed_box_max_speed' => 'Not SeedBox max upload speed',
+            'not_seed_box_max_speed_help' => 'Unit: Mbps, if this value is exceeded and the SeedBox record cannot be matched, download permission is disabled',
+        ],
     ],
     'user' => [
         'label' => 'User',

@@ -58,7 +58,17 @@ return [
             'ignore_when_ratio_reach_help' => '達標的最小分享率',
             'ban_user_when_counts_reach' => 'H&R 數量上限',
             'ban_user_when_counts_reach_help' => 'H&R 數量達到此值，賬號會被禁用',
-        ]
+        ],
+        'seed_box' => [
+            'tab_header' => 'SeedBox',
+            'enabled_help' => '是否啟用 SeedBox 規則',
+            'no_promotion' => '無優惠',
+            'no_promotion_help' => '不享受任何優惠，上傳量/下載量按實際值計算',
+            'max_uploaded' => '最大上傳量倍數',
+            'max_uploaded_help' => '總上傳量最多為其體積的多少倍',
+            'not_seed_box_max_speed' => '非 SeedBox 最高限速',
+            'not_seed_box_max_speed_help' => '單位：Mbps。若超過此值又不能匹配 SeedBox 記錄，禁用下載權限',
+        ],
     ],
     'user' => [
         'label' => '用戶',
