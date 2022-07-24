@@ -54,7 +54,7 @@ class ExamUserResource extends Resource
                 Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),
                 Tables\Columns\TextColumn::make('end')->label(__('label.end'))->dateTime(),
-                Tables\Columns\BooleanColumn::make('is_done')->label(__('label.exam.is_done')),
+                Tables\Columns\BooleanColumn::make('is_done')->label(__('label.exam_user.is_done')),
                 Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label(__('label.created_at')),
             ])
