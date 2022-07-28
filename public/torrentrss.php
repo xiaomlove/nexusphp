@@ -1,26 +1,22 @@
 <?php
 require "../include/bittorrent.php";
-$cacheKey = 'nexus_rss';
-$hashKey = md5(http_build_query($_GET));
-$redis = $Cache->getRedis();
-$cacheData = $redis->hGet($cacheKey, $hashKey);
+$passkey = $_GET['passkey'] ?? $CURUSER['passkey'] ?? '';
+if (!$passkey) {
+    die("require passkey");
+}
+$cacheKey = "nexus_rss:$passkey:" . md5(http_build_query($_GET));
+$cacheData = \Nexus\Database\NexusDB::cache_get($cacheKey);
 if ($cacheData) {
-    $cacheData = unserialize($cacheData);
-    if (isset($cacheData['deadline']) && $cacheData['deadline'] > time()) {
-        do_log("rss get from cache");
-        header ("Content-type: text/xml");
-        die($cacheData['data']);
-    }
+    do_log("rss get from cache");
+    header ("Content-type: text/xml");
+    die($cacheData);
 }
 dbconn();
 function hex_esc($matches) {
 	return sprintf("%02x", ord($matches[0]));
 }
 $dllink = false;
-$passkey = $_GET['passkey'] ?? $CURUSER['passkey'] ?? '';
-if (!$passkey) {
-	die("require passkey");
-}
+
 $where = "";
 if ($passkey){
 	$res = sql_query("SELECT id, enabled, parked, passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
@@ -192,7 +188,7 @@ $xml .= '<category domain="'.$url.'/torrents.php?cat='.$row['cat_id'].'">'.$row[
 $xml .= '</channel>
 </rss>';
 do_log("rss cache generated");
-$redis->hSet($cacheKey, $hashKey, serialize(['data' => $xml, 'deadline' => time() + 300]));
+\Nexus\Database\NexusDB::cache_put($cacheKey, $xml, 300);
 header ("Content-type: text/xml");
 echo $xml;
 ?>

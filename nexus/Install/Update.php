@@ -238,6 +238,8 @@ class Update extends Install
          * @since 1.7.19
          */
         $this->removeMenu(['freeleech.php']);
+        NexusDB::cache_del('nexus_rss');
+        NexusDB::cache_del('nexus_is_ip_seed_box');
 
     }
 

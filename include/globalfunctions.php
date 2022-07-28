@@ -767,16 +767,11 @@ function do_action($name, ...$args)
 
 function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
 {
-    $redis = \Nexus\Database\NexusDB::redis();
-    $key = "nexus_is_ip_seed_box";
-    $hashKey = "ip:$ip:uid:$uid";
-    $cacheData = $redis->hGet($key, $hashKey);
-    if ($cacheData && !$withoutCache) {
-        $cacheDataOriginal = unserialize($cacheData);
-        if ($cacheDataOriginal['deadline'] > time()) {
-            do_log("$hashKey, get result from cache: " . json_encode($cacheDataOriginal));
-            return $cacheDataOriginal['data'];
-        }
+    $key = "nexus_is_ip_seed_box:ip:$ip:uid:$uid";
+    $cacheData = \Nexus\Database\NexusDB::cache_get($key);
+    if (in_array($cacheData, [0, 1], true) && !$withoutCache) {
+        do_log("$key, get result from cache: $cacheData");
+        return (bool)$cacheData;
     }
     $ipObject = \PhpIP\IP::create($ip);
     $ipNumeric = $ipObject->numeric();
@@ -787,8 +782,8 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
     );
     $res = \Nexus\Database\NexusDB::select($checkSeedBoxAdminSql);
     if (!empty($res)) {
-        $redis->hSet($key, $hashKey, serialize(['data' => true, 'deadline' => time() + 3600]));
-        do_log("$hashKey, get result from admin, true");
+        \Nexus\Database\NexusDB::cache_put($key, 1);
+        do_log("$key, get result from admin, true");
         return true;
     }
     if ($uid !== null) {
@@ -798,13 +793,13 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
         );
         $res = \Nexus\Database\NexusDB::select($checkSeedBoxUserSql);
         if (!empty($res)) {
-            $redis->hSet($key, $hashKey, serialize(['data' => true, 'deadline' => time() + 3600]));
-            do_log("$hashKey, get result from user, true");
+            \Nexus\Database\NexusDB::cache_put($key, 1);
+            do_log("$key, get result from user, true");
             return true;
         }
     }
-    $redis->hSet($key, $hashKey, serialize(['data' => false, 'deadline' => time() + 3600]));
-    do_log("$hashKey, no result, false");
+    \Nexus\Database\NexusDB::cache_put($key, 0);
+    do_log("$key, no result, false");
     return false;
 }
 
