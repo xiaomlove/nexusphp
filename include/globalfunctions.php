@@ -10,11 +10,13 @@ function get_global_sp_state()
             \Nexus\Database\NexusDB::cache_put($cacheKey . '_deadline', $row['deadline'], 600);
             return $row;
         });
-        if (isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
+        if (is_array($row) && isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
             //expired
             $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
-        } else {
+        } elseif (is_array($row)) {
             $global_promotion_state = $row["global_sp_state"];
+        } else {
+            $global_promotion_state = $row;
         }
 	}
 	return $global_promotion_state;
