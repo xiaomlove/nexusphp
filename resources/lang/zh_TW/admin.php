@@ -18,6 +18,9 @@ return [
         'roles_list' => '角色',
         'ability_list' => '權限',
         'seed_box_records' => 'SeedBox',
+        'upload_speed' => '上行帶寬',
+        'download_speed' => '下行帶寬',
+        'isp' => 'ISP',
     ],
     'resources' => [
         'agent_allow' => [

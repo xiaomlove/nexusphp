@@ -18,6 +18,9 @@ return [
         'roles_list' => 'Roles',
         'ability_list' => 'Permissions',
         'seed_box_records' => 'SeedBox',
+        'upload_speed' => 'Upload speed',
+        'download_speed' => 'Download speed',
+        'isp' => 'ISP',
     ],
     'resources' => [
         'agent_allow' => [
