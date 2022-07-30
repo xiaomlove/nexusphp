@@ -49,8 +49,8 @@ class Locale
     public static function getLocaleFromCookie()
     {
         if (IN_NEXUS) {
-            $lang = get_langfolder_cookie();
-            $log = "IN_NEXUS, get_langfolder_cookie(): $lang";
+            $lang = IN_TRACKER ? null : get_langfolder_cookie();
+            $log = "IN_NEXUS, get_langfolder_cookie() or IN_TRACKER use null: $lang";
         } else {
             $lang = Cookie::get('c_lang_folder');
             $log = "Cookie::get(): $lang";

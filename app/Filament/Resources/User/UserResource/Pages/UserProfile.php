@@ -243,7 +243,7 @@ class UserProfile extends Page
             ->action(function () {
                 $userRep = new UserRepository();
                 try {
-                    $userRep->toggleDownloadPrivileges(Auth::user(), $this->record->id);
+                    $userRep->updateDownloadPrivileges(Auth::user(), $this->record->id, $this->record->downloadpos == 'yes' ? 'no' : 'yes');
                     $this->notify('success', 'Success!');
                     $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
                 } catch (\Exception $exception) {

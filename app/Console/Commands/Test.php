@@ -88,7 +88,7 @@ class Test extends Command
 //        $ipObj = IPBlock::create($ip);
 //        $ipObj = IP::create($ip);
 //        $r = $ipObj->getVersion();
-        $r = get_ip_location('116.30.133.129');
+        $r = isIPSeedBox('116.30.133.129', 1);
 //        $r = get_ip_location_from_geoip('116.30.133.129');
         dd($r);
     }

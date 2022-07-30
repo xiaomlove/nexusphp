@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Events\SeedBoxRecordUpdated;
 use App\Exceptions\InsufficientPermissionException;
 use App\Models\Message;
 use App\Models\Poll;
@@ -140,7 +141,8 @@ class SeedBoxRepository extends BaseRepository
 
     private function clearCache()
     {
-        NexusDB::redis()->del("nexus_is_ip_seed_box");
+        return true;
+//        SeedBoxRecordUpdated::dispatch();
     }
 
 

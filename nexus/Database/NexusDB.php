@@ -371,6 +371,24 @@ class NexusDB
         }
     }
 
+    public static function cache_del_by_pattern($pattern)
+    {
+        $redis = self::redis();
+        $it = NULL;
+        do {
+            // Scan for some keys
+            $arr_keys = $redis->scan($it, $pattern);
+
+            // Redis may return empty results, so protect against that
+            if ($arr_keys !== FALSE) {
+                foreach($arr_keys as $str_key) {
+                    do_log("[SCAN_KEY] $str_key");
+                    self::cache_del($str_key);
+                }
+            }
+        } while ($it > 0);
+    }
+
     /**
      * @return mixed|\Redis|null
      */

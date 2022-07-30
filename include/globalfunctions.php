@@ -3,18 +3,19 @@
 function get_global_sp_state()
 {
 	static $global_promotion_state;
+	$cacheKey = 'global_promotion_state';
 	if (!$global_promotion_state) {
-		if (!$global_promotion_state = \Nexus\Database\NexusDB::cache_get('global_promotion_state')){
-			$row = \Nexus\Database\NexusDB::getOne('torrents_state', 1);
-			if (isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
-			    //expired
-                $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
-            } else {
-                $global_promotion_state = $row["global_sp_state"];
-            }
-            \Nexus\Database\NexusDB::cache_put('global_promotion_state', $global_promotion_state, 600);
-            \Nexus\Database\NexusDB::cache_put('global_promotion_state_deadline', $row['deadline'], 600);
-		}
+        $row = \Nexus\Database\NexusDB::remember($cacheKey, 600, function () use ($cacheKey) {
+            $row = \Nexus\Database\NexusDB::getOne('torrents_state', 1);
+            \Nexus\Database\NexusDB::cache_put($cacheKey . '_deadline', $row['deadline'], 600);
+            return $row;
+        });
+        if (isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
+            //expired
+            $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
+        } else {
+            $global_promotion_state = $row["global_sp_state"];
+        }
 	}
 	return $global_promotion_state;
 }
@@ -769,8 +770,8 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
 {
     $key = "nexus_is_ip_seed_box:ip:$ip:uid:$uid";
     $cacheData = \Nexus\Database\NexusDB::cache_get($key);
-    if (in_array($cacheData, [0, 1], true) && !$withoutCache) {
-        do_log("$key, get result from cache: $cacheData");
+    if (in_array($cacheData, [0, 1, '0', '1'], true) && !$withoutCache) {
+        do_log("$key, get result from cache: $cacheData(" . gettype($cacheData) . ")");
         return (bool)$cacheData;
     }
     $ipObject = \PhpIP\IP::create($ip);
@@ -782,7 +783,7 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
     );
     $res = \Nexus\Database\NexusDB::select($checkSeedBoxAdminSql);
     if (!empty($res)) {
-        \Nexus\Database\NexusDB::cache_put($key, 1);
+        \Nexus\Database\NexusDB::cache_put($key, 1, 300);
         do_log("$key, get result from admin, true");
         return true;
     }
@@ -793,12 +794,12 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
         );
         $res = \Nexus\Database\NexusDB::select($checkSeedBoxUserSql);
         if (!empty($res)) {
-            \Nexus\Database\NexusDB::cache_put($key, 1);
+            \Nexus\Database\NexusDB::cache_put($key, 1, 300);
             do_log("$key, get result from user, true");
             return true;
         }
     }
-    \Nexus\Database\NexusDB::cache_put($key, 0);
+    \Nexus\Database\NexusDB::cache_put($key, 0, 300);
     do_log("$key, no result, false");
     return false;
 }

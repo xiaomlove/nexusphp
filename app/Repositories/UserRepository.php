@@ -174,6 +174,7 @@ class UserRepository extends BaseRepository
             UserBanLog::query()->insert($banLog);
         });
         do_log("user: $uid, $modCommentText");
+        $this->clearCache($targetUser);
         return true;
     }
 
@@ -199,6 +200,7 @@ class UserRepository extends BaseRepository
         $modCommentText = sprintf("%s - Enable by %s, reason: %s", now()->format('Y-m-d'), $operator->username, $reason);
         $targetUser->updateWithModComment($update, $modCommentText);
         do_log("user: $uid, $modCommentText, update: " . nexus_json_encode($update));
+        $this->clearCache($targetUser);
         return true;
     }
 
@@ -289,16 +291,16 @@ class UserRepository extends BaseRepository
             }
             Message::query()->insert($message);
         });
+        $this->clearCache($targetUser);
         return true;
     }
 
     public function removeLeechWarn($operator, $uid): bool
     {
         $operator = $this->getUser($operator);
-        $classRequire = Setting::get('authority.prfmanage');
         $user = User::query()->findOrFail($uid, User::$commonFields);
         $this->checkPermission($operator, $user);
-        NexusDB::cache_del('user_'.$uid.'_content');
+        $this->clearCache($user);
         $user->leechwarn = 'no';
         $user->leechwarnuntil = null;
         return $user->save();
@@ -311,33 +313,42 @@ class UserRepository extends BaseRepository
         }
         $user = User::query()->findOrFail($uid, User::$commonFields);
         $this->checkPermission($operator, $user);
+        $this->clearCache($user);
         $user->two_step_secret = '';
         return $user->save();
     }
 
 
-    public function toggleDownloadPrivileges($operator, $id)
+    public function updateDownloadPrivileges($operator, $user, $status)
     {
-        $targetUser = User::query()->findOrFail($id, User::$commonFields);
+        if (!in_array($status, ['yes', 'no'])) {
+            throw new \InvalidArgumentException("Invalid status: $status");
+        }
+        $targetUser = $this->getUser($user);
         $operator = $this->getUser($operator);
-        $this->checkPermission($operator, $targetUser);
+        $operatorUsername = 'System';
+        if ($operator) {
+            $operatorUsername = $operator->username;
+            $this->checkPermission($operator, $targetUser);
+        }
         $message = [
             'added' => now(),
             'receiver' => $targetUser->id,
         ];
-        if ($targetUser->downloadpos == 'yes') {
+        if ($status == 'no') {
             $update = ['downloadpos' => 'no'];
-            $modComment = date('Y-m-d') . " - Download disable by " . $operator->username;
+            $modComment = date('Y-m-d') . " - Download disable by " . $operatorUsername;
             $message['subject'] = nexus_trans('message.download_disable.subject', [], $targetUser->locale);
-            $message['msg'] = nexus_trans('message.download_disable.body', ['operator' => $operator->username], $targetUser->locale);
+            $message['msg'] = nexus_trans('message.download_disable.body', ['operator' => $operatorUsername], $targetUser->locale);
         } else {
             $update = ['downloadpos' => 'yes'];
-            $modComment = date('Y-m-d') . " - Download enable by " . $operator->username;
+            $modComment = date('Y-m-d') . " - Download enable by " . $operatorUsername;
             $message['subject'] = nexus_trans('message.download_enable.subject', [], $targetUser->locale);
-            $message['msg'] = nexus_trans('message.download_enable.body', ['operator' => $operator->username], $targetUser->locale);
+            $message['msg'] = nexus_trans('message.download_enable.body', ['operator' => $operatorUsername], $targetUser->locale);
         }
         return NexusDB::transaction(function () use ($targetUser, $update, $modComment, $message) {
             Message::add($message);
+            $this->clearCache($targetUser);
             return $targetUser->updateWithModComment($update, $modComment);
         });
     }
@@ -350,6 +361,12 @@ class UserRepository extends BaseRepository
         if ($operator->class < $classRequire || $operator->class <= $user->class) {
             throw new InsufficientPermissionException();
         }
+    }
+
+    private function clearCache(User $user)
+    {
+        \Nexus\Database\NexusDB::cache_del("user_{$user->id}_content");
+        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$user->passkey.'_content');
     }
 
 

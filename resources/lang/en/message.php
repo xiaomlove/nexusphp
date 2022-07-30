@@ -13,10 +13,10 @@ return [
 
     'download_disable' => [
         'subject' => 'Download permission cancellation',
-        'body' => 'Administrator: :operator has revoked your download privileges, possibly due to low sharing rates or misbehavior.',
+        'body' => 'Your download privileges has revoked, possibly due to low sharing rates or misbehavior. By: :operator',
     ],
     'download_enable' => [
         'subject' => 'Download permission restored',
-        'body' => 'Administrator: :operator restored your download privileges, you can now download torrents.',
+        'body' => 'Your download privileges restored, you can now download torrents. By: :operator',
     ],
 ];

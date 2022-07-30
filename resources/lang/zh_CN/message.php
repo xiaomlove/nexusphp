@@ -13,10 +13,10 @@ return [
 
     'download_disable' => [
         'subject' => '下载权限取消',
-        'body' => '管理员：:operator 取消了你的下载权限，可能的原因是过低的分享率或行为不当。',
+        'body' => '你的下载权限被取消，可能的原因是过低的分享率或行为不当。By: :operator',
     ],
     'download_enable' => [
         'subject' => '下载权限恢复',
-        'body' => '管理员：:operator 恢复了你的下载权限，你现在可以下载种子。',
+        'body' => '你的下载权限恢复，你现在可以下载种子。By: :operator',
     ],
 ];

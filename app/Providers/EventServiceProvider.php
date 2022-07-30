@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Events\SeedBoxRecordUpdated;
 use App\Events\TorrentUpdated;
+use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SyncTorrentToEs;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -22,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         TorrentUpdated::class => [
             SyncTorrentToEs::class,
+        ],
+        SeedBoxRecordUpdated::class => [
+            RemoveSeedBoxRecordCache::class,
         ],
     ];
 

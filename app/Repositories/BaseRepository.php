@@ -39,10 +39,13 @@ class BaseRepository
     /**
      * @param $user
      * @param null $fields
-     * @return User
+     * @return User|null
      */
-    protected function getUser($user, $fields = null): User
+    protected function getUser($user, $fields = null): User|null
     {
+        if ($user === null) {
+            return null;
+        }
         if ($user instanceof User) {
             return $user;
         }
