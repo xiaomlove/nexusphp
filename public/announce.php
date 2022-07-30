@@ -351,16 +351,17 @@ else // continue an existing session
     $snatchInfo = mysql_fetch_assoc(sql_query(sprintf('select * from snatched where torrentid = %s and userid = %s order by id desc limit 1', $torrentid, $userid)));
 	$upthis = $trueupthis = max(0, $uploaded - $self["uploaded"]);
 	$downthis = $truedownthis = max(0, $downloaded - $self["downloaded"]);
-
 	$announcetime = ($self["seeder"] == "yes" ? "seedtime = seedtime + {$self['announcetime']}" : "leechtime = leechtime + {$self['announcetime']}");
 	$is_cheater = false;
-    $notSeedBoxMaxSpeedMbps = get_setting('seed_box.not_seed_box_max_speed');
-    $upSpeedMbps = number_format(($trueupthis / $self['announcetime'] / 1024 / 1024) * 8);
-    do_log("notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps, upSpeedMbps: $upSpeedMbps");
-    if ($isSeedBoxRuleEnabled && !($az['class'] >= \App\Models\User::CLASS_VIP || $isDonor) && !$isIPSeedBox && $upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
-        (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no');
-        do_log("user: $userid downloading privileges have been disabled! (over speed)", 'error');
-        err("Your downloading privileges have been disabled! (over speed)");
+    if ($self['announcetime'] > 0 && $isSeedBoxRuleEnabled && !($az['class'] >= \App\Models\User::CLASS_VIP || $isDonor) && !$isIPSeedBox) {
+        $notSeedBoxMaxSpeedMbps = get_setting('seed_box.not_seed_box_max_speed');
+        $upSpeedMbps = number_format(($trueupthis / $self['announcetime'] / 1024 / 1024) * 8);
+        do_log("notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps, upSpeedMbps: $upSpeedMbps");
+        if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
+            (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no');
+            do_log("user: $userid downloading privileges have been disabled! (over speed)", 'error');
+            err("Your downloading privileges have been disabled! (over speed)");
+        }
     }
 
 	if ($cheaterdet_security){

@@ -586,6 +586,9 @@ class TrackerRepository extends BaseRepository
             return;
         }
         $duration = Carbon::now()->diffInSeconds($peer->last_action);
+        if ($duration <= 0) {
+            return;
+        }
         $upSpeedMbps = number_format(($dataTraffic['uploaded_increment'] / $duration / 1024 / 1024) * 8);
         $notSeedBoxMaxSpeedMbps = Setting::get('seed_box.not_seed_box_max_speed');
         do_log("upSpeedMbps: $upSpeedMbps, notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps");
