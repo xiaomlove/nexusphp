@@ -51,6 +51,7 @@ class ExamUser extends NexusModel
             }
             $currentValue = $progress[$index['index']] ?? 0;
             $requireValue = $index['require_value'];
+            $unit = Exam::$indexes[$index['index']]['unit'] ?? '';
             switch ($index['index']) {
                 case Exam::INDEX_UPLOADED:
                 case Exam::INDEX_DOWNLOADED:
@@ -58,7 +59,7 @@ class ExamUser extends NexusModel
                     $requireValueAtomic = $requireValue * 1024 * 1024 * 1024;
                     break;
                 case Exam::INDEX_SEED_TIME_AVERAGE:
-                    $currentValueFormatted = number_format($currentValue / 3600, 2) . " {$index['unit']}";
+                    $currentValueFormatted = number_format($currentValue / 3600, 2) . " $unit";
                     $requireValueAtomic = $requireValue * 3600;
                     break;
                 default:

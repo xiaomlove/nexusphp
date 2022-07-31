@@ -229,14 +229,16 @@ if ($compact == 1) {
 //check ReAnnounce
 $params = $_GET;
 unset($params['key']);
-$lockKey = md5(http_build_query($params));
+$reAnnounceQuery = http_build_query($params);
+$lockKey = md5($reAnnounceQuery);
+$log .= ", [CHECK_RE_ANNOUNCE], reAnnounceQuery: $reAnnounceQuery, lockKey: $lockKey";
 $redis = $Cache->getRedis();
 if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
-    do_log('ReAnnounce');
+    do_log("$log, [YES_RE_ANNOUNCE]");
     benc_resp($rep_dict);
     exit();
 }
-
+$log .= ", [NO_RE_ANNOUNCE]";
 unset($self);
 $res = sql_query($peerlistsql);
 if (isset($event) && $event == "stopped") {
@@ -359,7 +361,7 @@ else // continue an existing session
         do_log("notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps, upSpeedMbps: $upSpeedMbps");
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
             (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no');
-            do_log("user: $userid downloading privileges have been disabled! (over speed)", 'error');
+            do_log("user: $userid downloading privileges have been disabled! (over speed), notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps > upSpeedMbps: $upSpeedMbps", 'error');
             err("Your downloading privileges have been disabled! (over speed)");
         }
     }
