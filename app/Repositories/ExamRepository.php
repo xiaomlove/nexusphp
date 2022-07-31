@@ -691,7 +691,7 @@ class ExamRepository extends BaseRepository
 
     }
 
-    private function getProgressFormatted(Exam $exam, array $progress, $locale = null)
+    public function getProgressFormatted(Exam $exam, array $progress, $locale = null)
     {
         $result = [];
         foreach ($exam->indexes as $key => $index) {
@@ -700,6 +700,7 @@ class ExamRepository extends BaseRepository
             }
             $currentValue = $progress[$index['index']] ?? 0;
             $requireValue = $index['require_value'];
+            $unit = Exam::$indexes[$index['index']]['unit'] ?? '';
             switch ($index['index']) {
                 case Exam::INDEX_UPLOADED:
                 case Exam::INDEX_DOWNLOADED:
@@ -707,7 +708,7 @@ class ExamRepository extends BaseRepository
                     $requireValueAtomic = $requireValue * 1024 * 1024 * 1024;
                     break;
                 case Exam::INDEX_SEED_TIME_AVERAGE:
-                    $currentValueFormatted = number_format($currentValue / 3600, 2) . " {$index['unit']}";
+                    $currentValueFormatted = number_format($currentValue / 3600, 2) . " $unit";
                     $requireValueAtomic = $requireValue * 3600;
                     break;
                 default:
@@ -716,7 +717,7 @@ class ExamRepository extends BaseRepository
             }
             $index['name'] = Exam::$indexes[$index['index']]['name'] ?? '';
             $index['index_formatted'] = nexus_trans('exam.index_text_' . $index['index']);
-            $index['require_value_formatted'] = "$requireValue " . ($index['unit'] ?? '');
+            $index['require_value_formatted'] = "$requireValue $unit";
             $index['current_value'] = $currentValue;
             $index['current_value_formatted'] = $currentValueFormatted;
             $index['passed'] = $currentValue >= $requireValueAtomic;

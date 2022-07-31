@@ -617,8 +617,11 @@ class TrackerRepository extends BaseRepository
     protected function isReAnnounce(Request $request): int
     {
         $key = $request->query->get('key');
+        $ip = $request->query->get('ip');
+        $ipv4 = $request->query->get('ipv4');
+        $ipv6 = $request->query->get('ipv6');
         $queryString = $request->getQueryString();
-        $lockKeyOriginal = str_replace($key, '', $queryString);
+        $lockKeyOriginal = str_replace([$key, $ip, $ipv4, $ipv6], '', $queryString);
         $lockKey = md5($lockKeyOriginal);
         $startTimestamp = nexus()->getStartTimestamp();
         $redis = Redis::connection()->client();

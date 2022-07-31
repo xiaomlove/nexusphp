@@ -228,7 +228,7 @@ if ($compact == 1) {
 
 //check ReAnnounce
 $params = $_GET;
-unset($params['key']);
+unset($params['key'], $params['ip'], $params['ipv4'], $params['ipv6']);
 $reAnnounceQuery = http_build_query($params);
 $lockKey = md5($reAnnounceQuery);
 $log .= ", [CHECK_RE_ANNOUNCE], reAnnounceQuery: $reAnnounceQuery, lockKey: $lockKey";

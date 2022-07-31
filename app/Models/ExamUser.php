@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Repositories\ExamRepository;
+
 class ExamUser extends NexusModel
 {
     protected $fillable = ['exam_id', 'uid', 'status', 'progress', 'begin', 'end', 'is_done'];
@@ -43,38 +45,8 @@ class ExamUser extends NexusModel
 
     public function getProgressFormattedAttribute(): array
     {
-        $result = [];
-        $progress = $this->progress;
-        foreach ($this->exam->indexes as $key => $index) {
-            if (!isset($index['checked']) || !$index['checked']) {
-                continue;
-            }
-            $currentValue = $progress[$index['index']] ?? 0;
-            $requireValue = $index['require_value'];
-            $unit = Exam::$indexes[$index['index']]['unit'] ?? '';
-            switch ($index['index']) {
-                case Exam::INDEX_UPLOADED:
-                case Exam::INDEX_DOWNLOADED:
-                    $currentValueFormatted = mksize($currentValue);
-                    $requireValueAtomic = $requireValue * 1024 * 1024 * 1024;
-                    break;
-                case Exam::INDEX_SEED_TIME_AVERAGE:
-                    $currentValueFormatted = number_format($currentValue / 3600, 2) . " $unit";
-                    $requireValueAtomic = $requireValue * 3600;
-                    break;
-                default:
-                    $currentValueFormatted = $currentValue;
-                    $requireValueAtomic = $requireValue;
-            }
-            $index['name'] = Exam::$indexes[$index['index']]['name'] ?? '';
-            $index['index_formatted'] = nexus_trans('exam.index_text_' . $index['index']);
-            $index['require_value_formatted'] = "$requireValue " . ($index['unit'] ?? '');
-            $index['current_value'] = $currentValue;
-            $index['current_value_formatted'] = $currentValueFormatted;
-            $index['passed'] = $currentValue >= $requireValueAtomic;
-            $result[] = $index;
-        }
-        return $result;
+        $examRep = new ExamRepository();
+        return $examRep->getProgressFormatted($this->exam, $this->progress);
     }
 
     public static function listStatus($onlyKeyValue = false): array
