@@ -10,5 +10,5 @@ $lang_myhr = [
     'th_completed_at' => 'Completed at',
     'th_ttl' => 'Inspecting time left',
     'th_comment' => 'Comment',
-
+    'action_remove' => 'Remove',
 ];

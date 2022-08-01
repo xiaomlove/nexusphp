@@ -36,24 +36,12 @@ class HitAndRunResource extends Resource
         return self::getNavigationLabel();
     }
 
-//    public static function form(Form $form): Form
-//    {
-//        return $form
-//            ->schema(Forms\Components\Card::make()->schema([
-////                Forms\Components\Select::make('user')->relationship('user', 'username')->required(),
-////                Forms\Components\Select::make('torrent_id')->relationship('torrent', 'name')->required(),
-//                Forms\Components\Radio::make('status')->options(HitAndRun::listStatus(true))->inline()->required(),
-////                Forms\Components\Select::make('snatch_id')->relationship('snatch', 'uploaded'),
-//                Forms\Components\Textarea::make('comment'),
-//                Forms\Components\DateTimePicker::make('created_at')->displayFormat('Y-m-d H:i:s'),
-//            ]));
-//    }
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
+                Tables\Columns\TextColumn::make('uid')->searchable(),
                 Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
                 Tables\Columns\TextColumn::make('torrent.name')->limit(30)->label(__('label.torrent.label')),
                 Tables\Columns\TextColumn::make('snatch.uploadText')->label(__('label.uploaded')),

@@ -24,4 +24,5 @@ return [
     'unreached_disable_message_content' => '由於累計 H&R 數量已達系統上限：:ban_user_when_counts_reach，你的賬號已被禁用。',
 
     'bonus_cancel_comment' => '花費 :bonus 魔力進行了消除',
+    'remove_confirm_msg' => '消除一個 H&R 需要扣除 :bonus 魔力，確定嗎？',
 ];

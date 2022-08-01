@@ -109,3 +109,10 @@ function removeSeedBoxRecord($params)
     $rep = new \App\Repositories\SeedBoxRepository();
     return $rep->delete($params['id'], $CURUSER['id']);
 }
+
+function removeHitAndRun($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\BonusRepository();
+    return $rep->consumeToCancelHitAndRun($CURUSER['id'], $params['id']);
+}

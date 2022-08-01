@@ -27,4 +27,6 @@ $lang_complains = [
     'complaints_processed' => '已处理申诉',
     'no_complaints_have_been_processed' => '暂无已处理的申诉',
     'text_view_band_log' => '查看封禁记录',
+    'reply_notify_subject' => '申诉回复',
+    'reply_notify_body' => '你在网站 %s 的申诉有了回复，点此 <a href="%s" target="_blank">查看</a>。',
 ];

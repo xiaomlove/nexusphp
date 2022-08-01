@@ -13,7 +13,7 @@ if (!empty($_GET['userid'])) {
     $userid = $_GET['userid'];
     $pagerParams['userid'] = $userid;
 }
-$userInfo = \App\Models\User::query()->find($userid);
+$userInfo = \App\Models\User::query()->find($userid, \App\Models\User::$commonFields);
 if (empty($userInfo)) {
     stderr('Error', "User not exists.");
 }
@@ -50,7 +50,7 @@ print $filterForm;
 $baseQuery = \App\Models\HitAndRun::query()->where('uid', $userid)->where('status', $status);
 $rescount = (clone $baseQuery)->count();
 list($pagertop, $pagerbottom, $limit, $offset, $pageSize) = pager(50, $rescount, sprintf('?%s&', $queryString));
-print("<table width='100%'>");
+print("<table width='100%' id='hr-table'>");
 print("<tr>
 				<td class='colhead' align='center'>{$lang_myhr['th_hr_id']}</td>
 				<td class='colhead' align='center'>{$lang_myhr['th_torrent_name']}</td>
@@ -61,6 +61,7 @@ print("<tr>
 				<td class='colhead' align='center'>{$lang_myhr['th_completed_at']}</td>
 				<td class='colhead' align='center'>{$lang_myhr['th_ttl']}</td>
 				<td class='colhead' align='center'>{$lang_myhr['th_comment']}</td>
+				<td class='colhead' align='center'>{$lang_functions['std_action']}</td>
 				</tr>");
 if ($rescount) {
 
@@ -78,8 +79,13 @@ if ($rescount) {
         $query->where('id', $q);
     }
     $list = $query->get();
-
+    $hasActionRemove = false;
    foreach($list as $row) {
+       $columnAction = '';
+       if ($row->uid == $CURUSER['id'] && $row->status == \App\Models\HitAndRun::STATUS_INSPECTING) {
+           $hasActionRemove = true;
+           $columnAction = sprintf('<td class="rowfollow nowrap" align="center"><input class="remove-hr" type="button" value="%s" data-id="%s"></td>', $lang_myhr['action_remove'], $row->id);
+       }
         print("<tr>
 				<td class='rowfollow nowrap' align='center'>" . $row->id . "</td>
 				<td class='rowfollow' align='left'><a href='details.php?id=" . $row->torrent_id . "'>" . optional($row->torrent)->name . "</a></td>
@@ -89,9 +95,29 @@ if ($rescount) {
 				<td class='rowfollow nowrap' align='center'>" . ($row->status == \App\Models\HitAndRun::STATUS_INSPECTING ? mkprettytime(3600 * get_setting('hr.seed_time_minimum') - $row->snatch->seedtime) : '---') . "</td>
 				<td class='rowfollow nowrap' align='center'>" . format_datetime($row->snatch->completedat) . "</td>
 				<td class='rowfollow nowrap' align='center' >" . ($row->status == \App\Models\HitAndRun::STATUS_INSPECTING ? mkprettytime(\Carbon\Carbon::now()->diffInSeconds($row->snatch->completedat->addHours(get_setting('hr.inspect_time')))) : '---') . "</td>
-                <td class='rowfollow nowrap' align='left' style='padding-left: 10px'>" . nl2br($row->comment) . "</td>
+                <td class='rowfollow nowrap' align='left' style='padding-left: 10px'>" . nl2br(trim($row->comment)) . "</td>
+                {$columnAction}
 				</tr>");
     }
+   if ($hasActionRemove) {
+       $msg = nexus_trans('hr.remove_confirm_msg', ['bonus' => get_setting('bonus.cancel_hr')]);
+       $js = <<<JS
+jQuery('#hr-table').on('click', '.remove-hr', function () {
+    var id = jQuery(this).attr('data-id')
+    layer.confirm('{$msg}', function (index) {
+        jQuery.post('ajax.php', {"action": "removeHitAndRun", "params": {"id": id}}, function (response) {
+            console.log(response)
+            if (response.ret != 0) {
+                layer.alert(response.msg)
+                return
+            }
+            window.location.reload()
+        }, 'json')
+    })
+})
+JS;
+        \Nexus\Nexus::js($js, 'footer', false);
+   }
 
 }
 

@@ -6,8 +6,10 @@ require get_langfile_path();
 $isLogin = isset($CURUSER['id']);
 $isAdmin = get_user_class() >= $staffmem_class;
 
-if($isLogin && !$isAdmin) permissiondenied();
-
+if($isLogin && !$isAdmin) {
+    permissiondenied();
+}
+$uid = $CURUSER['id'] ?? 0;
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     switch($action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS)){
         case 'new':
@@ -23,8 +25,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         case 'reply':
             $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
             $body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $complain = \App\Models\Complain::query()->findOrFail($id);
             if(empty($id) || empty($body)) stderr($lang_functions['std_error'], $lang_complains['text_new_failure']);
-            sql_query(sprintf('INSERT INTO complain_replies (complain, userid, added, body) VALUES (%u, %u, NOW(), %s)', $id, isset($CURUSER['id']) ? $CURUSER['id'] : 0, sqlesc($body))) or sqlerr(__FILE__, __LINE__);
+            sql_query(sprintf('INSERT INTO complain_replies (complain, userid, added, body) VALUES (%u, %u, NOW(), %s)', $id, $uid, sqlesc($body))) or sqlerr(__FILE__, __LINE__);
+            if ($uid > 0) {
+                try {
+                    $toolRep = new \App\Repositories\ToolRepository();
+                    $toolRep->sendMail($complain->email, $lang_complains['reply_notify_subject'], sprintf($lang_complains['reply_notify_body'], get_setting('basic.SITENAME'), getSchemeAndHttpHost() . '/complains.php?action=view&id=' . $complain->uuid));
+                } catch (\Exception $exception) {
+                    do_log($exception->getMessage(), 'error');
+                }
+            }
             nexus_redirect($_SERVER['HTTP_REFERER']);
             break;
         case 'answered':

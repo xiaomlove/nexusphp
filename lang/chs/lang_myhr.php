@@ -10,5 +10,5 @@ $lang_myhr = [
     'th_completed_at' => '下载完成时间',
     'th_ttl' => '剩余考察时间',
     'th_comment' => '备注',
-
+    'action_remove' => '消除',
 ];

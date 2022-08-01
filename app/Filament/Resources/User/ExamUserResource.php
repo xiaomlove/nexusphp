@@ -50,6 +50,7 @@ class ExamUserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
+                Tables\Columns\TextColumn::make('uid')->searchable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
                 Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),

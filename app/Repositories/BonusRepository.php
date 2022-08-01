@@ -37,7 +37,7 @@ class BonusRepository extends BaseRepository
 
             $hitAndRun->update([
                 'status' => HitAndRun::STATUS_PARDONED,
-                'comment' => NexusDB::raw("concat(comment, '\n$comment')"),
+                'comment' => NexusDB::raw("if(comment = '', '$comment', concat_ws('\n', '$comment', comment))"),
             ]);
         });
 
@@ -106,7 +106,7 @@ class BonusRepository extends BaseRepository
         $user = $this->getUser($user);
         if ($user->seedbonus < $requireBonus) {
             do_log("user: {$user->id}, bonus: {$user->seedbonus} < requireBonus: $requireBonus", 'error');
-            throw new \LogicException("User bonus point not enough.");
+            throw new \LogicException("User bonus not enough.");
         }
         NexusDB::transaction(function () use ($user, $requireBonus, $logBusinessType, $logComment, $userUpdates) {
             $logComment = addslashes($logComment);

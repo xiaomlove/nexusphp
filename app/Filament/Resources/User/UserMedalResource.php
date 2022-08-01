@@ -46,6 +46,7 @@ class UserMedalResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
+                Tables\Columns\TextColumn::make('uid')->searchable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
                 Tables\Columns\TextColumn::make('medal.name')->label(__('label.medal.label'))->searchable(),
                 Tables\Columns\ImageColumn::make('medal.image_large')->label(__('label.image')),
