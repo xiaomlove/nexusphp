@@ -43,6 +43,9 @@ use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
+use NexusPlugin\Menu\Filament\MenuItemResource\Pages\ManageMenuItems;
+use NexusPlugin\Menu\MenuRepository;
+use NexusPlugin\Menu\Models\MenuItem;
 use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
@@ -83,14 +86,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $ip = '116.30.133.129';
-//        $ip = '240e:3a1:680c:bb11:211:32ff:fe2c:a603';
-//        $ipObj = IPBlock::create($ip);
-//        $ipObj = IP::create($ip);
-//        $r = $ipObj->getVersion();
-        $r = isIPSeedBox('116.30.133.129', 1);
-//        $r = get_ip_location_from_geoip('116.30.133.129');
-        dd($r);
+        $menuRep = new MenuRepository();
+        $menuRep->filterBuildMenu();
     }
 
 

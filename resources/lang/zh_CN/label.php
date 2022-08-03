@@ -21,6 +21,7 @@ return [
     'added' => '添加时间',
     'last_access' => '最后访问时间',
     'priority' => '优先级',
+    'priority_help' => '值越大，越靠前',
     'comment' => '备注',
     'duration' => '时长',
     'description' => '描述',
@@ -196,5 +197,13 @@ return [
         'ip_end' => '结束 IP',
         'ip_help' => '起始 IP/结束 IP、IP(段) 二选一',
         'status' => '状态',
+    ],
+    'menu_item' => [
+        'label' => '菜单项',
+        'url' => '链接',
+        'text' => '显示文本',
+        'target' => '打开方式',
+        'style' => '样式',
+        'parent_id' => '父菜单',
     ],
 ];

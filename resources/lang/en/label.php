@@ -21,6 +21,7 @@ return [
     'added' => 'Add time',
     'last_access' => 'Last access time',
     'priority' => 'Priority',
+    'priority_help' => 'The higher the value, the higher the ranking',
     'comment' => 'Comment',
     'duration' => 'Duration',
     'description' => 'Description',
@@ -193,5 +194,13 @@ return [
         'ip_end' => 'End IP',
         'ip_help' => 'Begin IP/End IP, IP(Block) Choose one',
         'status' => 'Status',
+    ],
+    'menu_item' => [
+        'label' => 'Menu items',
+        'url' => 'Link',
+        'text' => 'Text',
+        'target' => 'Open type',
+        'style' => 'Style',
+        'parent_id' => 'Parent',
     ],
 ];

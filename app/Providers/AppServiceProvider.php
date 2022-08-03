@@ -11,6 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Nexus\Nexus;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\View\View;
+use NexusPlugin\Menu\Filament\MenuItemResource;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        do_action('nexus_register');
     }
 
     /**
@@ -47,5 +48,6 @@ class AppServiceProvider extends ServiceProvider
 //            fn (): View => view('filament.footer'),
 //        );
 
+        do_action('nexus_boot');
     }
 }

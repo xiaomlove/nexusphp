@@ -32,35 +32,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$email = unesc(htmlspecialchars(trim($_POST["email"])));
 	$wantpassword = unesc(htmlspecialchars(trim($_POST["wantpassword"])));
 	$passagain = unesc(htmlspecialchars(trim($_POST["passagain"])));
-	
+
 	$email = safe_email($email);
 	if (empty($wantpassword) || empty($passagain) || empty($email))
 		bark($lang_confirm_resend['std_fields_blank']);
-	
+
 	if (!check_email($email))
 	failedlogins($lang_confirm_resend['std_invalid_email_address'],true);
 	$res = sql_query("SELECT * FROM users WHERE email=" . sqlesc($email) . " LIMIT 1") or sqlerr(__FILE__, __LINE__);
 	$arr = mysql_fetch_assoc($res) or failedlogins($lang_confirm_resend['std_email_not_found'],true);
 	if($arr["status"] != "pending") failedlogins($lang_confirm_resend['std_user_already_confirm'],true);
-	
+
 	if ($wantpassword != $passagain)
 		bark($lang_confirm_resend['std_passwords_unmatched']);
-	
+
 	if (strlen($wantpassword) < 6)
 		bark($lang_confirm_resend['std_password_too_short']);
-	
+
 	if (strlen($wantpassword) > 40)
 		bark($lang_confirm_resend['std_password_too_long']);
-	
+
 	if ($wantpassword == $wantusername)
 		bark($lang_confirm_resend['std_password_equals_username']);
-	
+
 	$secret = mksecret();
 	$wantpasshash = md5($secret . $wantpassword . $secret);
 	$editsecret = ($verification == 'admin' ? '' : $secret);
 
 	sql_query("UPDATE users SET passhash=" .sqlesc($wantpasshash) . ",secret=" . sqlesc($secret) . ",editsecret=" . sqlesc($editsecret) . " WHERE id=" . sqlesc($arr["id"])) or sqlerr(__FILE__, __LINE__);
-	
+
 	if (!mysql_affected_rows())
 	stderr($lang_confirm_resend['std_error'], $lang_confirm_resend['std_database_error']);
 
@@ -69,29 +69,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$usern = $arr["username"];
 	$id = $arr["id"];
 	$title = $SITENAME.$lang_confirm_resend['mail_title'];
-
+    $baseUrl = getSchemeAndHttpHost();
 $body = <<<EOD
 {$lang_confirm_resend['mail_one']}$usern{$lang_confirm_resend['mail_two']}($email){$lang_confirm_resend['mail_three']}$ip{$lang_confirm_resend['mail_four']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/confirm.php?id=$id&secret=$psecret')">
+<b><a href="javascript:void(null)" onclick="window.open('{$baseUrl}/confirm.php?id=$id&secret=$psecret')">
 {$lang_confirm_resend['mail_this_link']} </a></b><br />
-http://$BASEURL/confirm.php?id=$id&secret=$psecret
+{$baseUrl}/confirm.php?id=$id&secret=$psecret
 {$lang_confirm_resend['mail_four_1']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/confirm_resend.php')">{$lang_confirm_resend['mail_here']}</a></b><br />
-http://$BASEURL/confirm_resend.php
+<b><a href="javascript:void(null)" onclick="window.open('{$baseUrl}/confirm_resend.php')">{$lang_confirm_resend['mail_here']}</a></b><br />
+{$baseUrl}/confirm_resend.php
 <br />
 {$lang_confirm_resend['mail_five']}
 EOD;
-		
+
 	sent_mail($email,$SITENAME,$SITEEMAIL,$title,$body,"signup",false,false,'');
-	header("Location: " . get_protocol_prefix() . "$BASEURL/ok.php?type=signup&email=" . rawurlencode($email));
+	header("Location: " . "{$baseUrl}/ok.php?type=signup&email=" . rawurlencode($email));
 }
 else
 {
 	stdhead();
 	$s = "<select name=\"sitelanguage\" onchange='submit()'>\n";
-	
+
 	$langs = langlist("site_lang");
-	
+
 	foreach ($langs as $row)
 	{
 		if ($row["site_lang_folder"] == get_langfolder_cookie()) $se = " selected=\"selected\""; else $se = "";
