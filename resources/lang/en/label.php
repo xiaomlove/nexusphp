@@ -206,5 +206,6 @@ return [
         'target' => 'Open type',
         'style' => 'Style',
         'parent_id' => 'Parent',
+        'min_class' => 'Minimum visible class',
     ],
 ];

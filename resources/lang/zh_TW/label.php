@@ -206,5 +206,6 @@ return [
         'target' => '打開方式',
         'style' => '樣式',
         'parent_id' => '父菜單',
+        'min_class' => '最低可見等級',
     ],
 ];

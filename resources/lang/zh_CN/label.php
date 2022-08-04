@@ -209,5 +209,6 @@ return [
         'target' => '打开方式',
         'style' => '样式',
         'parent_id' => '父菜单',
+        'min_class' => '最低可见等级',
     ],
 ];

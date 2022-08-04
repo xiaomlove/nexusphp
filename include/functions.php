@@ -466,8 +466,20 @@ function highlight($search,$subject,$hlstart='<b><font class="striking">',$hlend
 
 function get_user_class()
 {
-	global $CURUSER;
-	return $CURUSER["class"] ?? '';
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["class"] ?? '';
+    }
+	return auth()->user()->class;
+}
+
+function get_user_id()
+{
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["id"] ?? 0;
+    }
+    return auth()->user()->id ?? 0;
 }
 
 function get_user_class_name($class, $compact = false, $b_colored = false, $I18N = false)
