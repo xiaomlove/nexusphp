@@ -195,6 +195,10 @@ return [
         'ip_help' => 'Begin IP/End IP, IP(Block) Choose one',
         'status' => 'Status',
     ],
+    'menu' => [
+        'label' => 'Custom menu',
+        'enable_help' => 'Whether to enable custom menu',
+    ],
     'menu_item' => [
         'label' => 'Menu items',
         'url' => 'Link',

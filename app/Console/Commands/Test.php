@@ -86,9 +86,14 @@ class Test extends Command
      */
     public function handle()
     {
-        $menuRep = new MenuRepository();
-        $r = $menuRep->listItems()->toArray();
-        dd($r);
+        add_filter('ttt', function ($d) {
+            $d[] = 100;
+            return $d;
+        });
+        $a = [];
+        $a[] = '1';
+        $a = apply_filter('ttt', $a);
+        dd($a);
     }
 
 

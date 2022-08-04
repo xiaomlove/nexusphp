@@ -198,6 +198,10 @@ return [
         'ip_help' => '起始 IP/结束 IP、IP(段) 二选一',
         'status' => '状态',
     ],
+    'menu' => [
+        'label' => '自定义菜单',
+        'enable_help' => '是否启用自定义菜单',
+    ],
     'menu_item' => [
         'label' => '菜单项',
         'url' => '链接',

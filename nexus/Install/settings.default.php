@@ -414,4 +414,7 @@ return array (
         'max_uploaded' => 3,
         'not_seed_box_max_speed' => 10240,
     ],
+    'menu' => [
+        'enabled' => 'no',
+    ],
 );

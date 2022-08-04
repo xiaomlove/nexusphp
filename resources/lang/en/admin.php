@@ -21,7 +21,7 @@ return [
         'upload_speed' => 'Upload speed',
         'download_speed' => 'Download speed',
         'isp' => 'ISP',
-        'menu' => 'Menu',
+        'menu' => 'Custom menu',
     ],
     'resources' => [
         'agent_allow' => [

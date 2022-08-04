@@ -195,6 +195,10 @@ return [
         'ip_help' => '起始 IP/結束 IP、IP(段) 二選一',
         'status' => '狀態',
     ],
+    'menu' => [
+        'label' => '自定義菜單',
+        'enable_help' => '是否啟用自定義菜單',
+    ],
     'menu_item' => [
         'label' => '菜單項',
         'url' => '鏈接',

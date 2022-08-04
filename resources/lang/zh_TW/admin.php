@@ -21,7 +21,7 @@ return [
         'upload_speed' => '上行帶寬',
         'download_speed' => '下行帶寬',
         'isp' => 'ISP',
-        'menu' => '菜單',
+        'menu' => '自定義菜單',
     ],
     'resources' => [
         'agent_allow' => [
