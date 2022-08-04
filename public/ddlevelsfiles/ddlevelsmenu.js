@@ -19,7 +19,7 @@ arrowpointers:{
 },
 hideinterval: 200, //delay in milliseconds before entire menu disappears onmouseout.
 effects: {enableswipe: true, enableslide: true, enablefade: true, duration: 200},
-httpsiframesrc: "blank.htm", //If menu is run on a secure (https) page, the IFRAME shim feature used by the script should point to an *blank* page *within* the secure area to prevent an IE security prompt. Specify full URL to that page on your server (leave as is if not applicable).
+httpsiframesrc: "about:blank", //If menu is run on a secure (https) page, the IFRAME shim feature used by the script should point to an *blank* page *within* the secure area to prevent an IE security prompt. Specify full URL to that page on your server (leave as is if not applicable).
 
 ///No need to edit beyond here////////////////////
 
@@ -315,7 +315,7 @@ animatemobilesubmenu:function(targetul, beforeleft, afterleft){
 		targetul.style.left = beforeleft
 		window.getComputedStyle(targetul).left // force layout reflow
 		this.css(targetul, 'notransition', 'remove')
-		targetul.style.left = afterleft	
+		targetul.style.left = afterleft
 },
 
 
@@ -323,7 +323,7 @@ togglemobilemenu:function(mainmenuid, xoffset, yoffset){
 	var toggler = document.getElementById(mainmenuid + '-mobiletoggle')
 	var mobilemenu = document.getElementById(mainmenuid + '-mobile')
 	if (mobilemenu){
-		if (!ddlevelsmenu.css(mobilemenu, 'open', 'check')){			
+		if (!ddlevelsmenu.css(mobilemenu, 'open', 'check')){
 			ddlevelsmenu.css(mobilemenu, 'open', 'add')
 			if (toggler)
 				ddlevelsmenu.css(toggler, 'open', 'add')
@@ -551,7 +551,7 @@ init:function(mainmenuid, dir, mobile){
 			}, "touchstart")
 			this.addEvent(shelldiv, function(e){  // 3.03 code
 				ddlevelsmenu.hidemenu(this)
-			}, "click")			
+			}, "click")
 			var arrowclass=(dir=="sidebar")? "rightarrowpointer" : "downarrowpointer"
 			var arrowpointer=(dir=="sidebar")? this.arrowpointers.rightarrow : this.arrowpointers.downarrow
 			if (this.arrowpointers.showarrow.toplevel)

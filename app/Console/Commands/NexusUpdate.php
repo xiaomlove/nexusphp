@@ -50,15 +50,7 @@ class NexusUpdate extends Command
         if ($includeComposer) {
             $includes[] = 'composer';
         }
-        if ($tag !== null) {
-            if ($tag === 'dev') {
-                $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
-            } else {
-                $url = "https://api.github.com/repos/xiaomlove/nexusphp/tarball/v$tag";
-            }
-            $this->doLog("Specific tag: '$tag', download from '$url' and extra code, includes: " . implode(', ', $includes));
-            $tmpPath = $this->update->downAndExtractCode($url, $includes);
-        }
+
         //Step 1
         $step = $this->update->currentStep();
         $log = sprintf('Step %s, %s...', $step, $this->update->getStepName($step));
@@ -72,6 +64,28 @@ class NexusUpdate extends Command
             return 0;
         }
         $this->update->gotoStep(++$step);
+
+        //Download
+        if ($tag !== null) {
+            if ($tag === 'dev') {
+                $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
+            } else {
+                $url = "https://api.github.com/repos/xiaomlove/nexusphp/tarball/v$tag";
+            }
+            $this->doLog("Specific tag: '$tag', download from '$url' and extra code, includes: " . implode(', ', $includes));
+            $tmpPath = $this->update->downAndExtractCode($url, $includes);
+        }
+        if ($includeComposer) {
+            $requireCommand = 'composer';
+            if (!command_exists($requireCommand)) {
+                $this->doLog("Error: require $requireCommand");
+                return 0;
+            }
+            $command = "composer install";
+            $log = "Running $command ...";
+            $this->doLog($log);
+            $this->update->executeCommand($command);
+        }
 
         //Step 2
         $log = sprintf('Step %s, %s, cli skip...', $step, $this->update->getStepName($step));

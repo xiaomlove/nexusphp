@@ -119,7 +119,6 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);
-//        return $tabs;
         return $tabs;
     }
 

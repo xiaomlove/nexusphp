@@ -322,6 +322,10 @@ class Update extends Install
 
     public function downAndExtractCode($url, array $includes = []): string
     {
+        $requireCommand = 'rsync';
+        if (!command_exists($requireCommand)) {
+            throw new \RuntimeException("command: $requireCommand not exists!");
+        }
         $arr = explode('/', $url);
         $basename = last($arr);
         $isZip = false;
