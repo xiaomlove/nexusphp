@@ -391,6 +391,7 @@ if ($perseeding_bonus > 0)
 print("<li>".$lang_mybonus['text_bonus_formula_one'].$tzero_bonus.$lang_mybonus['text_bonus_formula_two'].$nzero_bonus.$lang_mybonus['text_bonus_formula_three'].$bzero_bonus.$lang_mybonus['text_bonus_formula_four'].$l_bonus.$lang_mybonus['text_bonus_formula_five']."</li>");
 if ($donortimes_bonus)
 	print("<li>".$lang_mybonus['text_donors_always_get'].$donortimes_bonus.$lang_mybonus['text_times_of_bonus']."</li>");
+
 print("</ul>");
 
 //		$sqrtof2 = sqrt(2);
@@ -428,6 +429,32 @@ $A = $seedBonusResult['A'];
 	else $loadpic = "loadbargreen";
 	$width = $percent * 4;
 	print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
+
+$factor = get_setting('bonus.harem_addition');
+$addition = calculate_harem_addition($CURUSER['id']);
+$totalBonus = number_format($all_bonus + $addition * $factor, 3);
+$summaryTable = '<table cellspacing="4" cellpadding="4" style="width: 50%"><tbody>';
+$summaryTable .= '<tr style="font-weight: bold"><td>'.$lang_mybonus['reward_type'].'</td><td>'.$lang_mybonus['bonus_base'].'</td><td>'.$lang_mybonus['addition'].'</td><td>'.$lang_mybonus['got_bonus'].'</td><td>'.$lang_mybonus['total'].'</td></tr>';
+$summaryTable .= sprintf(
+    '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="2">%s</td></tr>',
+    $lang_mybonus['reward_type_basic'],
+    round($all_bonus,3),
+    '-',
+    round($all_bonus,3),
+    $totalBonus
+);
+if ($factor > 0) {
+    $summaryTable .= sprintf(
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+        $lang_mybonus['reward_type_harem_addition'],
+        number_format($addition, 3),
+        number_format($factor * 100, 2) . '%',
+        number_format($addition * $factor, 3)
+    );
+}
+$summaryTable .= '</tbody></table>';
+
+print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$summaryTable.'</div>';
 
 print("<h1>".$lang_mybonus['text_other_things_get_bonus']."</h1>");
 print("<ul>");

@@ -766,6 +766,9 @@ $lang_settings = array
     'row_imdb_language' => 'IMDB Language',
     'text_imdb_language_note' => 'Languages used to crawl IMDB data.',
     'text_login_type_passkey' => 'passkey',
+    'row_harem_addition' => 'Harem addition',
+    'text_user_would_get_by_harem' => 'The user will receive the bonus value of the direct harem',
+    'text_harem_addition_note' => 'times as reward (factor, e.g. fill in 0.01, if harem gets 100 bonus then reward user 100 * 0.01 = 1)',
 );
 
 ?>

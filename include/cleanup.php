@@ -264,45 +264,23 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$res = sql_query("SELECT DISTINCT userid FROM peers WHERE seeder = 'yes'") or sqlerr(__FILE__, __LINE__);
 	if (mysql_num_rows($res) > 0)
 	{
-//		$sqrtof2 = sqrt(2);
-//		$logofpointone = log(0.1);
-//		$valueone = $logofpointone / $tzero_bonus;
-//		$pi = 3.141592653589793;
-//		$valuetwo = $bzero_bonus * ( 2 / $pi);
-//		$valuethree = $logofpointone / ($nzero_bonus - 1);
-//		$timenow = TIMENOW;
-//		$sectoweek = 7*24*60*60;
+	    $haremAdditionFactor = get_setting('bonus.harem_addition');
 		while ($arr = mysql_fetch_assoc($res))	//loop for different users
 		{
-//			$A = 0;
-//			$count = 0;
-//			$all_bonus = 0;
-//			$torrentres = sql_query("select torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = {$arr['userid']} AND peers.seeder ='yes' group by torrents.id")  or sqlerr(__FILE__, __LINE__);
-//			while ($torrent = mysql_fetch_array($torrentres))
-//			{
-//				$weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
-//				$gb_size = $torrent['size'] / 1073741824;
-//				$temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
-//				$A += $temp;
-//				$count++;
-//			}
-//			if ($count > $maxseeding_bonus)
-//				$count = $maxseeding_bonus;
-//			$all_bonus = $seedPoints = ($valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count)) / (3600 / $autoclean_interval_one);
-//            $is_donor = get_single_value("users","donor","WHERE id=".$arr['userid']);
-//			$log = "[UPDATE_BONUS], user: {$arr['userid']}, original bonus: $all_bonus, is_donor: $is_donor, donortimes_bonus: $donortimes_bonus";
-//			if ($is_donor == 'yes' && $donortimes_bonus > 0) {
-//                $all_bonus = $all_bonus * $donortimes_bonus;
-//                $log .= ", do multiple, all_bonus: $all_bonus";
-//            }
-//			do_log($log);
             $seedBonusResult = calculate_seed_bonus($arr['userid']);
             $dividend = 3600 / $autoclean_interval_one;
             $all_bonus = $seedBonusResult['all_bonus'] / $dividend;
             $seed_points = $seedBonusResult['seed_points'] / $dividend;
+            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult) . ", all_bonus: $all_bonus, seed_points: $seed_points";
+            if ($haremAdditionFactor > 0) {
+                $haremAddition = calculate_harem_addition($arr['userid']) * $haremAdditionFactor / $dividend;
+                $all_bonus += $haremAddition;
+                $bonusLog .= ", haremAddition: $haremAddition, new all_bonus: $all_bonus";
+            }
             $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
-            do_log("[CLEANUP_CALCULATE_SEED_BONUS], result: " . nexus_json_encode($seedBonusResult) . ", query: $sql");
+            do_log("$bonusLog, query: $sql");
 			sql_query($sql);
+
 		}
 	}
 	$log = 'calculate seeding bonus';

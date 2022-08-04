@@ -130,6 +130,14 @@ $lang_mybonus = array
     'text_attendance_card' => '购买补签卡',
     'text_attendance_card_note' => '补签一天消耗一张，补签目标日期所得魔力奖励按照正常计算，即目标日期往前推计算连续天数获得奖励。',
     'text_success_buy_attendance_card' => '成功购买了一张补签卡。',
+    'text_harem_addition_get' => '当前后宫加成每小时获得 %s 魔力',
+    'reward_type' => '奖励类型',
+    'addition' => '加成',
+    'got_bonus' => '获得魔力',
+    'total' => '合计',
+    'reward_type_basic' => '基本奖励',
+    'reward_type_harem_addition' => '后宫加成',
+    'bonus_base' => '基础魔力',
 );
 
 ?>

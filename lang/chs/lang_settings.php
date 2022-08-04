@@ -766,6 +766,9 @@ $lang_settings = array
     'row_imdb_language' => 'IMDB 语言',
     'text_imdb_language_note' => '抓取 IMDB 数据使用的语言。',
     'text_login_type_passkey' => 'passkey',
+    'row_harem_addition' => '后宫加成',
+    'text_user_would_get_by_harem' => '用户将获得直属后宫魔力值的',
+    'text_harem_addition_note' => '倍作为奖励（系数，如填入 0.01，后宫获得 100 魔力则奖励用户 100 * 0.01 = 1）',
 );
 
 ?>

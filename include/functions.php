@@ -5730,4 +5730,21 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     return $result;
 }
 
+function calculate_harem_addition($uid)
+{
+    $harems = \App\Models\User::query()
+        ->where('invited_by', $uid)
+        ->where('status', \App\Models\User::STATUS_CONFIRMED)
+        ->where('enabled', \App\Models\User::ENABLED_YES)
+        ->get(['id']);
+    $addition = 0;
+    $haremsCount = $harems->count();
+    foreach ($harems as $harem) {
+        $result = calculate_seed_bonus($harem->id);
+        $addition += $result['all_bonus'];
+    }
+    do_log("[HAREM_ADDITION], user: $uid, haremsCount: $haremsCount ,addition: $addition");
+    return $addition;
+}
+
 ?>
