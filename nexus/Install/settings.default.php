@@ -227,6 +227,7 @@ return array (
     'prolinktime' => '600',
       'cancel_hr' => BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN,
       'attendance_card' => BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD,
+      'harem_addition' => 0,
   ),
   'account' =>
   array (

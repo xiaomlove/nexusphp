@@ -87,7 +87,8 @@ class Test extends Command
     public function handle()
     {
         $menuRep = new MenuRepository();
-        $menuRep->filterBuildMenu();
+        $r = $menuRep->listItems()->toArray();
+        dd($r);
     }
 
 
