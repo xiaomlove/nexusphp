@@ -19,24 +19,24 @@ $r = @sql_query("SELECT * FROM users WHERE status = 'pending' AND id = ".sqlesc(
 $user = mysql_fetch_array($r) or bark($lang_checkuser['std_no_user_id']);
 
 if (get_user_class() < UC_MODERATOR) {
-	if ($user[invited_by] != $CURUSER[id])
+	if ($user['invited_by'] != $CURUSER['id'])
 		bark($lang_checkuser['std_no_permission']);
 }
 
-if ($user["gender"] == "Male") $gender = "<img src=pic/male.png alt='Male' style='margin-left: 4pt'>";
-elseif ($user["gender"] == "Female") $gender = "<img src=pic/female.png alt='Female' style='margin-left: 4pt'>";
-elseif ($user["gender"] == "N/A") $gender = "<img src=pic/na.gif alt='N/A' style='margin-left: 4pt'>";
+if ($user["gender"] == "Male") $gender = '<img class="male" src="pic/trans.gif" alt="Male" title="Male" style="margin-left: 4pt">';
+elseif ($user["gender"] == "Female") $gender = '<img class="female" src="pic/trans.gif" alt="Female" title="Female" style="margin-left: 4pt">';
+elseif ($user["gender"] == "N/A") $gender = '<img class="no_gender" src="pic/trans.gif" alt="N/A" title="No gender" style="margin-left: 4pt">';
 
-if ($user[added] == "0000-00-00 00:00:00" || $user['added'] == null)
+if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
   $joindate = 'N/A';
 else
   $joindate = "$user[added] (" . get_elapsed_time(strtotime($user["added"])) . " ago)";
-  
+
 $res = sql_query("SELECT name,flagpic FROM countries WHERE id=$user[country] LIMIT 1") or sqlerr();
 if (mysql_num_rows($res) == 1)
 {
   $arr = mysql_fetch_assoc($res);
-  $country = "<td class=embedded><img src=pic/flag/$arr[flagpic] alt=\"$arr[name]\" style='margin-left: 8pt'></td>";
+  $country = "<td class=embedded><img src=pic/flag/{$arr['flagpic']} alt=\"$arr[name]\" style='margin-left: 8pt'></td>";
 }
 
 stdhead($lang_checkuser['head_detail_for'] . $user["username"]);
@@ -51,12 +51,12 @@ if (!$enabled)
 <table width=737 border=1 cellspacing=0 cellpadding=5>
 <tr><td class=rowhead width=1%><?php echo $lang_checkuser['row_join_date'] ?></td><td align=left width=99%><?php echo $joindate;?></td></tr>
 <tr><td class=rowhead width=1%><?php echo $lang_checkuser['row_gender'] ?></td><td align=left width=99%><?php echo $gender;?></td></tr>
-<tr><td class=rowhead width=1%><?php echo $lang_checkuser['row_email'] ?></td><td align=left width=99%><a href=mailto:<?php echo $user[email];?>><?php echo $user[email];?></a></td></tr>
+<tr><td class=rowhead width=1%><?php echo $lang_checkuser['row_email'] ?></td><td align=left width=99%><a href=mailto:<?php echo $user['email'];?>><?php echo $user['email'];?></a></td></tr>
 <?php
-if (get_user_class() >= UC_MODERATOR AND $user[ip] != '')
-	print ("<tr><td class=rowhead width=1%>".$lang_checkuser['row_ip']."</td><td align=left width=99%>$user[ip]</td></tr>");
+if (get_user_class() >= UC_MODERATOR AND $user['ip'] != '')
+	print ("<tr><td class=rowhead width=1%>".$lang_checkuser['row_ip']."</td><td align=left width=99%>{$user['ip']}</td></tr>");
 print("<form method=post action=takeconfirm.php?id=".htmlspecialchars($id).">");
-print("<input type=hidden name=email value=$user[email]>");
+print("<input type=hidden name=email value={$user['email']}>");
 print("<tr><td class=rowhead width=1%><input type=\"checkbox\" name=\"conusr[]\" value=\"" . $id . "\" checked/></td>");
 print("<td align=left width=99%><input type=submit style='height: 20px' value=\"".$lang_checkuser['submit_confirm_this_user'] ."\"></form></tr></td></table>");
 stdfoot();

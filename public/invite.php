@@ -9,11 +9,9 @@ $type = unesc($_GET["type"] ?? '');
 $menuSelected = $_REQUEST['menu'] ?? 'invitee';
 $pageSize = 50;
 
-registration_check('invitesystem',true,false);
-
 function inviteMenu ($selected = "invitee") {
     global $lang_invite, $id, $CURUSER;
-    begin_main_frame();
+    begin_main_frame("", false, "100%");
     print ("<div id=\"invitenav\" style='position: relative'><ul id=\"invitemenu\" class=\"menu\">");
     print ("<li" . ($selected == "invitee" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=invitee\">".$lang_invite['text_invite_status']."</a></li>");
     print ("<li" . ($selected == "sent" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=sent\">".$lang_invite['text_sent_invites_status']."</a></li>");
@@ -48,6 +46,7 @@ if ($inv["invites"] != 1){
 }
 
 if ($type == 'new'){
+    registration_check('invitesystem',true,false);
 	if ($CURUSER['invites'] <= 0) {
 		stdmsg($lang_invite['std_sorry'],$lang_invite['std_no_invites_left'].
 		"<a class=altlink href=invite.php?id={$CURUSER['id']}>".$lang_invite['here_to_go_back'],false);
@@ -80,13 +79,18 @@ if ($type == 'new'){
             print("<tr><td colspan=7 align=center>".$lang_invite['text_no_invites']."</tr>");
         } else {
             list($pagertop, $pagerbottom, $limit) = pager($pageSize, $number, "?id=$id&menu=$menuSelected&");
-
+            $haremAdditionFactor = get_setting('bonus.harem_addition');
             $ret = sql_query("SELECT id, username, email, uploaded, downloaded, status, warned, enabled, donor, email FROM users WHERE invited_by = ".mysql_real_escape_string($id) . " $limit") or sqlerr();
             $num = mysql_num_rows($ret);
 
-            print("<tr><td class=colhead><b>".$lang_invite['text_username']."</b></td><td class=colhead><b>".$lang_invite['text_email']."</b></td><td class=colhead><b>".$lang_invite['text_uploaded']."</b></td><td class=colhead><b>".$lang_invite['text_downloaded']."</b></td><td class=colhead><b>".$lang_invite['text_ratio']."</b></td><td class=colhead><b>".$lang_invite['text_status']."</b></td>");
-            if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP)
+            print("<tr><td class=colhead><b>".$lang_invite['text_username']."</b></td><td class=colhead><b>".$lang_invite['text_email']."</b></td><td class=colhead><b>".$lang_invite['text_uploaded']."</b></td><td class=colhead><b>".$lang_invite['text_downloaded']."</b></td><td class=colhead><b>".$lang_invite['text_ratio']."</b></td>");
+            if ($haremAdditionFactor > 0) {
+                print('<td class="colhead">'.$lang_invite['harem_addition'].'</td>');
+            }
+            print("<td class=colhead><b>".$lang_invite['text_status']."</b></td>");
+            if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP) {
                 print("<td class=colhead><b>".$lang_invite['text_confirm']."</b></td>");
+            }
 
             print("</tr>");
             for ($i = 0; $i < $num; ++$i)
@@ -110,7 +114,11 @@ if ($type == 'new'){
                 else
                     $status = "<a href=checkuser.php?id={$arr['id']}><font color=#ca0226>".$lang_invite['text_pending']."</font></a>";
 
-                print("<tr class=rowfollow>$user<td>{$arr['email']}</td><td class=rowfollow>" . mksize($arr['uploaded']) . "</td><td class=rowfollow>" . mksize($arr['downloaded']) . "</td><td class=rowfollow>$ratio</td><td class=rowfollow>$status</td>");
+                print("<tr class=rowfollow>$user<td>{$arr['email']}</td><td class=rowfollow>" . mksize($arr['uploaded']) . "</td><td class=rowfollow>" . mksize($arr['downloaded']) . "</td><td class=rowfollow>$ratio</td>");
+                if ($haremAdditionFactor > 0) {
+                    print ("<td class=rowfollow>".number_format(calculate_seed_bonus($arr['id'])['all_bonus'] * $haremAdditionFactor, 3)."</td>");
+                }
+                print("<td class=rowfollow>$status</td>");
                 if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP){
                     print("<td>");
                     if ($arr['status'] == 'pending')
@@ -124,11 +132,14 @@ if ($type == 'new'){
 
         if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP)
         {
-
             $pendingcount = number_format(get_row_count("users", "WHERE  status='pending' AND invited_by={$CURUSER['id']}"));
+            $colSpan = 7;
+            if (isset($haremAdditionFactor) && $haremAdditionFactor > 0) {
+                $colSpan += 1;
+            }
             if ($pendingcount){
                 print("<input type=hidden name=email value={$arr['email']}>");
-                print("<tr><td colspan=7 align=right><input type=submit style='height: 20px' value=".$lang_invite['submit_confirm_users']."></td></tr>");
+                print("<tr><td colspan=$colSpan align=right><input type=submit style='height: 20px' value=".$lang_invite['submit_confirm_users']."></td></tr>");
             }
             print("</form>");
         }

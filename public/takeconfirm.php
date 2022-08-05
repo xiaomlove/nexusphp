@@ -12,10 +12,11 @@ else
  "<a class=altlink href=invite.php?id={$CURUSER['id']}>".$lang_takeconfirm['std_here_to_go_back'],false);
 
 $title = $SITENAME.$lang_takeconfirm['mail_title'];
+$baseUrl = getSchemeAndHttpHost();
 $body = <<<EOD
 {$lang_takeconfirm['mail_content_1']}
-<b><a href="javascript:void(null)" onclick="window.open('http://$BASEURL/login.php')">{$lang_takeconfirm['mail_here']}</a></b><br />
-http://$BASEURL/login.php
+<b><a href="javascript:void(null)" onclick="window.open('{$baseUrl}/login.php')">{$lang_takeconfirm['mail_here']}</a></b><br />
+{$baseUrl}/login.php
 {$lang_takeconfirm['mail_content_2']}
 EOD;
 

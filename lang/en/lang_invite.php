@@ -51,6 +51,7 @@ Best Regards,
 	'std_only' => "Only ",
 	'std_or_above_can_invite' => " or above can send invitation.",
 	'text_email_restriction_note' => "You could only send invitation to email from those domains: ",
+    'harem_addition' => 'Harem addition',
 );
 
 ?>

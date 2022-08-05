@@ -614,7 +614,9 @@ function begin_main_frame($caption = "", $center = false, $width = 100)
 	if ($center)
 	$tdextra .= " align=\"center\"";
 
-	$width = 1200 * $width /100;
+	if (!str_ends_with($width, '%')) {
+        $width = 1200 * $width / 100;
+    }
 
 	print("<table class=\"main\" width=\"".$width."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" .
 	"<tr><td class=\"embedded\" $tdextra>");
