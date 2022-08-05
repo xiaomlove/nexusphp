@@ -198,7 +198,7 @@ if ($newnumpeers > $rsize)
 else $limit = "";
 $announce_wait = \App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND;
 
-$fields = "seeder, peer_id, ip, port, uploaded, downloaded, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
+$fields = "seeder, peer_id, ip, ipv4, ipv6, port, uploaded, downloaded, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
 //$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
 /**
  * return all peers,include connectable no
@@ -218,7 +218,8 @@ $rep_dict = [
     "min interval" => (int)$announce_wait,
     "complete" => (int)$torrent["seeders"],
     "incomplete" => (int)$torrent["leechers"],
-    "peers" => []  // By default it is a array object, only when `&compact=1` then it should be a string
+    "peers" => [],  // By default it is a array object, only when `&compact=1` then it should be a string
+    "peers6" => [],
 ];
 
 if ($compact == 1) {
@@ -255,16 +256,42 @@ if (isset($event) && $event == "stopped") {
         }
 
         if ($compact == 1) {
-            $peerField = filter_var($row['ip'],FILTER_VALIDATE_IP,FILTER_FLAG_IPV6) ? 'peers6' : 'peers';
-            $rep_dict[$peerField] .= inet_pton($row["ip"]) . pack("n", $row["port"]);
+//            $peerField = filter_var($row['ip'],FILTER_VALIDATE_IP,FILTER_FLAG_IPV6) ? 'peers6' : 'peers';
+//            $rep_dict[$peerField] .= inet_pton($row["ip"]) . pack("n", $row["port"]);
+            if (!empty($row['ipv4'])) {
+                $rep_dict['peers'] .= inet_pton($row["ipv4"]) . pack("n", $row["port"]);
+            }
+            if (!empty($row['ipv6'])) {
+                $rep_dict['peers6'] .= inet_pton($row["ipv6"]) . pack("n", $row["port"]);
+            }
         } else {
-            $peer = [
-                'ip' => $row["ip"],
-                'port' => (int) $row["port"]
-            ];
-
-            if ($no_peer_id == 1) $peer['peer id'] = $row["peer_id"];
-            $rep_dict['peers'][] = $peer;
+//            $peer = [
+//                'ip' => $row["ip"],
+//                'port' => (int) $row["port"]
+//            ];
+//
+//            if ($no_peer_id == 1) {
+//                $peer['peer id'] = $row["peer_id"];
+//            }
+//            $rep_dict['peers'][] = $peer;
+            if (!empty($row['ipv4'])) {
+                $peer = [
+                    'peer_id' => $row['peer_id'],
+                    'ip' => $row['ipv4'],
+                    'port' => (int)$row['port'],
+                ];
+                if ($no_peer_id) unset($peer['peer_id']);
+                $rep_dict['peers'][] = $peer;
+            }
+            if (!empty($row['ipv6'])) {
+                $peer = [
+                    'peer_id' => $row['peer_id'],
+                    'ip' => $row['ipv6'],
+                    'port' => (int)$row['port'],
+                ];
+                if ($no_peer_id) unset($peer['peer_id']);
+                $rep_dict['peers6'][] = $peer;
+            }
         }
     }
 }
