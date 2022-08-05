@@ -219,7 +219,6 @@ $rep_dict = [
     "complete" => (int)$torrent["seeders"],
     "incomplete" => (int)$torrent["leechers"],
     "peers" => [],  // By default it is a array object, only when `&compact=1` then it should be a string
-    "peers6" => [],
 ];
 
 if ($compact == 1) {
@@ -290,7 +289,7 @@ if (isset($event) && $event == "stopped") {
                     'port' => (int)$row['port'],
                 ];
                 if ($no_peer_id) unset($peer['peer_id']);
-                $rep_dict['peers6'][] = $peer;
+                $rep_dict['peers'][] = $peer;
             }
         }
     }
