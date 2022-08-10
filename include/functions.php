@@ -3736,13 +3736,13 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
         //medal
         $medalHtml = '';
 		foreach ($arr['wearing_medals'] as $medal) {
-            $medalHtml .= sprintf('<img src="%s" title="%s" class="preview" style="vertical-align: sub;max-height: 16px;max-width: 16px;margin-right: 2px"/>', $medal['image_large'], $medal['name']);
+            $medalHtml .= sprintf('<img src="%s" title="%s" class="preview" style="vertical-align: sub;max-height: 16px;max-width: 16px;margin-left: 2pt"/>', $medal['image_large'], $medal['name']);
         }
 
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
 		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true) : "<span class='".get_user_class_name($arr['class'],true) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
 
-		$username = "<span class=\"nowrap\">$medalHtml" . ( $bracket == true ? "(" . $username . ")" : $username) . "</span>";
+		$username = "<span class=\"nowrap\">" . ( $bracket == true ? "(" . $username . ")" : $username) . "$medalHtml</span>";
 	}
 	else
 	{
