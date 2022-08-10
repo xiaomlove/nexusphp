@@ -25,6 +25,13 @@
 - Json API
 - ....
 
+#### 以下功能由插件提供
+- 帖子点赞
+- 帖子奖励
+- 置顶促销
+- 自定义菜单
+- 幸运大转盘
+
 ## 系统要求
 - PHP: 8.0，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp
 - Mysql: 5.7 最新版或以上版本

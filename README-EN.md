@@ -25,6 +25,13 @@ Complete PT website building solution. Based on NexusPHP + Laravel + Filament.
 - Backend management system
 - Json API
 - ....
+ 
+#### The following functions are provided by the plugin
+- Post like
+- Post reward
+- Sticky promotion
+- Custom menu
+- Lucky draw
 
 ## System Requirements
 - PHP: 8.0, must have extensions: bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp
