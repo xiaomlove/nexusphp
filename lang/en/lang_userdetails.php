@@ -152,5 +152,8 @@ $lang_userdetails = array
     'text_donoruntil_note' => "Time format is YYYY-MM-DD hh:mm:ss. Leave blank permanently.",
     'change_field_value_migrated' => 'Modification please go to the background management system.',
     'sure_to_remove_leech_warn' => 'Are you sure to remove this leech warn ?',
+    'row_user_props' => 'Props',
+    'meta_key_change_username_username' => 'New username',
+    'consume' => 'Use',
 );
 ?>
