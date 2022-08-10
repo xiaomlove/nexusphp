@@ -10,8 +10,10 @@ use App\Models\Message;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserBanLog;
+use App\Models\UserMeta;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
@@ -82,12 +84,12 @@ class UserRepository extends BaseRepository
         }
         $username = $params['username'];
         if (!validusername($username)) {
-            throw new \InvalidArgumentException("Innvalid username: $username");
+            throw new \InvalidArgumentException("Invalid username: $username");
         }
         $email = htmlspecialchars(trim($params['email']));
         $email = safe_email($email);
         if (!check_email($email)) {
-            throw new \InvalidArgumentException("Innvalid email: $email");
+            throw new \InvalidArgumentException("Invalid email: $email");
         }
         if (User::query()->where('email', $email)->exists()) {
             throw new \InvalidArgumentException("The email address: $email is already in use");
@@ -96,7 +98,7 @@ class UserRepository extends BaseRepository
             throw new \InvalidArgumentException("The username: $username is already in use");
         }
         if (mb_strlen($password) < 6 || mb_strlen($password) > 40) {
-            throw new \InvalidArgumentException("Innvalid password: $password, it should be more than 6 character and less than 40 character");
+            throw new \InvalidArgumentException("Invalid password: $password, it should be more than 6 character and less than 40 character");
         }
         $class = !empty($params['class']) ? intval($params['class']) : User::CLASS_USER;
         if (!isset(User::$classes[$class])) {
@@ -365,10 +367,64 @@ class UserRepository extends BaseRepository
 
     private function clearCache(User $user)
     {
-        \Nexus\Database\NexusDB::cache_del("user_{$user->id}_content");
-        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$user->passkey.'_content');
+        clear_user_cache($user->id, $user->passkey);
     }
 
+    public function listMetas($uid, $metaKeys = [], $valid = true)
+    {
+        $query = UserMeta::query()->where('uid', $uid);
+        if (!empty($metaKeys)) {
+            $query->whereIn('meta_key', Arr::wrap($metaKeys));
+        }
+        if ($valid) {
+            $query->where('status', 0)->where(function (Builder $query) {
+                $query->whereNull('deadline')->orWhere('deadline', '>=', now());
+            });
+        }
+        return $query->get()->groupBy('meta_key');
+    }
+
+    public function consumeBenefit($uid, array $params): bool
+    {
+        $metaKey = $params['meta_key'];
+        $records = $this->listMetas($uid, $metaKey);
+        if (!$records->has($metaKey)) {
+            throw new \RuntimeException("User do not has this metaKey: $metaKey");
+        }
+        /** @var UserMeta $meta */
+        $meta = $records->get($metaKey)->first();
+        $user = User::query()->findOrFail($uid, User::$commonFields);
+        if ($metaKey == UserMeta::META_KEY_CHANGE_USERNAME) {
+            NexusDB::transaction(function () use ($user, $meta, $params) {
+                $this->changeUsername($user, $params['username']);
+                $meta->delete();
+                clear_user_cache($user->id, $user->passkey);
+            });
+            return true;
+        }
+
+        throw new \InvalidArgumentException("Invalid meta_key: $metaKey");
+    }
+
+    private function changeUsername(User $user, $newUsername): bool
+    {
+        if ($user->username == $newUsername) {
+            throw new \RuntimeException("New username can not be the same with current username !");
+        }
+        if (!validusername($newUsername)) {
+            throw new \InvalidArgumentException("Invalid username, length must between 4 and 20 characters");
+        }
+        if (User::query()->where('username', $newUsername)->where('id', '!=', $user->id)->exists()) {
+            throw new \RuntimeException("Username: $newUsername already exists !");
+        }
+        NexusDB::transaction(function () use ($user, $newUsername) {
+            $oldUsername = $user->username;
+            $user->usernameChangeLogs()->create(['username_old' => $oldUsername, 'username_new' => $newUsername]);
+            $user->username = $newUsername;
+            $user->save();
+        });
+        return true;
+    }
 
 
 }

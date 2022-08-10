@@ -73,7 +73,7 @@ class SeedBoxRepository extends BaseRepository
             }
             $params['version'] = $ipEnd->getVersion();
         } else {
-            throw new \InvalidArgumentException("Require ip or ip_begin + ip_end");
+            throw new \InvalidArgumentException(nexus_trans('label.seed_box_record.ip_help'));
         }
 
         return $params;

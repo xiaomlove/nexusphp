@@ -152,6 +152,11 @@ if ($showshoutbox_main == "yes") {
 	print("</form></td></tr></table>");
 }
 // ------------- end: shoutbox ------------------//
+
+$extraModules = [];
+$extraModules = apply_filter('nexus_home_module', $extraModules);
+print implode('', $extraModules);
+
 // ------------- start: latest forum posts ------------------//
 
 if ($showlastxforumposts_main == "yes" && $CURUSER)

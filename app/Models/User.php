@@ -135,7 +135,7 @@ class User extends Authenticatable implements FilamentUser, HasName
      */
     protected function serializeDate(\DateTimeInterface $date): string
     {
-        return $date->format($this->dateFormat ?: 'Y-m-d H:i');
+        return $date->format($this->dateFormat ?: 'Y-m-d H:i:s');
     }
 
     /**
@@ -146,7 +146,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     protected $fillable = [
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'modcomment', 'enabled', 'status',
         'leechwarn', 'leechwarnuntil', 'page', 'class', 'uploaded', 'downloaded', 'clientselect', 'showclienterror', 'last_home',
-        'seedbonus', 'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title',
+        'seedbonus', 'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
     ];
 
     /**
@@ -437,6 +437,16 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function poll_answers(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PollAnswer::class, 'userid');
+    }
+
+    public function metas()
+    {
+        return $this->hasMany(UserMeta::class, 'uid');
+    }
+
+    public function usernameChangeLogs()
+    {
+        return $this->hasMany(UsernameChangeLog::class, 'uid');
     }
 
     public function getAvatarAttribute($value)

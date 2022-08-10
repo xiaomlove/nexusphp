@@ -152,5 +152,8 @@ $lang_userdetails = array
     'text_donoruntil_note' => "时间格式为'年年年年-月月-日日 时时:分分:秒秒'。留空永久有效。",
     'change_field_value_migrated' => '修改请到管理后台操作',
     'sure_to_remove_leech_warn' => '确定要清除此吸血警告吗？',
+    'row_user_props' => '道具',
+    'meta_key_change_username_username' => '新用户名',
+    'consume' => '使用',
 );
 ?>

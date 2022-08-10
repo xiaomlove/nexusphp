@@ -3,7 +3,7 @@ require "../include/bittorrent.php";
 if ($_SERVER["REQUEST_METHOD"] != "POST")
 	stderr("Error", "Permission denied!");
 dbconn();
-loggedinorreturn();                                                    
+loggedinorreturn();
 
 if (get_user_class() < UC_ADMINISTRATOR)
 	stderr("Sorry", "Permission denied.");
@@ -25,10 +25,26 @@ if (is_array($updateset)) {
 		stderr("Error","Invalid Class");
 }
 $subject = trim($_POST['subject']);
-$query = sql_query("SELECT id FROM users WHERE class IN (".implode(",", $updateset).")");
-while($dat=mysql_fetch_assoc($query))
-{
-	sql_query("INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES ($sender_id, {$dat['id']}, $dt, " . sqlesc($subject) .", " . sqlesc($msg) .")") or sqlerr(__FILE__,__LINE__);
+$size = 10000;
+$page = 1;
+set_time_limit(300);
+$classStr = implode(",", $updateset);
+while (true) {
+    $msgValues = $idArr = [];
+    $offset = ($page - 1) * $size;
+    $query = sql_query("SELECT id FROM users WHERE class IN (".implode(",", $updateset).") and `enabled` = 'yes' and `status` = 'confirmed'");
+    while($dat=mysql_fetch_assoc($query))
+    {
+        $idArr[] = $dat['id'];
+        $msgValues[] = sprintf('(%s, %s, %s, %s, %s)', $sender_id, $dat['id'], $dt, sqlesc($subject), sqlesc($msg));
+    }
+    if (empty($idArr)) {
+        break;
+    }
+    $idStr = implode(', ', $idArr);
+    $sql = "INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES " . implode(', ', $msgValues);
+    sql_query($sql);
+    $page++;
 }
 
 header("Refresh: 0; url=staffmess.php?sent=1");

@@ -195,7 +195,7 @@ return [
         'ip' => 'IP(段)',
         'ip_begin' => '起始 IP',
         'ip_end' => '结束 IP',
-        'ip_help' => '起始 IP/结束 IP、IP(段) 二选一',
+        'ip_help' => '填写起始 IP + 结束 IP，或 IP(段)，不要同时填写',
         'status' => '状态',
     ],
     'menu' => [
@@ -210,5 +210,11 @@ return [
         'style' => '样式',
         'parent_id' => '父菜单',
         'min_class' => '最低可见等级',
+    ],
+    'user_meta' => [
+        'meta_keys' => [
+            \App\Models\UserMeta::META_KEY_CHANGE_USERNAME => '更名卡',
+            \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME => '彩虹 ID',
+        ],
     ],
 ];

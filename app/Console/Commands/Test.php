@@ -86,14 +86,9 @@ class Test extends Command
      */
     public function handle()
     {
-        add_filter('ttt', function ($d) {
-            $d[] = 100;
-            return $d;
-        });
-        $a = [];
-        $a[] = '1';
-        $a = apply_filter('ttt', $a);
-        dd($a);
+        $a = Carbon::parse('2022-08-06 23:08:03');
+        $b = $a->clone()->addHours(1);
+        dd($a, $b);
     }
 
 

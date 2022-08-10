@@ -602,40 +602,7 @@ function format_datetime($datetime, $format = 'Y-m-d H:i')
 
 function nexus_trans($key, $replace = [], $locale = null)
 {
-    if (!IN_NEXUS) {
-        return trans($key, $replace, $locale);
-    }
-    static $translations;
-    if (!$locale) {
-        $lang = get_langfolder_cookie();
-        $locale = \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
-    }
-    if (is_null($translations)) {
-        $langDir = ROOT_PATH . 'resources/lang/';
-        $files = glob($langDir . '*/*');
-        foreach ($files as $file) {
-            $values = require $file;
-            $setKey = substr($file, strlen($langDir));
-            if (substr($setKey, -4) == '.php') {
-                $setKey = substr($setKey, 0, -4);
-            }
-            $setKey = str_replace('/', '.', $setKey);
-            arr_set($translations, $setKey, $values);
-        }
-    }
-    $getKey = $locale . "." . $key;
-    $result = arr_get($translations, $getKey);
-    if (empty($result) && $locale != 'en') {
-        do_log("original getKey: $getKey can not get any translations", 'error');
-        $getKey = "en." . $key;
-        $result = arr_get($translations, $getKey);
-    }
-    if (!empty($replace)) {
-        $search = array_map(function ($value) {return ":$value";}, array_keys($replace));
-        $result = str_replace($search, array_values($replace), $result);
-    }
-    do_log("key: $key, replace: " . nexus_json_encode($replace) . ", locale: $locale, getKey: $getKey, result: $result", 'debug');
-    return $result;
+    return \Nexus\Nexus::trans($key, $replace, $locale);
 }
 
 function isRunningInConsole(): bool
@@ -902,4 +869,12 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
     ];
     do_log("$log, result: " . json_encode($result), 'info');
     return $result;
+}
+
+function clear_user_cache($uid, $passkey = '')
+{
+    \Nexus\Database\NexusDB::cache_del("user_{$uid}_content");
+    if ($passkey) {
+        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');
+    }
 }

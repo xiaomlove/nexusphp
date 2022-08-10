@@ -29,6 +29,7 @@ if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
 $userInfo = \App\Models\User::query()->with(['valid_medals'])->findOrFail($user['id']);
+$userRep = new \App\Repositories\UserRepository();
 
 if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
 $joindate = $lang_userdetails['text_not_available'];
@@ -279,6 +280,14 @@ tr_small($lang_userdetails['row_donated'], "$".htmlspecialchars($user['donated']
 if ($user["avatar"])
 tr_small($lang_userdetails['row_avatar'], return_avatar_image(htmlspecialchars(trim($user["avatar"]))), 1);
 
+$uclass = get_user_class_image($user["class"]);
+$utitle = get_user_class_name($user["class"],false,false,true);
+$uclassImg = "<img alt=\"".get_user_class_name($user["class"],false,false,true)."\" title=\"".get_user_class_name($user["class"],false,false,true)."\" src=\"".$uclass."\" /> ".($user['title']!=="" ? "&nbsp;".htmlspecialchars(trim($user["title"]))."" :  "");
+if ($user['class'] == UC_VIP && !empty($user['vip_until']) && strtotime($user['vip_until'])) {
+    $uclassImg .= sprintf('%s: %s', $lang_userdetails['row_vip_until'], $user['vip_until']);
+}
+tr_small($lang_userdetails['row_class'], $uclassImg, 1);
+
 if ($userInfo->valid_medals->isNotEmpty()) {
     tr_small($lang_userdetails['row_medal'], build_medal_image($userInfo->valid_medals, 200, $CURUSER['id'] == $user['id']), 1);
     $warnMedalJs = <<<JS
@@ -289,21 +298,63 @@ jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", funct
         console.log(response)
         if (response.ret != 0) {
             input.prop("checked", !checked)
-            alert(response.msg)
+            layer.alert(response.msg)
         }
     }, 'json')
 })
 JS;
     \Nexus\Nexus::js($warnMedalJs, 'footer', false);
 }
-
-$uclass = get_user_class_image($user["class"]);
-$utitle = get_user_class_name($user["class"],false,false,true);
-$uclassImg = "<img alt=\"".get_user_class_name($user["class"],false,false,true)."\" title=\"".get_user_class_name($user["class"],false,false,true)."\" src=\"".$uclass."\" /> ".($user['title']!=="" ? "&nbsp;".htmlspecialchars(trim($user["title"]))."" :  "");
-if ($user['class'] == UC_VIP && !empty($user['vip_until']) && strtotime($user['vip_until'])) {
-    $uclassImg .= sprintf('%s: %s', $lang_userdetails['row_vip_until'], $user['vip_until']);
+//User meta
+$metas = $userRep->listMetas($CURUSER['id']);
+$props = [];
+$metaKey = \App\Models\UserMeta::META_KEY_CHANGE_USERNAME;
+if ($metas->has($metaKey)) {
+    $triggerId = "consume-$metaKey";
+    $changeUsernameCards = $metas->get($metaKey);
+    $cardName = $changeUsernameCards->first()->meta_key_text;
+    $props[] = sprintf(
+        '<div><strong>[%s]</strong>(%s)<input type="button" value="%s" id="%s"></div>',
+        $cardName, $changeUsernameCards->count(), $lang_userdetails['consume'], $triggerId
+    );
+    $consumeChangeUsernameForm = <<<HTML
+<div class="layer-form">
+<form id="layer-form-$metaKey">
+    <input type="hidden" name="params[meta_key]" value="$metaKey">
+    <div class="form-control-row">
+        <div class="label">{$lang_userdetails['meta_key_change_username_username']}</div>
+        <div class="field"><input type="text" name="params[username]"></div>
+    </div>
+</form>
+</div>
+HTML;
+    $consumeChangeUsernameJs = <<<JS
+jQuery('#{$triggerId}').on("click", function () {
+    layer.open({
+        type: 1,
+        title: "{$lang_userdetails['consume']} {$cardName}",
+        content: `$consumeChangeUsernameForm`,
+        btn: ['OK'],
+        btnAlign: 'c',
+        yes: function () {
+            let params = jQuery('#layer-form-{$metaKey}').serialize()
+            jQuery.post('ajax.php', params + "&action=consumeBenefit", function (response) {
+                console.log(response)
+                if (response.ret != 0) {
+                    layer.alert(response.msg)
+                    return
+                }
+                window.location.reload()
+            }, 'json')
+        }
+    })
+})
+JS;
+    \Nexus\Nexus::js($consumeChangeUsernameJs, 'footer', false);
 }
-tr_small($lang_userdetails['row_class'], $uclassImg, 1);
+if (!empty($props)) {
+    tr_small($lang_userdetails['row_user_props'], sprintf('<div style="display: inline">%s</div>', implode('&nbsp;|&nbsp;', $props)), 1);
+}
 
 tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewcomments&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_comments']."\">".$torrentcomments."</a>" : $torrentcomments), 1);
 

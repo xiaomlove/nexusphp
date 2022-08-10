@@ -1933,9 +1933,17 @@ function get_user_row($id)
 	static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'donoruntil', 'leechwarn', 'warned', 'title');
 	$cacheKey = 'user_'.$id.'_content';
     $row = \Nexus\Database\NexusDB::remember($cacheKey, 900, function () use ($id, $neededColumns) {
-	    $user = \App\Models\User::query()->find($id, $neededColumns);
+	    $user = \App\Models\User::query()->with(['wearing_medals'])->find($id, $neededColumns);
 	    if ($user) {
-	        return $user->toArray();
+            $userRep = new \App\Repositories\UserRepository();
+            $metas = $userRep->listMetas($id, \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME);
+	        $arr = $user->toArray();
+	        if ($metas->isNotEmpty()) {
+	            $arr['__is_rainbow'] = 1;
+            } else {
+	            $arr['__is_rainbow'] = 0;
+            }
+	        return $arr;
         }
 	    return null;
     });
@@ -2907,6 +2915,7 @@ jQuery(document).ready(function(){
 </script>
 JS;
     print($js);
+    print('<img id="nexus-preview" style="display: none; position: absolute" src="" />');
 	print("</body></html>");
 
 	//echo replacePngTags(ob_get_clean());
@@ -3151,7 +3160,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 
 	$uidArr = array_unique(array_column($rows, 'user'));
     $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'leechwarn', 'warned', 'title');
-	$userInfoArr = \App\Models\User::query()->with(['wearing_medals'])->find($uidArr, $neededColumns)->keyBy('id');
+	$userInfoArr = \App\Models\User::query()->find($uidArr, $neededColumns)->keyBy('id');
 
 	foreach ($rows as $row)
 	{
@@ -3166,7 +3175,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 			}
 		}
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");
-		print(build_medal_image($userInfo->wearing_medals, 20) . get_username($row["user"],false,true,true,false,false,true));
+		print(get_username($row["user"],false,true,true,false,false,true));
 		print("&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_at']."</font>".gettime($row["added"]).
 		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars(trim($userRow["avatar"])) : "");
@@ -3420,7 +3429,7 @@ $torrent_tooltip = [];
 foreach ($rows as $row)
 {
 	$id = $row["id"];
-	$sphighlight = get_torrent_bg_color($row['sp_state'], $row['pos_state']);
+	$sphighlight = get_torrent_bg_color($row['sp_state'], $row['pos_state'], $row);
 	print("<tr" . $sphighlight . ">\n");
 
 	print("<td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>");
@@ -3696,19 +3705,44 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 			$disabledpic = "disabled";
 			$style = "style='margin-left: 2pt'";
 		}
-		$pics = $arr["donor"] == "yes" && ($arr['donoruntil'] === null || $arr['donoruntil'] < '1970' || $arr['donoruntil'] >= date('Y-m-d H:i:s')) ? "<img class=\"".$donorpic."\" src=\"pic/trans.gif\" alt=\"Donor\" ".$style." />" : "";
+		$pics = $arr["donor"] == "yes" && ($arr['donoruntil'] === null || $arr['donoruntil'] < '1970' || $arr['donoruntil'] >= date('Y-m-d H:i:s')) ? "<img class=\"".$donorpic."\" src=\"/pic/trans.gif\" alt=\"Donor\" ".$style." />" : "";
 
 		if ($arr["enabled"] == "yes")
-			$pics .= ($arr["leechwarn"] == "yes" ? "<img class=\"".$leechwarnpic."\" src=\"pic/trans.gif\" alt=\"Leechwarned\" ".$style." />" : "") . ($arr["warned"] == "yes" ? "<img class=\"".$warnedpic."\" src=\"pic/trans.gif\" alt=\"Warned\" ".$style." />" : "");
+			$pics .= ($arr["leechwarn"] == "yes" ? "<img class=\"".$leechwarnpic."\" src=\"/pic/trans.gif\" alt=\"Leechwarned\" ".$style." />" : "") . ($arr["warned"] == "yes" ? "<img class=\"".$warnedpic."\" src=\"/pic/trans.gif\" alt=\"Warned\" ".$style." />" : "");
 		else
-			$pics .= "<img class=\"".$disabledpic."\" src=\"pic/trans.gif\" alt=\"Disabled\" ".$style." />\n";
+			$pics .= "<img class=\"".$disabledpic."\" src=\"/pic/trans.gif\" alt=\"Disabled\" ".$style." />\n";
 
-		$username = ($underline == true ? "<u>" . $arr['username'] . "</u>" : $arr['username']);
-		$username = ($bold == true ? "<b>" . $username . "</b>" : $username);
+		//Rainbow effect
+		$username = $arr['username'];
+		$rainbow = "";
+		$hasSetRainbow = false;
+		if (isset($arr['__is_rainbow']) && $arr['__is_rainbow']) {
+		    $rainbow = ' class="rainbow"';
+        }
+		if ($underline) {
+		    $hasSetRainbow = true;
+		    $username = "<u{$rainbow}>{$username}</u>";
+        }
+		if ($bold) {
+		    if ($hasSetRainbow) {
+		        $username = "<b>{$username}</b>";
+            } else {
+		        $username = "<b{$rainbow}>{$username}</b>";
+            }
+        }
+//        $username = ($underline == true ? "<u>" . $arr['username'] . "</u>" : $arr['username']);
+//        $username = ($bold == true ? "<b>" . $username . "</b>" : $username);
+
+        //medal
+        $medalHtml = '';
+		foreach ($arr['wearing_medals'] as $medal) {
+            $medalHtml .= sprintf('<img src="%s" title="%s" class="preview" style="vertical-align: middle;max-height: 16px;max-width: 16px;margin-right: 2px"/>', $medal['image_large'], $medal['name']);
+        }
+
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
 		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true) : "<span class='".get_user_class_name($arr['class'],true) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
 
-		$username = "<span class=\"nowrap\">" . ( $bracket == true ? "(" . $username . ")" : $username) . "</span>";
+		$username = "<span class=\"nowrap\">$medalHtml" . ( $bracket == true ? "(" . $username . ")" : $username) . "</span>";
 	}
 	else
 	{
@@ -3791,10 +3825,14 @@ function validusername($username)
 
 	// The following characters are allowed in user names
 	$allowedchars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-	for ($i = 0; $i < strlen($username); ++$i)
+    $length = strlen($username);
+	for ($i = 0; $i < $length; ++$i)
 	if (strpos($allowedchars, $username[$i]) === false)
 	return false;
+
+	if ($length < 4 || $length > 20) {
+	    return false;
+    }
 
 	return true;
 }
@@ -4171,7 +4209,7 @@ function get_second_icon($row) //for CHDBits
 	}
 }
 
-function get_torrent_bg_color($promotion = 1, $posState = "")
+function get_torrent_bg_color($promotion = 1, $posState = "", array $torrent = [])
 {
 	global $CURUSER;
     $sphighlight = null;
@@ -4214,7 +4252,7 @@ function get_torrent_bg_color($promotion = 1, $posState = "")
             $sphighlight = sprintf(' style="background-color: %s"', $torrentSettings['sticky_second_level_background_color']);
         }
     }
-	return (string)$sphighlight;
+	return apply_filter('torrent_background_color', (string)$sphighlight, $torrent);
 }
 
 function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = '', $ignoreGlobal = false){
@@ -5615,7 +5653,7 @@ function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 
     $wrapBefore = '<div style="display: inline;">';
     $wrapAfter = '</div>';
     foreach ($medals as $medal) {
-        $html = sprintf('<div style="display: inline"><img src="%s" title="%s" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+        $html = sprintf('<div style="display: inline"><img src="%s" title="%s" class="preview" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
         if ($withActions) {
             $checked = '';
             if ($medal->pivot->status == \App\Models\UserMedal::STATUS_WEARING) {

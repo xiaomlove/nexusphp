@@ -192,7 +192,7 @@ return [
         'ip' => 'IP(Block)',
         'ip_begin' => 'Begin IP',
         'ip_end' => 'End IP',
-        'ip_help' => 'Begin IP/End IP, IP(Block) Choose one',
+        'ip_help' => 'Fill in the begin IP + end IP, or IP (Block), not both',
         'status' => 'Status',
     ],
     'menu' => [
@@ -207,5 +207,11 @@ return [
         'style' => 'Style',
         'parent_id' => 'Parent',
         'min_class' => 'Minimum visible class',
+    ],
+    'user_meta' => [
+        'meta_keys' => [
+            \App\Models\UserMeta::META_KEY_CHANGE_USERNAME => 'Name Change Card',
+            \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME => 'Rainbow ID',
+        ],
     ],
 ];

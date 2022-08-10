@@ -116,3 +116,10 @@ function removeHitAndRun($params)
     $rep = new \App\Repositories\BonusRepository();
     return $rep->consumeToCancelHitAndRun($CURUSER['id'], $params['id']);
 }
+
+function consumeBenefit($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\UserRepository();
+    return $rep->consumeBenefit($CURUSER['id'], $params);
+}

@@ -25,6 +25,10 @@ final class Nexus
 
     private static array $appendFooters = [];
 
+    private static array $translationNamespaces = [];
+
+    private static array $translations = [];
+
     const PLATFORM_USER = 'user';
     const PLATFORM_ADMIN = 'admin';
     const PLATFORM_TRACKER = 'tracker';
@@ -266,6 +270,87 @@ final class Nexus
         return self::$appendFooters;
     }
 
+    public static function addTranslationNamespace($path, $namespace)
+    {
+        if (empty($namespace)) {
+            throw new \InvalidArgumentException("namespace can not be empty");
+        }
+        self::$translationNamespaces[$namespace] = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    public static function trans($key, $replace = [], $locale = null)
+    {
+        if (!IN_NEXUS) {
+            return trans($key, $replace, $locale);
+        }
+        if (empty(self::$translations)) {
+            //load from default lang dir
+            $langDir = ROOT_PATH . 'resources/lang/';
+            self::loadTranslations($langDir);
+            //load from namespace
+            foreach (self::$translationNamespaces as $namespace => $path) {
+                self::loadTranslations($path, $namespace);
+            }
+        }
+        return self::getTranslation($key, $replace, $locale);
+    }
+
+    private static function loadTranslations($path, $namespace = null)
+    {
+        $files = glob($path . '*/*');
+        foreach ($files as $file) {
+            if (!is_file($file)) {
+                continue;
+            }
+            if (!is_readable($file)) {
+                do_log("[TRANSLATION_FILE_NOT_READABLE], $file");
+            }
+            $values = require $file;
+            $setKey = substr($file, strlen($path));
+            if (substr($setKey, -4) == '.php') {
+                $setKey = substr($setKey, 0, -4);
+            }
+            $setKey = str_replace('/', '.', $setKey);
+            if ($namespace !== null) {
+                $setKey = "$namespace.$setKey";
+            }
+//            do_log("path: $path, namespace: $namespace, file: $file, setKey: $setKey", 'debug');
+            arr_set(self::$translations, $setKey, $values);
+        }
+    }
+
+    private static function getTranslation($key, $replace = [], $locale = null)
+    {
+        if (!$locale) {
+            $lang = get_langfolder_cookie();
+            $locale = \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
+        }
+        $getKey = self::getTranslationGetKey($key, $locale);
+        $result = arr_get(self::$translations, $getKey);
+        if (empty($result) && $locale != 'en') {
+            do_log("original getKey: $getKey can not get any translations", 'error');
+            $getKey = self::getTranslationGetKey($key, 'en');
+            $result = arr_get(self::$translations, $getKey);
+        }
+        if (!empty($replace)) {
+            $search = array_map(function ($value) {return ":$value";}, array_keys($replace));
+            $result = str_replace($search, array_values($replace), $result);
+        }
+        do_log("key: $key, replace: " . nexus_json_encode($replace) . ", locale: $locale, getKey: $getKey, result: $result", 'debug');
+        return $result;
+    }
+
+    private static function getTranslationGetKey($key, $locale): string
+    {
+        $namespace = strstr($key, '::', true);
+        if ($namespace !== false) {
+            $getKey = sprintf('%s.%s.%s', $namespace, $locale, substr($key, strlen($namespace) + 2));
+        } else {
+            $getKey = $locale . "." . $key;
+        }
+//        do_log("key: $key, locale: $locale, namespace: $namespace, getKey: $getKey", 'debug');
+        return $getKey;
+    }
 
 
 }
