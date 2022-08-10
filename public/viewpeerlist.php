@@ -31,7 +31,7 @@ function get_location_column($e, $isStrongPrivacy, $canView): string
         }
         $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
         $addressStr = implode('<br/>', $address);
-        $location = "<div title='" . $title . "'>" . $addressStr . "</div>";
+        $location = '<div style="margin-right: 6px" title="'.$title.'">'.$addressStr.'</div>';
     } else {
         if (!empty($e['ipv4'])) {
             $ips[] = $e['ipv4'] . $seedBoxRep->renderIcon($e['ipv4'], $e['userid']);
@@ -39,13 +39,13 @@ function get_location_column($e, $isStrongPrivacy, $canView): string
         if (!empty($e['ipv6'])) {
             $ips[] = $e['ipv6'] . $seedBoxRep->renderIcon($e['ipv6'], $e['userid']);
         }
-        $location = '<div>'.implode('<br/>', $ips).'</div>';
+        $location = '<div style="margin-right: 6px">'.implode('<br/>', $ips).'</div>';
     }
 
     if ($isStrongPrivacy) {
-        $result = '<div style="margin-right: 6px"><i>'.$lang_viewpeerlist['text_anonymous'].'</i></div>';
+        $result = '<div><i>'.$lang_viewpeerlist['text_anonymous'].'</i></div>';
         if ($canView) {
-            $result .= $location;
+            $result = $location . $result;
         }
     } else {
         $result = $location;
