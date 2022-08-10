@@ -35,6 +35,10 @@ class Plugin
             if ($parts[0] == 'NexusPlugin') {
                 $className = str_replace('ServiceProvider', 'Repository', $provider);
                 if (class_exists($className)) {
+                    $constantName = "$className::COMPATIBLE_VERSION";
+                    if (defined($constantName) && version_compare(VERSION_NUMBER, constant($constantName), '<')) {
+                        continue;
+                    }
                     call_user_func([new $className, 'boot']);
                 }
             }
