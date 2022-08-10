@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserBanLog;
 use App\Models\UserMeta;
+use App\Models\UsernameChangeLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
@@ -359,6 +360,9 @@ class UserRepository extends BaseRepository
     private function checkPermission($operator, User $user, $minAuthClass = 'authority.prfmanage')
     {
         $operator = $this->getUser($operator);
+        if ($operator->id == $user->id) {
+            return;
+        }
         $classRequire = Setting::get($minAuthClass);
         if ($operator->class < $classRequire || $operator->class <= $user->class) {
             throw new InsufficientPermissionException();
@@ -396,7 +400,7 @@ class UserRepository extends BaseRepository
         $user = User::query()->findOrFail($uid, User::$commonFields);
         if ($metaKey == UserMeta::META_KEY_CHANGE_USERNAME) {
             NexusDB::transaction(function () use ($user, $meta, $params) {
-                $this->changeUsername($user, $params['username']);
+                $this->changeUsername($user, UsernameChangeLog::CHANGE_TYPE_USER, $user, $params['username']);
                 $meta->delete();
                 clear_user_cache($user->id, $user->passkey);
             });
@@ -406,22 +410,32 @@ class UserRepository extends BaseRepository
         throw new \InvalidArgumentException("Invalid meta_key: $metaKey");
     }
 
-    private function changeUsername(User $user, $newUsername): bool
+    private function changeUsername($operator, $changeType, $targetUser, $newUsername): bool
     {
-        if ($user->username == $newUsername) {
+        $operator = $this->getUser($operator);
+        $targetUser = $this->getUser($targetUser);
+        $this->checkPermission($operator, $targetUser);
+        if ($targetUser->username == $newUsername) {
             throw new \RuntimeException("New username can not be the same with current username !");
         }
-        if (!validusername($newUsername)) {
-            throw new \InvalidArgumentException("Invalid username, length must between 4 and 20 characters");
+        $strWidth = mb_strwidth($newUsername);
+        if ($strWidth < 4 || $strWidth > 20) {
+            throw new \InvalidArgumentException("Invalid username, maybe too long or too short");
         }
-        if (User::query()->where('username', $newUsername)->where('id', '!=', $user->id)->exists()) {
+        if (User::query()->where('username', $newUsername)->where('id', '!=', $targetUser->id)->exists()) {
             throw new \RuntimeException("Username: $newUsername already exists !");
         }
-        NexusDB::transaction(function () use ($user, $newUsername) {
-            $oldUsername = $user->username;
-            $user->usernameChangeLogs()->create(['username_old' => $oldUsername, 'username_new' => $newUsername]);
-            $user->username = $newUsername;
-            $user->save();
+        $changeLog = [
+            'uid' => $targetUser->id,
+            'operator' => $operator->username,
+            'change_type' => $changeType,
+            'username_old' => $targetUser->username,
+            'username_new' => $newUsername
+        ];
+        NexusDB::transaction(function () use ($operator, $changeType,$targetUser, $changeLog) {
+            $targetUser->usernameChangeLogs()->create($changeLog);
+            $targetUser->username = $changeLog['username_new'];
+            $targetUser->save();
         });
         return true;
     }

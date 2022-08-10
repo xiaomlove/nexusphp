@@ -27,6 +27,7 @@ return [
     'description' => 'Description',
     'price' => 'Price',
     'deadline' => 'Deadline',
+    'operator' => 'Operator',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

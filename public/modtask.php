@@ -117,6 +117,14 @@ if ($action == "edituser")
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_username_change']);
 			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_username_changed_from'].$arr['username'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $username .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+			$changeLog = [
+			    'uid' => $arr['id'],
+			    'operator' => $CURUSER['username'],
+                'change_type' => \App\Models\UsernameChangeLog::CHANGE_TYPE_ADMIN,
+                'username_old' => $arr['username'],
+                'username_new' => $username,
+            ];
+			\App\Models\UsernameChangeLog::query()->create($changeLog);
 		}
 		if ($ori_downloaded != $downloaded){
 			$updateset[] = "downloaded = " . sqlesc($downloaded);

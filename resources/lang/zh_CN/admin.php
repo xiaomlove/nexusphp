@@ -22,6 +22,7 @@ return [
         'download_speed' => '下行带宽',
         'isp' => 'ISP',
         'menu' => '自定义菜单',
+        'username_change_log' => '改名记录',
     ],
     'resources' => [
         'agent_allow' => [

@@ -27,6 +27,7 @@ return [
     'description' => '描述',
     'price' => '价格',
     'deadline' => '截止时间',
+    'operator' => '操作者',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [
@@ -213,7 +214,7 @@ return [
     ],
     'user_meta' => [
         'meta_keys' => [
-            \App\Models\UserMeta::META_KEY_CHANGE_USERNAME => '更名卡',
+            \App\Models\UserMeta::META_KEY_CHANGE_USERNAME => '改名卡',
             \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME => '彩虹 ID',
         ],
     ],

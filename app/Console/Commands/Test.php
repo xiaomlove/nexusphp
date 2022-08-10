@@ -86,9 +86,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $a = Carbon::parse('2022-08-06 23:08:03');
-        $b = $a->clone()->addHours(1);
-        dd($a, $b);
+
     }
 
 

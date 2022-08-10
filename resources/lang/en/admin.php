@@ -22,6 +22,7 @@ return [
         'download_speed' => 'Download speed',
         'isp' => 'ISP',
         'menu' => 'Custom menu',
+        'username_change_log' => 'Username change log',
     ],
     'resources' => [
         'agent_allow' => [
