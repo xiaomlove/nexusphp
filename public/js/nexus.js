@@ -10,7 +10,6 @@ jQuery(document).ready(function () {
 
     var previewEle = jQuery('#nexus-preview')
     jQuery("body").on("mouseover", ".preview", function (e) {
-        console.log(e)
         let src = jQuery(this).attr("src")
         if (src) {
             previewEle.attr("src", src).css({"display": "block", "left": e.pageX + 5, "top": e.pageY + 5})

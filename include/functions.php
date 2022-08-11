@@ -3695,7 +3695,9 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 			$leechwarnpic = "leechwarnedbig";
 			$warnedpic = "warnedbig";
 			$disabledpic = "disabledbig";
-			$style = "style='margin-left: 4pt'";
+			$marginLeft = '4pt';
+			$medalSize = '16px';
+			$style = "style='margin-left: $marginLeft'";
 		}
 		else
 		{
@@ -3703,7 +3705,9 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 			$leechwarnpic = "leechwarned";
 			$warnedpic = "warned";
 			$disabledpic = "disabled";
-			$style = "style='margin-left: 2pt'";
+            $marginLeft = '2pt';
+            $medalSize = '11px';
+			$style = "style='margin-left: $marginLeft'";
 		}
 		$pics = $arr["donor"] == "yes" && ($arr['donoruntil'] === null || $arr['donoruntil'] < '1970' || $arr['donoruntil'] >= date('Y-m-d H:i:s')) ? "<img class=\"".$donorpic."\" src=\"/pic/trans.gif\" alt=\"Donor\" ".$style." />" : "";
 
@@ -3737,7 +3741,10 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
         //medal
         $medalHtml = '';
 		foreach ($arr['wearing_medals'] as $medal) {
-            $medalHtml .= sprintf('<img src="%s" title="%s" class="preview" style="max-height: 16px;max-width: 16px;margin-left: 2pt"/>', $medal['image_large'], $medal['name']);
+            $medalHtml .= sprintf(
+                '<img src="%s" title="%s" class="preview" style="max-height: %s;max-width: %s;margin-left: %s"/>',
+                $medal['image_large'], $medal['name'], $medalSize, $medalSize, $marginLeft
+            );
         }
 
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
