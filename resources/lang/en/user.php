@@ -26,4 +26,5 @@ return [
         \App\Models\User::CLASS_SYSOP => 'Sysop',
         \App\Models\User::CLASS_STAFF_LEADER => 'Staff Leader',
     ],
+    'change_username_lte_min_interval' => 'Last change time: :last_change_time, unmet minimum interval: :interval days',
 ];

@@ -26,4 +26,5 @@ return [
         \App\Models\User::CLASS_SYSOP => '維護開發員',
         \App\Models\User::CLASS_STAFF_LEADER => '主管',
     ],
+    'change_username_lte_min_interval' => '上次修改時間：:last_change_time，未滿足最小間隔：:interval 天',
 ];

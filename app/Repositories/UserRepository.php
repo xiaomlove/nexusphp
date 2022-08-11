@@ -399,6 +399,14 @@ class UserRepository extends BaseRepository
         $meta = $records->get($metaKey)->first();
         $user = User::query()->findOrFail($uid, User::$commonFields);
         if ($metaKey == UserMeta::META_KEY_CHANGE_USERNAME) {
+            $changeLog = $user->usernameChangeLogs()->orderBy('id', 'desc')->first();
+            if ($changeLog) {
+                $miniDays = Setting::get('system.change_username_min_interval_in_days', 365);
+                if ($changeLog->created_at->diffInDays() <= $miniDays) {
+                    $msg = nexus_trans('user.change_username_lte_min_interval', ['last_change_time' => $changeLog->created_at, 'interval' => $miniDays]);
+                    throw new \RuntimeException($msg);
+                }
+            }
             NexusDB::transaction(function () use ($user, $meta, $params) {
                 $this->changeUsername(
                     $user, UsernameChangeLog::CHANGE_TYPE_USER, $user, $params['username'],

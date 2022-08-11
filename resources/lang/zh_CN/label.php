@@ -75,6 +75,7 @@ return [
         'system' => [
             'tab_header' => '系统',
             'change_username_card_allow_characters_outside_the_alphabets' => '改名卡是否允许英文字母外的字符',
+            'change_username_min_interval_in_days' => '修改用户名最小间隔天数',
         ],
     ],
     'user' => [

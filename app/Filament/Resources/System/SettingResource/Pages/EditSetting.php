@@ -126,6 +126,10 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->inline(true)
                     ->label(__('label.setting.system.change_username_card_allow_characters_outside_the_alphabets'))
                 ,
+                Forms\Components\TextInput::make('system.change_username_min_interval_in_days')
+                    ->integer()
+                    ->label(__('label.setting.system.change_username_min_interval_in_days'))
+                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);
