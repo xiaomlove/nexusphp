@@ -668,7 +668,7 @@ class Install
         $redis = NexusDB::redis();
         $result = $redis->info();
         $version = $result['redis_version'];
-        $match = version_compare($version, '2.0.0', '>=');
+        $match = version_compare($version, '2.6.12', '>=');
         return compact('version', 'match');
     }
 

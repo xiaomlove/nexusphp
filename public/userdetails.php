@@ -313,11 +313,16 @@ if ($metas->has($metaKey)) {
     $triggerId = "consume-$metaKey";
     $changeUsernameCards = $metas->get($metaKey);
     $cardName = $changeUsernameCards->first()->meta_key_text;
+    $useInput = '';
+    if ($CURUSER['id'] == $user['id']) {
+        $useInput = sprintf('<input type="button" value="%s" id="%s">', $lang_userdetails['consume'], $triggerId);
+    }
     $props[] = sprintf(
-        '<div><strong>[%s]</strong>(%s)<input type="button" value="%s" id="%s"></div>',
-        $cardName, $changeUsernameCards->count(), $lang_userdetails['consume'], $triggerId
+        '<div><strong>[%s]</strong>(%s)</div>%s',
+        $cardName, $changeUsernameCards->count(), $useInput
     );
-    $consumeChangeUsernameForm = <<<HTML
+    if ($useInput) {
+        $consumeChangeUsernameForm = <<<HTML
 <div class="layer-form">
 <form id="layer-form-$metaKey">
     <input type="hidden" name="params[meta_key]" value="$metaKey">
@@ -328,7 +333,7 @@ if ($metas->has($metaKey)) {
 </form>
 </div>
 HTML;
-    $consumeChangeUsernameJs = <<<JS
+        $consumeChangeUsernameJs = <<<JS
 jQuery('#{$triggerId}').on("click", function () {
     layer.open({
         type: 1,
@@ -350,7 +355,8 @@ jQuery('#{$triggerId}').on("click", function () {
     })
 })
 JS;
-    \Nexus\Nexus::js($consumeChangeUsernameJs, 'footer', false);
+        \Nexus\Nexus::js($consumeChangeUsernameJs, 'footer', false);
+    }
 }
 
 $metaKey = \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME;
