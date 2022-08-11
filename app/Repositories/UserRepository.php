@@ -440,5 +440,29 @@ class UserRepository extends BaseRepository
         return true;
     }
 
+    public function addMeta($user, array $metaData, array $keyExistsUpdates = [])
+    {
+        $user = $this->getUser($user);
+        $metaKey = $metaData['meta_key'];
+        $allowMultiple = UserMeta::$metaKeys[$metaKey]['multiple'];
+        if ($allowMultiple) {
+            //Allow multiple, just insert
+            $result = $user->metas()->create($metaData);
+        } else {
+            $metaExists = $user->metas()->where('meta_key', $metaKey)->first();
+            if (!$metaExists) {
+                $result = $user->metas()->create($metaData);
+            } else {
+                if (empty($keyExistsUpdates)) {
+                    $keyExistsUpdates = ['updated_at' => now()];
+                }
+                $result = $metaExists->update($keyExistsUpdates);
+            }
+        }
+        if ($result) {
+            clear_user_cache($user->id, $user->passkey);
+        }
+        return $result;
+    }
 
 }

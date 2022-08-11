@@ -5,6 +5,7 @@ namespace App\Filament\Resources\User\UserResource\Pages;
 use App\Filament\Resources\User\UserResource;
 use App\Models\Medal;
 use App\Models\User;
+use App\Models\UserMeta;
 use App\Repositories\ExamRepository;
 use App\Repositories\MedalRepository;
 use App\Repositories\UserRepository;
@@ -14,11 +15,14 @@ use Filament\Resources\Pages\Page;
 use Filament\Pages\Actions;
 use Filament\Forms;
 use Illuminate\Support\Facades\Auth;
+use Nexus\Database\NexusDB;
 
 class UserProfile extends Page
 {
     use InteractsWithRecord;
     use HasRelationManagers;
+
+    private static $rep;
 
     protected static string $resource = UserResource::class;
 
@@ -29,6 +33,14 @@ class UserProfile extends Page
     protected $listeners = [
         self::EVENT_RECORD_UPDATED => 'updateRecord'
     ];
+
+    private function getRep(): UserRepository
+    {
+        if (!self::$rep) {
+            self::$rep = new UserRepository();
+        }
+        return self::$rep;
+    }
 
     public function updateRecord($id)
     {
@@ -49,8 +61,9 @@ class UserProfile extends Page
     {
         $actions = [];
         if (Auth::user()->class > $this->record->class) {
-            $actions[] = $this->buildAssignExamAction();
+            $actions[] = $this->buildGrantPropsAction();
             $actions[] = $this->buildGrantMedalAction();
+            $actions[] = $this->buildAssignExamAction();
             $actions[] = $this->buildChangeBonusEtcAction();
             if ($this->record->two_step_secret) {
                 $actions[] = $this->buildDisableTwoStepAuthenticationAction();
@@ -75,7 +88,7 @@ class UserProfile extends Page
                 Forms\Components\Hidden::make('uid')->default($this->record->id),
             ])
             ->action(function ($data) {
-                $userRep = new UserRepository();
+                $userRep = $this->getRep();
                 try {
                     if ($data['action'] == 'enable') {
                         $userRep->enableUser(Auth::user(), $data['uid'], $data['reason']);
@@ -96,7 +109,7 @@ class UserProfile extends Page
             ->modalHeading(__('admin.resources.user.actions.disable_two_step_authentication'))
             ->requiresConfirmation()
             ->action(function ($data) {
-                $userRep = new UserRepository();
+                $userRep = $this->getRep();
                 try {
                     $userRep->removeTwoStepAuthentication(Auth::user(), $this->record->id);
                     $this->notify('success', 'Success!');
@@ -129,7 +142,7 @@ class UserProfile extends Page
                 Forms\Components\Textarea::make('reason')->label(__('admin.resources.user.actions.change_bonus_etc_reason_label')),
             ])
             ->action(function ($data) {
-                $userRep = new UserRepository();
+                $userRep = $this->getRep();
                 try {
                     $userRep->incrementDecrement(Auth::user(), $this->record->id, $data['action'], $data['field'], $data['value'], $data['reason']);
                     $this->notify('success', 'Success!');
@@ -152,7 +165,7 @@ class UserProfile extends Page
                     ->required(),
             ])
             ->action(function ($data) {
-                $userRep = new UserRepository();
+                $userRep = $this->getRep();
                 try {
                     $userRep->resetPassword($this->record->id, $data['password'], $data['password_confirmation']);
                     $this->notify('success', 'Success!');
@@ -241,7 +254,7 @@ class UserProfile extends Page
 //            ->modalHeading($this->record->enabled == 'yes' ? __('admin.resources.user.actions.disable_modal_title') : __('admin.resources.user.actions.enable_modal_title'))
             ->requiresConfirmation()
             ->action(function () {
-                $userRep = new UserRepository();
+                $userRep = $this->getRep();
                 try {
                     $userRep->updateDownloadPrivileges(Auth::user(), $this->record->id, $this->record->downloadpos == 'yes' ? 'no' : 'yes');
                     $this->notify('success', 'Success!');
@@ -250,5 +263,58 @@ class UserProfile extends Page
                     $this->notify('danger', $exception->getMessage());
                 }
             });
+    }
+
+    private function buildGrantPropsAction()
+    {
+        return Actions\Action::make(__('admin.resources.user.actions.grant_prop_btn'))
+            ->modalHeading(__('admin.resources.user.actions.grant_prop_btn'))
+            ->form([
+                Forms\Components\Select::make('meta_key')
+                    ->options(UserMeta::listProps())
+                    ->label(__('admin.resources.user.actions.grant_prop_form_prop'))->required(),
+                Forms\Components\TextInput::make('duration')->label(__('admin.resources.user.actions.grant_prop_form_duration'))
+                    ->helperText(__('admin.resources.user.actions.grant_prop_form_duration_help')),
+
+            ])
+            ->action(function ($data) {
+                $rep = $this->getRep();
+                try {
+                    if (!empty($data['duration'])) {
+                        $data['deadline'] = now()->addDays($data['duration']);
+                    }
+                    $rep->addMeta($this->record, $data);
+                    $this->notify('success', 'Success!');
+                    $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
+                } catch (\Exception $exception) {
+                    $this->notify('danger', $exception->getMessage());
+                }
+            });
+    }
+
+    public function getViewData(): array
+    {
+        return [
+            'props' => $this->listUserProps(),
+        ];
+    }
+
+    private function listUserProps(): array
+    {
+        $metaKeys = [
+            UserMeta::META_KEY_PERSONALIZED_USERNAME,
+            UserMeta::META_KEY_CHANGE_USERNAME,
+        ];
+        $metaList = $this->getRep()->listMetas($this->record->id, $metaKeys);
+        $props = [];
+        foreach ($metaList as $metaKey => $metas) {
+            $meta = $metas->first();
+            $text = sprintf('[%s]', $meta->metaKeyText, );
+            if ($meta->meta_key == UserMeta::META_KEY_PERSONALIZED_USERNAME) {
+                $text .= sprintf('(%s)', $meta->getDeadlineText());
+            }
+            $props[] = "<div>{$text}</div>";
+        }
+        return $props;
     }
 }

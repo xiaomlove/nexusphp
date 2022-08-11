@@ -62,6 +62,10 @@ return [
                 'confirm_btn' => '确认',
                 'disable_download_privileges_btn' => '禁用下载权限',
                 'enable_download_privileges_btn' => '启用下载权限',
+                'grant_prop_btn' => '授予道具',
+                'grant_prop_form_prop' => '选择道具',
+                'grant_prop_form_duration' => '有效时长',
+                'grant_prop_form_duration_help' => '单位：天。如果留空，用户永久拥有。注：改名卡没有时间限制，忽略该值。',
             ]
         ],
         'exam_user' => [

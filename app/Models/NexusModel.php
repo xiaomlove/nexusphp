@@ -42,4 +42,13 @@ class NexusModel extends Model
         return $d && $d->format($format) === $date;
     }
 
+    public function getDeadlineText($field = 'deadline')
+    {
+        $raw = $this->getRawOriginal($field);
+        if (in_array($raw, [null, '0000-00-00 00:00:00', ''], true)) {
+            return nexus_trans("label.permanent");
+        }
+        return sprintf('%s: %s', nexus_trans('label.deadline'), $raw);
+    }
+
 }

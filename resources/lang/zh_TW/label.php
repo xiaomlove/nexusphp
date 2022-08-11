@@ -27,6 +27,7 @@ return [
     'description' => '描述',
     'price' => '價格',
     'deadline' => '截止時間',
+    'permanent' => '永久有效',
     'operator' => '操作者',
     'setting' => [
         'nav_text' => '設置',

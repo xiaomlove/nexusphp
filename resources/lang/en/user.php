@@ -15,6 +15,7 @@ return [
         'downloaded' => 'Downloaded',
         'invites' => 'Invites',
         'attendance_card' => 'Attend card',
+        'props' => 'Props',
     ],
     'class_name' => [
         \App\Models\User::CLASS_VIP => 'Vip',

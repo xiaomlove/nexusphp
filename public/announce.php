@@ -227,11 +227,13 @@ if ($compact == 1) {
 }
 
 //check ReAnnounce
-$params = $_GET;
-unset($params['key'], $params['ip'], $params['ipv4'], $params['ipv6']);
-$reAnnounceQuery = http_build_query($params);
-$lockKey = md5($reAnnounceQuery);
-$log .= ", [CHECK_RE_ANNOUNCE], reAnnounceQuery: $reAnnounceQuery, lockKey: $lockKey";
+$lockParams = [];
+foreach(['info_hash', 'passkey', 'peer_id'] as $lockField) {
+    $lockParams[$lockField] = $_GET[$lockField];
+}
+$lockString = http_build_query($lockParams);
+$lockKey = md5($lockString);
+$log .= ", [CHECK_RE_ANNOUNCE], lockString: $lockString, lockKey: $lockKey";
 $redis = $Cache->getRedis();
 if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
     do_log("$log, [YES_RE_ANNOUNCE]");

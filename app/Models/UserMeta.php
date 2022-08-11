@@ -10,7 +10,6 @@ class UserMeta extends NexusModel
 
     const STATUS_NORMAL = 0;
 
-
     const META_KEY_PERSONALIZED_USERNAME = 'PERSONALIZED_USERNAME';
 
     const META_KEY_CHANGE_USERNAME = 'CHANGE_USERNAME';
@@ -20,6 +19,19 @@ class UserMeta extends NexusModel
     protected $casts = [
         'deadline' => 'datetime',
     ];
+
+    public static array $metaKeys = [
+        self::META_KEY_PERSONALIZED_USERNAME => ['text' => 'PERSONALIZED_USERNAME', 'multiple' => false],
+        self::META_KEY_CHANGE_USERNAME => ['text' => 'CHANGE_USERNAME', 'multiple' => false],
+    ];
+
+    public static function listProps()
+    {
+        return [
+            self::META_KEY_PERSONALIZED_USERNAME => nexus_trans('label.user_meta.meta_keys.' . self::META_KEY_PERSONALIZED_USERNAME),
+            self::META_KEY_CHANGE_USERNAME => nexus_trans('label.user_meta.meta_keys.' . self::META_KEY_CHANGE_USERNAME),
+        ];
+    }
 
     public function getMetaKeyTextAttribute()
     {

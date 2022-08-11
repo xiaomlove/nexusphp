@@ -3727,6 +3727,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 		    if ($hasSetRainbow) {
 		        $username = "<b>{$username}</b>";
             } else {
+                $hasSetRainbow = true;
 		        $username = "<b{$rainbow}>{$username}</b>";
             }
         }

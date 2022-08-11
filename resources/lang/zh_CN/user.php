@@ -15,6 +15,7 @@ return [
         'downloaded' => '下载量',
         'invites' => '邀请',
         'attendance_card' => '补签卡',
+        'props' => '道具',
     ],
     'class_names' => [
         \App\Models\User::CLASS_VIP => '贵宾',

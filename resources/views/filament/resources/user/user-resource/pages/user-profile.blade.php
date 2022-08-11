@@ -9,7 +9,7 @@
             </tr>
             <tr>
                 <th>{{__('label.user.username')}}</th>
-                <td>{{$record->username}}</td>
+                <td>{!! get_username($record->id, false, true, true, true) !!}</td>
                 <td></td>
             </tr>
             <tr>
@@ -42,6 +42,13 @@
                 <td>{{$record->classText}}</td>
                 <td></td>
             </tr>
+            @if($props)
+                <tr>
+                    <th>{{__('user.labels.props')}}</th>
+                    <td><div style="display: flex">{!! implode('&nbsp;|&nbsp;', $props) !!}</div></td>
+                    <td></td>
+                </tr>
+            @endif
             <tr>
                 <th>{{__('label.user.invite_by')}}</th>
                 <td>{{$record->inviter->username ?? ''}}</td>

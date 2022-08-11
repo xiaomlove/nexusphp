@@ -306,7 +306,7 @@ JS;
     \Nexus\Nexus::js($warnMedalJs, 'footer', false);
 }
 //User meta
-$metas = $userRep->listMetas($CURUSER['id']);
+$metas = $userRep->listMetas($user['id']);
 $props = [];
 $metaKey = \App\Models\UserMeta::META_KEY_CHANGE_USERNAME;
 if ($metas->has($metaKey)) {
@@ -358,14 +358,14 @@ if ($metas->has($metaKey)) {
     $rainbowID = $metas->get($metaKey)->first();
     if ($rainbowID->isValid()) {
         $props[] = sprintf(
-            '<div><strong>[%s]</strong>(%s: %s)</div>',
-            $rainbowID->metaKeyText, nexus_trans('label.deadline'), $rainbowID->deadline
+            '<div><strong>[%s]</strong>(%s)</div>',
+            $rainbowID->metaKeyText, $rainbowID->getDeadlineText()
         );
     }
 }
 
 if (!empty($props)) {
-    tr_small($lang_userdetails['row_user_props'], sprintf('<div style="display: inline">%s</div>', implode('&nbsp;|&nbsp;', $props)), 1);
+    tr_small($lang_userdetails['row_user_props'], sprintf('<div style="display: flex;align-items: center">%s</div>', implode('&nbsp;|&nbsp;', $props)), 1);
 }
 
 tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewcomments&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_comments']."\">".$torrentcomments."</a>" : $torrentcomments), 1);
