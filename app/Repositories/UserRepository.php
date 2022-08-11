@@ -400,7 +400,10 @@ class UserRepository extends BaseRepository
         $user = User::query()->findOrFail($uid, User::$commonFields);
         if ($metaKey == UserMeta::META_KEY_CHANGE_USERNAME) {
             NexusDB::transaction(function () use ($user, $meta, $params) {
-                $this->changeUsername($user, UsernameChangeLog::CHANGE_TYPE_USER, $user, $params['username']);
+                $this->changeUsername(
+                    $user, UsernameChangeLog::CHANGE_TYPE_USER, $user, $params['username'],
+                    Setting::get('system.change_username_card_allow_characters_outside_the_alphabets') == 'yes'
+                );
                 $meta->delete();
                 clear_user_cache($user->id, $user->passkey);
             });
@@ -410,7 +413,7 @@ class UserRepository extends BaseRepository
         throw new \InvalidArgumentException("Invalid meta_key: $metaKey");
     }
 
-    private function changeUsername($operator, $changeType, $targetUser, $newUsername): bool
+    private function changeUsername($operator, $changeType, $targetUser, $newUsername, $allowOutsideAlphabets = false): bool
     {
         $operator = $this->getUser($operator);
         $targetUser = $this->getUser($targetUser);
@@ -421,6 +424,9 @@ class UserRepository extends BaseRepository
         $strWidth = mb_strwidth($newUsername);
         if ($strWidth < 4 || $strWidth > 20) {
             throw new \InvalidArgumentException("Invalid username, maybe too long or too short");
+        }
+        if (!$allowOutsideAlphabets && !validusername($newUsername)) {
+            throw new \InvalidArgumentException("Invalid username, only support alphabets");
         }
         if (User::query()->where('username', $newUsername)->where('id', '!=', $targetUser->id)->exists()) {
             throw new \RuntimeException("Username: $newUsername already exists !");

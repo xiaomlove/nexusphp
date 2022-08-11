@@ -118,6 +118,16 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                 Forms\Components\TextInput::make('seed_box.max_uploaded')->label(__('label.setting.seed_box.max_uploaded'))->helperText(__('label.setting.seed_box.max_uploaded_help'))->integer(),
             ])->columns(2);
 
+        $tabs[] = Forms\Components\Tabs\Tab::make(__('label.setting.system.tab_header'))
+            ->id('system')
+            ->schema([
+                Forms\Components\Radio::make('system.change_username_card_allow_characters_outside_the_alphabets')
+                    ->options(self::$yesOrNo)
+                    ->inline(true)
+                    ->label(__('label.setting.system.change_username_card_allow_characters_outside_the_alphabets'))
+                ,
+            ])->columns(2);
+
         $tabs = apply_filter('nexus_setting_tabs', $tabs);
         return $tabs;
     }

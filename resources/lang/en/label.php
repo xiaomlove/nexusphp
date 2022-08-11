@@ -72,6 +72,10 @@ return [
             'not_seed_box_max_speed' => 'Not SeedBox max upload speed',
             'not_seed_box_max_speed_help' => 'Unit: Mbps, if this value is exceeded and the SeedBox record cannot be matched, download permission is disabled',
         ],
+        'system' => [
+            'tab_header' => 'System',
+            'change_username_card_allow_characters_outside_the_alphabets' => 'Does the name change card allow characters other than English letters',
+        ],
     ],
     'user' => [
         'label' => 'User',

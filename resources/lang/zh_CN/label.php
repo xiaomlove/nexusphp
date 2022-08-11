@@ -72,6 +72,10 @@ return [
             'not_seed_box_max_speed' => '非 SeedBox 最高限速',
             'not_seed_box_max_speed_help' => '单位：Mbps。若超过此值又不能匹配 SeedBox 记录，禁用下载权限',
         ],
+        'system' => [
+            'tab_header' => '系统',
+            'change_username_card_allow_characters_outside_the_alphabets' => '改名卡是否允许英文字母外的字符',
+        ],
     ],
     'user' => [
         'label' => '用户',
