@@ -352,6 +352,18 @@ jQuery('#{$triggerId}').on("click", function () {
 JS;
     \Nexus\Nexus::js($consumeChangeUsernameJs, 'footer', false);
 }
+
+$metaKey = \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME;
+if ($metas->has($metaKey)) {
+    $rainbowID = $metas->get($metaKey)->first();
+    if ($rainbowID->isValid()) {
+        $props[] = sprintf(
+            '<div><strong>[%s]</strong>(%s: %s)</div>',
+            $rainbowID->metaKeyText, nexus_trans('label.deadline'), $rainbowID->deadline
+        );
+    }
+}
+
 if (!empty($props)) {
     tr_small($lang_userdetails['row_user_props'], sprintf('<div style="display: inline">%s</div>', implode('&nbsp;|&nbsp;', $props)), 1);
 }

@@ -17,14 +17,18 @@ class UserMeta extends NexusModel
 
     protected $appends = ['meta_key_text'];
 
+    protected $casts = [
+        'deadline' => 'datetime',
+    ];
+
     public function getMetaKeyTextAttribute()
     {
         return nexus_trans('label.user_meta.meta_keys.' . $this->meta_key) ?? '';
     }
 
-    public static function consumeBenefit($uid, $metaKey)
+    public function isValid(): bool
     {
-
+        return $this->status == self::STATUS_NORMAL && ($this->getRawOriginal('deadline') === null || ($this->deadline && $this->deadline->gte(now())));
     }
 
 }

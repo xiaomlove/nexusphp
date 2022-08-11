@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
             Filament::registerNavigationGroups([
                 'User',
                 'Torrent',
+                'Other',
                 'System',
             ]);
         });
