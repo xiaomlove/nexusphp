@@ -75,6 +75,7 @@ return [
         'system' => [
             'tab_header' => 'System',
             'change_username_card_allow_characters_outside_the_alphabets' => 'Does the name change card allow characters other than English letters',
+            'change_username_min_interval_in_days' => 'the minimum interval days of Change user name',
         ],
     ],
     'user' => [

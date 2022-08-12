@@ -49,6 +49,11 @@ class AppServiceProvider extends ServiceProvider
 //            fn (): View => view('filament.footer'),
 //        );
 
+        Filament::registerStyles([
+            asset('styles/sprites.css'),
+            asset('styles/admin.css'),
+        ]);
+
         do_action('nexus_boot');
     }
 }

@@ -1,0 +1,6 @@
+.nowrap {
+    white-space: nowrap !important;
+}
+.nowrap img{
+    display: inline-block !important;
+}
