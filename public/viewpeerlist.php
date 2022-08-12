@@ -16,6 +16,7 @@ function get_location_column($e, $isStrongPrivacy, $canView): string
 {
     global $enablelocation_tweak, $seedBoxRep, $lang_functions, $lang_viewpeerlist;
     $address = $ips = [];
+    //First, build the location
     if ($enablelocation_tweak == 'yes') {
         if (!empty($e['ipv4'])) {
             list($loc_pub, $loc_mod) = get_ip_location($e['ipv4']);
@@ -29,7 +30,11 @@ function get_location_column($e, $isStrongPrivacy, $canView): string
             $address[] = $loc_pub . $seedBoxIcon;
             $ips[] = $e['ipv6'];
         }
-        $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
+        if ($canView) {
+            $title = sprintf('%s%s%s', $lang_functions['text_user_ip'], ':&nbsp;', implode(', ', $ips));
+        } else {
+            $title = '';
+        }
         $addressStr = implode('<br/>', $address);
         $location = '<div style="margin-right: 6px" title="'.$title.'">'.$addressStr.'</div>';
     } else {
@@ -104,30 +109,23 @@ function dltable($name, $arr, $torrent)
 		$s .= "<tr$highlight>\n";
         $secs = max(1, ($e["la"] - $e["st"]));
         $columnLocation = $usernameSeedBoxIcon = '';
-		if ($privacy == "strong" || ($torrent['anonymous'] == 'yes' && $e['userid'] == $torrent['owner'])) {
-			if (get_user_class() >= $viewanonymous_class || $e['userid'] == $CURUSER['id']) {
-                if ($showLocationColumn) {
-                    $columnLocation = get_location_column($e, true, true);
-                } else {
-                    $usernameSeedBoxIcon = get_username_seed_box_icon($e);
-                }
-                $columnUsername = "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i>".$usernameSeedBoxIcon."<br />(" . get_username($e['userid']) . ")</td>\n";
-            } else {
-                if ($showLocationColumn) {
-                    $columnLocation = get_location_column($e, true, false);
-                } else {
-                    $usernameSeedBoxIcon = get_username_seed_box_icon($e);
-                }
-                $columnUsername = "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i>".$usernameSeedBoxIcon."</td>\n";
-            }
-		} else {
-            if ($showLocationColumn) {
-                $columnLocation = get_location_column($e, false, false);
-            } else {
-                $usernameSeedBoxIcon = get_username_seed_box_icon($e);
-            }
-            $columnUsername = "<td class=rowfollow align=left width=1%>" . get_username($e['userid']).$usernameSeedBoxIcon."</td>\n";
+        $isStrongPrivacy = $privacy == "strong" || ($torrent['anonymous'] == 'yes' && $e['userid'] == $torrent['owner']);
+        $canView = get_user_class() >= $viewanonymous_class || $e['userid'] == $CURUSER['id'];
+        if ($showLocationColumn) {
+            $columnLocation = get_location_column($e, $isStrongPrivacy, $canView);
+        } else {
+            $usernameSeedBoxIcon = get_username_seed_box_icon($e);
         }
+        if ($isStrongPrivacy) {
+            $columnUsername = "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i>".$usernameSeedBoxIcon;
+            if ($canView) {
+                $columnUsername .= "<br />(" . get_username($e['userid']) . ")";
+            }
+            $columnUsername .= "</td>";
+        } else {
+            $columnUsername = "<td class=rowfollow align=left width=1%>" . get_username($e['userid']).$usernameSeedBoxIcon."</td>";
+        }
+
 		$s .= $columnUsername . $columnLocation;
 
 		$s .= "<td class=rowfollow align=center width=1%><nobr>" . ($e['connectable'] == "yes" ? $lang_viewpeerlist['text_yes'] : "<font color=red>".$lang_viewpeerlist['text_no']."</font>") . "</nobr></td>\n";
