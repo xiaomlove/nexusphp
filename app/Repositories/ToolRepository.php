@@ -21,13 +21,13 @@ class ToolRepository extends BaseRepository
     {
         $webRoot = base_path();
         $dirName = basename($webRoot);
-        $excludes = ['vendor', 'node_modules', '.git', '.idea', '.settings', '.DS_Store'];
+        $excludes = ['vendor', 'node_modules', '.git', '.idea', '.settings', '.DS_Store', '.github'];
         $baseFilename = sprintf('%s/%s.web.%s', sys_get_temp_dir(), $dirName, date('Ymd.His'));
         if (command_exists('tar') && ($method === 'tar' || $method === null)) {
             $filename = $baseFilename . ".tar.gz";
             $command = "tar";
             foreach ($excludes as $item) {
-                $command .= " --exclude=$item";
+                $command .= " --exclude=$dirName/$item";
             }
             $command .= sprintf(
                 ' -czf %s -C %s %s',
