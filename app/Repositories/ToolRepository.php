@@ -17,11 +17,13 @@ use Symfony\Component\Mime\Email;
 
 class ToolRepository extends BaseRepository
 {
+    const BACKUP_EXCLUDES = ['vendor', 'node_modules', '.git', '.idea', '.settings', '.DS_Store', '.github'];
+
     public function backupWeb($method = null): array
     {
         $webRoot = base_path();
         $dirName = basename($webRoot);
-        $excludes = ['vendor', 'node_modules', '.git', '.idea', '.settings', '.DS_Store', '.github'];
+        $excludes = self::BACKUP_EXCLUDES;
         $baseFilename = sprintf('%s/%s.web.%s', sys_get_temp_dir(), $dirName, date('Ymd.His'));
         if (command_exists('tar') && ($method === 'tar' || $method === null)) {
             $filename = $baseFilename . ".tar.gz";

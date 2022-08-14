@@ -18,6 +18,7 @@ use App\Repositories\AttendanceRepository;
 use App\Repositories\BonusRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\TagRepository;
+use App\Repositories\ToolRepository;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Model;
@@ -366,7 +367,7 @@ class Update extends Install
 
         foreach (glob("$extractDir/*") as $path) {
             if (is_dir($path)) {
-                $excludes = ['.git', 'public/favicon.ico', '.env'];
+                $excludes = array_merge(ToolRepository::BACKUP_EXCLUDES, ['public/favicon.ico', '.env']);
                 if (!in_array('composer', $includes)) {
                     $excludes[] = 'composer.lock';
                     $excludes[] = 'composer.json';
