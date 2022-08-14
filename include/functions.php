@@ -5100,7 +5100,7 @@ function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
 {
     $prefix = strtolower($prefix);
     $datetimeNow = date('Y-m-d H:i:s');
-    $sql = "insert into settings (name, value, created_at, updated_at, autoload) values ";
+    $sql = "insert into `settings` (name, value, created_at, updated_at, autoload) values ";
     $data = [];
     foreach ($nameAndValue as $name => $value) {
         if (is_array($value)) {
