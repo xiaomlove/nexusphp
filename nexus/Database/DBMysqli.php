@@ -15,6 +15,7 @@ class DBMysqli implements DBInterface
         $mysqli->query("SET NAMES UTF8");
         $mysqli->query("SET collation_connection = 'utf8_general_ci'");
         $mysqli->query("SET sql_mode=''");
+        $mysqli->query("SET time_zone='".date('P')."'");
 
         /* activate reporting */
         $driver = new \mysqli_driver();

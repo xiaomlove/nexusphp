@@ -86,8 +86,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $time = Carbon::parse('2022-08-10');
-        $r = $time->diffInDays();
+        $r = date('P');
         dd($r);
     }
 
