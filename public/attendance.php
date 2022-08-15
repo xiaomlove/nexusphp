@@ -49,6 +49,9 @@ $attendance = $rep->attend($CURUSER['id']);
 $logs = $attendance->logs()->where('date', '>=', $start->format('Y-m-d'))->get()->keyBy('date');
 $interval = new \DateInterval('P1D');
 $period = new \DatePeriod($start, $interval, $end);
+
+$interval = \Carbon\CarbonInterval::make($interval);
+$period = \Carbon\CarbonPeriod::make($period);
 $events = [];
 foreach ($period as $value) {
     if ($value->gte($tomorrow)) {
