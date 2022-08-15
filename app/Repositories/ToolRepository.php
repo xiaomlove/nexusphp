@@ -298,9 +298,9 @@ class ToolRepository extends BaseRepository
     public function sendMail($to, $subject, $body): bool
     {
         $log = "[SEND_MAIL]";
-        do_log("$log, to: $to, subject: $subject, body: $body");
         $factory = new EsmtpTransportFactory();
         $smtp = Setting::getFromDb('smtp');
+        do_log("$log, to: $to, subject: $subject, body: $body, smtp: " . json_encode($smtp));
         $encryption = null;
         if (isset($smtp['encryption']) && in_array($smtp['encryption'], ['ssl', 'tls'])) {
             $encryption = $smtp['encryption'];
