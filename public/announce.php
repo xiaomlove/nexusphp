@@ -198,7 +198,7 @@ if ($newnumpeers > $rsize)
 else $limit = "";
 $announce_wait = \App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND;
 
-$fields = "seeder, peer_id, ip, ipv4, ipv6, port, uploaded, downloaded, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
+$fields = "seeder, peer_id, ip, ipv4, ipv6, port, uploaded, downloaded, last_action, UNIX_TIMESTAMP(last_action) as last_action_unix_timestamp, prev_action, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
 //$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
 /**
  * return all peers,include connectable no
@@ -324,6 +324,12 @@ if ($isSeedBoxRuleEnabled && !($az['class'] >= \App\Models\User::CLASS_VIP || $i
 }
 $log .= ", isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, isIPSeedBox: $isIPSeedBox";
 
+if (isset($self)) {
+    $log .= sprintf(
+        ', [SELF], TIMENOW: %s(%s), last_action: %s, last_action_unix_timestamp: %s, announcetime: %s, prev_action: %s, prevts: %s',
+        TIMENOW, date('Y-m-d H:i:s', TIMENOW), $self['last_action'], $self['last_action_unix_timestamp'], $self['announcetime'], $self['prev_action'], $self['prevts']
+    );
+}
 do_log($log);
 
 // current peer_id, or you could say session with tracker not found in table peers
