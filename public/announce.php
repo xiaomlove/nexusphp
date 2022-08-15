@@ -307,12 +307,19 @@ if (!isset($self))
 		$self = $row;
 	}
 }
+if (isset($self)) {
+    $log .= sprintf(
+        ', [SELF], TIMENOW: %s(%s), last_action: %s, last_action_unix_timestamp: %s, announcetime: %s, prev_action: %s, prevts: %s',
+        TIMENOW, date('Y-m-d H:i:s', TIMENOW), $self['last_action'], $self['last_action_unix_timestamp'], $self['announcetime'], $self['prev_action'], $self['prevts']
+    );
+}
 
 // min announce time
 if(isset($self) && empty($_GET['event']) && $self['prevts'] > (TIMENOW - $announce_wait)) {
+    do_log($log);
     do_log(sprintf(
-        'timezone: %s, self prevts(%s, %s) > now(%s, %s) - announce_wait(%s)',
-        ini_get('date.timezone'), $self['prevts'], date('Y-m-d H:i:s', $self['prevts']), TIMENOW, date('Y-m-d H:i:s', TIMENOW), $announce_wait
+        'timezone: %s, self prevts(%s -> %s, %s) > now(%s, %s) - announce_wait(%s)',
+        ini_get('date.timezone'), $self['prev_action'], $self['prevts'], date('Y-m-d H:i:s', $self['prevts']), TIMENOW, date('Y-m-d H:i:s', TIMENOW), $announce_wait
     ));
     err('There is a minimum announce time of ' . $announce_wait . ' seconds');
 }
@@ -322,14 +329,8 @@ $isIPSeedBox = false;
 if ($isSeedBoxRuleEnabled && !($az['class'] >= \App\Models\User::CLASS_VIP || $isDonor)) {
     $isIPSeedBox = isIPSeedBox($ip, $userid);
 }
-$log .= ", isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, isIPSeedBox: $isIPSeedBox";
+$log .= ", [SEED_BOX], isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, isIPSeedBox: $isIPSeedBox";
 
-if (isset($self)) {
-    $log .= sprintf(
-        ', [SELF], TIMENOW: %s(%s), last_action: %s, last_action_unix_timestamp: %s, announcetime: %s, prev_action: %s, prevts: %s',
-        TIMENOW, date('Y-m-d H:i:s', TIMENOW), $self['last_action'], $self['last_action_unix_timestamp'], $self['announcetime'], $self['prev_action'], $self['prevts']
-    );
-}
 do_log($log);
 
 // current peer_id, or you could say session with tracker not found in table peers
