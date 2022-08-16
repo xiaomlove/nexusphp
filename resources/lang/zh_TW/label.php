@@ -30,6 +30,8 @@ return [
     'permanent' => '永久有效',
     'operator' => '操作者',
     'action' => '操作',
+    'submit' => '提交',
+    'reset' => '重置',
     'setting' => [
         'nav_text' => '設置',
         'backup' => [

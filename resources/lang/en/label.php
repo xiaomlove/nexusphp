@@ -30,6 +30,8 @@ return [
     'permanent' => 'Permanent',
     'operator' => 'Operator',
     'action' => 'Action',
+    'submit' => 'Submit',
+    'reset' => 'Reset',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

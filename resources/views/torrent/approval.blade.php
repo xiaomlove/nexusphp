@@ -49,8 +49,8 @@
             </div>
             <div class="layui-form-item">
                 <div class="layui-input-block">
-                    <button class="layui-btn" lay-submit lay-filter="formDemo">Submit</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">Reset</button>
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">{{ __('label.submit') }}</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">{{ __('label.reset') }}</button>
                 </div>
             </div>
         </form>
