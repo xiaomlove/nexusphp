@@ -23,6 +23,7 @@ return [
         'isp' => 'ISP',
         'menu' => 'Custom menu',
         'username_change_log' => 'Username change log',
+        'torrent_deny_reason' => 'Deny Reasons',
     ],
     'resources' => [
         'agent_allow' => [

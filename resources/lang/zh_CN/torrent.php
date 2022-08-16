@@ -46,23 +46,23 @@ return [
     'claim_disabled' => '认领未启用',
     'operation_log' => [
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY => [
-            'type_text' => '禁止',
-            'notify_subject' => '种子被禁止',
-            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 禁止，原因：:reason',
+            'type_text' => '审核拒绝',
+            'notify_subject' => '种子审核拒绝',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 审核拒绝，原因：:reason',
         ],
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW => [
-            'type_text' => '取消禁止',
-            'notify_subject' => '种子取消禁止',
-            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+            'type_text' => '审核通过',
+            'notify_subject' => '种子审核通过',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 审核通过',
         ],
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE => [
-            'type_text' => '取消禁止',
-            'notify_subject' => '种子取消禁止',
-            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+            'type_text' => '标记未审核',
+            'notify_subject' => '种子标记未审核',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 标记未审核',
         ]
     ],
-    'owner_update_torrent_subject' => '被禁种子已更新',
-    'owner_update_torrent_msg' => '种子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以检查是否符合要求并取消禁止',
+    'owner_update_torrent_subject' => '审核拒绝种子已更新',
+    'owner_update_torrent_msg' => '种子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以检查是否符合要求并审核通过',
     'approval' => [
         'modal_title' => '种子审核',
         'status_label' => '审核状态',
@@ -73,5 +73,6 @@ return [
             \App\Models\Torrent::APPROVAL_STATUS_DENY => '拒绝',
         ],
         'deny_comment_show' => '审核不通过，原因：:reason',
+        'logs_label' => '审核记录',
     ],
 ];

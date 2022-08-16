@@ -162,45 +162,16 @@ if (!$row) {
                 '<a href="javascript:;"><b><font id="approval" class="small approval" data-torrent_id="%s">%s&nbsp;%s</font></b></a>',
                 $row['id'], $approvalIcon, $lang_details['action_approval']
             );
+            $title = nexus_trans('torrent.approval.modal_title');
             $js = <<<JS
 jQuery('#approval').on("click", function () {
-    let loadingIndex1 = layer.load()
     let torrentId = jQuery(this).attr('data-torrent_id')
-    let params = {
-        action: 'approvalModal',
-        params: {
-            torrent_id: torrentId
-        }
-    }
-    jQuery.post('ajax.php', params, function (response) {
-        layer.close(loadingIndex1)
-        console.log(response)
-        if (response.ret != 0) {
-            layer.alert(response.msg)
-            return
-        }
-        let formId = response.data.form_id;
-        layer.open({
-            type: 1,
-            title: response.data.title,
-            content: response.data.content,
-            btn: ["OK"],
-            btnAlign: 'c',
-            yes: function () {
-                let loadingIndex2 = layer.load()
-                let params = jQuery("#" + formId).serialize();
-                jQuery.post("ajax.php", params + "&action=approval", function (response) {
-                    layer.close(loadingIndex2)
-                    console.log(response)
-                    if (response.ret != 0) {
-                        layer.alert(response.msg)
-                        return
-                    }
-                    window.location.reload()
-                }, 'json')
-            }
-        })
-    }, 'json')
+    layer.open({
+        type: 2,
+        title: '$title',
+        area: ['60%', '600px'],
+        content: '/web/torrent-approval-page?torrent_id=' + torrentId,
+    })
 })
 JS;
             \Nexus\Nexus::js($js, 'footer', false);

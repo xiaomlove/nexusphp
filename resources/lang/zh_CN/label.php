@@ -29,6 +29,7 @@ return [
     'deadline' => '截止时间',
     'permanent' => '永久有效',
     'operator' => '操作者',
+    'action' => '操作',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [

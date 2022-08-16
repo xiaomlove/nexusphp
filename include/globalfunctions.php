@@ -516,13 +516,30 @@ function api(...$args)
             $data = $data['data'];
         }
     }
-    return [
-        'ret' => (int)$ret,
-        'msg' => (string)$msg,
+    $time = (float)number_format(microtime(true) - nexus()->getStartTimestamp(), 3);
+    $count = null;
+    $resultKey = 'ret';
+    $msgKey = 'msg';
+    $format = $_REQUEST['__format'] ?? '';
+    if ($format == 'layui-table') {
+        $resultKey = 'code';
+        $count = $data['meta']['total'] ?? 0;
+        if (isset($data['data'])) {
+            $data = $data['data'];
+        }
+    }
+    $results = [
+        $resultKey => (int)$ret,
+        $msgKey => (string)$msg,
         'data' => $data,
-        'time' => (float)number_format(microtime(true) - nexus()->getStartTimestamp(), 3),
+        'time' => $time,
         'rid' => nexus()->getRequestId(),
     ];
+    if ($format == 'layui-table') {
+        $results['count'] = $count;
+    }
+
+    return $results;
 }
 
 function success(...$args)

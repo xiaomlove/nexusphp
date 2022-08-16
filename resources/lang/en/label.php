@@ -29,6 +29,7 @@ return [
     'deadline' => 'Deadline',
     'permanent' => 'Permanent',
     'operator' => 'Operator',
+    'action' => 'Action',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

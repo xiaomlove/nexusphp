@@ -46,23 +46,23 @@ return [
     'claim_disabled' => '認領未啟用',
     'operation_log' => [
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY => [
-            'type_text' => '禁止',
-            'notify_subject' => '種子被禁止',
-            'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 禁止，原因：:reason',
+            'type_text' => '審核拒絕',
+            'notify_subject' => '種子審核拒絕',
+            'notify_msg' => '妳的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 審核拒絕，原因：:reason',
         ],
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW => [
-            'type_text' => '取消禁止',
-            'notify_subject' => '種子取消禁止',
-            'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+            'type_text' => '審核通過',
+            'notify_subject' => '種子審核通過',
+            'notify_msg' => '妳的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 審核通過',
         ],
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE => [
-            'type_text' => '取消禁止',
-            'notify_subject' => '種子取消禁止',
-            'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 取消禁止',
+            'type_text' => '標記未審核',
+            'notify_subject' => '種子標記未審核',
+            'notify_msg' => '妳的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 標記未審核',
         ]
     ],
-    'owner_update_torrent_subject' => '被禁種子已更新',
-    'owner_update_torrent_msg' => '種子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以檢查是否符合要求並取消禁止',
+    'owner_update_torrent_subject' => '審核拒絕種子已更新',
+    'owner_update_torrent_msg' => '種子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以檢查是否符合要求併審核通過',
     'approval' => [
         'modal_title' => '種子審核',
         'status_label' => '審核狀態',
@@ -73,5 +73,6 @@ return [
             \App\Models\Torrent::APPROVAL_STATUS_DENY => '拒絕',
         ],
         'deny_comment_show' => '審核不通過，原因：:reason',
+        'logs_label' => '審核記錄'
     ],
 ];

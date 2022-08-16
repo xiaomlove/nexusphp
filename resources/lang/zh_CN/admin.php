@@ -23,6 +23,7 @@ return [
         'isp' => 'ISP',
         'menu' => '自定义菜单',
         'username_change_log' => '改名记录',
+        'torrent_deny_reason' => '拒绝原因',
     ],
     'resources' => [
         'agent_allow' => [

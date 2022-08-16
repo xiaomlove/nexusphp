@@ -22,6 +22,11 @@ class TorrentOperationLog extends NexusModel
         self::ACTION_TYPE_APPROVAL_DENY => ['text' => 'Approval deny'],
     ];
 
+    public function getActionTypeTextAttribute()
+    {
+        return nexus_trans("torrent.operation_log.{$this->action_type}.type_text");
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'uid')->select(User::$commonFields);

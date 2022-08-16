@@ -46,32 +46,33 @@ return [
     'claim_disabled' => 'Claim is disabled',
     'operation_log' => [
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY => [
-            'type_text' => 'Banned',
-            'notify_subject' => 'Torrent was banned',
-            'notify_msg' => 'Your torrent：[url=:detail_url]:torrent_name[/url] was banned by :operator, Reason: :reason',
+            'type_text' => 'Allowed',
+            'notify_subject' => 'Torrent was allowed',
+            'notify_msg' => 'Your torrent：[url=:detail_url]:torrent_name[/url] was allowed by :operator, Reason: :reason',
         ],
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW => [
-            'type_text' => 'Cancel banned',
-            'notify_subject' => 'Torrent was unbanned',
-            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] unbanned by :operator',
+            'type_text' => 'Denied',
+            'notify_subject' => 'Torrent was denied',
+            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] denied by :operator',
         ],
         \App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE => [
-            'type_text' => 'Cancel banned',
-            'notify_subject' => 'Torrent was unbanned',
-            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] unbanned by :operator',
+            'type_text' => 'Not reviewed',
+            'notify_subject' => 'Torrent was mark as not reviewed',
+            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] was mark as not reviewed by :operator',
         ]
     ],
-    'owner_update_torrent_subject' => 'Banned torrent have been updated',
-    'owner_update_torrent_msg' => 'Torrent：[url=:detail_url]:torrent_name[/url] has been updated by the owner, you can check if it meets the requirements and cancel the ban',
+    'owner_update_torrent_subject' => 'Denied torrent have been updated',
+    'owner_update_torrent_msg' => 'Torrent：[url=:detail_url]:torrent_name[/url] has been updated by the owner, you can check if it meets the requirements and allow',
     'approval' => [
         'modal_title' => 'Torrent approval',
         'status_label' => 'Approval status',
         'comment_label' => 'Comment(optional)',
         'status_text' => [
             \App\Models\Torrent::APPROVAL_STATUS_NONE => 'Not reviewed',
-            \App\Models\Torrent::APPROVAL_STATUS_ALLOW => 'Approved',
-            \App\Models\Torrent::APPROVAL_STATUS_DENY => 'Not approved',
+            \App\Models\Torrent::APPROVAL_STATUS_ALLOW => 'Allowed',
+            \App\Models\Torrent::APPROVAL_STATUS_DENY => 'Denied',
         ],
         'deny_comment_show' => 'Denied, reason: :reason',
+        'logs_label' => 'Approval logs'
     ],
 ];

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RewardResource;
+use App\Http\Resources\TorrentOperationLogResource;
 use App\Http\Resources\TorrentResource;
 use App\Models\Setting;
 use App\Models\Torrent;
+use App\Models\TorrentDenyReason;
+use App\Models\TorrentOperationLog;
 use App\Models\User;
 use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
@@ -99,5 +102,46 @@ class TorrentController extends Controller
         $result = $this->repository->getSearchBox();
 
         return $this->success($result);
+    }
+
+    public function approvalPage(Request $request)
+    {
+        $request->validate(['torrent_id' => 'required']);
+        $torrentId = $request->torrent_id;
+        $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
+        $denyReasons = TorrentDenyReason::query()->orderBy('priority', 'desc')->get();
+        return view('torrent/approval', compact('torrent', 'denyReasons'));
+    }
+
+    public function approvalLogs(Request $request)
+    {
+        $request->validate(['torrent_id' => 'required']);
+        $torrentId = $request->torrent_id;
+        $actionTypes = [
+            TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE,
+            TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW,
+            TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY,
+        ];
+        $records = TorrentOperationLog::query()
+            ->with(['user'])
+            ->where('torrent_id', $torrentId)
+            ->whereIn('action_type', $actionTypes)
+            ->orderBy('id', 'desc')
+            ->paginate($request->limit);
+
+        $resource = TorrentOperationLogResource::collection($records);
+
+        return $this->success($resource);
+    }
+
+    public function approval(Request $request)
+    {
+        $request->validate([
+            'torrent_id' => 'required',
+            'approval_status' => 'required',
+        ]);
+        $params = $request->all();
+        $this->repository->approval(Auth::user(), $params);
+        return $this->success($params);
     }
 }
