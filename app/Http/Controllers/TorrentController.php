@@ -107,6 +107,7 @@ class TorrentController extends Controller
     public function approvalPage(Request $request)
     {
         $request->validate(['torrent_id' => 'required']);
+        $this->checkPermission('authority.torrentmanage');
         $torrentId = $request->torrent_id;
         $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
         $denyReasons = TorrentDenyReason::query()->orderBy('priority', 'desc')->get();
@@ -116,6 +117,7 @@ class TorrentController extends Controller
     public function approvalLogs(Request $request)
     {
         $request->validate(['torrent_id' => 'required']);
+        $this->checkPermission('authority.torrentmanage');
         $torrentId = $request->torrent_id;
         $actionTypes = [
             TorrentOperationLog::ACTION_TYPE_APPROVAL_NONE,
@@ -140,8 +142,10 @@ class TorrentController extends Controller
             'torrent_id' => 'required',
             'approval_status' => 'required',
         ]);
+        $this->checkPermission('authority.torrentmanage');
         $params = $request->all();
         $this->repository->approval(Auth::user(), $params);
         return $this->success($params);
     }
+
 }

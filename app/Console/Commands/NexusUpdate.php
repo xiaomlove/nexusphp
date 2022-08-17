@@ -70,7 +70,10 @@ class NexusUpdate extends Command
             if ($tag === 'dev') {
                 $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
             } else {
-                $url = "https://api.github.com/repos/xiaomlove/nexusphp/tarball/v$tag";
+                if (!str_starts_with($tag, 'v')) {
+                    $tag = "v$tag";
+                }
+                $url = "https://api.github.com/repos/xiaomlove/nexusphp/tarball/$tag";
             }
             $this->doLog("Specific tag: '$tag', download from '$url' and extra code, includes: " . implode(', ', $includes));
             $tmpPath = $this->update->downAndExtractCode($url, $includes);

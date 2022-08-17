@@ -17,7 +17,7 @@ Route::get('/', function () {
     return redirect('index.php');
 });
 
-Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus', 'locale']], function () {
+Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web', 'locale']], function () {
     Route::get('torrent-approval-page', [\App\Http\Controllers\TorrentController::class, 'approvalPage']);
     Route::get('torrent-approval-logs', [\App\Http\Controllers\TorrentController::class, 'approvalLogs']);
     Route::post('torrent-approval', [\App\Http\Controllers\TorrentController::class, 'approval']);
