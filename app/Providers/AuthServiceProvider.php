@@ -41,9 +41,6 @@ class AuthServiceProvider extends ServiceProvider
             return new NexusWebGuard($app['request'], new NexusWebUserProvider());
         });
 
-//        Bouncer::useAbilityModel(Permission::class);
-//        Bouncer::useRoleModel(Role::class);
-//        Bouncer::useUserModel(User::class);
     }
 
     private function getUserByCookie($cookie)

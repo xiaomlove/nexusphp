@@ -479,6 +479,9 @@ class TorrentRepository extends BaseRepository
     public function approval($user, array $params): array
     {
         $user = $this->getUser($user);
+        if ($user->class < Setting::get('authority.torrentmanage')) {
+            throw new InsufficientPermissionException();
+        }
         $torrent = Torrent::query()->findOrFail($params['torrent_id'], ['id', 'banned', 'approval_status', 'visible', 'owner']);
         $lastLog = TorrentOperationLog::query()
             ->where('torrent_id', $params['torrent_id'])

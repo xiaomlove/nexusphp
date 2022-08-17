@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InsufficientPermissionException;
+use App\Models\Setting;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class Controller extends BaseController
@@ -52,6 +55,13 @@ class Controller extends BaseController
             $action = $map[$action];
         }
         return Str::slug("$title.$action", '.');
+    }
+
+    protected function checkPermission($permission)
+    {
+        if (Auth::user()->class < Setting::get($permission)) {
+            throw new InsufficientPermissionException();
+        }
     }
 
 }
