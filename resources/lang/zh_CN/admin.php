@@ -15,8 +15,6 @@ return [
         'claims' => '用户认领',
         'torrent_list' => '种子',
         'torrent_state' => '全站优惠',
-        'roles_list' => '角色',
-        'ability_list' => '权限',
         'seed_box_records' => 'SeedBox',
         'upload_speed' => '上行带宽',
         'download_speed' => '下行带宽',
@@ -24,6 +22,8 @@ return [
         'menu' => '自定义菜单',
         'username_change_log' => '改名记录',
         'torrent_deny_reason' => '拒绝原因',
+        'roles' => '角色',
+        'permissions' => '权限',
     ],
     'resources' => [
         'agent_allow' => [

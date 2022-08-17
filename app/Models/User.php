@@ -93,11 +93,20 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function getClassTextAttribute(): string
     {
-        if (!isset(self::$classes[$this->class]['text'])) {
+        return self::getClassText($this->class);
+    }
+
+    public static function getClassText($class)
+    {
+        if (!isset(self::$classes[$class])) {
             return '';
         }
-        $classText = self::$classes[$this->class]['text'];
-        $alias = Setting::get("account.{$this->class}_alias");
+        if ($class >= self::CLASS_VIP) {
+            $classText = nexus_trans('user.class_names.' . $class);
+        } else {
+            $classText = self::$classes[$class]['text'];
+        }
+        $alias = Setting::get("account.{$class}_alias");
         if (!empty($alias)) {
             $classText .= "({$alias})";
         }
@@ -447,6 +456,16 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function usernameChangeLogs()
     {
         return $this->hasMany(UsernameChangeLog::class, 'uid');
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_roles', 'uid', 'role_id')->withTimestamps();
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions', 'uid', 'permission_id')->withTimestamps();
     }
 
     public function getAvatarAttribute($value)

@@ -13,6 +13,7 @@ use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Peer;
+use App\Models\Role;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
@@ -86,8 +87,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = date('P');
-        dd($r);
+        Role::initClassRoles();
     }
 
 
