@@ -482,7 +482,7 @@ function get_user_id()
     return auth()->user()->id ?? 0;
 }
 
-function get_user_class_name($class, $compact = false, $b_colored = false, $I18N = false)
+function get_user_class_name($class, $compact = false, $b_colored = false, $I18N = false, array $options = [])
 {
     if (!IN_NEXUS) {
         return \App\Models\User::getClassName($class, $compact, $b_colored, $I18N);
@@ -557,9 +557,14 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_SYSOP: {$class_name_color = $en_lang_functions['text_sysops']; break;}
 		case UC_STAFFLEADER: {$class_name_color = $en_lang_functions['text_staff_leader']; break;}
 	}
-
 	$class_name = ( $compact == true ? str_replace(" ", "",$class_name) : $class_name);
-	if ($class_name) return ($b_colored == true ? "<b class='" . str_replace(" ", "",$class_name_color) . "_Name'>" . $class_name . "</b>" : $class_name);
+	if (isset($options['uid'], $options['with_role'])) {
+        $class_name = implode('&nbsp;|&nbsp;', apply_filter('user_class_name', [$class_name], $options['uid']));
+    }
+	if ($class_name && $b_colored) {
+        $class_name = "<b class='" . str_replace(" ", "",$class_name_color) . "_Name'>" . $class_name . "</b>";
+    }
+	return $class_name;
 }
 
 function is_valid_user_class($class)
@@ -3748,7 +3753,11 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
         }
 
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
-		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true) : "<span class='".get_user_class_name($arr['class'],true) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
+		$options = [
+		    'uid' => $id,
+            'with_role' => true,
+        ];
+		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true, false, false, $options) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true, $options) : "<span class='".get_user_class_name($arr['class'],true, false, false, $options) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
 
 		$username = "<span class=\"nowrap\">" . ( $bracket == true ? "(" . $username . ")" : $username) . "$medalHtml</span>";
 	}

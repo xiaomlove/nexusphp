@@ -29,25 +29,23 @@ if (!isset($validTypeMap[$type])) {
 if ($type == 'uploaded') {
     $amount = sqlesc(getsize_int($amount,"G"));
 }
-$updateset = $_POST['clases'];
-if (is_array($updateset)) {
-    foreach ($updateset as $class) {
-        if (!is_valid_id($class) && $class != 0)
-            stderr("Error","Invalid Class");
-    }
-}else{
-    if (!is_valid_id($updateset) && $updateset != 0)
-        stderr("Error","Invalid Class");
-}
 $subject = trim($_POST['subject']);
 $size = 10000;
 $page = 1;
 set_time_limit(300);
-$classStr = implode(",", $updateset);
+$conditions = [];
+if (!empty($_POST['classes'])) {
+    $conditions[] = "class IN (" . implode(', ', $_POST['classes']) . ")";
+}
+$conditions = apply_filter("increment_bulk_conditions", $conditions, $_POST);
+if (empty($conditions)) {
+    stderr("Error","No valid filter");
+}
+$whereStr = implode(' OR ', $conditions);
 while (true) {
     $msgValues = $idArr = [];
     $offset = ($page - 1) * $size;
-    $query = sql_query("SELECT id FROM users WHERE class IN ($classStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size");
+    $query = sql_query("SELECT id FROM users WHERE ($whereStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size");
     while($dat=mysql_fetch_assoc($query))
     {
         $idArr[] = $dat['id'];

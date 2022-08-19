@@ -895,3 +895,28 @@ function clear_user_cache($uid, $passkey = '')
         \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');
     }
 }
+
+function clear_setting_cache()
+{
+    \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
+    \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
+}
+
+function user_can($permission, $uid = 0): bool
+{
+    if ($uid == 0) {
+        $uid = get_user_id();
+    }
+    if ($uid <= 0) {
+        return false;
+    }
+    $result = apply_filter('nexus_user_can', null, $permission, $uid);
+    if (is_bool($result)) {
+        return $result;
+    }
+    if (isset(\App\Models\Setting::$permissionDegeneration[$permission])) {
+        $permission = \App\Models\Setting::$permissionDegeneration[$permission];
+    }
+    $requireClass = get_setting("authority.$permission");
+    return is_numeric($requireClass) && $requireClass < get_user_class();
+}

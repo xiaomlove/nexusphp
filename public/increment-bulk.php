@@ -50,13 +50,13 @@ $classes = array_chunk(\App\Models\User::$classes, 4, true);
                             </tr>
                             <tr><td class="rowhead" valign="top">Amount </td><td class="rowfollow"><input type=text name=amount size=10></td></tr>
                             <tr>
-                                <td class="rowhead" valign="top">Add to</td><td class="rowfollow">
+                                <td class="rowhead" valign="top">Add to Class</td><td class="rowfollow">
                                     <table style="border: 0" width="100%" cellpadding="0" cellspacing="0">
                                         <?php
                                         foreach ($classes as $chunk) {
                                             printf('<tr>');
                                             foreach ($chunk as $class => $info) {
-                                                printf('<td style="border: 0"><label><input type="checkbox" name="clases[]" value="%s" />%s</label></td>', $class, $info['text']);
+                                                printf('<td style="border: 0"><label><input type="checkbox" name="classes[]" value="%s" />%s</label></td>', $class, $info['text']);
                                             }
                                             printf('</tr>');
                                         }
@@ -64,6 +64,7 @@ $classes = array_chunk(\App\Models\User::$classes, 4, true);
                                     </table>
                                 </td>
                             </tr>
+                            <?php do_action('increment_bulk_filters') ?>
                             <tr><td class="rowhead" valign="top">Subject </td><td class="rowfollow"><input type=text name=subject size=82></td></tr>
                             <tr><td class="rowhead" valign="top">Reason </td><td class="rowfollow"><textarea name=msg cols=80 rows=5><?php echo $body ?? ''?></textarea></td></tr>
                             <tr>

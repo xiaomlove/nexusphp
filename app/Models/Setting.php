@@ -11,6 +11,10 @@ class Setting extends NexusModel
 
     public $timestamps = true;
 
+    public static array $permissionDegeneration = [
+        'torrent-approval' => 'torrentmanage',
+    ];
+
     /**
      * get setting autoload = yes with cache
      *

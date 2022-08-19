@@ -17,6 +17,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
+use NexusPlugin\Permission\Models\Permission;
+use NexusPlugin\Permission\Models\Role;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
@@ -98,7 +100,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public static function getClassText($class)
     {
-        if (!isset(self::$classes[$class])) {
+        if (!is_numeric($class)|| !isset(self::$classes[$class])) {
             return '';
         }
         if ($class >= self::CLASS_VIP) {
@@ -111,6 +113,15 @@ class User extends Authenticatable implements FilamentUser, HasName
             $classText .= "({$alias})";
         }
         return $classText;
+    }
+
+    public static function listClass(): array
+    {
+        $result = [];
+        foreach (self::$classes as $class => $info) {
+            $result[$class] = self::getClassText($class);
+        }
+        return $result;
     }
 
     public function canAccessFilament(): bool
@@ -463,7 +474,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->belongsToMany(Role::class, 'user_roles', 'uid', 'role_id')->withTimestamps();
     }
 
-    public function permissions()
+    public function directPermissions()
     {
         return $this->belongsToMany(Permission::class, 'user_permissions', 'uid', 'permission_id')->withTimestamps();
     }

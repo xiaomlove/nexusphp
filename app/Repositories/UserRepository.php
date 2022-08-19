@@ -149,13 +149,14 @@ class UserRepository extends BaseRepository
         return true;
     }
 
+    /**
+     * @deprecated  use User::listClass() instead !
+     *
+     * @return array
+     */
     public function listClass()
     {
-        $out = [];
-        foreach(User::$classes as $key => $value) {
-            $out[(string)$key] = $value['text'];
-        }
-        return $out;
+        return User::listClass();
     }
 
     public function disableUser(User $operator, $uid, $reason)

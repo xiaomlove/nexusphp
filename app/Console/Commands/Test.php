@@ -13,7 +13,6 @@ use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Peer;
-use App\Models\Role;
 use App\Models\SearchBox;
 use App\Models\Snatch;
 use App\Models\Tag;
@@ -39,14 +38,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use JeroenG\Explorer\Domain\Syntax\Matching;
-use JeroenG\Explorer\Infrastructure\Scout\ElasticEngine;
 use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
 use NexusPlugin\Menu\Filament\MenuItemResource\Pages\ManageMenuItems;
 use NexusPlugin\Menu\MenuRepository;
 use NexusPlugin\Menu\Models\MenuItem;
+use NexusPlugin\Permission\Models\Permission;
+use NexusPlugin\Permission\Models\Role;
 use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
@@ -87,7 +86,9 @@ class Test extends Command
      */
     public function handle()
     {
-        Role::initClassRoles();
+        $user = User::query()->find(10003);
+        $permissions = $user->rolePermissions;
+        dd($permissions);
     }
 
 
