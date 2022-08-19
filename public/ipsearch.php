@@ -117,7 +117,7 @@ $limit";
 
 	print("<h1 align=\"center\">".$count.$lang_ipsearch['text_users_used_the_ip'].$ip."</h1>");
 
-	print("<table width=1200 border=1 cellspacing=0 cellpadding=5 align=center>\n");
+	print("<table width=".CONTENT_WIDTH." border=1 cellspacing=0 cellpadding=5 align=center>\n");
 	print("<tr><td class=colhead align=center><a class=colhead href=\"?ip=$ip&mask=$mask&order=username\">".$lang_ipsearch['col_username']."</a></td>".
 "<td class=colhead align=center><a class=colhead href=\"?ip=$ip&mask=$mask&order=last_ip\">".$lang_ipsearch['col_last_ip']."</a></td>".
 "<td class=colhead align=center><a class=colhead href=\"?ip=$ip&mask=$mask&order=last_access\">".$lang_ipsearch['col_last_access']."</a></td>".
