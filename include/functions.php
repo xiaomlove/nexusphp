@@ -620,7 +620,7 @@ function begin_main_frame($caption = "", $center = false, $width = 100)
 	$tdextra .= " align=\"center\"";
 
 	if (!str_ends_with($width, '%')) {
-        $width = 1200 * $width / 100;
+        $width = CONTENT_WIDTH * $width / 100;
     }
 
 	print("<table class=\"main\" width=\"".$width."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" .
@@ -2556,7 +2556,7 @@ foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
 <script type="text/javascript" src="vendor/layer-v3.5.1/layer/layer.js<?php echo $cssupdatedate?>"></script>
 </head>
 <body>
-<table class="head" cellspacing="0" cellpadding="0" align="center">
+<table class="head" cellspacing="0" cellpadding="0" align="center" style="width: <?php echo isset($GLOBALS['CURUSER']) ? CONTENT_WIDTH + 28.66 : CONTENT_WIDTH ?>px">
 	<tr>
 		<td class="clear">
 <?php
@@ -2591,7 +2591,7 @@ if ($enabledonation == 'yes'){?>
 	</tr>
 </table>
 
-<table class="mainouter" width="1200" cellspacing="0" cellpadding="5" align="center">
+<table class="mainouter" width="<?php echo CONTENT_WIDTH ?>" cellspacing="0" cellpadding="5" align="center">
 	<tr><td id="nav_block" class="text" align="center">
 <?php if (!$CURUSER) { ?>
 			<a href="login.php"><font class="big"><b><?php echo $lang_functions['text_login'] ?></b></font></a> / <a href="signup.php"><font class="big"><b><?php echo $lang_functions['text_signup'] ?></b></font></a>

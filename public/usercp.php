@@ -161,7 +161,7 @@ if ($action){
 			}
 
 			usercpmenu ("personal");
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=".CONTENT_WIDTH.">");
 			if ($type == 'saved')
 				print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved']."</font></td></tr>\n");
 
@@ -395,7 +395,7 @@ if ($showprocessing) $processings = searchbox_item_list("processings");
 if ($showteam) $teams = searchbox_item_list("teams");
 if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 }
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=".CONTENT_WIDTH.">");
 			form ("tracker");
 			if ($type == 'saved')
 				print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved']."</font></td></tr>\n");
@@ -640,7 +640,7 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 			}
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_forum_settings'],true);
 			usercpmenu ("forum");
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=".CONTENT_WIDTH.">");
 			form ("forum");
 			if ($type == 'saved')
 			print("<tr><td colspan=2 class=\"heading\" valign=\"top\" align=\"center\"><font color=red>".$lang_usercp['text_saved']."</font></td></tr>\n");
@@ -819,7 +819,7 @@ EOD;
 			}
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_security_settings']);
 			usercpmenu ("security");
-			print ("<table border=0 cellspacing=0 cellpadding=5 width=1200>");
+			print ("<table border=0 cellspacing=0 cellpadding=5 width=".CONTENT_WIDTH.">");
 			if ($type == 'save') {
 				print("<form method=post action=usercp.php><input type=hidden name=action value=security><input type=hidden name=type value=confirm>");
 				$resetpasskey = $_POST["resetpasskey"];
@@ -919,7 +919,7 @@ if ($forumposts)
 	$percentages = round($forumposts*100/$postcount, 3)."%";
 }
 ?>
-<table border="0" cellspacing="0" cellpadding="5" width=1200>
+<table border="0" cellspacing="0" cellpadding="5" width=<?php echo CONTENT_WIDTH ?>>
 <?php
 tr_small($lang_usercp['row_join_date'], $joindate, 1);
 tr_small($lang_usercp['row_email_address'], $CURUSER['email'], 1);
@@ -1073,13 +1073,13 @@ if ($forumposts)
 	tr($lang_usercp['row_forum_posts'], $forumposts." [<a href=\"userhistory.php?action=viewposts&id=".$CURUSER['id']."\" title=\"".$lang_usercp['link_view_posts']."\">".$lang_usercp['text_view']."</a>] (".$dayposts.$lang_usercp['text_posts_per_day']."; ".$percentages.$lang_usercp['text_of_total_posts'].")", 1);
 ?>
 </table>
-<table border="0" cellspacing="0" cellpadding="5" width=1200>
+<table border="0" cellspacing="0" cellpadding="5" width=<?php echo CONTENT_WIDTH ?>>
 <?php
 print("<td align=center class=tabletitle><b>".$lang_usercp['text_recently_read_topics']."</b></td>");
 ?>
 </table>
 <?php
-print("<table border=0 cellspacing=0 cellpadding=3 width=1200><tr>".
+print("<table border=0 cellspacing=0 cellpadding=3 width=".CONTENT_WIDTH."><tr>".
 "<td class=colhead align=left width=80%>".$lang_usercp['col_topic_title']."</td>".
 "<td class=colhead align=center><nobr>".$lang_usercp['col_replies']."/".$lang_usercp['col_views']."</nobr></td>".
 "<td class=colhead align=center>".$lang_usercp['col_topic_starter']."</td>".
