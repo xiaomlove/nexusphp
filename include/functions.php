@@ -2551,7 +2551,7 @@ foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
 <script type="text/javascript" src="vendor/layer-v3.5.1/layer/layer.js<?php echo $cssupdatedate?>"></script>
 </head>
 <body>
-<table class="head" cellspacing="0" cellpadding="0" align="center" style="width: <?php echo CONTENT_WIDTH + 28.66 ?>px">
+<table class="head" cellspacing="0" cellpadding="0" align="center" style="width: <?php echo isset($GLOBALS['CURUSER']) ? CONTENT_WIDTH + 28.66 : CONTENT_WIDTH ?>px">
 	<tr>
 		<td class="clear">
 <?php
