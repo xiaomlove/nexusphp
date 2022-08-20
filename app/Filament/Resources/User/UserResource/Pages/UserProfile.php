@@ -74,8 +74,10 @@ class UserProfile extends Page
             $actions[] = $this->buildResetPasswordAction();
             $actions[] = $this->buildEnableDisableAction();
             $actions[] = $this->buildEnableDisableDownloadPrivilegesAction();
+
+            $actions = apply_filter('user_profile_actions', $actions);
         }
-        return apply_filter('user_profile_actions', $actions);
+        return $actions;
     }
 
     private function buildEnableDisableAction(): Actions\Action
