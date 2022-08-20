@@ -6,7 +6,7 @@ loggedinorreturn();
 //start apply for links
 if (isset($_GET['action']) && $_GET['action'] == "apply")
 {
-if (get_user_class() >= $applylink_class){
+if (user_can('applylink')){
 stdhead($lang_linksmanage['head_apply_for_links']);
 begin_main_frame();
 begin_frame($lang_linksmanage['text_apply_for_links'], true,10,"100%","center");
@@ -17,7 +17,7 @@ begin_frame($lang_linksmanage['text_apply_for_links'], true,10,"100%","center");
 	print("<p align=left>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ".$lang_linksmanage['text_rule_four']."</p>\n");
 	print("<p align=left>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ".$lang_linksmanage['text_rule_five']."</p>\n");
 	print("<p align=left>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ".$lang_linksmanage['text_rule_six']."</p>\n");
-	
+
 	print("<p>".$lang_linksmanage['text_red_star_required']."</p>");
 ?>
 <form method=post action="<?php echo $_SERVER["PHP_SELF"];?>">
@@ -40,7 +40,7 @@ else permissiondenied();
 }
 elseif (isset($_POST['action']) && $_POST['action'] == "newapply")
 {
-if (get_user_class() >= $applylink_class){
+if (user_can('applylink')){
 $sitename = unesc($_POST["linkname"]);
 $url = unesc($_POST["url"]);
 $title = unesc($_POST["title"]);
@@ -77,7 +77,7 @@ else permissiondenied();
 }
 
 //start admin work
-elseif (get_user_class() < $linkmanage_class)
+elseif (!user_can('linkmanage'))
 	permissiondenied();
 else{
 if (isset($_GET['action']) && $_GET['action'] == "del") {

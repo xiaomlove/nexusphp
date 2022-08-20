@@ -175,7 +175,7 @@ JS;
 				}
 				//===end
 
-				if(get_user_class()>=$beanonymous_class)
+				if(user_can('beanonymous'))
 				{
 					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" />".$lang_upload['checkbox_hide_uploader_note'], 1);
 				}

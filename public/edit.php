@@ -20,7 +20,7 @@ $customField = new \Nexus\Field\Field();
 
 $tagIdArr = \App\Models\TorrentTag::query()->where('torrent_id', $id)->get()->pluck('tag_id')->toArray();
 
-if ($enablespecial == 'yes' && get_user_class() >= $movetorrent_class)
+if ($enablespecial == 'yes' && user_can('movetorrent'))
 	$allowmove = true; //enable moving torrent to other section
 else $allowmove = false;
 
@@ -46,7 +46,7 @@ $showaudiocodec = (get_searchbox_value($sectionmode, 'showaudiocodec') || ($allo
 $settingMain = get_setting('main');
 stdhead($lang_edit['head_edit_torrent'] . "\"". $row["name"] . "\"");
 
-if (!isset($CURUSER) || ($CURUSER["id"] != $row["owner"] && get_user_class() < $torrentmanage_class)) {
+if (!isset($CURUSER) || ($CURUSER["id"] != $row["owner"] && !user_can('torrentmanage'))) {
 	print("<h1 align=\"center\">".$lang_edit['text_cannot_edit_torrent']."</h1>");
 	print("<p>".$lang_edit['text_cannot_edit_torrent_note']."</p>");
 }
@@ -150,17 +150,17 @@ else {
     tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox($tagIdArr), 1);
 
 	$rowChecks = [];
-	if (get_user_class() >= $beanonymous_class || get_user_class() >= $torrentmanage_class) {
+	if (user_can('beanonymous') || user_can('torrentmanage')) {
 	    $rowChecks[] = "<label><input type=\"checkbox\" name=\"anonymous\"" . ($row["anonymous"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_anonymous_note']."</label>";
     }
-	if (get_user_class() >= $torrentmanage_class) {
+	if (user_can('torrentmanage')) {
 	    array_unshift($rowChecks, "<label><input id='visible' type=\"checkbox\" name=\"visible\"" . ($row["visible"] == "yes" ? " checked=\"checked\"" : "" ) . " value=\"1\" />".$lang_edit['checkbox_visible']."</label>");
     }
 	if (!empty($rowChecks)) {
         tr($lang_edit['row_check'], implode('&nbsp;&nbsp;', $rowChecks), 1);
     }
 
-	if (get_user_class()>= $torrentsticky_class || (get_user_class() >= $torrentmanage_class && $CURUSER["picker"] == 'yes')){
+	if (user_can('torrentsticky') || (user_can('torrentmanage') && $CURUSER["picker"] == 'yes')){
 		$pickcontent = $pickcontentPrefix =  "";
 
         if(get_user_class() >= $torrentonpromotion_class)
@@ -173,7 +173,7 @@ else {
             }
             $pickcontent .= '</select>)&nbsp;'.$lang_edit['text_promotion_until_note'].'</span>&nbsp;&nbsp;';
         }
-		if(get_user_class()>=$torrentsticky_class)
+		if(user_can('torrentsticky'))
 		{
             if ($pickcontent) {
                 $pickcontent .= "<br />";
@@ -184,7 +184,7 @@ else {
             }
 			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"sel_posstate\" style=\"width: 100px;\">" . implode('', $options) . "</select>&nbsp;&nbsp;&nbsp;";
 		}
-		if(get_user_class()>=$torrentmanage_class && ($CURUSER["picker"] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
+		if(user_can('torrentmanage') && ($CURUSER["picker"] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
 		{
             if ($pickcontent) $pickcontent .= '<br />';
 			$pickcontent .= "<b>".$lang_edit['row_recommended_movie'].":&nbsp;</b>"."<select name=\"sel_recmovie\" style=\"width: 100px;\">" .

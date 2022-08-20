@@ -17,8 +17,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
-use NexusPlugin\Permission\Models\Permission;
 use NexusPlugin\Permission\Models\Role;
+use NexusPlugin\Permission\Models\UserPermission;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
@@ -239,15 +239,15 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public static function getClassName($class, $compact = false, $b_colored = false, $I18N = false)
     {
-        $class_name = self::$classes[$class]['text'];
+        $class_name = self::$classes[$class]['text'] ?? '';
         if ($class >= self::CLASS_VIP && $I18N) {
             $class_name = nexus_trans("user.class_names.$class");
         }
-        $class_name_color = self::$classes[$class]['text'];
+        $class_name_color = self::$classes[$class]['text'] ?? '';
         if ($compact) {
             $class_name = str_replace(" ", "",$class_name);
         }
-        if ($b_colored) {
+        if ($class_name && $b_colored) {
             return "<b class='" . str_replace(" ", "",$class_name_color) . "_Name'>" . $class_name . "</b>";
         }
         return $class_name;
@@ -476,7 +476,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function directPermissions()
     {
-        return $this->belongsToMany(Permission::class, 'user_permissions', 'uid', 'permission_id')->withTimestamps();
+        return $this->hasMany(UserPermission::class, 'uid');
     }
 
     public function getAvatarAttribute($value)

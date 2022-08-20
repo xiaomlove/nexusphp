@@ -25,7 +25,7 @@ $torrentAddedTimeString = $row['added'];
 if (!$row)
 	die();
 
-if ($CURUSER["id"] != $row["owner"] && get_user_class() < $torrentmanage_class)
+if ($CURUSER["id"] != $row["owner"] && !user_can('torrentmanage'))
 	bark($lang_takeedit['std_not_owner']);
 $oldcatmode = get_single_value("categories","mode","WHERE id=".sqlesc($row['category']));
 $updateset = array();
@@ -87,7 +87,7 @@ bark($lang_takeedit['std_missing_form_data']);
 if (!$name || !$descr)
 bark($lang_takeedit['std_missing_form_data']);
 $newcatmode = get_single_value("categories","mode","WHERE id=".sqlesc($catid));
-if ($enablespecial == 'yes' && get_user_class() >= $movetorrent_class)
+if ($enablespecial == 'yes' && user_can('movetorrent'))
 	$allowmove = true; //enable moving torrent to other section
 else $allowmove = false;
 if ($oldcatmode != $newcatmode && !$allowmove)
@@ -107,7 +107,7 @@ $updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"] ?? 0));
 $updateset[] = "team = " . sqlesc(intval($_POST["team_sel"] ?? 0));
 $updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"] ?? 0));
 $updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";
-if(get_user_class()>=$torrentonpromotion_class)
+if(user_can('torrentonpromotion'))
 {
 	if(!isset($_POST["sel_spstate"]) || $_POST["sel_spstate"] == 1)
 		$updateset[] = "sp_state = 1";
@@ -141,14 +141,14 @@ if(get_user_class()>=$torrentonpromotion_class)
 		}
 	}
 }
-if(get_user_class()>=$torrentsticky_class && isset($_POST['sel_posstate']) && isset(\App\Models\Torrent::$posStates[$_POST['sel_posstate']]))
+if(user_can('torrentsticky') && isset($_POST['sel_posstate']) && isset(\App\Models\Torrent::$posStates[$_POST['sel_posstate']]))
 {
     $updateset[] = "pos_state = '" . $_POST['sel_posstate'] . "'";
 }
 
 $pick_info = "";
 $place_info = "";
-if(get_user_class()>=$torrentmanage_class && ($CURUSER['picker'] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
+if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
 {
     $doRecommend = false;
 	if(intval($_POST["sel_recmovie"] ?? 0) == 0)

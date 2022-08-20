@@ -17,7 +17,7 @@ return [
         'attendance_card' => '補簽卡',
         'props' => '道具',
     ],
-    'class_name' => [
+    'class_names' => [
         \App\Models\User::CLASS_VIP => '貴賓',
         \App\Models\User::CLASS_RETIREE => '養老族',
         \App\Models\User::CLASS_UPLOADER => '發布員',

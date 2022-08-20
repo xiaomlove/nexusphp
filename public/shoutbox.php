@@ -6,7 +6,7 @@ if (isset($_GET['del']))
 {
 	if (is_valid_id($_GET['del']))
 	{
-		if((get_user_class() >= $sbmanage_class))
+		if(user_can('sbmanage'))
 		{
 			sql_query("DELETE FROM shoutbox WHERE id=".mysql_real_escape_string($_GET['del']));
 		}
@@ -118,7 +118,7 @@ else
 	while ($arr = mysql_fetch_assoc($res))
 	{
         $del = '';
-		if (get_user_class() >= $sbmanage_class) {
+		if (user_can('sbmanage')) {
 			$del .= "[<a href=\"shoutbox.php?del=".$arr['id']."\">".$lang_shoutbox['text_del']."</a>]";
 		}
 		if ($arr["userid"]) {

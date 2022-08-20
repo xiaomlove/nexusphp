@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Nexus\Plugin\BasePlugin;
 
 class Plugin extends Command
 {
@@ -30,9 +31,16 @@ class Plugin extends Command
         $plugin = new \Nexus\Plugin\Plugin();
         $action = $this->argument('action');
         $name = $this->argument('name');
+        /** @var BasePlugin $mainClass */
         $mainClass = $plugin->getMainClass($name);
         if (!$mainClass) {
             $this->error("Can not find plugin: $name");
+            return 1;
+        }
+        try {
+            $mainClass->checkMainApplicationVersion();
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
             return 1;
         }
         if ($action == 'install') {

@@ -37,7 +37,7 @@ stdhead($lang_index['head_home']);
 begin_main_frame();
 
 // ------------- start: recent news ------------------//
-print("<h2>".$lang_index['text_recent_news'].(get_user_class() >= $newsmanage_class ? " - <font class=\"small\">[<a class=\"altlink\" href=\"news.php\"><b>".$lang_index['text_news_page']."</b></a>]</font>" : "")."</h2>");
+print("<h2>".$lang_index['text_recent_news'].(user_can('newsmanage') ? " - <font class=\"small\">[<a class=\"altlink\" href=\"news.php\"><b>".$lang_index['text_news_page']."</b></a>]</font>" : "")."</h2>");
 
 $Cache->new_page('recent_news', 86400, true);
 if (!$Cache->get_page()){
@@ -79,7 +79,7 @@ if (mysql_num_rows($res) > 0)
 echo $Cache->next_row();
 while($Cache->next_row()){
 	echo $Cache->next_part();
-	if (get_user_class() >= $newsmanage_class)
+	if (user_can('newsmanage'))
 	echo $Cache->next_part();
 }
 echo $Cache->next_row();
@@ -97,7 +97,7 @@ if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes
 	}
 	if (!$row) //There is no funbox item
 	{
-		print("<h2>".$lang_index['text_funbox'].(get_user_class() >= $newfunitem_class ? "<font class=\"small\"> - [<a class=\"altlink\" href=\"fun.php?action=new\"><b>".$lang_index['text_new_fun']."</b></a>]</font>" : "")."</h2>");
+		print("<h2>".$lang_index['text_funbox'].(user_can('newfunitem') ? "<font class=\"small\"> - [<a class=\"altlink\" href=\"fun.php?action=new\"><b>".$lang_index['text_new_fun']."</b></a>]</font>" : "")."</h2>");
 	}
 	else
 	{
@@ -117,7 +117,7 @@ if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes
 	print ("<h2>".$lang_index['text_funbox']);
 	if ($CURUSER)
 	{
-		print("<font class=\"small\">".(get_user_class() >= $log_class ? " - [<a class=\"altlink\" href=\"log.php?action=funbox\"><b>".$lang_index['text_more_fun']."</b></a>]": "").($row['neednew'] && get_user_class() >= $newfunitem_class ? " - [<a class=altlink href=\"fun.php?action=new\"><b>".$lang_index['text_new_fun']."</b></a>]" : "" ).( ($CURUSER['id'] == $row['userid'] || get_user_class() >= $funmanage_class) ? " - [<a class=\"altlink\" href=\"fun.php?action=edit&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_edit']."</b></a>]" : "").(get_user_class() >= $funmanage_class ? " - [<a class=\"altlink\" href=\"fun.php?action=delete&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_delete']."</b></a>] - [<a class=\"altlink\" href=\"fun.php?action=ban&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_ban']."</b></a>]" : "")."</font>");
+		print("<font class=\"small\">".(user_can('log') ? " - [<a class=\"altlink\" href=\"log.php?action=funbox\"><b>".$lang_index['text_more_fun']."</b></a>]": "").($row['neednew'] && user_can('newfunitem') ? " - [<a class=altlink href=\"fun.php?action=new\"><b>".$lang_index['text_new_fun']."</b></a>]" : "" ).( ($CURUSER['id'] == $row['userid'] || user_can('funmanage')) ? " - [<a class=\"altlink\" href=\"fun.php?action=edit&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_edit']."</b></a>]" : "").(get_user_class() >= $funmanage_class ? " - [<a class=\"altlink\" href=\"fun.php?action=delete&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_delete']."</b></a>] - [<a class=\"altlink\" href=\"fun.php?action=ban&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_ban']."</b></a>]" : "")."</font>");
 	}
 	print("</h2>");
 
@@ -266,7 +266,7 @@ if ($CURUSER && $showpolls_main == "yes")
 
 		print("<h2>".$lang_index['text_polls']);
 
-			if (get_user_class() >= $pollmanage_class)
+			if (user_can('pollmanage'))
 			{
 				print("<font class=\"small\"> - [<a class=\"altlink\" href=\"makepoll.php?returnto=main\"><b>".$lang_index['text_new']."</b></a>]\n");
 				if ($pollexists)
@@ -389,7 +389,7 @@ if ($CURUSER && $showpolls_main == "yes")
 			}
 			print("</td></tr></table>");
 
-			if ($voted && get_user_class() >= $log_class)
+			if ($voted && user_can('log'))
 				print("<p align=\"center\"><a href=\"log.php?action=poll\">".$lang_index['text_previous_polls']."</a></p>\n");
 			print("</td></tr></table>");
 		}
@@ -600,9 +600,9 @@ if ($showtrackerload == "yes") {
 // ------------- end: disclaimer ------------------//
 // ------------- start: links ------------------//
 	print("<h2>".$lang_index['text_links']);
-	if (get_user_class() >= $applylink_class)
+	if (user_can('applylink'))
 		print("<font class=\"small\"> - [<a class=\"altlink\" href=\"linksmanage.php?action=apply\"><b>".$lang_index['text_apply_for_link']."</b></a>]</font>");
-	if (get_user_class() >= $linkmanage_class)
+	if (user_can('linkmanage'))
 	{
 		print("<font class=\"small\">");
 		print(" - [<a class=\"altlink\" href=\"linksmanage.php\"><b>".$lang_index['text_manage_links']."</b></a>]\n");

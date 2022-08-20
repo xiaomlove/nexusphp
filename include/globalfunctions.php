@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+
 function get_global_sp_state()
 {
 	static $global_promotion_state;
@@ -735,7 +737,7 @@ function add_filter($name, $function, $priority = 10, $argc = 1)
 function apply_filter($name, ...$args)
 {
     global $hook;
-    do_log("[APPLY_FILTER]: $name");
+//    do_log("[APPLY_FILTER]: $name");
     return $hook->applyFilter(...func_get_args());
 }
 
@@ -748,7 +750,7 @@ function add_action($name, $function, $priority = 10, $argc = 1)
 function do_action($name, ...$args)
 {
     global $hook;
-    do_log("[DO_ACTION]: $name");
+//    do_log("[DO_ACTION]: $name");
     return $hook->doAction(...func_get_args());
 }
 
@@ -902,7 +904,7 @@ function clear_setting_cache()
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
 }
 
-function user_can($permission, $uid = 0): bool
+function user_can($permission, $fail = false, $uid = 0): bool
 {
     if ($uid == 0) {
         $uid = get_user_id();
@@ -910,13 +912,28 @@ function user_can($permission, $uid = 0): bool
     if ($uid <= 0) {
         return false;
     }
+    $userInfo = get_user_row($uid);
+    $log = "permission: $permission, user: $uid, userClass: {$userInfo['class']}";
+    if ($userInfo['class'] == User::CLASS_STAFF_LEADER) {
+        do_log("$log, CLASS_STAFF_LEADER, true");
+        return true;
+    }
     $result = apply_filter('nexus_user_can', null, $permission, $uid);
-    if (is_bool($result)) {
+    $requireClass = get_setting("authority.$permission");
+    if (!is_bool($result)) {
+        $result = is_numeric($requireClass) && $requireClass >= 0 && $requireClass < $userInfo['class'];
+        do_log("$log, requireClass: $requireClass, result: $result");
+    }
+    if (!$fail || $result) {
         return $result;
     }
-    if (isset(\App\Models\Setting::$permissionDegeneration[$permission])) {
-        $permission = \App\Models\Setting::$permissionDegeneration[$permission];
+    if (IN_NEXUS && !IN_TRACKER) {
+        global $lang_functions;
+        if (isset(User::$classes[$requireClass])) {
+            stderr($lang_functions['std_sorry'],$lang_functions['std_permission_denied_only'].get_user_class_name($requireClass,false,true,true).$lang_functions['std_or_above_can_view'],false);
+        } else {
+            stderr($lang_functions['std_error'], $lang_functions['std_permission_denied']);
+        }
     }
-    $requireClass = get_setting("authority.$permission");
-    return is_numeric($requireClass) && $requireClass < get_user_class();
+    throw new \Illuminate\Auth\Access\AuthorizationException();
 }

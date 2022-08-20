@@ -4,8 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 require(get_langfile_path("",true));
 loggedinorreturn();
-if (get_user_class() < $askreseed_class)
-permissiondenied();
+user_can('askreseed', true);
 
 $reseedid = intval($_GET["reseedid"] ?? 0);
 $res = sql_query("SELECT seeders, last_reseed FROM torrents WHERE id=".sqlesc($reseedid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);

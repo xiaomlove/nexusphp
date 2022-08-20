@@ -52,9 +52,9 @@ if ($action == 'add')
 	stderr($lang_friends['std_error'], $lang_friends['std_user_id'].$targetid.$lang_friends['std_already_in'].$table_is.$lang_friends['std_list']);
 
 	sql_query("INSERT INTO $table_is VALUES (0,$userid, $targetid)") or sqlerr(__FILE__, __LINE__);
-	
+
 	purge_neighbors_cache();
-	
+
 	header("Location: " . get_protocol_prefix() . "$BASEURL/friends.php?id=$userid#$frag");
 	die;
 }
@@ -227,7 +227,7 @@ else
 					$body1 = get_username($neighbors_arr["id"]) .
 					" ($title)<br /><br />".$lang_friends['text_last_seen_on']. gettime($neighbors_arr['last_access'], true, false);
 
-					
+
 					$body2 = ((empty($friend_id_arr)||(!in_array($neighbors_arr["id"],$friend_id_arr))) ? "<a href=friends.php?id=$userid&action=add&type=friend&targetid=" . $neighbors_arr['id'] . ">".$lang_friends['text_add_to_friends']."</a>" : "<a href=friends.php?id=$userid&action=delete&type=friend&targetid=" . $neighbors_arr['id'] . ">".$lang_friends['text_remove_from_friends']."</a>") .
 					"<br /><br /><a href=sendmessage.php?receiver=" . $neighbors_arr['id'] . ">".$lang_friends['text_send_pm']."</a>";
 					$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars($neighbors_arr["avatar"]) : "");
@@ -350,7 +350,7 @@ print($blocks);
 print("</td></tr></table>\n");
 
 print("</td></tr></table>\n");
-if (get_user_class() >= $viewuserlist_class)
+if (user_can('viewuserlist'))
 	print("<p><a href=users.php><b>".$lang_friends['text_find_user']."</b></a></p>");
 stdfoot();
 ?>

@@ -26,7 +26,7 @@ if ($action == "add")
 	{
 		// Anti Flood Code
 		// This code ensures that a member can only send one comment per minute.
-		if (get_user_class() < $commanage_class) {
+		if (!user_can('commanage')) {
 			if (strtotime($CURUSER['last_comment']) > (TIMENOW - 10))
 			{
 				$secs = 10 - (TIMENOW - strtotime($CURUSER['last_comment']));
@@ -165,7 +165,7 @@ elseif ($action == "edit")
 		if (!$arr)
 		stderr($lang_comment['std_error'], $lang_comment['std_invalid_id']);
 
-		if ($arr["user"] != $CURUSER["id"] && get_user_class() < $commanage_class)
+		if ($arr["user"] != $CURUSER["id"] && !user_can('commanage'))
 		stderr($lang_comment['std_error'], $lang_comment['std_permission_denied']);
 
 		if ($_SERVER["REQUEST_METHOD"] == "POST")
@@ -208,7 +208,7 @@ elseif ($action == "edit")
 }
 elseif ($action == "delete")
 {
-		if (get_user_class() < $commanage_class)
+		if (!user_can('commanage'))
 		stderr($lang_comment['std_error'], $lang_comment['std_permission_denied']);
 
 		$commentid = intval($_GET["cid"] ?? 0);
@@ -265,7 +265,7 @@ elseif ($action == "delete")
 }
 elseif ($action == "vieworiginal")
 {
-	if (get_user_class() < $commanage_class)
+	if (!user_can('commanage'))
 	stderr($lang_comment['std_error'], $lang_comment['std_permission_denied']);
 
 		$commentid = intval($_GET["cid"] ?? 0);

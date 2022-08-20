@@ -87,7 +87,7 @@ $limit .= $showrows;
 
 //approval status
 $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
-if ($approvalStatusNoneVisible == 'no' && get_user_class() < $staffmem_class) {
+if ($approvalStatusNoneVisible == 'no' && !user_can('staffmem')) {
     $where .= ($where ? " AND " : "") . "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
 

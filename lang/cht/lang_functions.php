@@ -331,6 +331,7 @@ $lang_functions = array
     'full_site_promotion_in_effect' => '全站 [%s] 生效中！截止時間：%s',
     'text_torrent_to_approval' => '有 %s%u 個待審核的種子%s',
     'std_confirm_remove' => '確定要刪除嗎？',
+    'select_an_user_class' => '選擇一個用戶等級',
 );
 
 ?>

@@ -4,8 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 
-if (get_user_class() < $pollmanage_class)
-	permissiondenied();
+user_can('pollmanage', true);
 
 $pollid = intval($_GET['id'] ?? 0);
 
@@ -17,18 +16,18 @@ if ($pollid)
 	stdhead($lang_polloverview['head_poll_overview']);
 	print("<h1 align=\"center\">".$lang_polloverview['text_polls_overview']."</h1>\n");
 
-	print("<table width=737 border=1 cellspacing=0 cellpadding=5><tr>\n" . 
+	print("<table width=737 border=1 cellspacing=0 cellpadding=5><tr>\n" .
  "<td class=colhead align=center><nobr>".$lang_polloverview['col_id']."</nobr></td><td class=colhead><nobr>".$lang_polloverview['col_added']."</nobr></td><td class=colhead><nobr>".$lang_polloverview['col_question']."</nobr></td></tr>\n");
-  
+
 	while ($poll = mysql_fetch_assoc($res))
 	{
 		$o = array($poll["option0"], $poll["option1"], $poll["option2"], $poll["option3"], $poll["option4"], $poll["option5"], $poll["option6"], $poll["option7"], $poll["option8"], $poll["option9"], $poll["option10"], $poll["option11"], $poll["option12"], $poll["option13"], $poll["option14"], $poll["option15"], $poll["option16"], $poll["option17"], $poll["option18"], $poll["option19"]);
-   
+
 		$added = gettime($poll['added']);
 		print("<tr><td align=center><a href=\"polloverview.php?id=".$poll['id']."\">".$poll['id']."</a></td><td>".$added."</td><td><a href=\"polloverview.php?id=".$poll['id']."\">".$poll['question']."</a></td></tr>\n");
 	}
 	print("</table>\n");
- 
+
 	print("<h1 align=\"center\">".$lang_polloverview['text_poll_question']."</h1><br />\n");
 	print("<table width=737 border=1 cellspacing=0 cellpadding=5><tr><td class=colhead>".$lang_polloverview['col_option_no']."</td><td class=colhead>".$lang_polloverview['col_options']."</td></tr>\n");
 	foreach($o as $key=>$value) {
@@ -68,12 +67,12 @@ else
 	stdhead($lang_polloverview['head_poll_overview']);
 	print("<h1 align=\"center\">".$lang_polloverview['text_polls_overview']."</h1>\n");
 
-	print("<table width=737 border=1 cellspacing=0 cellpadding=5><tr>\n" . 
+	print("<table width=737 border=1 cellspacing=0 cellpadding=5><tr>\n" .
  "<td class=colhead align=center><nobr>".$lang_polloverview['col_id']."</nobr></td><td class=colhead>".$lang_polloverview['col_added']."</td><td class=colhead><nobr>".$lang_polloverview['col_question']."</nobr></td></tr>\n");
 	while ($poll = mysql_fetch_assoc($res))
 	{
 		$added = gettime($poll['added']);
-		print("<tr><td align=center><a href=\"polloverview.php?id=".$poll['id']."\">".$poll['id']."</a></td><td>".$added."</td><td><a href=\"polloverview.php?id=".$poll['id']."\">".$poll['question']."</a></td></tr>\n");  
+		print("<tr><td align=center><a href=\"polloverview.php?id=".$poll['id']."\">".$poll['id']."</a></td><td>".$added."</td><td><a href=\"polloverview.php?id=".$poll['id']."\">".$poll['question']."</a></td></tr>\n");
 	}
 	print("</table>\n");
 	stdfoot();

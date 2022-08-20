@@ -19,9 +19,9 @@ function inviteMenu ($selected = "invitee") {
     end_main_frame();
 }
 
-if (($CURUSER['id'] != $id && get_user_class() < $viewinvite_class) || !is_valid_id($id))
+if (($CURUSER['id'] != $id && !user_can('viewinvite')) || !is_valid_id($id))
 stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied']);
-if (get_user_class() < $sendinvite_class)
+if (!user_can('sendinvite'))
 stderr($lang_invite['std_sorry'],$lang_invite['std_only'].get_user_class_name($sendinvite_class,false,true,true).$lang_invite['std_or_above_can_invite'],false);
 $res = sql_query("SELECT username FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
 $user =  mysql_fetch_assoc($res);

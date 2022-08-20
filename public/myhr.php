@@ -7,7 +7,7 @@ require_once(get_langfile_path());
 $userid =  $CURUSER['id'];
 $pagerParams = [];
 if (!empty($_GET['userid'])) {
-    if (get_user_class() < $viewhistory_class && $_GET['userid'] != $CURUSER['id']) {
+    if (!user_can('viewhistory') && $_GET['userid'] != $CURUSER['id']) {
         permissiondenied($viewhistory_class);
     }
     $userid = $_GET['userid'];

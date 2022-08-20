@@ -38,7 +38,7 @@ class Hook
         $args = func_get_args();
         ksort(self::$callbacks[$name]);
         reset(self::$callbacks[$name]);
-        do_log("name: $name, argc: " . (func_num_args() - 1));
+//        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
             foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
                 $args[1] = $value;
@@ -65,7 +65,7 @@ class Hook
         $args = func_get_args();
         ksort(self::$callbacks[$name]);
         reset(self::$callbacks[$name]);
-        do_log("name: $name, argc: " . (func_num_args() - 1));
+//        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
             foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
 //                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));

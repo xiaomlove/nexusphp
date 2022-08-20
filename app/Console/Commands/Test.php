@@ -86,9 +86,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $user = User::query()->find(10003);
-        $permissions = $user->rolePermissions;
-        dd($permissions);
+        $role = Role::query()->first();
+        $r = $role->permissions()->createMany([['permission' => 'sss']]);
+        dd($r);
     }
 
 

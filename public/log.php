@@ -3,7 +3,7 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
-if (get_user_class() < $log_class)
+if (!user_can('log'))
 {
 stderr($lang_log['std_sorry'],$lang_log['std_permission_denied_only'].get_user_class_name($log_class,false,true,true).$lang_log['std_or_above_can_view'],false);
 }
@@ -89,7 +89,7 @@ else {
 
 		$addparam = "";
 		$wherea = "";
-		if (get_user_class() >= $confilog_class){
+		if (user_can('confilog')){
 			switch ($search)
 			{
 				case "mod": $wherea=" WHERE security_level = 'mod'"; break;
@@ -140,7 +140,7 @@ else {
 				print("<tr><td class=\"rowfollow nowrap\" align=center>".gettime($arr['added'],true,false)."</td><td class=rowfollow align=left><font color='".$color."'>".htmlspecialchars($arr['txt'])."</font></td></tr>\n");
 			}
 			print("</table>");
-	
+
 			echo $pagerbottom;
 		}
 
@@ -162,7 +162,7 @@ else {
 		}
 		logmenu("chronicle");
 		searchtable($lang_log['text_search_chronicle'], 'chronicle');
-		if (get_user_class() >= $chrmanage_class)
+		if (user_can('chrmanage'))
 			additem($lang_log['text_add_chronicle'], 'chronicle');
 		if (
 			(isset($_GET['do']) && $_GET['do'] == "del")
@@ -172,8 +172,8 @@ else {
 		)
 		{
 			$txt = $_POST['txt'] ?? '';
-			if (get_user_class() < $chrmanage_class)
-				permissiondeny();
+            if (get_user_class() < $chrmanage_class)
+                permissiondeny();
 			elseif (isset($_POST['do']) && $_POST['do'] == "add")
 					sql_query ("INSERT INTO chronicle (userid,added, txt) VALUES ('".$CURUSER["id"]."', now(), ".sqlesc($txt).")") or sqlerr(__FILE__, __LINE__);
 			elseif (isset($_POST['do'] ) && $_POST['do'] == "update"){
@@ -205,11 +205,11 @@ else {
 		//echo $pagertop;
 
 			print("<table width=940 border=1 cellspacing=0 cellpadding=5>\n");
-			print("<tr><td class=colhead align=center>".$lang_log['col_date']."</td><td class=colhead align=left>".$lang_log['col_event']."</td>".(get_user_class() >= $chrmanage_class ? "<td class=colhead align=center>".$lang_log['col_modify']."</td>" : "")."</tr>\n");
+			print("<tr><td class=colhead align=center>".$lang_log['col_date']."</td><td class=colhead align=left>".$lang_log['col_event']."</td>".(user_can('chrmanage') ? "<td class=colhead align=center>".$lang_log['col_modify']."</td>" : "")."</tr>\n");
 			while ($arr = mysql_fetch_assoc($res))
 			{
 				$date = gettime($arr['added'],true,false);
-				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(get_user_class() >= $chrmanage_class ? "<td align=center nowrap><b><a href=\"".$_SERVER['REQUEST_URI']."?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"".$_SERVER['REQUEST_URI']."?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
+				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(user_can('chrmanage') ? "<td align=center nowrap><b><a href=\"".$_SERVER['REQUEST_URI']."?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"".$_SERVER['REQUEST_URI']."?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
 			}
 			print("</table>");
 			echo $pagerbottom;
@@ -319,7 +319,7 @@ else {
   		$returnto = htmlspecialchars($_GET["returnto"] ?? '');
   		if ($do == "delete")
   		{
-  		if (get_user_class() < $chrmanage_class)
+  		if (!user_can('chrmanage'))
   		stderr($lang_log['std_error'], $lang_log['std_permission_denied']);
 
   		int_check($pollid,true);
@@ -372,7 +372,7 @@ else {
 
     print($added);
 
-    if (get_user_class() >= $pollmanage_class)
+    if (user_can('pollmanage'))
     {
     	print(" - [<a href=makepoll.php?action=edit&pollid=$poll[id]><b>".$lang_log['text_edit']."</b></a>]\n");
 			print(" - [<a href=?action=poll&do=delete&pollid=$poll[id]><b>".$lang_log['text_delete']."</b></a>]\n");

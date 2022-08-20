@@ -15,7 +15,7 @@ $id = intval($_GET['userid'] ?? 0);
 $type = $_GET['type'];
 if (!in_array($type,array('uploaded','seeding','leeching','completed','incomplete')))
     die;
-if(get_user_class() < $torrenthistory_class && $id != $CURUSER["id"])
+if(!user_can('torrenthistory') && $id != $CURUSER["id"])
     permissiondenied();
 
 function maketable($res, $mode = 'seeding')
@@ -211,7 +211,7 @@ switch ($type)
 	case 'uploaded':
 	{
 //		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, snatched.seedtime, snatched.uploaded FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id AND snatched.userid=$id " . (($CURUSER["id"] != $id)?((get_user_class() < $viewanonymous_class) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
-		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id " . (($CURUSER["id"] != $id)?((get_user_class() < $viewanonymous_class) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
+		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id " . (($CURUSER["id"] != $id)?((!user_can('viewanonymous')) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
 		$count = mysql_num_rows($res);
 		if ($count > 0)
 		{

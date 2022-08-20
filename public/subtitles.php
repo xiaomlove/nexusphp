@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 		else
 		{
 			$r_a = mysql_fetch_assoc($r);
-			if($r_a["owner"] != $CURUSER["id"] && get_user_class() < $uploadsub_class)
+			if($r_a["owner"] != $CURUSER["id"] && !user_can('uploadsub'))
 			{
 				echo($lang_subtitles['std_no_permission_uploading_others']);
 				exit;
@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 	}
 	//end process language
 
-	if (isset($_POST['uplver']) && $_POST['uplver'] == 'yes' && get_user_class()>=$beanonymous_class) {
+	if (isset($_POST['uplver']) && $_POST['uplver'] == 'yes' && user_can('beanonymous')) {
 		$anonymous = "yes";
 		$anon = "Anonymous";
 	}
@@ -195,7 +195,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 	$msg_bt = "$arr[lang_name] Subtitle $id ($title) was uploaded by $anon, Download: " . get_protocol_prefix() . "$BASEURL/downloadsubs.php/".$file["name"]."";
 }
 
-if (get_user_class() >= $delownsub_class)
+if (user_can('delownsub'))
 {
 	$delete = intval($_GET["delete"] ?? 0);
 	if (is_valid_id($delete))
@@ -204,7 +204,7 @@ if (get_user_class() >= $delownsub_class)
 		if (mysql_num_rows($r) == 1)
 		{
 			$a = mysql_fetch_assoc($r);
-			if (get_user_class() >= $submanage_class || $a["uppedby"] == $CURUSER["id"])
+			if (user_can('submanage') || $a["uppedby"] == $CURUSER["id"])
 			{
 				$sure = intval($_GET["sure"] ?? 0);
 				if ($sure == 1)
@@ -308,7 +308,7 @@ if (get_user_class() >= UC_PEASANT)
 
 	print($s);
 
-	if(get_user_class() >= $beanonymous_class)
+	if(user_can('beanonymous'))
 	{
 		tr($lang_subtitles['row_show_uploader'], "<input type=checkbox name=uplver value=yes>".$lang_subtitles['hide_uploader_note'], 1);
 	}
@@ -371,8 +371,8 @@ if(get_user_class() >= UC_PEASANT)
 		print("<tr><td class=colhead>".$lang_subtitles['col_lang']."</td><td width=100% class=colhead align=center>".$lang_subtitles['col_title']."</td><td class=colhead align=center><img class=\"time\" src=\"pic/trans.gif\" alt=\"time\" title=\"".$lang_subtitles['title_date_added']."\" /></td>
 		<td class=colhead align=center><img class=\"size\" src=\"pic/trans.gif\" alt=\"size\" title=\"".$lang_subtitles['title_size']."\" /></td><td class=colhead align=center>".$lang_subtitles['col_hits']."</td><td class=colhead align=center>".$lang_subtitles['col_upped_by']."</td><td class=colhead align=center>".$lang_subtitles['col_report']."</td></tr>\n");
 
-		$mod = get_user_class() >= $submanage_class;
-		$pu = get_user_class() >= $delownsub_class;
+		$mod = user_can('submanage');
+		$pu = user_can('delownsub');
 
 		while ($arr = mysql_fetch_assoc($res))
 		{
@@ -384,7 +384,7 @@ if(get_user_class() >= UC_PEASANT)
 			$added = "<td class=rowfollow align=center><nobr>" . $addtime . "</nobr></td>\n";
 			$size = "<td class=rowfollow align=center>" . mksize_loose($arr['size']) . "</td>\n";
 			$hits = "<td class=rowfollow align=center>" . number_format($arr['hits']) . "</td>\n";
-			$uppedby = "<td class=rowfollow align=center>" . ($arr["anonymous"] == 'yes' ? $lang_subtitles['text_anonymous'] . (get_user_class() >= $viewanonymous_class ? "<br />".get_username($arr['uppedby'],false,true,true,false,true) : "") : get_username($arr['uppedby'])) . "</td>\n";
+			$uppedby = "<td class=rowfollow align=center>" . ($arr["anonymous"] == 'yes' ? $lang_subtitles['text_anonymous'] . (user_can('viewanonymous') ? "<br />".get_username($arr['uppedby'],false,true,true,false,true) : "") : get_username($arr['uppedby'])) . "</td>\n";
 			$report = "<td class=rowfollow align=center><a href=\"report.php?subtitle=$arr[id]\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_subtitles['title_report_subtitle']."\" /></a></td>\n";
 			print("<tr>".$lang.$title.$added.$size.$hits.$uppedby.$report."</tr>\n");
 			$i++;

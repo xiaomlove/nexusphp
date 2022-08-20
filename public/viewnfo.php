@@ -5,7 +5,7 @@ require_once(get_langfile_path());
 loggedinorreturn();
 parked();
 $id = $_GET["id"];
-if (get_user_class() < $viewnfo_class || !is_valid_id($id) || $enablenfo_main != 'yes')
+if (!user_can('viewnfo') || !is_valid_id($id) || $enablenfo_main != 'yes')
 permissiondenied();
 
 $r = sql_query("SELECT name,nfo FROM torrents WHERE id=$id") or sqlerr();

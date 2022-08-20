@@ -108,7 +108,7 @@ if (filesize($fn) == 0) {
     httperr();
 }
 $approvalNotAllowed = $row['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no';
-if ((($row['banned'] == 'yes' || $approvalNotAllowed) && get_user_class() < $seebanned_class) || !can_access_torrent($row)) {
+if ((($row['banned'] == 'yes' || $approvalNotAllowed) && !user_can('seebanned')) || !can_access_torrent($row)) {
     denyDownload();
 }
 

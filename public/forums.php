@@ -307,7 +307,7 @@ if ($action == "editpost")
 	$locked = ($arr2["locked"] == 'yes');
 
 	$ismod = is_forum_moderator($postid, 'post');
-	if (($CURUSER["id"] != $arr["userid"] || $locked) && get_user_class() < $postmanage_class && !$ismod)
+	if (($CURUSER["id"] != $arr["userid"] || $locked) && !user_can('postmanage') && !$ismod)
 		permissiondenied();
 
 	stdhead($lang_forums['text_edit_post']);
@@ -390,7 +390,7 @@ if ($action == "post")
 
 		$res = sql_query("SELECT locked FROM topics WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
 		$arr = mysql_fetch_assoc($res) or die("Topic id n/a");
-		if ($arr["locked"] == 'yes' && get_user_class() < $postmanage_class && !is_forum_moderator($topicid, 'topic'))
+		if ($arr["locked"] == 'yes' && !user_can('postmanage') && !is_forum_moderator($topicid, 'topic'))
 			stderr($lang_forums['std_error'], $lang_forums['std_topic_locked']);
 	}
 
@@ -429,7 +429,7 @@ if ($action == "post")
 		// Anti Flood Code
 		// To ensure that posts are not entered within 10 seconds limiting posts
 		// to a maximum of 360*6 per hour.
-		if (get_user_class() < $postmanage_class) {
+		if (!user_can('postmanage')) {
 			if (strtotime($CURUSER['last_post']) > (TIMENOW - 10))
 			{
 				$secs = 10 - (TIMENOW - strtotime($CURUSER['last_post']));
@@ -547,7 +547,7 @@ if ($action == "viewtopic")
 
 	if (get_user_class() < $row["minclassread"])
 		stderr($lang_forums['std_error'], $lang_forums['std_unpermitted_viewing_topic']);
-	if (((get_user_class() >= $row["minclasswrite"] && !$locked) || get_user_class() >= $postmanage_class || $is_forummod) && $CURUSER["forumpost"] == 'yes')
+	if (((get_user_class() >= $row["minclasswrite"] && !$locked) || user_can('postmanage') || $is_forummod) && $CURUSER["forumpost"] == 'yes')
 		$maypost = true;
 	else $maypost = false;
 
@@ -768,17 +768,17 @@ if ($action == "viewtopic")
 		if ($maypost)
 		print("<a href=\"".htmlspecialchars("?action=quotepost&postid=".$postid)."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_forums['title_reply_with_quote']."\" /></a>");
 
-		if (get_user_class() >= $postmanage_class || $is_forummod)
+		if (user_can('postmanage') || $is_forummod)
 		print("<a href=\"".htmlspecialchars("?action=deletepost&postid=".$postid)."\"><img class=\"f_delete\" src=\"pic/trans.gif\" alt=\"Delete\" title=\"".$lang_forums['title_delete_post']."\" /></a>");
 
-		if (($CURUSER["id"] == $posterid && !$locked) || get_user_class() >= $postmanage_class || $is_forummod)
+		if (($CURUSER["id"] == $posterid && !$locked) || user_can('postmanage') || $is_forummod)
 		print("<a href=\"".htmlspecialchars("?action=editpost&postid=".$postid)."\"><img class=\"f_edit\" src=\"pic/trans.gif\" alt=\"Edit\" title=\"".$lang_forums['title_edit_post']."\" /></a>");
 		print("</td></tr></table>");
 	}
 
 	//------ Mod options
 
-	if (get_user_class() >= $postmanage_class || $is_forummod)
+	if (user_can('postmanage') || $is_forummod)
 	{
 		print("</td></tr><tr><td class=\"toolbox\" align=\"center\">\n");
 		print("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" align=\"left\">\n");
@@ -883,7 +883,7 @@ if ($action == "movetopic")
 
 	$topicid = intval($_GET["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
-	if (!is_valid_id($forumid) || !is_valid_id($topicid) || (get_user_class() < $postmanage_class && !$ismod))
+	if (!is_valid_id($forumid) || !is_valid_id($topicid) || (!user_can('postmanage') && !$ismod))
 		permissiondenied();
 
 	// Make sure topic and forum is valid
@@ -946,7 +946,7 @@ if ($action == "deletetopic")
 		$userid = $row1['userid'];
 	}
 	$ismod = is_forum_moderator($topicid,'topic');
-	if (!is_valid_id($topicid) || (get_user_class() < $postmanage_class && !$ismod))
+	if (!is_valid_id($topicid) || (!user_can('postmanage') && !$ismod))
 		permissiondenied();
 
 	$sure = intval($_GET["sure"] ?? 0);
@@ -983,7 +983,7 @@ if ($action == "deletepost")
 	$sure = intval($_GET["sure"] ?? 0);
 
 	$ismod = is_forum_moderator($postid, 'post');
-	if ((get_user_class() < $postmanage_class && !$ismod) || !is_valid_id($postid))
+	if ((!user_can('postmanage') && !$ismod) || !is_valid_id($postid))
 		permissiondenied();
 
 	//------- Get topic id
@@ -1040,7 +1040,7 @@ if ($action == "setlocked")
 {
 	$topicid = intval($_POST["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
-	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
+	if (!$topicid || (!user_can('postmanage') && !$ismod))
 		permissiondenied();
 
 	$locked = sqlesc($_POST["locked"]);
@@ -1054,7 +1054,7 @@ if ($action == 'hltopic')
 {
 	$topicid = intval($_GET["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
-	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
+	if (!$topicid || (!user_can('postmanage') && !$ismod))
 		permissiondenied();
 	$color = $_POST["color"];
 	if ($color==0 || get_hl_color($color))
@@ -1074,7 +1074,7 @@ if ($action == "setsticky")
 {
 	$topicid = intval($_POST["topicid"] ?? 0);
 	$ismod = is_forum_moderator($topicid,'topic');
-	if (!$topicid || (get_user_class() < $postmanage_class && !$ismod))
+	if (!$topicid || (!user_can('postmanage') && !$ismod))
 		permissiondenied();
 
 	$sticky = sqlesc($_POST["sticky"]);
@@ -1475,7 +1475,7 @@ if ($CURUSER)
 stdhead($lang_forums['head_forums']);
 begin_main_frame();
 print("<h1 align=\"center\">".$SITENAME."&nbsp;".$lang_forums['text_forums']."</h1>");
-print("<p align=\"center\"><a href=\"?action=search\"><b>".$lang_forums['text_search']."</b></a> | <a href=\"?action=viewunread\"><b>".$lang_forums['text_view_unread']."</b></a> | <a href=\"?catchup=1\"><b>".$lang_forums['text_catch_up']."</b></a> ".(get_user_class() >= $forummanage_class ? "| <a href=\"forummanage.php\"><b>".$lang_forums['text_forum_manager']."</b></a>":"")."</p>");
+print("<p align=\"center\"><a href=\"?action=search\"><b>".$lang_forums['text_search']."</b></a> | <a href=\"?action=viewunread\"><b>".$lang_forums['text_view_unread']."</b></a> | <a href=\"?catchup=1\"><b>".$lang_forums['text_catch_up']."</b></a> ".(user_can('forummanage') ? "| <a href=\"forummanage.php\"><b>".$lang_forums['text_forum_manager']."</b></a>":"")."</p>");
 print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"100%\">\n");
 
 if (!$overforums = $Cache->get_value('overforums_list')){

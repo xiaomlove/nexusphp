@@ -174,6 +174,7 @@ return array (
     'userbar' => '2',
     'view_special_torrent' => '4',
       'torrent_hr' => User::CLASS_ADMINISTRATOR,
+      'torrent-approval' => User::CLASS_ADMINISTRATOR,
   ),
   'tweak' =>
   array (

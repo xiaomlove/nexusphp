@@ -149,7 +149,6 @@ $emailnotify_smtp = $SMTP['emailnotify'];
 $smtptype = $SMTP['smtptype'];
 $smtp_host = $SMTP['smtp_host'];
 $smtp_port = $SMTP['smtp_port'];
-if (strtoupper(substr(PHP_OS,0,3)=='WIN'))
 $smtp_from = $SMTP['smtp_from'];
 $smtpaddress = $SMTP['smtpaddress'] ?? '';
 $smtpport = $SMTP['smtpport'] ?? '';
@@ -167,7 +166,7 @@ $disableemailchange = $SECURITY['changeemail'];
 $cheaterdet_security = $SECURITY['cheaterdet'];
 $nodetect_security = $SECURITY['nodetect'];
 
-$defaultclass_class = $AUTHORITY['defaultclass'];
+$defaultclass_class = isset(\App\Models\User::$classes[$AUTHORITY['defaultclass']]) ? $AUTHORITY['defaultclass'] : \App\Models\User::CLASS_USER;
 $staffmem_class = $AUTHORITY['staffmem'];
 $newsmanage_class = $AUTHORITY['newsmanage'];
 $newfunitem_class = $AUTHORITY['newfunitem'];

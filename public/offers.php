@@ -29,8 +29,7 @@ if (isset($_GET['id']) && $_GET["id"]){
 
 //==== add offer
 if (isset($_GET['add_offer']) && $_GET["add_offer"]){
-	if (get_user_class() < $addoffer_class)
-		permissiondenied();
+	user_can('addoffer', true);
 	$add_offer = intval($_GET["add_offer"] ?? 0);
 	if($add_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
@@ -61,8 +60,7 @@ if (isset($_GET['add_offer']) && $_GET["add_offer"]){
 
 //=== take new offer
 if (isset($_GET['new_offer']) && $_GET["new_offer"]){
-	if (get_user_class() < $addoffer_class)
-		permissiondenied();
+	user_can('addoffer', true);
 	$new_offer = intval($_GET["new_offer"] ?? 0);
 	if($new_offer != '1')
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
@@ -158,7 +156,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	$status="<font color=\"red\">".$lang_offers['text_denied']."</font>";
 	tr($lang_offers['row_status'], $status, 1);
 //=== if you want to have a pending thing for uploaders use this next bit
-	if (get_user_class() >= $offermanage_class && $num["allowed"] == "pending")
+	if (user_can('offermanage') && $num["allowed"] == "pending")
 	tr($lang_offers['row_allow'], "<table><tr><td class=\"embedded\"><form method=\"post\" action=\"?allow_offer=1\"><input type=\"hidden\" value=\"".$id."\" name=\"offerid\" />".
 	"<input class=\"btn\" type=\"submit\" value=\"".$lang_offers['submit_allow']."\" />&nbsp;&nbsp;</form></td><td class=\"embedded\"><form method=\"post\" action=\"?id=".$id."&amp;finish_offer=1\">".
 	"<input type=\"hidden\" value=\"".$id."\" name=\"finish\" /><input class=\"btn\" type=\"submit\" value=\"".$lang_offers['submit_let_votes_decide']."\" /></form></td></tr></table>", 1);
@@ -174,7 +172,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	//if pending
 	if ($num["allowed"] == "pending"){
 		tr($lang_offers['row_vote'], "<b>".
-		"<a href=\"?id=".$id."&amp;vote=yeah\"><font color=\"green\">".$lang_offers['text_for']."</font></a></b>".(get_user_class() >= $againstoffer_class ? " - <b><a href=\"?id=".$id."&amp;vote=against\">".
+		"<a href=\"?id=".$id."&amp;vote=yeah\"><font color=\"green\">".$lang_offers['text_for']."</font></a></b>".(user_can('againstoffer') ? " - <b><a href=\"?id=".$id."&amp;vote=against\">".
 		"<font color=\"red\">".$lang_offers['text_against']."</font></a></b>" : ""), 1);
 		tr($lang_offers['row_vote_results'],
 	"<b>".$lang_offers['text_for'].":</b> $za  <b>".$lang_offers['text_against']."</b> $protiv &nbsp; &nbsp; <a href=\"?id=".$id."&amp;offer_vote=1\"><i>".$lang_offers['text_see_vote_detail']."</i></a>", 1);
@@ -186,7 +184,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 		tr($lang_offers['row_offer_allowed'],
 		$lang_offers['text_urge_upload_offer_note'], 1);
 	}
-	if ($CURUSER['id'] == $num['userid'] || get_user_class() >= $offermanage_class){
+	if ($CURUSER['id'] == $num['userid'] || user_can('offermanage')){
 		$edit = "<a href=\"?id=".$id."&amp;edit_offer=1\"><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_offers['text_edit_offer'] . "</font></b></a>&nbsp;|&nbsp;";
 		$delete = "<a href=\"?id=".$id."&amp;del_offer=1&amp;sure=0\"><img class=\"dt_delete\" src=\"pic/trans.gif\" alt=\"delete\" />&nbsp;<b><font class=\"small\">".$lang_offers['text_delete_offer']."</font></b></a>&nbsp;|&nbsp;";
 	}
@@ -235,7 +233,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 //=== allow offer by staff
 if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 
-	if (get_user_class() < $offermanage_class)
+	if (!user_can('offermanage'))
 	stderr($lang_offers['std_access_denied'], $lang_offers['std_mans_job']);
 
 	$allow_offer = intval($_GET["allow_offer"] ?? 0);
@@ -270,7 +268,7 @@ if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 //=== allow offer by vote
 if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 
-	if (get_user_class() < $offermanage_class)
+	if (!user_can('offermanage'))
 	stderr($lang_offers['std_access_denied'], $lang_offers['std_have_no_permission']);
 
 	$finish_offer = intval($_GET["finish_offer"] ?? 0);
@@ -337,7 +335,7 @@ if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 	$s = $num["name"];
 	$id2 = $num["category"];
 
-	if ($CURUSER["id"] != $num["userid"] && get_user_class() < $offermanage_class)
+	if ($CURUSER["id"] != $num["userid"] && !user_can('offermanage'))
 	stderr($lang_offers['std_error'], $lang_offers['std_cannot_edit_others_offer']);
 
 	$body = htmlspecialchars(unesc($num["descr"]));
@@ -378,7 +376,7 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 	$res = sql_query("SELECT userid FROM offers WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 	$num = mysql_fetch_array($res);
 
-	if ($CURUSER['id'] != $num['userid'] && get_user_class() < $offermanage_class)
+	if ($CURUSER['id'] != $num['userid'] && !user_can('offermanage'))
 	stderr($lang_offers['std_error'], $lang_offers['std_access_denied']);
 
 	$name = $_POST["name"];
@@ -461,7 +459,7 @@ if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 if (isset($_GET["vote"]) && $_GET["vote"]){
 	$offerid = htmlspecialchars(intval($_GET["id"] ?? 0));
 	$vote = htmlspecialchars($_GET["vote"]);
-	if ($vote == 'against' && get_user_class() < $againstoffer_class)
+	if ($vote == 'against' && !user_can('againstoffer'))
 		stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 	if ($vote =='yeah' || $vote =='against')
 	{
@@ -547,7 +545,7 @@ if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 
 	$name = $num["name"];
 
-	if ($userid != $num["userid"] && get_user_class() < $offermanage_class)
+	if ($userid != $num["userid"] && !user_can('offermanage'))
 	stderr($lang_offers['std_error'], $lang_offers['std_cannot_delete_others_offer']);
 
 	if ($_GET["sure"])
@@ -707,7 +705,7 @@ if ($offervotetimeout_main)
 if ($offeruptimeout_main)
 	print("<li>".$lang_offers['text_rule_four_one']."<b>".($offeruptimeout_main / 3600)."</b>".$lang_offers['text_rule_four_two']."</li>\n");
 print("</ul></div>");
-if (get_user_class() >= $addoffer_class)
+if (user_can('addoffer'))
 print("<div align=\"right\" style=\"margin-bottom: 8px;\"><a href=\"?add_offer=1\">".
 "<b>".$lang_offers['text_add_offer']."</b></a></div>");
 print("<div align=\"center\"><form method=\"get\" action=\"?\">".$lang_offers['text_search_offers']."&nbsp;&nbsp;<input type=\"text\" id=\"specialboxg\" name=\"search\" />&nbsp;&nbsp;");
@@ -736,7 +734,7 @@ else
 if ($offervotetimeout_main > 0 && $offeruptimeout_main > 0)
 	print("<td class=\"colhead\">".$lang_offers['col_timeout']."</td>");
 print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
-(get_user_class() >= $offermanage_class ? "<td class=\"colhead\">".$lang_offers['col_act']."</td>" : "")."</tr>\n");
+(user_can('offermanage') ? "<td class=\"colhead\">".$lang_offers['col_act']."</td>" : "")."</tr>\n");
 	for ($i = 0; $i < $num; ++$i)
 	{
 	$arr = mysql_fetch_assoc($res);
@@ -811,7 +809,7 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 	$max_length_of_offer_name = 70;
 	if($count_dispname > $max_length_of_offer_name)
 		$dispname=mb_substr($dispname, 0, $max_length_of_offer_name-2,"UTF-8") . "..";
-	print("<tr><td class=\"rowfollow\" style=\"padding: 0px\"><a href=\"?category=".$arr['cat_id']."\">".return_category_image($arr['cat_id'], "")."</a></td><td style='text-align: left'><a href=\"?id=".$arr['id']."&amp;off_details=1\" title=\"".htmlspecialchars($arr['name'])."\"><b>".htmlspecialchars($dispname)."</b></a>".($CURUSER['appendnew'] != 'no' && strtotime($arr["added"]) >= $last_offer ? "<b> (<font class='new'>".$lang_offers['text_new']."</font>)</b>" : "").$allowed."</td><td class=\"rowfollow nowrap\" style='padding: 5px' align=\"center\">".$v_res."</td><td class=\"rowfollow nowrap\" ".(get_user_class() < $againstoffer_class ? " colspan=\"2\" " : "")." style='padding: 5px'><a href=\"?id=".$arr['id']."&amp;vote=yeah\" title=\"".$lang_offers['title_i_want_this']."\"><font color=\"green\"><b>".$lang_offers['text_yep']."</b></font></a></td>".(get_user_class() >= $againstoffer_class ? "<td class=\"rowfollow nowrap\" align=\"center\"><a href=\"?id=".$arr['id']."&amp;vote=against\" title=\"".$lang_offers['title_do_not_want_it']."\"><font color=\"red\"><b>".$lang_offers['text_nah']."</b></font></a></td>" : ""));
+	print("<tr><td class=\"rowfollow\" style=\"padding: 0px\"><a href=\"?category=".$arr['cat_id']."\">".return_category_image($arr['cat_id'], "")."</a></td><td style='text-align: left'><a href=\"?id=".$arr['id']."&amp;off_details=1\" title=\"".htmlspecialchars($arr['name'])."\"><b>".htmlspecialchars($dispname)."</b></a>".($CURUSER['appendnew'] != 'no' && strtotime($arr["added"]) >= $last_offer ? "<b> (<font class='new'>".$lang_offers['text_new']."</font>)</b>" : "").$allowed."</td><td class=\"rowfollow nowrap\" style='padding: 5px' align=\"center\">".$v_res."</td><td class=\"rowfollow nowrap\" ".(!user_can('againstoffer') ? " colspan=\"2\" " : "")." style='padding: 5px'><a href=\"?id=".$arr['id']."&amp;vote=yeah\" title=\"".$lang_offers['title_i_want_this']."\"><font color=\"green\"><b>".$lang_offers['text_yep']."</b></font></a></td>".(get_user_class() >= $againstoffer_class ? "<td class=\"rowfollow nowrap\" align=\"center\"><a href=\"?id=".$arr['id']."&amp;vote=against\" title=\"".$lang_offers['title_do_not_want_it']."\"><font color=\"red\"><b>".$lang_offers['text_nah']."</b></font></a></td>" : ""));
 
 	print("<td class=\"rowfollow\">".$comment."</td><td class=\"rowfollow nowrap\">" . $addtime. "</td>");
 	if ($offervotetimeout_main > 0 && $offeruptimeout_main > 0){
@@ -828,7 +826,7 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 			$timeout = "N/A";
 		print("<td class=\"rowfollow nowrap\">".$timeout."</td>");
 	}
-	print("<td class=\"rowfollow\">".$addedby."</td>".(get_user_class() >= $offermanage_class ? "<td class=\"rowfollow\"><a href=\"?id=".$arr['id']."&amp;del_offer=1\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_offers['title_delete']."\" /></a><br /><a href=\"?id=".$arr['id']."&amp;edit_offer=1\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_offers['title_edit']."\" /></a></td>" : "")."</tr>");
+	print("<td class=\"rowfollow\">".$addedby."</td>".(user_can('offermanage') ? "<td class=\"rowfollow\"><a href=\"?id=".$arr['id']."&amp;del_offer=1\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_offers['title_delete']."\" /></a><br /><a href=\"?id=".$arr['id']."&amp;edit_offer=1\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_offers['title_edit']."\" /></a></td>" : "")."</tr>");
 	}
 	print("</table>\n");
 	echo $pagerbottom;

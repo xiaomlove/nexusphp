@@ -338,7 +338,7 @@ for ($i=0; $i < count($allBonus); $i++)
 		}
 		elseif($bonusarray['art'] == 'invite')
 		{
-			if(get_user_class() < $buyinvite_class)
+			if(!user_can('buyinvite'))
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']."\" disabled=\"disabled\" /></td>");
 			else
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
@@ -543,7 +543,7 @@ if ($action == "exchange") {
 		}
 		//=== trade for invites
 		elseif($art == "invite") {
-			if(get_user_class() < $buyinvite_class)
+			if(!user_can('buyinvite'))
 				die(get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']);
 			$invites = $CURUSER['invites'];
 			$inv = $invites+$bonusarray['menge'];

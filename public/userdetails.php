@@ -97,12 +97,12 @@ elseif ($CURUSER["id"] <> $user["id"])
 	}
 }
 begin_main_frame();
-if ($CURUSER['id'] == $user['id'] || get_user_class() >= $cruprfmanage_class)
+if ($CURUSER['id'] == $user['id'] || user_can('cruprfmanage'))
 	print("<h2>".$lang_userdetails['text_flush_ghost_torrents']."<a class=\"altlink\" href=\"takeflush.php?id=".$id."\">".$lang_userdetails['text_here']."</a></h2>\n");
 ?>
 <table width="100%" border="1" cellspacing="0" cellpadding="5">
 <?php
-if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || $CURUSER['id'] == $user['id']){
+if (($user["privacy"] != "strong") OR (user_can('prfmanage')) || $CURUSER['id'] == $user['id']){
 //Xia Zuojie: Taste compatibility is extremely slow. It can takes thounsands of datebase queries. It is disabled until someone makes it fast.
 /*
 	if (isset($CURUSER) && $CURUSER['id'] != $user['id'])
@@ -171,7 +171,7 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 	}
 */
     tr_small($lang_userdetails['text_user_id'], $user['id'], 1);
-	if ($CURUSER['id'] == $user['id'] || get_user_class() >= $viewinvite_class){
+	if ($CURUSER['id'] == $user['id'] || user_can('viewinvite')){
 	if ($user["invites"] <= 0)
 	tr_small($lang_userdetails['row_invitation'], $lang_userdetails['text_no_invitation'], 1);
 	else
@@ -191,10 +191,10 @@ if (($user["privacy"] != "strong") OR (get_user_class() >= $prfmanage_class) || 
 if ($where_tweak == "yes") {
 	tr_small($lang_userdetails['row_last_seen_location'], $user['page'], 1);
 }
-if (get_user_class() >= $userprofile_class OR $user["privacy"] == "low") {
+if (user_can('userprofile') OR $user["privacy"] == "low") {
 	tr_small($lang_userdetails['row_email'], "<a href=\"mailto:".$user['email']."\">".$user['email']."</a>", 1);
 }
-if (get_user_class() >= $userprofile_class) {
+if (user_can('userprofile')) {
 	$resip = sql_query("SELECT ip FROM iplog WHERE userid =$id GROUP BY ip") or sqlerr(__FILE__, __LINE__);
 	$iphistory = mysql_num_rows($resip);
 
@@ -203,7 +203,7 @@ if (get_user_class() >= $userprofile_class) {
 
 }
 $seedBoxRep = new \App\Repositories\SeedBoxRepository();
-if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"])
+if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"])
 {
     $seedBoxIcon = $seedBoxRep->renderIcon($CURUSER['ip'], $CURUSER['id']);
 	if ($enablelocation_tweak == 'yes'){
@@ -222,7 +222,7 @@ if (mysql_num_rows($res) > 0)
 	{
 	    $clientselect .= "<tr>";
 		$clientselect .= sprintf('<td>%s</td>', get_agent($arr['peer_id'], $arr['agent']));
-		if (get_user_class() >= $userprofile_class ||  $user["id"] == $CURUSER["id"]) {
+		if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"]) {
             $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'].$seedBoxRep->renderIcon($arr['ipv4'], $CURUSER['id']), $arr['ipv6'].$seedBoxRep->renderIcon($arr['ipv6'], $CURUSER['id']), $arr['port']);
         } else {
             $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', '---', '---', '---');
@@ -274,7 +274,7 @@ if ($user["download"] && $user["upload"])
 tr_small($lang_userdetails['row_internet_speed'], $download."&nbsp;&nbsp;&nbsp;&nbsp;".$upload."&nbsp;&nbsp;&nbsp;&nbsp;".$isp, 1);
 tr_small($lang_userdetails['row_gender'], $gender, 1);
 
-if (($user['donated'] > 0 || $user['donated_cny'] > 0 )&& (get_user_class() >= $userprofile_class || $CURUSER["id"] == $user["id"]))
+if (($user['donated'] > 0 || $user['donated_cny'] > 0 )&& (user_can('userprofile') || $CURUSER["id"] == $user["id"]))
 tr_small($lang_userdetails['row_donated'], "$".htmlspecialchars($user['donated'])."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".htmlspecialchars($user['donated_cny']), 1);
 
 if ($user["avatar"])
@@ -374,11 +374,13 @@ if (!empty($props)) {
     tr_small($lang_userdetails['row_user_props'], sprintf('<div style="display: flex;align-items: center">%s</div>', implode('&nbsp;|&nbsp;', $props)), 1);
 }
 
-tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewcomments&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_comments']."\">".$torrentcomments."</a>" : $torrentcomments), 1);
+do_action('user_detail_rows', $user['id'], 'web');
 
-tr_small($lang_userdetails['row_forum_posts'], ($forumposts && ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) ? "<a href=\"userhistory.php?action=viewposts&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_posts']."\">".$forumposts."</a>" : $forumposts), 1);
+tr_small($lang_userdetails['row_torrent_comment'], ($torrentcomments && ($user["id"] == $CURUSER["id"] || user_can('viewhistory')) ? "<a href=\"userhistory.php?action=viewcomments&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_comments']."\">".$torrentcomments."</a>" : $torrentcomments), 1);
 
-if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) {
+tr_small($lang_userdetails['row_forum_posts'], ($forumposts && ($user["id"] == $CURUSER["id"] || user_can('viewhistory')) ? "<a href=\"userhistory.php?action=viewposts&amp;id=".$id."\" title=\"".$lang_userdetails['link_view_posts']."\">".$forumposts."</a>" : $forumposts), 1);
+
+if ($user["id"] == $CURUSER["id"] || user_can('viewhistory')) {
     if (\App\Models\HitAndRun::getIsEnabled()) {
         $hrStatus = (new \App\Repositories\HitAndRunRepository())->getStatusStats($user['id']);
         tr_small('H&R', sprintf('<a href="myhr.php?userid=%s" target="_blank">%s</a>', $user['id'], $hrStatus), 1);
@@ -392,7 +394,7 @@ if ($user["id"] == $CURUSER["id"] || get_user_class() >= $viewhistory_class) {
 }
 
 
-if ($user["ip"] && (get_user_class() >= $torrenthistory_class || $user["id"] == $CURUSER["id"])){
+if ($user["ip"] && (user_can('torrenthistory') || $user["id"] == $CURUSER["id"])){
 
 tr_small($lang_userdetails['row_uploaded_torrents'], "<a href=\"javascript: getusertorrentlistajax('".$user['id']."', 'uploaded', 'ka'); klappe_news('a')\"><img class=\"plus\" src=\"pic/trans.gif\" id=\"pica\" alt=\"Show/Hide\" title=\"".$lang_userdetails['title_show_or_hide'] ."\" />   <u>".$lang_userdetails['text_show_or_hide']."</u></a><div id=\"ka\" style=\"display: none;\"></div>", 1);
 
@@ -417,7 +419,7 @@ else
 }
 $showpmbutton = 0;
 if ($CURUSER["id"] != $user["id"])
-if (get_user_class() >= $staffmem_class)
+if (user_can('staffmem'))
 $showpmbutton = 1;
 elseif ($user["acceptpms"] == "yes")
 {
@@ -439,7 +441,7 @@ print("</td></tr>");
 }
 print("</table>\n");
 
-if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
+if (user_can('prfmanage') && $user["class"] < get_user_class())
 {
 	begin_frame($lang_userdetails['text_edit_user'], true);
 	print("<form method=\"post\" action=\"modtask.php\">");
@@ -482,7 +484,7 @@ if (get_user_class() >= $prfmanage_class && $user["class"] < get_user_class())
 	tr($lang_userdetails['row_movie_picker'], "<input name=\"moviepicker\" value=\"yes\" type=\"radio\"" . ($moviepicker ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input name=\"moviepicker\" value=\"no\" type=\"radio\"" . (!$moviepicker ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_pick_for'], "<textarea cols=\"60\" rows=\"6\" name=\"pickfor\">".$pickfor."</textarea>", 1);
 
-	if (get_user_class() >= $cruprfmanage_class)
+	if (user_can('cruprfmanage'))
 	{
 		$modcomment = htmlspecialchars($user["modcomment"]);
 		tr($lang_userdetails['row_comment'], "<textarea cols=\"60\" rows=\"6\" name=\"modcomment\">".$modcomment."</textarea>", 1);
@@ -582,7 +584,7 @@ JS;
 	tr($lang_userdetails['row_download_possible'], "<input type=\"radio\" name=\"downloadpos\" value=\"yes\"" .($user["downloadpos"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"downloadpos\" value=\"no\"" .($user["downloadpos"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_show_ad'], "<input type=\"radio\" name=\"noad\" value=\"no\"" .($user["noad"]=="no" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_yes']."<input type=\"radio\" name=\"noad\" value=\"yes\"" .($user["noad"]=="yes" ? " checked=\"checked\"" : "") . " />".$lang_userdetails['radio_no'], 1);
 	tr($lang_userdetails['row_no_ad_until'], "<input type=\"text\" name=\"noaduntil\" value=\"".htmlspecialchars($user["noaduntil"])."\" /> ".$lang_userdetails['text_no_ad_until_note'], 1);
-	if (get_user_class() >= $cruprfmanage_class)
+	if (user_can('cruprfmanage'))
 	{
 		tr($lang_userdetails['row_change_username'], "<input type=\"text\" size=\"25\" name=\"username\" value=\"" . htmlspecialchars($user['username']) . "\" />", 1);
 
@@ -592,7 +594,7 @@ JS;
 	tr($lang_userdetails['row_change_password'], "<input type=\"password\" name=\"chpassword\" size=\"50\" />", 1);
 	tr($lang_userdetails['row_repeat_password'], "<input type=\"password\" name=\"passagain\" size=\"50\" />", 1);
 
-	if (get_user_class() >= $cruprfmanage_class)
+	if (user_can('cruprfmanage'))
 	{
 //		tr($lang_userdetails['row_amount_uploaded'], "<input disabled type=\"text\" size=\"60\" name=\"uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" /><input type=\"hidden\" name=\"ori_uploaded\" value=\"" . htmlspecialchars($user['uploaded']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
 //		tr($lang_userdetails['row_amount_downloaded'], "<input disabled type=\"text\" size=\"60\" name=\"downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" /><input type=\"hidden\" name=\"ori_downloaded\" value=\"" .htmlspecialchars($user['downloaded']) . "\" />".$lang_userdetails['change_field_value_migrated'], 1);
@@ -610,7 +612,7 @@ JS;
 	print("</table>\n");
 	print("</form>\n");
 	end_frame();
-	if (get_user_class() >= $cruprfmanage_class)
+	if (user_can('cruprfmanage'))
 	{
 		begin_frame($lang_userdetails['text_delete_user'], true);
 		print("<form method=\"post\" action=\"delacctadmin.php\" name=\"deluser\">

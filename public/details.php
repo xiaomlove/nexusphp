@@ -23,7 +23,7 @@ FROM torrents LEFT JOIN categories ON torrents.category = categories.id
 WHERE torrents.id = $id LIMIT 1")
 or sqlerr();
 $row = mysql_fetch_array($res);
-if (get_user_class() >= $torrentmanage_class || $CURUSER["id"] == $row["owner"])
+if (user_can('torrentmanage') || $CURUSER["id"] == $row["owner"])
 $owned = 1;
 else $owned = 0;
 
@@ -31,7 +31,7 @@ $settingMain = get_setting('main');
 if (!$row) {
     stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
 } elseif (
-    ($row['banned'] == 'yes' && get_user_class() < $seebanned_class && $row['owner'] != $CURUSER['id'])
+    ($row['banned'] == 'yes' && !user_can('seebanned') && $row['owner'] != $CURUSER['id'])
     || (!can_access_torrent($row) && $row['owner'] != $CURUSER['id'])
 ) {
     permissiondenied();
@@ -101,7 +101,7 @@ if (!$row) {
 
 		// ------------- start upped by block ------------------//
 		if($row['anonymous'] == 'yes') {
-			if (get_user_class() < $viewanonymous_class)
+			if (!user_can('viewanonymous'))
 			$uprow = "<i>".$lang_details['text_anonymous']."</i>";
 			else
 			$uprow = "<i>".$lang_details['text_anonymous']."</i> (" . get_username($row['owner'], false, true, true, false, false, true) . ")";
@@ -153,10 +153,10 @@ if (!$row) {
         if ($owned == 1) {
             $actions[] = "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".$lang_details['text_edit_torrent'] . "</font></b></a>";
         }
-        if (get_user_class() >= $askreseed_class && $row['seeders'] == 0) {
+        if (user_can('askreseed') && $row['seeders'] == 0) {
             $actions[] = "<a title=\"".$lang_details['title_ask_for_reseed']."\" href=\"takereseed.php?reseedid=$id\"><img class=\"dt_reseed\" src=\"pic/trans.gif\" alt=\"reseed\">&nbsp;<b><font class=\"small\">".$lang_details['text_ask_for_reseed'] ."</font></b></a>";
         }
-        if (get_user_class() >= $torrentmanage_class && (get_setting('torrent.approval_status_icon_enabled') == 'yes' || get_setting('torrent.approval_status_none_visible') == 'no')) {
+        if (user_can('torrentmanage') && (get_setting('torrent.approval_status_icon_enabled') == 'yes' || get_setting('torrent.approval_status_none_visible') == 'no')) {
             $approvalIcon = '<svg t="1655224943277" class="icon" viewBox="0 0 1397 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="45530" width="16" height="16"><path d="M1396.363636 121.018182c0 0-223.418182 74.472727-484.072727 372.363636-242.036364 269.963636-297.890909 381.672727-390.981818 530.618182C512 1014.690909 372.363636 744.727273 0 549.236364l195.490909-186.181818c0 0 176.872727 121.018182 297.890909 344.436364 0 0 307.2-474.763636 902.981818-707.490909L1396.363636 121.018182 1396.363636 121.018182zM1396.363636 121.018182" p-id="45531" fill="#e78d0f"></path></svg>';
             $actions[] = sprintf(
                 '<a href="javascript:;"><b><font id="approval" class="small approval" data-torrent_id="%s">%s&nbsp;%s</font></b></a>',
@@ -230,7 +230,7 @@ JS;
 			while($a = mysql_fetch_assoc($r))
 			{
 				$lang = "<tr><td class=\"embedded\"><img border=\"0\" src=\"pic/flag/". $a["flagpic"] . "\" alt=\"" . $a["lang_name"] . "\" title=\"" . $a["lang_name"] . "\" style=\"padding-bottom: 4px\" /></td>";
-				$lang .= "<td class=\"embedded\">&nbsp;&nbsp;<a href=\"downloadsubs.php?torrentid=".$a['torrent_id']."&subid=".$a['id']."\"><u>". $a["title"]. "</u></a>".(get_user_class() >= $submanage_class || (get_user_class() >= $delownsub_class && $a["uppedby"] == $CURUSER["id"]) ? " <font class=\"small\"><a href=\"subtitles.php?delete=".$a['id']."\">[".$lang_details['text_delete']."</a>]</font>" : "")."</td><td class=\"embedded\">&nbsp;&nbsp;".($a["anonymous"] == 'yes' ? $lang_details['text_anonymous'] . (get_user_class() >= $viewanonymous_class ? get_username($a['uppedby'],false,true,true,false,true) : "") : get_username($a['uppedby']))."</td></tr>";
+				$lang .= "<td class=\"embedded\">&nbsp;&nbsp;<a href=\"downloadsubs.php?torrentid=".$a['torrent_id']."&subid=".$a['id']."\"><u>". $a["title"]. "</u></a>".(user_can('submanage') || (user_can('delownsub') && $a["uppedby"] == $CURUSER["id"]) ? " <font class=\"small\"><a href=\"subtitles.php?delete=".$a['id']."\">[".$lang_details['text_delete']."</a>]</font>" : "")."</td><td class=\"embedded\">&nbsp;&nbsp;".($a["anonymous"] == 'yes' ? $lang_details['text_anonymous'] . (user_can('viewanonymous') ? get_username($a['uppedby'],false,true,true,false,true) : "") : get_username($a['uppedby']))."</td></tr>";
 				print($lang);
 			}
 		}
@@ -238,7 +238,7 @@ JS;
 			print("<tr><td class=\"embedded\">".$lang_details['text_no_subtitles']."</td></tr>");
 		print("</table>");
 		print("<table border=\"0\" cellspacing=\"0\"><tr>");
-		if($CURUSER['id']==$row['owner']  ||  get_user_class() >= $uploadsub_class)
+		if($CURUSER['id']==$row['owner']  ||  !user_can('uploadsub'))
 		{
 			print("<td class=\"embedded\"><form method=\"post\" action=\"subtitles.php\"><input type=\"hidden\" name=\"torrent_name\" value=\"" . $row["name"]. "\" /><input type=\"hidden\" name=\"detail_torrent_id\" value=\"" . $row["id"]. "\" /><input type=\"hidden\" name=\"in_detail\" value=\"in_detail\" /><input type=\"submit\" value=\"".$lang_details['submit_upload_subtitles']."\" /></form></td>");
 		}
@@ -282,7 +282,7 @@ JS;
             tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"\">".$torrentdetailad[0]."</div>" : "").$desc."</div>", 1);
 		}
 
-		if (get_user_class() >= $viewnfo_class && $CURUSER['shownfo'] != 'no' && $row["nfosz"] > 0){
+		if (user_can('viewnfo') && $CURUSER['shownfo'] != 'no' && $row["nfosz"] > 0){
 			if (!$nfo = $Cache->get_value('nfo_block_torrent_id_'.$id)){
 				$nfo = code($row["nfo"], $view == "magic");
 				$Cache->cache_value('nfo_block_torrent_id_'.$id, $nfo, 604800);
@@ -335,7 +335,7 @@ JS;
                         echo $Cache->next_row();
                         $Cache->next_row();
                         echo $Cache->next_part();
-                        if (get_user_class() >= $updateextinfo_class)
+                        if (user_can('updateextinfo'))
                             echo $Cache->next_part();
                         echo $Cache->next_row();
                         break;
@@ -355,7 +355,7 @@ JS;
 				echo $Cache->next_row();
 				$Cache->next_row();
 				echo $Cache->next_part();
-				if (get_user_class() >= $updateextinfo_class){
+				if (user_can('updateextinfo')){
 					echo $Cache->next_part();
 				}
 				echo $Cache->next_row();
@@ -423,7 +423,7 @@ JS;
 			return sprintf("%02x", ord($matches[0]));
 		}
 		if ($enablenfo_main=='yes')
-			tr($lang_details['row_torrent_info'], "<table><tr>" . (!empty($files_info) ? "<td class=\"no_border_wide\">" . $files_info . "</td>" : "") . "<td class=\"no_border_wide\"><b>".$lang_details['row_info_hash'].":</b>&nbsp;".preg_replace_callback('/./s', "hex_esc", hash_pad($row["info_hash"]))."</td>". (get_user_class() >= $torrentstructure_class ? "<td class=\"no_border_wide\"><b>" . $lang_details['text_torrent_structure'] . "</b><a href=\"torrent_info.php?id=".$id."\">".$lang_details['text_torrent_info_note']."</a></td>" : "") . "</tr></table><span id='filelist'></span>",1);
+			tr($lang_details['row_torrent_info'], "<table><tr>" . (!empty($files_info) ? "<td class=\"no_border_wide\">" . $files_info . "</td>" : "") . "<td class=\"no_border_wide\"><b>".$lang_details['row_info_hash'].":</b>&nbsp;".preg_replace_callback('/./s', "hex_esc", hash_pad($row["info_hash"]))."</td>". (user_can('torrentstructure') ? "<td class=\"no_border_wide\"><b>" . $lang_details['text_torrent_structure'] . "</b><a href=\"torrent_info.php?id=".$id."\">".$lang_details['text_torrent_info_note']."</a></td>" : "") . "</tr></table><span id='filelist'></span>",1);
 		tr($lang_details['row_hot_meter'], "<table><tr><td class=\"no_border_wide\"><b>" . $lang_details['text_views']."</b>". $row["views"] . "</td><td class=\"no_border_wide\"><b>" . $lang_details['text_hits']. "</b>" . $row["hits"] . "</td><td class=\"no_border_wide\"><b>" .$lang_details['text_snatched'] . "</b><a href=\"viewsnatches.php?id=".$id."\"><b>" . $row["times_completed"]. $lang_details['text_view_snatches'] . "</td><td class=\"no_border_wide\"><b>" . $lang_details['row_last_seeder']. "</b>" . gettime($row["last_action"]) . "</td></tr></table>",1);
 		$bwres = sql_query("SELECT uploadspeed.name AS upname, downloadspeed.name AS downname, isp.name AS ispname FROM users LEFT JOIN uploadspeed ON users.upload = uploadspeed.id LEFT JOIN downloadspeed ON users.download = downloadspeed.id LEFT JOIN isp ON users.isp = isp.id WHERE users.id=".$row['owner']);
 		$bwrow = mysql_fetch_array($bwres);

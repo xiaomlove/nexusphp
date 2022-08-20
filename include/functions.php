@@ -2238,14 +2238,18 @@ function tr($x,$y,$noesc=0,$relation='', $return = false) {
 	print $result;
 }
 
-function tr_small($x,$y,$noesc=0,$relation='') {
+function tr_small($x,$y,$noesc=0,$relation='',$return = false) {
 	if ($noesc)
 	$a = $y;
 	else {
 		$a = htmlspecialchars($y);
 		//$a = str_replace("\n", "<br />\n", $a);
 	}
-	print("<tr".( $relation ? " relation = \"$relation\"" : "")."><td width=\"1%\" class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$x."</td><td width=\"99%\" class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>\n");
+	$result = "<tr".( $relation ? " relation = \"$relation\"" : "")."><td width=\"1%\" class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$x."</td><td width=\"99%\" class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>";
+	if ($return) {
+	    return $result;
+    }
+	print($result);
 }
 
 function twotd($x,$y,$nosec=0){
@@ -2683,7 +2687,7 @@ else {
         </td>
 	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum['hours'].":".$datum['minutes']?><br />
 <?php
-	if (get_user_class() >= $staffmem_class) {
+	if (user_can('staffmem')) {
         $totalreports = $Cache->get_value('staff_report_count');
         if ($totalreports == ""){
             $totalreports = get_row_count("reports");
@@ -2791,7 +2795,7 @@ if ($msgalert)
 		}
 	}
 
-	if (get_user_class() >= $staffmem_class)
+	if (user_can('staffmem'))
 	{
 	    //torrent approval
         if (get_setting('torrent.approval_status_none_visible') == 'no') {
@@ -3182,7 +3186,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 		print("<div style=\"margin-top: 8pt; margin-bottom: 8pt;\"><table id=\"cid".$row["id"]."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\"><tr><td class=\"embedded\" width=\"99%\">#" . $row["id"] . "&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_by']."</font>");
 		print(get_username($row["user"],false,true,true,false,false,true));
 		print("&nbsp;&nbsp;<font color=\"gray\">".$lang_functions['text_at']."</font>".gettime($row["added"]).
-		($row["editedby"] && get_user_class() >= $commanage_class ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
+		($row["editedby"] && user_can('commanage') ? " - [<a href=\"comment.php?action=vieworiginal&amp;cid=".$row['id']."&amp;type=".$type."\">".$lang_functions['text_view_original']."</a>]" : "") . "</td><td class=\"embedded nowrap\" width=\"1%\"><a href=\"#top\"><img class=\"top\" src=\"pic/trans.gif\" alt=\"Top\" title=\"Top\" /></a>&nbsp;&nbsp;</td></tr></table></div>");
 		$avatar = ($CURUSER["avatars"] == "yes" ? htmlspecialchars(trim($userRow["avatar"])) : "");
 		if (!$avatar)
 			$avatar = "pic/default_avatar.png";
@@ -3201,7 +3205,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 		print("<td class=\"rowfollow\" valign=\"top\"><br />".$text.$text_editby."</td>\n");
 		print("</tr>\n");
 		$actionbar = "<a href=\"comment.php?action=add&amp;sub=quote&amp;cid=".$row['id']."&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_functions['title_reply_with_quote']."\" /></a>".
-		"<a href=\"comment.php?action=add&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_reply\" src=\"pic/trans.gif\" alt=\"Add Reply\" title=\"".$lang_functions['title_add_reply']."\" /></a>".(get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=delete&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_delete\" src=\"pic/trans.gif\" alt=\"Delete\" title=\"".$lang_functions['title_delete']."\" /></a>" : "").($row["user"] == $CURUSER["id"] || get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=edit&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_edit\" src=\"pic/trans.gif\" alt=\"Edit\" title=\"".$lang_functions['title_edit']."\" />"."</a>" : "");
+		"<a href=\"comment.php?action=add&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_reply\" src=\"pic/trans.gif\" alt=\"Add Reply\" title=\"".$lang_functions['title_add_reply']."\" /></a>".(user_can('commanage') ? "<a href=\"comment.php?action=delete&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_delete\" src=\"pic/trans.gif\" alt=\"Delete\" title=\"".$lang_functions['title_delete']."\" /></a>" : "").($row["user"] == $CURUSER["id"] || get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=edit&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_edit\" src=\"pic/trans.gif\" alt=\"Edit\" title=\"".$lang_functions['title_edit']."\" />"."</a>" : "");
 		print("<tr><td class=\"toolbox\"> ".("'".$userRow['last_access']."'"> $dt ? "<img class=\"f_online\" src=\"pic/trans.gif\" alt=\"Online\" title=\"".$lang_functions['title_online']."\" />":"<img class=\"f_offline\" src=\"pic/trans.gif\" alt=\"Offline\" title=\"".$lang_functions['title_offline']."\" />" )."<a href=\"sendmessage.php?receiver=".htmlspecialchars(trim($row["user"]))."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_functions['title_send_message_to'].htmlspecialchars($userRow["username"])."\" /></a><a href=\"report.php?commentid=".htmlspecialchars(trim($row["id"]))."\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_functions['title_report_this_comment']."\" /></a></td><td class=\"toolbox\" align=\"right\">".$actionbar."</td>");
 
 		print("</tr></table>\n");
@@ -3415,7 +3419,7 @@ if ($CURUSER['showcomnum'] != 'no') { ?>
 <td class="colhead"><a href="?<?php echo $oldlink?>sort=6&amp;type=<?php echo $link[6]?>"><img class="snatched" src="pic/trans.gif" alt="snatched" title="<?php echo $lang_functions['title_number_of_snatched']?>" /></a></td>
 <td class="colhead"><a href="?<?php echo $oldlink?>sort=9&amp;type=<?php echo $link[9]?>"><?php echo $lang_functions['col_uploader']?></a></td>
 <?php
-if (get_user_class() >= $torrentmanage_class) { ?>
+if (user_can('torrentmanage')) { ?>
 	<td class="colhead"><?php echo $lang_functions['col_action'] ?></td>
 <?php } ?>
 </tr>
@@ -3653,7 +3657,7 @@ foreach ($rows as $row)
 	else
 	print("<td class=\"rowfollow\">" . number_format($row["times_completed"]) . "</td>\n");
 
-		if ($row["anonymous"] == "yes" && get_user_class() >= $torrentmanage_class)
+		if ($row["anonymous"] == "yes" && user_can('torrentmanage'))
 		{
 			print("<td class=\"rowfollow\" align=\"center\"><i>".$lang_functions['text_anonymous']."</i><br />".(isset($row["owner"]) ? "(" . get_username($row["owner"]) .")" : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
 		}
@@ -3666,7 +3670,7 @@ foreach ($rows as $row)
 			print("<td class=\"rowfollow\">" . (isset($row["owner"]) ? get_username($row["owner"]) : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
 		}
 
-	if (get_user_class() >= $torrentmanage_class)
+	if (user_can('torrentmanage'))
 	{
 		print("<td class=\"rowfollow\"><a href=\"".htmlspecialchars("fastdelete.php?id=".$row['id'])."\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_functions['text_delete']."\" /></a>");
 		print("<br /><a href=\"edit.php?returnto=" . rawurlencode($_SERVER["REQUEST_URI"]) . "&amp;id=" . $row["id"] . "\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_functions['text_edit']."\" /></a></td>\n");
@@ -4113,8 +4117,12 @@ function getSmileIt($formname, $taname, $smilyNumber) {
 	return "<a href=\"javascript: SmileIT('[em$smilyNumber]','".$formname."','".$taname."')\"  onmouseover=\"domTT_activate(this, event, 'content', '".htmlspecialchars("<table><tr><td><img src=\'pic/smilies/$smilyNumber.gif\' alt=\'\' /></td></tr></table>")."', 'trail', false, 'delay', 0,'lifetime',10000,'styleClass','smilies','maxWidth', 400);\"><img style=\"max-width: 25px;\" src=\"pic/smilies/$smilyNumber.gif\" alt=\"\" /></a>";
 }
 
-function classlist($selectname,$maxclass, $selected, $minClass = 0){
+function classlist($selectname,$maxclass, $selected, $minClass = 0, $includeNoClass = false){
+    global $lang_functions;
 	$list = "<select name=\"".$selectname."\">";
+	if ($includeNoClass) {
+        $list .= sprintf('<option value="%s">%s</option>', \App\Models\Setting::PERMISSION_NO_CLASS, $lang_functions['select_an_user_class']);
+    }
 	for ($i = $minClass; $i <= $maxclass; $i++)
 		$list .= "<option value=\"".$i."\"" . ($selected == $i ? " selected=\"selected\"" : "") . ">" . get_user_class_name($i,false,false,true) . "</option>\n";
 	$list .= "</select>";
@@ -4802,14 +4810,14 @@ function user_can_upload($where = "torrents"){
 		return false;
 	if ($where == "torrents")
 	{
-		if (get_user_class() >= $upload_class)
+		if (user_can('upload'))
 			return true;
 		if (get_if_restricted_is_open())
 			return true;
 	}
 	if ($where == "music")
 	{
-		if ($enablespecial == 'yes' && get_user_class() >= $uploadspecial_class)
+		if ($enablespecial == 'yes' && user_can('uploadspecial'))
 			return true;
 	}
 	return false;

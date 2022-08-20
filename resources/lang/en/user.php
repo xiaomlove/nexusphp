@@ -17,7 +17,7 @@ return [
         'attendance_card' => 'Attend card',
         'props' => 'Props',
     ],
-    'class_name' => [
+    'class_names' => [
         \App\Models\User::CLASS_VIP => 'Vip',
         \App\Models\User::CLASS_RETIREE => 'Retiree',
         \App\Models\User::CLASS_UPLOADER => 'Uploader',

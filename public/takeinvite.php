@@ -3,7 +3,7 @@ require_once("../include/bittorrent.php");
 dbconn();
 require_once(get_langfile_path());
 registration_check('invitesystem', true, false);
-if (get_user_class() < $sendinvite_class)
+if (!user_can('sendinvite'))
 stderr($lang_takeinvite['std_error'],$lang_takeinvite['std_invite_denied']);
 if ($CURUSER['invites'] < 1)
 	stderr($lang_takeinvite['std_error'],$lang_takeinvite['std_no_invite']);

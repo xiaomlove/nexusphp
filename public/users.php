@@ -4,8 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-if (get_user_class() < $viewuserlist_class)
-permissiondenied();
+user_can('viewuserlist', true);
 $search = trim($_GET['search']);
 $class = $_GET['class'];
 $country = intval($_GET['country'] ?? 0);

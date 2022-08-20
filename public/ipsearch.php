@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 
-if (get_user_class() < $userprofile_class)
+if (!user_can('userprofile'))
 	permissiondenied();
 else
 {

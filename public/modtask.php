@@ -11,7 +11,7 @@ function puke()
 	stderr("Error", "Permission denied. For security reason, we logged this action");
 }
 
-if (get_user_class() < $prfmanage_class)
+if (!user_can('prfmanage'))
 	puke();
 
 $action = $_POST["action"];
@@ -87,11 +87,11 @@ if ($action == "edituser")
 	$updateset[] = "supportlang = ".sqlesc($supportlang);
     $banLog = [];
 
-	if(get_user_class()<=$cruprfmanage_class)
+	if(!user_can('cruprfmanage'))
 	{
 		$modcomment = $arr["modcomment"];
 	}
-	if(get_user_class() >= $cruprfmanage_class)
+	if(user_can('cruprfmanage'))
 	{
 		$email = $_POST["email"];
 		$username = $_POST["username"];

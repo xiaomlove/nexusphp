@@ -40,7 +40,6 @@ class AppServiceProvider extends ServiceProvider
                 'User',
                 'Torrent',
                 'Other',
-                'Permission',
                 'System',
             ]);
         });

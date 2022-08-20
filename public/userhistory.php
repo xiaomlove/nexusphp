@@ -8,7 +8,7 @@ parked();
 $userid = $_GET["id"];
 int_check($userid,true);
 
-if ($CURUSER["id"] != $userid && get_user_class() < $viewhistory_class)
+if ($CURUSER["id"] != $userid && !user_can('viewhistory'))
 permissiondenied();
 
 $action = htmlspecialchars($_GET["action"]);
@@ -107,7 +107,7 @@ if ($action == "viewposts")
       "</td></tr></table></p>\n");
 
       print("<br />");
-      
+
       print("<table class=main width=100% border=1 cellspacing=0 cellpadding=5>\n");
 
       $body = format_comment($arr["body"]);
@@ -228,7 +228,7 @@ if ($action == "viewcomments")
 		"&nbsp;---&nbsp;".$lang_userhistory['text_comment']."</b>#<a href=details.php?id=$torrentid&tocomm=1&hit=1$page_url>$commentid</a>
 	  </td></tr></table></p>\n");
 		print("<br />");
-		
+
 		print("<table class=main width=100% border=1 cellspacing=0 cellpadding=5>\n");
 
 		$body = format_comment($arr["text"]);
@@ -236,7 +236,7 @@ if ($action == "viewcomments")
 		print("<tr valign=top><td class=comment>$body</td></tr>\n");
 
 		print("</td></tr></table>\n");
-		
+
 		print("<br />");
 	}
 

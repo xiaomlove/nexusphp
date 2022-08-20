@@ -157,7 +157,7 @@ elseif ($inclbookmarked == 2)		//not bookmarked
 }
 // ----------------- end bookmarked ---------------------//
 
-if (!isset($CURUSER) || get_user_class() < $seebanned_class)
+if (!isset($CURUSER) || !user_can('seebanned'))
 	$wherea[] = "banned = 'no'";
 // ----------------- start include dead ---------------------//
 if (isset($_GET["incldead"]))
@@ -777,7 +777,7 @@ if (isset($searchstr))
 			}
 			else
 			{
-				if(get_user_class() > $torrentmanage_class)	// moderator or above, show all
+				if(user_can('torrentmanage'))	// moderator or above, show all
 				{
 					$wherea[] =  implode($ANDOR, $like_expression_array);
 				}
@@ -812,7 +812,7 @@ $approvalStatusIconEnabled = get_setting('torrent.approval_status_icon_enabled')
 $approvalStatus = null;
 $showApprovalStatusFilter = false;
 //when enable approval status icon, all user can use this filter, otherwise only staff member and approval none visible is 'no' can use
-if ($approvalStatusIconEnabled == 'yes' || (get_user_class() >= $staffmem_class && $approvalStatusNoneVisible == 'no')) {
+if ($approvalStatusIconEnabled == 'yes' || (user_can('staffmem') && $approvalStatusNoneVisible == 'no')) {
     $showApprovalStatusFilter = true;
 }
 //when user can use approval status filter, and pass `approval_status` parameter, will affect
@@ -820,7 +820,7 @@ if ($approvalStatusIconEnabled == 'yes' || (get_user_class() >= $staffmem_class 
 if ($showApprovalStatusFilter && isset($_REQUEST['approval_status']) && is_numeric($_REQUEST['approval_status'])) {
     $approvalStatus = intval($_REQUEST['approval_status']);
     $wherea[] = "torrents.approval_status = $approvalStatus";
-} elseif ($approvalStatusNoneVisible == 'no' && get_user_class() < $staffmem_class) {
+} elseif ($approvalStatusNoneVisible == 'no' && !user_can('staffmem')) {
     $wherea[] = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
 

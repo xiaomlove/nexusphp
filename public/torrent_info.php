@@ -38,10 +38,7 @@ dbconn();
 
 loggedinorreturn();
 
-if (get_user_class() < $torrentstructure_class)
-{
-	permissiondenied();
-}
+user_can('torrentstructure', true);
 
 $id = (int)$_GET["id"];
 

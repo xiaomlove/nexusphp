@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 			$origfrom = "[url=userdetails.php?id=".$origmsgrow['sender']."]".$origmsgsendername."[/url]";
 		}
 		$msg = "-------- ".$lang_takemessage_target[get_user_lang($receiver)]['msg_original_message_from'] . $origfrom . " --------\n" . $origmsgrow['msg']."\n\n".($msg ? "-------- [url=userdetails.php?id=".$CURUSER["id"]."]".$CURUSER["username"]."[/url][i] Wrote at ".date("Y-m-d H:i:s").":[/i] --------\n".$msg : "");
-		
+
 	}
 	else
 	{
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 
 	// Anti Flood Code
 	// This code ensures that a member can only send one PM every 10 seconds.
-	if (get_user_class() < $staffmem_class) {
+	if (!user_can('staffmem')) {
 		if (strtotime($CURUSER['last_pm']) > (TIMENOW - 10))
 		{
 			$secs = 60 - (TIMENOW - strtotime($CURUSER['last_pm']));
@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 		stderr($lang_takemessage['std_error'], $lang_takemessage['std_user_not_exist']);
 
 	//Make sure recipient wants this message
-	if (get_user_class() < $staffmem_class)
+	if (!user_can('staffmem'))
 	{
 		if ($user["parked"] == "yes")
 		stderr($lang_takemessage['std_refused'], $lang_takemessage['std_account_parked']);
@@ -90,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 	$Cache->delete_value('user_'.$receiver.'_unread_message_count');
 	$Cache->delete_value('user_'.$receiver.'_inbox_count');
 	$Cache->delete_value('user_'.$CURUSER["id"].'_outbox_count');
-	
+
 	$msgid=mysql_insert_id();
 	$date=date("Y-m-d H:i:s");
 	// Update Last PM sent...
@@ -112,20 +112,20 @@ if ($emailnotify_smtp=='yes' && $smtptype != 'none'){
 		$username = trim($CURUSER["username"]);
 		$msg_receiver = trim($user["username"]);
 		$prefix = get_protocol_prefix();
-		
+
 		$title = "$SITENAME ".$lang_takemessage_target[get_user_lang($user["id"])]['mail_received_pm_from'] . $username . "!";
 		$body = <<<EOD
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_dear']}$msg_receiver,
-		
+
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_you_received_a_pm']}
-		
+
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_sender']}: $username
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_subject']}: $subject
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_date']}: $date
-		
+
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_use_following_url']}<b><a href="javascript:void(null)" onclick="window.open('$prefix$BASEURL/messages.php?action=viewmessage&id=$msgid')">{$lang_takemessage_target[get_user_lang($user["id"])]['mail_here']}</a></b>{$lang_takemessage_target[get_user_lang($user["id"])]['mail_use_following_url_1']}<br />
 $prefix$BASEURL/messages.php?action=viewmessage&id=$msgid
-		
+
 		------{$lang_takemessage_target[get_user_lang($user["id"])]['mail_yours']}
 		{$lang_takemessage_target[get_user_lang($user["id"])]['mail_the_site_team']}
 EOD;

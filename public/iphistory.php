@@ -4,8 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 
-if (get_user_class() < $userprofile_class)
-	permissiondenied();
+user_can('userprofile', true);
 
 $userid = intval($_GET["id"] ?? 0);
 if (!is_valid_id($userid))

@@ -8,8 +8,7 @@ $prefix = '';
 $user = $CURUSER;
 $PHP_SELF = $_SERVER['PHP_SELF'];
 
-if (get_user_class() < $forummanage_class)
-    permissiondenied();
+user_can('forummanage', true);
 
 // DELETE FORUM ACTION
 if (isset($_GET['action']) && $_GET['action'] == "del") {
@@ -180,8 +179,8 @@ $nr = mysql_num_rows($res);
 
 <?php
 		} while($row = mysql_fetch_array($result));
-	} 
-	else 
+	}
+	else
 	{
 	print ($lang_forummanage['text_no_records_found']);
 	}

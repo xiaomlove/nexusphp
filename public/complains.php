@@ -4,7 +4,7 @@ dbconn();
 require get_langfile_path();
 
 $isLogin = isset($CURUSER['id']);
-$isAdmin = get_user_class() >= $staffmem_class;
+$isAdmin = user_can('staffmem');
 
 if($isLogin && !$isAdmin) {
     permissiondenied();

@@ -49,6 +49,7 @@
                     <td></td>
                 </tr>
             @endif
+            {!! do_action('user_detail_rows', $record->id, 'admin') !!}
             <tr>
                 <th>{{__('label.user.invite_by')}}</th>
                 <td>{{$record->inviter->username ?? ''}}</td>

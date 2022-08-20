@@ -3,8 +3,7 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
-if (get_user_class() < $newsmanage_class)
-	permissiondenied();
+user_can('newsmanage', true);
 
 $action = htmlspecialchars($_GET["action"] ?? '');
 
@@ -46,11 +45,11 @@ if ($action == 'add')
 	$added = sqlesc(date("Y-m-d H:i:s"));
 	$notify = $_POST['notify'] ?? '';
 	if ($notify != 'yes')
-		$notify = 'no'; 
+		$notify = 'no';
 	sql_query("INSERT INTO news (userid, added, body, title, notify) VALUES (".sqlesc($CURUSER['id']) . ", $added, " . sqlesc($body) . ", " . sqlesc($title) . ", " . sqlesc($notify).")") or sqlerr(__FILE__, __LINE__);
 	$Cache->delete_value('recent_news',true);
 	if (mysql_affected_rows() != 1)
-	stderr($lang_news['std_error'], $lang_news['std_something_weird_happened']);	
+	stderr($lang_news['std_error'], $lang_news['std_something_weird_happened']);
 	header("Location: " . get_protocol_prefix() . "$BASEURL/index.php");
 }
 

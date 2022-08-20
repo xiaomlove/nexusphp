@@ -81,7 +81,7 @@ function dltable($name, $arr, $torrent)
 	global $lang_functions, $seedBoxRep;
 
 	$s = "<b>" . count($arr) . " $name</b>\n";
-	$showLocationColumn = $enablelocation_tweak == 'yes' || get_user_class() >= $userprofile_class;
+	$showLocationColumn = $enablelocation_tweak == 'yes' || user_can('userprofile');
 	if (!count($arr))
 		return $s;
 	$s .= "\n";
@@ -110,7 +110,7 @@ function dltable($name, $arr, $torrent)
         $secs = max(1, ($e["la"] - $e["st"]));
         $columnLocation = $usernameSeedBoxIcon = '';
         $isStrongPrivacy = $privacy == "strong" || ($torrent['anonymous'] == 'yes' && $e['userid'] == $torrent['owner']);
-        $canView = get_user_class() >= $viewanonymous_class || $e['userid'] == $CURUSER['id'];
+        $canView = user_can('viewanonymous') || $e['userid'] == $CURUSER['id'];
         if ($showLocationColumn) {
             $columnLocation = get_location_column($e, $isStrongPrivacy, $canView);
         } else {

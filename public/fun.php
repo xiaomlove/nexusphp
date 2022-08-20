@@ -19,8 +19,7 @@ if ($action == 'delete')
 	$arr = mysql_fetch_array($res);
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
-	if (get_user_class() < $funmanage_class)
-		permissiondenied();
+	user_can('funmanage', true);
 	$sure = intval($_GET["sure"] ?? 0);
 	$returnto = $_GET["returnto"] ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]);
 	if (!$sure)
@@ -130,7 +129,7 @@ if ($action == 'edit'){
 	$arr = mysql_fetch_array($res);
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
-	if ($arr["userid"] != $CURUSER["id"] && get_user_class() < $funmanage_class)
+	if ($arr["userid"] != $CURUSER["id"] && !user_can('funmanage'))
 		permissiondenied();
 	if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
@@ -164,8 +163,7 @@ if ($action == 'edit'){
 }
 if ($action == 'ban')
 {
-	if (get_user_class() < $funmanage_class)
-		permissiondenied();
+	user_can('funmanage', true);
 	$id = intval($_GET["id"] ?? 0);
 	int_check($id,true);
 	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);

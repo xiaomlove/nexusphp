@@ -25,4 +25,15 @@ abstract class BasePlugin extends BaseRepository
             Artisan::call($toExecute);
         }
     }
+
+    public function checkMainApplicationVersion()
+    {
+        $constantName = "static::COMPATIBLE_VERSION";
+        if (defined($constantName) && version_compare(VERSION_NUMBER, constant($constantName), '<')) {
+            throw new \RuntimeException(sprintf(
+                "NexusPHP version: %s is too low, this plugin require: %s",
+                VERSION_NUMBER, constant($constantName)
+            ));
+        }
+    }
 }

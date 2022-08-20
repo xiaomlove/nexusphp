@@ -24,7 +24,7 @@ $row = mysql_fetch_array($res);
 if (!$row)
     die();
 
-if (get_user_class() < $torrentmanage_class)
+if (!user_can('torrentmanage'))
     bark($lang_fastdelete['text_no_permission']);
 
 if (!$sure)

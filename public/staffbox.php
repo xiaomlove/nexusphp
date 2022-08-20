@@ -3,8 +3,7 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
-if (get_user_class() < $staffmem_class)
-	permissiondenied();
+user_can('staffmem', true);
 
 $action = $_GET["action"] ?? '';
 
@@ -65,8 +64,7 @@ if (!$action) {
 
 if ($action == "viewpm")
 {
-	if (get_user_class() < $staffmem_class)
-		permissiondenied();
+    user_can('staffmem', true);
 
 $pmid = intval($_GET["pmid"] ?? 0);
 
@@ -122,8 +120,7 @@ stdfoot();
        //////////////////////////
 
 if ($action == "answermessage") {
-	if (get_user_class() < $staffmem_class)
-		permissiondenied();
+        user_can('staffmem', true);
 
         $answeringto = $_GET["answeringto"];
         $receiver = intval($_GET["receiver"] ?? 0);
@@ -163,8 +160,7 @@ if ($action == "takeanswer") {
   if ($_SERVER["REQUEST_METHOD"] != "POST")
     die();
 
-    if (get_user_class() < $staffmem_class)
-   permissiondenied();
+    user_can('staffmem', true);
 
      $receiver = intval($_POST["receiver"] ?? 0);
    $answeringto = $_POST["answeringto"];
@@ -200,8 +196,7 @@ if ($action == "deletestaffmessage") {
     if (!is_numeric($id) || $id < 1 || floor($id) != $id)
     die;
 
-          if (get_user_class() < $staffmem_class)
-          permissiondenied();
+    user_can('staffmem', true);
 
     sql_query("DELETE FROM staffmessages WHERE id=" . sqlesc($id)) or die();
 $Cache->delete_value('staff_message_count');
@@ -215,8 +210,7 @@ $Cache->delete_value('staff_new_message_count');
 
 if ($action == "setanswered") {
 
- if (get_user_class() < $staffmem_class)
-    permissiondenied();
+    user_can('staffmem', true);
 
 $id = intval($_GET["id"] ?? 0);
 
@@ -230,8 +224,7 @@ header("Refresh: 0; url=staffbox.php?action=viewpm&pmid=$id");
        //////////////////////////
 
 if ($action == "takecontactanswered") {
-	if (get_user_class() < $staffmem_class)
-		permissiondenied();
+    user_can('staffmem', true);
 
 if ($_POST['setdealt']){
 	$res = sql_query ("SELECT id FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST['setanswered']) . ")");

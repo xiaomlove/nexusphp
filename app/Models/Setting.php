@@ -11,9 +11,9 @@ class Setting extends NexusModel
 
     public $timestamps = true;
 
-    public static array $permissionDegeneration = [
-        'torrent-approval' => 'torrentmanage',
-    ];
+    const PERMISSION_NO_CLASS = 100;
+
+    public static array $permissionMustHaveClass = ['defaultclass', 'staffmem'];
 
     /**
      * get setting autoload = yes with cache

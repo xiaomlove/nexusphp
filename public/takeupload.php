@@ -30,7 +30,7 @@ $f = $_FILES["file"];
 $fname = unesc($f["name"]);
 if (empty($fname))
 bark($lang_takeupload['std_empty_filename']);
-if (get_user_class()>=$beanonymous_class && isset($_POST['uplver']) && $_POST['uplver'] == 'yes') {
+if (user_can('beanonymous') && isset($_POST['uplver']) && $_POST['uplver'] == 'yes') {
 	$anonymous = "yes";
 	$anon = "Anonymous";
 }

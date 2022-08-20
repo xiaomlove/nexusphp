@@ -53,7 +53,7 @@ else
 <tr><td class="colfollow"><?php echo $lang_promotionlink['row_html']?></td><td class="colfollow"><textarea cols="50" rows="4"><?php echo htmlspecialchars("<a href=\"".$yourlink."\"><img src=\"". $imgurl . "\" alt=\"".$SITENAME."\" title=\"".$SITENAME." - ".$SLOGAN."\"></a>")?></textarea></td><td class="colfollow"><div><a href="<?php echo $yourlink?>" target="_blank"><img src="<?php echo $imgurl?>" alt="<?php echo htmlspecialchars($SITENAME)?>" title="<?php echo htmlspecialchars($SITENAME)?> - <?php echo htmlspecialchars($SLOGAN)?>" /></a></div><div style="padding-top: 10px"><?php echo $lang_promotionlink['text_html_note']?></div></td></tr>
 <tr><td class="colfollow"><?php echo $lang_promotionlink['row_bbcode']?></td><td class="colfollow"><textarea cols="50" rows="4"><?php echo htmlspecialchars("[url=".$yourlink."][img]".$imgurl."[/img][/url]")?></textarea></td><td class="colfollow"><div><a href="<?php echo $yourlink?>"><img src="<?php echo $imgurl?>" /></a></div><div style="padding-top: 10px"><?php echo $lang_promotionlink['text_bbcode_note']?></div></td></tr>
 <?php
-if (get_user_class() >= $userbar_class)
+if (user_can('userbar'))
 {
 ?>
 <tr><td class="colfollow"><?php echo $lang_promotionlink['row_bbcode_userbar']?></td><td class="colfollow"><textarea cols="50" rows="4"><?php echo htmlspecialchars("[url=".$yourlink."][img]".get_protocol_prefix() . $BASEURL."/mybar.php?userid=".$CURUSER['id'].".png[/img][/url]")?></textarea></td><td class="colfollow"><div><a href="<?php echo $yourlink?>"><img src="<?php echo get_protocol_prefix() . $BASEURL?>/mybar.php?userid=<?php echo $CURUSER['id']?>.png" /></a></div><div style="padding-top: 10px"><?php echo $lang_promotionlink['text_bbcode_userbar_note']?></div></td></tr>

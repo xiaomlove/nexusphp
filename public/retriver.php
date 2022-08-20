@@ -2,9 +2,7 @@
 require_once("../include/bittorrent.php");
 dbconn();
 loggedinorreturn();
-if (get_user_class() < $updateextinfo_class) {
-permissiondenied();
-}
+user_can('updateextinfo', true);
 $id = intval($_GET["id"] ?? 0);
 $type = intval($_GET["type"] ?? 0);
 $siteid = $_GET["siteid"] ?? 0; // 1 for IMDb

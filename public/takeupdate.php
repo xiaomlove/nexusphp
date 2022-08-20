@@ -1,15 +1,14 @@
 <?php
 require_once("../include/bittorrent.php");
-function bark($msg) { 
- stdhead(); 
-   stdmsg("Failed", $msg); 
- stdfoot(); 
- exit; 
-} 
-dbconn(); 
-loggedinorreturn(); 
-if (get_user_class() < $staffmem_class)
-       permissiondenied();
+function bark($msg) {
+ stdhead();
+   stdmsg("Failed", $msg);
+ stdfoot();
+ exit;
+}
+dbconn();
+loggedinorreturn();
+user_can('staffmem', true);
 if ($_POST['setdealt']){
 $res = sql_query ("SELECT id FROM reports WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST['delreport']) . ")");
 while ($arr = mysql_fetch_assoc($res))
@@ -22,6 +21,6 @@ while ($arr = mysql_fetch_assoc($res))
 	sql_query ("DELETE from reports WHERE id = {$arr['id']}") or sqlerr();
 	$Cache->delete_value('staff_new_report_count');
 	$Cache->delete_value('staff_report_count');
-} 
+}
 
-header("Refresh: 0; url=reports.php"); 
+header("Refresh: 0; url=reports.php");

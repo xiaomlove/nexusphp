@@ -3,8 +3,7 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
-if (get_user_class() < $forummanage_class) 
-	permissiondenied();
+user_can('forummanage', true);
 
 //Presets
 $act = $_GET['action'] ?? '';
@@ -19,8 +18,7 @@ $act = "forum";
 
 // DELETE FORUM ACTION
 if ($act == "del") {
-if (get_user_class() < $forummanage_class)
-	permissiondenied();
+user_can('forummanage', true);
 
 if (!$id) { header("Location: $PHP_SELF?action=forum"); die();}
 
@@ -32,8 +30,7 @@ die();
 
 //EDIT FORUM ACTION
 if (isset($_POST['action']) && $_POST['action'] == "editforum") {
-if (get_user_class() < $forummanage_class)
-	permissiondenied();
+user_can('forummanage', true);
 
 $name = $_POST['name'];
 $desc = $_POST['desc'];
@@ -48,8 +45,7 @@ die();
 
 //ADD FORUM ACTION
 if (isset($_POST['action']) && $_POST['action'] == "addforum") {
-if (get_user_class() < $forummanage_class)
-	permissiondenied();
+user_can('forummanage', true);
 
 $name = trim($_POST['name']);
 $desc = trim($_POST['desc']);
