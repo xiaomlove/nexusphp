@@ -57,11 +57,4 @@ class Controller extends BaseController
         return Str::slug("$title.$action", '.');
     }
 
-    protected function checkPermission($permission)
-    {
-        if (Auth::user()->class < Setting::get($permission)) {
-            throw new InsufficientPermissionException();
-        }
-    }
-
 }

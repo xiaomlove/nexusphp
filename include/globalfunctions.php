@@ -922,11 +922,15 @@ function user_can($permission, $fail = false, $uid = 0): bool
     $requireClass = get_setting("authority.$permission");
     if (!is_bool($result)) {
         $result = is_numeric($requireClass) && $requireClass >= 0 && $requireClass < $userInfo['class'];
-        do_log("$log, requireClass: $requireClass, result: $result");
+        $log .= ", requireClass: $requireClass, result: $result";
+    } else {
+        $log .= ", get result: $result from filter nexus_user_can";
     }
     if (!$fail || $result) {
+        do_log($log);
         return $result;
     }
+    do_log("$log, [FAIL]");
     if (IN_NEXUS && !IN_TRACKER) {
         global $lang_functions;
         if (isset(User::$classes[$requireClass])) {
@@ -935,5 +939,5 @@ function user_can($permission, $fail = false, $uid = 0): bool
             stderr($lang_functions['std_error'], $lang_functions['std_permission_denied']);
         }
     }
-    throw new \Illuminate\Auth\Access\AuthorizationException();
+    throw new \App\Exceptions\InsufficientPermissionException();
 }

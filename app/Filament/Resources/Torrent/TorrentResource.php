@@ -137,8 +137,7 @@ class TorrentResource extends Resource
     private static function getBulkActions(): array
     {
         $actions = [];
-        $userClass = Auth::user()->class;
-        if ($userClass >= Setting::get('authority.torrentsticky')) {
+        if (user_can('torrentsticky')) {
             $actions[] = Tables\Actions\BulkAction::make('posState')
                 ->label(__('admin.resources.torrent.bulk_action_pos_state'))
                 ->form([
@@ -160,7 +159,7 @@ class TorrentResource extends Resource
                 ->deselectRecordsAfterCompletion();
         }
 
-        if ($userClass >= Setting::get('authority.torrentmanage')) {
+        if (user_can('torrentmanage')) {
             $actions[] = Tables\Actions\BulkAction::make('remove_tag')
                 ->label(__('admin.resources.torrent.bulk_action_remove_tag'))
                 ->requiresConfirmation()

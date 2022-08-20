@@ -434,9 +434,7 @@ class TorrentRepository extends BaseRepository
     public function buildApprovalModal($user, $torrentId)
     {
         $user = $this->getUser($user);
-        if ($user->class < Setting::get('authority.torrentmanage')) {
-            throw new \RuntimeException("No permission !");
-        }
+        user_can('torrent-approval', true);
         $torrent = Torrent::query()->findOrFail($torrentId, ['id', 'approval_status', 'banned']);
         $radios = [];
         foreach (Torrent::$approvalStatus as $key => $value) {
@@ -479,9 +477,7 @@ class TorrentRepository extends BaseRepository
     public function approval($user, array $params): array
     {
         $user = $this->getUser($user);
-        if ($user->class < Setting::get('authority.torrentmanage')) {
-            throw new InsufficientPermissionException();
-        }
+        user_can('torrent-approval', true);
         $torrent = Torrent::query()->findOrFail($params['torrent_id'], ['id', 'banned', 'approval_status', 'visible', 'owner']);
         $lastLog = TorrentOperationLog::query()
             ->where('torrent_id', $params['torrent_id'])
@@ -578,9 +574,7 @@ class TorrentRepository extends BaseRepository
 
     public function syncTags($id, array $tagIdArr = [])
     {
-        if (Auth::user()->class < Setting::get('authority.torrentmanage')) {
-            throw new InsufficientPermissionException();
-        }
+        user_can('torrentmanage', true);
         $idArr = Arr::wrap($id);
         return NexusDB::transaction(function () use ($idArr, $tagIdArr) {
             $insert = [];
@@ -606,9 +600,7 @@ class TorrentRepository extends BaseRepository
 
     public function setPosState($id, $posState): int
     {
-        if (Auth::user()->class < Setting::get('authority.torrentsticky')) {
-            throw new InsufficientPermissionException();
-        }
+        user_can('torrentsticky', true);
         $idArr = Arr::wrap($id);
         return Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $posState]);
     }
