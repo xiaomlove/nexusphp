@@ -16,8 +16,12 @@ class CreateUsersTable extends Migration
         if (Schema::hasTable('users')) {
             return;
         }
-        Schema::create('users', function (Blueprint $table) {
-            $table->id('id')->startingValue(10001);
+        $uidStarts = env('UID_STARTS');
+        if (!is_numeric($uidStarts) || $uidStarts < 1) {
+            $uidStarts = 10001;
+        }
+        Schema::create('users', function (Blueprint $table) use ($uidStarts) {
+            $table->id('id')->startingValue($uidStarts);
             $table->string('username', 40)->default('')->unique('username');
             $table->string('passhash', 32)->default('');
             $table->binary('secret');
