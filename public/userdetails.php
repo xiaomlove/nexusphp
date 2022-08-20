@@ -28,7 +28,11 @@ else
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
-$userInfo = \App\Models\User::query()->with(['valid_medals'])->findOrFail($user['id']);
+$medalType = 'wearing_medals';
+if ($user['id'] == $CURUSER['id']) {
+    $medalType = 'valid_medals';
+}
+$userInfo = \App\Models\User::query()->with($medalType)->findOrFail($user['id']);
 $userRep = new \App\Repositories\UserRepository();
 
 if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
@@ -76,6 +80,23 @@ $enabled = $user["enabled"] == 'yes';
 $moviepicker = $user["picker"] == 'yes';
 
 print("<h1 style='margin:0px'>" . get_username($user['id'], true,false) . $country."</h1>");
+if ($userInfo->valid_medals->isNotEmpty()) {
+    print build_medal_image($userInfo->{$medalType}, 200, $CURUSER['id'] == $user['id']);
+    $warnMedalJs = <<<JS
+jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
+    let input = jQuery(this);
+    let checked = input.prop("checked")
+    jQuery.post('ajax.php', {params: {id: this.value}, action: 'toggleUserMedalStatus'}, function (response) {
+        console.log(response)
+        if (response.ret != 0) {
+            input.prop("checked", !checked)
+            layer.alert(response.msg)
+        }
+    }, 'json')
+})
+JS;
+    \Nexus\Nexus::js($warnMedalJs, 'footer', false);
+}
 
 if (!$enabled)
 print("<p><b>".$lang_userdetails['text_account_disabled_note']."</b></p>");
@@ -288,23 +309,6 @@ if ($user['class'] == UC_VIP && !empty($user['vip_until']) && strtotime($user['v
 }
 tr_small($lang_userdetails['row_class'], $uclassImg, 1);
 
-if ($userInfo->valid_medals->isNotEmpty()) {
-    tr_small($lang_userdetails['row_medal'], build_medal_image($userInfo->valid_medals, 200, $CURUSER['id'] == $user['id']), 1);
-    $warnMedalJs = <<<JS
-jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
-    let input = jQuery(this);
-    let checked = input.prop("checked")
-    jQuery.post('ajax.php', {params: {id: this.value}, action: 'toggleUserMedalStatus'}, function (response) {
-        console.log(response)
-        if (response.ret != 0) {
-            input.prop("checked", !checked)
-            layer.alert(response.msg)
-        }
-    }, 'json')
-})
-JS;
-    \Nexus\Nexus::js($warnMedalJs, 'footer', false);
-}
 //User meta
 $metas = $userRep->listMetas($user['id']);
 $props = [];

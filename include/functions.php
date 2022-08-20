@@ -5675,7 +5675,7 @@ function msgalert($url, $text, $bgcolor = "red")
 function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false): string
 {
     $medalImages = [];
-    $wrapBefore = '<div style="display: inline;">';
+    $wrapBefore = '<div style="display: flex;justify-content: center;align-items: baseline;margin-top: 10px;">';
     $wrapAfter = '</div>';
     foreach ($medals as $medal) {
         $html = sprintf('<div style="display: inline"><img src="%s" title="%s" class="preview" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
