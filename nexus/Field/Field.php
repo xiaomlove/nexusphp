@@ -409,7 +409,15 @@ JS;
         $customFields = $this->listTorrentCustomField($torrentId);
         $mixedRowContent = get_searchbox_value($browsecatmode, 'custom_fields_display');
         $rowByRowHtml = '';
+        $shouldRenderMixRow = false;
         foreach ($customFields as $field) {
+            if (empty($field['custom_field_value'])) {
+                //No value, remove special tags
+                $mixedRowContent = str_replace("<%{$field['name']}.label%>", '', $mixedRowContent);
+                $mixedRowContent = str_replace("<%{$field['name']}.value%>", '', $mixedRowContent);
+                continue;
+            }
+            $shouldRenderMixRow = true;
             $contentNotFormatted = $this->formatCustomFieldValue($field, false);
             $mixedRowContent = str_replace("<%{$field['name']}.label%>", $field['label'], $mixedRowContent);
             $mixedRowContent = str_replace("<%{$field['name']}.value%>", $contentNotFormatted, $mixedRowContent);
@@ -419,7 +427,7 @@ JS;
             }
         }
         $result = $rowByRowHtml;
-        if (!empty($mixedRowContent)) {
+        if ($shouldRenderMixRow) {
             $result .= tr($displayName, format_comment($mixedRowContent), 1);
         }
         return $result;
