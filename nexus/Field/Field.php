@@ -267,9 +267,9 @@ HEAD;
             $name = "custom_fields[{$row['id']}]";
             $currentValue = $customValues[$row['id']]['custom_field_value'] ?? '';
             if ($row['type'] == self::TYPE_TEXT) {
-                $html .= tr($row['label'], sprintf('<input type="text" name="%s" value="%s" style="width: 650px"/>', $name, $currentValue), 1);
+                $html .= tr($row['label'], sprintf('<input type="text" name="%s" value="%s" style="width: %s"/>', $name, $currentValue, '99%'), 1);
             } elseif ($row['type'] == self::TYPE_TEXTAREA) {
-                $html .= tr($row['label'], sprintf('<textarea name="%s" rows="4" style="width: 650px">%s</textarea>', $name, $currentValue), 1);
+                $html .= tr($row['label'], sprintf('<textarea name="%s" rows="4" style="width: %s">%s</textarea>', $name, '99%', $currentValue), 1);
             } elseif ($row['type'] == self::TYPE_RADIO || $row['type'] == self::TYPE_CHECKBOX) {
                 if ($row['type'] == self::TYPE_CHECKBOX) {
                     $name .= '[]';
@@ -320,7 +320,7 @@ HEAD;
                 $imgId = "attach" . $row['id'];
                 $previewBoxId = "preview_$callbackFunc";
                 $y = '<iframe id="' . $iframeId . '" src="' . getSchemeAndHttpHost() . '/attachment.php?callback_func=' . $callbackFunc . '" width="100%" height="24" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>';
-                $y .= sprintf('<input id="%s" type="text" name="%s" value="%s" style="width: 650px;margin: 10px 0">', $inputId, $name, $currentValue);
+                $y .= sprintf('<input id="%s" type="text" name="%s" value="%s" style="width: %s;margin: 10px 0">', $inputId, $name, $currentValue, '99%');
                 $y .= '<div id="' . $previewBoxId . '">';
                 if (!empty($currentValue)) {
                     if (substr($currentValue, 0, 4) == 'http') {
@@ -406,16 +406,16 @@ JS;
     {
         global $browsecatmode;
         $displayName = get_searchbox_value($browsecatmode, 'custom_fields_display_name');
-        $display = get_searchbox_value($browsecatmode, 'custom_fields_display');
         $customFields = $this->listTorrentCustomField($torrentId);
-        $mixedRowContent = nl2br($display);
+        $mixedRowContent = get_searchbox_value($browsecatmode, 'custom_fields_display');
         $rowByRowHtml = '';
         foreach ($customFields as $field) {
-            $content = $this->formatCustomFieldValue($field);
+            $contentNotFormatted = $this->formatCustomFieldValue($field, false);
             $mixedRowContent = str_replace("<%{$field['name']}.label%>", $field['label'], $mixedRowContent);
-            $mixedRowContent = str_replace("<%{$field['name']}.value%>", $content, $mixedRowContent);
+            $mixedRowContent = str_replace("<%{$field['name']}.value%>", $contentNotFormatted, $mixedRowContent);
             if ($field['is_single_row']) {
-                $rowByRowHtml .= tr($field['label'], $content, 1);
+                $contentFormatted = $this->formatCustomFieldValue($field, true);
+                $rowByRowHtml .= tr($field['label'], $contentFormatted, 1);
             }
         }
         $result = $rowByRowHtml;
@@ -427,20 +427,20 @@ JS;
 
 
 
-    protected function formatCustomFieldValue(array $customFieldWithValue)
+    protected function formatCustomFieldValue(array $customFieldWithValue, $doFormatComment = false): string
     {
         $result = '';
         $fieldValue = $customFieldWithValue['custom_field_value'];
         switch ($customFieldWithValue['type']) {
             case self::TYPE_TEXT:
             case self::TYPE_TEXTAREA:
-                $result .= format_comment($fieldValue);
+                $result .= $doFormatComment ? format_comment($fieldValue) : $fieldValue;
                 break;
             case self::TYPE_IMAGE:
                 if (substr($fieldValue, 0, 4) == 'http') {
-                    $result .= formatImg($fieldValue, true, 700, 0, "attach{$customFieldWithValue['id']}");
+                    $result .= $doFormatComment ? formatImg($fieldValue, true, 700, 0, "attach{$customFieldWithValue['id']}") : $fieldValue;
                 } else {
-                    $result .= format_comment($fieldValue);
+                    $result .= $doFormatComment ? format_comment($fieldValue) : $fieldValue;
                 }
                 break;
             case self::TYPE_RADIO:
