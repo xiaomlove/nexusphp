@@ -57,7 +57,7 @@ $torrentOperationLog = [];
  * hr
  * @since 1.6.0-beta12
  */
-if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']])) {
+if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']]) && user_can('torrent_hr')) {
     $updateset[] = "hr = " . sqlesc($_POST['hr']);
 }
 

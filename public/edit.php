@@ -163,7 +163,7 @@ else {
 	if (user_can('torrentsticky') || (user_can('torrentmanage') && $CURUSER["picker"] == 'yes')){
 		$pickcontent = $pickcontentPrefix =  "";
 
-        if(get_user_class() >= $torrentonpromotion_class)
+        if(user_can('torrentonpromotion'))
         {
             $pickcontent .= "<b>".$lang_edit['row_special_torrent'].":&nbsp;</b>"."<select name=\"sel_spstate\" style=\"width: 100px;\">" .promotion_selection($row["sp_state"], 0). "</select>&nbsp;&nbsp;&nbsp;".'<select name="promotion_time_type" onchange="if (this.value == \'2\') {document.getElementById(\'promotion_until_note\').style.display = \'\';} else {document.getElementById(\'promotion_until_note\').style.display = \'none\';}"><option value="0"'.($row['promotion_time_type'] == 0 ? ' selected="selected"' : '').'>'.$lang_edit['select_use_global_setting'].'</option><option value="1"'.($row['promotion_time_type'] == 1 ? ' selected="selected"' : '').'>'.$lang_edit['select_forever'].'</option><option value="2"'.($row['promotion_time_type'] == 2 ? ' selected="selected"' : '').'>'.$lang_edit['select_until'].'</option></select><span id="promotion_until_note"'.($row['promotion_time_type'] == 2 ? '' : ' style="display: none;"').'>';
             $pickcontent .= '<input type="text" id="promotionuntiltime" name="promotionuntil" style="width: 120px;" value="'.($row['promotion_until'] > $row['added'] ? $row['promotion_until'] : '').'" />';
@@ -196,7 +196,7 @@ else {
 		}
 		tr($lang_edit['row_pick'], $pickcontent, 1);
 	}
-	if (get_setting('hr.mode') == \App\Models\HitAndRun::MODE_MANUAL && get_user_class() >= get_setting('authority.torrent_hr')) {
+	if (get_setting('hr.mode') == \App\Models\HitAndRun::MODE_MANUAL && user_can('torrent_hr')) {
         $hrRadio = sprintf('<label><input type="radio" name="hr" value="0"%s />NO</label>', (string)$row['hr'] === '0' ? ' checked' : '');
         $hrRadio .= sprintf('<label><input type="radio" name="hr" value="1"%s />YES</label>', (string)$row['hr'] === '1' ? ' checked' : '');
         tr('H&R', $hrRadio, 1);
