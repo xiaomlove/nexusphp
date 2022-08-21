@@ -420,7 +420,7 @@ JS;
         }
         $result = $rowByRowHtml;
         if (!empty($mixedRowContent)) {
-            $result .= tr($displayName, $mixedRowContent, 1);
+            $result .= tr($displayName, format_comment($mixedRowContent), 1);
         }
         return $result;
     }
