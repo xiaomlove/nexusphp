@@ -9,13 +9,15 @@ jQuery(document).ready(function () {
     })
 
     var previewEle = jQuery('#nexus-preview')
-    jQuery("body").on("mouseover", ".preview", function (e) {
-        let src = jQuery(this).attr("src")
+    jQuery(".preview").hover(function (e) {
+        let _this = jQuery(this);
+        let src = _this.attr("src")
         if (src) {
-            previewEle.attr("src", src).css({"display": "block", "left": e.pageX + 5, "top": e.pageY + 5})
+            previewEle.attr("src", src).fadeIn("fast");
         }
-    });
-    jQuery("body").on("mouseout", ".preview", function (e) {
-        previewEle.hide()
-    });
+    }, function (e) {
+        previewEle.fadeOut("fast");
+    }).on("mousemove", function (e) {
+        previewEle.css({"left": e.pageX + 10, "top": e.pageY + 10})
+    })
 })

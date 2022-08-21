@@ -415,7 +415,8 @@ return array (
         'max_uploaded' => 3,
         'not_seed_box_max_speed' => 10240,
     ],
-    'menu' => [
-        'enabled' => 'no',
+    'system' => [
+        'change_username_min_interval_in_days' => '365',
+        'change_username_card_allow_characters_outside_the_alphabets' => 'no',
     ],
 );

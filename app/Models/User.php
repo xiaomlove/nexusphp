@@ -115,11 +115,13 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $classText;
     }
 
-    public static function listClass(): array
+    public static function listClass($min = self::CLASS_PEASANT, $max = self::CLASS_STAFF_LEADER): array
     {
         $result = [];
         foreach (self::$classes as $class => $info) {
-            $result[$class] = self::getClassText($class);
+            if ($class >= $min && $class <= $max) {
+                $result[$class] = self::getClassText($class);
+            }
         }
         return $result;
     }

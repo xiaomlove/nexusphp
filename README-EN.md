@@ -33,7 +33,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel + Filament.
 - Sticky promotion
 - Custom menu
 - Lucky draw
-
+- Custom role permission
 ## System Requirements
 - PHP: 8.0, must have extensions: bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp
 - Mysql: 5.7 latest version or above
