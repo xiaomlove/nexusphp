@@ -87,6 +87,7 @@ class MedalRepository extends BaseRepository
             $userMedal->status = UserMedal::STATUS_NOT_WEARING;
         }
         $userMedal->save();
+        clear_user_cache($userId);
         return $userMedal;
     }
 

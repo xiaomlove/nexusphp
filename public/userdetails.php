@@ -29,9 +29,6 @@ if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
 $medalType = 'valid_medals';
-if ($user['id'] == $CURUSER['id']) {
-    $medalType = 'valid_medals';
-}
 $userInfo = \App\Models\User::query()->with($medalType)->findOrFail($user['id']);
 $userRep = new \App\Repositories\UserRepository();
 
