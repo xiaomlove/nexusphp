@@ -6,6 +6,7 @@ use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\ExamResource\Pages;
 use App\Filament\Resources\System\ExamResource\RelationManagers;
 use App\Models\Exam;
+use App\Repositories\ExamRepository;
 use App\Repositories\UserRepository;
 use Filament\Forms;
 use Filament\Resources\Form;
@@ -131,9 +132,13 @@ class ExamResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()->using(function ($record) {
+                    $rep = new ExamRepository();
+                    $rep->delete($record->id);
+                }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+//                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 

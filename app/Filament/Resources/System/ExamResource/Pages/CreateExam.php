@@ -14,7 +14,6 @@ class CreateExam extends CreateRecord
     public function create(bool $another = false): void
     {
         $data = $this->form->getState();
-//        dd($data);
         $examRep = new ExamRepository();
         try {
             $this->record = $examRep->store($data);
@@ -28,9 +27,10 @@ class CreateExam extends CreateRecord
 
                 return;
             }
-            $this->redirect($this->getRedirectUrl());
+            $this->redirect($this->getResource()::getUrl('index'));
         } catch (\Exception $exception) {
             $this->notify('danger', $exception->getMessage());
         }
     }
+
 }

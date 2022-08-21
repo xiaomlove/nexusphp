@@ -6,6 +6,7 @@ use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\SettingResource;
 use App\Models\HitAndRun;
 use App\Models\Setting;
+use Filament\Facades\Filament;
 use Filament\Forms\ComponentContainer;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
@@ -31,10 +32,13 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
     public function mount()
     {
         static::authorizeResourceAccess();
+        $this->fillForm();
+    }
 
+    private function fillForm()
+    {
         $settings = Setting::get();
         $this->form->fill($settings);
-
     }
 
     protected function getFormSchema(): array
@@ -73,12 +77,9 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
 
             }
         }
-
         Setting::query()->upsert($data, ['name'], ['value']);
-        NexusDB::cache_del('nexus_settings_in_laravel');
-        NexusDB::cache_del('nexus_settings_in_nexus');
-
-        $this->notify('success', __('filament::resources/pages/edit-record.messages.saved'));
+        clear_setting_cache();
+        Filament::notify('success', __('filament::resources/pages/edit-record.messages.saved'), true);
     }
 
     private function getTabs(): array
