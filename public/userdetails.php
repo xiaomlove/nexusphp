@@ -28,7 +28,7 @@ else
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
-$medalType = 'wearing_medals';
+$medalType = 'valid_medals';
 if ($user['id'] == $CURUSER['id']) {
     $medalType = 'valid_medals';
 }
