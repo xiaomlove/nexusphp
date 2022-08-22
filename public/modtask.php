@@ -352,8 +352,7 @@ if ($action == "edituser")
     if (!empty($banLog)) {
         \App\Models\UserBanLog::query()->insert($banLog);
     }
-    \Nexus\Database\NexusDB::cache_del("user_{$userid}_content");
-    \Nexus\Database\NexusDB::cache_del('user_passkey_'.$userInfo->passkey.'_content');
+    clear_user_cache($userid, $userInfo->passkey);
 	$returnto = htmlspecialchars($_POST["returnto"]);
 	header("Location: " . get_protocol_prefix() . "$BASEURL/$returnto");
 	die;

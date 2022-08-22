@@ -368,17 +368,14 @@ class ToolRepository extends BaseRepository
     {
         $userInfo = get_user_row($uid);
         $prefix = "authority";
-        $excludes = collect(Setting::$permissionMustHaveClass)->map(fn ($p) => "$prefix.$p")->toArray();
         return Setting::query()
             ->where("name", "like", "$prefix.%")
-            ->whereNotIn('name', $excludes)
             ->where('value', '<=', $userInfo['class'])
             ->where('value', '>=', User::CLASS_PEASANT)
             ->pluck('name')
             ->map(fn ($name) => str_replace("$prefix.", "", $name))
             ->toArray();
     }
-
 
     public static function listUserAllPermissions($uid): array
     {

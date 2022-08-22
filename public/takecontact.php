@@ -35,6 +35,7 @@ sql_query("INSERT INTO staffmessages (sender, added, msg, subject) VALUES($useri
 sql_query("UPDATE users SET last_staffmsg = NOW() WHERE id = ".sqlesc($CURUSER['id'])) or sqlerr(__FILE__, __LINE__);
 $Cache->delete_value('staff_message_count');
 $Cache->delete_value('staff_new_message_count');
+clear_staff_message_cache();
 if ($_POST["returnto"])
 {
 	header("Location: " . htmlspecialchars($_POST["returnto"]));
