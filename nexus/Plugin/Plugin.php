@@ -11,7 +11,7 @@ class Plugin
         $this->bootPlugins();
     }
 
-    public function enabled($name): bool
+    public static function enabled($name): bool
     {
         return !empty(self::$providers[$name]['providers']);
     }

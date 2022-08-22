@@ -2693,18 +2693,28 @@ else {
             $totalreports = get_row_count("reports");
             $Cache->cache_value('staff_report_count', $totalreports, 900);
         }
-        $totalsm = $Cache->get_value('staff_message_count');
-        if ($totalsm == ""){
-            $totalsm = get_row_count("staffmessages");
-            $Cache->cache_value('staff_message_count', $totalsm, 900);
-        }
         $totalcheaters = $Cache->get_value('staff_cheater_count');
         if ($totalcheaters == ""){
             $totalcheaters = get_row_count("cheaters");
             $Cache->cache_value('staff_cheater_count', $totalcheaters, 900);
         }
-        print("<a href=\"cheaterbox.php\"><img class=\"cheaterbox\" alt=\"cheaterbox\" title=\"".$lang_functions['title_cheaterbox']."\" src=\"pic/trans.gif\" />  </a>".$totalcheaters."  <a href=\"reports.php\"><img class=\"reportbox\" alt=\"reportbox\" title=\"".$lang_functions['title_reportbox']."\" src=\"pic/trans.gif\" />  </a>".$totalreports."  <a href=\"staffbox.php\"><img class=\"staffbox\" alt=\"staffbox\" title=\"".$lang_functions['title_staffbox']."\" src=\"pic/trans.gif\" />  </a>".$totalsm."  ");
+        print(
+            "<a href=\"cheaterbox.php\"><img class=\"cheaterbox\" alt=\"cheaterbox\" title=\"".$lang_functions['title_cheaterbox']."\" src=\"pic/trans.gif\" />  </a>".$totalcheaters
+            ."  <a href=\"reports.php\"><img class=\"reportbox\" alt=\"reportbox\" title=\"".$lang_functions['title_reportbox']."\" src=\"pic/trans.gif\" />  </a>".$totalreports
+            );
 	}
+//	$cacheKey = "staff_message_count_" . $CURUSER['id'];
+//    $totalsm = $Cache->get_value($cacheKey);
+    $totalsm = \App\Repositories\MessageRepository::getStaffMessageCountCache($CURUSER['id'], 'total');
+
+    if ($totalsm == ""){
+        $totalsm = \App\Repositories\MessageRepository::countStaffMessage($CURUSER['id']);
+//        $Cache->cache_value($cacheKey, $totalsm, 900);
+        \App\Repositories\MessageRepository::updateStaffMessageCountCache($CURUSER['id'], 'total', $totalsm);
+    }
+    if ($totalsm > 0) {
+        print ("  <a href=\"staffbox.php\"><img class=\"staffbox\" alt=\"staffbox\" title=\"".$lang_functions['title_staffbox']."\" src=\"pic/trans.gif\" />  </a>".$totalsm."  ");
+    }
 
 	print("<a href=\"messages.php\">".$inboxpic."</a> ".($messages ? $messages." (".$unread.$lang_functions['text_message_new'].")" : "0"));
 	print("  <a href=\"messages.php?action=viewmailbox&amp;box=-1\"><img class=\"sentbox\" alt=\"sentbox\" title=\"".$lang_functions['title_sentbox']."\" src=\"pic/trans.gif\" /></a> ".($outmessages ? $outmessages : "0"));
@@ -2795,6 +2805,21 @@ if ($msgalert)
 		}
 	}
 
+	//Staff message, not only staff member
+//    $cacheKey = 'staff_new_message_count_' . $CURUSER['id'];
+//    $nummessages = $Cache->get_value($cacheKey);
+    $nummessages = \App\Repositories\MessageRepository::getStaffMessageCountCache($CURUSER['id'], 'new');
+
+    if ($nummessages == ""){
+        $nummessages = \App\Repositories\MessageRepository::countStaffMessage($CURUSER['id'], 0);
+//        $Cache->cache_value($cacheKey, $nummessages, 900);
+        \App\Repositories\MessageRepository::updateStaffMessageCountCache($CURUSER['id'], 'new', $nummessages);
+    }
+    if ($nummessages > 0) {
+        $text = $lang_functions['text_there_is'].is_or_are($nummessages).$nummessages.$lang_functions['text_new_staff_message'] . add_s($nummessages);
+        msgalert("staffbox.php",$text, "blue");
+    }
+
 	if (user_can('staffmem'))
 	{
 	    //torrent approval
@@ -2827,15 +2852,7 @@ if ($msgalert)
 			$text = $lang_functions['text_there_is'].is_or_are($numreports).$numreports.$lang_functions['text_new_report'] .add_s($numreports);
 			msgalert("reports.php",$text, "blue");
 		}
-		$nummessages = $Cache->get_value('staff_new_message_count');
-		if ($nummessages == ""){
-			$nummessages = get_row_count("staffmessages","WHERE answered='no'");
-			$Cache->cache_value('staff_new_message_count', $nummessages, 900);
-		}
-		if ($nummessages > 0) {
-			$text = $lang_functions['text_there_is'].is_or_are($nummessages).$nummessages.$lang_functions['text_new_staff_message'] . add_s($nummessages);
-			msgalert("staffbox.php",$text, "blue");
-		}
+
 		$numcheaters = $Cache->get_value('staff_new_cheater_count');
 		if ($numcheaters == ""){
 			$numcheaters = get_row_count("cheaters","WHERE dealtwith=0");

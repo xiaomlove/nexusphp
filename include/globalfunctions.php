@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 function get_global_sp_state()
 {
 	static $global_promotion_state;
@@ -892,7 +890,10 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
 
 function clear_user_cache($uid, $passkey = '')
 {
+    do_log("uid: $uid, passkey: $passkey");
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_content");
+    \Nexus\Database\NexusDB::cache_del("user_{$uid}_permissions");
+    \Nexus\Database\NexusDB::cache_del("user_{$uid}_roles");
     if ($passkey) {
         \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');
     }
@@ -904,36 +905,47 @@ function clear_setting_cache()
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
 }
 
+function clear_staff_message_cache()
+{
+    do_log("clear_staff_message_cache");
+    \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
+}
+
 function user_can($permission, $fail = false, $uid = 0): bool
 {
+    $log = "permission: $permission, fail: $fail, user: $uid";
+    static $userCanCached = [];
     if ($uid == 0) {
         $uid = get_user_id();
+        $log .= ", set current uid: $uid";
     }
     if ($uid <= 0) {
+        do_log("$log, no uid, false");
         return false;
     }
+    if (!$fail && isset($userCanCached[$permission][$uid])) {
+        return $userCanCached[$permission][$uid];
+    }
     $userInfo = get_user_row($uid);
-    $log = "permission: $permission, user: $uid, userClass: {$userInfo['class']}";
-    if ($userInfo['class'] == User::CLASS_STAFF_LEADER) {
+    $log .= ", userClass: " . $userInfo['class'];
+    if ($userInfo['class'] == \App\Models\User::CLASS_STAFF_LEADER) {
         do_log("$log, CLASS_STAFF_LEADER, true");
+        $userCanCached[$permission][$uid] = true;
         return true;
     }
-    $result = apply_filter('nexus_user_can', null, $permission, $uid);
-    $requireClass = get_setting("authority.$permission");
-    if (!is_bool($result)) {
-        $result = is_numeric($requireClass) && $requireClass >= 0 && $requireClass < $userInfo['class'];
-        $log .= ", requireClass: $requireClass, result: $result";
-    } else {
-        $log .= ", get result: $result from filter nexus_user_can";
-    }
+    $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid);
+    $result = in_array($permission, $userAllPermissions);
+    $log .= ", userAllPermissions: " . json_encode($userAllPermissions) . ", result: $result";
     if (!$fail || $result) {
         do_log($log);
+        $userCanCached[$permission][$uid] = $result;
         return $result;
     }
     do_log("$log, [FAIL]");
     if (IN_NEXUS && !IN_TRACKER) {
         global $lang_functions;
-        if (isset(User::$classes[$requireClass])) {
+        $requireClass = get_setting("authority.$permission");
+        if (isset(\App\Models\User::$classes[$requireClass])) {
             stderr($lang_functions['std_sorry'],$lang_functions['std_permission_denied_only'].get_user_class_name($requireClass,false,true,true).$lang_functions['std_or_above_can_view'],false);
         } else {
             stderr($lang_functions['std_error'], $lang_functions['std_permission_denied']);

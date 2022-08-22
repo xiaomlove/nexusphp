@@ -8,7 +8,11 @@ use App\Models\PollAnswer;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Nexus\Database\NexusDB;
+use Nexus\Plugin\Plugin;
+use NexusPlugin\Permission\PermissionRepository;
 use Symfony\Component\Mailer\Transport\Dsn;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
 use Symfony\Component\Mailer\Mailer;
@@ -360,5 +364,27 @@ class ToolRepository extends BaseRepository
         return $result;
     }
 
+    public static function listUserClassPermissions($uid): array
+    {
+        $userInfo = get_user_row($uid);
+        $prefix = "authority";
+        $excludes = collect(Setting::$permissionMustHaveClass)->map(fn ($p) => "$prefix.$p")->toArray();
+        return Setting::query()
+            ->where("name", "like", "$prefix.%")
+            ->whereNotIn('name', $excludes)
+            ->where('value', '<=', $userInfo['class'])
+            ->where('value', '>=', User::CLASS_PEASANT)
+            ->pluck('name')
+            ->map(fn ($name) => str_replace("$prefix.", "", $name))
+            ->toArray();
+    }
 
+
+    public static function listUserAllPermissions($uid): array
+    {
+        return NexusDB::remember("user_{$uid}_permissions", 600, function () use ($uid) {
+            $classPermissions = self::listUserClassPermissions($uid);
+            return apply_filter('user_permissions', $classPermissions, $uid);
+        });
+    }
 }

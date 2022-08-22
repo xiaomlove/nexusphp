@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Repositories\ToolRepository;
+use Google\Service\Testing\ToolResultsExecution;
+
 class StaffMessage extends NexusModel
 {
     protected $table = 'staffmessages';
 
     protected $fillable = [
-        'sender', 'added', 'subject', 'msg', 'answeredby', 'answered', 'answer'
+        'sender', 'added', 'subject', 'msg', 'answeredby', 'answered', 'answer', 'permission',
     ];
 
     protected $casts = [

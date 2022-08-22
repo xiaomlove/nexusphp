@@ -172,7 +172,7 @@ if (!$torrent) {
     do_log("[TORRENT NOT EXISTS] infoHashUrlEncode: $infoHashUrlEncode", 'error');
 
     err("torrent not registered with this tracker");
-} elseif ($az['class'] < $seebanned_class) {
+} elseif (!user_can('seebanned', false, $userid)) {
     if ($torrent['banned'] == 'yes') {
         err("torrent banned");
     } elseif ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no') {

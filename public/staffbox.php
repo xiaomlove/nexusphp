@@ -3,9 +3,22 @@ require "../include/bittorrent.php";
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
-user_can('staffmem', true);
 
 $action = $_GET["action"] ?? '';
+
+function can_access_staff_message($msg)
+{
+    global $CURUSER;
+    if (user_can('staffmem')) {
+        return true;
+    }
+    if (is_numeric($msg)) {
+        $msg = \App\Models\StaffMessage::query()->findOrFail($msg)->toArray();
+    }
+    if (empty($msg['permission']) || !in_array($msg['permission'], \App\Repositories\ToolRepository::listUserAllPermissions($CURUSER['id']))) {
+        permissiondenied(get_setting('authority.staffmem'));
+    }
+}
 
 ///////////////////////////
 //        SHOW PM'S        //
@@ -14,12 +27,14 @@ $action = $_GET["action"] ?? '';
 if (!$action) {
 	stdhead($lang_staffbox['head_staff_pm']);
 	$url = $_SERVER['PHP_SELF']."?";
-	$count = get_row_count("staffmessages");
+    $query = \App\Repositories\MessageRepository::buildStaffMessageQuery($CURUSER['id']);
+    $count = $query->count();
 	$perpage = 20;
-	list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $url);
+	list($pagertop, $pagerbottom, $limit, $offset, $pageSize, $pageNum) = pager($perpage, $count, $url);
 	print ("<h1 align=center>".$lang_staffbox['text_staff_pm']."</h1>");
 	if ($count == 0)
 	{
+	    do_log(last_query());
 		stdmsg($lang_staffbox['std_sorry'], $lang_staffbox['std_no_messages_yet']);
 	}
 	else
@@ -35,9 +50,9 @@ if (!$action) {
 			<td class=colhead align=center><nobr>".$lang_staffbox['col_action']."</nobr></td>
 		</tr>");
 
-	$res = sql_query("SELECT staffmessages.id, staffmessages.added, staffmessages.subject, staffmessages.answered, staffmessages.answeredby, staffmessages.sender, staffmessages.answer FROM staffmessages ORDER BY id desc $limit");
-
-	while ($arr = mysql_fetch_assoc($res))
+	$res = $query->forPage($pageNum, $perpage)->orderBy('id', 'desc')->get()->toArray();
+	do_log(last_query());
+	foreach ($res as $arr)
 	{
     		if ($arr['answered'])
     		{
@@ -64,13 +79,11 @@ if (!$action) {
 
 if ($action == "viewpm")
 {
-    user_can('staffmem', true);
-
 $pmid = intval($_GET["pmid"] ?? 0);
 
 $ress4 = sql_query("SELECT * FROM staffmessages WHERE id=".sqlesc($pmid));
 $arr4 = mysql_fetch_assoc($ress4);
-
+can_access_staff_message($arr4);
 $answeredby = get_username($arr4["answeredby"]);
 
 if (is_valid_id($arr4["sender"]))
@@ -120,8 +133,6 @@ stdfoot();
        //////////////////////////
 
 if ($action == "answermessage") {
-        user_can('staffmem', true);
-
         $answeringto = $_GET["answeringto"];
         $receiver = intval($_GET["receiver"] ?? 0);
 
@@ -135,6 +146,9 @@ if ($action == "answermessage") {
 
         $res2 = sql_query("SELECT * FROM staffmessages WHERE id=" . sqlesc($answeringto));
         $staffmsg = mysql_fetch_assoc($res2);
+
+        can_access_staff_message($staffmsg);
+
 	stdhead($lang_staffbox['head_answer_to_staff_pm']);
 	begin_main_frame();
         ?>
@@ -160,8 +174,6 @@ if ($action == "takeanswer") {
   if ($_SERVER["REQUEST_METHOD"] != "POST")
     die();
 
-    user_can('staffmem', true);
-
      $receiver = intval($_POST["receiver"] ?? 0);
    $answeringto = $_POST["answeringto"];
 
@@ -178,10 +190,13 @@ if ($action == "takeanswer") {
    if (!$msg)
      stderr($lang_staffbox['std_error'], $lang_staffbox['std_body_is_empty']);
 
+    can_access_staff_message($answeringto);
+
 sql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES($userid, $receiver, $added, $message)") or sqlerr(__FILE__, __LINE__);
 
 sql_query("UPDATE staffmessages SET answer=$message, answered='1', answeredby='$userid' WHERE id=$answeringto") or sqlerr(__FILE__, __LINE__);
 $Cache->delete_value('staff_new_message_count');
+clear_staff_message_cache();
         header("Location: staffbox.php?action=viewpm&pmid=$answeringto");
         die;
 }
@@ -196,11 +211,11 @@ if ($action == "deletestaffmessage") {
     if (!is_numeric($id) || $id < 1 || floor($id) != $id)
     die;
 
-    user_can('staffmem', true);
-
+    can_access_staff_message($id);
     sql_query("DELETE FROM staffmessages WHERE id=" . sqlesc($id)) or die();
 $Cache->delete_value('staff_message_count');
 $Cache->delete_value('staff_new_message_count');
+clear_staff_message_cache();
   header("Location: " . get_protocol_prefix() . "$BASEURL/staffbox.php");
 }
 
@@ -210,12 +225,12 @@ $Cache->delete_value('staff_new_message_count');
 
 if ($action == "setanswered") {
 
-    user_can('staffmem', true);
 
 $id = intval($_GET["id"] ?? 0);
-
+    can_access_staff_message($id);
 sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = $id") or sqlerr();
 $Cache->delete_value('staff_new_message_count');
+    clear_staff_message_cache();
 header("Refresh: 0; url=staffbox.php?action=viewpm&pmid=$id");
 }
 
@@ -224,19 +239,23 @@ header("Refresh: 0; url=staffbox.php?action=viewpm&pmid=$id");
        //////////////////////////
 
 if ($action == "takecontactanswered") {
-    user_can('staffmem', true);
 
 if ($_POST['setdealt']){
-	$res = sql_query ("SELECT id FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST['setanswered']) . ")");
-	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
+	$res = sql_query ("SELECT * FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST['setanswered']) . ")");
+	while ($arr = mysql_fetch_assoc($res)) {
+	    can_access_staff_message($arr);
+        sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
+    }
 }
 elseif ($_POST['delete']){
-	$res = sql_query ("SELECT id FROM staffmessages WHERE id IN (" . implode(", ", $_POST['setanswered']) . ")");
-	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("DELETE FROM staffmessages WHERE id = {$arr['id']}") or sqlerr();
+	$res = sql_query ("SELECT * FROM staffmessages WHERE id IN (" . implode(", ", $_POST['setanswered']) . ")");
+	while ($arr = mysql_fetch_assoc($res)) {
+        can_access_staff_message($arr);
+        sql_query ("DELETE FROM staffmessages WHERE id = {$arr['id']}") or sqlerr();
+    }
 }
 $Cache->delete_value('staff_new_message_count');
+    clear_staff_message_cache();
 header("Refresh: 0; url=staffbox.php");
 }
 
