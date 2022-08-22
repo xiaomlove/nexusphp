@@ -705,22 +705,25 @@ function get_user_row($id)
 {
     global $Cache, $CURUSER;
     static $curuserRowUpdated = false;
-    static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'donoruntil', 'leechwarn', 'warned', 'title');
+    static $neededColumns = array(
+        'id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor',
+        'donoruntil', 'leechwarn', 'warned', 'title', 'downloadpos', 'parked', 'clientselect', 'showclienterror',
+    );
     $cacheKey = 'user_'.$id.'_content';
     $row = \Nexus\Database\NexusDB::remember($cacheKey, 900, function () use ($id, $neededColumns) {
         $user = \App\Models\User::query()->with(['wearing_medals'])->find($id, $neededColumns);
-        if ($user) {
-            $userRep = new \App\Repositories\UserRepository();
-            $metas = $userRep->listMetas($id, \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME);
-            $arr = $user->toArray();
-            if ($metas->isNotEmpty()) {
-                $arr['__is_rainbow'] = 1;
-            } else {
-                $arr['__is_rainbow'] = 0;
-            }
-            return $arr;
+        if (!$user) {
+            return null;
         }
-        return null;
+        $arr = $user->toArray();
+        $userRep = new \App\Repositories\UserRepository();
+        $metas = $userRep->listMetas($id, \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME);
+        if ($metas->isNotEmpty()) {
+            $arr['__is_rainbow'] = 1;
+        } else {
+            $arr['__is_rainbow'] = 0;
+        }
+        return $arr;
     });
 
 //	if ($CURUSER && $id == $CURUSER['id']) {
