@@ -8,16 +8,32 @@ jQuery(document).ready(function () {
         }
     })
 
+    function getPosition(e, imgEle) {
+        let imgWidth = imgEle.prop('naturalWidth')
+        let imgHeight = imgEle.prop("naturalHeight")
+        let left = e.pageX + 10;
+        if (left + imgWidth > window.innerWidth) {
+            left = e.pageX - 10 - imgWidth
+        }
+        let top = e.pageY + 10;
+        if (top + imgHeight > window.innerHeight) {
+            top = e.pageY - imgHeight / 2
+        }
+        return {left, top}
+    }
     var previewEle = jQuery('#nexus-preview')
+    var imgEle
     jQuery(".preview").hover(function (e) {
-        let _this = jQuery(this);
-        let src = _this.attr("src")
+        imgEle = jQuery(this);
+        let position = getPosition(e, imgEle)
+        let src = imgEle.attr("src")
         if (src) {
-            previewEle.attr("src", src).fadeIn("fast");
+            previewEle.attr("src", src).css(position).fadeIn("fast");
         }
     }, function (e) {
         previewEle.fadeOut("fast");
     }).on("mousemove", function (e) {
-        previewEle.css({"left": e.pageX + 10, "top": e.pageY + 10})
+        let position = getPosition(e, imgEle)
+        previewEle.css(position)
     })
 })
