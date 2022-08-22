@@ -701,6 +701,66 @@ function get_row_count($table, $suffix = "")
     return $a[0];
 }
 
+function get_user_row($id)
+{
+    global $Cache, $CURUSER;
+    static $curuserRowUpdated = false;
+    static $neededColumns = array('id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor', 'donoruntil', 'leechwarn', 'warned', 'title');
+    $cacheKey = 'user_'.$id.'_content';
+    $row = \Nexus\Database\NexusDB::remember($cacheKey, 900, function () use ($id, $neededColumns) {
+        $user = \App\Models\User::query()->with(['wearing_medals'])->find($id, $neededColumns);
+        if ($user) {
+            $userRep = new \App\Repositories\UserRepository();
+            $metas = $userRep->listMetas($id, \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME);
+            $arr = $user->toArray();
+            if ($metas->isNotEmpty()) {
+                $arr['__is_rainbow'] = 1;
+            } else {
+                $arr['__is_rainbow'] = 0;
+            }
+            return $arr;
+        }
+        return null;
+    });
+
+//	if ($CURUSER && $id == $CURUSER['id']) {
+//		$row = array();
+//		foreach($neededColumns as $column) {
+//			$row[$column] = $CURUSER[$column];
+//		}
+//		if (!$curuserRowUpdated) {
+//			$Cache->cache_value('user_'.$CURUSER['id'].'_content', $row, 900);
+//			$curuserRowUpdated = true;
+//		}
+//	} elseif (!$row = $Cache->get_value('user_'.$id.'_content')){
+//		$res = sql_query("SELECT ".implode(',', $neededColumns)." FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
+//		$row = mysql_fetch_array($res);
+//		$Cache->cache_value('user_'.$id.'_content', $row, 900);
+//	}
+
+    if (!$row)
+        return false;
+    else return $row;
+}
+
+function get_user_class()
+{
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["class"] ?? '';
+    }
+    return auth()->user()->class;
+}
+
+function get_user_id()
+{
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["id"] ?? 0;
+    }
+    return auth()->user()->id ?? 0;
+}
+
 function nexus()
 {
     return \Nexus\Nexus::instance();
