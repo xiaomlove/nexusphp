@@ -2648,8 +2648,7 @@ else {
 //	$cacheKey = "staff_message_count_" . $CURUSER['id'];
 //    $totalsm = $Cache->get_value($cacheKey);
     $totalsm = \App\Repositories\MessageRepository::getStaffMessageCountCache($CURUSER['id'], 'total');
-
-    if ($totalsm == ""){
+    if ($totalsm === false){
         $totalsm = \App\Repositories\MessageRepository::countStaffMessage($CURUSER['id']);
 //        $Cache->cache_value($cacheKey, $totalsm, 900);
         \App\Repositories\MessageRepository::updateStaffMessageCountCache($CURUSER['id'], 'total', $totalsm);
@@ -2752,7 +2751,7 @@ if ($msgalert)
 //    $nummessages = $Cache->get_value($cacheKey);
     $nummessages = \App\Repositories\MessageRepository::getStaffMessageCountCache($CURUSER['id'], 'new');
 
-    if ($nummessages == ""){
+    if ($nummessages === false){
         $nummessages = \App\Repositories\MessageRepository::countStaffMessage($CURUSER['id'], 0);
 //        $Cache->cache_value($cacheKey, $nummessages, 900);
         \App\Repositories\MessageRepository::updateStaffMessageCountCache($CURUSER['id'], 'new', $nummessages);
@@ -3029,6 +3028,8 @@ function deletetorrent($id) {
 	}
     sql_query("DELETE FROM hit_and_runs WHERE torrent_id = ".mysql_real_escape_string($id));
     sql_query("DELETE FROM claims WHERE torrent_id = ".mysql_real_escape_string($id));
+    do_action("delete_torrent", $id);
+    do_log("delete torrent: $id", "error");
 	unlink(getFullDirectory("$torrent_dir/$id.torrent"));
 }
 
@@ -3717,8 +3718,8 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
 		$options = [
-		    'uid' => $id,
-            'with_role' => true,
+//		    'uid' => $id,
+//            'with_role' => true,
         ];
 		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true, false, false, $options) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true, $options) : "<span class='".get_user_class_name($arr['class'],true, false, false, $options) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
 
@@ -5086,6 +5087,7 @@ function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
     }
     $sql .= implode(",", $data) . " on duplicate key update value = values(value)";
     \Nexus\Database\NexusDB::statement($sql);
+    do_action("nexus_setting_update", $prefix, $nameAndValue);
 }
 
 function getFullDirectory($dir)

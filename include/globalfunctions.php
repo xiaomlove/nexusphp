@@ -710,12 +710,13 @@ function get_user_row($id)
         'donoruntil', 'leechwarn', 'warned', 'title', 'downloadpos', 'parked', 'clientselect', 'showclienterror',
     );
     $cacheKey = 'user_'.$id.'_content';
-    $row = \Nexus\Database\NexusDB::remember($cacheKey, 900, function () use ($id, $neededColumns) {
+    $row = \Nexus\Database\NexusDB::remember($cacheKey, 3600, function () use ($id, $neededColumns) {
         $user = \App\Models\User::query()->with(['wearing_medals'])->find($id, $neededColumns);
         if (!$user) {
             return null;
         }
         $arr = $user->toArray();
+        //Rainbow ID
         $userRep = new \App\Repositories\UserRepository();
         $metas = $userRep->listMetas($id, \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME);
         if ($metas->isNotEmpty()) {
@@ -723,7 +724,7 @@ function get_user_row($id)
         } else {
             $arr['__is_rainbow'] = 0;
         }
-        return $arr;
+        return apply_filter("user_row", $arr);
     });
 
 //	if ($CURUSER && $id == $CURUSER['id']) {
@@ -955,17 +956,19 @@ function clear_user_cache($uid, $passkey = '')
 {
     do_log("uid: $uid, passkey: $passkey");
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_content");
-    \Nexus\Database\NexusDB::cache_del("user_{$uid}_permissions");
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_roles");
+    \Nexus\Database\NexusDB::cache_del("announce_user_passkey_$uid");//announce.php
+    \Nexus\Database\NexusDB::cache_del(\App\Models\Setting::DIRECT_PERMISSION_SET_KEY_PREFIX . $uid);
     if ($passkey) {
-        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');
+        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');//announce.php
     }
 }
 
-function clear_setting_cache()
+function clear_setting_cache($buildPermissionCache = false)
 {
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
+
 }
 
 function clear_staff_message_cache()
@@ -974,7 +977,26 @@ function clear_staff_message_cache()
     \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
 }
 
-function user_can($permission, $fail = false, $uid = 0): bool
+function build_class_permission_cache()
+{
+    $redis = \Nexus\Database\NexusDB::redis();
+    $results = [];
+    $settings = get_setting_from_db("authority");
+    foreach (\App\Models\User::$classes as $class => $info) {
+        foreach ($settings as $permission => $minClass) {
+            if ($class >= $minClass) {
+                $results[$class][] = $permission;
+            }
+        }
+    }
+    foreach ($results as $class => $permissions) {
+        $classKey = \App\Models\Setting::CLASS_PERMISSION_SET_KEY_PREFIX . $class;
+        $redis->del($classKey);
+        $redis->sAddArray($classKey, $permissions);
+    }
+}
+
+function user_can($permission, $fail = false, $uid = 0, $class = null): bool
 {
     $log = "permission: $permission, fail: $fail, user: $uid";
     static $userCanCached = [];
@@ -983,21 +1005,24 @@ function user_can($permission, $fail = false, $uid = 0): bool
         $log .= ", set current uid: $uid";
     }
     if ($uid <= 0) {
-        do_log("$log, no uid, false");
+        do_log("$log, no uid, false", 'error');
         return false;
     }
     if (!$fail && isset($userCanCached[$permission][$uid])) {
         return $userCanCached[$permission][$uid];
     }
-    $userInfo = get_user_row($uid);
-    $log .= ", userClass: " . $userInfo['class'];
-    if ($userInfo['class'] == \App\Models\User::CLASS_STAFF_LEADER) {
+    if ($class === null) {
+        $userInfo = get_user_row($uid);
+        $class = $userInfo['class'];
+    }
+    $log .= ", userClass: $class";
+    if ($class == \App\Models\User::CLASS_STAFF_LEADER) {
         do_log("$log, CLASS_STAFF_LEADER, true");
         $userCanCached[$permission][$uid] = true;
         return true;
     }
-    $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid);
-    $result = in_array($permission, $userAllPermissions);
+    $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid, $class);
+    $result = isset($userAllPermissions[$permission]);
     $log .= ", userAllPermissions: " . json_encode($userAllPermissions) . ", result: $result";
     if (!$fail || $result) {
         do_log($log);

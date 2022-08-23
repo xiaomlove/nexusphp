@@ -242,6 +242,11 @@ class Update extends Install
         NexusDB::cache_del('nexus_rss');
         NexusDB::cache_del('nexus_is_ip_seed_box');
 
+        /**
+         * @since 1.7.23
+         */
+        build_class_permission_cache();
+
     }
 
     public function runExtraMigrate()

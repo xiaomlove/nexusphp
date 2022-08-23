@@ -815,6 +815,7 @@ EOD;
 				$to .= "&password=1";
 				if ($privacyupdated == 1)
 				$to .= "&privacy=1";
+				clear_user_cache($CURUSER["id"]);
 				header("Location: $to");
 			}
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_security_settings']);

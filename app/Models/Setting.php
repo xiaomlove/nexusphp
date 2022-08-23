@@ -15,6 +15,10 @@ class Setting extends NexusModel
 
     public static array $permissionMustHaveClass = ['defaultclass', 'staffmem'];
 
+    const CLASS_PERMISSION_SET_KEY_PREFIX = 'nexus_class_permissions_';
+    const DIRECT_PERMISSION_SET_KEY_PREFIX = 'nexus_direct_permissions_';
+    const ROLE_PERMISSION_SET_KEY_PREFIX = 'nexus_role_permissions_';
+
     /**
      * get setting autoload = yes with cache
      *

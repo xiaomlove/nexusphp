@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Nexus\Database\NexusDB;
 use Nexus\Plugin\Plugin;
@@ -367,21 +368,50 @@ class ToolRepository extends BaseRepository
     public static function listUserClassPermissions($uid): array
     {
         $userInfo = get_user_row($uid);
-        $prefix = "authority";
-        return Setting::query()
-            ->where("name", "like", "$prefix.%")
-            ->where('value', '<=', $userInfo['class'])
-            ->where('value', '>=', User::CLASS_PEASANT)
-            ->pluck('name')
-            ->map(fn ($name) => str_replace("$prefix.", "", $name))
-            ->toArray();
+        $settings = Setting::get('authority');
+        $result = [];
+        foreach ($settings as $permission => $minClass) {
+            if ($minClass >= User::CLASS_PEASANT && $minClass <= $userInfo['class']) {
+                $result[] = $permission;
+            }
+        }
+        return $result;
     }
 
-    public static function listUserAllPermissions($uid): array
+    public static function listUserAllPermissions($uid, $class = null): array
     {
-        return NexusDB::remember("user_{$uid}_permissions", 600, function () use ($uid) {
-            $classPermissions = self::listUserClassPermissions($uid);
-            return apply_filter('user_permissions', $classPermissions, $uid);
-        });
+        static $uidPermissionsCached = [];
+        if (isset($uidPermissionsCached[$uid])) {
+            return $uidPermissionsCached[$uid];
+        }
+        $log = "uid: $uid";
+        if ($class === null) {
+            $userInfo = get_user_row($uid);
+            $class = $userInfo['class'];
+        }
+        $redis = NexusDB::redis();
+        $setKeys = [];
+        //Class permission, use push mechanism, already prepared,see settings.php
+        $key = Setting::CLASS_PERMISSION_SET_KEY_PREFIX . $class;
+        $setKeys[] = $key;
+
+        //Role permission, use push mechanism, already prepared, see plugin role saving
+        $setKeys = apply_filter("role_permission_set_keys", $setKeys, $uid);
+
+        //Direct permission, use pull mechanism
+        $key = Setting::DIRECT_PERMISSION_SET_KEY_PREFIX . $uid;
+        $setKeys[] = $key;
+        if (!$redis->exists($key)) {
+            $log .= ", init direct permissions";
+            /** @var Collection $userPermissions */
+            $userPermissions = apply_filter("user_direct_permissions", $uid);
+            $userPermissionsArr = $userPermissions->pluck('permission')->toArray();
+            $redis->sAddArray($key, $userPermissionsArr);
+        }
+        $allPermissions = $redis->sUnion($setKeys);
+        do_log("$log, allSetKeys: " . json_encode($setKeys) . ", allPermissions: " . json_encode($allPermissions));
+        $result = array_combine($allPermissions, $allPermissions);
+        $uidPermissionsCached[$uid] = $result;
+        return $result;
     }
 }

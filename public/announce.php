@@ -35,7 +35,7 @@ if (!empty($_REQUEST['authkey'])) {
     if (empty($decrypted)) {
         err('Invalid authkey');
     }
-    $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 600, function () use ($uid) {
+    $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 3600, function () use ($uid) {
         return \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
     });
     if (!$userInfo) {
@@ -115,7 +115,7 @@ if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 	$res = sql_query("SELECT id, username, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = mysql_fetch_array($res);
 	do_log("[check passkey], currentUser: " . nexus_json_encode($az));
-	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 950);
+	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 3600);
 }
 if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
 $userid = intval($az['id'] ?? 0);
@@ -173,8 +173,7 @@ if (!$torrent) {
 
     err("torrent not registered with this tracker");
 }
-//Do not use user_can(), some func user_can() used is not available IN_TRACKER
-if ($az['class'] < $seebanned_class) {
+if (!user_can('seebanned', false, $az['id'], $az['class'])) {
     if ($torrent['banned'] == 'yes') {
         err("torrent banned");
     } elseif ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no') {
