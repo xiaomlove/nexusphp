@@ -403,9 +403,7 @@ class ToolRepository extends BaseRepository
         $setKeys[] = $key;
         if (!$redis->exists($key)) {
             $log .= ", init direct permissions";
-            /** @var Collection $userPermissions */
-            $userPermissions = apply_filter("user_direct_permissions", $uid);
-            $userPermissionsArr = $userPermissions->pluck('permission')->toArray();
+            $userPermissionsArr = apply_filter("user_direct_permissions", [], $uid);
             $redis->sAddArray($key, $userPermissionsArr);
         }
         $allPermissions = $redis->sUnion($setKeys);
