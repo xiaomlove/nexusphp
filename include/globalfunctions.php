@@ -1000,6 +1000,7 @@ function user_can($permission, $fail = false, $uid = 0, $class = null): bool
 {
     $log = "permission: $permission, fail: $fail, user: $uid";
     static $userCanCached = [];
+    static $sequence = 0;
     if ($uid == 0) {
         $uid = get_user_id();
         $log .= ", set current uid: $uid";
@@ -1023,7 +1024,11 @@ function user_can($permission, $fail = false, $uid = 0, $class = null): bool
     }
     $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid, $class);
     $result = isset($userAllPermissions[$permission]);
-    $log .= ", userAllPermissions: " . json_encode($userAllPermissions) . ", result: $result";
+    if ($sequence == 0) {
+        $sequence++;
+        $log .= ", userAllPermissions: " . json_encode($userAllPermissions);
+    }
+    $log .= ", result: $result";
     if (!$fail || $result) {
         do_log($log);
         $userCanCached[$permission][$uid] = $result;
