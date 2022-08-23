@@ -1006,8 +1006,7 @@ function user_can($permission, $fail = false, $uid = 0, $class = null): bool
         $log .= ", set current uid: $uid";
     }
     if ($uid <= 0) {
-        do_log("$log, no uid, false", 'error');
-        return false;
+        throw new \RuntimeException("No authentication info !");
     }
     if (!$fail && isset($userCanCached[$permission][$uid])) {
         return $userCanCached[$permission][$uid];
