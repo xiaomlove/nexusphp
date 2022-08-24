@@ -977,7 +977,7 @@ function clear_staff_message_cache()
     \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
 }
 
-function user_can($permission, $fail = false, $uid = 0, $class = null): bool
+function user_can($permission, $fail = false, $uid = 0): bool
 {
     $log = "permission: $permission, fail: $fail, user: $uid";
     static $userCanCached = [];
@@ -993,10 +993,8 @@ function user_can($permission, $fail = false, $uid = 0, $class = null): bool
     if (!$fail && isset($userCanCached[$permission][$uid])) {
         return $userCanCached[$permission][$uid];
     }
-    if ($class === null) {
-        $userInfo = get_user_row($uid);
-        $class = $userInfo['class'];
-    }
+    $userInfo = get_user_row($uid);
+    $class = $userInfo['class'];
     $log .= ", userClass: $class";
     if ($class == \App\Models\User::CLASS_STAFF_LEADER) {
         do_log("$log, CLASS_STAFF_LEADER, true");

@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 require_once(get_langfile_path("",true));
 loggedinorreturn();
-
+user_can('torrentmanage', true);
 function bark($msg) {
   global $lang_delete;
   stdhead();

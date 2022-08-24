@@ -173,13 +173,17 @@ if (!$torrent) {
 
     err("torrent not registered with this tracker");
 }
-if (!user_can('seebanned', false, $az['id'], $az['class'])) {
-    if ($torrent['banned'] == 'yes') {
+if ($torrent['banned'] == 'yes') {
+    if (!user_can('seebanned', false, $az['id'])) {
         err("torrent banned");
-    } elseif ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no') {
+    }
+}
+if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no') {
+    if (!user_can('seebanned', false, $az['id'])) {
         err("torrent review not approved");
     }
 }
+
 // select peers info from peers table for this torrent
 $torrentid = $torrent["id"];
 $numpeers = $torrent["seeders"]+$torrent["leechers"];
