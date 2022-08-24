@@ -696,7 +696,7 @@ $lang_settings = array
 	'row_login_type' => 'Login type',
 	'text_login_type_normal' => 'Normal',
 	'text_login_type_secret' => 'Secret',
-	'text_login_type_warning' => "When 'Guest visit' != Normal, user can only login through the 'Secret' way",
+	'text_login_type_warning' => "Only one of the three is in effect",
 	'row_login_secret' => 'Login secret',
 	'text_login_secret_current' => 'Current secret',
 	'text_login_url_with_secret' => 'Secret login URL',

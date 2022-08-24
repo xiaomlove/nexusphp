@@ -3666,6 +3666,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 			$disabledpic = "disabledbig";
 			$marginLeft = '4pt';
 			$medalSize = '16px';
+			$medalClass = 'nexus-username-medal-big';
 			$style = "style='margin-left: $marginLeft'";
 		}
 		else
@@ -3676,6 +3677,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 			$disabledpic = "disabled";
             $marginLeft = '2pt';
             $medalSize = '11px';
+            $medalClass = 'nexus-username-medal';
 			$style = "style='margin-left: $marginLeft'";
 		}
 		$pics = $arr["donor"] == "yes" && ($arr['donoruntil'] === null || $arr['donoruntil'] < '1970' || $arr['donoruntil'] >= date('Y-m-d H:i:s')) ? "<img class=\"".$donorpic."\" src=\"/pic/trans.gif\" alt=\"Donor\" ".$style." />" : "";
@@ -3711,8 +3713,8 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
         $medalHtml = '';
 		foreach ($arr['wearing_medals'] as $medal) {
             $medalHtml .= sprintf(
-                '<img src="%s" title="%s" class="preview" style="max-height: %s;max-width: %s;margin-left: %s"/>',
-                $medal['image_large'], $medal['name'], $medalSize, $medalSize, $marginLeft
+                '<img src="%s" title="%s" class="%s preview" style="max-height: %s;max-width: %s;margin-left: %s"/>',
+                $medal['image_large'], $medal['name'], $medalClass, $medalSize, $medalSize, $marginLeft
             );
         }
 
