@@ -3711,7 +3711,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 
         //medal
         $medalHtml = '';
-		foreach ($arr['wearing_medals'] as $medal) {
+		foreach ($arr['wearing_medals'] ?? [] as $medal) {
             $medalHtml .= sprintf(
                 '<img src="%s" title="%s" class="%s preview" style="max-height: %s;max-width: %s;margin-left: %s"/>',
                 $medal['image_large'], $medal['name'], $medalClass, $medalSize, $medalSize, $marginLeft
