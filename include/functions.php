@@ -3028,7 +3028,7 @@ function deletetorrent($id) {
 	}
     sql_query("DELETE FROM hit_and_runs WHERE torrent_id = ".mysql_real_escape_string($id));
     sql_query("DELETE FROM claims WHERE torrent_id = ".mysql_real_escape_string($id));
-    do_action("delete_torrent", $id);
+    do_action("torrent_delete", $id);
     do_log("delete torrent: $id", "error");
 	unlink(getFullDirectory("$torrent_dir/$id.torrent"));
 }
@@ -5113,6 +5113,7 @@ function checkGuestVisit()
     if (empty($guestVisitType) || $guestVisitType == 'normal') {
         return;
     }
+
     if (in_array(nexus()->getScript(), ['login', 'takelogin', 'image']) && canDoLogin()) {
         return;
     }
@@ -5182,6 +5183,10 @@ function canDoLogin()
             do_log("secret: {$_REQUEST['secret']} expires(deadline: {$setting['login_secret_deadline']})");
             return false;
         }
+        return true;
+    }
+    if ($loginType == 'passkey') {
+        return false;
     }
     return true;
 }
