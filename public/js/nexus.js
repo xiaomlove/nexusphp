@@ -22,18 +22,19 @@ jQuery(document).ready(function () {
         return {left, top}
     }
     var previewEle = jQuery('#nexus-preview')
-    var imgEle
-    jQuery(".preview").hover(function (e) {
+    var imgEle, selector = '.preview'
+    jQuery("body").on("mouseover", selector, function (e) {
         imgEle = jQuery(this);
         let position = getPosition(e, imgEle)
         let src = imgEle.attr("src")
         if (src) {
             previewEle.attr("src", src).css(position).fadeIn("fast");
         }
-    }, function (e) {
+    }).on("mouseout", selector, function (e) {
         previewEle.fadeOut("fast");
-    }).on("mousemove", function (e) {
+    }).on("mousemove", selector, function (e) {
         let position = getPosition(e, imgEle)
         previewEle.css(position)
     })
+
 })

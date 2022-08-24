@@ -365,49 +365,39 @@ class ToolRepository extends BaseRepository
         return $result;
     }
 
-    public static function listUserClassPermissions($uid): array
+    public static function listUserClassPermissions($class): array
     {
-        $userInfo = get_user_row($uid);
         $settings = Setting::get('authority');
         $result = [];
         foreach ($settings as $permission => $minClass) {
-            if ($minClass >= User::CLASS_PEASANT && $minClass <= $userInfo['class']) {
+            if ($minClass >= User::CLASS_PEASANT && $minClass <= $class) {
                 $result[] = $permission;
             }
         }
         return $result;
     }
 
-    public static function listUserAllPermissions($uid, $class = null): array
+    public static function listUserAllPermissions($uid): array
     {
         static $uidPermissionsCached = [];
         if (isset($uidPermissionsCached[$uid])) {
             return $uidPermissionsCached[$uid];
         }
         $log = "uid: $uid";
-        if ($class === null) {
-            $userInfo = get_user_row($uid);
-            $class = $userInfo['class'];
-        }
-        $redis = NexusDB::redis();
-        $setKeys = [];
-        //Class permission, use push mechanism, already prepared,see settings.php
-        $key = Setting::CLASS_PERMISSION_SET_KEY_PREFIX . $class;
-        $setKeys[] = $key;
+        $userInfo = get_user_row($uid);
+        $class = $userInfo['class'];
 
-        //Role permission, use push mechanism, already prepared, see plugin role saving
-        $setKeys = apply_filter("role_permission_set_keys", $setKeys, $uid);
+        //Class permission
+        $classPermissions = self::listUserClassPermissions($class);
 
-        //Direct permission, use pull mechanism
-        $key = Setting::DIRECT_PERMISSION_SET_KEY_PREFIX . $uid;
-        $setKeys[] = $key;
-        if (!$redis->exists($key)) {
-            $log .= ", init direct permissions";
-            $userPermissionsArr = apply_filter("user_direct_permissions", [], $uid);
-            $redis->sAddArray($key, $userPermissionsArr);
-        }
-        $allPermissions = $redis->sUnion($setKeys);
-        do_log("$log, allSetKeys: " . json_encode($setKeys) . ", allPermissions: " . json_encode($allPermissions));
+        //Role permission
+        $rolePermissions = apply_filter("user_role_permissions", [], $uid);
+
+        //Direct permission
+        $directPermissions = apply_filter("user_direct_permissions", [], $uid);
+
+        $allPermissions = array_merge($classPermissions, $rolePermissions, $directPermissions);
+        do_log("$log, allPermissions: " . json_encode($allPermissions));
         $result = array_combine($allPermissions, $allPermissions);
         $uidPermissionsCached[$uid] = $result;
         return $result;

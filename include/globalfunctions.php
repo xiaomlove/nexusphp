@@ -958,7 +958,7 @@ function clear_user_cache($uid, $passkey = '')
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_content");
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_roles");
     \Nexus\Database\NexusDB::cache_del("announce_user_passkey_$uid");//announce.php
-    \Nexus\Database\NexusDB::cache_del(\App\Models\Setting::DIRECT_PERMISSION_SET_KEY_PREFIX . $uid);
+    \Nexus\Database\NexusDB::cache_del(\App\Models\Setting::DIRECT_PERMISSION_CACHE_KEY_PREFIX . $uid);
     if ($passkey) {
         \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');//announce.php
     }
@@ -975,25 +975,6 @@ function clear_staff_message_cache()
 {
     do_log("clear_staff_message_cache");
     \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
-}
-
-function build_class_permission_cache()
-{
-    $redis = \Nexus\Database\NexusDB::redis();
-    $results = [];
-    $settings = get_setting_from_db("authority");
-    foreach (\App\Models\User::$classes as $class => $info) {
-        foreach ($settings as $permission => $minClass) {
-            if ($class >= $minClass) {
-                $results[$class][] = $permission;
-            }
-        }
-    }
-    foreach ($results as $class => $permissions) {
-        $classKey = \App\Models\Setting::CLASS_PERMISSION_SET_KEY_PREFIX . $class;
-        $redis->del($classKey);
-        $redis->sAddArray($classKey, $permissions);
-    }
 }
 
 function user_can($permission, $fail = false, $uid = 0, $class = null): bool
@@ -1022,7 +1003,7 @@ function user_can($permission, $fail = false, $uid = 0, $class = null): bool
         $userCanCached[$permission][$uid] = true;
         return true;
     }
-    $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid, $class);
+    $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid);
     $result = isset($userAllPermissions[$permission]);
     if ($sequence == 0) {
         $sequence++;

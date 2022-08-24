@@ -245,7 +245,6 @@ class Update extends Install
         /**
          * @since 1.7.23
          */
-        build_class_permission_cache();
 
     }
 

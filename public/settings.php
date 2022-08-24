@@ -237,7 +237,6 @@ elseif ($action == 'savesettings_authority') 	// save user authority
 	saveSetting('authority', $AUTHORITY);
 	$actiontime = date("F j, Y, g:i a");
 	write_log("Tracker USER AUTHORITY settings updated by {$CURUSER['username']}. $actiontime",'mod');
-    build_class_permission_cache();
 	go_back();
 }
 elseif ($action == 'savesettings_tweak')	// save tweak
