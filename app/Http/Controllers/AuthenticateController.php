@@ -50,9 +50,10 @@ class AuthenticateController extends Controller
         if ($deadline && $deadline > now()->toDateTimeString()) {
             $user = User::query()->where('passkey', $passkey)->first(['id', 'passhash']);
             if ($user) {
-                $passhash = md5($user->passhash . $_SERVER["REMOTE_ADDR"]);
-                do_log(sprintf('passhash: %s, remote_addr: %s, md5: %s', $user->passhash, $_SERVER["REMOTE_ADDR"], $passhash));
-                logincookie($user->id, $passhash,false, 86400 * 30, true, true, true);
+                $ip = getip();
+                $passhash = md5($user->passhash . $ip);
+                do_log(sprintf('passhash: %s, ip: %s, md5: %s', $user->passhash, $ip, $passhash));
+                logincookie($user->id, $passhash,false, 0x7fffffff, true, true, true);
                 $user->last_login = now();
                 $user->save();
             }

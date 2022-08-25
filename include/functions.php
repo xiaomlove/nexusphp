@@ -1976,8 +1976,8 @@ function userlogin() {
 
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
-        $md5 = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
-        $log .= ", secure login == yeah, passhash: {$row['passhash']}, remote_addr: {$_SERVER["REMOTE_ADDR"]}, md5: $md5";
+        $md5 = md5($row["passhash"].$ip);
+        $log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, md5: $md5";
 		if ($_COOKIE["c_secure_pass"] != $md5) {
 		    do_log("$log, c_secure_pass != md5");
             return $loginResult = false;

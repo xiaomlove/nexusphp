@@ -7,7 +7,7 @@ dbconn();
 require_once(get_langfile_path("", false, get_langfolder_cookie()));
 failedloginscheck ();
 cur_user_check () ;
-
+$ip = getip();
 function bark($text = "")
 {
   global $lang_takelogin;
@@ -33,7 +33,7 @@ if (!empty($row['two_step_secret'])) {
         failedlogins($lang_takelogin['std_invalid_two_step_code']);
     }
 }
-$log = "user: " . $row['id'];
+$log = "user: {$row['id']}, ip: $ip";
 if ($row["passhash"] != md5($row["secret"] . $password . $row["secret"]))
 	login_failedlogins();
 
@@ -43,8 +43,8 @@ if ($row["enabled"] == "no")
 if (isset($_POST["securelogin"]) && $_POST["securelogin"] == "yes")
 {
 	$securelogin_indentity_cookie = true;
-	$passh = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
-	$log .= ", secure login == yeah, passhash: {$row['passhash']}, remote_addr: {$_SERVER["REMOTE_ADDR"]}, md5: $passh";
+	$passh = md5($row["passhash"].$ip);
+	$log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, md5: $passh";
 }
 else
 {
