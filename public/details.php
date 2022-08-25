@@ -238,7 +238,7 @@ JS;
 			print("<tr><td class=\"embedded\">".$lang_details['text_no_subtitles']."</td></tr>");
 		print("</table>");
 		print("<table border=\"0\" cellspacing=\"0\"><tr>");
-		if($CURUSER['id']==$row['owner']  ||  !user_can('uploadsub'))
+		if($CURUSER['id']==$row['owner']  ||  user_can('uploadsub'))
 		{
 			print("<td class=\"embedded\"><form method=\"post\" action=\"subtitles.php\"><input type=\"hidden\" name=\"torrent_name\" value=\"" . $row["name"]. "\" /><input type=\"hidden\" name=\"detail_torrent_id\" value=\"" . $row["id"]. "\" /><input type=\"hidden\" name=\"in_detail\" value=\"in_detail\" /><input type=\"submit\" value=\"".$lang_details['submit_upload_subtitles']."\" /></form></td>");
 		}
