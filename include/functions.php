@@ -1926,6 +1926,7 @@ function userlogin() {
 	global $SITE_ONLINE, $oldip;
 	global $enablesqldebug_tweak, $sqldebug_tweak;
 	unset($GLOBALS["CURUSER"]);
+	$log = "cookie: " . json_encode($_COOKIE);
 
 	$ip = getip();
 	$nip = ip2long($ip);
@@ -1941,6 +1942,7 @@ function userlogin() {
 	}
 
 	if (empty($_COOKIE["c_secure_pass"]) || empty($_COOKIE["c_secure_uid"]) || empty($_COOKIE["c_secure_login"])) {
+	    do_log("$log, param not enough");
 	    return $loginResult = false;
     }
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
@@ -1951,6 +1953,7 @@ function userlogin() {
 	$b_id = base64($_COOKIE["c_secure_uid"],false);
 	$id = intval($b_id ?? 0);
 	if (!$id || !is_valid_id($id) || strlen($_COOKIE["c_secure_pass"]) != 32) {
+        do_log("$log, invalid c_secure_uid");
         return $loginResult = false;
     }
 
@@ -1963,6 +1966,7 @@ function userlogin() {
 	$res = sql_query("SELECT * FROM users WHERE users.id = ".sqlesc($id)." AND users.enabled='yes' AND users.status = 'confirmed' LIMIT 1");
 	$row = mysql_fetch_array($res);
 	if (!$row) {
+        do_log("$log, c_secure_uid not exists");
         return $loginResult = false;
     }
 
@@ -1974,12 +1978,14 @@ function userlogin() {
 	{
 
 		if ($_COOKIE["c_secure_pass"] != md5($row["passhash"].$_SERVER["REMOTE_ADDR"])) {
+            do_log("$log, secure login == yeah, c_secure_pass invalid");
             return $loginResult = false;
         }
 	}
 	else
 	{
 		if ($_COOKIE["c_secure_pass"] !== md5($row["passhash"])) {
+            do_log("$log, c_secure_pass invalid");
             return $loginResult = false;
         }
 	}

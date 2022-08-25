@@ -51,7 +51,7 @@ class AuthenticateController extends Controller
             $user = User::query()->where('passkey', $passkey)->first(['id', 'passhash']);
             if ($user) {
                 $passhash = md5($user->passhash . $_SERVER["REMOTE_ADDR"]);
-                logincookie($user->id, $passhash,false,0x7fffffff, true, true, true);
+                logincookie($user->id, $passhash,false, 86400 * 30, true, true, true);
                 $user->last_login = now();
                 $user->save();
             }
