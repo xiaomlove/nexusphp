@@ -106,7 +106,9 @@ $updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"] ?? 0));
 $updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"] ?? 0));
 $updateset[] = "team = " . sqlesc(intval($_POST["team_sel"] ?? 0));
 $updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"] ?? 0));
-$updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";
+if (user_can('torrentmanage')) {
+    $updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";
+}
 if(user_can('torrentonpromotion'))
 {
 	if(!isset($_POST["sel_spstate"]) || $_POST["sel_spstate"] == 1)
