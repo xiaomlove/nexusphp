@@ -77,7 +77,7 @@ class NexusWebUserProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
         if ($credentials["c_secure_login"] == base64("yeah")) {
-            if ($credentials["c_secure_pass"] != md5($user->passhash . $_SERVER["REMOTE_ADDR"])) {
+            if ($credentials["c_secure_pass"] != md5($user->passhash . getip())) {
                 return false;
             }
         } else {

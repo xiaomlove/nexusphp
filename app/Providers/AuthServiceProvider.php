@@ -58,7 +58,7 @@ class AuthServiceProvider extends ServiceProvider
             return null;
         }
         if ($cookie["c_secure_login"] == base64("yeah")) {
-            if ($cookie["c_secure_pass"] != md5($user->passhash . $_SERVER["REMOTE_ADDR"])) {
+            if ($cookie["c_secure_pass"] != md5($user->passhash . getip())) {
                 return null;
             }
         } else {
