@@ -33,7 +33,7 @@ if (!empty($row['two_step_secret'])) {
         failedlogins($lang_takelogin['std_invalid_two_step_code']);
     }
 }
-
+$log = "user: " . $row['id'];
 if ($row["passhash"] != md5($row["secret"] . $password . $row["secret"]))
 	login_failedlogins();
 
@@ -44,11 +44,13 @@ if (isset($_POST["securelogin"]) && $_POST["securelogin"] == "yes")
 {
 	$securelogin_indentity_cookie = true;
 	$passh = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
+	$log .= ", secure login == yeah, passhash: {$row['passhash']}, remote_addr: {$_SERVER["REMOTE_ADDR"]}, md5: $passh";
 }
 else
 {
 	$securelogin_indentity_cookie = false;
 	$passh = md5($row["passhash"]);
+    $log .= ",  passhash: {$row['passhash']}, md5: $passh";
 }
 
 if ($securelogin=='yes' || (isset($_POST["ssl"]) && $_POST["ssl"] == "yes"))
@@ -69,6 +71,9 @@ else
 {
 	$trackerssl = false;
 }
+
+do_log($log);
+
 if (isset($_POST["logout"]) && $_POST["logout"] == "yes")
 {
 	logincookie($row["id"], $passh,1,900,$securelogin_indentity_cookie, $ssl, $trackerssl);

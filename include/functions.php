@@ -1976,16 +1976,19 @@ function userlogin() {
 
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
-
-		if ($_COOKIE["c_secure_pass"] != md5($row["passhash"].$_SERVER["REMOTE_ADDR"])) {
-            do_log("$log, secure login == yeah, c_secure_pass invalid");
+        $md5 = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
+        $log .= ", secure login == yeah, passhash: {$row['passhash']}, remote_addr: {$_SERVER["REMOTE_ADDR"]}, md5: $md5";
+		if ($_COOKIE["c_secure_pass"] != $md5) {
+		    do_log("$log, c_secure_pass != md5");
             return $loginResult = false;
         }
 	}
 	else
 	{
-		if ($_COOKIE["c_secure_pass"] !== md5($row["passhash"])) {
-            do_log("$log, c_secure_pass invalid");
+	    $md5 = md5($row["passhash"]);
+        $log .= "$log, passhash: {$row['passhash']}, md5: $md5";
+		if ($_COOKIE["c_secure_pass"] !== $md5) {
+            do_log("$log, c_secure_pass != md5");
             return $loginResult = false;
         }
 	}
