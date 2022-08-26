@@ -37,6 +37,8 @@ class TorrentResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    private static ?TorrentRepository $rep;
+
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.torrent_list');
@@ -55,6 +57,14 @@ class TorrentResource extends Resource
             ]);
     }
 
+    public static function getRep(): ?TorrentRepository
+    {
+        if (self::$rep === null) {
+            self::$rep = new TorrentRepository();
+        }
+        return self::$rep;
+    }
+
     public static function table(Table $table): Table
     {
         $showApproval = self::shouldShowApproval();
@@ -64,8 +74,8 @@ class TorrentResource extends Resource
                 Tables\Columns\TextColumn::make('basic_category.name')->label(__('label.torrent.category')),
                 Tables\Columns\TextColumn::make('name')->formatStateUsing(function (Torrent $record) {
                     $name = sprintf(
-                        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank">%s</a></div>',
-                        $record->id, Str::limit($record->name, 40)
+                        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank" title="%s">%s</a></div>',
+                        $record->id, $record->name, Str::limit($record->name, 40)
                     );
                     $tags = sprintf('&nbsp;<div>%s</div>', $record->tagsFormatted);
 
@@ -206,8 +216,7 @@ class TorrentResource extends Resource
     private static function getActions(): array
     {
         $actions = [];
-        $userClass = Auth::user()->class;
-        if (self::shouldShowApproval() && $userClass >= Setting::get('authority.torrentmanage')) {
+        if (self::shouldShowApproval() && user_can('torrent-approval')) {
             $actions[] = Tables\Actions\Action::make('approval')
                 ->label(__('admin.resources.torrent.action_approval'))
                 ->form([
@@ -228,6 +237,12 @@ class TorrentResource extends Resource
                         do_log($exception->getMessage(), 'error');
                     }
                 });
+
+        }
+        if (user_can('torrentmanage')) {
+            $actions[] = Tables\Actions\DeleteAction::make('delete')->using(function ($record) {
+                deletetorrent($record->id);
+            });
         }
         return $actions;
     }

@@ -605,5 +605,4 @@ class TorrentRepository extends BaseRepository
         return Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $posState]);
     }
 
-
 }

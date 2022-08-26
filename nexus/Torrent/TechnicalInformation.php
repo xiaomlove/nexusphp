@@ -80,7 +80,7 @@ class TechnicalInformation
     public function getRefFrame()
     {
         foreach ($this->mediaInfoArr['Video'] ?? [] as $key => $value) {
-            if (strpos($key, 'Reference frames') !== false) {
+            if (str_contains($key, 'Reference frames')) {
                 return $value;
             }
         }
@@ -135,6 +135,16 @@ class TechnicalInformation
         return $result;
     }
 
+    public function getHDRFormat()
+    {
+        return $this->mediaInfoArr['Video']['HDR format'] ?? '';
+    }
+
+    public function getBitDepth()
+    {
+        return $this->mediaInfoArr['Video']['Bit depth'] ?? '';
+    }
+
     public function renderOnDetailsPage()
     {
         global $lang_functions;
@@ -142,7 +152,9 @@ class TechnicalInformation
             'Runtime' => $this->getRuntime(),
             'Resolution' => $this->getResolution(),
             'Bitrate' => $this->getBitrate(),
-            'Framerate' => $this->getFramerate(),
+            'HDR' => $this->getHDRFormat(),
+            'Bit depth' => $this->getBitDepth(),
+            'Frame rate' => $this->getFramerate(),
             'Profile' => $this->getProfile(),
             'Ref.Frames' => $this->getRefFrame(),
         ];

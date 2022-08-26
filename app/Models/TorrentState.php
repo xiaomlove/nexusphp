@@ -5,7 +5,7 @@ namespace App\Models;
 
 class TorrentState extends NexusModel
 {
-    protected $fillable = ['global_sp_state', 'deadline'];
+    protected $fillable = ['global_sp_state', 'deadline', 'begin'];
 
     protected $table = 'torrents_state';
 

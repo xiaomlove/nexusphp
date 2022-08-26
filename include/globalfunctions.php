@@ -3,15 +3,16 @@
 function get_global_sp_state()
 {
 	static $global_promotion_state;
-	$cacheKey = 'global_promotion_state';
+	$cacheKey = \App\Models\Setting::TORRENT_GLOBAL_STATE_CACHE_KEY;
 	if (!$global_promotion_state) {
         $row = \Nexus\Database\NexusDB::remember($cacheKey, 600, function () use ($cacheKey) {
-            $row = \Nexus\Database\NexusDB::getOne('torrents_state', 1);
-            \Nexus\Database\NexusDB::cache_put($cacheKey . '_deadline', $row['deadline'], 600);
-            return $row;
+            return \Nexus\Database\NexusDB::getOne('torrents_state', 1);
         });
         if (is_array($row) && isset($row['deadline']) && $row['deadline'] < date('Y-m-d H:i:s')) {
             //expired
+            $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
+        } elseif (is_array($row) && isset($row['begin']) && $row['begin'] > date('Y-m-d H:i:s')) {
+            //Not begin
             $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
         } elseif (is_array($row)) {
             $global_promotion_state = $row["global_sp_state"];

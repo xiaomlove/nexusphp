@@ -2689,11 +2689,12 @@ if ($msgalert)
 {
     $spStateGlobal = get_global_sp_state();
     if ($spStateGlobal != \App\Models\Torrent::PROMOTION_NORMAL) {
-        $deadline = \Nexus\Database\NexusDB::cache_get('global_promotion_state_deadline');
-        if (!$deadline) {
-            $deadline = \App\Models\TorrentState::query()->first(['deadline'])->deadline ?? '';
-        }
-        msgalert("torrents.php", sprintf($lang_functions['full_site_promotion_in_effect'], \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text'], $deadline), "green");
+        $torrentGlobalStateRow = \Nexus\Database\NexusDB::cache_get(\App\Models\Setting::TORRENT_GLOBAL_STATE_CACHE_KEY);
+        $timeRange = sprintf('%s ~ %s', $torrentGlobalStateRow['begin'] ?? '', $torrentGlobalStateRow['deadline'] ?? '');
+        msgalert("torrents.php", sprintf(
+            $lang_functions['full_site_promotion_in_effect'],
+            \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text'], $timeRange
+        ), "green");
     }
 	if($CURUSER['leechwarn'] == 'yes')
 	{
@@ -3030,14 +3031,15 @@ function loggedinorreturn($mainpage = false) {
 }
 
 function deletetorrent($id) {
-	global $torrent_dir;
-	sql_query("DELETE FROM torrents WHERE id = ".mysql_real_escape_string($id));
-	sql_query("DELETE FROM snatched WHERE torrentid = ".mysql_real_escape_string($id));
+	$id = intval($id);
+	$torrent_dir = get_setting('main.torrent_dir');
+    \Nexus\Database\NexusDB::statement("DELETE FROM torrents WHERE id = $id");
+    \Nexus\Database\NexusDB::statement("DELETE FROM snatched WHERE torrentid = $id");
 	foreach(array("peers", "files", "comments") as $x) {
-		sql_query("DELETE FROM $x WHERE torrent = ".mysql_real_escape_string($id));
+        \Nexus\Database\NexusDB::statement("DELETE FROM $x WHERE torrent = $id");
 	}
-    sql_query("DELETE FROM hit_and_runs WHERE torrent_id = ".mysql_real_escape_string($id));
-    sql_query("DELETE FROM claims WHERE torrent_id = ".mysql_real_escape_string($id));
+    \Nexus\Database\NexusDB::statement("DELETE FROM hit_and_runs WHERE torrent_id = $id");
+    \Nexus\Database\NexusDB::statement("DELETE FROM claims WHERE torrent_id = $id");
     do_action("torrent_delete", $id);
     do_log("delete torrent: $id", "error");
 	unlink(getFullDirectory("$torrent_dir/$id.torrent"));

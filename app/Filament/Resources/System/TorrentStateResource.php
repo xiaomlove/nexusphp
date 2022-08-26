@@ -4,6 +4,7 @@ namespace App\Filament\Resources\System;
 
 use App\Filament\Resources\System\TorrentStateResource\Pages;
 use App\Filament\Resources\System\TorrentStateResource\RelationManagers;
+use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\TorrentState;
 use Filament\Forms;
@@ -43,8 +44,9 @@ class TorrentStateResource extends Resource
                     ->options(Torrent::listPromotionTypes(true))
                     ->label(__('label.torrent_state.global_sp_state'))
                     ->required(),
+                Forms\Components\DateTimePicker::make('begin')
+                    ->label(__('label.begin')),
                 Forms\Components\DateTimePicker::make('deadline')
-                    ->required()
                     ->label(__('label.deadline')),
             ])->columns(1);
     }
@@ -54,6 +56,7 @@ class TorrentStateResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('global_sp_state_text')->label(__('label.torrent_state.global_sp_state')),
+                Tables\Columns\TextColumn::make('begin')->label(__('label.begin')),
                 Tables\Columns\TextColumn::make('deadline')->label(__('label.deadline')),
             ])
             ->filters([
@@ -62,8 +65,7 @@ class TorrentStateResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()->after(function () {
                     do_log("cache_del: global_promotion_state");
-                    NexusDB::cache_del('global_promotion_state');
-                    NexusDB::cache_del('global_promotion_state_deadline');
+                    NexusDB::cache_del(Setting::TORRENT_GLOBAL_STATE_CACHE_KEY);
                 }),
 //                Tables\Actions\DeleteAction::make(),
             ])

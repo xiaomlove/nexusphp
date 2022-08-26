@@ -18,6 +18,8 @@ class Setting extends NexusModel
     const DIRECT_PERMISSION_CACHE_KEY_PREFIX = 'nexus_direct_permissions_';
     const ROLE_PERMISSION_CACHE_KEY_PREFIX = 'nexus_role_permissions_';
 
+    const TORRENT_GLOBAL_STATE_CACHE_KEY = 'global_promotion_state';
+
     /**
      * get setting autoload = yes with cache
      *
