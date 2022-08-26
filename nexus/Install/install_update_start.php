@@ -17,3 +17,5 @@ if (file_exists(ROOT_PATH . '.env')) {
 }
 define('WITH_LARAVEL', $withLaravel);
 \Nexus\Nexus::boot();
+$hook = new \Nexus\Plugin\Hook();
+$plugin = new \Nexus\Plugin\Plugin();
