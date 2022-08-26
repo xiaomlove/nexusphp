@@ -2690,11 +2690,12 @@ if ($msgalert)
     $spStateGlobal = get_global_sp_state();
     if ($spStateGlobal != \App\Models\Torrent::PROMOTION_NORMAL) {
         $torrentGlobalStateRow = \Nexus\Database\NexusDB::cache_get(\App\Models\Setting::TORRENT_GLOBAL_STATE_CACHE_KEY);
-        $timeRange = sprintf('%s ~ %s', $torrentGlobalStateRow['begin'] ?? '', $torrentGlobalStateRow['deadline'] ?? '');
-        msgalert("torrents.php", sprintf(
-            $lang_functions['full_site_promotion_in_effect'],
-            \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text'], $timeRange
-        ), "green");
+        $msg = sprintf($lang_functions['full_site_promotion_in_effect'], \App\Models\Torrent::$promotionTypes[$spStateGlobal]['text']);
+        if (!empty($torrentGlobalStateRow['begin']) || !empty($torrentGlobalStateRow['deadline'])) {
+            $timeRange = sprintf($lang_functions['full_site_promotion_time_range'], $torrentGlobalStateRow['begin'] ?? '-∞', $torrentGlobalStateRow['deadline'] ?? '∞');
+            $msg .= $timeRange;
+        }
+        msgalert("torrents.php", $msg, "green");
     }
 	if($CURUSER['leechwarn'] == 'yes')
 	{
