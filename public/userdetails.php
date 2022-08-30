@@ -464,10 +464,7 @@ if (user_can('prfmanage') && $user["class"] < get_user_class())
 		tr($lang_userdetails['row_donated'], "USD: <input type=\"text\" size=\"5\" name=\"donated\" value=\"" . htmlspecialchars($user['donated']) . "\" />&nbsp;&nbsp;&nbsp;&nbsp;CNY: <input type=\"text\" size=\"5\" name=\"donated_cny\" value=\"" . htmlspecialchars($user['donated_cny']) . "\" />" . $lang_userdetails['text_transaction_memo'] . "<input type=\"text\" size=\"50\" name=\"donation_memo\" />", 1);
         tr($lang_userdetails['row_donoruntil'], "<input type=\"text\" name=\"donoruntil\" value=\"".htmlspecialchars($user["donoruntil"])."\" /> ".$lang_userdetails['text_donoruntil_note'], 1);
 	}
-	if (get_user_class() == $prfmanage_class)
-		$maxclass = UC_VIP;
-	else
-		$maxclass = get_user_class() - 1;
+    $maxclass = get_user_class() - 1;
 	$classselect=classlist('class', $maxclass, $user["class"]);
 	tr($lang_userdetails['row_class'], $classselect, 1);
 	tr($lang_userdetails['row_vip_by_bonus'], "<input type=\"radio\" name=\"vip_added\" value=\"yes\"" .($user["vip_added"] == "yes" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_yes']." <input type=\"radio\" name=\"vip_added\" value=\"no\"" .($user["vip_added"] == "no" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_no']."<br />".$lang_userdetails['text_vip_by_bonus_note'], 1);
