@@ -3492,7 +3492,9 @@ foreach ($rows as $row)
     $coverSrc = '';
     if ($imdb_id = parse_imdb_id($row["url"])) {
         try {
-            $coverSrc = $imdb->getMovie($imdb_id)->photo(false);
+            if ($imdb->getCacheStatus($imdb_id) == 1) {
+                $coverSrc = $imdb->getMovie($imdb_id)->photo(false);
+            }
         } catch (\Exception $exception) {
             do_log("torrent: {$row['id']} get cover from imdb error: ".$exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
         }

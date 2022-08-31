@@ -8,38 +8,58 @@ jQuery(document).ready(function () {
         }
     })
 
-    // preview
-    function getPosition(e, imgEle) {
+    function getImgPosition(e, imgEle) {
         let imgWidth = imgEle.prop('naturalWidth')
         let imgHeight = imgEle.prop("naturalHeight")
-        console.log(`imgWidth: ${imgWidth}, imgHeight: ${imgHeight}`)
         let ratio = imgWidth / imgHeight;
-        if (imgWidth > window.innerWidth) {
-            imgWidth = window.innerWidth;
-            imgHeight = imgWidth / ratio;
+        let offsetX = 10;
+        let offsetY = 10;
+        let width = window.innerWidth - e.pageX;
+        let height = window.innerHeight - e.pageY;
+        let changeOffsetY = false;
+        let changeOffsetX = false;
+        if (e.pageX > window.innerWidth / 2 && e.pageX + imgWidth > window.innerWidth) {
+            changeOffsetX = true
+            width = e.pageX
         }
-        if (imgHeight > window.innerHeight) {
-            imgHeight = window.innerHeight;
+        if (e.pageY > window.innerHeight / 2 && e.pageY + imgHeight > window.innerHeight) {
+            changeOffsetY = true
+            height = e.pageY
+        }
+        let log = `imgWidth: ${imgWidth}, imgHeight: ${imgHeight}, width: ${width}, height: ${height}, offsetX: ${offsetX}, offsetY: ${offsetY}, changeOffsetX: ${changeOffsetX}, changeOffsetY: ${changeOffsetY}`
+        console.log(log)
+        if (imgWidth > width) {
+            imgWidth = width;
+            imgHeight = imgHeight = imgWidth / ratio;
+        }
+        if (imgHeight > height) {
+            imgHeight = height;
             imgWidth = imgHeight * ratio;
         }
-        let width = imgWidth, height= imgHeight;
-        let left = e.pageX + 10;
-        if (left + imgWidth > window.innerWidth) {
-            left = e.pageX - 10 - imgWidth
+        if (changeOffsetX) {
+            offsetX = -(e.pageX - width + 10)
         }
-        let top = e.pageY + 10;
-        if (top + imgHeight > window.innerHeight) {
-            top = e.pageY - imgHeight / 2
+        if (changeOffsetY) {
+            offsetY = -(e.pageY - imgHeight/2)
         }
-        let result = {left, top, width, height}
-        console.log(result)
-        return result
+        return {imgWidth, imgHeight,offsetX, offsetY}
+    }
+
+    // preview
+    function getPosition(e, position) {
+        return {
+            left: e.pageX + position.offsetX,
+            top: e.pageY + position.offsetY,
+            width: position.imgWidth,
+            height: position.imgHeight
+        }
     }
     var previewEle = jQuery('#nexus-preview')
-    var imgEle, selector = '.preview'
+    var imgEle, selector = 'img.preview', imgPosition
     jQuery("body").on("mouseover", selector, function (e) {
         imgEle = jQuery(this);
-        let position = getPosition(e, imgEle)
+        imgPosition = getImgPosition(e, imgEle)
+        let position = getPosition(e, imgPosition)
         let src = imgEle.attr("src")
         if (src) {
             previewEle.attr("src", src).css(position).fadeIn("fast");
@@ -47,7 +67,7 @@ jQuery(document).ready(function () {
     }).on("mouseout", selector, function (e) {
         previewEle.fadeOut("fast");
     }).on("mousemove", selector, function (e) {
-        let position = getPosition(e, imgEle)
+        let position = getPosition(e, imgPosition)
         previewEle.css(position)
     })
 
