@@ -26,11 +26,11 @@ jQuery(document).ready(function () {
             changeOffsetY = true
             height = e.pageY
         }
-        let log = `imgWidth: ${imgWidth}, imgHeight: ${imgHeight}, width: ${width}, height: ${height}, offsetX: ${offsetX}, offsetY: ${offsetY}, changeOffsetX: ${changeOffsetX}, changeOffsetY: ${changeOffsetY}`
+        let log = `innerWidth: ${window.innerWidth}, innerHeight: ${window.innerHeight}, pageX: ${e.pageX}, pageY: ${e.pageY}, imgWidth: ${imgWidth}, imgHeight: ${imgHeight}, width: ${width}, height: ${height}, offsetX: ${offsetX}, offsetY: ${offsetY}, changeOffsetX: ${changeOffsetX}, changeOffsetY: ${changeOffsetY}`
         console.log(log)
         if (imgWidth > width) {
             imgWidth = width;
-            imgHeight = imgHeight = imgWidth / ratio;
+            imgHeight = imgWidth / ratio;
         }
         if (imgHeight > height) {
             imgHeight = height;
@@ -40,7 +40,7 @@ jQuery(document).ready(function () {
             offsetX = -(e.pageX - width + 10)
         }
         if (changeOffsetY) {
-            offsetY = -(e.pageY - imgHeight/2)
+            offsetY = -imgHeight/2
         }
         return {imgWidth, imgHeight,offsetX, offsetY}
     }
