@@ -82,13 +82,16 @@ class UserProfile extends Page
 
     private function buildEnableDisableAction(): Actions\Action
     {
-        return Actions\Action::make($this->record->enabled == 'yes' ? __('admin.resources.user.actions.disable_modal_btn') : __('admin.resources.user.actions.enable_modal_btn'))
+        return Actions\Action::make('enable_disable')
+            ->label($this->record->enabled == 'yes' ? __('admin.resources.user.actions.disable_modal_btn') : __('admin.resources.user.actions.enable_modal_btn'))
             ->modalHeading($this->record->enabled == 'yes' ? __('admin.resources.user.actions.disable_modal_title') : __('admin.resources.user.actions.enable_modal_title'))
             ->form([
                 Forms\Components\TextInput::make('reason')->label(__('admin.resources.user.actions.enable_disable_reason'))->placeholder(__('admin.resources.user.actions.enable_disable_reason_placeholder')),
                 Forms\Components\Hidden::make('action')->default($this->record->enabled == 'yes' ? 'disable' : 'enable'),
                 Forms\Components\Hidden::make('uid')->default($this->record->id),
             ])
+//            ->visible(false)
+//            ->hidden(true)
             ->action(function ($data) {
                 $userRep = $this->getRep();
                 try {

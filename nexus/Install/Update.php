@@ -91,7 +91,7 @@ class Update extends Install
          */
         foreach (['adminpanel', 'modpanel', 'sysoppanel'] as $table) {
             $columnInfo = NexusDB::getMysqlColumnInfo($table, 'id');
-            if ($columnInfo['DATA_TYPE'] == 'tinyint') {
+            if ($columnInfo['DATA_TYPE'] == 'tinyint' || empty($columnInfo['EXTRA']) || $columnInfo['EXTRA'] != 'auto_increment') {
                 sql_query("alter table $table modify id int(11) unsigned not null AUTO_INCREMENT");
             }
         }

@@ -3301,6 +3301,7 @@ function torrenttable($rows, $variant = "torrent") {
 
 	$torrent = new Nexus\Torrent\Torrent();
 	$torrentRep = new \App\Repositories\TorrentRepository();
+    $imdb = new \Nexus\Imdb\Imdb();
 	$torrentIdArr = array_column($rows, 'id');
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], $torrentIdArr);
     $tagRep = new \App\Repositories\TagRepository();
@@ -3487,7 +3488,20 @@ foreach ($rows as $row)
     $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
 	$hrImg = get_hr_img($row);
 
-	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\"><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . "><td class=\"embedded\">".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>");
+	//cover
+    $coverSrc = '';
+    if ($imdb_id = parse_imdb_id($row["url"])) {
+        try {
+            $coverSrc = $imdb->getMovie($imdb_id)->photo(false);
+        } catch (\Exception $exception) {
+            do_log("torrent: {$row['id']} get cover from imdb error: ".$exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
+        }
+    }
+    if (empty($coverSrc) && !empty($row['cover'])) {
+        $coverSrc = $row['cover'];
+    }
+	$tdCover = sprintf('<td class="embedded" style="text-align: center;width: 46px;height: 46px"><img src="pic/misc/spinner.svg" data-src="%s" class="nexus-lazy-load" style="max-height: 46px;max-width: 46px" /></td>', $coverSrc);
+	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\" style='padding: 0px'><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . ">$tdCover<td class=\"embedded\" style='padding-left: 5px'>".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>");
 	$picked_torrent = "";
 	if ($CURUSER['appendpicked'] != 'no'){
 	if($row['picktype']=="hot")
@@ -3547,7 +3561,7 @@ foreach ($rows as $row)
 			$act .= ($act ? "<br />" : "")."<a id=\"bookmark".$counter."\" ".$bookmark." >".get_torrent_bookmark_state($CURUSER['id'], $id)."</a>";
 		}
 
-	print("<td width=\"20\" class=\"embedded\" style=\"text-align: right; \" valign=\"middle\">".$act."</td>\n");
+	print("<td width=\"20\" class=\"embedded\" style=\"text-align: right;padding-right: 5px\" valign=\"middle\">".$act."</td>\n");
 
 	print("</tr></table></td>");
 	if ($wait)
