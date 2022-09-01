@@ -3115,11 +3115,11 @@ function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
 			$pagerarr[] = "<font class=\"gray\"><b>$text</b></font>";
 		}
 		$pagerstr = join(" | ", $pagerarr);
-		$pagertop = "<p align=\"center\">$pager<br />$pagerstr</p>\n";
-		$pagerbottom = "<p align=\"center\">$pagerstr<br />$pager</p>\n";
+		$pagertop = "<p align=\"center\" class='nexus-pagination'>$pager<br />$pagerstr</p>\n";
+		$pagerbottom = "<p align=\"center\" class='nexus-pagination'>$pagerstr<br />$pager</p>\n";
 	}
 	else {
-		$pagertop = "<p align=\"center\">$pager</p>\n";
+		$pagertop = "<p align=\"center\" class='nexus-pagination'>$pager</p>\n";
 		$pagerbottom = $pagertop;
 	}
 

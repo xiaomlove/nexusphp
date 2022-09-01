@@ -83,20 +83,20 @@ jQuery(document).ready(function () {
     if ("IntersectionObserver" in window) {
         const imgList = [...document.querySelectorAll('.nexus-lazy-load')]
         var io = new IntersectionObserver((entries) =>{
-            entries.forEach(item => {
-                // isIntersecting是一个Boolean值，判断目标元素当前是否可见
-                if (item.isIntersecting) {
-                    item.target.src = item.target.dataset.src
-                    item.target.classList.add('preview')
-                    // 图片加载后即停止监听该元素
-                    io.unobserve(item.target)
+            entries.forEach(entry  => {
+                const el = entry.target
+                const intersectionRatio = entry.intersectionRatio
+                // console.log(`el, ${el.getAttribute('data-src')}, intersectionRatio: ${intersectionRatio}`)
+                if (intersectionRatio > 0 && intersectionRatio <= 1 && !el.classList.contains('preview')) {
+                    // console.log(`el, ${el.getAttribute('data-src')}, loadImg`)
+                    const source = el.dataset.src
+                    el.src = source
+                    el.classList.add('preview')
                 }
+                el.onload = el.onerror = () => io.unobserve(el)
             })
-        }, {
-            root: document.querySelector('body')
         })
 
-        // observe遍历监听所有img节点
         imgList.forEach(img => io.observe(img))
     }
 
