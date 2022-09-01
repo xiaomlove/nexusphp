@@ -70,7 +70,7 @@ function maketable($res, $mode = 'seeding')
 		break;
 		}
 		case 'completed': {
-		$showsize = false;
+		$showsize = true;
 		$showsenum = false;
 		$showlenum = false;
 		$showuploaded = true;
@@ -85,7 +85,7 @@ function maketable($res, $mode = 'seeding')
 		break;
 		}
 		case 'incomplete': {
-		$showsize = false;
+		$showsize = true;
 		$showsenum = false;
 		$showlenum = false;
 		$showuploaded = true;
