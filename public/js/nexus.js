@@ -9,26 +9,27 @@ jQuery(document).ready(function () {
     })
 
     function getImgPosition(e, imgEle) {
+        // console.log(e, imgEle)
         let imgWidth = imgEle.prop('naturalWidth')
         let imgHeight = imgEle.prop("naturalHeight")
         let ratio = imgWidth / imgHeight;
         let offsetX = 10;
         let offsetY = 10;
-        let width = window.innerWidth - e.pageX;
-        let height = window.innerHeight - e.pageY;
+        let width = window.innerWidth - e.clientX;
+        let height = window.innerHeight - e.clientY;
         let changeOffsetY = 0;
         let changeOffsetX = false;
-        if (e.pageX > window.innerWidth / 2 && e.pageX + imgWidth > window.innerWidth) {
+        if (e.clientX > window.innerWidth / 2 && e.pageX + imgWidth > window.innerWidth) {
             changeOffsetX = true
-            width = e.pageX
+            width = e.clientX
         }
-        if (e.pageY > window.innerHeight / 2) {
-            if (e.pageY + imgHeight/2 > window.innerHeight) {
+        if (e.clientY > window.innerHeight / 2) {
+            if (e.clientY + imgHeight/2 > window.innerHeight) {
                 changeOffsetY = 1
-                height = e.pageY
-            } else if (e.pageY + imgHeight > window.innerHeight) {
+                height = e.clientY
+            } else if (e.clientY + imgHeight > window.innerHeight) {
                 changeOffsetY = 2
-                height = e.pageY
+                height = e.clientY
             }
         }
         let log = `innerWidth: ${window.innerWidth}, innerHeight: ${window.innerHeight}, pageX: ${e.pageX}, pageY: ${e.pageY}, imgWidth: ${imgWidth}, imgHeight: ${imgHeight}, width: ${width}, height: ${height}, offsetX: ${offsetX}, offsetY: ${offsetY}, changeOffsetX: ${changeOffsetX}, changeOffsetY: ${changeOffsetY}`
