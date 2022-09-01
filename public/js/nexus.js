@@ -16,15 +16,20 @@ jQuery(document).ready(function () {
         let offsetY = 10;
         let width = window.innerWidth - e.pageX;
         let height = window.innerHeight - e.pageY;
-        let changeOffsetY = false;
+        let changeOffsetY = 0;
         let changeOffsetX = false;
         if (e.pageX > window.innerWidth / 2 && e.pageX + imgWidth > window.innerWidth) {
             changeOffsetX = true
             width = e.pageX
         }
-        if (e.pageY > window.innerHeight / 2 && e.pageY + imgHeight > window.innerHeight) {
-            changeOffsetY = true
-            height = e.pageY
+        if (e.pageY > window.innerHeight / 2) {
+            if (e.pageY + imgHeight/2 > window.innerHeight) {
+                changeOffsetY = 1
+                height = e.pageY
+            } else if (e.pageY + imgHeight > window.innerHeight) {
+                changeOffsetY = 2
+                height = e.pageY
+            }
         }
         let log = `innerWidth: ${window.innerWidth}, innerHeight: ${window.innerHeight}, pageX: ${e.pageX}, pageY: ${e.pageY}, imgWidth: ${imgWidth}, imgHeight: ${imgHeight}, width: ${width}, height: ${height}, offsetX: ${offsetX}, offsetY: ${offsetY}, changeOffsetX: ${changeOffsetX}, changeOffsetY: ${changeOffsetY}`
         console.log(log)
@@ -39,8 +44,10 @@ jQuery(document).ready(function () {
         if (changeOffsetX) {
             offsetX = -(e.pageX - width + 10)
         }
-        if (changeOffsetY) {
-            offsetY = -imgHeight/2
+        if (changeOffsetY == 1) {
+            offsetY = - (imgHeight - (window.innerHeight - e.pageY))
+        } else if (changeOffsetY == 2) {
+            offsetY = - imgHeight/2
         }
         return {imgWidth, imgHeight,offsetX, offsetY}
     }
