@@ -19,7 +19,7 @@ jQuery(document).ready(function () {
         let height = window.innerHeight - e.clientY;
         let changeOffsetY = 0;
         let changeOffsetX = false;
-        if (e.clientX > window.innerWidth / 2 && e.pageX + imgWidth > window.innerWidth) {
+        if (e.clientX > window.innerWidth / 2 && e.clientX + imgWidth > window.innerWidth) {
             changeOffsetX = true
             width = e.clientX
         }
@@ -43,10 +43,10 @@ jQuery(document).ready(function () {
             imgWidth = imgHeight * ratio;
         }
         if (changeOffsetX) {
-            offsetX = -(e.pageX - width + 10)
+            offsetX = -(e.clientX - width + 10)
         }
         if (changeOffsetY == 1) {
-            offsetY = - (imgHeight - (window.innerHeight - e.pageY))
+            offsetY = - (imgHeight - (window.innerHeight - e.clientY))
         } else if (changeOffsetY == 2) {
             offsetY = - imgHeight/2
         }
