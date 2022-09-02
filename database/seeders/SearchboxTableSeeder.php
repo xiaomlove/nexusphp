@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\SearchBox;
 use Illuminate\Database\Seeder;
 
 class SearchboxTableSeeder extends Seeder
@@ -14,12 +15,12 @@ class SearchboxTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('searchbox')->delete();
-        
+
         \DB::table('searchbox')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 4,
                 'name' => 'chd',
@@ -36,9 +37,12 @@ class SearchboxTableSeeder extends Seeder
                 'custom_fields' => '',
                 'custom_fields_display_name' => '',
                 'custom_fields_display' => '',
+                'extra' => json_encode([
+                    SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => 1,
+                ])
             ),
         ));
-        
-        
+
+
     }
 }

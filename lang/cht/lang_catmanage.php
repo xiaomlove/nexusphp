@@ -80,6 +80,7 @@ $lang_catmanage = array
 	'row_custom_field_display_name' => '自定義字段展示名稱',
 	'row_custom_field_display' => '自定義字段展示',
 	'row_custom_field_display_help' => '使用特殊的標簽代表字段的名稱和值，如某字段其 Name 為 artist，則它的名稱為：<%artist.label%>，它的值為：<%artist.value%>',
+    'row_searchbox_extras' => '其他',
 );
 
 ?>

@@ -44,7 +44,7 @@ class TagResource extends Resource
                 Forms\Components\TextInput::make('margin')->required()->label(__('label.tag.margin')),
                 Forms\Components\TextInput::make('padding')->required()->label(__('label.tag.padding')),
                 Forms\Components\TextInput::make('border_radius')->required()->label(__('label.tag.border_radius')),
-                Forms\Components\TextInput::make('priority')->integer()->label(__('label.priority')),
+                Forms\Components\TextInput::make('priority')->integer()->required()->label(__('label.priority'))->default(0),
             ]);
     }
 

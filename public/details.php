@@ -221,7 +221,13 @@ JS;
         tr($lang_details['torrent_dl_url'],sprintf('<a title="%s" href="%s/download.php?downhash=%s|%s">%s</a>',$lang_details['torrent_dl_url_notice'], getSchemeAndHttpHost(), $CURUSER['id'], $torrentRep->encryptDownHash($row['id'], $CURUSER), $lang_details['torrent_dl_url_text']),1);
 
 		// ---------------- start subtitle block -------------------//
-		$r = sql_query("SELECT subs.*, language.flagpic, language.lang_name FROM subs LEFT JOIN language ON subs.lang_id=language.id WHERE torrent_id = " . sqlesc($row["id"]). " ORDER BY subs.lang_id ASC") or sqlerr(__FILE__, __LINE__);
+        $subTorrentIdArr = [$row['id']];
+        $otherCopiesIdArr = [];
+        if ($imdb_id) {
+            $otherCopiesIdArr = \App\Models\Torrent::query()->where('url', $imdb_id)->where('id', '!=', $row['id'])->pluck('id')->toArray();
+            $subTorrentIdArr = array_merge($subTorrentIdArr, $otherCopiesIdArr);
+        }
+		$r = sql_query("SELECT subs.*, language.flagpic, language.lang_name FROM subs LEFT JOIN language ON subs.lang_id=language.id WHERE torrent_id in(" . implode(',', $subTorrentIdArr). ") ORDER BY subs.lang_id ASC") or sqlerr(__FILE__, __LINE__);
 		print("<tr><td class=\"rowhead\" valign=\"top\">".$lang_details['row_subtitles']."</td>");
 		print("<td class=\"rowfollow\" align=\"left\" valign=\"top\">");
 		print("<table border=\"0\" cellspacing=\"0\">");
@@ -366,9 +372,10 @@ JS;
 	    $ptGen = new \Nexus\PTGen\PTGen();
 	    $ptGen->updateTorrentPtGen($row);
     }
-		if ($imdb_id)
+		if (!empty($otherCopiesIdArr))
 		{
-			$where_area = " url = " . sqlesc((int)$imdb_id) ." AND torrents.id != ".sqlesc($id);
+//			$where_area = " url = " . sqlesc((int)$imdb_id) ." AND torrents.id != ".sqlesc($id);
+			$where_area = sprintf('torrents.id in (%s)', implode(',', $otherCopiesIdArr));
 			$copies_res = sql_query("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name FROM torrents LEFT JOIN categories ON torrents.category=categories.id LEFT JOIN sources ON torrents.source = sources.id LEFT JOIN media ON torrents.medium = media.id  LEFT JOIN codecs ON torrents.codec = codecs.id LEFT JOIN standards ON torrents.standard = standards.id LEFT JOIN processings ON torrents.processing = processings.id WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
 
 			$copies_count = mysql_num_rows($copies_res);

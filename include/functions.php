@@ -3291,7 +3291,7 @@ function get_torrent_bookmark_state($userid, $torrentid, $text = false)
 	return $act;
 }
 
-function torrenttable($rows, $variant = "torrent") {
+function torrenttable($rows, $variant = "torrent", $searchBoxId = 0) {
 	global $Cache;
 	global $lang_functions;
 	global $CURUSER, $waitsystem;
@@ -3302,7 +3302,13 @@ function torrenttable($rows, $variant = "torrent") {
 	$torrent = new Nexus\Torrent\Torrent();
 	$torrentRep = new \App\Repositories\TorrentRepository();
     $imdb = new \Nexus\Imdb\Imdb();
-	$torrentIdArr = array_column($rows, 'id');
+	$torrentIdArr = $ownerIdArr = [];
+	foreach($rows as $row) {
+	    $torrentIdArr[] = $row['id'];
+        $ownerIdArr[] = $row['owner'];
+    }
+	unset($row);
+
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], $torrentIdArr);
     $tagRep = new \App\Repositories\TagRepository();
     $tagCollection = $tagRep->createBasicQuery()->get();
@@ -3310,6 +3316,25 @@ function torrenttable($rows, $variant = "torrent") {
 	$torrentTagCollection = \App\Models\TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->orderByRaw("field(tag_id,$tagIdStr)")->get();
 	$tagKeyById = $tagCollection->keyBy('id');
 	$torrentTagResult = $torrentTagCollection->groupBy('torrent_id');
+	$showCover = false;
+	if ($searchBoxId) {
+	    $searchBoxExtra = get_searchbox_value($searchBoxId, "extra");
+	    if (!empty($searchBoxExtra[\App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST])) {
+	        $showCover = true;
+        }
+    }
+	//seedBoxIcon
+    $showSeedBoxIcon = get_setting('seed_box.enabled') == 'yes';
+	if ($showSeedBoxIcon) {
+	    $seedBoxRep = new \App\Repositories\SeedBoxRepository();
+	    $ownerPeerInfo = \App\Models\Peer::query()
+            ->whereIn('torrent', $torrentIdArr)
+            ->whereIn('userid', array_unique($ownerIdArr))
+            ->where('seeder', 'yes')
+            ->get(['torrent', 'ipv4', 'ipv6'])
+            ->keyBy('torrent');
+    }
+
 
     $last_browse = $CURUSER['last_browse'];
 //	if ($variant == "torrent"){
@@ -3489,20 +3514,23 @@ foreach ($rows as $row)
 	$hrImg = get_hr_img($row);
 
 	//cover
-    $coverSrc = '';
-    if ($imdb_id = parse_imdb_id($row["url"])) {
-        try {
-            if ($imdb->getCacheStatus($imdb_id) == 1) {
-                $coverSrc = $imdb->getMovie($imdb_id)->photo(false);
+    $coverSrc = $tdCover = '';
+    if ($showCover) {
+        if ($imdb_id = parse_imdb_id($row["url"])) {
+            try {
+                if ($imdb->getCacheStatus($imdb_id) == 1) {
+                    $coverSrc = $imdb->getMovie($imdb_id)->photo(false);
+                }
+            } catch (\Exception $exception) {
+                do_log("torrent: {$row['id']} get cover from imdb error: ".$exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
             }
-        } catch (\Exception $exception) {
-            do_log("torrent: {$row['id']} get cover from imdb error: ".$exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
         }
+        if (empty($coverSrc) && !empty($row['cover'])) {
+            $coverSrc = $row['cover'];
+        }
+        $tdCover = sprintf('<td class="embedded" style="text-align: center;width: 46px;height: 46px"><img src="pic/misc/spinner.svg" data-src="%s" class="nexus-lazy-load" style="max-height: 46px;max-width: 46px" /></td>', $coverSrc);
     }
-    if (empty($coverSrc) && !empty($row['cover'])) {
-        $coverSrc = $row['cover'];
-    }
-	$tdCover = sprintf('<td class="embedded" style="text-align: center;width: 46px;height: 46px"><img src="pic/misc/spinner.svg" data-src="%s" class="nexus-lazy-load" style="max-height: 46px;max-width: 46px" /></td>', $coverSrc);
+
 	print("<td class=\"rowfollow\" width=\"100%\" align=\"left\" style='padding: 0px'><table class=\"torrentname\" width=\"100%\"><tr" . $sphighlight . ">$tdCover<td class=\"embedded\" style='padding-left: 5px'>".$stickyicon."<a $short_torrent_name_alt $mouseovertorrent href=\"details.php?id=".$id."&amp;hit=1\"><b>".htmlspecialchars($dispname)."</b></a>");
 	$picked_torrent = "";
 	if ($CURUSER['appendpicked'] != 'no'){
@@ -3519,7 +3547,13 @@ foreach ($rows as $row)
 	$banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 	$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
     $approvalStatusIcon = $torrentRep->renderApprovalStatus($row['approval_status']);
-	$titleSuffix = $banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $approvalStatusIcon;
+    if ($showSeedBoxIcon && $ownerPeerInfo->has($row['id'])) {
+        $ownerPeer = $ownerPeerInfo->get($row['id']);
+        $seedBoxIcon = $seedBoxRep->renderIcon([$ownerPeer->ipv4, $ownerPeer->ipv6], $row['owner']);
+    } else {
+        $seedBoxIcon = '';
+    }
+	$titleSuffix = $banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $seedBoxIcon . $approvalStatusIcon;
 	$titleSuffix = apply_filter('torrent_title_suffix', $titleSuffix, $row);
 	print($titleSuffix);
 	//$tags = torrentTags($row['tags'], 'span');
@@ -4707,6 +4741,9 @@ function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 		$rows = array();
 		$res = sql_query("SELECT * FROM searchbox ORDER BY id ASC");
 		while ($row = mysql_fetch_array($res)) {
+		    if (isset($row['extra'])) {
+		        $row['extra'] = json_decode($row['extra'], true);
+            }
 			$rows[$row['id']] = $row;
 		}
 		$Cache->cache_value('searchbox_content', $rows, 100500);

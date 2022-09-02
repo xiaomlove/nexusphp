@@ -130,13 +130,18 @@ class SeedBoxRepository extends BaseRepository
         });
     }
 
-    public function renderIcon($ip, $uid): string
+    public function renderIcon($ipArr, $uid): string
     {
-        $result = '';
-        if ((isIPV4($ip) || isIPV6($ip)) && get_setting('seed_box.enabled') == 'yes' && isIPSeedBox($ip, $uid)) {
-            $result = '<img src="pic/misc/seed-box.png" style="vertical-align: bottom; height: 16px; margin-left: 4px" title="SeedBox" />';
+        static $enableSeedBox;
+        if ($enableSeedBox === null) {
+            $enableSeedBox = get_setting('seed_box.enabled') == 'yes';
         }
-        return $result;
+        foreach (Arr::wrap($ipArr) as $ip) {
+            if ((isIPV4($ip) || isIPV6($ip)) && $enableSeedBox && isIPSeedBox($ip, $uid)) {
+                return '<img src="pic/misc/seed-box.png" style="vertical-align: bottom; height: 16px; margin-left: 4px" title="SeedBox" />';
+            }
+        }
+        return '';
     }
 
     private function clearCache()

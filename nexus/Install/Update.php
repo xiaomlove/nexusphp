@@ -9,6 +9,7 @@ use App\Models\Exam;
 use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Icon;
+use App\Models\SearchBox;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Torrent;
@@ -243,8 +244,14 @@ class Update extends Install
         NexusDB::cache_del('nexus_is_ip_seed_box');
 
         /**
-         * @since 1.7.23
+         * @since 1.7.24
          */
+        if (!NexusDB::hasColumn('searchbox', 'extra')) {
+            $this->runMigrate('database/migrations/2022_09_02_031539_add_extra_to_searchbox_table.php');
+            SearchBox::query()->update(['extra' => [
+                SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => 1,
+            ]]);
+        }
 
     }
 

@@ -8,5 +8,8 @@ return [
     'sub_category_team_label' => '制作组',
     'sub_category_processing_label' => '处理',
     'sub_category_codec_label' => '编码',
-    'sub_category_audio_codec_label' => '音频编码', 
+    'sub_category_audio_codec_label' => '音频编码',
+    'extras' => [
+        \App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => '种子列表页展示封面',
+    ],
 ];
