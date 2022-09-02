@@ -31,6 +31,7 @@ return [
     'operator' => '操作者',
     'action' => '操作',
     'submit' => '提交',
+    'cancel' => '取消',
     'reset' => '重置',
     'setting' => [
         'nav_text' => '设置',

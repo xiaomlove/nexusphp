@@ -31,6 +31,7 @@ return [
     'operator' => 'Operator',
     'action' => 'Action',
     'submit' => 'Submit',
+    'cancel' => 'Cancel',
     'reset' => 'Reset',
     'setting' => [
         'nav_text' => 'Setting',

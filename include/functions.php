@@ -2836,6 +2836,7 @@ if ($msgalert)
 
 function stdfoot() {
 	global $SITENAME,$BASEURL,$Cache,$datefounded,$tstart,$icplicense_main,$add_key_shortcut,$query_name, $USERUPDATESET, $CURUSER, $enablesqldebug_tweak, $sqldebug_tweak, $Advertisement, $analyticscode_tweak;
+	global $hook;
 	print("</td></tr></table>");
 	print("<div id=\"footer\">");
 	if ($Advertisement->enable_ad()){
@@ -2880,6 +2881,7 @@ function stdfoot() {
 	print("</div>");
 	if ($analyticscode_tweak)
 		print("\n".$analyticscode_tweak."\n");
+//	$hook->dump();
     do_action('nexus_footer');
 	foreach (\Nexus\Nexus::getAppendFooters() as $value) {
 	    print($value);

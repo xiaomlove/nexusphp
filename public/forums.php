@@ -870,7 +870,6 @@ if ($action == "viewtopic")
 	else print($lang_forums['text_unpermitted_posting_here']);
 
 	print(key_shortcut($page,$pages-1));
-    do_action('page_forums_js');
 	stdfoot();
 	die;
 }

@@ -244,16 +244,22 @@ final class Nexus
 
     private static function appendJsCss($append, $position, $key = null)
     {
+        $log = "position: $position, key: $key";
         if ($key === null) {
             $key = md5($append);
+            $log .= ", md5 key: $key";
         }
         if ($position == 'header') {
             if (!isset(self::$appendHeaders[$key])) {
                 self::$appendHeaders[$key] = $append;
+            } else {
+                do_log("$log, [DUPLICATE]");
             }
         } elseif ($position == 'footer') {
             if (!isset(self::$appendFooters[$key])) {
                 self::$appendFooters[$key] = $append;
+            } else {
+                do_log("$log, [DUPLICATE]");
             }
         } else {
             throw new \InvalidArgumentException("Invalid position: $position");
