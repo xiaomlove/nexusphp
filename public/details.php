@@ -225,7 +225,7 @@ JS;
         $otherCopiesIdArr = [];
         if ($imdb_id) {
             $otherCopiesIdArr = \App\Models\Torrent::query()->where('url', $imdb_id)->where('id', '!=', $row['id'])->pluck('id')->toArray();
-            $subTorrentIdArr = array_merge($subTorrentIdArr, $otherCopiesIdArr);
+//            $subTorrentIdArr = array_merge($subTorrentIdArr, $otherCopiesIdArr);
         }
 		$r = sql_query("SELECT subs.*, language.flagpic, language.lang_name FROM subs LEFT JOIN language ON subs.lang_id=language.id WHERE torrent_id in(" . implode(',', $subTorrentIdArr). ") ORDER BY subs.lang_id ASC") or sqlerr(__FILE__, __LINE__);
 		print("<tr><td class=\"rowhead\" valign=\"top\">".$lang_details['row_subtitles']."</td>");
