@@ -339,6 +339,9 @@ $insert = [
     'technical_info' => $_POST['technical_info'] ?? '',
     'cover' => $cover,
 ];
+if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']]) && user_can('torrent_hr')) {
+    $insert['hr'] = $_POST['hr'];
+}
 $id = \Nexus\Database\NexusDB::insert('torrents', $insert);
 
 //$ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .

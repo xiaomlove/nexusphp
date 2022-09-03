@@ -301,8 +301,9 @@ function format_urls($text, $newWindow = false) {
 function format_comment($text, $strip_html = true, $xssclean = false, $newtab = true, $imageresizer = true, $image_max_width = 700, $enableimage = true, $enableflash = true , $imagenum = -1, $image_max_height = 0, $adid = 0)
 {
 	global $lang_functions;
-	global $CURUSER, $SITENAME, $BASEURL, $enableattach_attachment;
+	global $CURUSER, $SITENAME, $BASEURL;
 	global $tempCode, $tempCodeCount;
+    $enableattach_attachment = get_setting('attachment.enableattach');
 	$tempCode = array();
 	$tempCodeCount = 0;
 	$imageresizer = $imageresizer ? 1 : 0;
@@ -322,7 +323,7 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	}
 
 	$originalBbTagArray = array('[siteurl]', '[site]','[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[pre]', '[/pre]', '[/color]', '[/font]', '[/size]', "  ");
-	$replaceXhtmlTagArray = array(get_protocol_prefix().$BASEURL, $SITENAME, '<img class="listicon listitem" src="pic/trans.gif" alt="list" />', '<b>', '</b>', '<i>', '</i>', '<u>', '</u>', '<pre>', '</pre>', '</span>', '</font>', '</font>', ' &nbsp;');
+	$replaceXhtmlTagArray = array(get_protocol_prefix().get_setting('basic.BASEURL'), get_setting('basic.SITENAME'), '<img class="listicon listitem" src="pic/trans.gif" alt="list" />', '<b>', '</b>', '<i>', '</i>', '<u>', '</u>', '<pre>', '</pre>', '</span>', '</font>', '</font>', ' &nbsp;');
 	$s = str_replace($originalBbTagArray, $replaceXhtmlTagArray, $s);
 
 	$originalBbTagArray = array("/\[font=([^\[\(&\\;]+?)\]/is", "/\[color=([#0-9a-z]{1,15})\]/is", "/\[color=([a-z]+)\]/is", "/\[size=([1-7])\]/is");
