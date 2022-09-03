@@ -333,6 +333,9 @@ $lang_functions = array
     'text_torrent_to_approval' => '有 %s%u 個待審核的種子%s',
     'std_confirm_remove' => '確定要刪除嗎？',
     'select_an_user_class' => '選擇一個用戶等級',
+    'input_check_all' => "全選",
+    'input_uncheck_all' => "全不選",
+    'select_at_least_one_record' => '至少選擇一條記錄！',
 );
 
 ?>

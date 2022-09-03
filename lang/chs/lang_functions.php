@@ -326,6 +326,9 @@ $lang_functions = array
     'text_torrent_to_approval' => '有 %s%u 个待审核的种子%s',
     'std_confirm_remove' => '确定要删除吗？',
     'select_an_user_class' => '选择一个用户等级',
+    'input_check_all' => "全选",
+    'input_uncheck_all' => "全不选",
+    'select_at_least_one_record' => '至少选择一条记录！',
 );
 
 ?>

@@ -334,6 +334,9 @@ $lang_functions = array
     'text_torrent_to_approval' => 'There %s%u not approval torrent%s.',
     'std_confirm_remove' => 'Are you sure you want to delete it?',
     'select_an_user_class' => 'Select an user class',
+    'input_check_all' => "Check All",
+    'input_uncheck_all' => "Uncheck All",
+    'select_at_least_one_record' => 'Select at least one record!',
 );
 
 ?>

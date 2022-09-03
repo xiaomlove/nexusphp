@@ -9,12 +9,18 @@ user_can('staffmem', true);
 
 
 if (!empty($_POST['setdealt'])) {
+    if (empty($_POST['delcheater'])) {
+        stderr("Error", $lang_functions['select_at_least_one_record']);
+    }
 	$res = sql_query ("SELECT id FROM cheaters WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST['delcheater']) . ")");
 	while ($arr = mysql_fetch_assoc($res))
 		sql_query ("UPDATE cheaters SET dealtwith=1, dealtby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
 	$Cache->delete_value('staff_new_cheater_count');
 }
 elseif (!empty($_POST['delete'])) {
+    if (empty($_POST['delcheater'])) {
+        stderr("Error", $lang_functions['select_at_least_one_record']);
+    }
 	$res = sql_query ("SELECT id FROM cheaters WHERE id IN (" . implode(", ", $_POST['delcheater']) . ")");
 	while ($arr = mysql_fetch_assoc($res))
 		sql_query ("DELETE from cheaters WHERE id = {$arr['id']}") or sqlerr();
@@ -25,7 +31,7 @@ $count = get_row_count("cheaters");
 if (!$count){
 	stderr($lang_cheaterbox['std_oho'], $lang_cheaterbox['std_no_suspect_detected']);
 }
-$perpage = 10;
+$perpage = 50;
 list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "cheaterbox.php?");
 stdhead($lang_cheaterbox['head_cheaterbox']);
 ?>
@@ -61,7 +67,7 @@ while ($row = mysql_fetch_array($cheatersres))
 	print("<tr><td class=rowfollow>".gettime($row['added'])."</td><td class=rowfollow>" . get_username($row['userid']) . "</td><td class=rowfollow>" . $row['hit'] . "</td><td class=rowfollow>" . $torrent . "</td><td class=rowfollow>".mksize($row['uploaded']).($upspeed ? " @ ".mksize($upspeed)."/s" : "")."</td><td class=rowfollow>".mksize($row['downloaded']).($lespeed ? " @ ".mksize($lespeed)."/s" : "")."</td><td class=rowfollow>".$row['anctime']." sec"."</td><td class=rowfollow>".$row['seeders']."</td><td class=rowfollow>".$row['leechers']."</td><td class=rowfollow>".htmlspecialchars($row['comment'])."</td><td class=rowfollow>".$dealtwith."</td><td class=rowfollow><input type=\"checkbox\" name=\"delcheater[]\" value=\"" . $row['id'] . "\" /></td></tr>\n");
 }
 ?>
-<tr><td class="colhead" colspan="12" style="text-align: right"><input type="submit" name="setdealt" value="<?php echo $lang_cheaterbox['submit_set_dealt']?>" /><input type="submit" name="delete" value="<?php echo $lang_cheaterbox['submit_delete']?>" /></td></tr>
+<tr><td class="colhead" colspan="12" style="text-align: right"><input class=btn type="button" value="<?php echo $lang_functions['input_check_all']; ?>" onClick="this.value=check(form,'<?php echo $lang_functions['input_check_all'] ?>','<?php echo $lang_functions['input_uncheck_all'] ?>')"><input type="submit" name="setdealt" value="<?php echo $lang_cheaterbox['submit_set_dealt']?>" /><input type="submit" name="delete" value="<?php echo $lang_cheaterbox['submit_delete']?>" /></td></tr>
 </form>
 <?php
 print("</table>");
