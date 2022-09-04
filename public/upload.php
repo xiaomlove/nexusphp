@@ -65,7 +65,7 @@ stdhead($lang_upload['head_upload']);
 <b>".$lang_upload['text_chinese_title']."</b>&nbsp;<input type=\"text\" style=\"width: 250px\" name=\"cnname\"><br /><font class=\"medium\">".$lang_upload['text_titles_note']."</font>", 1);
 				} else {
 				    $autoFillText = $lang_upload['fill_quality'];
-				    $nameInput = $torrentRep->buildUploadFieldInput("name", "", "", $autoFillText);
+				    $nameInput = $torrentRep->buildUploadFieldInput("name", "", $lang_upload['text_torrent_name_note'], $autoFillText);
                     tr($lang_upload['row_torrent_name'], $nameInput, 1);
                 }
 

@@ -62,10 +62,11 @@ jQuery(document).ready(function () {
             height: position.imgHeight
         }
     }
-    var previewEle = jQuery('#nexus-preview')
+    var previewEle = null
     var imgEle, selector = 'img.preview', imgPosition
     jQuery("body").on("mouseover", selector, function (e) {
         imgEle = jQuery(this);
+        previewEle = jQuery('<img style="display: none;position:absolute;">').appendTo(imgEle.parent())
         imgPosition = getImgPosition(e, imgEle)
         let position = getPosition(e, imgPosition)
         let src = imgEle.attr("src")
@@ -73,7 +74,8 @@ jQuery(document).ready(function () {
             previewEle.attr("src", src).css(position).fadeIn("fast");
         }
     }).on("mouseout", selector, function (e) {
-        previewEle.fadeOut("fast");
+        previewEle.remove()
+        previewEle = null
     }).on("mousemove", selector, function (e) {
         let position = getPosition(e, imgPosition)
         previewEle.css(position)
