@@ -19,11 +19,11 @@ jQuery('.btn-get-pt-gen').on('click', function () {
             return
         }
         doInsert(response.data.format, '', false)
-        if (response.data.aka) {
+        if (response.data.aka && response.data.site === 'douban') {
             form.find("input[name=small_descr]").val(response.data.aka.join("/"))
         }
         if (response.data.imdb_link) {
-            form.find("input[name=url]").val(response.data.imdb_link)
+            form.find("input[data-pt-gen=url]").val(response.data.imdb_link)
         }
     }, 'json')
 })
