@@ -27,3 +27,47 @@ jQuery('.btn-get-pt-gen').on('click', function () {
         }
     }, 'json')
 })
+
+
+function autoSelect(value) {
+    // console.log(`autoSelect: ${value}`)
+    let names = ["source_sel", "medium_sel", "codec_sel", "audiocodec_sel", "standard_sel", "processing_sel", "team_sel"];
+    for (let i = 0; i < names.length; i++) {
+        const name = names[i];
+        const select = jQuery("select[name="+name+"]")
+        // console.log("check name: " + name)
+        select.children("option").each(function (index, option) {
+            let _option = jQuery(option)
+            let optionText = _option.text();
+            // console.log("check option text: " + optionText + " match value: " + value)
+            let pattern = new RegExp(value, "i");
+            if (optionText.match(pattern)) {
+                console.log(`name: ${name}, optionText: ${optionText} match value: ${value}, break`)
+                select.val(option.getAttribute('value'))
+                return false
+            }
+        })
+    }
+}
+jQuery("#compose").on("click", ".nexus-action-btn",function () {
+    let box = jQuery(this).closest(".nexus-input-box")
+    let inputValue = box.find("[name=name]").val();
+    if (inputValue.trim() == '') {
+        return
+    }
+    let parts = inputValue.split(/[\s]+/i)
+    let count = parts.length;
+    for (let i = 0; i < count; i++) {
+        if (i < count - 1) {
+            autoSelect(parts[i])
+        } else {
+            let arr = parts[i].split("-")
+            if (arr[0]) {
+                autoSelect(arr[0])
+            }
+            if (arr[1]) {
+                autoSelect(arr[1])
+            }
+        }
+    }
+})

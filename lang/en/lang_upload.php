@@ -40,6 +40,7 @@ $lang_upload = array
 	'text_chinese_title' => "Chinese Name:",
 	'text_english_title' => "English Name:",
 	'text_titles_note' => "(If no English Name exists, use pinyin or leave it blank)",
+    'fill_quality' => 'Fill quality',
 );
 
 ?>

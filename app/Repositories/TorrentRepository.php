@@ -605,4 +605,25 @@ class TorrentRepository extends BaseRepository
         return Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $posState]);
     }
 
+    public function buildUploadFieldInput($name, $value, $noteText, $btnText): string
+    {
+        $btn = $note = '';
+        if ($btnText) {
+            $btn = '<div><input type="button" class="nexus-action-btn" value="'.$btnText.'"></div>';
+        }
+        if ($noteText) {
+            $note = '<span class="medium">'.$noteText.'</span>';
+        }
+        $input = <<<HTML
+<div class="nexus-input-box" style="display: flex">
+    <div style="display: flex;flex-direction: column;flex-grow: 1">
+        <input type="text" name="$name" value="{$value}">
+        $note
+    </div>
+    $btn
+</div>
+HTML;
+        return $input;
+    }
+
 }

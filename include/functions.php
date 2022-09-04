@@ -3683,8 +3683,10 @@ foreach ($rows as $row)
 	else
 	print("<td class=\"rowfollow\">" . number_format($row["times_completed"]) . "</td>\n");
 
-		if ($row["anonymous"] == "yes" && user_can('torrentmanage'))
-		{
+		if (
+		    $row["anonymous"] == "yes"
+            && (user_can('torrentmanage') || (isset($row['owner']) && $row['owner'] == $CURUSER['id']))
+        ) {
 			print("<td class=\"rowfollow\" align=\"center\"><i>".$lang_functions['text_anonymous']."</i><br />".(isset($row["owner"]) ? "(" . get_username($row["owner"]) .")" : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
 		}
 		elseif ($row["anonymous"] == "yes")

@@ -20,6 +20,7 @@ if ($enableoffer == 'yes') {
     $has_allowed_offer = false;
 }
 $uploadfreely = user_can_upload("torrents");
+do_log("uploadfreely: $uploadfreely, has_allowed_offer: $has_allowed_offer");
 $allowtorrents = ($has_allowed_offer || $uploadfreely);
 $allowspecial = user_can_upload("music");
 
@@ -38,7 +39,7 @@ $showteam = (($allowtorrents && get_searchbox_value($brsectiontype, 'showteam'))
 $showaudiocodec = (($allowtorrents && get_searchbox_value($brsectiontype, 'showaudiocodec')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showaudiocodec'))); //whether show languages or not
 
 $settingMain = get_setting('main');
-
+$torrentRep = new \App\Repositories\TorrentRepository();
 stdhead($lang_upload['head_upload']);
 ?>
 	<form id="compose" enctype="multipart/form-data" action="takeupload.php" method="post" name="upload">
@@ -62,9 +63,12 @@ stdhead($lang_upload['head_upload']);
 				if ($altname_main == 'yes'){
 					tr($lang_upload['row_torrent_name'], "<b>".$lang_upload['text_english_title']."</b>&nbsp;<input type=\"text\" style=\"width: 250px;\" name=\"name\" />&nbsp;&nbsp;&nbsp;
 <b>".$lang_upload['text_chinese_title']."</b>&nbsp;<input type=\"text\" style=\"width: 250px\" name=\"cnname\"><br /><font class=\"medium\">".$lang_upload['text_titles_note']."</font>", 1);
-				}
-				else
-					tr($lang_upload['row_torrent_name'], "<input type=\"text\" style=\"width: 99%;\" id=\"name\" name=\"name\" /><br /><font class=\"medium\">".$lang_upload['text_torrent_name_note']."</font>", 1);
+				} else {
+				    $autoFillText = $lang_upload['fill_quality'];
+				    $nameInput = $torrentRep->buildUploadFieldInput("name", "", "", $autoFillText);
+                    tr($lang_upload['row_torrent_name'], $nameInput, 1);
+                }
+
 				if ($smalldescription_main == 'yes')
 				tr($lang_upload['row_small_description'], "<input type=\"text\" style=\"width: 99%;\" name=\"small_descr\" /><br /><font class=\"medium\">".$lang_upload['text_small_description_note']."</font>", 1);
 				get_external_tr();

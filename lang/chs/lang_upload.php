@@ -40,6 +40,7 @@ $lang_upload = array
 	'text_chinese_title' => "中文名:",
 	'text_english_title' => "英文名:",
 	'text_titles_note' => "(如果英文名不存在，使用拼音或不填写)",
+    'fill_quality' => '填写质量',
 );
 
 ?>

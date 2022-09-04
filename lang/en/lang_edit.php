@@ -68,6 +68,7 @@ $lang_edit = array
 	'text_audio_codec' => "Audio Codec",
 	'row_content' => "Content",
     'ban_reason_label' => 'Reason',
+    'fill_quality' => 'Fill quality',
 );
 
 ?>
