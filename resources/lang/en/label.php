@@ -160,6 +160,7 @@ return [
         'margin' => 'Margin',
         'padding' => 'Padding',
         'border_radius' => 'Border radius',
+        'torrents_count' => 'Torrents count',
     ],
     'agent_allow' => [
         'label' => 'Agent allow',

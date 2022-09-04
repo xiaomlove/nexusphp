@@ -91,5 +91,8 @@ return [
         'seed_box_record' => [
             'toggle_status' => '更改狀態',
         ],
+        'tag' => [
+            'detach_torrents' => '分離所有種子',
+        ],
     ]
 ];

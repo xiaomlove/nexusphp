@@ -159,6 +159,7 @@ return [
         'margin' => '外边距',
         'padding' => '内边距',
         'border_radius' => '边框圆角',
+        'torrents_count' => '种子数',
     ],
     'agent_allow' => [
         'label' => '允许客户端',

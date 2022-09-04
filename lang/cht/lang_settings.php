@@ -769,6 +769,8 @@ $lang_settings = array
     'row_harem_addition' => '後宮加成',
     'text_user_would_get_by_harem' => '用戶將獲得直屬後宮魔力值的',
     'text_harem_addition_note' => '倍作為獎勵（系數，如填入 0.01，後宮獲得 100 魔力則獎勵用戶 100 * 0.01 = 1）',
+    'row_offer_skip_approved_count' => '直接發布候選通過數',
+    'text_offer_skip_approved_count_note' => '當通過的候選數大於等於此數值時，可直接發布不用提交候選。',
 );
 
 ?>

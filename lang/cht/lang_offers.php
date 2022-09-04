@@ -137,6 +137,7 @@ $lang_offers = array
 	'text_rule_three_two' => "小時后未被通過，它將被移除。",
 	'text_rule_four_one' => "如在候選通過后",
 	'text_rule_four_two' => "小時內用戶沒有發布種子，通過的候選將被移除。",
+    'text_rule_skip_offer' => "當用戶通過的候選數大於等於<b>%d</b>時，可直接發布種子，無需經過候選。",
 );
 
 ?>

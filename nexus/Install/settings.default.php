@@ -91,6 +91,7 @@ return array (
       'site_language_enabled' => \App\Models\Language::DEFAULT_ENABLED,
       'show_top_uploader' => 'no',
       'imdb_language' => 'en-US',
+      'offer_skip_approved_count' => 5,
   ),
   'smtp' =>
   array (

@@ -769,6 +769,8 @@ $lang_settings = array
     'row_harem_addition' => 'Harem addition',
     'text_user_would_get_by_harem' => 'The user will receive the bonus value of the direct harem',
     'text_harem_addition_note' => 'times as reward (factor, e.g. fill in 0.01, if harem gets 100 bonus then reward user 100 * 0.01 = 1)',
+    'row_offer_skip_approved_count' => 'Direct upload offer allow count',
+    'text_offer_skip_approved_count_note' => 'When the number of approved offer is greater than or equal to this value, you can upload directly without submitting offers.',
 );
 
 ?>

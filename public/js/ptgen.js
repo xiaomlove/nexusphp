@@ -1,5 +1,6 @@
 jQuery('.btn-get-pt-gen').on('click', function () {
     let input = jQuery(this).closest('td').find('[data-pt-gen]')
+    let form = jQuery(this).closest('form')
     let value = input.val().trim()
     if (value == '') {
         return
@@ -17,6 +18,12 @@ jQuery('.btn-get-pt-gen').on('click', function () {
             alert(response.msg)
             return
         }
-        doInsert(response.data, '', false)
+        doInsert(response.data.format, '', false)
+        if (response.data.aka) {
+            form.find("input[name=small_descr]").val(response.data.aka.join("/"))
+        }
+        if (response.data.imdb_link) {
+            form.find("input[name=url]").val(response.data.imdb_link)
+        }
     }, 'json')
 })

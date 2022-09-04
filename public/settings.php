@@ -42,7 +42,7 @@ if ($action == 'savesettings_main')	// save main
 		'showpolls','showstats','showlastxtorrents', 'showtrackerload','showshoutbox','showfunbox','showoffer','sptime','showhelpbox','enablebitbucket',
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
-		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language',
+		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language', 'offer_skip_approved_count'
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -844,6 +844,8 @@ JS;
 	tr($lang_settings['row_min_offer_votes'],"<input type='text' style=\"width: 100px\" name=minoffervotes value='".($MAIN["minoffervotes"] ? $MAIN["minoffervotes"] : 15)."'> ".$lang_settings['text_min_offer_votes_note'], 1);
 	tr($lang_settings['row_offer_vote_timeout'],"<input type='text' style=\"width: 100px\" name=offervotetimeout value='".(isset($MAIN["offervotetimeout"]) ? $MAIN["offervotetimeout"] : 259200)."'> ".$lang_settings['text_offer_vote_timeout_note'], 1);
 	tr($lang_settings['row_offer_upload_timeout'],"<input type='text' style=\"width: 100px\" name=offeruptimeout value='".(isset($MAIN["offeruptimeout"]) ? $MAIN["offeruptimeout"] : 86400)."'> ".$lang_settings['text_offer_upload_timeout_note'], 1);
+	tr($lang_settings['row_offer_skip_approved_count'],"<input type='text' style=\"width: 100px\" name=offer_skip_approved_count value='".($MAIN["offer_skip_approved_count"] ?? '')."'> ".$lang_settings['text_offer_skip_approved_count_note'], 1);
+
 	tr($lang_settings['row_max_subtitle_size'],"<input type='text' style=\"width: 100px\" name=maxsubsize value='".(isset($MAIN["maxsubsize"]) ? $MAIN["maxsubsize"] : 3145728)."'> ". $lang_settings['text_max_subtitle_size_note'], 1);
 	tr($lang_settings['row_posts_per_page'],"<input type='text' style=\"width: 100px\" name=postsperpage value='".($MAIN["postsperpage"] ? $MAIN["postsperpage"] : 10)."'> ".$lang_settings['text_posts_per_page_note'], 1);
 	tr($lang_settings['row_topics_per_page'],"<input type='text' style=\"width: 100px\" name=topicsperpage value='".($MAIN["topicsperpage"] ? $MAIN["topicsperpage"] : 20)."'> ".$lang_settings['text_topics_per_page_note'], 1);

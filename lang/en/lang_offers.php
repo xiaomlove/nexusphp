@@ -137,6 +137,7 @@ $lang_offers = array
 	'text_rule_three_two' => " hours after added.",
 	'text_rule_four_one' => "Offers will be deleted if not uploaded ",
 	'text_rule_four_two' => " hours after being approved.",
+    'text_rule_skip_offer' => "When the number of offers passed by the user is greater than or equal to <b>%d</b>, user can upload torrents directly without going through offers section.",
 );
 
 ?>

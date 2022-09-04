@@ -61,15 +61,14 @@ class TagResource extends Resource
                 Tables\Columns\TextColumn::make('padding')->label(__('label.tag.padding')),
                 Tables\Columns\TextColumn::make('border_radius')->label(__('label.tag.border_radius')),
                 Tables\Columns\TextColumn::make('priority')->label(__('label.priority'))->sortable(),
+                Tables\Columns\TextColumn::make('torrents_count')->label(__('label.tag.torrents_count')),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->label(__('label.updated_at')),
             ])
             ->defaultSort('priority', 'desc')
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
+            ->actions(self::getActions())
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
@@ -89,5 +88,18 @@ class TagResource extends Resource
             'create' => Pages\CreateTag::route('/create'),
             'edit' => Pages\EditTag::route('/{record}/edit'),
         ];
+    }
+
+    private static function getActions(): array
+    {
+        $actions = [];
+        $actions[] = Tables\Actions\Action::make('detach_torrents')
+            ->label(__('admin.resources.tag.detach_torrents'))
+            ->requiresConfirmation()
+            ->action(function ($record) {
+                $record->torrent_tags()->delete();
+            });
+        $actions[] = Tables\Actions\EditAction::make();
+        return $actions;
     }
 }

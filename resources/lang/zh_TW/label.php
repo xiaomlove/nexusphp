@@ -160,6 +160,7 @@ return [
         'margin' => '外邊距',
         'padding' => '內邊距',
         'border_radius' => '邊框圓角',
+        'torrents_count' => '種子數',
     ],
     'agent_allow' => [
         'label' => '允許客戶端',

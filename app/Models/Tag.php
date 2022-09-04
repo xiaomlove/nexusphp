@@ -53,6 +53,11 @@ class Tag extends NexusModel
         return $this->belongsToMany(Torrent::class, 'torrent_tags', 'tag_id', 'torrent_id');
     }
 
+    public function torrent_tags(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TorrentTag::class, 'tag_id');
+    }
+
 
 
 }

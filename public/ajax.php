@@ -39,9 +39,9 @@ function getPtGen($params)
     $rep = new Nexus\PTGen\PTGen();
     $result = $rep->generate($params['url']);
     if ($rep->isRawPTGen($result)) {
-        return $result['format'];
+        return $result;
     } elseif ($rep->isIyuu($result)) {
-        return $result['data']['format'];
+        return $result['data'];
     } else {
         return '';
     }

@@ -137,6 +137,7 @@ $lang_offers = array
 	'text_rule_three_two' => "小时后未被通过，它将被删除。",
 	'text_rule_four_one' => "如在候选通过后",
 	'text_rule_four_two' => "小时内用户没有发布种子，通过的候选将被删除。",
+    'text_rule_skip_offer' => "当用户通过的候选数大于等于<b>%d</b>时，可直接发布种子，无需经过候选。",
 );
 
 ?>

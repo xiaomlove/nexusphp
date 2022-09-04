@@ -91,5 +91,8 @@ return [
         'seed_box_record' => [
             'toggle_status' => 'Change status',
         ],
+        'tag' => [
+            'detach_torrents' => 'Detach all torrents',
+        ],
     ]
 ];

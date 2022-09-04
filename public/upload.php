@@ -8,9 +8,17 @@ parked();
 if ($CURUSER["uploadpos"] == 'no')
 	stderr($lang_upload['std_sorry'], $lang_upload['std_unauthorized_to_upload'],false);
 
-if ($enableoffer == 'yes')
-	$has_allowed_offer = get_row_count("offers","WHERE allowed='allowed' AND userid = ". sqlesc($CURUSER["id"]));
-else $has_allowed_offer = 0;
+if ($enableoffer == 'yes') {
+    $offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
+    $allowCount = get_row_count("offers","WHERE allowed='allowed' AND userid = ". sqlesc($CURUSER["id"]));
+    if (is_numeric($offerSkipApprovedCount) && $offerSkipApprovedCount > 0 && $allowCount >= $offerSkipApprovedCount) {
+        $has_allowed_offer = true;
+    } else {
+        $has_allowed_offer = false;
+    }
+} else {
+    $has_allowed_offer = false;
+}
 $uploadfreely = user_can_upload("torrents");
 $allowtorrents = ($has_allowed_offer || $uploadfreely);
 $allowspecial = user_can_upload("music");
