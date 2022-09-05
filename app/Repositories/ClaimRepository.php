@@ -13,6 +13,8 @@ use Nexus\Database\NexusDB;
 
 class ClaimRepository extends BaseRepository
 {
+    const STAT_CACHE_PREFIX = 'claim_stats_';
+
     public function getList(array $params)
     {
         $query = Claim::query()->with(['family']);
@@ -59,6 +61,7 @@ class ClaimRepository extends BaseRepository
             'seed_time_begin' => $snatch->seedtime,
             'uploaded_begin' => $snatch->uploaded,
         ];
+        $this->clearStatsCache($uid);
         return Claim::query()->create($insert);
     }
 
@@ -87,6 +90,7 @@ class ClaimRepository extends BaseRepository
         }
         $deductBonus = Claim::getConfigGiveUpDeductBonus();
         return NexusDB::transaction(function () use ($model, $deductBonus) {
+            $this->clearStatsCache($model->uid);
             User::query()->where('id', $model->uid)->decrement('seedbonus', $deductBonus);
             do_log(sprintf("[GIVE_UP_CLAIM_TORRENT], user: %s, deduct bonus: %s", $model->uid, $deductBonus), 'alert');
             return $model->delete();
@@ -95,11 +99,16 @@ class ClaimRepository extends BaseRepository
 
     public function getStats($uid)
     {
-        $key = "claim_stats_$uid";
-        return NexusDB::remember($key, 60, function () use ($uid) {
+        $key = self::STAT_CACHE_PREFIX . $uid;
+        return NexusDB::remember($key, 3600, function () use ($uid) {
             $max = Claim::getConfigTorrentUpLimit();
             return sprintf('%s/%s', Claim::query()->where('uid', $uid)->count(), $max);
         });
+    }
+
+    public function clearStatsCache($uid)
+    {
+        NexusDB::cache_del(self::STAT_CACHE_PREFIX . $uid);
     }
 
     public function settleCronjob(): array
