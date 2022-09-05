@@ -53,6 +53,7 @@ function maketable($res, $mode = 'seeding')
 		$showanonymous = false;
         $showtotalsize = true;
 		$columncount = 8;
+            $showActionClaim = true;
 		break;
 		}
 		case 'leeching': {
