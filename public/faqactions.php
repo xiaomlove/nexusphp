@@ -28,6 +28,10 @@ if (get_user_class() < UC_ADMINISTRATOR) {
 	stderr("Error","Only Administrators and above can modify the FAQ, sorry.");
 }
 
+function clear_faq_cache()
+{
+    \Nexus\Database\NexusDB::cache_del('faq');
+}
 //stdhead("FAQ Management");
 
 // ACTION: reorder - reorder sections and items
@@ -93,6 +97,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "edititem" && $_POST['id'] 
 	$question = $_POST['question'];
 	$answer = $_POST['answer'];
 	sql_query("UPDATE `faq` SET `question`=".sqlesc($question).", `answer`=".sqlesc($answer).", `flag`=".sqlesc($_POST['flag']).", `categ`=".sqlesc($_POST['categ'])." WHERE id=".sqlesc($_POST['id'])) or sqlerr();
+    clear_faq_cache();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 }
@@ -101,6 +106,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "edititem" && $_POST['id'] 
 elseif (isset($_GET['action']) && $_GET['action'] == "editsect" && $_POST['id'] != NULL && $_POST['title'] != NULL && $_POST['flag'] != NULL) {
 	$title = $_POST['title'];
 	sql_query("UPDATE `faq` SET `question`=".sqlesc($title).", `answer`='', `flag`=".sqlesc($_POST['flag']).", `categ`='0' WHERE id=".sqlesc($_POST['id'])) or sqlerr();
+    clear_faq_cache();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 }
@@ -171,12 +177,13 @@ elseif (isset($_GET['action']) && $_GET['action'] == "addnewitem" && $_POST['que
 	$categ = intval($_POST['categ'] ?? 0);
 	$langid = intval($_POST['langid'] ?? 0);
 	$res = sql_query("SELECT MAX(`order`) AS maxorder, MAX(`link_id`) AS maxlinkid FROM `faq` WHERE `type`='item' AND `categ`=".sqlesc($categ)." AND lang_id=".sqlesc($langid));
-	while ($arr = mysql_fetch_array($res, MYSQLI_BOTH)) 
+	while ($arr = mysql_fetch_array($res, MYSQLI_BOTH))
 	{
 		$order = $arr['maxorder'] + 1;
 		$link_id = $arr['maxlinkid']+1;
 	}
 	sql_query("INSERT INTO `faq` (`link_id`, `type`, `lang_id`, `question`, `answer`, `flag`, `categ`, `order`) VALUES ('$link_id', 'item', ".sqlesc($langid).", ".sqlesc($question).", ".sqlesc($answer).", " . sqlesc(intval($_POST['flag'] ?? 0)) . ", ".sqlesc($categ).", ".sqlesc($order).")") or sqlerr();
+    clear_faq_cache();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 }
@@ -188,6 +195,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "addnewsect" && $_POST['tit
 	$res = sql_query("SELECT MAX(`order`) AS maxorder, MAX(`link_id`) AS maxlinkid FROM `faq` WHERE `type`='categ' AND `lang_id` = ".sqlesc($language));
 	while ($arr = mysql_fetch_array($res, MYSQLI_BOTH)) {$order = $arr['maxorder'] + 1;$link_id = $arr['maxlinkid']+1;}
 	sql_query("INSERT INTO `faq` (`link_id`,`type`,`lang_id`, `question`, `answer`, `flag`, `categ`, `order`) VALUES (".sqlesc($link_id).",'categ', ".sqlesc($language).", ".sqlesc($title).", '', ".sqlesc($_POST['flag']).", '0', ".sqlesc($order).")") or sqlerr();
+    clear_faq_cache();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 } else {

@@ -161,6 +161,21 @@ class Install
             'result' => $this->yesOrNo(version_compare(PHP_VERSION, $this->minimumPhpVersion, '>=')),
         ];
 
+        $requiredFunctions = ['symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec'];
+        $disabledFunctions = [];
+        foreach ($requiredFunctions as $fn) {
+            if (!function_exists($fn)) {
+                $disabledFunctions[] = $fn;
+            }
+        }
+
+        $tableRows[] = [
+            'label' => 'Required functions',
+            'required' => 'true',
+            'current' => empty($disabledFunctions) ? '1' : "These functions are Disabled: " . implode(',', $disabledFunctions),
+            'result' => $this->yesOrNo(empty($disabledFunctions)),
+        ];
+
         foreach ($this->requiredExtensions as $extension) {
             $tableRows[] = [
                 'label' => "PHP extension $extension",

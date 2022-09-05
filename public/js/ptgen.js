@@ -31,6 +31,7 @@ jQuery('.btn-get-pt-gen').on('click', function () {
 
 function autoSelect(value) {
     // console.log(`autoSelect: ${value}`)
+    value = value.replace(/[-\/\.]+/ig, '').toUpperCase();
     let names = ["source_sel", "medium_sel", "codec_sel", "audiocodec_sel", "standard_sel", "processing_sel", "team_sel"];
     for (let i = 0; i < names.length; i++) {
         const name = names[i];
@@ -38,11 +39,10 @@ function autoSelect(value) {
         // console.log("check name: " + name)
         select.children("option").each(function (index, option) {
             let _option = jQuery(option)
-            let optionText = _option.text();
+            let optionText = _option.text().replace(/[-\/\.]+/ig, '').toUpperCase();
             // console.log("check option text: " + optionText + " match value: " + value)
-            let pattern = new RegExp(value, "i");
-            if (optionText.match(pattern)) {
-                console.log(`name: ${name}, optionText: ${optionText} match value: ${value}, break`)
+            if (optionText == value) {
+                console.log(`name: ${name}, optionText: ${optionText} === value: ${value}, break`)
                 select.val(option.getAttribute('value'))
                 return false
             }

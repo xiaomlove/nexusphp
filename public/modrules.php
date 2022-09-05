@@ -5,6 +5,10 @@ loggedinorreturn();
 if (get_user_class() < UC_ADMINISTRATOR) {
 	stderr("Error","Only Administrators and above can modify the Rules, sorry.");
 }
+function clear_rules_cache()
+{
+    \Nexus\Database\NexusDB::cache_del('rules');
+}
 
 if (isset($_GET["act"]) && $_GET["act"] == "newsect")
 {
@@ -35,6 +39,7 @@ elseif (isset($_GET["act"]) && $_GET["act"]=="addsect"){
 	$text = $_POST["text"];
 	$language = $_POST["language"];
 	sql_query("insert into rules (title, text, lang_id) values(".sqlesc($title).", ".sqlesc($text).", ".sqlesc($language).")") or sqlerr(__FILE__,__LINE__);
+    clear_rules_cache();
 	header("Refresh: 0; url=modrules.php");
 }
 elseif (isset($_GET["act"]) && $_GET["act"] == "edit"){
@@ -68,6 +73,7 @@ elseif (isset($_GET["act"]) && $_GET["act"]=="edited"){
 	$text = $_POST["text"];
 	$language = $_POST["language"];
 	sql_query("update rules set title=".sqlesc($title).", text=".sqlesc($text).", lang_id = ".sqlesc($language)." where id=".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
+    clear_rules_cache();
 	header("Refresh: 0; url=modrules.php");
 }
 elseif (isset($_GET["act"]) && $_GET["act"]=="del"){
@@ -78,6 +84,7 @@ elseif (isset($_GET["act"]) && $_GET["act"]=="del"){
 		stderr("Delete Rule","You are about to delete a rule. Click <a class=altlink href=?act=del&id=$id&sure=1>here</a> if you are sure.",false);
 	}
 	sql_query("DELETE FROM rules WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+    clear_rules_cache();
 	header("Refresh: 0; url=modrules.php");
 }
 else{
