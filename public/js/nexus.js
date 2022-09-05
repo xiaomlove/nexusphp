@@ -103,4 +103,47 @@ jQuery(document).ready(function () {
         imgList.forEach(img => io.observe(img))
     }
 
+    //claim
+    jQuery("body").on("click", "[data-claim_id]", function () {
+        let _this = jQuery(this)
+        let box = _this.closest('td')
+        let claimId = _this.attr("data-claim_id")
+        let torrentId = _this.attr("data-torrent_id")
+        let action = _this.attr("data-action")
+        let reload = _this.attr("data-reload")
+        let confirmText = _this.attr("data-confirm")
+        let showStyle = "width: max-content;display: flex;align-items: center";
+        let hideStyle = "width: max-content;display: none;align-items: center";
+        let params = {}
+        if (claimId > 0) {
+            params.id = claimId
+        } else {
+            params.torrent_id = torrentId
+        }
+        let modalConfig = {title: "Info", btn: ['OK', 'Cancel'], btnAlign: 'c'}
+        layer.confirm(confirmText, modalConfig, function (confirmIndex) {
+            jQuery.post("ajax.php", {"action": action, params: params}, function (response) {
+                console.log(response)
+                if (response.ret != 0) {
+                    layer.alert(response.msg, modalConfig)
+                    return
+                }
+                if (reload > 0) {
+                    window.location.reload();
+                    return;
+                }
+                if (claimId > 0) {
+                    //do remove, show add
+                    box.find("[data-action=addClaim]").attr("style", showStyle).attr("data-claim_id", 0)
+                    box.find("[data-action=removeClaim]").attr("style", hideStyle)
+                } else {
+                    //do add, show remove, update claim_id
+                    box.find("[data-action=addClaim]").attr("style", hideStyle)
+                    box.find("[data-action=removeClaim]").attr("style", showStyle).attr("data-claim_id", response.data.id)
+                }
+                layer.close(confirmIndex)
+            }, "json")
+        })
+    })
+
 })

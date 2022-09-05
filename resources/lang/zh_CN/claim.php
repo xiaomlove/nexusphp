@@ -25,4 +25,8 @@ return [
     'claim_unreached_summary' => '未达标每个种子扣除魔力：<b>:deduct_per_torrent</b>，总扣除魔力：<b>:deduct_total</b>',
 
     'confirm_give_up' => '确定要放弃认领此种子吗？',
+    'add_claim' => '认领',
+    'add_claim_confirm' => '确认要认领？',
+    'remove_claim' => '放弃',
+    'remove_claim_confirm' => '确认要放弃认领？',
 ];

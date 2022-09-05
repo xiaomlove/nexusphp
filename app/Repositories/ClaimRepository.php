@@ -304,4 +304,20 @@ class ClaimRepository extends BaseRepository
             'msg' => implode("\n\n", $msg),
         ];
     }
+
+    public function buildActionButtons($torrentId, $claimData, $reload = 0): string
+    {
+        $buttonHtml = '<button data-action="%s" data-reload="%s" data-confirm="%s" data-claim_id="%s" data-torrent_id="%s" style="width: max-content;display: %s;align-items: center"><img style="margin-right: 4px;" class="staff_%s" src="pic/trans.gif">%s</button>';
+        $addButton = sprintf($buttonHtml, 'addClaim', $reload, nexus_trans('claim.add_claim_confirm'), $claimData ? $claimData->id : 0, $torrentId, '%s', 'edit', nexus_trans('claim.add_claim'));
+        $removeButton = sprintf($buttonHtml, 'removeClaim', $reload, nexus_trans('claim.remove_claim_confirm'), $claimData ? $claimData->id : 0, $torrentId, '%s', 'delete', nexus_trans('claim.remove_claim'));
+
+        if ($claimData) {
+            //Only show remove
+            return sprintf($addButton, 'none') . sprintf($removeButton, 'flex');
+        } else {
+            //Only show add
+            return sprintf($addButton, 'flex') . sprintf($removeButton, 'none');
+        }
+
+    }
 }

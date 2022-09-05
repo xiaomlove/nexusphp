@@ -28,25 +28,6 @@ if (!empty($_GET['torrent_id'])) {
     print("<h1 align=center>".nexus_trans('claim.title_for_user') . "<a href=userdetails.php?id=" . htmlspecialchars($uid) . "><b>&nbsp;".htmlspecialchars($user->username)."</b></a></h1>");
     if ($uid == $CURUSER['id']) {
         $actionTh = sprintf("<td class='colhead' align='center'>%s</td>", nexus_trans("claim.th_action"));
-        $actionTd = "<td class='rowfollow nowrap' align='center'><input class='claim-remove' type='button' value='Remove' data-id='%s'></td>";
-        $confirmMsg = nexus_trans('claim.confirm_give_up');
-        $removeJs = <<<JS
-jQuery("#claim-table").on("click", '.claim-remove', function () {
-    if (!window.confirm('$confirmMsg')) {
-        return
-    }
-    let params = {action: "removeClaim", params: {id: jQuery(this).attr("data-id")}}
-    jQuery.post('ajax.php', params, function (response) {
-        console.log(response)
-        if (response.ret == 0) {
-            location.reload()
-        } else {
-            window.alert(response.msg)
-        }
-    }, 'json')
-})
-JS;
-        \Nexus\Nexus::js($removeJs, 'footer', false);
     }
 } else {
     stderr("Invalid parameters", "Require torrent_id or uid");
@@ -73,6 +54,7 @@ print("<tr>
 $now = \Carbon\Carbon::now();
 $seedTimeRequiredHours = \App\Models\Claim::getConfigStandardSeedTimeHours();
 $uploadedRequiredTimes = \App\Models\Claim::getConfigStandardUploadedTimes();
+$claimRep = new \App\Repositories\ClaimRepository();
 foreach ($list as $row) {
     if (
         bcsub($row->snatch->seedtime, $row->seed_time_begin) >= $seedTimeRequiredHours * 3600
@@ -81,6 +63,10 @@ foreach ($list as $row) {
         $reached = 'Yes';
     } else {
         $reached = 'No';
+    }
+    $actionTd = '';
+    if ($actionTh) {
+        $actionTd = sprintf('<td class="rowfollow nowrap" align="center">%s</td>', $claimRep->buildActionButtons($row->torrent_id, $row, 1));
     }
     print("<tr>
         <td class='rowfollow nowrap' align='center'>" . $row->id . "</td>
@@ -93,7 +79,7 @@ foreach ($list as $row) {
         <td class='rowfollow nowrap' align='center'>" . mkprettytime($row->snatch->seedtime - $row->seed_time_begin) . "</td>
         <td class='rowfollow nowrap' align='center'>" . mksize($row->snatch->uploaded - $row->uploaded_begin) . "</td>
         <td class='rowfollow nowrap' align='center'>" . $reached . "</td>
-        ".sprintf($actionTd, $row->id)."
+        ".$actionTd."
     </tr>");
 }
 

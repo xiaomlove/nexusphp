@@ -10,7 +10,7 @@ header("Pragma: no-cache" );
 //header("Content-Type: text/xml; charset=utf-8");
 
 $torrentRep = new \App\Repositories\TorrentRepository();
-
+$claimRep = new \App\Repositories\ClaimRepository();
 $id = intval($_GET['userid'] ?? 0);
 $type = $_GET['type'];
 if (!in_array($type,array('uploaded','seeding','leeching','completed','incomplete')))
@@ -21,7 +21,8 @@ if(!user_can('torrenthistory') && $id != $CURUSER["id"])
 function maketable($res, $mode = 'seeding')
 {
 	global $lang_getusertorrentlistajax,$CURUSER,$smalldescription_main, $lang_functions, $id;
-	global $torrentRep;
+	global $torrentRep, $claimRep;
+	$showActionClaim = false;
 	switch ($mode)
 	{
 		case 'uploaded': {
@@ -82,6 +83,7 @@ function maketable($res, $mode = 'seeding')
 		$showanonymous = false;
         $showtotalsize = false;
 		$columncount = 8;
+            $showActionClaim = true;
 		break;
 		}
 		case 'incomplete': {
@@ -115,10 +117,21 @@ function maketable($res, $mode = 'seeding')
             ->get()
             ->keyBy('torrentid');
     }
+    if ($showActionClaim) {
+        $claimData = \App\Models\Claim::query()
+            ->where('uid', $CURUSER['id'])
+            ->whereIn('torrent_id', $torrentIdArr)
+            ->get()
+            ->keyBy('torrent_id');
+    }
 
 	$ret = "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"100%\"><tr><td class=\"colhead\" style=\"padding: 0px\">".$lang_getusertorrentlistajax['col_type']."</td><td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_name']."</td><td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_added']."</td>".
-	($showsize ? "<td class=\"colhead\" align=\"center\"><img class=\"size\" src=\"pic/trans.gif\" alt=\"size\" title=\"".$lang_getusertorrentlistajax['title_size']."\" /></td>" : "").($showsenum ? "<td class=\"colhead\" align=\"center\"><img class=\"seeders\" src=\"pic/trans.gif\" alt=\"seeders\" title=\"".$lang_getusertorrentlistajax['title_seeders']."\" /></td>" : "").($showlenum ? "<td class=\"colhead\" align=\"center\"><img class=\"leechers\" src=\"pic/trans.gif\" alt=\"leechers\" title=\"".$lang_getusertorrentlistajax['title_leechers']."\" /></td>" : "").($showuploaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_uploaded']."</td>" : "") . ($showdownloaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_downloaded']."</td>" : "").($showratio ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_ratio']."</td>" : "").($showsetime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_se_time']."</td>" : "").($showletime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_le_time']."</td>" : "").($showcotime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_time_completed']."</td>" : "").($showanonymous ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_anonymous']."</td>" : "")."</tr>\n";
-	$total_size = 0;
+	($showsize ? "<td class=\"colhead\" align=\"center\"><img class=\"size\" src=\"pic/trans.gif\" alt=\"size\" title=\"".$lang_getusertorrentlistajax['title_size']."\" /></td>" : "").($showsenum ? "<td class=\"colhead\" align=\"center\"><img class=\"seeders\" src=\"pic/trans.gif\" alt=\"seeders\" title=\"".$lang_getusertorrentlistajax['title_seeders']."\" /></td>" : "").($showlenum ? "<td class=\"colhead\" align=\"center\"><img class=\"leechers\" src=\"pic/trans.gif\" alt=\"leechers\" title=\"".$lang_getusertorrentlistajax['title_leechers']."\" /></td>" : "").($showuploaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_uploaded']."</td>" : "") . ($showdownloaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_downloaded']."</td>" : "").($showratio ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_ratio']."</td>" : "").($showsetime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_se_time']."</td>" : "").($showletime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_le_time']."</td>" : "").($showcotime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_time_completed']."</td>" : "").($showanonymous ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_anonymous']."</td>" : "");
+    if ($showActionClaim) {
+        $ret .= sprintf('<td class="colhead" align="center">%s</td>', $lang_functions['std_action']);
+    }
+    $ret .= "</tr>";
+    $total_size = 0;
 	foreach ($results as $arr)
 	{
 	    if ($mode == 'uploaded') {
@@ -199,6 +212,11 @@ function maketable($res, $mode = 'seeding')
 			$ret .= "<td class=\"rowfollow\" align=\"center\">"."". str_replace("&nbsp;", "<br />", gettime($arr['completedat'],false)). "</td>";
 		if ($showanonymous)
 			$ret .= "<td class=\"rowfollow\" align=\"center\">".$arr['anonymous']."</td>";
+		if ($showActionClaim) {
+		    $claim = $claimData->get($arr['torrent']);
+		    $claimButton = $claimRep->buildActionButtons($arr['torrent'], $claim);
+		    $ret .= sprintf('<td class="rowfollow" align="center">%s</td>', $claimButton);
+        }
 		$ret .="</tr>\n";
 
 	}
@@ -255,7 +273,7 @@ switch ($type)
 	// Incomplete torrents
 	case 'incomplete':
 	{
-		$res = sql_query("SELECT torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id ORDER BY snatched.id DESC") or sqlerr();
+//		$res = sql_query("SELECT torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id ORDER BY snatched.id DESC") or sqlerr();
 		$fields = "torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime,snatched.seedtime,snatched.uploaded";
 		$tableWhere = "torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id";
 		$order = "snatched.id DESC";

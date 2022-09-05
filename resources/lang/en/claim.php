@@ -25,4 +25,8 @@ return [
     'claim_unreached_summary' => 'Deduct bonus every unreached torrent：<b>:deduct_per_torrent</b>, total deduct: <b>:deduct_total</b>',
 
     'confirm_give_up' => 'Are you sure you want to give up claiming this torrent?',
+    'add_claim' => 'Claim',
+    'add_claim_confirm' => 'Confirm to claim?',
+    'remove_claim' => 'Give up',
+    'remove_claim_confirm' => 'Confirm to give up the claim?',
 ];
