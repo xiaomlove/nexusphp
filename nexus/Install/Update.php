@@ -250,6 +250,7 @@ class Update extends Install
             $this->runMigrate('database/migrations/2022_09_02_031539_add_extra_to_searchbox_table.php');
             SearchBox::query()->update(['extra' => [
                 SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => 1,
+                SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => 1,
             ]]);
         }
 

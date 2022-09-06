@@ -25,6 +25,7 @@ class SearchBox extends NexusModel
     const EXTRA_TAXONOMY_LABELS = 'taxonomy_labels';
 
     const EXTRA_DISPLAY_COVER_ON_TORRENT_LIST = 'display_cover_on_torrent_list';
+    const EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST = 'display_seed_box_icon_on_torrent_list';
 
     public static array $subCatFields = [
         'source', 'medium', 'codec', 'audiocodec', 'team', 'standard', 'processing'
@@ -32,6 +33,7 @@ class SearchBox extends NexusModel
 
     public static array $extras = [
         self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => ['text' => 'Display cover on torrent list'],
+        self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => ['text' => 'Display seed box icon on torrent list'],
     ];
 
     public static function listExtraText(): array

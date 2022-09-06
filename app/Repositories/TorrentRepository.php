@@ -617,7 +617,7 @@ class TorrentRepository extends BaseRepository
         $input = <<<HTML
 <div class="nexus-input-box" style="display: flex">
     <div style="display: flex;flex-direction: column;flex-grow: 1">
-        <input type="text" name="$name" value="{$value}">
+        <input type="text" id="$name" name="$name" value="{$value}">
         $note
     </div>
     $btn
