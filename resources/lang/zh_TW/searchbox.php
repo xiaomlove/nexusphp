@@ -11,5 +11,6 @@ return [
     'sub_category_audio_codec_label' => '音頻編碼',
     'extras' => [
         \App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => '種子列表頁展示封面',
+        \App\Models\SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => '種子列表頁展示 SeedBox 圖標',
     ],
 ];

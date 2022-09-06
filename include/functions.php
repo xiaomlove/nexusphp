@@ -3320,14 +3320,17 @@ function torrenttable($rows, $variant = "torrent", $searchBoxId = 0) {
 	$tagKeyById = $tagCollection->keyBy('id');
 	$torrentTagResult = $torrentTagCollection->groupBy('torrent_id');
 	$showCover = false;
+    $showSeedBoxIcon = get_setting('seed_box.enabled') == 'yes';
 	if ($searchBoxId) {
 	    $searchBoxExtra = get_searchbox_value($searchBoxId, "extra");
 	    if (!empty($searchBoxExtra[\App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST])) {
 	        $showCover = true;
         }
+        if (empty($searchBoxExtra[\App\Models\SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST])) {
+            $showSeedBoxIcon = false;
+        }
     }
 	//seedBoxIcon
-    $showSeedBoxIcon = get_setting('seed_box.enabled') == 'yes';
 	if ($showSeedBoxIcon) {
 	    $seedBoxRep = new \App\Repositories\SeedBoxRepository();
 	    $ownerPeerInfo = \App\Models\Peer::query()
