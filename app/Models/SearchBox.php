@@ -2,21 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 class SearchBox extends NexusModel
 {
     protected $table = 'searchbox';
 
     protected $fillable = [
-        'name', 'catsperrow', 'catpadding', 'showsubcat',
+        'name', 'catsperrow', 'catpadding', 'showsubcat', 'section_name', 'is_default',
         'showsource', 'showmedium', 'showcodec', 'showstandard', 'showprocessing', 'showteam', 'showaudiocodec',
-        'custom_fields', 'custom_fields_display_name', 'custom_fields_display', 'extra'
+        'custom_fields', 'custom_fields_display_name', 'custom_fields_display',
+        'extra->' . self::EXTRA_TAXONOMY_LABELS,
+        'extra->' . self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST
     ];
 
     protected $casts = [
-        'extra' => 'object'
+        'extra' => 'array',
+        'is_default' => 'boolean',
+        'showsubcat' => 'boolean',
     ];
 
+    const EXTRA_TAXONOMY_LABELS = 'taxonomy_labels';
+
     const EXTRA_DISPLAY_COVER_ON_TORRENT_LIST = 'display_cover_on_torrent_list';
+
+    public static array $subCatFields = [
+        'source', 'medium', 'codec', 'audiocodec', 'team', 'standard', 'processing'
+    ];
 
     public static array $extras = [
         self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => ['text' => 'Display cover on torrent list'],
@@ -31,6 +43,19 @@ class SearchBox extends NexusModel
         return $result;
     }
 
+    protected function customFields(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => is_string($value) ? explode(',', $value) : $value,
+            set: fn ($value) => is_array($value) ? implode(',', $value) : $value,
+        );
+    }
+
+    public static function getSubCatOptions(): array
+    {
+        return array_combine(self::$subCatFields, self::$subCatFields);
+    }
+
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Category::class, 'mode');
@@ -40,5 +65,47 @@ class SearchBox extends NexusModel
     {
         return $this->hasMany(SearchBoxField::class, 'searchbox_id');
     }
+
+    public function taxonomy_sources(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Source::class, 'mode');
+    }
+
+    public function taxonomy_media(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Media::class, 'mode');
+    }
+
+    public function taxonomy_standards(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Standard::class, 'mode');
+    }
+
+    public function taxonomy_codecs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Codec::class, 'mode');
+    }
+
+    public function taxonomy_audio_codecs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AudioCodec::class, 'mode');
+    }
+
+    public function taxonomy_teams(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Team::class, 'mode');
+    }
+
+    public function taxonomy_processing(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Processing::class, 'mode');
+    }
+
+    public function taxonomies(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Taxonomy::class, 'mode');
+    }
+
+
 
 }

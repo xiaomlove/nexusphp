@@ -86,7 +86,11 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $box = SearchBox::query()->find(6);
+        $update = [
+            'extra->taxonomy_labels->ss' => '444'
+        ];
+        $box->update($update);
     }
 
 

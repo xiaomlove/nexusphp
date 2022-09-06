@@ -675,7 +675,7 @@ class Install
         $sql = 'select version() as v';
         $result = NexusDB::select($sql);
         $version = $result[0]['v'];
-        $match = version_compare($version, '5.7.7', '>=');
+        $match = version_compare($version, '5.7.8', '>=');
         return compact('version', 'match');
     }
 
