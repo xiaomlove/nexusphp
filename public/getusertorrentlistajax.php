@@ -11,6 +11,7 @@ header("Pragma: no-cache" );
 
 $torrentRep = new \App\Repositories\TorrentRepository();
 $claimRep = new \App\Repositories\ClaimRepository();
+$claimTorrentTTL = \App\Models\Claim::getConfigTorrentTTL();
 $id = intval($_GET['userid'] ?? 0);
 $type = $_GET['type'];
 if (!in_array($type,array('uploaded','seeding','leeching','completed','incomplete')))
@@ -21,7 +22,7 @@ if(!user_can('torrenthistory') && $id != $CURUSER["id"])
 function maketable($res, $mode = 'seeding')
 {
 	global $lang_getusertorrentlistajax,$CURUSER,$smalldescription_main, $lang_functions, $id;
-	global $torrentRep, $claimRep;
+	global $torrentRep, $claimRep, $claimTorrentTTL;
 	$showActionClaim = false;
 	switch ($mode)
 	{
@@ -213,11 +214,12 @@ function maketable($res, $mode = 'seeding')
 			$ret .= "<td class=\"rowfollow\" align=\"center\">"."". str_replace("&nbsp;", "<br />", gettime($arr['completedat'],false)). "</td>";
 		if ($showanonymous)
 			$ret .= "<td class=\"rowfollow\" align=\"center\">".$arr['anonymous']."</td>";
-		if ($showActionClaim) {
+        $claimButton = '';
+		if ($showActionClaim && \App\Models\Claim::getConfigIsEnabled() && \Carbon\Carbon::parse($arr['added'])->addDays($claimTorrentTTL)->lte(\Carbon\Carbon::now())) {
 		    $claim = $claimData->get($arr['torrent']);
 		    $claimButton = $claimRep->buildActionButtons($arr['torrent'], $claim);
-		    $ret .= sprintf('<td class="rowfollow" align="center">%s</td>', $claimButton);
         }
+        $ret .= sprintf('<td class="rowfollow" align="center">%s</td>', $claimButton);
 		$ret .="</tr>\n";
 
 	}
