@@ -29,4 +29,6 @@ return [
     'add_claim_confirm' => 'Confirm to claim?',
     'remove_claim' => 'Give up',
     'remove_claim_confirm' => 'Confirm to give up the claim?',
+    'already_claimed' => 'Claimed',
+    'not_claim_yet' => 'Unclaimed',
 ];

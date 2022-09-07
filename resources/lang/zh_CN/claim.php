@@ -29,4 +29,6 @@ return [
     'add_claim_confirm' => '确认要认领？',
     'remove_claim' => '放弃',
     'remove_claim_confirm' => '确认要放弃认领？',
+    'already_claimed' => '已认领',
+    'not_claim_yet' => '未认领',
 ];
