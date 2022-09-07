@@ -246,5 +246,15 @@ return [
         'custom_fields_display_name' => '自定义字段展示名称',
         'custom_fields_display' => '自定义字段展示',
         'custom_fields_display_help' => '使用特殊的标签代表字段的名称和值，如某字段其 Name 为 artist，则它的名称为：<%artist.label%>，它的值为：<%artist.value%>',
+        'category' => '主分类',
+        'taxonomy' => [
+            'name' => '名称',
+            'sort_index' => '排序',
+            'sort_index_help' => "递增排序，即'0'排在最前。",
+            'class_name' => 'class属性值',
+            'class_name_help' => "为图片指定class属性值。若无请留空。允许的字符: [a-z]（小写），[0-9]，[_]，第一个字符必须是字母。",
+            'image' => '图片文件名',
+            'image_help' => '图片文件的名字。允许的字符：[a-z]（小写），[0-9]，[_./]。',
+        ],
     ],
 ];

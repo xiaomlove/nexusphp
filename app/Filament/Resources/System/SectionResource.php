@@ -51,11 +51,15 @@ class SectionResource extends Resource
                     ->label(__('label.search_box.catsperrow'))
                     ->helperText(__('label.search_box.catsperrow_help'))
                     ->integer()
+                    ->required()
+                    ->default(8)
                 ,
                 Forms\Components\TextInput::make('catpadding')
                     ->label(__('label.search_box.catpadding'))
                     ->helperText(__('label.search_box.catpadding_help'))
                     ->integer()
+                    ->required()
+                    ->default(3)
                 ,
                 Forms\Components\CheckboxList::make('custom_fields')
                     ->options(TorrentCustomField::getCheckboxOptions())
@@ -115,7 +119,14 @@ class SectionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\CategoriesRelationManager::class,
+            RelationManagers\TaxonomySourcesRelationManager::class,
+            RelationManagers\TaxonomyMediumRelationManager::class,
+            RelationManagers\TaxonomyCodecsRelationManager::class,
+            RelationManagers\TaxonomyAudioCodecsRelationManager::class,
+            RelationManagers\TaxonomyTeamsRelationManager::class,
+            RelationManagers\TaxonomyStandardsRelationManager::class,
+            RelationManagers\TaxonomyProcessingRelationManager::class,
         ];
     }
 

@@ -45,6 +45,11 @@ class SearchBox extends NexusModel
         return $result;
     }
 
+    public static function getTaxonomyDisplayText($field)
+    {
+
+    }
+
     protected function customFields(): Attribute
     {
         return new Attribute(
@@ -73,7 +78,7 @@ class SearchBox extends NexusModel
         return $this->hasMany(Source::class, 'mode');
     }
 
-    public function taxonomy_media(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function taxonomy_medium(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Media::class, 'mode');
     }

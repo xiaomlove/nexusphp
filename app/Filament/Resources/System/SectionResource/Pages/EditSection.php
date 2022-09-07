@@ -29,6 +29,11 @@ class EditSection extends EditRecord
                 }
             }
         }
-        return array_filter($data);
+        return $data;
+    }
+
+    protected function getRedirectUrl(): ?string
+    {
+        return static::$resource::getUrl('index');
     }
 }

@@ -15,6 +15,12 @@ return new class extends Migration
     {
         Schema::table('searchbox', function (Blueprint $table) {
             $table->json('extra')->nullable()->change();
+            $table->string('custom_fields_display_name')->nullable(true)->default('')->change();
+        });
+
+        Schema::table('categories', function (Blueprint $table) {
+            $table->string('class_name')->nullable(true)->default('')->change();
+            $table->string('image')->nullable(true)->default('')->change();
         });
     }
 
