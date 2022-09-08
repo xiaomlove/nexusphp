@@ -6,11 +6,11 @@ use App\Http\Middleware\Locale;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Nexus\Nexus;
 use Filament\Facades\Filament;
-use Illuminate\Contracts\View\View;
 use NexusPlugin\Menu\Filament\MenuItemResource;
 
 class AppServiceProvider extends ServiceProvider
@@ -43,11 +43,6 @@ class AppServiceProvider extends ServiceProvider
                 'System',
             ]);
         });
-
-//        Filament::registerRenderHook(
-//            'content.end',
-//            fn (): View => view('filament.footer'),
-//        );
 
         Filament::registerStyles([
             asset('styles/sprites.css'),

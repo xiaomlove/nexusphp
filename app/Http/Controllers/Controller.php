@@ -57,4 +57,20 @@ class Controller extends BaseController
         return Str::slug("$title.$action", '.');
     }
 
+    protected function getPaginationParameters(): array
+    {
+        $request = request();
+        $format = $request->__format;
+        if ($format == 'data-table') {
+            $perPage = $request->length;
+            $page = intval($request->start / $perPage) + 1;
+        } else {
+            $perPage = $request->limit;
+            $page = $request->page;
+        }
+        return [$perPage, ['*'], 'page', $page];
+    }
+
+
+
 }
