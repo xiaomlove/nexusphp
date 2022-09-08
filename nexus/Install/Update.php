@@ -386,6 +386,7 @@ class Update extends Install
                 }
 //                $command = sprintf('cp -raf %s/. %s', $path, ROOT_PATH);
                 $command = "rsync -rvq $path/ " . ROOT_PATH;
+                $command .= " --include=public/vendor";
                 foreach ($excludes as $exclude) {
                     $command .= " --exclude=$exclude";
                 }
