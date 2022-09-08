@@ -5169,6 +5169,7 @@ function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
     }
     $sql .= implode(",", $data) . " on duplicate key update value = values(value)";
     \Nexus\Database\NexusDB::statement($sql);
+    clear_setting_cache();
     do_action("nexus_setting_update", $prefix, $nameAndValue);
 }
 

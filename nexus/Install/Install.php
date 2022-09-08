@@ -568,6 +568,7 @@ class Install
             $this->doLog("[SAVE SETTING], prefix: $prefix, nameAndValues: " . json_encode($group));
             saveSetting($prefix, $group);
         }
+
     }
 
     public function createSymbolicLinks($symbolicLinks)
