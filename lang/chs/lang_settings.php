@@ -91,7 +91,7 @@ $lang_settings = array
 	'row_view_userlist' => "查看用户列表",
 	'text_view_userlist_note' => "。查看、搜索用户列表。",
 	'row_torrent_management' => "管理种子",
-	'text_torrent_management_note' => "。编辑、删除种子，但不能将种子设为置顶或促销。",
+	'text_torrent_management_note' => "。编辑种子，但不能将种子设为置顶或促销或删除。",
 	'row_torrent_sticky' => "设定种子置顶",
 	'text_torrent_sticky_note' => "。将种子设为置顶",
 	'row_torrent_on_promotion' => "设定种子为促销",
@@ -771,6 +771,8 @@ $lang_settings = array
     'text_harem_addition_note' => '倍作为奖励（系数，如填入 0.01，后宫获得 100 魔力则奖励用户 100 * 0.01 = 1）',
     'row_offer_skip_approved_count' => '直接发布候选通过数',
     'text_offer_skip_approved_count_note' => '当通过的候选数大于等于此数值时，可直接发布不用提交候选。',
+    'row_torrent_delete' => '删除种子',
+    'text_torrent_delete_note' => '。删除种子',
 );
 
 ?>

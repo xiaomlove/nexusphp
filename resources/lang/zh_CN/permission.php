@@ -61,6 +61,10 @@ return [
         'text' => '管理种子',
         'desc' => '编辑、删除种子，但不能将种子设为置顶或促销',
     ],
+    'torrent-delete' => [
+        'text' => '删除种子',
+        'desc' => '删除种子',
+    ],
     'torrentsticky' => [
         'text' => '设定种子置顶',
         'desc' => '将种子设为置顶',

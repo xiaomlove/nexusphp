@@ -176,6 +176,7 @@ return array (
     'view_special_torrent' => '4',
       'torrent_hr' => User::CLASS_ADMINISTRATOR,
       'torrent-approval' => User::CLASS_ADMINISTRATOR,
+      'torrent-delete' => User::CLASS_ADMINISTRATOR,
   ),
   'tweak' =>
   array (

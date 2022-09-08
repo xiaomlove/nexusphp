@@ -205,7 +205,7 @@ else {
 	print("<tr><td class=\"toolbox\" colspan=\"2\" align=\"center\"><input id=\"qr\" type=\"submit\" value=\"".$lang_edit['submit_edit_it']."\" /> <input type=\"reset\" value=\"".$lang_edit['submit_revert_changes']."\" /></td></tr>\n");
 	print("</table>\n");
 	print("</form>\n");
-	if (user_can('torrentmanage')) {
+	if (user_can('torrent-delete')) {
         print("<br /><br />");
         print("<form method=\"post\" action=\"delete.php\">\n");
         print("<input type=\"hidden\" name=\"id\" value=\"$id\" />\n");

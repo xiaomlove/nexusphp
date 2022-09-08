@@ -61,6 +61,10 @@ return [
         'text' => '管理種子',
         'desc' => '編輯、移除種子，但無法將種子設為置頂或促銷',
     ],
+    'torrent-delete' => [
+        'text' => '移除种子',
+        'desc' => '移除种子',
+    ],
     'torrentsticky' => [
         'text' => '設定種子置頂',
         'desc' => '將種子設為置頂',

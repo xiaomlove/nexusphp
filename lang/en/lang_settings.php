@@ -91,7 +91,7 @@ $lang_settings = array
 	'row_view_userlist' => "View User List",
 	'text_view_userlist_note' => ". View, search user list",
 	'row_torrent_management' => "Torrent Management",
-	'text_torrent_management_note' => ". Edit, delete torrents, excluding setting torrent sticky or on promotion",
+	'text_torrent_management_note' => ". Edit torrents, excluding setting torrent sticky or on promotion or delete",
 	'row_torrent_sticky' => "Torrent Sticky",
 	'text_torrent_sticky_note' => ". Set torrents sticky",
 	'row_torrent_on_promotion' => "Torrent on Promotion",
@@ -771,6 +771,8 @@ $lang_settings = array
     'text_harem_addition_note' => 'times as reward (factor, e.g. fill in 0.01, if harem gets 100 bonus then reward user 100 * 0.01 = 1)',
     'row_offer_skip_approved_count' => 'Direct upload offer allow count',
     'text_offer_skip_approved_count_note' => 'When the number of approved offer is greater than or equal to this value, you can upload directly without submitting offers.',
+    'row_torrent_delete' => 'Delete torrent',
+    'text_torrent_delete_note' => '.Delete torrent',
 );
 
 ?>
