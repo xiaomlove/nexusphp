@@ -235,7 +235,8 @@ function bonusarray($option = 0){
 }
 
 $allBonus = bonusarray();
-
+$lockSeconds = 10;
+$lockText = sprintf($lang_mybonus['lock_text'], $lockSeconds);
 if ($bonus_tweak == "disable" || $bonus_tweak == "disablesave")
 	stderr($lang_mybonus['std_sorry'],$lang_mybonus['std_karma_system_disabled'].($bonus_tweak == "disablesave" ? "<b>".$lang_mybonus['std_points_active']."</b>" : ""),false);
 
@@ -265,6 +266,8 @@ if (isset($do)) {
         $msg =  $lang_mybonus['text_success_buy_medal'];
     elseif ($do == "attendance_card")
         $msg =  $lang_mybonus['text_success_buy_attendance_card'];
+    elseif ($do == 'duplicated')
+        $msg = $lockText;
 	else
 	$msg = '';
 }
@@ -275,10 +278,10 @@ if (!$action) {
 	print("<table align=\"center\" width=\"97%\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n");
 	print("<tr><td class=\"colhead\" colspan=\"4\" align=\"center\"><font class=\"big\">".$SITENAME.$lang_mybonus['text_karma_system']."</font></td></tr>\n");
 	if ($msg)
-	print("<tr><td align=\"center\" colspan=\"4\"><font class=\"striking\">". $msg ."</font></td></tr>");
+	print("<tr><td align=\"center\" colspan=\"4\"><font class=\"striking\"><b>". $msg ."</b></font></td></tr>");
 ?>
 <tr><td class="text" align="center" colspan="4"><?php echo $lang_mybonus['text_exchange_your_karma']?><?php echo $bonus?><?php echo $lang_mybonus['text_for_goodies'] ?>
-<br /><b><?php echo $lang_mybonus['text_no_buttons_note'] ?></b></td></tr>
+<br /><b><?php echo $lang_mybonus['text_no_buttons_note'] ?></b><br /><small style="color: orangered">(<?php echo $lockText ?>)</small></td></tr>
 <?php
 
 print("<tr><td class=\"colhead\" align=\"center\">".$lang_mybonus['col_option']."</td>".
@@ -452,6 +455,7 @@ if ($factor > 0) {
         number_format($addition * $factor, 3)
     );
 }
+
 $summaryTable .= '</tbody></table>';
 
 print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$summaryTable.'</div>';
@@ -512,6 +516,12 @@ if ($action == "exchange") {
 
 	if($CURUSER['seedbonus'] >= $points) {
         $bonusRep = new \App\Repositories\BonusRepository();
+        $lockName = "user:$userid:exchange:bonus";
+        $lock = new \Nexus\Database\NexusLock($lockName, $lockSeconds);
+        if (!$lock->get()) {
+            do_log("[LOCKED], $lockName, $lockText");
+            nexus_redirect('mybonus.php?do=duplicated');
+        }
 		//=== trade for upload
 		if($art == "traffic") {
 			if ($CURUSER['uploaded'] > $dlamountlimit_bonus * 1073741824)//uploaded amount reach limit
@@ -550,7 +560,7 @@ if ($action == "exchange") {
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
 //			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_INVITE, $points. " Points for invites.", ['invites' => $inv, ]);
-			nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=invite");
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=invite");
 		}
 		//=== trade for special title
 		/**** the $words array are words that you DO NOT want the user to have... use to filter "bad words" & user class...

@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Imdb\Cache;
 use League\Flysystem\StorageAttributes;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
@@ -86,7 +87,7 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $r = \Illuminate\Support\Facades\Cache::lock();
     }
 
 

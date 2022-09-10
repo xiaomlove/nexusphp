@@ -138,6 +138,7 @@ $lang_mybonus = array
     'reward_type_basic' => '基本獎勵',
     'reward_type_harem_addition' => '後宮加成',
     'bonus_base' => '基礎魔力',
+    'lock_text' => '系統限製 %s 秒內只能點擊交換按鈕一次！',
 );
 
 ?>
