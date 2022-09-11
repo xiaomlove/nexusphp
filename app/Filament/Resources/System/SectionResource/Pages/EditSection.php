@@ -32,8 +32,4 @@ class EditSection extends EditRecord
         return $data;
     }
 
-    protected function getRedirectUrl(): ?string
-    {
-        return static::$resource::getUrl('index');
-    }
 }
