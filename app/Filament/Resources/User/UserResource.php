@@ -6,6 +6,7 @@ use App\Filament\OptionsTrait;
 use App\Filament\Resources\User\UserResource\Pages;
 use App\Filament\Resources\User\UserResource\RelationManagers;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Resources\Form;
@@ -15,6 +16,8 @@ use Filament\Tables;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 
 class UserResource extends Resource
@@ -85,9 +88,7 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
             ])
-            ->bulkActions([
-//                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->bulkActions(self::getBulkActions());
     }
 
     public static function getRelations(): array
@@ -106,6 +107,23 @@ class UserResource extends Resource
 //            'view' => Pages\ViewUser::route('/{record}'),
             'view' => Pages\UserProfile::route('/{record}'),
         ];
+    }
+
+    public static function getBulkActions(): array
+    {
+        $actions = [];
+        if (Auth::user()->class >= User::CLASS_SYSOP) {
+            $actions[] = Tables\Actions\BulkAction::make('confirm')
+                ->label(__('admin.resources.user.actions.confirm_bulk'))
+                ->requiresConfirmation()
+                ->deselectRecordsAfterCompletion()
+                ->action(function (Collection $records) {
+                    $rep = new UserRepository();
+                    $rep->confirmUser($records->pluck('id')->toArray());
+                });
+        }
+
+        return $actions;
     }
 
 }

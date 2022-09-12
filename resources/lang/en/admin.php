@@ -67,6 +67,7 @@ return [
                 'grant_prop_form_prop' => 'Select prop',
                 'grant_prop_form_duration' => 'Duration',
                 'grant_prop_form_duration_help' => 'Unit: days. If left blank, the user has it permanently. Note: There is no time limit for Name Change Card, ignore this value.' ,
+                'confirm_bulk' => 'Bulk confirm',
             ]
         ],
         'exam_user' => [

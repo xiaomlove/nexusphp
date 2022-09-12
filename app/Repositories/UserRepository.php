@@ -483,4 +483,18 @@ class UserRepository extends BaseRepository
         return $result;
     }
 
+    public function confirmUser($id): bool
+    {
+        $update = [
+            'status' => User::STATUS_CONFIRMED,
+            'editsecret' => '',
+        ];
+        User::query()
+            ->whereIn('id', Arr::wrap($id))
+            ->where('status', User::STATUS_PENDING)
+            ->update($update);
+
+        return true;
+    }
+
 }
