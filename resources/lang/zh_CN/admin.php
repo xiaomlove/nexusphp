@@ -25,6 +25,7 @@ return [
         'roles' => '角色',
         'permissions' => '权限',
         'section' => '分区',
+        'icon' => '分类图标',
     ],
     'resources' => [
         'agent_allow' => [
