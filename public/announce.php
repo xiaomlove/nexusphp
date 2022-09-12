@@ -331,7 +331,7 @@ if(isset($self) && empty($_GET['event']) && $self['prevts'] > (TIMENOW - $announ
 
 $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
 $isIPSeedBox = false;
-if ($isSeedBoxRuleEnabled && !($az['class'] >= \App\Models\User::CLASS_VIP || $isDonor)) {
+if ($isSeedBoxRuleEnabled) {
     if (!empty($ipv4)) {
         $isIPSeedBox = isIPSeedBox($ipv4, $userid);
     }
