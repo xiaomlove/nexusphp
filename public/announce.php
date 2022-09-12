@@ -332,7 +332,12 @@ if(isset($self) && empty($_GET['event']) && $self['prevts'] > (TIMENOW - $announ
 $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
 $isIPSeedBox = false;
 if ($isSeedBoxRuleEnabled && !($az['class'] >= \App\Models\User::CLASS_VIP || $isDonor)) {
-    $isIPSeedBox = isIPSeedBox($ip, $userid);
+    if (!empty($ipv4)) {
+        $isIPSeedBox = isIPSeedBox($ipv4, $userid);
+    }
+    if (!$isIPSeedBox && !empty($ipv6)) {
+        $isIPSeedBox = isIPSeedBox($ipv6, $userid);
+    }
 }
 $log .= ", [SEED_BOX], isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, isIPSeedBox: $isIPSeedBox";
 
@@ -537,7 +542,7 @@ elseif(isset($self))
 		$updateset[] = "times_completed = times_completed + 1";
 	}
 
-	sql_query("UPDATE peers SET ip = ".sqlesc($ip).", port = $port, uploaded = $uploaded, downloaded = $downloaded, to_go = $left, prev_action = last_action, last_action = $dt, seeder = '$seeder', agent = ".sqlesc($agent)." $finished $peerIPV46 WHERE $selfwhere") or err("PL Err 1");
+	sql_query("UPDATE peers SET ip = ".sqlesc($ip).", port = $port, uploaded = $uploaded, downloaded = $downloaded, to_go = $left, prev_action = last_action, last_action = $dt, seeder = '$seeder', agent = ".sqlesc($agent).", is_seed_box = ". intval($isIPSeedBox) . " $finished $peerIPV46 WHERE $selfwhere") or err("PL Err 1");
 
 	if (mysql_affected_rows())
 	{
@@ -578,7 +583,7 @@ else
                 }
                 return 'no';
             });
-            $insertPeerSql = "INSERT INTO peers (torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey, ipv4, ipv6) VALUES ($torrentid, $userid, ".sqlesc($peer_id).", ".sqlesc($ip).", $port, '$connectable', $uploaded, $downloaded, $left, $dt, $dt, '$seeder', ".sqlesc($agent).", $downloaded, $uploaded, ".sqlesc($passkey).",".sqlesc($ipv4).",".sqlesc($ipv6).")";
+            $insertPeerSql = "INSERT INTO peers (torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey, ipv4, ipv6, is_seed_box) VALUES ($torrentid, $userid, ".sqlesc($peer_id).", ".sqlesc($ip).", $port, '$connectable', $uploaded, $downloaded, $left, $dt, $dt, '$seeder', ".sqlesc($agent).", $downloaded, $uploaded, ".sqlesc($passkey).", ".sqlesc($ipv4).", ".sqlesc($ipv6).", ".intval($isIPSeedBox).")";
             do_log("[INSERT PEER] peer not exists for $selfwhere, do insert with $insertPeerSql");
 
             try {

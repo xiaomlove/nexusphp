@@ -3339,11 +3339,11 @@ function torrenttable($rows, $variant = "torrent", $searchBoxId = 0) {
 	//seedBoxIcon
 	if ($showSeedBoxIcon) {
 	    $seedBoxRep = new \App\Repositories\SeedBoxRepository();
-	    $ownerPeerInfo = \App\Models\Peer::query()
+	    $seedBoxPeerInfo = \App\Models\Peer::query()
             ->whereIn('torrent', $torrentIdArr)
-            ->whereIn('userid', array_unique($ownerIdArr))
             ->where('seeder', 'yes')
-            ->get(['torrent', 'ipv4', 'ipv6'])
+            ->where('is_seed_box', '1')
+            ->get(['torrent', 'is_seed_box'])
             ->keyBy('torrent');
     }
 
@@ -3559,9 +3559,8 @@ foreach ($rows as $row)
 	$banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 	$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
     $approvalStatusIcon = $torrentRep->renderApprovalStatus($row['approval_status']);
-    if ($showSeedBoxIcon && $ownerPeerInfo->has($row['id'])) {
-        $ownerPeer = $ownerPeerInfo->get($row['id']);
-        $seedBoxIcon = $seedBoxRep->renderIcon([$ownerPeer->ipv4, $ownerPeer->ipv6], $row['owner']);
+    if ($showSeedBoxIcon && $seedBoxPeerInfo->has($row['id'])) {
+        $seedBoxIcon = $seedBoxRep->getSeedBoxIcon();
     } else {
         $seedBoxIcon = '';
     }
