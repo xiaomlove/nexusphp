@@ -221,7 +221,8 @@ elseif ($action == 'savesettings_authority') 	// save user authority
         'commanage','forummanage','viewuserlist','torrentmanage','torrentsticky', 'torrentonpromotion', 'torrent_hr', 'askreseed', 'viewnfo',
         'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage',
         'uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial',
-        'view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar', 'torrent-approval', 'torrent-delete'
+        'view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar', 'torrent-approval',
+        'torrent-delete', 'user-delete', 'user-change-class',
     );
 	GetVar($validConfig);
 	$AUTHORITY = [];
@@ -439,6 +440,9 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_comment_management'], $lang_settings['text_minimum_class'].classlist('commanage',$maxclass,$AUTHORITY['commanage'],0,true).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_comment_management_note'],1);
 	tr($lang_settings['row_forum_management'], $lang_settings['text_minimum_class'].classlist('forummanage',$maxclass,$AUTHORITY['forummanage'],0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_forum_management_note'],1);
 	tr($lang_settings['row_view_userlist'], $lang_settings['text_minimum_class'].classlist('viewuserlist',$maxclass,$AUTHORITY['viewuserlist'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_view_userlist_note'],1);
+	tr(nexus_trans('permission.user-delete.text'), $lang_settings['text_minimum_class'].classlist('user-delete',$maxclass,$AUTHORITY['user-delete'],0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).nexus_trans('permission.user-delete.desc'),1);
+	tr(nexus_trans('permission.user-change-class.text'), $lang_settings['text_minimum_class'].classlist('user-change-class',$maxclass,$AUTHORITY['user-change-class'],0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).nexus_trans('permission.user-change-class.desc'),1);
+
 	tr($lang_settings['row_torrent_management'], $lang_settings['text_minimum_class'].classlist('torrentmanage',$maxclass,$AUTHORITY['torrentmanage'],0,true).$lang_settings['text_default'].get_user_class_name(UC_MODERATOR,false,true,true).$lang_settings['text_torrent_management_note'], 1);
 	tr($lang_settings['row_torrent_delete'], $lang_settings['text_minimum_class'].classlist('torrent-delete',$maxclass,$AUTHORITY['torrent-delete'],0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_delete_note'], 1);
 

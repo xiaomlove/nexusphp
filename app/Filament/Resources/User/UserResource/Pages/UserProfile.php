@@ -14,10 +14,11 @@ use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Pages\Actions;
 use Filament\Forms;
+use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Auth;
 use Nexus\Database\NexusDB;
 
-class UserProfile extends Page
+class UserProfile extends ViewRecord
 {
     use InteractsWithRecord;
     use HasRelationManagers;
@@ -47,16 +48,6 @@ class UserProfile extends Page
         $this->record = $this->resolveRecord($id);
     }
 
-    public function mount($record)
-    {
-        static::authorizeResourceAccess();
-
-        $this->record = $this->resolveRecord($record);
-
-        abort_unless(static::getResource()::canView($this->getRecord()), 403);
-
-    }
-
     protected function getActions(): array
     {
         $actions = [];
@@ -74,7 +65,9 @@ class UserProfile extends Page
             $actions[] = $this->buildResetPasswordAction();
             $actions[] = $this->buildEnableDisableAction();
             $actions[] = $this->buildEnableDisableDownloadPrivilegesAction();
-
+            if (user_can('user-delete')) {
+                $actions[] = $this->buildDeleteAction();
+            }
             $actions = apply_filter('user_profile_actions', $actions);
         }
         return $actions;
@@ -297,6 +290,13 @@ class UserProfile extends Page
                     $this->notify('danger', $exception->getMessage());
                 }
             });
+    }
+
+    private function buildDeleteAction(): Actions\Action
+    {
+        return Actions\DeleteAction::make()->using(function () {
+            $this->getRep()->destroy($this->record->id);
+        });
     }
 
     public function getViewData(): array

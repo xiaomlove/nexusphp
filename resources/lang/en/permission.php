@@ -57,6 +57,14 @@ return [
         'text' => 'View User List',
         'desc' => 'View, search user list',
     ],
+    'user-delete' => [
+        'text' => 'Delete user',
+        'desc' => 'Completely delete user account information from the database',
+    ],
+    'user-change-class' => [
+        'text' => 'Change user class',
+        'desc' => "Modify the user's level, can not be modified to a level higher than or equal to their own",
+    ],
     'torrentmanage' => [
         'text' => 'Torrent Management',
         'desc' => 'Edit torrents, excluding setting torrent sticky or on promotion or delete',

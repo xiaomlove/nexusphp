@@ -497,4 +497,21 @@ class UserRepository extends BaseRepository
         return true;
     }
 
+    public function destroy($id)
+    {
+        user_can('user-delete', true);
+        $tables = [
+            'users' => 'id',
+            'hit_and_runs' => 'uid',
+            'claims' => 'uid',
+            'exam_users' => 'uid',
+            'exam_progress' => 'uid',
+        ];
+        foreach ($tables as $table => $key) {
+            \Nexus\Database\NexusDB::table($table)->where($key, $id)->delete();
+        }
+        do_log("[DESTROY_USER]: $id", 'error');
+        return true;
+    }
+
 }

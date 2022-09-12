@@ -194,7 +194,7 @@ if ($action == "edituser")
 	if ($curclass >= get_user_class())
 		puke();
 
-	if ($curclass != $class)
+	if (user_can('user-change-class') && $curclass != $class)
 	{
 		$what = ($class > $curclass ? $lang_modtask_target[get_user_lang($userid)]['msg_promoted'] : $lang_modtask_target[get_user_lang($userid)]['msg_demoted']);
 		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_class_change']);
