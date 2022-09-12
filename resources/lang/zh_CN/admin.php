@@ -68,6 +68,7 @@ return [
                 'grant_prop_form_prop' => '选择道具',
                 'grant_prop_form_duration' => '有效时长',
                 'grant_prop_form_duration_help' => '单位：天。如果留空，用户永久拥有。注：改名卡没有时间限制，忽略该值。',
+                'confirm_bulk' => '批量确认',
             ]
         ],
         'exam_user' => [
@@ -88,6 +89,7 @@ return [
             'bulk_action_remove_tag' => '清除标签',
             'bulk_action_attach_tag' => '设置标签',
             'action_approval' => '审核',
+            'bulk_action_attach_tag_remove_old' => '同时删除旧标签',
         ],
         'seed_box_record' => [
             'toggle_status' => '更改状态',

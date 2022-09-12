@@ -91,7 +91,7 @@ $lang_settings = array
 	'row_view_userlist' => "檢視用戶清單",
 	'text_view_userlist_note' => "。檢視、搜索用戶清單。",
 	'row_torrent_management' => "管理種子",
-	'text_torrent_management_note' => "。編輯、移除種子，但無法將種子設為置頂或促銷。",
+	'text_torrent_management_note' => "。編輯種子，但無法將種子設為置頂或促銷或移除。",
 	'row_torrent_sticky' => "設定種子置頂",
 	'text_torrent_sticky_note' => "。將種子設為置頂",
 	'row_torrent_on_promotion' => "設定種子為促銷",
@@ -771,6 +771,8 @@ $lang_settings = array
     'text_harem_addition_note' => '倍作為獎勵（系數，如填入 0.01，後宮獲得 100 魔力則獎勵用戶 100 * 0.01 = 1）',
     'row_offer_skip_approved_count' => '直接發布候選通過數',
     'text_offer_skip_approved_count_note' => '當通過的候選數大於等於此數值時，可直接發布不用提交候選。',
+    'row_torrent_delete' => '移除種子',
+    'text_torrent_delete_note' => '。移除種子',
 );
 
 ?>

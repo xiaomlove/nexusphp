@@ -522,7 +522,7 @@ function api(...$args)
     $resultKey = 'ret';
     $msgKey = 'msg';
     $format = $_REQUEST['__format'] ?? '';
-    if ($format == 'layui-table') {
+    if (in_array($format, ['layui-table', 'data-table'])) {
         $resultKey = 'code';
         $count = $data['meta']['total'] ?? 0;
         if (isset($data['data'])) {
@@ -538,6 +538,11 @@ function api(...$args)
     ];
     if ($format == 'layui-table') {
         $results['count'] = $count;
+    }
+    if ($format == 'data-table') {
+        $results['draw'] = intval($_REQUEST['draw'] ?? 1);
+        $results['recordsTotal'] = $count;
+        $results['recordsFiltered'] = $count;
     }
 
     return $results;

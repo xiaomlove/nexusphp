@@ -841,11 +841,16 @@ class TrackerRepository extends BaseRepository
             'agent' => $queries['user_agent'],
             'connectable' => $this->getConnectable($queries['ip'], $queries['port'], $queries['user_agent'])
         ];
+        $isSeedBox = false;
         if (!empty($queries['ipv4'])) {
             $update['ipv4'] = $queries['ipv4'];
+            $isSeedBox = isIPSeedBox($queries['ipv4'], $peer->userid);
         }
         if (!empty($queries['ipv6'])) {
             $update['ipv6'] = $queries['ipv6'];
+            if (!$isSeedBox) {
+                $isSeedBox = isIPSeedBox($queries['ipv6'], $peer->userid);
+            }
         }
 
         if ($peer->exists) {
@@ -865,6 +870,7 @@ class TrackerRepository extends BaseRepository
         $update['last_action'] = $nowStr;
         $update['uploaded'] = $queries['uploaded'];
         $update['downloaded'] = $queries['downloaded'];
+        $update['is_seed_box'] = intval($isSeedBox);
 
         $logData = json_encode(Arr::except($update, ['peer_id']));
         if ($peer->exists) {

@@ -138,6 +138,7 @@ $lang_mybonus = array
     'reward_type_basic' => '基本奖励',
     'reward_type_harem_addition' => '后宫加成',
     'bonus_base' => '基础魔力',
+    'lock_text' => '系统限制 %s 秒内只能点击交换按钮一次！',
 );
 
 ?>

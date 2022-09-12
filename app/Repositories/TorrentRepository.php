@@ -30,6 +30,7 @@ use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
@@ -572,28 +573,27 @@ class TorrentRepository extends BaseRepository
         return false;
     }
 
-    public function syncTags($id, array $tagIdArr = [])
+    public function syncTags($id, array $tagIdArr = [], $remove = true)
     {
         user_can('torrentmanage', true);
         $idArr = Arr::wrap($id);
-        return NexusDB::transaction(function () use ($idArr, $tagIdArr) {
-            $insert = [];
+        return NexusDB::transaction(function () use ($idArr, $tagIdArr, $remove) {
+            $sql = "insert into torrent_tags (torrent_id, tag_id, created_at, updated_at) values ";
             $time = now()->toDateTimeString();
+            $values = [];
             foreach ($idArr as $torrentId) {
                 foreach ($tagIdArr as $tagId) {
-                    $insert[] = [
-                        'torrent_id' => $torrentId,
-                        'tag_id' => $tagId,
-                        'created_at' => $time,
-                        'updated_at' => $time,
-                    ];
+                    $values[] = sprintf("(%s, %s, '%s', '%s')", $torrentId, $tagId, $time, $time);
                 }
             }
-            TorrentTag::query()->whereIn('torrent_id', $idArr)->delete();
-            if (!empty($insert)) {
-                TorrentTag::query()->insert($insert);
+            $sql .= implode(', ', $values) . " on duplicate key update updated_at = values(updated_at)";
+            if ($remove) {
+                TorrentTag::query()->whereIn('torrent_id', $idArr)->delete();
             }
-            return count($insert);
+            if (!empty($values)) {
+                DB::insert($sql);
+            }
+            return count($values);
         });
 
     }

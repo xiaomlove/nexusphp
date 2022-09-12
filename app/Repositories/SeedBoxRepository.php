@@ -138,10 +138,18 @@ class SeedBoxRepository extends BaseRepository
         }
         foreach (Arr::wrap($ipArr) as $ip) {
             if ((isIPV4($ip) || isIPV6($ip)) && $enableSeedBox && isIPSeedBox($ip, $uid)) {
-                return '<img src="pic/misc/seed-box.png" style="vertical-align: bottom; height: 16px; margin-left: 4px" title="SeedBox" />';
+                return $this->getSeedBoxIcon();
             }
         }
         return '';
+    }
+
+    public function getSeedBoxIcon($isSeedBox = true): string
+    {
+        if (!$isSeedBox) {
+            return '';
+        }
+        return '<img src="pic/misc/seed-box.png" style="vertical-align: bottom; height: 16px; margin-left: 4px" title="SeedBox" />';
     }
 
     private function clearCache()

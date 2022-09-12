@@ -11,11 +11,11 @@ header("Content-Type: text/xml; charset=utf-8");
 
 $id = intval($_GET['id'] ?? 0);
 $seedBoxRep = new \App\Repositories\SeedBoxRepository();
-
-function get_location_column($e, $isStrongPrivacy, $canView): string
+function get_location_column($e, $isStrongPrivacy, $canView): array
 {
     global $enablelocation_tweak, $seedBoxRep, $lang_functions, $lang_viewpeerlist;
     $address = $ips = [];
+    $isSeedBox = false;
     //First, build the location
     if ($enablelocation_tweak == 'yes') {
         if (!empty($e['ipv4'])) {
@@ -39,10 +39,12 @@ function get_location_column($e, $isStrongPrivacy, $canView): string
         $location = '<div style="margin-right: 6px" title="'.$title.'">'.$addressStr.'</div>';
     } else {
         if (!empty($e['ipv4'])) {
-            $ips[] = $e['ipv4'] . $seedBoxRep->renderIcon($e['ipv4'], $e['userid']);
+            $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv4'], $e['userid']);
+            $ips[] = $e['ipv4'] . $seedBoxIcon;
         }
         if (!empty($e['ipv6'])) {
-            $ips[] = $e['ipv6'] . $seedBoxRep->renderIcon($e['ipv6'], $e['userid']);
+            $seedBoxIcon = $seedBoxRep->renderIcon($e['ipv6'], $e['userid']);
+            $ips[] = $e['ipv6'] . $seedBoxIcon;
         }
         $location = '<div style="margin-right: 6px">'.implode('<br/>', $ips).'</div>';
     }
@@ -55,8 +57,13 @@ function get_location_column($e, $isStrongPrivacy, $canView): string
     } else {
         $result = $location;
     }
-
-    return "<td class=rowfollow align=left width=1%><div style='display: flex;white-space: nowrap;align-items: center'>" . $result . "</div></td>\n";
+    if (isset($seedBoxIcon) && !empty($seedBoxIcon)) {
+        $isSeedBox = true;
+    }
+    return [
+        "td" => "<td class=rowfollow align=left width=1%><div style='display: flex;white-space: nowrap;align-items: center'>" . $result . "</div></td>",
+        "is_seed_box" => $isSeedBox,
+    ];
 }
 
 function get_username_seed_box_icon($e): string
@@ -74,7 +81,7 @@ function get_username_seed_box_icon($e): string
 
 if(isset($CURUSER))
 {
-function dltable($name, $arr, $torrent)
+function dltable($name, $arr, $torrent, &$isSeedBoxCaseWhens)
 {
 	global $lang_viewpeerlist,$viewanonymous_class,$userprofile_class,$enablelocation_tweak;
 	global $CURUSER;
@@ -101,7 +108,8 @@ function dltable($name, $arr, $torrent)
 	$now = time();
 	$num = 0;
     $privacyData = \App\Models\User::query()->whereIn('id', array_column($arr, 'userid'))->get(['id', 'privacy'])->keyBy('id');
-	foreach ($arr as $e) {
+
+    foreach ($arr as $e) {
         $privacy = $privacyData->get($e['userid'])->privacy ?? '';
 		++$num;
 
@@ -112,10 +120,14 @@ function dltable($name, $arr, $torrent)
         $isStrongPrivacy = $privacy == "strong" || ($torrent['anonymous'] == 'yes' && $e['userid'] == $torrent['owner']);
         $canView = user_can('viewanonymous') || $e['userid'] == $CURUSER['id'];
         if ($showLocationColumn) {
-            $columnLocation = get_location_column($e, $isStrongPrivacy, $canView);
+            $columnLocationResult = get_location_column($e, $isStrongPrivacy, $canView);
+            $columnLocation = $columnLocationResult['td'];
+            $isSeedBox = $columnLocationResult['is_seed_box'];
         } else {
             $usernameSeedBoxIcon = get_username_seed_box_icon($e);
+            $isSeedBox = !empty($usernameSeedBoxIcon);
         }
+        $isSeedBoxCaseWhens[$e['id']] = sprintf("when %s then %s", $e['id'], intval($isSeedBox));
         if ($isStrongPrivacy) {
             $columnUsername = "<td class=rowfollow align=left width=1%><i>".$lang_viewpeerlist['text_anonymous']."</i>".$usernameSeedBoxIcon;
             if ($canView) {
@@ -159,7 +171,7 @@ function dltable($name, $arr, $torrent)
 	$downloaders = array();
 	$seeders = array();
 	$torrent = \App\Models\Torrent::query()->findOrFail($id, ['id', 'seeders', 'leechers']);
-	$subres = sql_query("SELECT seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id") or sqlerr();
+	$subres = sql_query("SELECT id, seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id") or sqlerr();
 	while ($subrow = mysql_fetch_array($subres)) {
 	if ($subrow["seeder"] == "yes")
 		$seeders[] = $subrow;
@@ -176,6 +188,7 @@ function dltable($name, $arr, $torrent)
         $torrent->update($update);
         do_log("[UPDATE_TORRENT_SEEDERS_LEECHERS], torrent: $id, original: " . $torrent->toJson() . ", update: " . json_encode($update));
     }
+
 	function leech_sort($a,$b) {
 		$x = $a["to_go"];
 		$y = $b["to_go"];
@@ -199,7 +212,18 @@ function dltable($name, $arr, $torrent)
 	usort($seeders, "seed_sort");
 	usort($downloaders, "leech_sort");
 
-	print(dltable($lang_viewpeerlist['text_seeders'], $seeders, $row));
-	print(dltable($lang_viewpeerlist['text_leechers'], $downloaders, $row));
+    $isSeedBoxCaseWhens = [];
+    $seederTable = dltable($lang_viewpeerlist['text_seeders'], $seeders, $row, $isSeedBoxCaseWhens);
+    $leecherTable = dltable($lang_viewpeerlist['text_leechers'], $downloaders, $row, $isSeedBoxCaseWhens);
+    //update peer is_seed_box
+    if (!empty($isSeedBoxCaseWhens) && get_setting('seed_box.enabled') == 'yes') {
+        $sql = sprintf(
+            "update peers set is_seed_box = case id %s end where id in (%s)",
+            implode(' ', array_values($isSeedBoxCaseWhens)), implode(',', array_keys($isSeedBoxCaseWhens))
+        );
+        do_log("[IS_SEED_BOX], $sql");
+        sql_query($sql);
+    }
+    print $seederTable . $leecherTable;
 }
 ?>

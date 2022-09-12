@@ -138,7 +138,10 @@ class UserRepository extends BaseRepository
             throw new \InvalidArgumentException("password confirmation != password");
         }
         $user = User::query()->findOrFail($id, ['id', 'username', 'class']);
-        $this->checkPermission(Auth::user(), $user);
+        $operator = Auth::user();
+        if ($operator) {
+            $this->checkPermission($operator, $user);
+        }
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
         $update = [
@@ -478,6 +481,20 @@ class UserRepository extends BaseRepository
             clear_user_cache($user->id, $user->passkey);
         }
         return $result;
+    }
+
+    public function confirmUser($id): bool
+    {
+        $update = [
+            'status' => User::STATUS_CONFIRMED,
+            'editsecret' => '',
+        ];
+        User::query()
+            ->whereIn('id', Arr::wrap($id))
+            ->where('status', User::STATUS_PENDING)
+            ->update($update);
+
+        return true;
     }
 
 }

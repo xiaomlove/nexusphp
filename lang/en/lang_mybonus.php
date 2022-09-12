@@ -138,6 +138,7 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'reward_type_basic' => 'Basic reward',
     'reward_type_harem_addition' => 'Harem addition',
     'bonus_base' => 'Base bonus',
+    'lock_text' => 'The system limits you to one click on the exchange button within %s seconds!',
 );
 
 ?>

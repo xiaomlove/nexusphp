@@ -67,6 +67,7 @@ return [
                 'grant_prop_form_prop' => '選擇道具',
                 'grant_prop_form_duration' => '有效時長',
                 'grant_prop_form_duration_help' => '單位：天。如果留空，用戶永久擁有。註：改名卡沒有時間限製，忽略該值。',
+                'confirm_bulk' => '批量確認',
             ]
         ],
         'exam_user' => [
@@ -87,6 +88,7 @@ return [
             'bulk_action_remove_tag' => '清除標簽',
             'bulk_action_attach_tag' => '設置標簽',
             'action_approval' => '審核',
+            'bulk_action_attach_tag_remove_old' => '同時刪除舊標簽',
         ],
         'seed_box_record' => [
             'toggle_status' => '更改狀態',

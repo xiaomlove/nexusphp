@@ -59,7 +59,11 @@ return [
     ],
     'torrentmanage' => [
         'text' => 'Torrent Management',
-        'desc' => 'Edit, delete torrents, excluding setting torrent sticky or on promotion',
+        'desc' => 'Edit torrents, excluding setting torrent sticky or on promotion or delete',
+    ],
+    'torrent-delete' => [
+        'text' => 'Delete torrent',
+        'desc' => 'Delete torrent',
     ],
     'torrentsticky' => [
         'text' => 'Torrent Sticky',
