@@ -177,6 +177,8 @@ return array (
       'torrent_hr' => User::CLASS_ADMINISTRATOR,
       'torrent-approval' => User::CLASS_ADMINISTRATOR,
       'torrent-delete' => User::CLASS_ADMINISTRATOR,
+      'user-delete' => User::CLASS_ADMINISTRATOR,
+      'user-change-class' => User::CLASS_ADMINISTRATOR,
   ),
   'tweak' =>
   array (
