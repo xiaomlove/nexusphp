@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\System\SectionResource\RelationManagers;
 
+use App\Models\Icon;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -31,6 +32,10 @@ class CategoriesRelationManager extends RelationManager
                     ->label(__('label.search_box.taxonomy.image'))
                     ->helperText(__('label.search_box.taxonomy.image_help'))
                 ,
+                Forms\Components\Select::make('icon_id')
+                    ->options(Icon::query()->pluck('name', 'id')->toArray())
+                    ->label(__('label.search_box.taxonomy.icon_id'))
+                ,
                 Forms\Components\TextInput::make('class_name')
                     ->label(__('label.search_box.taxonomy.class_name'))
                     ->helperText(__('label.search_box.taxonomy.class_name_help'))
@@ -49,6 +54,7 @@ class CategoriesRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('name')->label(__('label.search_box.taxonomy.name')),
+                Tables\Columns\TextColumn::make('icon.name')->label(__('label.search_box.taxonomy.icon_id')),
                 Tables\Columns\TextColumn::make('image')->label(__('label.search_box.taxonomy.image')),
                 Tables\Columns\TextColumn::make('class_name')->label(__('label.search_box.taxonomy.class_name')),
             ])
