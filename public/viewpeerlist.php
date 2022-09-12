@@ -216,7 +216,7 @@ function dltable($name, $arr, $torrent, &$isSeedBoxCaseWhens)
     $seederTable = dltable($lang_viewpeerlist['text_seeders'], $seeders, $row, $isSeedBoxCaseWhens);
     $leecherTable = dltable($lang_viewpeerlist['text_leechers'], $downloaders, $row, $isSeedBoxCaseWhens);
     //update peer is_seed_box
-    if (!empty($isSeedBoxCaseWhens)) {
+    if (!empty($isSeedBoxCaseWhens) && get_setting('seed_box.enabled') == 'yes') {
         $sql = sprintf(
             "update peers set is_seed_box = case id %s end where id in (%s)",
             implode(' ', array_values($isSeedBoxCaseWhens)), implode(',', array_keys($isSeedBoxCaseWhens))

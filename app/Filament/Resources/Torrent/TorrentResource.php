@@ -163,6 +163,7 @@ class TorrentResource extends Resource
                         $torrentRep = new TorrentRepository();
                         $torrentRep->setPosState($idArr, $data['pos_state']);
                     } catch (\Exception $exception) {
+                        do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
                         Filament::notify('danger', class_basename($exception));
                     }
                 })
@@ -180,6 +181,7 @@ class TorrentResource extends Resource
                         $torrentRep = new TorrentRepository();
                         $torrentRep->syncTags($idArr);
                     } catch (\Exception $exception) {
+                        do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
                         Filament::notify('danger', class_basename($exception));
                     }
                 })
@@ -188,11 +190,13 @@ class TorrentResource extends Resource
             $actions[] = Tables\Actions\BulkAction::make('attach_tag')
                 ->label(__('admin.resources.torrent.bulk_action_attach_tag'))
                 ->form([
+                    Forms\Components\Checkbox::make('remove')->label(__('admin.resources.torrent.bulk_action_attach_tag_remove_old')),
                     Forms\Components\CheckboxList::make('tags')
                         ->label(__('label.tag.label'))
                         ->columns(4)
                         ->options(TagRepository::createBasicQuery()->pluck('name', 'id')->toArray())
                         ->required(),
+
                 ])
                 ->icon('heroicon-o-tag')
                 ->action(function (Collection $records, array $data) {
@@ -202,8 +206,9 @@ class TorrentResource extends Resource
                     $idArr = $records->pluck('id')->toArray();
                     try {
                         $torrentRep = new TorrentRepository();
-                        $torrentRep->syncTags($idArr, $data['tags']);
+                        $torrentRep->syncTags($idArr, $data['tags'], $data['remove'] ?? false);
                     } catch (\Exception $exception) {
+                        do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
                         Filament::notify('danger', class_basename($exception));
                     }
                 })

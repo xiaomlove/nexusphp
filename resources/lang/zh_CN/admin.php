@@ -87,6 +87,7 @@ return [
             'bulk_action_remove_tag' => '清除标签',
             'bulk_action_attach_tag' => '设置标签',
             'action_approval' => '审核',
+            'bulk_action_attach_tag_remove_old' => '同时删除旧标签',
         ],
         'seed_box_record' => [
             'toggle_status' => '更改状态',
