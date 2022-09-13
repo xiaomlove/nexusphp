@@ -10,6 +10,8 @@ class EditCategoryIcon extends EditRecord
 {
     protected static string $resource = CategoryIconResource::class;
 
+    protected static string $view = 'filament.resources.system.category-icon-resource.pages.edit-record';
+
     protected function getActions(): array
     {
         return [
@@ -25,5 +27,12 @@ class EditCategoryIcon extends EditRecord
     protected function getRedirectUrl(): string
     {
         return static::$resource::getUrl('index');
+    }
+
+    protected function getViewData(): array
+    {
+        return [
+            'desc' => nexus_trans('label.icon.desc')
+        ];
     }
 }

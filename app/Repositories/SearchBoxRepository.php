@@ -6,7 +6,9 @@ use App\Models\Icon;
 use App\Models\NexusModel;
 use App\Models\SearchBox;
 use App\Models\SearchBoxField;
+use App\Models\Setting;
 use Illuminate\Support\Arr;
+use Nexus\Database\NexusDB;
 
 class SearchBoxRepository extends BaseRepository
 {
@@ -100,5 +102,44 @@ class SearchBoxRepository extends BaseRepository
         return Icon::query()->find(array_keys($iconIdArr));
     }
 
+    public static function migrateToModeRelated()
+    {
+        $secondIconTable = 'secondicons';
+        $normalId = Setting::get('main.browsecat');
+        $specialId = Setting::get('main.specialcat');
+        $searchBoxList = SearchBox::query()->get();
+        $tables = array_values(SearchBox::$subCategories);
+        foreach ($searchBoxList as $searchBox) {
+            if ($searchBox->id == $normalId) {
+                //all sub categories add `mode` field
+                foreach ($tables as  $table) {
+                    NexusDB::table($table)->update(['mode' => $normalId]);
+                    do_log("update table $table mode = $normalId");
+                }
+                //also second icons
+                NexusDB::table($secondIconTable)->update(['mode' => $normalId]);
+                do_log("update table $secondIconTable mode = $normalId");
+            } elseif ($searchBox->id == $specialId && $specialId != $normalId) {
+                //copy from normal section
+                foreach ($tables as $table) {
+                    $sql = sprintf(
+                        "insert into `%s` (name, sort_index, mode) select name, sort_index, '%s' from `%s`",
+                        $table, $specialId, $table
+                    );
+                    NexusDB::statement($sql);
+                    do_log("copy table $table, $sql");
+                }
+                $fields = array_keys(SearchBox::$subCategories);
+                $fields = array_merge($fields, ['name', 'class_name', 'image']);
+                $fieldStr = implode(', ', $fields);
+                $sql = sprintf(
+                    "insert into `%s` (%s, mode) select %s, '%s' from `%s`",
+                    $secondIconTable, $fieldStr, $fieldStr, $specialId, $secondIconTable
+                );
+                NexusDB::statement($sql);
+                do_log("copy table $secondIconTable, $sql");
+            }
+        }
+    }
 
 }

@@ -79,10 +79,27 @@ class SectionResource extends Resource
                 ,
                 Forms\Components\Toggle::make('showsubcat')->label(__('label.search_box.showsubcat')),
                 Forms\Components\Section::make(__('label.search_box.showsubcat'))->schema([
-                    Forms\Components\Repeater::make('extra.' . SearchBox::EXTRA_TAXONOMY_LABELS)->schema([
-                        Forms\Components\Select::make('torrent_field')->options(SearchBox::getSubCatOptions())->label(__('label.search_box.torrent_field')),
-                        Forms\Components\TextInput::make('display_text')->label(__('label.search_box.taxonomy_display_text')),
-                    ])->label(__('label.search_box.taxonomies'))->columns(2),
+                    Forms\Components\Repeater::make('extra.' . SearchBox::EXTRA_TAXONOMY_LABELS)
+                        ->schema([
+                            Forms\Components\Select::make('torrent_field')->options(SearchBox::getSubCatOptions())->label(__('label.search_box.torrent_field')),
+                            Forms\Components\TextInput::make('display_text')->label(__('label.search_box.taxonomy_display_text')),
+                        ])
+                        ->label(__('label.search_box.taxonomies'))->columns(2)
+                        ->rules([
+                            function () {
+                                return function (string $attribute, $value, \Closure $fail) {
+                                    $fields = [];
+                                    foreach ($value as $item) {
+                                        if (!in_array($item['torrent_field'], $fields)) {
+                                            $fields[] = $item['torrent_field'];
+                                        } else {
+                                            $fail(__('label.search_box.torrent_field_duplicate', ['field' => $item['torrent_field']]));
+                                        }
+                                    }
+                                };
+                            }
+                        ])
+                    ,
                 ]),
             ])->columns(3);
     }

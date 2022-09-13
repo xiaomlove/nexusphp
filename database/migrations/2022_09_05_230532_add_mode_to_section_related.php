@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     private static array $tables = [
-        'sources', 'media', 'standards', 'codecs', 'audiocodecs', 'teams', 'processings'
+        'sources', 'media', 'standards', 'codecs', 'audiocodecs', 'teams', 'processings', 'secondicons'
     ];
     /**
      * Run the migrations.

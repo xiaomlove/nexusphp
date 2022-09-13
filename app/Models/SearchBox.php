@@ -27,8 +27,14 @@ class SearchBox extends NexusModel
     const EXTRA_DISPLAY_COVER_ON_TORRENT_LIST = 'display_cover_on_torrent_list';
     const EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST = 'display_seed_box_icon_on_torrent_list';
 
-    public static array $subCatFields = [
-        'source', 'medium', 'codec', 'audiocodec', 'team', 'standard', 'processing'
+    public static array $subCategories = [
+        'source' => 'surces',
+        'medium' => 'media',
+        'codec' => 'codecs',
+        'audiocodec' => 'audiocodecs',
+        'team' => 'teams',
+        'standard' => 'standards',
+        'processing' => 'processings'
     ];
 
     public static array $extras = [
@@ -45,9 +51,18 @@ class SearchBox extends NexusModel
         return $result;
     }
 
-    public static function getTaxonomyDisplayText($field)
+    public static function formatTaxonomyExtra(array $data): array
     {
-
+        foreach (self::$subCategories as $field => $table) {
+            $data["show{$field}"] = 0;
+            foreach ($data['extra'][self::EXTRA_TAXONOMY_LABELS] ?? [] as $item) {
+                if ($field == $item['torrent_field']) {
+                    $data["show{$field}"] = 1;
+                    $data["extra->" . self::EXTRA_TAXONOMY_LABELS][] = $item;
+                }
+            }
+        }
+        return $data;
     }
 
     protected function customFields(): Attribute
@@ -60,7 +75,7 @@ class SearchBox extends NexusModel
 
     public static function getSubCatOptions(): array
     {
-        return array_combine(self::$subCatFields, self::$subCatFields);
+        return array_combine(array_keys(self::$subCategories), array_keys(self::$subCategories));
     }
 
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -112,6 +127,8 @@ class SearchBox extends NexusModel
     {
         return $this->hasMany(Taxonomy::class, 'mode');
     }
+
+
 
 
 

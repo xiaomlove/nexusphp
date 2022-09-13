@@ -10,6 +10,8 @@ class CreateCategoryIcon extends CreateRecord
 {
     protected static string $resource = CategoryIconResource::class;
 
+    protected static string $view = 'filament.resources.system.category-icon-resource.pages.create-record';
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         return array_filter($data);
@@ -18,5 +20,12 @@ class CreateCategoryIcon extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return static::$resource::getUrl('index');
+    }
+
+    protected function getViewData(): array
+    {
+        return [
+            'desc' => nexus_trans('label.icon.desc')
+        ];
     }
 }

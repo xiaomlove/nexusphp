@@ -17,4 +17,11 @@ class ListCategoryIcons extends PageList
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getViewData(): array
+    {
+        return [
+            'desc' => nexus_trans('label.icon.desc')
+        ];
+    }
 }

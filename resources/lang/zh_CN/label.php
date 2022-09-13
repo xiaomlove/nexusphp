@@ -247,6 +247,7 @@ return [
         'custom_fields_display' => '自定义字段展示',
         'custom_fields_display_help' => '使用特殊的标签代表字段的名称和值，如某字段其 Name 为 artist，则它的名称为：<%artist.label%>，它的值为：<%artist.value%>',
         'category' => '主分类',
+        'torrent_field_duplicate' => '种子表字段：:field 不能重复使用！',
         'taxonomy' => [
             'name' => '名称',
             'sort_index' => '排序',
@@ -272,5 +273,18 @@ return [
         'designer_help' => '此图标集的设计者。',
         'comment' => '说明',
         'comment_help' => '此图标集的说明。',
+        'desc' => "你必须将图标文件放入服务器正确的目录才能使得以下设定起作用。将普通的分类图标放入'pic/category/分类模式名字/图标文件夹[语言缩写/]'，将第二图标放入'pic/category/分类模式名字/图标文件夹[语言缩写/]additional/'.不明白？参考下面的例子：
+当
+    分类模式名字='nhd'
+    图标文件夹='scenetorrents/'
+    多语言='是'
+    第二图标='否'
+你应该将一个英语的电影类型的图标（如'movies.png'）文件放入'pic/category/nhd/scenetorrents/en/'。
+当
+    分类模式名字='chd'
+    图标文件夹='nanosofts/'
+    多语言='否'
+    第二图标='是'
+你应该将一个电影类型的图标（如'movies.png'）文件放入'pic/category/chd/nanosofts/'，将一个第二图标（如'bdh264.png'）放入'pic/category/chd/nanosofts/additional/'。",
     ],
 ];
