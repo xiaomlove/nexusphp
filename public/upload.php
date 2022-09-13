@@ -4,24 +4,17 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-
+$userInfo = \App\Models\User::query()->findOrFail($CURUSER['id']);
 if ($CURUSER["uploadpos"] == 'no')
 	stderr($lang_upload['std_sorry'], $lang_upload['std_unauthorized_to_upload'],false);
 
-if ($enableoffer == 'yes') {
-    $offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
-    $allowCount = get_row_count("offers","WHERE allowed='allowed' AND userid = ". sqlesc($CURUSER["id"]));
-    if (is_numeric($offerSkipApprovedCount) && $offerSkipApprovedCount > 0 && $allowCount >= $offerSkipApprovedCount) {
-        $has_allowed_offer = true;
-    } else {
-        $has_allowed_offer = false;
-    }
-} else {
-    $has_allowed_offer = false;
-}
+if ($enableoffer == 'yes')
+    $has_allowed_offer = get_row_count("offers","WHERE allowed='allowed' AND userid = ". sqlesc($CURUSER["id"]));
+else $has_allowed_offer = 0;
 $uploadfreely = user_can_upload("torrents");
-do_log("uploadfreely: $uploadfreely, has_allowed_offer: $has_allowed_offer");
-$allowtorrents = ($has_allowed_offer || $uploadfreely);
+$offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
+do_log("uploadfreely: $uploadfreely, has_allowed_offer: $has_allowed_offer, offerSkipApprovedCount: $offerSkipApprovedCount");
+$allowtorrents = ($has_allowed_offer || $uploadfreely || ($userInfo->offer_allowed_count >= $offerSkipApprovedCount));
 $allowspecial = user_can_upload("music");
 
 if (!$allowtorrents && !$allowspecial)

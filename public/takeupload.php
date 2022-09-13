@@ -421,7 +421,7 @@ if ($is_offer)
 		//$some_variable .= "(0, $row[userid], '" . date("Y-m-d H:i:s") . "', " . sqlesc($pn_msg) . ")";
 
 		//=== use this if you DO have subject in your PMs
-		sql_query("INSERT INTO messages (sender, subject, receiver, added, msg) VALUES (0, ".sqlesc($subject).", $row[userid], ".sqlesc(date("Y-m-d H:i:s")).", " . sqlesc($pn_msg) . ")") or sqlerr(__FILE__, __LINE__);
+		sql_query("INSERT INTO messages (sender, subject, receiver, added, msg) VALUES (0, ".sqlesc($subject).", {$row['userid']}, ".sqlesc(date("Y-m-d H:i:s")).", " . sqlesc($pn_msg) . ")") or sqlerr(__FILE__, __LINE__);
 		//=== use this if you do NOT have subject in your PMs
 		//sql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES ".$some_variable."") or sqlerr(__FILE__, __LINE__);
 		//===end
@@ -430,6 +430,8 @@ if ($is_offer)
 	sql_query("DELETE FROM offers WHERE id = ". $offerid);
 	sql_query("DELETE FROM offervotes WHERE offerid = ". $offerid);
 	sql_query("DELETE FROM comments WHERE offer = ". $offerid);
+	//increment user offer_allowed_count
+    sql_query("update users set offer_allowed_count = offer_allowed_count + 1 where id = " . $CURUSER["id"]);
 }
 //=== end notify people who voted on offer
 
