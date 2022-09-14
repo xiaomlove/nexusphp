@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TaxonomyAudioCodecsRelationManager extends TaxonomySourcesRelationManager
 {
-    protected static string $relationship = 'taxonomy_audio_codecs';
+    protected static string $relationship = 'taxonomy_audiocodec';
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -87,7 +87,8 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $rep = new SearchBoxRepository();
+        $rep->migrateToModeRelated();
     }
 
 

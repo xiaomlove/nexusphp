@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TaxonomySourcesRelationManager extends RelationManager
 {
-    protected static string $relationship = 'taxonomy_sources';
+    protected static string $relationship = 'taxonomy_source';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -94,14 +94,20 @@ class TaxonomySourcesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()->after(function ($record) {
+                    clear_search_box_cache($record->mode);
+                }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->after(function ($record) {
+                    clear_search_box_cache($record->mode);
+                }),
+                Tables\Actions\DeleteAction::make()->after(function ($record) {
+                    clear_search_box_cache($record->mode);
+                }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+
             ]);
     }
 

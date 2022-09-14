@@ -19,7 +19,7 @@ if (!$row) die();
 $customField = new \Nexus\Field\Field();
 
 $tagIdArr = \App\Models\TorrentTag::query()->where('torrent_id', $id)->get()->pluck('tag_id')->toArray();
-
+$searchBoxRep = new \App\Repositories\SearchBoxRepository();
 if ($enablespecial == 'yes' && user_can('movetorrent'))
 	$allowmove = true; //enable moving torrent to other section
 else $allowmove = false;
@@ -35,7 +35,7 @@ else
 	$othermode = $browsecatmode;
 	$movenote = $lang_edit['text_move_to_browse'];
 }
-
+/*
 $showsource = (get_searchbox_value($sectionmode, 'showsource') || ($allowmove && get_searchbox_value($othermode, 'showsource'))); //whether show sources or not
 $showmedium = (get_searchbox_value($sectionmode, 'showmedium') || ($allowmove && get_searchbox_value($othermode, 'showmedium'))); //whether show media or not
 $showcodec = (get_searchbox_value($sectionmode, 'showcodec') || ($allowmove && get_searchbox_value($othermode, 'showcodec'))); //whether show codecs or not
@@ -43,6 +43,7 @@ $showstandard = (get_searchbox_value($sectionmode, 'showstandard') || ($allowmov
 $showprocessing = (get_searchbox_value($sectionmode, 'showprocessing') || ($allowmove && get_searchbox_value($othermode, 'showprocessing'))); //whether show processings or not
 $showteam = (get_searchbox_value($sectionmode, 'showteam') || ($allowmove && get_searchbox_value($othermode, 'showteam'))); //whether show teams or not
 $showaudiocodec = (get_searchbox_value($sectionmode, 'showaudiocodec') || ($allowmove && get_searchbox_value($othermode, 'showaudiocodec'))); //whether show audio codecs or not
+*/
 $settingMain = get_setting('main');
 stdhead($lang_edit['head_edit_torrent'] . "\"". $row["name"] . "\"");
 
@@ -105,6 +106,7 @@ else {
 		$movecheckbox = "<input type=\"checkbox\" id=movecheck name=\"movecheck\" value=\"1\" onclick=\"disableother2('oricat','newcat')\" />";
 	}
 	tr($lang_edit['row_type']."<font color=\"red\">*</font>", $s.($allowmove ? "&nbsp;&nbsp;".$movecheckbox.$movenote.$s2 : ""), 1);
+/*
 	if ($showsource || $showmedium || $showcodec || $showaudiocodec || $showstandard || $showprocessing){
 		if ($showsource){
 			$source_select = torrent_selection($lang_edit['text_source'],"source_sel","sources",$row["source"]);
@@ -147,6 +149,16 @@ else {
 
 		tr($lang_edit['row_content'],$team_select,1);
 	}
+*/
+
+    $sectionCurrent = $searchBoxRep->renderQualitySelect($sectionmode);
+    tr($lang_edit['row_quality'], $sectionCurrent, 1, "hide mode mode_$sectionmode");
+
+    if ($allowmove && $othermode) {
+        $selectOther = $searchBoxRep->renderQualitySelect($othermode);
+        tr($lang_edit['row_quality'], $selectOther, 1, "hide mode mode_$othermode");
+    }
+
     tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox($tagIdArr), 1);
 
 	$rowChecks = [];

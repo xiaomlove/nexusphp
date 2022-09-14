@@ -28,7 +28,7 @@ jQuery('.btn-get-pt-gen').on('click', function () {
     }, 'json')
 })
 
-
+//auto fill quality
 function autoSelect(value) {
     // console.log(`autoSelect: ${value}`)
     value = value.replace(/[-\/\.]+/ig, '').toUpperCase();
@@ -36,6 +36,10 @@ function autoSelect(value) {
     for (let i = 0; i < names.length; i++) {
         const name = names[i];
         const select = jQuery("select[name="+name+"]")
+        if (select.prop('disabled')) {
+            console.log("name: " + name + " is disabled, skip")
+            continue
+        }
         // console.log("check name: " + name)
         select.children("option").each(function (index, option) {
             let _option = jQuery(option)
@@ -71,3 +75,24 @@ jQuery("#compose").on("click", ".nexus-action-btn",function () {
         }
     }
 })
+
+//change section
+function showHideQuality(activeSelect) {
+    let mode = activeSelect.getAttribute("data-mode")
+    let value = activeSelect.value
+    console.log(mode, value)
+    if (value == 0) {
+        //enable all section
+        jQuery("select[name=type]").prop("disabled", false);
+        //disable all quality tr
+        jQuery("tr.mode").hide().find("select").prop("disabled", true);
+    } else {
+        jQuery("select[name=type]").prop("disabled", true);
+        activeSelect.disabled = false
+        //active current section quality tr
+        jQuery("tr.mode_" + mode).show().find("select").prop("disabled", false);
+    }
+}
+jQuery("#compose").on("change", "select[name=type]", function () {
+    showHideQuality(this)
+});

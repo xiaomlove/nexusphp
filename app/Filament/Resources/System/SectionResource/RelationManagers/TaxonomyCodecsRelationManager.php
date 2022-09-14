@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TaxonomyCodecsRelationManager extends TaxonomySourcesRelationManager
 {
-    protected static string $relationship = 'taxonomy_codecs';
+    protected static string $relationship = 'taxonomy_codec';
 
     protected static ?string $recordTitleAttribute = 'name';
 

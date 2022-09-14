@@ -23,6 +23,7 @@ $allowtwosec = ($allowtorrents && $allowspecial);
 
 $brsectiontype = $browsecatmode;
 $spsectiontype = $specialcatmode;
+/*
 $showsource = (($allowtorrents && get_searchbox_value($brsectiontype, 'showsource')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showsource'))); //whether show sources or not
 $showmedium = (($allowtorrents && get_searchbox_value($brsectiontype, 'showmedium')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showmedium'))); //whether show media or not
 $showcodec = (($allowtorrents && get_searchbox_value($brsectiontype, 'showcodec')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showcodec'))); //whether show codecs or not
@@ -30,9 +31,10 @@ $showstandard = (($allowtorrents && get_searchbox_value($brsectiontype, 'showsta
 $showprocessing = (($allowtorrents && get_searchbox_value($brsectiontype, 'showprocessing')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showprocessing'))); //whether show processings or not
 $showteam = (($allowtorrents && get_searchbox_value($brsectiontype, 'showteam')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showteam'))); //whether show teams or not
 $showaudiocodec = (($allowtorrents && get_searchbox_value($brsectiontype, 'showaudiocodec')) || ($allowspecial && get_searchbox_value($spsectiontype, 'showaudiocodec'))); //whether show languages or not
-
+*/
 $settingMain = get_setting('main');
 $torrentRep = new \App\Repositories\TorrentRepository();
+$searchBoxRep = new \App\Repositories\SearchBoxRepository();
 stdhead($lang_upload['head_upload']);
 ?>
 	<form id="compose" enctype="multipart/form-data" action="takeupload.php" method="post" name="upload">
@@ -84,7 +86,7 @@ stdhead($lang_upload['head_upload']);
 
 				if ($allowtorrents){
 					$disablespecial = " onchange=\"disableother('browsecat','specialcat')\"";
-					$s = "<select name=\"type\" id=\"browsecat\" ".($allowtwosec ? $disablespecial : "").">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
+					$s = "<select name=\"type\" id=\"browsecat\" data-mode='$browsecatmode'>\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
 					$cats = genrelist($browsecatmode);
 					foreach ($cats as $row)
 						$s .= "<option value=\"" . $row["id"] . "\">" . htmlspecialchars($row["name"]) . "</option>\n";
@@ -93,7 +95,7 @@ stdhead($lang_upload['head_upload']);
 				else $s = "";
 				if ($allowspecial){
 					$disablebrowse = " onchange=\"disableother('specialcat','browsecat')\"";
-					$s2 = "<select name=\"type\" id=\"specialcat\" ".$disablebrowse.">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
+					$s2 = "<select name=\"type\" id=\"specialcat\" data-mode='$specialcatmode'>\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
 					$cats2 = genrelist($specialcatmode);
 					foreach ($cats2 as $row)
 						$s2 .= "<option value=\"" . $row["id"] . "\">" . htmlspecialchars($row["name"]) . "</option>\n";
@@ -101,7 +103,7 @@ stdhead($lang_upload['head_upload']);
 				}
 				else $s2 = "";
 				tr($lang_upload['row_type']."<font color=\"red\">*</font>", ($allowtwosec ? $lang_upload['text_to_browse_section'] : "").$s.($allowtwosec ? $lang_upload['text_to_special_section'] : "").$s2.($allowtwosec ? $lang_upload['text_type_note'] : ""),1);
-
+/*
 				if ($showsource || $showmedium || $showcodec || $showaudiocodec || $showstandard || $showprocessing){
 					if ($showsource){
 						$source_select = torrent_selection($lang_upload['text_source'],"source_sel","sources");
@@ -144,6 +146,15 @@ stdhead($lang_upload['head_upload']);
 
 					tr($lang_upload['row_content'],$team_select,1);
 				}
+*/
+                if ($allowtorrents) {
+                    $selectNormal = $searchBoxRep->renderQualitySelect($browsecatmode);
+                    tr($lang_upload['row_quality'], $selectNormal, 1, "hide mode mode_$browsecatmode");
+                }
+                if ($allowspecial) {
+                    $selectNormal = $searchBoxRep->renderQualitySelect($specialcatmode);
+                    tr($lang_upload['row_quality'], $selectNormal, 1, "hide mode mode_$specialcatmode");
+                }
 
 				//==== offer dropdown for offer mod  from code by S4NE
 				$offerres = sql_query("SELECT id, name FROM offers WHERE userid = ".sqlesc($CURUSER['id'])." AND allowed = 'allowed' ORDER BY name ASC") or sqlerr(__FILE__, __LINE__);

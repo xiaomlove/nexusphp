@@ -6,7 +6,7 @@ loggedinorreturn();
 
 $brsectiontype = $browsecatmode;
 $spsectiontype = $specialcatmode;
-if ($enablespecial == 'yes' && get_user_class() >= get_setting('authority.view_special_torrent'))
+if ($enablespecial == 'yes' && user_can('view_special_torrent'))
 	$allowspecial = true;
 else $allowspecial = false;
 $showsubcat = (get_searchbox_value($brsectiontype, 'showsubcat') || ($allowspecial && get_searchbox_value($spsectiontype, 'showsubcat')));
@@ -29,13 +29,13 @@ $brcats = genrelist($brsectiontype);
 $spcats = genrelist($spsectiontype);
 
 if ($showsubcat){
-if ($showsource) $sources = searchbox_item_list("sources");
-if ($showmedium) $media = searchbox_item_list("media");
-if ($showcodec) $codecs = searchbox_item_list("codecs");
-if ($showstandard) $standards = searchbox_item_list("standards");
-if ($showprocessing) $processings = searchbox_item_list("processings");
-if ($showteam) $teams = searchbox_item_list("teams");
-if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
+if ($showsource) $sources = searchbox_item_list("sources", $brsectiontype);
+if ($showmedium) $media = searchbox_item_list("media", $brsectiontype);
+if ($showcodec) $codecs = searchbox_item_list("codecs", $brsectiontype);
+if ($showstandard) $standards = searchbox_item_list("standards", $brsectiontype);
+if ($showprocessing) $processings = searchbox_item_list("processings", $brsectiontype);
+if ($showteam) $teams = searchbox_item_list("teams", $brsectiontype);
+if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs", $brsectiontype);
 }
 stdhead($lang_getrss['head_rss_feeds']);
 $query = [];
@@ -177,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	stdfoot();
 	die();
 }
+
 ?>
 <h1 align="center"><?php echo $lang_getrss['text_rss_feeds']?></h1>
 <form method="post" action="getrss.php">
@@ -186,6 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 </td>
 <td class="rowfollow" align="left">
 <?php
+/*
 $categories = "<table><tr><td class=\"embedded\" align=\"left\"><b>".$lang_getrss['text_category']."</b></td></tr><tr>";
 $i = 0;
 foreach ($brcats as $cat)//print category list of Torrents section
@@ -296,7 +298,13 @@ if ($allowspecial) //print category list of Special section
 				}
 			}
 $categories .= "</table>";
+*/
+
+$categories = build_search_box_category_table($browsecatmode, 'yes', 'torrents.php?allsec=1', false, 3);
 print($categories);
+print '<div style="height: 1px;background-color: #eee;margin: 10px 0"></div>';
+$categoriesSpecial = build_search_box_category_table($specialcatmode, 'yes', 'torrents.php?allsec=1', false, 3);
+print($categoriesSpecial);
 ?>
 </td>
 </tr>

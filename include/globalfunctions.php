@@ -983,6 +983,12 @@ function clear_staff_message_cache()
     \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
 }
 
+function clear_search_box_cache($id)
+{
+    do_log("clear_search_box_cache: $id");
+    \Nexus\Database\NexusDB::cache_del("search_box_content_{$id}");
+}
+
 function user_can($permission, $fail = false, $uid = 0): bool
 {
     $log = "permission: $permission, fail: $fail, user: $uid";

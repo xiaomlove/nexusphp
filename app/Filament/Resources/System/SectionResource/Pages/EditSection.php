@@ -23,4 +23,9 @@ class EditSection extends EditRecord
         return SearchBox::formatTaxonomyExtra($data);
     }
 
+    protected function afterSave()
+    {
+        clear_search_box_cache($this->record->id);
+    }
+
 }

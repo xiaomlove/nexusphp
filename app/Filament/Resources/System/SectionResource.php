@@ -45,7 +45,6 @@ class SectionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('section_name')->label(__('label.search_box.section_name'))->required(),
                 Forms\Components\TextInput::make('name')->label(__('label.search_box.name'))->rules('alpha_dash')->required(),
                 Forms\Components\TextInput::make('catsperrow')
                     ->label(__('label.search_box.catsperrow'))
@@ -60,6 +59,10 @@ class SectionResource extends Resource
                     ->integer()
                     ->required()
                     ->default(3)
+                ,
+                Forms\Components\TextInput::make('section_name')
+                    ->label(__('label.search_box.section_name'))
+                    ->helperText(__('label.search_box.section_name_help'))
                 ,
                 Forms\Components\CheckboxList::make('custom_fields')
                     ->options(TorrentCustomField::getCheckboxOptions())
@@ -109,8 +112,8 @@ class SectionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('section_name')->label(__('label.search_box.section_name')),
                 Tables\Columns\TextColumn::make('name')->label(__('label.search_box.name')),
+                Tables\Columns\TextColumn::make('section_name')->label(__('label.search_box.section_name')),
                 Tables\Columns\BooleanColumn::make('is_default')->label(__('label.search_box.is_default')),
                 Tables\Columns\BooleanColumn::make('showsubcat')->label(__('label.search_box.showsubcat')),
                 Tables\Columns\BooleanColumn::make('showsource'),

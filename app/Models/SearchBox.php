@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Str;
 
 class SearchBox extends NexusModel
 {
@@ -27,8 +28,8 @@ class SearchBox extends NexusModel
     const EXTRA_DISPLAY_COVER_ON_TORRENT_LIST = 'display_cover_on_torrent_list';
     const EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST = 'display_seed_box_icon_on_torrent_list';
 
-    public static array $subCategories = [
-        'source' => 'surces',
+    public static array $taxonomies = [
+        'source' => 'sources',
         'medium' => 'media',
         'codec' => 'codecs',
         'audiocodec' => 'audiocodecs',
@@ -53,7 +54,7 @@ class SearchBox extends NexusModel
 
     public static function formatTaxonomyExtra(array $data): array
     {
-        foreach (self::$subCategories as $field => $table) {
+        foreach (self::$taxonomies as $field => $table) {
             $data["show{$field}"] = 0;
             foreach ($data['extra'][self::EXTRA_TAXONOMY_LABELS] ?? [] as $item) {
                 if ($field == $item['torrent_field']) {
@@ -63,6 +64,16 @@ class SearchBox extends NexusModel
             }
         }
         return $data;
+    }
+
+    public function getTaxonomyLabel($torrentField)
+    {
+        foreach ($this->extra[self::EXTRA_TAXONOMY_LABELS] ?? [] as $item) {
+            if ($item['torrent_field'] == $torrentField) {
+                return $item['display_text'];
+            }
+        }
+        return nexus_trans('label.torrent.' . $torrentField) ?: ucfirst($torrentField);
     }
 
     protected function customFields(): Attribute
@@ -75,7 +86,7 @@ class SearchBox extends NexusModel
 
     public static function getSubCatOptions(): array
     {
-        return array_combine(array_keys(self::$subCategories), array_keys(self::$subCategories));
+        return array_combine(array_keys(self::$taxonomies), array_keys(self::$taxonomies));
     }
 
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -88,7 +99,7 @@ class SearchBox extends NexusModel
         return $this->hasMany(SearchBoxField::class, 'searchbox_id');
     }
 
-    public function taxonomy_sources(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function taxonomy_source(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Source::class, 'mode');
     }
@@ -98,22 +109,22 @@ class SearchBox extends NexusModel
         return $this->hasMany(Media::class, 'mode');
     }
 
-    public function taxonomy_standards(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function taxonomy_standard(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Standard::class, 'mode');
     }
 
-    public function taxonomy_codecs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function taxonomy_codec(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Codec::class, 'mode');
     }
 
-    public function taxonomy_audio_codecs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function taxonomy_audiocodec(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(AudioCodec::class, 'mode');
     }
 
-    public function taxonomy_teams(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function taxonomy_team(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Team::class, 'mode');
     }
@@ -127,9 +138,6 @@ class SearchBox extends NexusModel
     {
         return $this->hasMany(Taxonomy::class, 'mode');
     }
-
-
-
 
 
 }

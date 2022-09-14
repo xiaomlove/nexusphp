@@ -23,7 +23,7 @@ switch (nexus()->getScript()) {
         if (get_setting('main.spsct') != 'yes') {
             httperr();
         }
-        if (get_user_class() < get_setting('authority.view_special_torrent')) {
+        if (!user_can('view_special_torrent')) {
             stderr($lang_special['std_sorry'],$lang_special['std_permission_denied_only'].get_user_class_name(get_setting('authority.view_special_torrent'),false,true,true).$lang_special['std_or_above_can_view'],false);
         }
         $sectiontype = $specialcatmode;
@@ -44,13 +44,13 @@ $catpadding = get_searchbox_value($sectiontype, 'catpadding'); //padding space b
 
 $cats = genrelist($sectiontype);
 if ($showsubcat){
-	if ($showsource) $sources = searchbox_item_list("sources");
-	if ($showmedium) $media = searchbox_item_list("media");
-	if ($showcodec) $codecs = searchbox_item_list("codecs");
-	if ($showstandard) $standards = searchbox_item_list("standards");
-	if ($showprocessing) $processings = searchbox_item_list("processings");
-	if ($showteam) $teams = searchbox_item_list("teams");
-	if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
+	if ($showsource) $sources = searchbox_item_list("sources", $sectiontype);
+	if ($showmedium) $media = searchbox_item_list("media", $sectiontype);
+	if ($showcodec) $codecs = searchbox_item_list("codecs", $sectiontype);
+	if ($showstandard) $standards = searchbox_item_list("standards", $sectiontype);
+	if ($showprocessing) $processings = searchbox_item_list("processings", $sectiontype);
+	if ($showteam) $teams = searchbox_item_list("teams", $sectiontype);
+	if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs", $sectiontype);
 }
 
 $searchstr_ori = htmlspecialchars(trim($_GET["search"] ?? ''));

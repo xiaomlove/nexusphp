@@ -530,3 +530,6 @@ img.hitandrun {
         background-position: 100% 0;
     }
 }
+.hide {
+    display: none;
+}

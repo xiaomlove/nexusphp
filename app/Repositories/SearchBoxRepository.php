@@ -7,6 +7,7 @@ use App\Models\NexusModel;
 use App\Models\SearchBox;
 use App\Models\SearchBoxField;
 use App\Models\Setting;
+use Elasticsearch\Endpoints\Search;
 use Illuminate\Support\Arr;
 use Nexus\Database\NexusDB;
 
@@ -102,13 +103,14 @@ class SearchBoxRepository extends BaseRepository
         return Icon::query()->find(array_keys($iconIdArr));
     }
 
-    public static function migrateToModeRelated()
+    public function migrateToModeRelated()
     {
         $secondIconTable = 'secondicons';
         $normalId = Setting::get('main.browsecat');
         $specialId = Setting::get('main.specialcat');
         $searchBoxList = SearchBox::query()->get();
-        $tables = array_values(SearchBox::$subCategories);
+        $tables = array_values(SearchBox::$taxonomies);
+
         foreach ($searchBoxList as $searchBox) {
             if ($searchBox->id == $normalId) {
                 //all sub categories add `mode` field
@@ -129,17 +131,56 @@ class SearchBoxRepository extends BaseRepository
                     NexusDB::statement($sql);
                     do_log("copy table $table, $sql");
                 }
-                $fields = array_keys(SearchBox::$subCategories);
-                $fields = array_merge($fields, ['name', 'class_name', 'image']);
-                $fieldStr = implode(', ', $fields);
-                $sql = sprintf(
-                    "insert into `%s` (%s, mode) select %s, '%s' from `%s`",
-                    $secondIconTable, $fieldStr, $fieldStr, $specialId, $secondIconTable
-                );
-                NexusDB::statement($sql);
-                do_log("copy table $secondIconTable, $sql");
+//                $fields = array_keys(SearchBox::$taxonomies);
+//                $fields = array_merge($fields, ['name', 'class_name', 'image']);
+//                $fieldStr = implode(', ', $fields);
+//                $sql = sprintf(
+//                    "insert into `%s` (%s, mode) select %s, '%s' from `%s`",
+//                    $secondIconTable, $fieldStr, $fieldStr, $specialId, $secondIconTable
+//                );
+//                NexusDB::statement($sql);
+//                do_log("copy table $secondIconTable, $sql");
+            }
+            $taxonomies = [];
+            foreach (SearchBox::$taxonomies as $field => $taxonomyTable) {
+                $showField = "show" . $field;
+                if ($searchBox->{$showField}) {
+                    $taxonomies[] = [
+                        'torrent_field' => $field,
+                        'display_text' => $field,
+                    ];
+                }
+            }
+            $searchBox->update(["extra->" . SearchBox::EXTRA_TAXONOMY_LABELS => $taxonomies]);
+        }
+    }
+
+    public function renderQualitySelect($searchBox, array $torrentInfo = []): string
+    {
+        if (!$searchBox instanceof SearchBox) {
+            $searchBox = SearchBox::query()->findOrFail(intval($searchBox));
+        }
+        $results = [];
+        foreach (SearchBox::$taxonomies as $torrentField => $table) {
+            $searchBoxField = "show" . $torrentField;
+            if ($searchBox->{$searchBoxField}) {
+                $select = sprintf("<b>%s:</b>", $searchBox->getTaxonomyLabel($torrentField));
+                $select .= sprintf('<select name="%s" data-mode="%s">', $torrentField . "_sel", $searchBox->id);
+                $select .= sprintf('<option value="%s">%s</option>', 0, nexus_trans('nexus.select_one_please'));
+                $relation = "taxonomy_$torrentField";
+                $list = $searchBox->{$relation};
+                foreach ($list as $item) {
+                    $selected = '';
+                    if (isset($torrentInfo[$torrentField]) && $torrentInfo[$torrentField] == $item->id) {
+                        $selected = " selected";
+                    }
+                    $select .= sprintf('<option value="%s"%s>%s</option>', $item->id, $selected, $item->name);
+                }
+                $select .= '</select>';
+                $results[] = $select;
             }
         }
+        return implode('&nbsp;&nbsp;', $results);
     }
 
 }
