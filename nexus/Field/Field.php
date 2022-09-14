@@ -426,8 +426,9 @@ JS;
                 $rowByRowHtml .= tr($field['label'], $contentFormatted, 1);
             }
         }
+
         $result = $rowByRowHtml;
-        if ($shouldRenderMixRow) {
+        if ($shouldRenderMixRow && $mixedRowContent) {
             $result .= tr($displayName, format_comment($mixedRowContent), 1);
         }
         return $result;

@@ -267,6 +267,9 @@ JS;
 		print("</td></tr>\n");
 		// ---------------- end subtitle block -------------------//
 
+        //hook before desc
+        do_action('torrent_detail_before_desc', $row['id'], $CURUSER['id']);
+
         /**************start custom fields****************/
         echo $customField->renderOnTorrentDetailsPage($id);
 
