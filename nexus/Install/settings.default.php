@@ -233,6 +233,9 @@ return array (
       'cancel_hr' => BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN,
       'attendance_card' => BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD,
       'harem_addition' => 0,
+      'hundredgbupload' => 10000,
+      'tengbdownload' => 1000,
+      'hundredgbdownload' => 8000,
   ),
   'account' =>
   array (
