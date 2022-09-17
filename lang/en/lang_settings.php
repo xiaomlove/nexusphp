@@ -773,6 +773,12 @@ $lang_settings = array
     'text_offer_skip_approved_count_note' => 'When the number of approved offer is greater than or equal to this value, you can upload directly without submitting offers.',
     'row_torrent_delete' => 'Delete torrent',
     'text_torrent_delete_note' => '.Delete torrent',
+    'row_hundred_gb_credit' => "100.0 GB uploading credit",
+    'text_hundred_gb_credit_note' => " bonus points to exchange for 100.0 GB uploading credit. Default '10000'.",
+    'row_ten_gb_download_credit' => "10.0 GB downloading credit",
+    'text_ten_gb_download_credit_note' => " bonus points to exchange for 10.0 GB downloading credit. Default '1000'.",
+    'row_hundred_gb_download_credit' => "100.0 GB downloading credit",
+    'text_hundred_gb_download_credit_note' => " bonus points to exchange for 100.0 GB downloading credit. Default '8000'.",
 );
 
 ?>

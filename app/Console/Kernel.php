@@ -35,6 +35,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('claim:settle')->hourly()->when(function () {
             return Carbon::now()->format('d') == '01';
         })->withoutOverlapping();
+
+//        $schedule->command('plugin:cronjob')->everyMinute()->withoutOverlapping();
     }
 
     /**

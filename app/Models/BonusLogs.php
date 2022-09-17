@@ -25,6 +25,7 @@ class BonusLogs extends NexusModel
     const BUSINESS_TYPE_NO_AD = 11;
     const BUSINESS_TYPE_GIFT_TO_LOW_SHARE_RATIO = 12;
     const BUSINESS_TYPE_LUCKY_DRAW = 13;
+    const BUSINESS_TYPE_EXCHANGE_DOWNLOAD = 14;
 
     public static array $businessTypes = [
         self::BUSINESS_TYPE_CANCEL_HIT_AND_RUN => ['text' => 'Cancel H&R'],
@@ -40,6 +41,7 @@ class BonusLogs extends NexusModel
         self::BUSINESS_TYPE_NO_AD => ['text' => 'No ad'],
         self::BUSINESS_TYPE_GIFT_TO_LOW_SHARE_RATIO => ['text' => 'Gift to low share ratio'],
         self::BUSINESS_TYPE_LUCKY_DRAW => ['text' => 'Lucky draw'],
+        self::BUSINESS_TYPE_EXCHANGE_DOWNLOAD => ['text' => 'Exchange download'],
     ];
 
     public static function getBonusForCancelHitAndRun()

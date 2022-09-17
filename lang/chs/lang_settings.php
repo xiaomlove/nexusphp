@@ -773,6 +773,12 @@ $lang_settings = array
     'text_offer_skip_approved_count_note' => '当通过的候选数大于等于此数值时，可直接发布不用提交候选。',
     'row_torrent_delete' => '删除种子',
     'text_torrent_delete_note' => '。删除种子',
+    'row_hundred_gb_credit' => "100.0 GB 上传量",
+    'text_hundred_gb_credit_note' => "个魔力值，如果他选择交换100.0 GB上传量。默认'10000'。",
+    'row_ten_gb_download_credit' => "10.0 GB 下载量",
+    'text_ten_gb_download_credit_note' => " 个魔力值，如果他选择交换10.0 GB下载量。默认'1000'。",
+    'row_hundred_gb_download_credit' => "100.0 GB 下载量",
+    'text_hundred_gb_download_credit_note' => " 个魔力值，如果他选择交换100.0 GB下载量。默认'8000'。",
 );
 
 ?>

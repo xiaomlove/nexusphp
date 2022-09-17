@@ -24,6 +24,7 @@ return [
         'torrent_deny_reason' => '拒绝原因',
         'roles' => '角色',
         'permissions' => '权限',
+        'plugin' => '插件',
     ],
     'resources' => [
         'agent_allow' => [

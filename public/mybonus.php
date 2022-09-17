@@ -39,6 +39,33 @@ function bonusarray($option = 0){
     $bonus['description'] = $lang_mybonus['text_uploaded_note'];
     $results[] = $bonus;
 
+    //100.0 GB Uploaded
+    $bonus = array();
+    $bonus['points'] = get_setting('bonus.hundredgbupload');
+    $bonus['art'] = 'traffic';
+    $bonus['menge'] = 107374182400;
+    $bonus['name'] = $lang_mybonus['text_uploaded_four'];
+    $bonus['description'] = $lang_mybonus['text_uploaded_note'];
+    $results[] = $bonus;
+
+    //10.0 GB Downloaded
+    $bonus = array();
+    $bonus['points'] = get_setting('bonus.tengbdownload');
+    $bonus['art'] = 'traffic_downloaded';
+    $bonus['menge'] = 10737418240;
+    $bonus['name'] = $lang_mybonus['text_downloaded_ten_gb'];
+    $bonus['description'] = $lang_mybonus['text_download_note'];
+    $results[] = $bonus;
+
+    //100.0 GB Downloaded
+    $bonus = array();
+    $bonus['points'] = get_setting('bonus.hundredgbdownload');
+    $bonus['art'] = 'traffic_downloaded';
+    $bonus['menge'] = 107374182400;
+    $bonus['name'] = $lang_mybonus['text_downloaded_hundred_gb'];
+    $bonus['description'] = $lang_mybonus['text_download_note'];
+    $results[] = $bonus;
+
     //Invite
     $bonus = array();
     $bonus['points'] = $oneinvite_bonus;
@@ -246,6 +273,8 @@ unset($msg);
 if (isset($do)) {
 	if ($do == "upload")
 	$msg = $lang_mybonus['text_success_upload'];
+    if ($do == "download")
+    $msg = $lang_mybonus['text_success_download'];
 	elseif ($do == "invite")
 	$msg = $lang_mybonus['text_success_invites'];
 	elseif ($do == "vip")
@@ -538,6 +567,12 @@ if ($action == "exchange") {
 			nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=upload");
 			}
 		}
+        if($art == "traffic_downloaded") {
+            $downloaded = $CURUSER['downloaded'];
+            $down = $downloaded + $bonusarray['menge'];
+            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_DOWNLOAD, $points. " Points for download bonus.", ['downloaded' => $down]);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=download");
+        }
 		//=== trade for one month VIP status ***note "SET class = '10'" change "10" to whatever your VIP class number is
 		elseif($art == "class") {
 			if (get_user_class() >= UC_VIP) {

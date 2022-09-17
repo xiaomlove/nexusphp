@@ -23,6 +23,7 @@ use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
+use App\Repositories\PluginRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\SearchRepository;
 use App\Repositories\TagRepository;
@@ -87,7 +88,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = \Illuminate\Support\Facades\Cache::lock();
+        $rep = new PluginRepository();
+//        $rep->installCronjob();
+        $r = $rep->getInstalledVersion('xiaomlove/nexusphp-post-like');
+        dd($r);
     }
 
 

@@ -5866,7 +5866,7 @@ function calculate_harem_addition($uid)
     $haremsCount = $harems->count();
     foreach ($harems as $harem) {
         $result = calculate_seed_bonus($harem->id);
-        $addition += $result['all_bonus'];
+        $addition += $result['seed_bonus'];
     }
     do_log("[HAREM_ADDITION], user: $uid, haremsCount: $haremsCount ,addition: $addition");
     return $addition;
