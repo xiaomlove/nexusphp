@@ -462,6 +462,28 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+	//expire torrent sticky
+    $toBeExpirePosStates = [
+        \App\Models\Torrent::POS_STATE_STICKY_FIRST,
+        \App\Models\Torrent::POS_STATE_STICKY_SECOND,
+    ];
+	$update = [
+	    'pos_state' => \App\Models\Torrent::POS_STATE_STICKY_NONE,
+        'pos_state_until' => null,
+    ];
+    \App\Models\Torrent::query()
+        ->whereIn('pos_state', $toBeExpirePosStates)
+        ->whereNotNull('pos_state_until')
+        ->where('pos_state_until', '<', now())
+        ->update($update);
+    $log = "expire torrent pos state";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
+
 	//automatically pick hot
 	if ($hotdays_torrent)
 	{

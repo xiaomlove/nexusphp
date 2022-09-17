@@ -256,6 +256,21 @@ class Torrent extends NexusModel
         return $result;
     }
 
+    public static function listPickInfo($onlyKeyValue = false, $valueField = 'text'): array
+    {
+        $result = self::$pickTypes;
+        $keyValue = [];
+        foreach ($result as $status => &$info) {
+            $text = nexus_trans('torrent.pick_info.' . $status);
+            $info['text'] = $text;
+            $keyValue[$status] = $info[$valueField];
+        }
+        if ($onlyKeyValue) {
+            return $keyValue;
+        }
+        return $result;
+    }
+
     public function getHrAttribute(): string
     {
         $hrMode = Setting::get('hr.mode');

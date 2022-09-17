@@ -5872,4 +5872,24 @@ function calculate_harem_addition($uid)
     return $addition;
 }
 
+function datetimepicker_input($name, $value = '', $label = '')
+{
+    \Nexus\Nexus::css('vendor/jquery-datetimepicker/jquery.datetimepicker.min.css', 'footer', true);
+    \Nexus\Nexus::js('vendor/jquery-datetimepicker/jquery.datetimepicker.full.min.js', 'footer', true);
+    $id = "datetime-picker-$name";
+    $input = sprintf('%s<input type="text" id="%s" name="%s" value="%s" autocomplete="off" >', $label, $id, $name, $value);
+    $lang = get_langfolder_cookie(true);
+    if ($lang == 'zh_CN') {
+        $lang = 'zh';
+    }
+    $lang = str_replace('_', '-', $lang);
+    $js = <<<JS
+jQuery.datetimepicker.setLocale('{$lang}');
+jQuery("#{$id}").datetimepicker({
+    format: 'Y-m-d H:i'
+})
+JS;
+    \Nexus\Nexus::js($js, 'footer', false);
+    return $input;
+}
 ?>

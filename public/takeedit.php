@@ -143,9 +143,21 @@ if(user_can('torrentonpromotion'))
 		}
 	}
 }
-if(user_can('torrentsticky') && isset($_POST['sel_posstate']) && isset(\App\Models\Torrent::$posStates[$_POST['sel_posstate']]))
+if(user_can('torrentsticky'))
 {
-    $updateset[] = "pos_state = '" . $_POST['sel_posstate'] . "'";
+    if (isset($_POST['pos_state']) && isset(\App\Models\Torrent::$posStates[$_POST['pos_state']])) {
+        $posStateUntil = null;
+        $posState = \App\Models\Torrent::POS_STATE_STICKY_NONE;
+        if (!empty($_POST['pos_state_until']) && $_POST['pos_state'] != \App\Models\Torrent::POS_STATE_STICKY_NONE) {
+            $posStateUntil = \Carbon\Carbon::parse($_POST['pos_state_until']);
+            if ($posStateUntil->gte(now())) {
+                $posState = $_POST['pos_state'];
+            }
+        }
+        $updateset[] = sprintf("pos_state = %s", sqlesc($posState));
+        $updateset[] = sprintf("pos_state_until = %s", sqlesc($posStateUntil));
+    }
+
 }
 
 $pick_info = "";
@@ -202,7 +214,9 @@ $descriptionArr = format_description($descr);
 $cover = get_image_from_description($descriptionArr, true, false);
 $updateset[] = "cover = " . sqlesc($cover);
 
-$affectedRows = sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+$sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
+do_log("[UPDATE_TORRENT]: $sql");
+$affectedRows = sql_query($sql) or sqlerr(__FILE__, __LINE__);
 
 $dateTimeStringNow = date("Y-m-d H:i:s");
 
