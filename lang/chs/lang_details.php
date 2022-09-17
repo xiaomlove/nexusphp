@@ -239,6 +239,7 @@ $lang_details = array
     'claim_label' => '认领种子',
     'claim_confirm' => '确定要认领此种子吗？',
     'action_approval' => '审核',
+    'row_tags' => '标签',
 );
 
 ?>

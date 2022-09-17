@@ -10,8 +10,7 @@ parked();
  * tags
  */
 $tagRep = new \App\Repositories\TagRepository();
-$tagKeyById = $tagRep->createBasicQuery()->get()->keyBy('id');
-$renderKeyArr = $tagKeyById->keys()->toArray();
+$allTags = $tagRep->listAll();
 $elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
 
 //check searchbox
@@ -1143,8 +1142,8 @@ if (!$Cache->get_page()){
 }
 echo $Cache->next_row();
 
-if ($tagKeyById->isNotEmpty()) {
-    echo '<tr><td colspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan($tagKeyById, $renderKeyArr, true) . '</td></tr>';
+if ($allTags->isNotEmpty()) {
+    echo '<tr><td colspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan(['*'], true) . '</td></tr>';
 }
 
 ?>

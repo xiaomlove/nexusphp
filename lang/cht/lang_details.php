@@ -238,6 +238,7 @@ $lang_details = array
     'claim_label' => '認領種子',
     'claim_confirm' => '確定要認領此種子嗎？',
     'action_approval' => '審核',
+    'row_tags' => '標簽',
 );
 
 ?>

@@ -11,6 +11,8 @@ class TagRepository extends BaseRepository
 {
     private static $orderByFieldIdString;
 
+    private static $allTags;
+
     public function getList(array $params)
     {
         $query = $this->createBasicQuery();
@@ -61,20 +63,25 @@ class TagRepository extends BaseRepository
         return $html;
     }
 
-    public function renderSpan(Collection $tagKeyById, array $renderIdArr = [], $withFilterLink = false): string
+    public function renderSpan(array $renderIdArr = [], $withFilterLink = false): string
     {
+        if (empty(self::$allTags)) {
+            self::$allTags = self::createBasicQuery()->get();
+        }
         $html = '';
-        foreach ($renderIdArr as $tagId) {
-            $value = $tagKeyById->get($tagId);
-            if ($value) {
-                $item = sprintf(
-                    "<span style=\"background-color:%s;color:%s;border-radius:%s;font-size:%s;margin:%s;padding:%s\">%s</span>",
-                    $value->color, $value->font_color, $value->border_radius, $value->font_size, $value->margin, $value->padding, $value->name
-                );
-                if ($withFilterLink) {
-                    $html .= sprintf('<a href="?tag_id=%s">%s</a>', $tagId, $item);
-                } else {
-                    $html .= $item;
+        foreach (self::$allTags as $value) {
+            if (in_array($value->id, $renderIdArr) || (isset($renderIdArr[0]) && $renderIdArr[0] == '*')) {
+                $tagId = $value->id;
+                if ($value) {
+                    $item = sprintf(
+                        "<span style=\"background-color:%s;color:%s;border-radius:%s;font-size:%s;margin:%s;padding:%s\">%s</span>",
+                        $value->color, $value->font_color, $value->border_radius, $value->font_size, $value->margin, $value->padding, $value->name
+                    );
+                    if ($withFilterLink) {
+                        $html .= sprintf('<a href="?tag_id=%s">%s</a>', $tagId, $item);
+                    } else {
+                        $html .= $item;
+                    }
                 }
             }
         }
@@ -139,6 +146,12 @@ class TagRepository extends BaseRepository
             self::$orderByFieldIdString = $results->isEmpty() ? '0' : $results->implode('id', ',');
         }
         return self::$orderByFieldIdString;
+    }
+
+    public function listAll()
+    {
+        self::$allTags = self::createBasicQuery()->get();
+        return self::$allTags;
     }
 
 

@@ -126,6 +126,13 @@ if (!$row) {
 		if ($smalldescription_main == 'yes')
 			tr($lang_details['row_small_description'],htmlspecialchars(trim($row["small_descr"])),true);
 
+		//tag
+        $torrentTags = \App\Models\TorrentTag::query()->where('torrent_id', $row['id'])->get();
+        if ($torrentTags->isNotEmpty()) {
+            $tagRep = new \App\Repositories\TagRepository();
+            tr($lang_details['row_tags'], $tagRep->renderSpan($torrentTags->pluck('tag_id')->toArray()),true);
+        }
+
 		$size_info =  "<b>".$lang_details['text_size']."</b>" . mksize($row["size"]);
 		$type_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['row_type'].":</b>&nbsp;".$row["cat_name"];
         $source_info = $medium_info = $codec_info = $audiocodec_info = $standard_info = $processing_info = $team_info = '';
