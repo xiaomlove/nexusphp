@@ -155,13 +155,17 @@ class TorrentResource extends Resource
                         ->label(__('label.torrent.pos_state'))
                         ->options(Torrent::listPosStates(true))
                         ->required()
+                    ,
+                    Forms\Components\DateTimePicker::make('pos_state_until')
+                        ->label(__('label.deadline'))
+                    ,
                 ])
                 ->icon('heroicon-o-arrow-circle-up')
                 ->action(function (Collection $records, array $data) {
                     $idArr = $records->pluck('id')->toArray();
                     try {
                         $torrentRep = new TorrentRepository();
-                        $torrentRep->setPosState($idArr, $data['pos_state']);
+                        $torrentRep->setPosState($idArr, $data['pos_state'], $data['pos_state_until']);
                     } catch (\Exception $exception) {
                         do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
                         Filament::notify('danger', class_basename($exception));

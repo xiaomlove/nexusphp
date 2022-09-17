@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Repositories\TagRepository;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use JeroenG\Explorer\Application\Explored;
 use Laravel\Scout\Searchable;
@@ -15,7 +16,7 @@ class Torrent extends NexusModel
         'size', 'added', 'type', 'numfiles', 'owner', 'nfo', 'sp_state', 'promotion_time_type',
         'promotion_until', 'anonymous', 'url', 'pos_state', 'cache_stamp', 'picktype', 'picktime',
         'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders', 'cover', 'last_action',
-        'times_completed', 'approval_status', 'banned', 'visible',
+        'times_completed', 'approval_status', 'banned', 'visible', 'pos_state_until',
     ];
 
     private static $globalPromotionState;
@@ -30,11 +31,13 @@ class Torrent extends NexusModel
         'added' => 'datetime',
         'pt_gen' => 'array',
         'promotion_until' => 'datetime',
+        'pos_state_until' => 'datetime',
     ];
 
     public static $commentFields = [
         'id', 'name', 'added', 'visible', 'banned', 'owner', 'sp_state', 'pos_state', 'hr', 'picktype', 'picktime',
-        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover', 'anonymous', 'approval_status'
+        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover', 'anonymous', 'approval_status',
+        'pos_state_until'
     ];
 
     public static $basicRelations = [
@@ -193,11 +196,18 @@ class Torrent extends NexusModel
         return $spState;
     }
 
-    protected function posStateText(): Attribute
+    protected function getPosStateTextAttribute()
     {
-        return new Attribute(
-            get: fn($value, $attributes) => nexus_trans('torrent.pos_state_' . $attributes['pos_state'])
-        );
+        $text = nexus_trans('torrent.pos_state_' . $this->pos_state);
+        if ($this->pos_state != Torrent::POS_STATE_STICKY_NONE) {
+            if ($this->pos_state_until) {
+                $append = format_datetime($this->pos_state_until);
+            } else {
+                $append = nexus_trans('label.permanent');
+            }
+            $text .= "($append)";
+        }
+        return $text;
     }
 
     protected function approvalStatusText(): Attribute

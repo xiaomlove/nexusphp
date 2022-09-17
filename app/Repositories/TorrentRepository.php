@@ -598,11 +598,22 @@ class TorrentRepository extends BaseRepository
 
     }
 
-    public function setPosState($id, $posState): int
+    public function setPosState($id, $posState, $posStateUntil = null): int
     {
         user_can('torrentsticky', true);
+        if ($posState == Torrent::POS_STATE_STICKY_NONE) {
+            $posStateUntil = null;
+        }
+        if ($posStateUntil && Carbon::parse($posStateUntil)->lte(now())) {
+            $posState = Torrent::POS_STATE_STICKY_NONE;
+            $posStateUntil = null;
+        }
+        $update = [
+            'pos_state' => $posState,
+            'pos_state_until' => $posStateUntil,
+        ];
         $idArr = Arr::wrap($id);
-        return Torrent::query()->whereIn('id', $idArr)->update(['pos_state' => $posState]);
+        return Torrent::query()->whereIn('id', $idArr)->update($update);
     }
 
     public function buildUploadFieldInput($name, $value, $noteText, $btnText): string
