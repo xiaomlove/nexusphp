@@ -88,9 +88,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new PluginRepository();
-//        $rep->installCronjob();
-        $r = $rep->getInstalledVersion('xiaomlove/nexusphp-post-like');
+        $rep = new ToolRepository();
+        $r = $rep->transfer('C:\Users\CHENYU~1\AppData\Local\Temp/nexusphp.v1.5.beta5.20120707.web.20220918.053953.zip', 0);
         dd($r);
     }
 
