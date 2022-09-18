@@ -58,9 +58,6 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
         $data = [];
         foreach ($formData as $prefix => $parts) {
             foreach ($parts as $name => $value) {
-                if (is_null($value)) {
-                    continue;
-                }
                 if (in_array($name, $notAutoloadNames)) {
                     $autoload = 'no';
                 } else {
