@@ -61,3 +61,6 @@ img.hitandrun {
 .nexus-media-info-raw .spoiler-title-box{
     text-align: center;
 }
+.nexus-media-info-raw pre {
+    white-space: break-spaces;
+}
