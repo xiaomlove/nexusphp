@@ -70,8 +70,6 @@ stdhead($lang_upload['head_upload']);
                     $ptGen = new \Nexus\PTGen\PTGen();
                     echo $ptGen->renderUploadPageFormInput("");
                 }
-                $field = new \Nexus\Field\Field();
-                $field->renderOnUploadPage();
 				if ($enablenfo_main=='yes') {
                     tr($lang_upload['row_nfo_file'], "<input type=\"file\" class=\"file\" name=\"nfo\" /><br /><font class=\"medium\">".$lang_upload['text_only_viewed_by'].get_user_class_name($viewnfo_class,false,true,true).$lang_upload['text_or_above']."</font>", 1);
                 }
@@ -85,7 +83,7 @@ stdhead($lang_upload['head_upload']);
 
 				if ($allowtorrents){
 					$disablespecial = " onchange=\"disableother('browsecat','specialcat')\"";
-					$s = "<select name=\"type\" id=\"browsecat\" ".($allowtwosec ? $disablespecial : "").">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
+					$s = "<select name=\"type\" id=\"browsecat\" data-mode='$browsecatmode' ".($allowtwosec ? $disablespecial : "").">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
 					$cats = genrelist($browsecatmode);
 					foreach ($cats as $row)
 						$s .= "<option value=\"" . $row["id"] . "\">" . htmlspecialchars($row["name"]) . "</option>\n";
@@ -94,7 +92,7 @@ stdhead($lang_upload['head_upload']);
 				else $s = "";
 				if ($allowspecial){
 					$disablebrowse = " onchange=\"disableother('specialcat','browsecat')\"";
-					$s2 = "<select name=\"type\" id=\"specialcat\" ".$disablebrowse.">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
+					$s2 = "<select name=\"type\" id=\"specialcat\" data-mode='$specialcatmode' ".$disablebrowse.">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
 					$cats2 = genrelist($specialcatmode);
 					foreach ($cats2 as $row)
 						$s2 .= "<option value=\"" . $row["id"] . "\">" . htmlspecialchars($row["name"]) . "</option>\n";
@@ -145,6 +143,11 @@ stdhead($lang_upload['head_upload']);
 
 					tr($lang_upload['row_content'],$team_select,1);
 				}
+                $customField = new \Nexus\Field\Field();
+                echo $customField->renderOnUploadPage(0, $browsecatmode);
+                if ($enablespecial) {
+                    echo $customField->renderOnUploadPage(0, $specialcatmode);
+                }
 
 				//==== offer dropdown for offer mod  from code by S4NE
 				$offerres = sql_query("SELECT id, name FROM offers WHERE userid = ".sqlesc($CURUSER['id'])." AND allowed = 'allowed' ORDER BY name ASC") or sqlerr(__FILE__, __LINE__);
@@ -222,4 +225,18 @@ JS;
 <?php
 \Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
 \Nexus\Nexus::js('js/ptgen.js', 'footer', true);
+$customFieldJs = <<<JS
+jQuery("#compose").on("change", "select[name=type]", function () {
+    let _this = jQuery(this);
+    let mode = _this.attr("data-mode");
+    let value = _this.val();
+    console.log(mode)
+    jQuery("tr[relation]").hide();
+    if (value > 0) {
+        jQuery("tr[relation=mode_" + mode +"]").show();
+    }
+})
+jQuery("tr[relation]").hide();
+JS;
+\Nexus\Nexus::js($customFieldJs, 'footer', false);
 stdfoot();

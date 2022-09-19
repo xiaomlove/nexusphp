@@ -33,6 +33,7 @@ return [
     'submit' => 'Submit',
     'cancel' => 'Cancel',
     'reset' => 'Reset',
+    'anonymous' => 'Anonymous',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

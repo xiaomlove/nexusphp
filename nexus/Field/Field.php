@@ -2,6 +2,10 @@
 
 namespace Nexus\Field;
 
+use App\Models\SearchBox;
+use App\Models\TorrentCustomField;
+use App\Models\TorrentCustomFieldValue;
+use Elasticsearch\Endpoints\Search;
 use Nexus\Database\NexusDB;
 
 class Field
@@ -86,7 +90,7 @@ class Field
 
     function buildFieldForm(array $row = [])
     {
-        global $lang_fields, $lang_functions;
+        global $lang_fields, $lang_functions, $lang_catmanage;
         $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;' . $lang_fields['col_name_help'], 1, '', true);
         $trLabel = tr($lang_fields['col_label'] . '<font color="red">*</font>', '<input type="text" name="label" value="' . ($row['label'] ?? '') . '"  style="width: 300px" />', 1, '', true);
         $trType = tr($lang_fields['col_type'] . '<font color="red">*</font>', $this->radio('type', $this->getTypeRadioOptions(), $row['type'] ?? null), 1, '', true);
@@ -94,6 +98,9 @@ class Field
         $trHelp = tr($lang_fields['col_help'], '<textarea name="help" rows="4" cols="80">' . ($row['help'] ?? '') . '</textarea>', 1, '', true);
         $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>' . $lang_fields['col_options_help'], 1, '', true);
         $trIsSingleRow = tr($lang_fields['col_is_single_row'] . '<font color="red">*</font>', $this->radio('is_single_row', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['is_single_row'] ?? null), 1, '', true);
+        $trPriority = tr(nexus_trans('label.priority') . '<font color="red">*</font>', '<input type="number" name="priority" value="' . ($row['priority'] ?? '0') . '" style="width: 300px" />', 1, '', true);
+        $trDisplay = tr($lang_fields['col_display'], '<textarea name="display" rows="4" cols="80">' . ($row['display'] ?? '') . '</textarea><br/>' . $lang_catmanage['row_custom_field_display_help'], 1, '', true);
+
         $id = $row['id'] ?? 0;
         $form = <<<HTML
 <div>
@@ -109,6 +116,8 @@ class Field
             {$trHelp}
             {$trOptions}
             {$trIsSingleRow}
+            {$trPriority}
+            {$trDisplay}
     </table>
 </div>
 <div style="text-align: center; margin-top: 10px;">
@@ -126,7 +135,7 @@ HTML;
         $perPage = 10;
         $total = get_row_count('torrents_custom_fields');
         list($paginationTop, $paginationBottom, $limit) = pager($perPage, $total, "?");
-        $sql = "select * from torrents_custom_fields order by id asc $limit";
+        $sql = "select * from torrents_custom_fields order by priority desc $limit";
         $res = sql_query($sql);
         $header = [
             'id' => $lang_fields['col_id'],
@@ -135,6 +144,7 @@ HTML;
             'type_text' => $lang_fields['col_type'],
             'required_text' => $lang_fields['col_required'],
             'is_single_row_text' => $lang_fields['col_is_single_row'],
+            'priority' => nexus_trans('label.priority'),
             'action' => $lang_fields['col_action'],
         ];
         $rows = [];
@@ -203,6 +213,8 @@ HEAD;
 
         $attributes['help'] = $data['help'] ?? '';
         $attributes['options'] = trim($data['options'] ?? '');
+        $attributes['display'] = trim($data['display'] ?? '');
+        $attributes['priority'] = trim($data['priority'] ?? '0');
         $now = date('Y-m-d H:i:s');
         $attributes['updated_at'] = $now;
         $table = 'torrents_custom_fields';
@@ -252,24 +264,29 @@ HEAD;
 
     }
 
-    public function renderOnUploadPage($torrentId = 0)
+    public function renderOnUploadPage($torrentId = 0, $searchBoxId)
     {
-        global $browsecatmode;
-        $searchBox = NexusDB::getOne('searchbox', "id = $browsecatmode");
+        $searchBox = NexusDB::getOne('searchbox', "id = $searchBoxId");
         if (empty($searchBox)) {
-            throw new \RuntimeException("Invalid search box: $browsecatmode");
+            throw new \RuntimeException("Invalid search box: $searchBoxId");
         }
-        $customValues = $this->listTorrentCustomField($torrentId);
-        $sql = sprintf('select * from torrents_custom_fields where id in (%s)', $searchBox['custom_fields'] ?: 0);
+        $customValues = $this->listTorrentCustomField($torrentId, $searchBoxId);
+        $sql = sprintf('select * from torrents_custom_fields where id in (%s) order by priority desc', $searchBox['custom_fields'] ?: 0);
         $res = sql_query($sql);
         $html = '';
         while ($row = mysql_fetch_assoc($res)) {
-            $name = "custom_fields[{$row['id']}]";
+            $name = "custom_fields[$searchBoxId][{$row['id']}]";
             $currentValue = $customValues[$row['id']]['custom_field_value'] ?? '';
+            $requireText = '';
+            if ($row['required']) {
+                $requireText = "<font color=\"red\">*</font>";
+            }
+            $trLabel = $row['label'] . $requireText;
+            $trRelation = "mode_$searchBoxId";
             if ($row['type'] == self::TYPE_TEXT) {
-                $html .= tr($row['label'], sprintf('<input type="text" name="%s" value="%s" style="width: %s"/>', $name, $currentValue, '99%'), 1);
+                $html .= tr($trLabel, sprintf('<input type="text" name="%s" value="%s" style="width: %s"/>', $name, $currentValue, '99%'), 1, $trRelation);
             } elseif ($row['type'] == self::TYPE_TEXTAREA) {
-                $html .= tr($row['label'], sprintf('<textarea name="%s" rows="4" style="width: %s">%s</textarea>', $name, '99%', $currentValue), 1);
+                $html .= tr($trLabel, sprintf('<textarea name="%s" rows="4" style="width: %s">%s</textarea>', $name, '99%', $currentValue), 1, $trRelation);
             } elseif ($row['type'] == self::TYPE_RADIO || $row['type'] == self::TYPE_CHECKBOX) {
                 if ($row['type'] == self::TYPE_CHECKBOX) {
                     $name .= '[]';
@@ -293,7 +310,7 @@ HEAD;
                         $row['type'], $name, $value, $checked, $label
                     );
                 }
-                $html .= tr($row['label'], $part, 1);
+                $html .= tr($trLabel, $part, 1, $trRelation);
             } elseif ($row['type'] == self::TYPE_SELECT) {
                 $part = '<select name="' . $name . '">';
                 foreach (preg_split('/[\r\n]+/', trim($row['options'])) as $option) {
@@ -312,7 +329,7 @@ HEAD;
                     );
                 }
                 $part .= '</select>';
-                $html .= tr($row['label'], $part, 1);
+                $html .= tr($trLabel, $part, 1, $trRelation);
             } elseif ($row['type'] == self::TYPE_IMAGE) {
                 $callbackFunc = "preview_custom_field_image_" . $row['id'];
                 $iframeId = "iframe_$callbackFunc";
@@ -351,18 +368,14 @@ HEAD;
     }
 </script>
 JS;
-                $html .= tr($row['label'], $y, 1);
+                $html .= tr($trLabel, $y, 1, $trRelation, true);
             }
         }
         return $html;
     }
 
-    public function listTorrentCustomField($torrentId, $searchBoxId = 0)
+    public function listTorrentCustomField($torrentId, $searchBoxId)
     {
-        global $browsecatmode;
-        if ($searchBoxId <= 0) {
-            $searchBoxId = $browsecatmode;
-        }
         //suppose torrentId is array
         $isArray = true;
         $torrentIdArr = $torrentId;
@@ -371,7 +384,7 @@ JS;
             $torrentIdArr = [$torrentId];
         }
         $torrentIdStr = implode(',', $torrentIdArr);
-        $res = sql_query("select f.*, v.custom_field_value, v.torrent_id from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id inner join searchbox box on box.id = $searchBoxId and find_in_set(f.id, box.custom_fields) where torrent_id in ($torrentIdStr)");
+        $res = sql_query("select f.*, v.custom_field_value, v.torrent_id from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id inner join searchbox box on box.id = $searchBoxId and find_in_set(f.id, box.custom_fields) where torrent_id in ($torrentIdStr) order by f.priority desc");
         $values = [];
         $result = [];
         while ($row = mysql_fetch_assoc($res)) {
@@ -402,12 +415,11 @@ JS;
         return $isArray ? $result : ($result[$torrentId] ?? []);
     }
 
-    public function renderOnTorrentDetailsPage($torrentId)
+    public function renderOnTorrentDetailsPage($torrentId, $searchBoxId)
     {
-        global $browsecatmode;
-        $displayName = get_searchbox_value($browsecatmode, 'custom_fields_display_name');
-        $customFields = $this->listTorrentCustomField($torrentId);
-        $mixedRowContent = get_searchbox_value($browsecatmode, 'custom_fields_display');
+        $displayName = get_searchbox_value($searchBoxId, 'custom_fields_display_name');
+        $customFields = $this->listTorrentCustomField($torrentId, $searchBoxId);
+        $mixedRowContent = get_searchbox_value($searchBoxId, 'custom_fields_display');
         $rowByRowHtml = '';
         $shouldRenderMixRow = false;
         foreach ($customFields as $field) {
@@ -422,8 +434,15 @@ JS;
             $mixedRowContent = str_replace("<%{$field['name']}.label%>", $field['label'], $mixedRowContent);
             $mixedRowContent = str_replace("<%{$field['name']}.value%>", $contentNotFormatted, $mixedRowContent);
             if ($field['is_single_row']) {
-                $contentFormatted = $this->formatCustomFieldValue($field, true);
-                $rowByRowHtml .= tr($field['label'], $contentFormatted, 1);
+                if (!empty($field['display'])) {
+                    $customFieldDisplay = $field['display'];
+                    $customFieldDisplay = str_replace("<%{$field['name']}.label%>", $field['label'], $customFieldDisplay);
+                    $customFieldDisplay = str_replace("<%{$field['name']}.value%>", $contentNotFormatted, $customFieldDisplay);
+                    $rowByRowHtml .= tr($field['label'], format_comment($customFieldDisplay, false), 1);
+                } else {
+                    $contentFormatted = $this->formatCustomFieldValue($field, true);
+                    $rowByRowHtml .= tr($field['label'], $contentFormatted, 1);
+                }
             }
         }
 
@@ -443,13 +462,13 @@ JS;
         switch ($customFieldWithValue['type']) {
             case self::TYPE_TEXT:
             case self::TYPE_TEXTAREA:
-                $result .= $doFormatComment ? format_comment($fieldValue) : $fieldValue;
+                $result .= $doFormatComment ? format_comment($fieldValue, false) : $fieldValue;
                 break;
             case self::TYPE_IMAGE:
                 if (substr($fieldValue, 0, 4) == 'http') {
                     $result .= $doFormatComment ? formatImg($fieldValue, true, 700, 0, "attach{$customFieldWithValue['id']}") : $fieldValue;
                 } else {
-                    $result .= $doFormatComment ? format_comment($fieldValue) : $fieldValue;
+                    $result .= $doFormatComment ? format_comment($fieldValue, false) : $fieldValue;
                 }
                 break;
             case self::TYPE_RADIO:
@@ -491,6 +510,32 @@ JS;
         return $this->preparedTorrentCustomFieldValues[$torrentId][$fieldName] ?? '';
     }
 
+
+    public function saveFieldValues($searchBoxId, $torrentId, array $data)
+    {
+        $searchBox = SearchBox::query()->findOrFail($searchBoxId);
+        $enabledFields = TorrentCustomField::query()->find($searchBox->custom_fields);
+        $insert = [];
+        $now = now();
+        foreach ($enabledFields as $field) {
+            if (empty($data[$field->id])) {
+                if ($field->required) {
+//                    throw new \InvalidArgumentException(nexus_trans("nexus.require_argument", ['argument' => $field->label]));
+                    do_log("Field: {$field->label} required, but empty");
+                }
+                continue;
+            }
+            $insert[] = [
+                'torrent_id' => $torrentId,
+                'custom_field_id' => $field->id,
+                'custom_field_value' => $data[$field->id],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+        TorrentCustomFieldValue::query()->where('torrent_id', $torrentId)->delete();
+        TorrentCustomFieldValue::query()->insert($insert);
+    }
 
 
 

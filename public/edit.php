@@ -67,8 +67,6 @@ else {
         echo $ptGen->renderUploadPageFormInput($row['pt_gen']);
     }
 
-    $customField->renderOnUploadPage($id);
-
 	if ($enablenfo_main=='yes')
 		tr($lang_edit['row_nfo_file'], "<font class=\"medium\"><input type=\"radio\" name=\"nfoaction\" value=\"keep\" checked=\"checked\" />".$lang_edit['radio_keep_current'].
 	"<input type=\"radio\" name=\"nfoaction\" value=\"remove\" />".$lang_edit['radio_remove'].
@@ -81,7 +79,7 @@ else {
         tr($lang_functions['text_technical_info'], '<textarea name="technical_info" rows="8" style="width: 99%;">' . $row['technical_info'] . '</textarea><br/>' . $lang_functions['text_technical_info_help_text'], 1);
     }
 
-	$s = "<select name=\"type\" id=\"oricat\">";
+	$s = "<select name=\"type\" id=\"oricat\" data-mode='$sectionmode'>";
 
 	$cats = genrelist($sectionmode);
 	foreach ($cats as $subrow) {
@@ -93,7 +91,7 @@ else {
 
 	$s .= "</select>\n";
 	if ($allowmove){
-		$s2 = "<select name=\"type\" id=newcat disabled>\n";
+		$s2 = "<select name=\"type\" id=newcat disabled data-mode='$othermode'>\n";
 		$cats2 = genrelist($othermode);
 		foreach ($cats2 as $subrow) {
 			$s2 .= "<option value=\"" . $subrow["id"] . "\"";
@@ -147,6 +145,12 @@ else {
 
 		tr($lang_edit['row_content'],$team_select,1);
 	}
+
+    echo $customField->renderOnUploadPage($id, $browsecatmode);
+	if ($enablespecial) {
+	    $customField->renderOnUploadPage($id, $specialcatmode);
+    }
+
     tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox($tagIdArr), 1);
 
 	$rowChecks = [];
@@ -282,6 +286,26 @@ EOT;
 }
 \Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
 \Nexus\Nexus::js('js/ptgen.js', 'footer', true);
+$customFieldJs = <<<JS
+jQuery("#movecheck").on("change", function () {
+    let _this = jQuery(this);
+    let checked = _this.prop("checked");
+    let activeSelect
+    if (checked) {
+        activeSelect = jQuery("#newcat");
+    } else {
+        activeSelect = jQuery("#oricat");
+    }
+    let mode = activeSelect.attr("data-mode");
+    console.log(mode)
+    jQuery("tr[relation]").hide();
+    jQuery("tr[relation=mode_" + mode +"]").show();
+})
+jQuery("tr[relation]").hide();
+jQuery("tr[relation=mode_{$sectionmode}]").show();
+
+JS;
+\Nexus\Nexus::js($customFieldJs, 'footer', false);
 stdfoot();
 function getAddedTimeOption($timeStamp, $addSeconds) {
     $timeStamp += $addSeconds;

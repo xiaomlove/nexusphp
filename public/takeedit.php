@@ -224,20 +224,9 @@ $dateTimeStringNow = date("Y-m-d H:i:s");
  * add custom fields
  * @since v1.6
  */
-if (!empty($_POST['custom_fields'])) {
-    \Nexus\Database\NexusDB::delete('torrents_custom_field_values', "torrent_id = $id");
-    foreach ($_POST['custom_fields'] as $customField => $customValue) {
-        foreach ((array)$customValue as $value) {
-            $customData = [
-                'torrent_id' => $id,
-                'custom_field_id' => $customField,
-                'custom_field_value' => $value,
-                'created_at' => $dateTimeStringNow,
-                'updated_at' => $dateTimeStringNow,
-            ];
-            \Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
-        }
-    }
+if (!empty($_POST['custom_fields'][$newcatmode])) {
+    $customField = new \Nexus\Field\Field();
+    $customField->saveFieldValues($newcatmode, $id, $_POST['custom_fields'][$newcatmode]);
 }
 
 /**

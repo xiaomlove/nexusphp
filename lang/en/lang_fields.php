@@ -26,5 +26,6 @@ $lang_fields = [
     'field_type_checkbox' => 'Horizontal multiple select',
     'field_type_select' => 'Vertical single select',
     'field_type_image' => 'Image',
+    'col_display' => 'Custom display',
 
 ];

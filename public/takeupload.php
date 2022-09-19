@@ -390,20 +390,9 @@ if ($saveResult === false) {
  * add custom fields
  * @since v1.6
  */
-if (!empty($_POST['custom_fields'])) {
-	$now = date('Y-m-d H:i:s');
-	foreach ($_POST['custom_fields'] as $customField => $customValue) {
-		foreach ((array)$customValue as $value) {
-			$customData = [
-				'torrent_id' => $id,
-				'custom_field_id' => $customField,
-				'custom_field_value' => $value,
-				'created_at' => $now,
-				'updated_at' => $now,
-			];
-			\Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
-		}
-	}
+if (!empty($_POST['custom_fields'][$catmod])) {
+	$customField = new \Nexus\Field\Field();
+	$customField->saveFieldValues($catmod, $id, $_POST['custom_fields'][$catmod]);
 }
 
 /**

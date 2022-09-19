@@ -25,5 +25,6 @@ $lang_fields = [
     'field_type_radio' => '橫向單選',
     'field_type_checkbox' => '橫向多選',
     'field_type_select' => '下拉單選',
+    'col_display' => '自定義展示',
 
 ];

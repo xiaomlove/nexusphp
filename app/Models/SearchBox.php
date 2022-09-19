@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 class SearchBox extends NexusModel
 {
     protected $table = 'searchbox';
@@ -32,6 +34,21 @@ class SearchBox extends NexusModel
         }
         return $result;
     }
+
+    public function getCustomFieldsAttribute($value): array
+    {
+        if (!is_array($value)) {
+            return explode(',', $value);
+        }
+    }
+
+    public function setCustomFieldsAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['custom_fields'] = implode(',', $value);
+        }
+    }
+
 
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

@@ -278,7 +278,7 @@ JS;
         do_action('torrent_detail_before_desc', $row['id'], $CURUSER['id']);
 
         /**************start custom fields****************/
-        echo $customField->renderOnTorrentDetailsPage($id);
+        echo $customField->renderOnTorrentDetailsPage($id, $row['search_box_id']);
 
         /**************end custom fields****************/
 

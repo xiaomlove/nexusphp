@@ -33,6 +33,7 @@ return [
     'submit' => '提交',
     'cancel' => '取消',
     'reset' => '重置',
+    'anonymous' => '匿名',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [
