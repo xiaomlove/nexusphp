@@ -784,6 +784,7 @@ elseif($action == 'submit')
 		$updateset[] = "name=".sqlesc($name);
 		$updateset[] = "image=".sqlesc($image);
 		$updateset[] = "class_name=".sqlesc($class_name);
+		$updateset[] = "source=".sqlesc($source);
 		$updateset[] = "medium=".sqlesc($medium);
 		$updateset[] = "codec=".sqlesc($codec);
 		$updateset[] = "standard=".sqlesc($standard);
