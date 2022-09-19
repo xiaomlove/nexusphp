@@ -146,13 +146,14 @@ if(user_can('torrentonpromotion'))
 if(user_can('torrentsticky'))
 {
     if (isset($_POST['pos_state']) && isset(\App\Models\Torrent::$posStates[$_POST['pos_state']])) {
-        $posStateUntil = null;
-        $posState = \App\Models\Torrent::POS_STATE_STICKY_NONE;
-        if (!empty($_POST['pos_state_until']) && $_POST['pos_state'] != \App\Models\Torrent::POS_STATE_STICKY_NONE) {
-            $posStateUntil = \Carbon\Carbon::parse($_POST['pos_state_until']);
-            if ($posStateUntil->gte(now())) {
-                $posState = $_POST['pos_state'];
-            }
+        $posStateUntil = $_POST['pos_state_until'] ?: null;
+        $posState = $_POST['pos_state'];
+        if ($posState == \App\Models\Torrent::POS_STATE_STICKY_NONE) {
+            $posStateUntil = null;
+        }
+        if ($posStateUntil && \Carbon\Carbon::parse($posStateUntil)->lte(now())) {
+            $posState = \App\Models\Torrent::POS_STATE_STICKY_NONE;
+            $posStateUntil = null;
         }
         $updateset[] = sprintf("pos_state = %s", sqlesc($posState));
         $updateset[] = sprintf("pos_state_until = %s", sqlesc($posStateUntil));
