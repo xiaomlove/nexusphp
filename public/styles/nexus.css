@@ -56,6 +56,7 @@ img.hitandrun {
 }
 .nexus-media-info-raw {
     padding: 0 0.5rem;
+    border: none;
 }
 .nexus-media-info-raw .spoiler-title-box{
     text-align: center;
