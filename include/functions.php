@@ -281,7 +281,7 @@ function formatSpoiler($content, $title = '', $defaultCollapsed = true): string
         $contentClass .= " collapse";
     }
     $HTML = sprintf(
-        '<div><div><div class="spoiler-title" title="%s">%s</div></div><div class="%s"><pre>%s</pre></div></div>',
+        '<div><div class="spoiler-title-box"><div class="spoiler-title" title="%s">%s</div></div><div class="%s">%s</div></div>',
         $lang_functions['spoiler_expand_collapse'], $title, $contentClass, $content
     );
     return addTempCode($HTML);
@@ -312,8 +312,6 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 	if ($strip_html) {
 		$s = htmlspecialchars($s);
 	}
-	// Linebreaks
-	$s = nl2br($s);
 
 	if (strpos($s,"[code]") !== false && strpos($s,"[/code]") !== false) {
 //		$s = preg_replace("/\[code\](.+?)\[\/code\]/eis","formatCode('\\1')", $s);
@@ -321,6 +319,15 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 		    return formatCode($matches[1]);
         }, $s);
 	}
+
+    if (strpos($s,"[raw]") !== false && strpos($s,"[/raw]") !== false) {
+        $s = preg_replace_callback("/\[raw\](.+?)\[\/raw\]/is",function ($matches) {
+            return addTempCode($matches[1]);
+        }, $s);
+    }
+
+    // Linebreaks
+    $s = nl2br($s);
 
 	$originalBbTagArray = array('[siteurl]', '[site]','[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[pre]', '[/pre]', '[/color]', '[/font]', '[/size]', "  ");
 	$replaceXhtmlTagArray = array(get_protocol_prefix().get_setting('basic.BASEURL'), get_setting('basic.SITENAME'), '<img class="listicon listitem" src="pic/trans.gif" alt="list" />', '<b>', '</b>', '<i>', '</i>', '<u>', '</u>', '<pre>', '</pre>', '</span>', '</font>', '</font>', ' &nbsp;');
@@ -2484,6 +2491,7 @@ $cssupdatedate=($cssupdatedate ? "?".htmlspecialchars($cssupdatedate) : "");
 <link rel="stylesheet" href="<?php echo $css_uri."theme.css".$cssupdatedate?>" type="text/css" />
 <link rel="stylesheet" href="<?php echo $css_uri."DomTT.css".$cssupdatedate?>" type="text/css" />
 <link rel="stylesheet" href="styles/curtain_imageresizer.css<?php echo $cssupdatedate?>" type="text/css" />
+<link rel="stylesheet" href="styles/nexus.css<?php echo $cssupdatedate?>" type="text/css" />
 <?php
 if ($CURUSER){
 //	$caticonrow = get_category_icon_row($CURUSER['caticon']);

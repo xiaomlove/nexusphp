@@ -75,4 +75,5 @@ return [
         'deny_comment_show' => '審核不通過，原因：:reason',
         'logs_label' => '審核記錄'
     ],
+    'show_hide_media_info' => '顯示/隱藏原始 MediaInfo',
 ];

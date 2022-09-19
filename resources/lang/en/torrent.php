@@ -75,4 +75,5 @@ return [
         'deny_comment_show' => 'Denied, reason: :reason',
         'logs_label' => 'Approval logs'
     ],
+    'show_hide_media_info' => 'Show/Hide raw MediaInfo',
 ];
