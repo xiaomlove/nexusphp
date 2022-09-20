@@ -15,6 +15,7 @@ use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use phpDocumentor\Reflection\DocBlock\Tags\See;
+use PhpIP\IP;
 
 class SeedBoxRecordResource extends Resource
 {
@@ -60,7 +61,17 @@ class SeedBoxRecordResource extends Resource
                 Tables\Columns\TextColumn::make('bandwidth')->label(__('label.seed_box_record.bandwidth')),
                 Tables\Columns\TextColumn::make('ip')
                     ->label(__('label.seed_box_record.ip'))
-                    ->searchable()
+                    ->searchable(true, function (Builder $query, $search) {
+                        try {
+                            $ip = IP::create($search);
+                            $ipNumeric = $ip->numeric();
+                            return $query->orWhere(function (Builder $query) use ($ipNumeric) {
+                                return $query->where('ip_begin_numeric', '<=', $ipNumeric)->where('ip_end_numeric', '>=', $ipNumeric);
+                            });
+                        } catch (\Exception $exception) {
+                            do_log("Invalid IP: $search, error: " . $exception->getMessage());
+                        }
+                    })
                     ->formatStateUsing(fn ($record) => $record->ip ?: sprintf('%s ~ %s', $record->ip_begin, $record->ip_end)),
                 Tables\Columns\TextColumn::make('comment')->label(__('label.comment')),
                 Tables\Columns\BadgeColumn::make('status')
