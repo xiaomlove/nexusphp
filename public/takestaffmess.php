@@ -28,11 +28,19 @@ $subject = trim($_POST['subject']);
 $size = 10000;
 $page = 1;
 set_time_limit(300);
-$classStr = implode(",", $updateset);
+$conditions = [];
+if (!empty($_POST['classes'])) {
+    $conditions[] = "class IN (" . implode(', ', $_POST['classes']) . ")";
+}
+$conditions = apply_filter("role_query_conditions", $conditions, $_POST);
+if (empty($conditions)) {
+    stderr("Error","No valid filter");
+}
+$whereStr = implode(' OR ', $conditions);
 while (true) {
     $msgValues = [];
     $offset = ($page - 1) * $size;
-    $query = sql_query("SELECT id FROM users WHERE class IN ($classStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size");
+    $query = sql_query("SELECT id FROM users WHERE ($whereStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size");
     while($dat=mysql_fetch_assoc($query))
     {
         $msgValues[] = sprintf('(%s, %s, %s, %s, %s)', $sender_id, $dat['id'], $dt, sqlesc($subject), sqlesc($msg));

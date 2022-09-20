@@ -64,7 +64,7 @@ $classes = array_chunk(\App\Models\User::$classes, 4, true);
                                     </table>
                                 </td>
                             </tr>
-                            <?php do_action('increment_bulk_form_filters') ?>
+                            <?php do_action('form_role_filter', 'Add to Role') ?>
                             <tr><td class="rowhead" valign="top">Subject </td><td class="rowfollow"><input type=text name=subject size=82></td></tr>
                             <tr><td class="rowhead" valign="top">Reason </td><td class="rowfollow"><textarea name=msg cols=80 rows=5><?php echo $body ?? ''?></textarea></td></tr>
                             <tr>

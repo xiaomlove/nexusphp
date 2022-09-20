@@ -24,35 +24,43 @@ if ($_GET["returnto"] || $_SERVER["HTTP_REFERER"])
 <?php
 if ($_GET["sent"] == 1) {
 ?>
-<tr><td colspan=2><font color=red><b>The message has ben sent.</font></b></tr></td>
+<tr><td colspan=2><font color=red><b>The message has ben sent.</b></font></td></tr>
 <?php
 }
 ?>
 <tr>
-<td><b>Send to:</b><br />
-  <table style="border: 0" width="100%" cellpadding="0" cellspacing="0">
-      <?php
-      foreach ($classes as $chunk) {
-          printf('<tr>');
-          foreach ($chunk as $class => $info) {
-              printf('<td style="border: 0"><label><input type="checkbox" name="clases[]" value="%s" />%s</label></td>', $class, $info['text']);
-          }
-          printf('</tr>');
-      }
-      ?>
-    </table>
-  </td>
+    <td><b>Send to class:</b></td>
+    <td>
+        <table style="border: 0" width="100%" cellpadding="0" cellspacing="0">
+            <?php
+            foreach ($classes as $chunk) {
+                printf('<tr>');
+                foreach ($chunk as $class => $info) {
+                    printf('<td style="border: 0"><label><input type="checkbox" name="classes[]" value="%s" />%s</label></td>', $class, $info['text']);
+                }
+                printf('</tr>');
+            }
+            ?>
+        </table>
+    </td>
 </tr>
-<tr><td>Subject <input type=text name=subject size=75></tr></td>
-<tr><td><textarea name=msg cols=80 rows=15><?php echo $body?></textarea></td></tr>
+<?php do_action('form_role_filter', 'Send to Role:') ?>
 <tr>
-<td colspan=1><div align="center"><b>Sender:&nbsp;&nbsp;</b>
+    <td class="rowhead">Subject</td>
+    <td> <input type=text name=subject size=75></td>
+</tr>
+<tr>
+    <td class="rowhead">Message</td>
+    <td><textarea name=msg cols=80 rows=15><?php echo $body?></textarea></td>
+</tr>
+<tr>
+<td colspan=2><div align="center"><b>Sender:&nbsp;&nbsp;</b>
 <?php echo $CURUSER['username']?>
 <input name="sender" type="radio" value="self" checked>
 &nbsp; System
 <input name="sender" type="radio" value="system">
 </div></td></tr>
-<tr><td colspan=1 align=center><input type=submit value="Send!" class=btn></td></tr>
+<tr><td colspan=2 align=center><input type=submit value="Send!" class=btn></td></tr>
 </table>
 <input type=hidden name=receiver value=<?php echo $receiver?>>
 </form>

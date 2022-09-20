@@ -37,7 +37,7 @@ $conditions = [];
 if (!empty($_POST['classes'])) {
     $conditions[] = "class IN (" . implode(', ', $_POST['classes']) . ")";
 }
-$conditions = apply_filter("increment_bulk_query_conditions", $conditions, $_POST);
+$conditions = apply_filter("role_query_conditions", $conditions, $_POST);
 if (empty($conditions)) {
     stderr("Error","No valid filter");
 }
