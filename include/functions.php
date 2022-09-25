@@ -5867,7 +5867,8 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     if ($count > $maxseeding_bonus)
         $count = $maxseeding_bonus;
     $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
-    $official_bonus =  $valuetwo * atan($official_a / $l_bonus) + ($perseeding_bonus * $count);
+    //Official addition don't think about the minimum value
+    $official_bonus =  $valuetwo * atan($official_a / $l_bonus);
     $result = compact('seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'official_a', 'official_bonus');
     $result['donor_times'] = $donortimes_bonus;
     $result['official_additional_factor'] = $officialAdditionalFactor;
