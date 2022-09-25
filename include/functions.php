@@ -5837,7 +5837,7 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
             $tagGrouped[$tagItem['torrent_id']][$tagItem['tag_id']] = 1;
         }
     }
-    $officialTag = \App\Models\Setting::get('system.official_tag');
+    $officialTag = \App\Models\Setting::get('bonus.official_tag');
     $officialAdditionalFactor = \App\Models\Setting::get('bonus.official_addition');
     $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
     $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');

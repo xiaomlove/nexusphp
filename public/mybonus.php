@@ -461,8 +461,9 @@ $A = $seedBonusResult['A'];
 	$width = $percent * 4;
 	print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
 
-	$officialAdditionalFactor = get_setting('bonus.official_addition');
-	if ($officialAdditionalFactor > 0) {
+	$officialAdditionalFactor = get_setting('bonus.official_addition', 0);
+	$officialTag = get_setting('bonus.official_tag');
+	if ($officialAdditionalFactor > 0 && $officialTag) {
         print("<h1>".$lang_mybonus['text_get_by_seeding_official']."</h1>");
         print("<ul>");
         print("<li>".$lang_mybonus['official_calculate_method']."</li>");
@@ -482,7 +483,7 @@ $rowSpan = 1;
 if ($haremFactor > 0) {
     $rowSpan++;
 }
-if ($officialAdditionalFactor > 0) {
+if ($officialAdditionalFactor > 0 && $officialTag) {
     $rowSpan++;
 }
 $summaryTable = '<table cellspacing="4" cellpadding="4" style="width: 50%"><tbody>';
@@ -505,7 +506,7 @@ if ($haremFactor > 0) {
         number_format($haremAddition * $haremFactor, 3)
     );
 }
-if ($officialAdditionalFactor > 0) {
+if ($officialAdditionalFactor > 0 && $officialTag) {
     $summaryTable .= sprintf(
         '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
         $lang_mybonus['reward_type_official_addition'],
