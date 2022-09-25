@@ -91,12 +91,13 @@ $lang_mybonus = array
 	'text_bonus_gift_note' => "可能你不需要魔力值，為什麼不把它送給那些需要的人呢？你可以把自己的魔力值作為禮物送給別人。交易完成後，你的魔力值會減少，禮物接收者的魔力值則會增加。同時，接收者會收到一條關於你的饋贈的短訊。",
 	'text_error' => "錯誤",
 	'text_ratio_too_high' => "分享率已很高",
-	'text_bonus_formula_one' => "每小時獲得的魔力值點數由下面的公式給出<br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulaa.png alt=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) )\" title=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) )\"><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulab.png alt=\"B = B0 * 2 / pi * arctan( A / L )\" title=\"B = B0 * 2 / pi * arctan( A / L )\"><br />
+	'text_bonus_formula_one' => "每小時獲得的魔力值點數由下面的公式給出<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulaa.svg title=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) ) * Wi\"><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulab.png title=\"B = B0 * 2 / pi * arctan( A / L )\"><br />
 式中<ul><li><b>A</b>為中間變量</li><li><b>Ti</b>為第<b>i</b>個種子的生存時間, 即自種子發布起到現在所經過的時間, 單位是周</li><li><b>T0</b>為參數。<b>T0</b> = ",
 	'text_bonus_formula_two' => "</li><li><b>Si</b>為第<b>i</b>個種子的大小，單位是GB</li><li><b>Ni</b>為第<b>i</b>個種子當前的做種者數</li><li><b>N0</b>為參數。<b>N0</b> = ",
 	'text_bonus_formula_three' => "</li><li><b>B</b>為1小時中用戶獲得的做種魔力值點數</li><li><b>B0</b>為參數，代表用戶1小時獲得魔力值的上限。<b>B0</b> = ",
 	'text_bonus_formula_four' => "</li><li><b>L</b>為參數。<b>L</b> = ",
 	'text_bonus_formula_five' => "</li></ul>簡言之，為做種人數少、文件體積大的種子做種能獲得更多魔力值。",
+    'text_bonus_formula_wi' => "</li><li><b>Wi</b>為第<b>i</b>個種子的權重系數，默認為 1，零魔種子為 ",
 	'text_user_with_ratio_above' => "分享率高于",
 	'text_and_uploaded_amount_above' => "且上傳量大于",
 	'text_cannot_exchange_uploading' => "GB的用戶不能換取更多的上傳量。",
@@ -137,13 +138,18 @@ $lang_mybonus = array
     'text_success_buy_attendance_card' => '成功購買了一張補簽卡。',
     'text_harem_addition_get' => '當前後宮加成每小時獲得 %s 魔力',
     'reward_type' => '獎勵類型',
-    'addition' => '加成',
+    'factor' => '系數',
     'got_bonus' => '獲得魔力',
     'total' => '合計',
     'reward_type_basic' => '基本獎勵',
     'reward_type_harem_addition' => '後宮加成',
     'bonus_base' => '基礎魔力',
     'lock_text' => '系統限製 %s 秒內只能點擊交換按鈕一次！',
+    'text_get_by_seeding_official' => '官種每小時將額外得到如下的魔力值',
+    'official_calculate_method' => '官種獎勵計算公式同上，只是僅針對官種進行計算',
+    'official_tag_bonus_additional_factor' => '最終獎勵為計算所得官種獎勵乘以官種系數，當前官種系數為: ',
+    'reward_type_official_addition' => '官種加成',
+
 );
 
 ?>

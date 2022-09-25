@@ -265,22 +265,36 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if (mysql_num_rows($res) > 0)
 	{
 	    $haremAdditionFactor = get_setting('bonus.harem_addition');
+	    $officialAdditionFactor = get_setting('bonus.official_addition');
 		while ($arr = mysql_fetch_assoc($res))	//loop for different users
 		{
+		    $userInfo = get_user_row($arr['userid']);
+            $isDonor = is_donor($userInfo);
             $seedBonusResult = calculate_seed_bonus($arr['userid']);
-            $dividend = 3600 / $autoclean_interval_one;
-            $all_bonus = $seedBonusResult['all_bonus'] / $dividend;
-            $seed_points = $seedBonusResult['seed_points'] / $dividend;
-            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult) . ", all_bonus: $all_bonus, seed_points: $seed_points";
-            if ($haremAdditionFactor > 0) {
-                $haremAddition = calculate_harem_addition($arr['userid']) * $haremAdditionFactor / $dividend;
-                $all_bonus += $haremAddition;
-                $bonusLog .= ", haremAddition: $haremAddition, new all_bonus: $all_bonus";
+            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult);
+            $all_bonus = $seedBonusResult['seed_bonus'];
+            $bonusLog .= ", all_bonus: $all_bonus";
+            if ($isDonor) {
+                $all_bonus = $all_bonus * $donortimes_bonus;
+                $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
             }
+            if ($officialAdditionFactor > 0) {
+                $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
+                $all_bonus += $officialAddition;
+                $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
+            }
+            if ($haremAdditionFactor > 0) {
+                $haremBonus = calculate_harem_addition($arr['userid']);
+                $haremAddition =  $haremBonus * $haremAdditionFactor;
+                $all_bonus += $haremAddition;
+                $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
+            }
+            $dividend = 3600 / $autoclean_interval_one;
+            $all_bonus = $all_bonus / $dividend;
+            $seed_points = $seedBonusResult['seed_points'] / $dividend;
             $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
             do_log("$bonusLog, query: $sql");
 			sql_query($sql);
-
 		}
 	}
 	$log = 'calculate seeding bonus';

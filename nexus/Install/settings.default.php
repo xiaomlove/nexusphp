@@ -236,6 +236,8 @@ return array (
       'hundredgbupload' => 10000,
       'tengbdownload' => 1000,
       'hundredgbdownload' => 8000,
+      'official_addition' => '0.5',
+      'zero_bonus_factor' => '0.2',
   ),
   'account' =>
   array (

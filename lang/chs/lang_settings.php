@@ -218,6 +218,7 @@ $lang_settings = array
 	'text_bonus_formula_four' => "。默认为'4'",
 	'text_bonus_formula_five' => "<b>Si</b>为第<b>i</b>个种子的大小，单位是GB",
 	'text_bonus_formula_six' => "<b>Ni</b>为第<b>i</b>个种子当前的做种者数</li><li><b>N0</b>为参数。<b>N0</b> = ",
+	'text_bonus_formula_zero_bonus_factor' => "<b>Wi</b>为第<b>i</b>个种子权重系数。默认为 1，零魔种子为 ",
 	'text_bonus_formula_seven' => "。默认为'7'",
 	'text_bonus_formula_eight' => "<b>B</b>为1小时中用户获得的做种魔力值点数",
 	'text_bonus_formula_nine' => "<b>B0</b>为参数，代表用户1小时获得魔力值的上限。<b>B0</b> = ",
@@ -779,6 +780,14 @@ $lang_settings = array
     'text_ten_gb_download_credit_note' => " 个魔力值，如果他选择交换10.0 GB下载量。默认'1000'。",
     'row_hundred_gb_download_credit' => "100.0 GB 下载量",
     'text_hundred_gb_download_credit_note' => " 个魔力值，如果他选择交换100.0 GB下载量。默认'8000'。",
+    'row_official_addition' => '官种加成',
+    'text_user_would_get_by_official' => '用户将获得官种正常魔力值的',
+    'text_addition_addition_note' => '倍作为奖励（系数，如填入 0.01，官种获得 100 魔力则奖励用户 100 * 0.01 = 1）',
+    'zero_bonus_factor_default' => '。默认为：0.2',
+    'row_official_tag' => '官种标签',
+    'text_official_tag_note' => '。带此标签的种子为官种',
+    'row_zero_bonus_tag' => '零魔标签',
+    'text_zero_bonus_tag_note' => '。带此标签的种子为零魔种子',
 );
 
 ?>

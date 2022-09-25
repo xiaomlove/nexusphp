@@ -730,6 +730,7 @@ function get_user_row($id)
         } else {
             $arr['__is_rainbow'] = 0;
         }
+        $arr['__is_donor'] = is_donor($arr);
         return apply_filter("user_row", $arr);
     });
 
@@ -1030,4 +1031,9 @@ function user_can($permission, $fail = false, $uid = 0): bool
         }
     }
     throw new \App\Exceptions\InsufficientPermissionException();
+}
+
+function is_donor(array $userInfo): bool
+{
+    return $userInfo['donor'] == 'yes' && ($userInfo['donoruntil'] === null || $userInfo['donoruntil'] == '0000-00-00 00:00:00' || $userInfo['donoruntil'] >= date('Y-m-d H:i:s'));
 }

@@ -218,6 +218,7 @@ $lang_settings = array
 	'text_bonus_formula_four' => "。預設為'4'",
 	'text_bonus_formula_five' => "<b>Si</b>為第<b>i</b>個種子的大小，單位是GB",
 	'text_bonus_formula_six' => "<b>Ni</b>為第<b>i</b>個種子目前的做種者數</li><li><b>N0</b>為參數。<b>N0</b> = ",
+    'text_bonus_formula_zero_bonus_factor' => "<b>Wi</b>為第<b>i</b>個種子權重系數。默認為 1，零魔種子為 ",
 	'text_bonus_formula_seven' => "。預設為'7'",
 	'text_bonus_formula_eight' => "<b>B</b>為1小時中用戶獲得的做種魔力值點數",
 	'text_bonus_formula_nine' => "<b>B0</b>為參數，代表用戶1小時獲得魔力值的上限。<b>B0</b> = ",
@@ -779,6 +780,14 @@ $lang_settings = array
     'text_ten_gb_download_credit_note' => " 個魔力值，如果他選擇交換10.0 GB下載量。默認'1000'。",
     'row_hundred_gb_download_credit' => "100.0 GB 下載量",
     'text_hundred_gb_download_credit_note' => " 個魔力值，如果他選擇交換100.0 GB下載量。默認'8000'。",
+    'row_official_addition' => '官種加成',
+    'text_user_would_get_by_official' => '用戶將獲得官種正常魔力值的',
+    'text_addition_addition_note' => '倍作為獎勵（系數，如填入 0.01，官種獲得 100 魔力則獎勵用戶 100 * 0.01 = 1）',
+    'zero_bonus_factor_default' => '。默認為：0.2',
+    'row_official_tag' => '官種標簽',
+    'text_official_tag_note' => '。帶此標簽的種子為官種',
+    'row_zero_bonus_tag' => '零魔標簽',
+    'text_zero_bonus_tag_note' => '。帶此標簽的種子為零魔種子',
 );
 
 ?>

@@ -218,6 +218,7 @@ $lang_settings = array
 	'text_bonus_formula_four' => ". Default '4'",
 	'text_bonus_formula_five' => "<b>Si</b> is the <b>i</b>th torrent's size, in GB",
 	'text_bonus_formula_six' => "<b>Ni</b> is the number of current seeders of the <b>i</b>th torrent</li><li><b>N0</b> is a parameter. <b>N0</b> = ",
+    'text_bonus_formula_zero_bonus_factor' => "<b>Wi</b> is the <b>i</b>th torrent's weight. Default is 1, zero torrent is ",
 	'text_bonus_formula_seven' => ". Default '7'",
 	'text_bonus_formula_eight' => "<b>B</b> is the number of karma points gained by seeding in an hour",
 	'text_bonus_formula_nine' => "<b>B0</b> is a parameter, which standards for the maximum bonus points per hour a user can get by seeding. <b>B0</b> = ",
@@ -779,6 +780,14 @@ $lang_settings = array
     'text_ten_gb_download_credit_note' => " bonus points to exchange for 10.0 GB downloading credit. Default '1000'.",
     'row_hundred_gb_download_credit' => "100.0 GB downloading credit",
     'text_hundred_gb_download_credit_note' => " bonus points to exchange for 100.0 GB downloading credit. Default '8000'.",
+    'row_official_addition' => 'Official addition',
+    'text_user_would_get_by_official' => 'The user will receive the normal bonus value of the official torrent',
+    'text_addition_addition_note' => 'times as reward (factor, e.g. fill in 0.01, if official torrens gets 100 bonus then reward user 100 * 0.01 = 1)',
+    'zero_bonus_factor_default' => '. Default is: 0.2',
+    'row_official_tag' => 'Official tag',
+    'text_official_tag_note' => '. Torrents with this tag are official torrents',
+    'row_zero_bonus_tag' => 'Zero bonus tag',
+    'text_zero_bonus_tag_note' => '. Torrents with this tag are zero bonus torrents',
 );
 
 ?>

@@ -5828,35 +5828,50 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     } else {
         $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
     }
+    $tagGrouped = [];
     $torrentResult = \Nexus\Database\NexusDB::select($sql);
-    do_log("$logPrefix, sql: $sql, count: " . count($torrentResult));
+    if (!empty($torrentResult)) {
+        $torrentIdArrReal = array_column($torrentResult, 'id');
+        $tagResult = \Nexus\Database\NexusDB::select(sprintf("select torrent_id, tag_id from torrent_tags where torrent_id in (%s)", implode(',', $torrentIdArrReal)));
+        foreach ($tagResult as $tagItem) {
+            $tagGrouped[$tagItem['torrent_id']][$tagItem['tag_id']] = 1;
+        }
+    }
+    $officialTag = \App\Models\Setting::get('system.official_tag');
+    $officialAdditionalFactor = \App\Models\Setting::get('bonus.official_addition');
+    $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
+    $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');
+    do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor");
+    $official_a = 0;
     foreach ($torrentResult as $torrent)
     {
         $weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
-        $gb_size = $torrent['size'] / 1073741824;
+        $gb_size = $gb_size_raw = $torrent['size'] / 1073741824;
+        if ($zeroBonusTag && isset($tagGrouped[$torrent['id']][$zeroBonusTag]) && is_numeric($zeroBonusFactor)) {
+            $gb_size = $gb_size * $zeroBonusFactor;
+        }
         $temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
-        do_log(sprintf(
-            "$logPrefix, torrent: %s, peer ID: %s, weeks: %s, size: %s GB, increase A: %s",
-            $torrent['id'], $torrent['peerID'], $weeks_alive, $gb_size, $temp
-        ));
         $A += $temp;
         $count++;
         $torrent_peer_count++;
+        $officialAIncrease = 0;
+        if ($officialTag && isset($tagGrouped[$torrent['id']][$officialTag])) {
+            $officialAIncrease = $temp;
+        }
+        $official_a += $officialAIncrease;
+        do_log(sprintf(
+            "$logPrefix, torrent: %s, peer ID: %s, weeks: %s, size_raw: %s GB, size: %s GB, increase A: %s, increase official A: %s",
+            $torrent['id'], $torrent['peerID'], $weeks_alive, $gb_size_raw, $gb_size, $temp, $officialAIncrease
+        ));
     }
     if ($count > $maxseeding_bonus)
         $count = $maxseeding_bonus;
-    $all_bonus = $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
-    $is_donor_info = \Nexus\Database\NexusDB::getOne('users', "id = $uid", "donor, donoruntil");
-    $is_donor_until = $is_donor_info['donoruntil'];
-    $is_donor = $is_donor_info['donor'] == 'yes' && ($is_donor_until === null || $is_donor_until == '0000-00-00 00:00:00' || $is_donor_until >= date('Y-m-d H:i:s'));
-    $is_donor = intval($is_donor);
-    $log = "$logPrefix, original bonus: $all_bonus, is_donor: $is_donor, donortimes_bonus: $donortimes_bonus";
-    if ($is_donor && $donortimes_bonus > 0) {
-        $all_bonus = $all_bonus * $donortimes_bonus;
-        $log .= ", do multiple, all_bonus: $all_bonus";
-    }
-    $result = compact('seed_points','seed_bonus', 'all_bonus', 'A', 'count', 'torrent_peer_count');
-    do_log("$log, result: " . json_encode($result));
+    $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
+    $official_bonus =  $valuetwo * atan($official_a / $l_bonus) + ($perseeding_bonus * $count);
+    $result = compact('seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'official_a', 'official_bonus');
+    $result['donor_times'] = $donortimes_bonus;
+    $result['official_additional_factor'] = $officialAdditionalFactor;
+    do_log("$logPrefix, result: " . json_encode($result));
     return $result;
 }
 

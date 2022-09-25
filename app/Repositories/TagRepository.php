@@ -154,5 +154,20 @@ class TagRepository extends BaseRepository
         return self::$allTags;
     }
 
+    public function buildSelect($name, $value): string
+    {
+        $list = $this->listAll();
+        $select = sprintf('<select name="%s"><option value="">%s</option>', $name, nexus_trans('nexus.select_one_please'));
+        foreach ($list as $item) {
+            $selected = '';
+            if ($item->id == $value) {
+                $selected = ' selected';
+            }
+            $select .= sprintf('<option value="%s"%s>%s</option>', $item->id, $selected, $item->name);
+        }
+        $select .= '</select>';
+        return $select;
+    }
+
 
 }

@@ -91,12 +91,13 @@ $lang_mybonus = array
 	'text_bonus_gift_note' => "Well perhaps you don't need the upload credit, but you know somebody that could use the Karma boost! You are now able to give your Karma credits as a gift! The points are then removed from your Bonus Bank and added to the account of a user of your choice! And they receive a PM with all the info as well as who it came from...",
 	'text_error' => "Error",
 	'text_ratio_too_high' => "Your ratio is high",
-	'text_bonus_formula_one' => "The number of karma points gained per hour is given by the following formula<br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"pic/bonusformulaa.png\" alt=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) )\" title=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) )\" /><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"pic/bonusformulab.png\" alt=\"B = B0 * 2 / pi * arctan( A / L )\" title=\"B = B0 * 2 / pi * arctan( A / L )\" /><br />
+	'text_bonus_formula_one' => "The number of karma points gained per hour is given by the following formula<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"pic/bonusformulaa.svg\" title=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) ) * Wi\" /><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"pic/bonusformulab.png\" title=\"B = B0 * 2 / pi * arctan( A / L )\" /><br />
 where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i</b>th torrent's Time Alive (TA), i.e. time elapsed since the torrent was uploaded, in weeks</li><li><b>T0</b> is a parameter. <b>T0</b> = ",
 	'text_bonus_formula_two' => "</li><li><b>Si</b> is the <b>i</b>th torrent's size, in GB</li><li><b>Ni</b> is the number of current seeders of the <b>i</b>th torrent</li><li><b>N0</b> is a parameter. <b>N0</b> = ",
 	'text_bonus_formula_three' => "</li><li><b>B</b> is the number of karma points gained by seeding in an hour</li><li><b>B0</b> is a parameter, which stands for the maximum bonus points per hour a user can get by seeding. <b>B0</b> = ",
 	'text_bonus_formula_four' => "</li><li><b>L</b> is a parameter. <b>L</b> = ",
 	'text_bonus_formula_five' => "</li></ul>In a nutshell, you can get more bonus by seeding less-seeded and larger torrents.",
+    'text_bonus_formula_wi' => "</li><li><b>Wi</b> is the <b>i</b>th torrent's weight, default is 1, zero torrent is ",
 	'text_user_with_ratio_above' => "User with ratio above ",
 	'text_and_uploaded_amount_above' => " and uploaded amount above ",
 	'text_cannot_exchange_uploading' => " GB cannot exchange for more uploading credit.",
@@ -137,13 +138,17 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'text_success_buy_attendance_card' => 'Success buy 1 attendance card.',
     'text_harem_addition_get' => 'Current harem addition gains %s bonus per hour',
     'reward_type' => 'Reward type',
-    'addition' => 'Addition',
+    'factor' => 'Factor',
     'got_bonus' => 'Got bonus',
     'total' => 'Total',
     'reward_type_basic' => 'Basic reward',
     'reward_type_harem_addition' => 'Harem addition',
     'bonus_base' => 'Base bonus',
     'lock_text' => 'The system limits you to one click on the exchange button within %s seconds!',
+    'text_get_by_seeding_official' => 'The official torrents will receive the following additional bonus value per hour',
+    'official_calculate_method' => 'The formula for calculating the official reward is the same as above, but only for the official type',
+    'official_tag_bonus_additional_factor' => 'The final reward is the calculated official type reward multiplied by the official type factor, the current official type factor is: ',
+    'reward_type_official_addition' => 'Official addition',
 );
 
 ?>
