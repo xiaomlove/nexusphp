@@ -92,6 +92,7 @@ return array (
       'show_top_uploader' => 'no',
       'imdb_language' => 'en-US',
       'offer_skip_approved_count' => 5,
+      'upload_deny_approval_deny_count' => 2,
   ),
   'smtp' =>
   array (

@@ -41,6 +41,7 @@ $lang_upload = array
 	'text_english_title' => "英文名:",
 	'text_titles_note' => "(如果英文名不存在，請使用拼音或不填寫)",
     'fill_quality' => '填寫質量',
+    'approval_deny_reach_upper_limit' => '當前審核被拒絕的種子數：%s 達到上限，不允許發布。',
 );
 
 ?>

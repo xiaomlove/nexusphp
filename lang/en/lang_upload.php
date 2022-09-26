@@ -41,6 +41,7 @@ $lang_upload = array
 	'text_english_title' => "English Name:",
 	'text_titles_note' => "(If no English Name exists, use pinyin or leave it blank)",
     'fill_quality' => 'Fill quality',
+    'approval_deny_reach_upper_limit' => 'The number of torrents whose current approval was denied: %s reached the upper limit and is not allowed to be upload.',
 );
 
 ?>

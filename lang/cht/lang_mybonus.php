@@ -145,11 +145,14 @@ $lang_mybonus = array
     'reward_type_harem_addition' => '後宮加成',
     'bonus_base' => '基礎魔力',
     'lock_text' => '系統限製 %s 秒內只能點擊交換按鈕一次！',
-    'text_get_by_seeding_official' => '官種每小時將額外得到如下的魔力值',
+    'text_get_by_seeding_official' => '官種加成每小時將額外得到如下的魔力值',
     'official_calculate_method' => '官種獎勵計算公式同上，只是僅針對官種進行計算',
     'official_tag_bonus_additional_factor' => '最終獎勵為計算所得官種獎勵乘以官種系數，當前官種系數為: ',
     'reward_type_official_addition' => '官種加成',
-
+    'text_get_by_harem' => '後宮加成每小時將額外得到如下的魔力值',
+    'harem_additional_desc' => '後宮只考慮直屬後宮。每個後宮加成值可<a href="invite.php?id=%s" target="_blank" class="altlink">在此</a>查看',
+    'harem_additional_factor' => '所得獎勵為全部後宮的時魔（不考慮加成）之和，乘以後宮加成系數，當前值為：',
+    'text_bonus_summary' => '每小時獲得的合計魔力值',
 );
 
 ?>

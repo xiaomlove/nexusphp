@@ -97,7 +97,7 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
 	'text_bonus_formula_three' => "</li><li><b>B</b> is the number of karma points gained by seeding in an hour</li><li><b>B0</b> is a parameter, which stands for the maximum bonus points per hour a user can get by seeding. <b>B0</b> = ",
 	'text_bonus_formula_four' => "</li><li><b>L</b> is a parameter. <b>L</b> = ",
 	'text_bonus_formula_five' => "</li></ul>In a nutshell, you can get more bonus by seeding less-seeded and larger torrents.",
-    'text_bonus_formula_wi' => "</li><li><b>Wi</b> is the <b>i</b>th torrent's weight, default is 1, zero torrent is ",
+    'text_bonus_formula_wi' => "</li><li><b>Wi</b> is the <b>i</b>th torrent's weight, default is 1, zero bonus torrent is ",
 	'text_user_with_ratio_above' => "User with ratio above ",
 	'text_and_uploaded_amount_above' => " and uploaded amount above ",
 	'text_cannot_exchange_uploading' => " GB cannot exchange for more uploading credit.",
@@ -149,6 +149,10 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'official_calculate_method' => 'The formula for calculating the official reward is the same as above, but only for the official type',
     'official_tag_bonus_additional_factor' => 'The final reward is the calculated official type reward multiplied by the official type factor, the current official type factor is: ',
     'reward_type_official_addition' => 'Official addition',
+    'text_get_by_harem' => 'The harem addition will give the following additional bonus value per hour',
+    'harem_additional_desc' => "Only direct harems will be considered for the harem. Each harem's bonus addition value can be viewed <a href=\"invite.php?id=%s\" class='altlink' target='_blank'>here</a>",
+    'harem_additional_factor' => 'The reward obtained is the sum of the hourly bonus of all the harems (regardless of the addition), multiplied by the harem bonus factor, with the current value of ',
+    'text_bonus_summary' => 'Total bonus gained per hour',
 );
 
 ?>
