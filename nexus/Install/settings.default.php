@@ -347,6 +347,7 @@ return array (
       'claim_reach_standard_uploaded' => \App\Models\Claim::STANDARD_UPLOADED_TIMES,
       'approval_status_icon_enabled' => 'no',
       'approval_status_none_visible' => 'yes',
+      'nfo_view_style_default' => \App\Models\Torrent::NFO_VIEW_STYLE_DOS,
   ),
   'attachment' =>
   array (

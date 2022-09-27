@@ -790,6 +790,7 @@ $lang_settings = array
     'text_zero_bonus_tag_note' => '. Torrents with this tag are zero bonus torrents',
     'row_upload_deny_approval_deny_count' => 'Refuse to upload approval deny count',
     'text_upload_deny_approval_deny_count_note' => "When the number of torrents approval deny is greater than or equal to this value, publishing is not allowed. Set to '0' to not use this rule",
+    'row_nfo_view_style_default' => 'NFO view style default',
 );
 
 ?>

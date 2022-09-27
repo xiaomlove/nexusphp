@@ -3908,7 +3908,11 @@ function validusername($username)
 // Some Swedish Latin-1 letters collide with popular DOS glyphs. If these
 // characters are between ASCII-characters (a-zA-Z and more) they are
 // treated like the Swedish letters, otherwise like the DOS glyphs.
-function code($ibm_437, $swedishmagic = false) {
+function code($ibm_437, $view) {
+    $swedishmagic = false;
+    if ($view == "magic") {
+        $swedishmagic = true;
+    }
 $table437 = array("\200", "\201", "\202", "\203", "\204", "\205", "\206", "\207",
 "\210", "\211", "\212", "\213", "\214", "\215", "\216", "\217", "\220",
 "\221", "\222", "\223", "\224", "\225", "\226", "\227", "\230", "\231",

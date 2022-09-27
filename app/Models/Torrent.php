@@ -19,8 +19,6 @@ class Torrent extends NexusModel
         'times_completed', 'approval_status', 'banned', 'visible', 'pos_state_until',
     ];
 
-    private static $globalPromotionState;
-
     const VISIBLE_YES = 'yes';
     const VISIBLE_NO = 'no';
 
@@ -154,6 +152,14 @@ class Torrent extends NexusModel
             'badge_color' => 'danger',
             'icon' => '<svg t="1655184952662" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="35029" width="16" height="16"><path d="M220.8 812.8l22.4 22.4 272-272 272 272 48-44.8-275.2-272 275.2-272-48-48-272 275.2-272-275.2-22.4 25.6-22.4 22.4 272 272-272 272z" fill="#d81e06" p-id="35030"></path></svg>',
         ],
+    ];
+
+    const NFO_VIEW_STYLE_DOS = 'magic';
+    const NFO_VIEW_STYLE_WINDOWS = 'latin-1';
+
+    public static array $nfoViewStyles = [
+        self::NFO_VIEW_STYLE_DOS => ['text' => 'DOS-vy'],
+        self::NFO_VIEW_STYLE_WINDOWS => ['text' => 'Windows-vy'],
     ];
 
     public function getPickInfoAttribute()

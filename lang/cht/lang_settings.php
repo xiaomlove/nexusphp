@@ -790,6 +790,7 @@ $lang_settings = array
     'text_zero_bonus_tag_note' => '。帶此標簽的種子為零魔種子',
     'row_upload_deny_approval_deny_count' => '拒絕發布審核不通過數',
     'text_upload_deny_approval_deny_count_note' => "當審核不通過的種子數大於等於此數值時，不允許發布。設置為 '0' 不使用此規則",
+    'row_nfo_view_style_default' => 'NFO 默認查看樣式',
 );
 
 ?>

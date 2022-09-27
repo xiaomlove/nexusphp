@@ -790,6 +790,7 @@ $lang_settings = array
     'text_zero_bonus_tag_note' => '。带此标签的种子为零魔种子',
     'row_upload_deny_approval_deny_count' => '拒绝发布审核不通过数',
     'text_upload_deny_approval_deny_count_note' => "当审核不通过的种子数大于等于此数值时，不允许发布。设置为 '0' 不使用此规则",
+    'row_nfo_view_style_default' => 'NFO 默认查看样式',
 );
 
 ?>

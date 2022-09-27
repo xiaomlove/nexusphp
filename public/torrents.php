@@ -1129,7 +1129,7 @@ if (!$Cache->get_page()){
 	$hotsearch = "";
 	while ($searchrow = mysql_fetch_assoc($searchres))
 	{
-		$hotsearch .= "<a href=\"".htmlspecialchars("?search=" . rawurlencode($searchrow["keywords"]) . "&notnewword=1")."\"><u>" . $searchrow["keywords"] . "</u></a>&nbsp;&nbsp;";
+		$hotsearch .= "<a href=\"".htmlspecialchars("?search=" . rawurlencode($searchrow["keywords"]) . "&notnewword=1")."\"><u>" . htmlspecialchars($searchrow["keywords"]) . "</u></a>&nbsp;&nbsp;";
 		$hotcount += mb_strlen($searchrow["keywords"],"UTF-8");
 		if ($hotcount > 60)
 			break;
