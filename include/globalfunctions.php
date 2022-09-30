@@ -971,7 +971,7 @@ function clear_user_cache($uid, $passkey = '')
     }
 }
 
-function clear_setting_cache($buildPermissionCache = false)
+function clear_setting_cache()
 {
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');

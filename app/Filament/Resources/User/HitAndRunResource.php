@@ -72,7 +72,7 @@ class HitAndRunResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['user', 'torrent', 'snatch']);
+        return parent::getEloquentQuery()->with(['user', 'torrent', 'snatch', 'torrent.basic_category']);
     }
 
     public static function getRelations(): array

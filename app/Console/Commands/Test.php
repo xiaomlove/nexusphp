@@ -89,8 +89,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = strstr('hr.*', '.', true);
-        dd($r);
+        $rep = new \NexusPlugin\HitAndRun\HitAndRunRepository();
+        $rep->initSectionHitAndRunSetting(SearchBox::SECTION_BROWSE . "_");
+        $rep->initSectionHitAndRunSetting(SearchBox::SECTION_SPECIAL . "_");
+        clear_setting_cache();
     }
 
 

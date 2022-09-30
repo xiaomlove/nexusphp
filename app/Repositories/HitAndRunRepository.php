@@ -335,7 +335,12 @@ class HitAndRunRepository extends BaseRepository
         //disable user
         /** @var User $user */
         $user = $hitAndRun->user;
-        $counts = $user->hitAndRuns()->where('status', HitAndRun::STATUS_UNREACHED)->count();
+        $counts = $user->hitAndRuns()
+            ->where('status', HitAndRun::STATUS_UNREACHED)
+            ->whereHas('torrent.basic_category', function (Builder $query) use ($searchBoxId) {
+                return $query->where('mode', $searchBoxId);
+            })
+            ->count();
         $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $searchBoxId);
         do_log("user: {$user->id}, H&R counts: $counts, disableCounts: $disableCounts", 'notice');
         if ($counts >= $disableCounts) {
