@@ -18,6 +18,14 @@ class SearchBox extends NexusModel
         'extra' => 'object'
     ];
 
+    const SECTION_BROWSE = 'browse';
+    const SECTION_SPECIAL = 'special';
+
+    public static array $sections = [
+        self::SECTION_BROWSE => ['text' => 'Browse'],
+        self::SECTION_SPECIAL => ['text' => 'Special'],
+    ];
+
     const EXTRA_DISPLAY_COVER_ON_TORRENT_LIST = 'display_cover_on_torrent_list';
     const EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST = 'display_seed_box_icon_on_torrent_list';
 
@@ -31,6 +39,21 @@ class SearchBox extends NexusModel
         $result = [];
         foreach (self::$extras as $extra => $info) {
             $result[$extra] = nexus_trans("searchbox.extras.$extra");
+        }
+        return $result;
+    }
+
+    public static function listSections($field = null): array
+    {
+        $result = [];
+        foreach (self::$sections as $key => $value) {
+            $value['text'] = nexus_trans("searchbox.sections.$key");
+            $value['mode'] = Setting::get("main.{$key}cat");
+            if ($field !== null && isset($value[$field])) {
+                $result[$key] = $value[$field];
+            } else {
+                $result[$key] = $value;
+            }
         }
         return $result;
     }

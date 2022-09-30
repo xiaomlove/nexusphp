@@ -13,4 +13,8 @@ return [
         \App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => '种子列表页展示封面',
         \App\Models\SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => '种子列表页展示 SeedBox 图标',
     ],
+    'sections' => [
+        'browse' => '种子区',
+        'special' => '特别区',
+    ],
 ];

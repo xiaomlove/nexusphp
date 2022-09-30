@@ -53,13 +53,6 @@ if (!empty($_POST['pt_gen'])) {
 
 $updateset[] = "technical_info = " . sqlesc($_POST['technical_info'] ?? '');
 $torrentOperationLog = [];
-/**
- * hr
- * @since 1.6.0-beta12
- */
-if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']]) && user_can('torrent_hr')) {
-    $updateset[] = "hr = " . sqlesc($_POST['hr']);
-}
 
 
 if ($enablenfo_main=='yes'){
@@ -214,6 +207,14 @@ if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class()
 $descriptionArr = format_description($descr);
 $cover = get_image_from_description($descriptionArr, true, false);
 $updateset[] = "cover = " . sqlesc($cover);
+
+/**
+ * hr
+ * @since 1.6.0-beta12
+ */
+if (isset($_POST['hr'][$newcatmode]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$newcatmode]]) && user_can('torrent_hr')) {
+    $updateset[] = "hr = " . sqlesc($_POST['hr'][$newcatmode]);
+}
 
 $sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
 do_log("[UPDATE_TORRENT]: $sql");

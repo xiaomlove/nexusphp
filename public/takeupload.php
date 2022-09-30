@@ -339,8 +339,8 @@ $insert = [
     'technical_info' => $_POST['technical_info'] ?? '',
     'cover' => $cover,
 ];
-if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']]) && user_can('torrent_hr')) {
-    $insert['hr'] = $_POST['hr'];
+if (isset($_POST['hr'][$catmod]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$catmod]]) && user_can('torrent_hr')) {
+    $insert['hr'] = $_POST['hr'][$catmod];
 }
 if(user_can('torrentsticky')) {
     if (isset($_POST['pos_state']) && isset(\App\Models\Torrent::$posStates[$_POST['pos_state']])) {

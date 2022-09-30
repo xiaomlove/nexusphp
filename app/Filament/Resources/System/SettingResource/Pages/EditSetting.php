@@ -76,6 +76,7 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
             }
         }
         Setting::query()->upsert($data, ['name'], ['value']);
+        do_action("nexus_setting_update");
         clear_setting_cache();
         Filament::notify('success', __('filament::resources/pages/edit-record.messages.saved'), true);
     }
@@ -85,13 +86,9 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
         $tabs = [];
         $tabs[] = Forms\Components\Tabs\Tab::make(__('label.setting.hr.tab_header'))
             ->id('hr')
-            ->schema([
-                Forms\Components\Radio::make('hr.mode')->options(HitAndRun::listModes(true))->inline(true)->label(__('label.setting.hr.mode')),
-                Forms\Components\TextInput::make('hr.inspect_time')->helperText(__('label.setting.hr.inspect_time_help'))->label(__('label.setting.hr.inspect_time'))->integer(),
-                Forms\Components\TextInput::make('hr.seed_time_minimum')->helperText(__('label.setting.hr.seed_time_minimum_help'))->label(__('label.setting.hr.seed_time_minimum'))->integer(),
-                Forms\Components\TextInput::make('hr.ignore_when_ratio_reach')->helperText(__('label.setting.hr.ignore_when_ratio_reach_help'))->label(__('label.setting.hr.ignore_when_ratio_reach'))->integer(),
-                Forms\Components\TextInput::make('hr.ban_user_when_counts_reach')->helperText(__('label.setting.hr.ban_user_when_counts_reach_help'))->label(__('label.setting.hr.ban_user_when_counts_reach'))->integer(),
-            ])->columns(2);
+            ->schema($this->getHitAndRunSchema())
+            ->columns(2)
+        ;
 
         $tabs[] = Forms\Components\Tabs\Tab::make(__('label.setting.backup.tab_header'))
             ->id('backup')
@@ -133,6 +130,18 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);
         return $tabs;
+    }
+
+    private function getHitAndRunSchema()
+    {
+        $default = [
+            Forms\Components\Radio::make('hr.mode')->options(HitAndRun::listModes(true))->inline(true)->label(__('label.setting.hr.mode')),
+            Forms\Components\TextInput::make('hr.inspect_time')->helperText(__('label.setting.hr.inspect_time_help'))->label(__('label.setting.hr.inspect_time'))->integer(),
+            Forms\Components\TextInput::make('hr.seed_time_minimum')->helperText(__('label.setting.hr.seed_time_minimum_help'))->label(__('label.setting.hr.seed_time_minimum'))->integer(),
+            Forms\Components\TextInput::make('hr.ignore_when_ratio_reach')->helperText(__('label.setting.hr.ignore_when_ratio_reach_help'))->label(__('label.setting.hr.ignore_when_ratio_reach'))->integer(),
+            Forms\Components\TextInput::make('hr.ban_user_when_counts_reach')->helperText(__('label.setting.hr.ban_user_when_counts_reach_help'))->label(__('label.setting.hr.ban_user_when_counts_reach'))->integer(),
+        ];
+        return apply_filter("nexus_hit_and_run_setting_schema", $default);
     }
 
 }

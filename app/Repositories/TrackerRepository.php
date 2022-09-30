@@ -1092,7 +1092,8 @@ class TrackerRepository extends BaseRepository
         if ($user->isDonating()) {
             return;
         }
-        $hrMode = Setting::get('hr.mode');
+//        $hrMode = Setting::get('hr.mode');
+        $hrMode = HitAndRun::getConfig('mode', $torrent->basic_category->mode);
         if ($hrMode == HitAndRun::MODE_DISABLED) {
             return;
         }

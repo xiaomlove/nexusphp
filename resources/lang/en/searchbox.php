@@ -13,4 +13,8 @@ return [
         \App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => 'Display cover on torrent list',
         \App\Models\SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => 'Display seed box icon on torrent list',
     ],
+    'sections' => [
+        'browse' => 'Torrents section',
+        'special' => 'Special section',
+    ],
 ];

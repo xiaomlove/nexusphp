@@ -289,7 +289,8 @@ class Torrent extends NexusModel
 
     public function getHrAttribute(): string
     {
-        $hrMode = Setting::get('hr.mode');
+//        $hrMode = Setting::get('hr.mode');
+        $hrMode = HitAndRun::getConfig('mode', $this->basic_category->mode);
         if ($hrMode == HitAndRun::MODE_GLOBAL) {
             return self::HR_YES;
         }

@@ -67,7 +67,8 @@ if ($rescount) {
 
     $query = (clone $baseQuery)
         ->with([
-            'torrent' => function ($query) {$query->select(['id', 'size', 'name']);},
+            'torrent' => function ($query) {$query->select(['id', 'size', 'name', 'category']);},
+            'torrent.basic_category',
             'snatch',
             'user' => function ($query) {$query->select(['id', 'lang']);},
             'user.language',
@@ -92,9 +93,9 @@ if ($rescount) {
 				<td class='rowfollow nowrap' align='center'>" . mksize($row->snatch->uploaded) . "</td>
 				<td class='rowfollow nowrap' align='center'>" . mksize($row->snatch->downloaded) . "</td>
 				<td class='rowfollow nowrap' align='center'>" . get_hr_ratio($row->snatch->uploaded, $row->snatch->downloaded) . "</td>
-				<td class='rowfollow nowrap' align='center'>" . ($row->status == \App\Models\HitAndRun::STATUS_INSPECTING ? mkprettytime(3600 * get_setting('hr.seed_time_minimum') - $row->snatch->seedtime) : '---') . "</td>
+				<td class='rowfollow nowrap' align='center'>" . $row->seedTimeRequired . "</td>
 				<td class='rowfollow nowrap' align='center'>" . format_datetime($row->snatch->completedat) . "</td>
-				<td class='rowfollow nowrap' align='center' >" . ($row->status == \App\Models\HitAndRun::STATUS_INSPECTING ? mkprettytime(\Carbon\Carbon::now()->diffInSeconds($row->snatch->completedat->addHours(get_setting('hr.inspect_time')))) : '---') . "</td>
+				<td class='rowfollow nowrap' align='center' >" . $row->inspectTimeLeft . "</td>
                 <td class='rowfollow nowrap' align='left' style='padding-left: 10px'>" . nl2br(trim($row->comment)) . "</td>
                 {$columnAction}
 				</tr>");

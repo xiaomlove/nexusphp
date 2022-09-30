@@ -17,6 +17,7 @@ if (!$row) die();
  * @since v1.6
  */
 $customField = new \Nexus\Field\Field();
+$hitAndRunRep = new \App\Repositories\HitAndRunRepository();
 
 $tagIdArr = \App\Models\TorrentTag::query()->where('torrent_id', $id)->get()->pluck('tag_id')->toArray();
 
@@ -145,10 +146,11 @@ else {
 
 		tr($lang_edit['row_content'],$team_select,1);
 	}
-
     echo $customField->renderOnUploadPage($id, $browsecatmode);
+	echo $hitAndRunRep->renderOnUploadPage($row['hr'], $browsecatmode);
 	if ($enablespecial) {
 	    $customField->renderOnUploadPage($id, $specialcatmode);
+        echo $hitAndRunRep->renderOnUploadPage($row['hr'], $specialcatmode);
     }
 
     tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox($tagIdArr), 1);
@@ -201,11 +203,6 @@ else {
 		}
 		tr($lang_edit['row_pick'], $pickcontent, 1);
 	}
-	if (get_setting('hr.mode') == \App\Models\HitAndRun::MODE_MANUAL && user_can('torrent_hr')) {
-        $hrRadio = sprintf('<label><input type="radio" name="hr" value="0"%s />NO</label>', (string)$row['hr'] === '0' ? ' checked' : '');
-        $hrRadio .= sprintf('<label><input type="radio" name="hr" value="1"%s />YES</label>', (string)$row['hr'] === '1' ? ' checked' : '');
-        tr('H&R', $hrRadio, 1);
-    }
 
 	print("<tr><td class=\"toolbox\" colspan=\"2\" align=\"center\"><input id=\"qr\" type=\"submit\" value=\"".$lang_edit['submit_edit_it']."\" /> <input type=\"reset\" value=\"".$lang_edit['submit_revert_changes']."\" /></td></tr>\n");
 	print("</table>\n");

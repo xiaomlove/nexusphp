@@ -70,7 +70,7 @@ if (!$row) {
         $banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
-        $hrImg = get_hr_img($row);
+        $hrImg = get_hr_img($row, $row['search_box_id']);
         $approvalStatusIcon = $torrentRep->renderApprovalStatus($row["approval_status"]);
 		$s=htmlspecialchars($row["name"]).$banned_torrent.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg . $approvalStatusIcon;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");

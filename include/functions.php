@@ -3528,7 +3528,7 @@ foreach ($rows as $row)
     }
 	$stickyicon = apply_filter('sticky_icon', $stickyicon, $row);
     $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
-	$hrImg = get_hr_img($row);
+	$hrImg = get_hr_img($row, $searchBoxId);
 
 	//cover
     $coverSrc = $tdCover = '';
@@ -4669,9 +4669,10 @@ function get_torrent_promotion_append_sub($promotion = 1,$forcemode = "",$showti
 	return $sp_torrent;
 }
 
-function get_hr_img(array $torrent)
+function get_hr_img(array $torrent, $searchBoxId)
 {
-    $mode = get_setting('hr.mode');
+//    $mode = get_setting('hr.mode');
+    $mode = \App\Models\HitAndRun::getConfig('mode', $searchBoxId);
     $result = '';
     if ($mode == \App\Models\HitAndRun::MODE_GLOBAL || ($mode == \App\Models\HitAndRun::MODE_MANUAL && isset($torrent['hr']) && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
         $result = '<img class="hitandrun" src="pic/trans.gif" alt="H&R" title="H&R" />';
@@ -5178,7 +5179,7 @@ function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
     $sql .= implode(",", $data) . " on duplicate key update value = values(value)";
     \Nexus\Database\NexusDB::statement($sql);
     clear_setting_cache();
-    do_action("nexus_setting_update", $prefix, $nameAndValue);
+    do_action("nexus_setting_update");
 }
 
 function getFullDirectory($dir)

@@ -14,6 +14,7 @@ use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Peer;
 use App\Models\SearchBox;
+use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Tag;
 use App\Models\Torrent;
@@ -88,8 +89,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new ToolRepository();
-        $r = $rep->transfer('C:\Users\CHENYU~1\AppData\Local\Temp/nexusphp.v1.5.beta5.20120707.web.20220918.053953.zip', 0);
+        $r = strstr('hr.*', '.', true);
         dd($r);
     }
 
