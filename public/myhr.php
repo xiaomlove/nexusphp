@@ -82,11 +82,12 @@ if ($rescount) {
     $list = $query->get();
     $hasActionRemove = false;
    foreach($list as $row) {
-       $columnAction = '';
+       $columnAction = '<td class="rowfollow nowrap" align="center">';
        if ($row->uid == $CURUSER['id'] && $row->status == \App\Models\HitAndRun::STATUS_INSPECTING) {
            $hasActionRemove = true;
-           $columnAction = sprintf('<td class="rowfollow nowrap" align="center"><input class="remove-hr" type="button" value="%s" data-id="%s"></td>', $lang_myhr['action_remove'], $row->id);
+           $columnAction .= sprintf('<input class="remove-hr" type="button" value="%s" data-id="%s">', $lang_myhr['action_remove'], $row->id);
        }
+       $columnAction .= '</td>';
         print("<tr>
 				<td class='rowfollow nowrap' align='center'>" . $row->id . "</td>
 				<td class='rowfollow' align='left'><a href='details.php?id=" . $row->torrent_id . "'>" . optional($row->torrent)->name . "</a></td>
