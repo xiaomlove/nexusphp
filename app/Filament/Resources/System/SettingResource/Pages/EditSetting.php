@@ -141,7 +141,7 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
             Forms\Components\TextInput::make('hr.ignore_when_ratio_reach')->helperText(__('label.setting.hr.ignore_when_ratio_reach_help'))->label(__('label.setting.hr.ignore_when_ratio_reach'))->integer(),
             Forms\Components\TextInput::make('hr.ban_user_when_counts_reach')->helperText(__('label.setting.hr.ban_user_when_counts_reach_help'))->label(__('label.setting.hr.ban_user_when_counts_reach'))->integer(),
         ];
-        return apply_filter("nexus_hit_and_run_setting_schema", $default);
+        return apply_filter("hit_and_run_setting_schema", $default);
     }
 
 }

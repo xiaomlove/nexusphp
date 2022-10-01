@@ -134,6 +134,12 @@ class HitAndRun extends NexusModel
         return apply_filter("nexus_setting_get", $default, $name, ['mode' => $searchBoxId]);
     }
 
+    public static function diffInSection(): bool
+    {
+        $enableSpecialSection = Setting::get('main.spsct') == 'yes';
+        return $enableSpecialSection && apply_filter("hit_and_run_diff_in_section", false);
+    }
+
     public function torrent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Torrent::class, 'torrent_id');

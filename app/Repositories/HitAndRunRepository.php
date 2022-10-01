@@ -92,19 +92,25 @@ class HitAndRunRepository extends BaseRepository
 
     public function cronjobUpdateStatus($uid = null, $torrentId = null, $ignoreTime = false)
     {
-        $enableSpecialSection = Setting::get('main.spsct') == 'yes';
+        $diffInSection = HitAndRun::diffInSection();
         $browseMode = Setting::get('main.browsecat');
+        $setting = HitAndRun::getConfig('*', $browseMode);
+        $setting['diff_in_section'] = $diffInSection;
+        $setting['search_box_id'] = $browseMode;
+        $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
+
         $specialMode = Setting::get('main.specialcat');
-        $this->doCronjobUpdateStatus($browseMode, $uid, $torrentId, $ignoreTime);
-        if ($enableSpecialSection && $browseMode != $specialMode) {
-            $this->doCronjobUpdateStatus($specialMode, $uid, $torrentId, $ignoreTime, $specialMode);
+        if ($diffInSection && $browseMode != $specialMode) {
+            $setting = HitAndRun::getConfig('*', $specialMode);
+            $setting['diff_in_section'] = $diffInSection;
+            $setting['search_box_id'] = $specialMode;
+            $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
         }
     }
 
-    private function doCronjobUpdateStatus($searchBoxId, $uid = null, $torrentId = null, $ignoreTime = false)
+    private function doCronjobUpdateStatus(array $setting, $uid = null, $torrentId = null, $ignoreTime = false)
     {
-        do_log("searchBoxId: $searchBoxId, uid: $uid, torrentId: $torrentId, ignoreTime: " . var_export($ignoreTime, true));
-        $setting = HitAndRun::getConfig('*', $searchBoxId);
+        do_log("uid: $uid, torrentId: $torrentId, ignoreTime: " . var_export($ignoreTime, true));
         $size = 1000;
         $page = 1;
         if (empty($setting['mode'])) {
@@ -136,9 +142,12 @@ class HitAndRunRepository extends BaseRepository
         if (!$ignoreTime) {
             $query->where('created_at', '<', Carbon::now()->subHours($setting['inspect_time']));
         }
-        $query->whereHas('torrent.basic_category', function (Builder $query) use ($searchBoxId) {
-            return $query->where('mode', $searchBoxId);
-        });
+        if ($setting['diff_in_section']) {
+            $query->whereHas('torrent.basic_category', function (Builder $query) use ($setting) {
+                return $query->where('mode', $setting['search_box_id']);
+            });
+        }
+
         $successCounts = 0;
         $disabledUsers = [];
         while (true) {
@@ -181,7 +190,7 @@ class HitAndRunRepository extends BaseRepository
                 $requireSeedTime = bcmul($setting['seed_time_minimum'], 3600);
                 do_log("$currentLog, targetSeedTime: $targetSeedTime, requireSeedTime: $requireSeedTime");
                 if ($targetSeedTime >= $requireSeedTime) {
-                    $result = $this->reachedBySeedTime($row, $searchBoxId);
+                    $result = $this->reachedBySeedTime($row, $setting);
                     if ($result) {
                         $successCounts++;
                     }
@@ -193,7 +202,7 @@ class HitAndRunRepository extends BaseRepository
                 $requireShareRatio = $setting['ignore_when_ratio_reach'];
                 do_log("$currentLog, targetShareRatio: $targetShareRatio, requireShareRatio: $requireShareRatio");
                 if ($targetShareRatio >= $requireShareRatio) {
-                    $result = $this->reachedByShareRatio($row, $searchBoxId);
+                    $result = $this->reachedByShareRatio($row, $setting);
                     if ($result) {
                         $successCounts++;
                     }
@@ -202,7 +211,7 @@ class HitAndRunRepository extends BaseRepository
 
                 //unreached
                 if ($row->created_at->addHours($setting['inspect_time'])->lte(Carbon::now())) {
-                    $result = $this->unreached($row, $searchBoxId, !isset($disabledUsers[$row->uid]));
+                    $result = $this->unreached($row, $setting, !isset($disabledUsers[$row->uid]));
                     if ($result) {
                         $successCounts++;
                         $disabledUsers[$row->uid] = true;
@@ -211,7 +220,7 @@ class HitAndRunRepository extends BaseRepository
             }
             $page++;
         }
-        do_log("searchBoxId: $searchBoxId, [CRONJOB_UPDATE_HR_DONE]");
+        do_log("[CRONJOB_UPDATE_HR_DONE]");
         return $successCounts;
     }
 
@@ -229,15 +238,15 @@ class HitAndRunRepository extends BaseRepository
         ];
     }
 
-    private function reachedByShareRatio(HitAndRun $hitAndRun, $searchBoxId): bool
+    private function reachedByShareRatio(HitAndRun $hitAndRun, array $setting): bool
     {
         do_log(__METHOD__);
         $comment = nexus_trans('hr.reached_by_share_ratio_comment', [
             'now' => Carbon::now()->toDateTimeString(),
-            'seed_time_minimum' => HitAndRun::getConfig('seed_time_minimum', $searchBoxId),
+            'seed_time_minimum' => $setting['seed_time_minimum'],
             'seed_time' => bcdiv($hitAndRun->snatch->seedtime, 3600, 1),
             'share_ratio' => get_hr_ratio($hitAndRun->snatch->uploaded, $hitAndRun->snatch->downloaded),
-            'ignore_when_ratio_reach' => HitAndRun::getConfig('ignore_when_ratio_reach', $searchBoxId),
+            'ignore_when_ratio_reach' => $setting['ignore_when_ratio_reach'],
         ], $hitAndRun->user->locale);
         $update = [
             'comment' => $comment
@@ -245,13 +254,13 @@ class HitAndRunRepository extends BaseRepository
         return $this->inspectingToReached($hitAndRun, $update, __FUNCTION__);
     }
 
-    private function reachedBySeedTime(HitAndRun $hitAndRun, $searchBoxId): bool
+    private function reachedBySeedTime(HitAndRun $hitAndRun, array $setting): bool
     {
         do_log(__METHOD__);
         $comment = nexus_trans('hr.reached_by_seed_time_comment', [
             'now' => Carbon::now()->toDateTimeString(),
             'seed_time' => bcdiv($hitAndRun->snatch->seedtime, 3600, 1),
-            'seed_time_minimum' => HitAndRun::getConfig('seed_time_minimum', $searchBoxId)
+            'seed_time_minimum' => $setting['seed_time_minimum'],
         ], $hitAndRun->user->locale);
         $update = [
             'comment' => $comment
@@ -288,16 +297,16 @@ class HitAndRunRepository extends BaseRepository
         return true;
     }
 
-    private function unreached(HitAndRun $hitAndRun, $searchBoxId, $disableUser = true): bool
+    private function unreached(HitAndRun $hitAndRun, array $setting, $disableUser = true): bool
     {
         do_log(sprintf('hitAndRun: %s, disableUser: %s', $hitAndRun->toJson(), var_export($disableUser, true)));
         $comment = nexus_trans('hr.unreached_comment', [
             'now' => Carbon::now()->toDateTimeString(),
             'seed_time' => bcdiv($hitAndRun->snatch->seedtime, 3600, 1),
-            'seed_time_minimum' => HitAndRun::getConfig('seed_time_minimum', $searchBoxId),
+            'seed_time_minimum' => $setting['seed_time_minimum'],
             'share_ratio' => get_hr_ratio($hitAndRun->snatch->uploaded, $hitAndRun->snatch->downloaded),
             'torrent_size' => mksize($hitAndRun->torrent->size),
-            'ignore_when_ratio_reach' => HitAndRun::getConfig('ignore_when_ratio_reach', $searchBoxId)
+            'ignore_when_ratio_reach' => $setting['ignore_when_ratio_reach']
         ], $hitAndRun->user->locale);
         $update = [
             'status' => HitAndRun::STATUS_UNREACHED,
@@ -335,13 +344,14 @@ class HitAndRunRepository extends BaseRepository
         //disable user
         /** @var User $user */
         $user = $hitAndRun->user;
-        $counts = $user->hitAndRuns()
-            ->where('status', HitAndRun::STATUS_UNREACHED)
-            ->whereHas('torrent.basic_category', function (Builder $query) use ($searchBoxId) {
-                return $query->where('mode', $searchBoxId);
-            })
-            ->count();
-        $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $searchBoxId);
+        $countsQuery = $user->hitAndRuns()->where('status', HitAndRun::STATUS_UNREACHED);
+        if ($setting['diff_in_section']) {
+            $countsQuery->whereHas('torrent.basic_category', function (Builder $query) use ($setting) {
+                return $query->where('mode', $setting['search_box_id']);
+            });
+        }
+        $counts = $countsQuery->count();
+        $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $setting['search_box_id']);
         do_log("user: {$user->id}, H&R counts: $counts, disableCounts: $disableCounts", 'notice');
         if ($counts >= $disableCounts) {
             do_log("[DISABLE_USER_DUE_TO_H&R_UNREACHED]", 'notice');
@@ -369,8 +379,8 @@ class HitAndRunRepository extends BaseRepository
 
     public function getStatusStats($uid, $formatted = true)
     {
-        $enableSpecialSection = Setting::get('main.spsct') == 'yes';
-        if ($enableSpecialSection) {
+        $diffInSection = HitAndRun::diffInSection();
+        if ($diffInSection) {
             $sql = "select hit_and_runs.status, categories.mode, count(*) as counts from hit_and_runs left join torrents on torrents.id = hit_and_runs.torrent_id left join categories on categories.id = torrents.category where hit_and_runs.uid = $uid group by hit_and_runs.status, categories.mode";
         } else {
             $sql = "select hit_and_runs.status, count(*) as counts from hit_and_runs where uid = $uid group by status";
@@ -379,7 +389,7 @@ class HitAndRunRepository extends BaseRepository
         if (!$formatted) {
             return $results;
         }
-        if ($enableSpecialSection) {
+        if ($diffInSection) {
             $grouped = [];
             foreach ($results as $item) {
                 $grouped[$item['mode']][$item['status']] = $item['counts'];
