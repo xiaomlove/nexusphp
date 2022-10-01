@@ -28,13 +28,13 @@ if ($view == "latin-1" || $view == "fonthack") {
 // NOTICE: TBSource specifies Latin-1 encoding in include/bittorrent.php:
 // stdhead()
 //$nfo = htmlspecialchars(($a["nfo"]));
-$nfo = code($a["nfo"], $view);
+$nfo = code_new($a["nfo"], $view);
 }
 else {
 // Convert from ibm-437 to html unicode entities.
 // take special care of Swedish letters if in magic view.
 //$nfo = code($a["nfo"], $view == "magic");
-$nfo = code($a["nfo"], $view);
+$nfo = code_new($a["nfo"], $view);
 }
 
 stdhead($lang_viewnfo['head_view_nfo']);
