@@ -942,9 +942,20 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
                 $log .= ", isIPSeedBox && isSeedBoxNoPromotion, increment for user = real";
             }
             $maxUploadedTimes = get_setting('seed_box.max_uploaded');
-            if (!empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
-                $log .= ", snatchUploaded >= torrentSize * times($maxUploadedTimes), uploadedIncrementForUser = 0";
-                $uploadedIncrementForUser = 0;
+            $maxUploadedDurationSeconds = get_setting('seed_box.max_uploaded_duration', 0) * 3600;
+            $torrentTTL = time() - strtotime($torrent['added']);
+            $timeRangeValid = ($maxUploadedDurationSeconds == 0) || ($torrentTTL < $maxUploadedDurationSeconds);
+            $log .= ", maxUploadedTimes: $maxUploadedTimes, maxUploadedDurationSeconds: $maxUploadedDurationSeconds, timeRangeValid: $timeRangeValid";
+            if ($maxUploadedTimes > 0 && $timeRangeValid) {
+                $log .= ", [LIMIT_UPLOADED]";
+                if (!empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
+                    $log .= ", snatchUploaded({$snatch['uploaded']}) >= torrentSize({$torrent['size']}) * times($maxUploadedTimes), uploadedIncrementForUser = 0";
+                    $uploadedIncrementForUser = 0;
+                } else {
+                    $log .= ", snatchUploaded({$snatch['uploaded']}) < torrentSize({$torrent['size']}) * times($maxUploadedTimes), uploadedIncrementForUser do not change to 0";
+                }
+            } else {
+                $log .= ", [NOT_LIMIT_UPLOADED]";
             }
         }
     }

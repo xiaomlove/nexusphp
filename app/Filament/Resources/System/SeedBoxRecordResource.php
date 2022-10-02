@@ -56,6 +56,7 @@ class SeedBoxRecordResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('typeText')->label(__('label.seed_box_record.type')),
+                Tables\Columns\TextColumn::make('uid')->searchable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
                 Tables\Columns\TextColumn::make('operator')->label(__('label.seed_box_record.operator'))->searchable(),
                 Tables\Columns\TextColumn::make('bandwidth')->label(__('label.seed_box_record.bandwidth')),

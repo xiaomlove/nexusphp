@@ -73,9 +73,11 @@ return [
             'no_promotion' => '無優惠',
             'no_promotion_help' => '不享受任何優惠，上傳量/下載量按實際值計算',
             'max_uploaded' => '最大上傳量倍數',
-            'max_uploaded_help' => '總上傳量最多為其體積的多少倍',
+            'max_uploaded_help' => '總上傳量最多為其體積的多少倍。設置為 0 無此限製',
             'not_seed_box_max_speed' => '非 SeedBox 最高限速',
             'not_seed_box_max_speed_help' => '單位：Mbps。若超過此值又不能匹配 SeedBox 記錄，禁用下載權限',
+            'max_uploaded_duration' => '最大上傳量倍數有效時間範圍',
+            'max_uploaded_duration_help' => '單位：小時。種子發布後的這個時間範圍內，最大上傳量倍數生效，超過此範圍不生效。設置為 0 一直生效',
         ],
         'system' => [
             'tab_header' => '系統',
@@ -149,6 +151,9 @@ return [
         'pos_state' => '置頂',
         'sp_state' => '優惠',
         'visible' => '活種',
+        'picktype' => '推薦',
+        'promotion_time_type' => '優惠時間類型',
+        'hr' => 'H&R',
     ],
     'hit_and_run' => [
         'label' => '用戶 H&R',

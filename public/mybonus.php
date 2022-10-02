@@ -580,14 +580,14 @@ if ($action == "exchange") {
 			$up = $upload + $bonusarray['menge'];
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for upload bonus.\n " .$bonuscomment;
 //			sql_query("UPDATE users SET uploaded = ".sqlesc($up).", seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_UPLOAD, $points. " Points for upload bonus.", ['uploaded' => $up]);
+            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_UPLOAD, $points. " Points for uploaded.", ['uploaded' => $up]);
 			nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=upload");
 			}
 		}
         if($art == "traffic_downloaded") {
             $downloaded = $CURUSER['downloaded'];
             $down = $downloaded + $bonusarray['menge'];
-            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_DOWNLOAD, $points. " Points for download bonus.", ['downloaded' => $down]);
+            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_DOWNLOAD, $points. " Points for downloaded.", ['downloaded' => $down]);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=download");
         }
 		//=== trade for one month VIP status ***note "SET class = '10'" change "10" to whatever your VIP class number is

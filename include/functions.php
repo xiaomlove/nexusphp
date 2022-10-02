@@ -3049,18 +3049,21 @@ function loggedinorreturn($mainpage = false) {
 }
 
 function deletetorrent($id) {
-	$id = intval($id);
+    $idArr = \Illuminate\Support\Arr::wrap($id);
+	$idStr = implode(', ', $idArr ?: [0]);
 	$torrent_dir = get_setting('main.torrent_dir');
-    \Nexus\Database\NexusDB::statement("DELETE FROM torrents WHERE id = $id");
-    \Nexus\Database\NexusDB::statement("DELETE FROM snatched WHERE torrentid = $id");
+    \Nexus\Database\NexusDB::statement("DELETE FROM torrents WHERE id in ($idStr)");
+    \Nexus\Database\NexusDB::statement("DELETE FROM snatched WHERE torrentid in ($idStr)");
 	foreach(array("peers", "files", "comments") as $x) {
-        \Nexus\Database\NexusDB::statement("DELETE FROM $x WHERE torrent = $id");
+        \Nexus\Database\NexusDB::statement("DELETE FROM $x WHERE torrent in ($idStr)");
 	}
-    \Nexus\Database\NexusDB::statement("DELETE FROM hit_and_runs WHERE torrent_id = $id");
-    \Nexus\Database\NexusDB::statement("DELETE FROM claims WHERE torrent_id = $id");
-    do_action("torrent_delete", $id);
-    do_log("delete torrent: $id", "error");
-	unlink(getFullDirectory("$torrent_dir/$id.torrent"));
+    \Nexus\Database\NexusDB::statement("DELETE FROM hit_and_runs WHERE torrent_id in ($idStr)");
+    \Nexus\Database\NexusDB::statement("DELETE FROM claims WHERE torrent_id in ($idStr)");
+    foreach ($idArr as $_id) {
+        do_action("torrent_delete", $_id);
+        do_log("delete torrent: $_id", "error");
+        unlink(getFullDirectory("$torrent_dir/$_id.torrent"));
+    }
 }
 
 function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {
@@ -5790,6 +5793,8 @@ function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 
 
 function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)
 {
+    $specialTags = \App\Models\Tag::listSpecial();
+    $canSetSpecialTag = user_can('torrent-set-special-tag');
     $dateTimeStringNow = date('Y-m-d H:i:s');
     if ($sync) {
         sql_query("delete from torrent_tags where torrent_id = $torrentId");
@@ -5800,6 +5805,10 @@ function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)
     $insertTagsSql = 'insert into torrent_tags (`torrent_id`, `tag_id`, `created_at`, `updated_at`) values ';
     $values = [];
     foreach ($tagIdArr as $tagId) {
+        if (in_array($tagId, $specialTags) && !$canSetSpecialTag) {
+            do_log("special tag: $tagId, and user no permission");
+            continue;
+        }
         $values[] = sprintf("(%s, %s, '%s', '%s')", $torrentId, $tagId, $dateTimeStringNow, $dateTimeStringNow);
     }
     $insertTagsSql .= implode(', ', $values);

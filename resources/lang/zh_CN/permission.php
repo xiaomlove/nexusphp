@@ -5,6 +5,10 @@ return [
         'text' => '审核种子',
         'desc' => '通过种子、拒绝种子、或将种子标记为未审',
     ],
+    'torrent-set-special-tag' => [
+        'text' => '设定种子特殊标签',
+        'desc' => '设定种子的官方、零魔标签',
+    ],
     'defaultclass' => [
         'text' => '默认等级',
         'desc' => '注册时获得的等级',

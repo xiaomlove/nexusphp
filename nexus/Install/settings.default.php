@@ -180,6 +180,7 @@ return array (
       'torrent-delete' => User::CLASS_ADMINISTRATOR,
       'user-delete' => User::CLASS_ADMINISTRATOR,
       'user-change-class' => User::CLASS_ADMINISTRATOR,
+      'torrent-set-special-tag' => User::CLASS_ADMINISTRATOR,
   ),
   'tweak' =>
   array (
@@ -425,6 +426,7 @@ return array (
         'no_promotion' => 'yes',
         'max_uploaded' => 3,
         'not_seed_box_max_speed' => 10240,
+        'max_uploaded_duration' => 0,
     ],
     'system' => [
         'change_username_min_interval_in_days' => '365',

@@ -50,10 +50,14 @@ class TagRepository extends BaseRepository
         return Tag::query()->orderBy('priority', 'desc')->orderBy('id', 'desc');
     }
 
-    public function renderCheckbox(array $checked = []): string
+    public function renderCheckbox(array $checked = [], $ignorePermission = false): string
     {
         $html = '';
-        $results = $this->createBasicQuery()->get();
+        $results = $this->listAll();
+        if (!$ignorePermission && !user_can('torrent-set-special-tag')) {
+            $specialTags = Tag::listSpecial();
+            $results = $results->filter(fn ($item) => !in_array($item->id, $specialTags));
+        }
         foreach ($results as $value) {
             $html .= sprintf(
                 '<label><input type="checkbox" name="tags[]" value="%s"%s />%s</label>',
@@ -65,11 +69,8 @@ class TagRepository extends BaseRepository
 
     public function renderSpan(array $renderIdArr = [], $withFilterLink = false): string
     {
-        if (empty(self::$allTags)) {
-            self::$allTags = self::createBasicQuery()->get();
-        }
         $html = '';
-        foreach (self::$allTags as $value) {
+        foreach ($this->listAll() as $value) {
             if (in_array($value->id, $renderIdArr) || (isset($renderIdArr[0]) && $renderIdArr[0] == '*')) {
                 $tagId = $value->id;
                 if ($value) {
@@ -150,7 +151,9 @@ class TagRepository extends BaseRepository
 
     public function listAll()
     {
-        self::$allTags = self::createBasicQuery()->get();
+        if (empty(self::$allTags)) {
+            self::$allTags = self::createBasicQuery()->get();
+        }
         return self::$allTags;
     }
 

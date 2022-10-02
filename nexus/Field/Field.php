@@ -3,6 +3,7 @@
 namespace Nexus\Field;
 
 use App\Models\SearchBox;
+use App\Models\Tag;
 use App\Models\TorrentCustomField;
 use App\Models\TorrentCustomFieldValue;
 use Elasticsearch\Endpoints\Search;

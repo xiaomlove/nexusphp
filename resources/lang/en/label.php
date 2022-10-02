@@ -73,9 +73,11 @@ return [
             'no_promotion' => 'No promotion',
             'no_promotion_help' => 'No Promotion, uploaded/downloaded are calculated according to the actual value',
             'max_uploaded' => 'Maximum upload volume multiplier',
-            'max_uploaded_help' => 'The total upload volume is at most a multiple of its volume',
+            'max_uploaded_help' => 'The total upload volume is at most a multiple of its volume. Set to 0 No limitation',
             'not_seed_box_max_speed' => 'Not SeedBox max upload speed',
             'not_seed_box_max_speed_help' => 'Unit: Mbps, if this value is exceeded and the SeedBox record cannot be matched, download permission is disabled',
+            'max_uploaded_duration' => 'Maximum upload volume multiplier effective time range',
+            'max_uploaded_duration_help' => 'Unit: hours. The maximum upload volume multiplier takes effect within this time range after the torrent is published, and does not take effect beyond this range. A setting of 0 is always in effect',
         ],
         'system' => [
             'tab_header' => 'System',
@@ -149,6 +151,9 @@ return [
         'pos_state' => 'Pos state',
         'sp_state' => 'Promotion',
         'visible' => 'Visible',
+        'picktype' => 'Recommend',
+        'promotion_time_type' => 'Promotion type time',
+        'hr' => 'H&R',
     ],
     'hit_and_run' => [
         'label' => 'User H&R',

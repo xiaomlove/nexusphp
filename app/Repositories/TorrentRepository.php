@@ -616,6 +616,56 @@ class TorrentRepository extends BaseRepository
         return Torrent::query()->whereIn('id', $idArr)->update($update);
     }
 
+    public function setPickType($id, $pickType): int
+    {
+        user_can('torrentmanage', true);
+        if (!isset(Torrent::$pickTypes[$pickType])) {
+            throw new \InvalidArgumentException("Invalid pickType: $pickType");
+        }
+        $update = [
+            'picktype' => $pickType,
+            'picktime' => now(),
+        ];
+        $idArr = Arr::wrap($id);
+        return Torrent::query()->whereIn('id', $idArr)->update($update);
+    }
+
+    public function setHr($id, $hrStatus): int
+    {
+        user_can('torrentmanage', true);
+        if (!isset(Torrent::$hrStatus[$hrStatus])) {
+            throw new \InvalidArgumentException("Invalid hrStatus: $hrStatus");
+        }
+        $update = [
+            'hr' => $hrStatus,
+        ];
+        $idArr = Arr::wrap($id);
+        return Torrent::query()->whereIn('id', $idArr)->update($update);
+    }
+
+    public function setSpState($id, $spState, $promotionTimeType, $promotionUntil = null): int
+    {
+        user_can('torrentonpromotion', true);
+        if (!isset(Torrent::$promotionTypes[$spState])) {
+            throw new \InvalidArgumentException("Invalid spState: $spState");
+        }
+        if (!isset(Torrent::$promotionTimeTypes[$promotionTimeType])) {
+            throw new \InvalidArgumentException("Invalid promotionTimeType: $promotionTimeType");
+        }
+        if (in_array($promotionTimeType, [Torrent::PROMOTION_TIME_TYPE_GLOBAL, Torrent::PROMOTION_TIME_TYPE_PERMANENT])) {
+            $promotionUntil = null;
+        } elseif (!$promotionUntil || Carbon::parse($promotionUntil)->lte(now())) {
+            throw new \InvalidArgumentException("Invalid promotionUntil: $promotionUntil");
+        }
+        $update = [
+            'sp_state' => $spState,
+            'promotion_time_type' => $promotionTimeType,
+            'promotion_until' => $promotionUntil,
+        ];
+        $idArr = Arr::wrap($id);
+        return Torrent::query()->whereIn('id', $idArr)->update($update);
+    }
+
     public function buildUploadFieldInput($name, $value, $noteText, $btnText): string
     {
         $btn = $note = '';

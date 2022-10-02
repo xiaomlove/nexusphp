@@ -90,6 +90,9 @@ return [
             'bulk_action_attach_tag' => '设置标签',
             'action_approval' => '审核',
             'bulk_action_attach_tag_remove_old' => '同时删除旧标签',
+            'bulk_action_recommend' => '推荐',
+            'bulk_action_sp_state' => '优惠',
+            'bulk_action_hr' => 'H&R',
         ],
         'seed_box_record' => [
             'toggle_status' => '更改状态',

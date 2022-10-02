@@ -89,6 +89,9 @@ return [
             'bulk_action_attach_tag' => 'Attach tag',
             'action_approval' => 'Approval',
             'bulk_action_attach_tag_remove_old' => 'Also delete old tags',
+            'bulk_action_recommend' => 'Recommend',
+            'bulk_action_sp_state' => 'Promotion',
+            'bulk_action_hr' => 'H&R',
         ],
         'seed_box_record' => [
             'toggle_status' => 'Change status',

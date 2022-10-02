@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
+use App\Models\User;
 use App\Repositories\TagRepository;
 use App\Repositories\TorrentRepository;
 use Filament\Facades\Filament;
@@ -24,6 +25,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class TorrentResource extends Resource
 {
@@ -83,10 +85,16 @@ class TorrentResource extends Resource
                 })->label(__('label.name'))->searchable(),
                 Tables\Columns\TextColumn::make('posStateText')->label(__('label.torrent.pos_state')),
                 Tables\Columns\TextColumn::make('spStateText')->label(__('label.torrent.sp_state')),
+                Tables\Columns\TextColumn::make('pickInfoText')
+                    ->label(__('label.torrent.picktype'))
+                    ->formatStateUsing(fn ($record) => $record->pickInfo['text'])
+                ,
+                Tables\Columns\BooleanColumn::make('hr')
+                    ->label(__('label.torrent.hr'))
+                ,
                 Tables\Columns\TextColumn::make('size')->label(__('label.torrent.size'))->formatStateUsing(fn ($state) => mksize($state)),
                 Tables\Columns\TextColumn::make('seeders')->label(__('label.torrent.seeders')),
                 Tables\Columns\TextColumn::make('leechers')->label(__('label.torrent.leechers')),
-//                Tables\Columns\TextColumn::make('times_completed')->label(__('label.torrent.times_completed')),
                 Tables\Columns\BadgeColumn::make('approval_status')
                     ->visible($showApproval)
                     ->label(__('label.torrent.approval_status'))
@@ -113,10 +121,18 @@ class TorrentResource extends Resource
                     ->options(Torrent::listPromotionTypes(true))
                     ->label(__('label.torrent.sp_state')),
 
+                Tables\Filters\SelectFilter::make('picktype')
+                    ->options(Torrent::listPickInfo(true))
+                    ->label(__('label.torrent.picktype')),
+
                 Tables\Filters\SelectFilter::make('approval_status')
                     ->options(Torrent::listApprovalStatus(true))
                     ->visible($showApproval)
                     ->label(__('label.torrent.approval_status')),
+
+                Tables\Filters\SelectFilter::make('hr')
+                    ->options(self::getYesNoOptions())
+                    ->label(__('label.torrent.hr')),
             ])
             ->actions(self::getActions())
             ->bulkActions(self::getBulkActions());
@@ -146,6 +162,7 @@ class TorrentResource extends Resource
 
     private static function getBulkActions(): array
     {
+        $user = Auth::user();
         $actions = [];
         if (user_can('torrentsticky')) {
             $actions[] = Tables\Actions\BulkAction::make('posState')
@@ -166,6 +183,66 @@ class TorrentResource extends Resource
                     try {
                         $torrentRep = new TorrentRepository();
                         $torrentRep->setPosState($idArr, $data['pos_state'], $data['pos_state_until']);
+                    } catch (\Exception $exception) {
+                        do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
+                        Filament::notify('danger', class_basename($exception));
+                    }
+                })
+                ->deselectRecordsAfterCompletion();
+        }
+
+        if (user_can('torrentonpromotion')) {
+            $actions[] = Tables\Actions\BulkAction::make('sp_state')
+                ->label(__('admin.resources.torrent.bulk_action_sp_state'))
+                ->form([
+                    Forms\Components\Select::make('sp_state')
+                        ->label(__('label.torrent.sp_state'))
+                        ->options(Torrent::listPromotionTypes(true))
+                        ->required()
+                    ,
+                    Forms\Components\Select::make('promotion_time_type')
+                        ->label(__('label.torrent.promotion_time_type'))
+                        ->options(Torrent::listPromotionTimeTypes(true))
+                        ->required()
+                    ,
+                    Forms\Components\DateTimePicker::make('promotion_until')
+                        ->label(__('label.deadline'))
+                    ,
+                ])
+                ->icon('heroicon-o-speakerphone')
+                ->action(function (Collection $records, array $data) {
+                    $idArr = $records->pluck('id')->toArray();
+                    try {
+                        $torrentRep = new TorrentRepository();
+                        $torrentRep->setSpState($idArr, $data['sp_state'], $data['promotion_time_type'], $data['promotion_until']);
+                    } catch (\Exception $exception) {
+                        do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
+                        Filament::notify('danger', $exception->getMessage());
+                    }
+                })
+                ->deselectRecordsAfterCompletion();
+        }
+
+        if (user_can('torrentmanage') && ($user->picker == 'yes' || $user->class >= User::CLASS_SYSOP)) {
+            $actions[] = Tables\Actions\BulkAction::make('recommend')
+                ->label(__('admin.resources.torrent.bulk_action_recommend'))
+                ->form([
+                    Forms\Components\Radio::make('picktype')
+                        ->label(__('admin.resources.torrent.bulk_action_recommend'))
+                        ->inline()
+                        ->options(Torrent::listPickInfo(true))
+                        ->required(),
+
+                ])
+                ->icon('heroicon-o-fire')
+                ->action(function (Collection $records, array $data) {
+                    if (empty($data['picktype'])) {
+                        return;
+                    }
+                    $idArr = $records->pluck('id')->toArray();
+                    try {
+                        $torrentRep = new TorrentRepository();
+                        $torrentRep->setPickType($idArr, $data['picktype']);
                     } catch (\Exception $exception) {
                         do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
                         Filament::notify('danger', class_basename($exception));
@@ -217,6 +294,38 @@ class TorrentResource extends Resource
                     }
                 })
                 ->deselectRecordsAfterCompletion();
+
+            $actions[] = Tables\Actions\BulkAction::make('hr')
+                ->label(__('admin.resources.torrent.bulk_action_hr'))
+                ->form([
+                    Forms\Components\Radio::make('hr')
+                        ->label(__('admin.resources.torrent.bulk_action_hr'))
+                        ->inline()
+                        ->options(self::getYesNoOptions())
+                        ->required(),
+
+                ])
+                ->icon('heroicon-o-sparkles')
+                ->action(function (Collection $records, array $data) {
+                    if (empty($data['hr'])) {
+                        return;
+                    }
+                    $idArr = $records->pluck('id')->toArray();
+                    try {
+                        $torrentRep = new TorrentRepository();
+                        $torrentRep->setHr($idArr, $data['hr']);
+                    } catch (\Exception $exception) {
+                        do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
+                        Filament::notify('danger', class_basename($exception));
+                    }
+                })
+                ->deselectRecordsAfterCompletion();
+        }
+
+        if (user_can('torrent-delete')) {
+            $actions[] = Tables\Actions\DeleteBulkAction::make('bulk-delete')->using(function (Collection $records) {
+                deletetorrent($records->pluck('id')->toArray());
+            });
         }
 
         return $actions;
@@ -248,7 +357,7 @@ class TorrentResource extends Resource
                 });
 
         }
-        if (user_can('torrentmanage')) {
+        if (user_can('torrent-delete')) {
             $actions[] = Tables\Actions\DeleteAction::make('delete')->using(function ($record) {
                 deletetorrent($record->id);
             });

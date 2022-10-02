@@ -130,6 +130,16 @@ class Torrent extends NexusModel
         self::PICK_RECOMMENDED => ['text' => self::PICK_RECOMMENDED, 'color' => '#820084'],
     ];
 
+    const PROMOTION_TIME_TYPE_GLOBAL = 0;
+    const PROMOTION_TIME_TYPE_PERMANENT = 1;
+    const PROMOTION_TIME_TYPE_DEADLINE = 2;
+
+    public static array $promotionTimeTypes = [
+        self::PROMOTION_TIME_TYPE_GLOBAL => ['text' => 'Global'],
+        self::PROMOTION_TIME_TYPE_PERMANENT => ['text' => 'Permanent'],
+        self::PROMOTION_TIME_TYPE_DEADLINE => ['text' => 'Until'],
+    ];
+
     const BONUS_REWARD_VALUES = [50, 100, 200, 500, 1000];
 
     const APPROVAL_STATUS_NONE = 0;
@@ -270,6 +280,11 @@ class Torrent extends NexusModel
             return $keyValue;
         }
         return $result;
+    }
+
+    public static function listPromotionTimeTypes($onlyKeyValue = false, $valueField = 'text'): array
+    {
+        return self::listStaticProps(self::$promotionTimeTypes, 'torrent.promotion_time_types', $onlyKeyValue, $valueField);
     }
 
     public static function listPickInfo($onlyKeyValue = false, $valueField = 'text'): array

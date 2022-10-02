@@ -89,6 +89,9 @@ return [
             'bulk_action_attach_tag' => '設置標簽',
             'action_approval' => '審核',
             'bulk_action_attach_tag_remove_old' => '同時刪除舊標簽',
+            'bulk_action_recommend' => '推薦',
+            'bulk_action_sp_state' => '優惠',
+            'bulk_action_hr' => 'H&R',
         ],
         'seed_box_record' => [
             'toggle_status' => '更改狀態',

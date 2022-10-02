@@ -5,6 +5,10 @@ return [
         'text' => '審核種子',
         'desc' => '通過種子、拒絕種子、或將種子標記為未審',
     ],
+    'torrent-set-special-tag' => [
+        'text' => '設定種子特殊標簽',
+        'desc' => '設定種子的官方、零魔標簽',
+    ],
     'defaultclass' => [
         'text' => '預設等級',
         'desc' => '註冊時獲得的等級',
