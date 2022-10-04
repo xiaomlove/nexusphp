@@ -181,6 +181,7 @@ return array (
       'user-delete' => User::CLASS_ADMINISTRATOR,
       'user-change-class' => User::CLASS_ADMINISTRATOR,
       'torrent-set-special-tag' => User::CLASS_ADMINISTRATOR,
+      'torrent-approval-allow-automatic' => User::CLASS_UPLOADER,
   ),
   'tweak' =>
   array (

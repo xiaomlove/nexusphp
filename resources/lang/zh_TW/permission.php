@@ -9,6 +9,10 @@ return [
         'text' => '設定種子特殊標簽',
         'desc' => '設定種子的官方、零魔標簽',
     ],
+    'torrent-approval-allow-automatic' => [
+        'text' => '種子自動通過審核',
+        'desc' => '種子發布即為審核通過狀態',
+    ],
     'defaultclass' => [
         'text' => '預設等級',
         'desc' => '註冊時獲得的等級',

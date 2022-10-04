@@ -239,6 +239,9 @@ header("Refresh: 0; url=staffbox.php?action=viewpm&pmid=$id");
        //////////////////////////
 
 if ($action == "takecontactanswered") {
+    if (empty($_POST['setanswered'])) {
+        stderr($lang_staffbox['std_sorry'], nexus_trans('nexus.select_one_please'));
+    }
 
 if ($_POST['setdealt']){
 	$res = sql_query ("SELECT * FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST['setanswered']) . ")");

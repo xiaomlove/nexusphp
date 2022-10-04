@@ -5,8 +5,21 @@ loggedinorreturn();
 
 if (get_user_class() < UC_MODERATOR)
 stderr("Sorry", "Access denied.");
-stdhead("Duplicate IP users");
-begin_frame("Duplicate IP users:", true);
+
+$tabs = ['users', 'peers'];
+$tab = 'users';
+if (!empty($_REQUEST['tab']) && in_array($_REQUEST['tab'], $tabs)) {
+    $tab = $_REQUEST['tab'];
+}
+$page = $_REQUEST['page'] ?? 0;
+$title = 'Duplicate IP users';
+stdhead($title);
+print '<h1>'.$title.'</h1>';
+//print '<ul class="menu" style="padding-inline-start: 0">';
+//foreach ($tabs as $item) {
+//    echo sprintf('<li class="%s"><a href="?tab=%s&page=%s">%s</a></li>', $tab == $item ? 'selected' : '', $item, $page, $item);
+//}
+//print '</ul>';
 begin_table();
 
 if (get_user_class() >= UC_MODERATOR || $CURUSER["guard"] == "yes")
@@ -44,7 +57,7 @@ if (get_user_class() >= UC_MODERATOR || $CURUSER["guard"] == "yes")
 			$ratio = number_format($arr["uploaded"] / $arr["downloaded"], 3);
 		  else
 			$ratio="---";
- 
+
 		  $ratio = "<font color=" . get_ratio_color($ratio) . ">$ratio</font>";
 		  $uploaded = mksize($arr["uploaded"]);
 		  $downloaded = mksize($arr["downloaded"]);
@@ -54,7 +67,7 @@ if (get_user_class() >= UC_MODERATOR || $CURUSER["guard"] == "yes")
 			$utc = "";
 		  else
 			$utc = " bgcolor=\"ECE9D8\"";
-			
+
 			$peer_res = sql_query("SELECT count(*) FROM peers WHERE ip = " . sqlesc($ras['ip']) . " AND userid = " . $arr['id']);
 			$peer_row = mysql_fetch_row($peer_res);
 		  print("<tr$utc><td align=left>" . get_username($arr["id"])."</td>
@@ -64,7 +77,7 @@ if (get_user_class() >= UC_MODERATOR || $CURUSER["guard"] == "yes")
 				  <td align=center>$downloaded</td>
 				  <td align=center>$uploaded</td>
 				  <td align=center>$ratio</td>
-				  <td align=center><a href=\"http://www.whois.sc/$arr[ip]\" target=\"_blank\">$arr[ip]</a></td>\n<td align=center>" . 
+				  <td align=center><a href=\"http://www.whois.sc/$arr[ip]\" target=\"_blank\">$arr[ip]</a></td>\n<td align=center>" .
 				  ($peer_row[0] ? "ja" : "nein") . "</td></tr>\n");
 		  $ip = $arr["ip"];
 		}

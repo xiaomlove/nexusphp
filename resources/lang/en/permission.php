@@ -9,6 +9,10 @@ return [
         'text' => 'Set torrent special tags',
         'desc' => 'Set the Official/Zero bonus tag to torrents',
     ],
+    'torrent-approval-allow-automatic' => [
+        'text' => 'Torrent approval allow automatically',
+        'desc' => 'Torrent is the approval allow status after upload automatically',
+    ],
     'defaultclass' => [
         'text' => 'Default Class',
         'desc' => ' Class upon registration',

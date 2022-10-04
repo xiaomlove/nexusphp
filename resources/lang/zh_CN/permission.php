@@ -9,6 +9,10 @@ return [
         'text' => '设定种子特殊标签',
         'desc' => '设定种子的官方、零魔标签',
     ],
+    'torrent-approval-allow-automatic' => [
+        'text' => '种子自动通过审核',
+        'desc' => '种子发布即为审核通过状态',
+    ],
     'defaultclass' => [
         'text' => '默认等级',
         'desc' => '注册时获得的等级',
