@@ -15,6 +15,10 @@ return [
         'subject' => '下载权限取消',
         'body' => '你的下载权限被取消，可能的原因是过低的分享率或行为不当。By: :operator',
     ],
+    'download_disable_upload_over_speed' => [
+        'subject' => '下载权限取消',
+        'body' => '你因上传速度过快下载权限被取消，若是盒子用户请备案。',
+    ],
     'download_enable' => [
         'subject' => '下载权限恢复',
         'body' => '你的下载权限恢复，你现在可以下载种子。By: :operator',

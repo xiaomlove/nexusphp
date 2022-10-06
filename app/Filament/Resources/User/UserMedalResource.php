@@ -12,6 +12,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class UserMedalResource extends Resource
 {
@@ -47,7 +48,11 @@ class UserMedalResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('uid')->searchable(),
-                Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->label(__('label.username'))
+                    ->searchable()
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true)))
+                ,
                 Tables\Columns\TextColumn::make('medal.name')->label(__('label.medal.label'))->searchable(),
                 Tables\Columns\ImageColumn::make('medal.image_large')->label(__('label.image')),
                 Tables\Columns\TextColumn::make('expire_at')->label(__('label.expire_at'))->dateTime(),

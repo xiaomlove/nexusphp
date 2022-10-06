@@ -103,8 +103,7 @@ class TorrentResource extends Resource
                 Tables\Columns\TextColumn::make('added')->label(__('label.added'))->dateTime(),
                 Tables\Columns\TextColumn::make('user.username')
                     ->label(__('label.torrent.owner'))
-                    ->url(fn ($record) => sprintf('/userdetails.php?id=%s', $record->owner))
-                    ->openUrlInNewTab(true)
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->owner, false, true, true, true)))
                 ,
             ])
             ->defaultSort('id', 'desc')

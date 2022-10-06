@@ -593,7 +593,7 @@ class TrackerRepository extends BaseRepository
         $notSeedBoxMaxSpeedMbps = Setting::get('seed_box.not_seed_box_max_speed');
         do_log("upSpeedMbps: $upSpeedMbps, notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps");
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
-            (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $user, 'no');
+            (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $user, 'no', 'upload_over_speed');
             do_log("user: {$user->id} downloading privileges have been disabled! (over speed)", 'error');
             throw new TrackerException("Your downloading privileges have been disabled! (over speed)");
         }

@@ -326,7 +326,7 @@ class UserRepository extends BaseRepository
     }
 
 
-    public function updateDownloadPrivileges($operator, $user, $status)
+    public function updateDownloadPrivileges($operator, $user, $status, $disableReasonKey = null)
     {
         if (!in_array($status, ['yes', 'no'])) {
             throw new \InvalidArgumentException("Invalid status: $status");
@@ -345,8 +345,12 @@ class UserRepository extends BaseRepository
         if ($status == 'no') {
             $update = ['downloadpos' => 'no'];
             $modComment = date('Y-m-d') . " - Download disable by " . $operatorUsername;
-            $message['subject'] = nexus_trans('message.download_disable.subject', [], $targetUser->locale);
-            $message['msg'] = nexus_trans('message.download_disable.body', ['operator' => $operatorUsername], $targetUser->locale);
+            $msgTransPrefix = "message.download_disable";
+            if ($disableReasonKey !== null) {
+                $msgTransPrefix .= "_$disableReasonKey";
+            }
+            $message['subject'] = nexus_trans("$msgTransPrefix.subject", [], $targetUser->locale);
+            $message['msg'] = nexus_trans("$msgTransPrefix.body", ['operator' => $operatorUsername], $targetUser->locale);
         } else {
             $update = ['downloadpos' => 'yes'];
             $modComment = date('Y-m-d') . " - Download enable by " . $operatorUsername;

@@ -464,7 +464,7 @@ class HitAndRunRepository extends BaseRepository
 
     private function getCanPardonStatus(): array
     {
-        return [HitAndRun::STATUS_INSPECTING, HitAndRun::STATUS_UNREACHED];
+        return HitAndRun::CAN_PARDON_STATUS;
     }
 
     public function renderOnUploadPage($value, $searchBoxId): string

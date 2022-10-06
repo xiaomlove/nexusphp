@@ -83,7 +83,7 @@ if ($rescount) {
     $hasActionRemove = false;
    foreach($list as $row) {
        $columnAction = '<td class="rowfollow nowrap" align="center">';
-       if ($row->uid == $CURUSER['id'] && $row->status == \App\Models\HitAndRun::STATUS_INSPECTING) {
+       if ($row->uid == $CURUSER['id'] && in_array($row->status, \App\Models\HitAndRun::CAN_PARDON_STATUS)) {
            $hasActionRemove = true;
            $columnAction .= sprintf('<input class="remove-hr" type="button" value="%s" data-id="%s">', $lang_myhr['action_remove'], $row->id);
        }

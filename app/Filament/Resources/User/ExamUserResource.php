@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class ExamUserResource extends Resource
 {
@@ -51,7 +52,11 @@ class ExamUserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('uid')->searchable(),
-                Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->label(__('label.username'))
+                    ->searchable()
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true)))
+                ,
                 Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),
                 Tables\Columns\TextColumn::make('end')->label(__('label.end'))->dateTime(),

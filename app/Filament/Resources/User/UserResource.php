@@ -61,7 +61,7 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('username')->searchable()->label(__("label.user.username"))
-                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, false, true))),
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true))),
                 Tables\Columns\TextColumn::make('email')->searchable()->label(__("label.email")),
                 Tables\Columns\TextColumn::make('class')->label('Class')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->classText)

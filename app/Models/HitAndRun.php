@@ -26,6 +26,11 @@ class HitAndRun extends NexusModel
         self::STATUS_PARDONED => ['text' => 'Pardoned'],
     ];
 
+    const CAN_PARDON_STATUS = [
+        self::STATUS_INSPECTING,
+        self::STATUS_UNREACHED,
+    ];
+
     const MODE_DISABLED = 'disabled';
     const MODE_MANUAL = 'manual';
     const MODE_GLOBAL = 'global';

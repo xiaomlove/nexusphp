@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class HitAndRunResource extends Resource
 {
@@ -42,7 +43,12 @@ class HitAndRunResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('uid')->searchable(),
-                Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->searchable()
+                    ->label(__('label.username'))
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true)))
+                ,
+
                 Tables\Columns\TextColumn::make('torrent.name')->limit(30)->label(__('label.torrent.label')),
                 Tables\Columns\TextColumn::make('snatch.uploadText')->label(__('label.uploaded')),
                 Tables\Columns\TextColumn::make('snatch.downloadText')->label(__('label.downloaded')),
