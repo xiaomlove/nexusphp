@@ -3734,7 +3734,6 @@ create_tooltip_container($torrent_tooltip, 500);
 function get_username($id, $big = false, $link = true, $bold = true, $target = false, $bracket = false, $withtitle = false, $link_ext = "", $underline = false)
 {
 	static $usernameArray = array();
-	global $lang_functions;
 	$id = (int)$id;
 
 	if (func_num_args() == 1 && isset($usernameArray[$id])) {  //One argument=is default display of username. Get it directly from static array if available
@@ -3813,7 +3812,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 	}
 	else
 	{
-		$username = "<i>".$lang_functions['text_orphaned']."</i>";
+		$username = "<i>".nexus_trans('nexus.user_not_exists')."</i>";
 		$username = "<span class=\"nowrap\">" . ( $bracket == true ? "(" . $username . ")" : $username) . "</span>";
 	}
 	if (func_num_args() == 1) { //One argument=is default display of username, save it in static array
