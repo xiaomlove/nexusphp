@@ -55,7 +55,7 @@ class ExamUserResource extends Resource
                 Tables\Columns\TextColumn::make('user.username')
                     ->label(__('label.username'))
                     ->searchable()
-                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true)))
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->uid, false, true, true, true)))
                 ,
                 Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),

@@ -52,7 +52,7 @@ class ClaimResource extends Resource
                 Tables\Columns\TextColumn::make('user.username')
                     ->label(__('label.user.label'))
                     ->searchable()
-                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true)))
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->uid, false, true, true, true)))
                 ,
                 Tables\Columns\TextColumn::make('torrent.name')->limit(40)->label(__('label.torrent.label'))->searchable(),
                 Tables\Columns\TextColumn::make('torrent.size')->label(__('label.torrent.size'))->formatStateUsing(fn (Model $record) => mksize($record->torrent->size)),
