@@ -33,6 +33,7 @@
 - 自定义菜单
 - 幸运大转盘
 - 自定义角色权限
+- 分区 H&R
 
 ## 系统要求
 - PHP: 8.0，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp
