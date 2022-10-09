@@ -278,11 +278,6 @@ class UserProfile extends ViewRecord
             ->action(function ($data) {
                 $rep = $this->getRep();
                 try {
-                    if (!empty($data['duration'])) {
-                        $data['deadline'] = now()->addDays($data['duration']);
-                    } else {
-                        $data['deadline'] = null;
-                    }
                     $rep->addMeta($this->record, $data, $data);
                     $this->notify('success', 'Success!');
                     $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);

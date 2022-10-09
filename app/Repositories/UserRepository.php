@@ -467,23 +467,41 @@ class UserRepository extends BaseRepository
         $user = $this->getUser($user);
         $metaKey = $metaData['meta_key'];
         $allowMultiple = UserMeta::$metaKeys[$metaKey]['multiple'];
+        $log = "user: {$user->id}, metaKey: $metaKey, allowMultiple: $allowMultiple";
         if ($allowMultiple) {
             //Allow multiple, just insert
             $result = $user->metas()->create($metaData);
+            $log .= ", allowMultiple, just insert";
         } else {
             $metaExists = $user->metas()->where('meta_key', $metaKey)->first();
+            $log .= ", metaExists: " . ($metaExists->id ?? '');
             if (!$metaExists) {
                 $result = $user->metas()->create($metaData);
+                $log .= ", meta not exists, just create";
             } else {
-                if (empty($keyExistsUpdates)) {
-                    $keyExistsUpdates = ['updated_at' => now()];
+                $log .= ", meta exists";
+                $keyExistsUpdates['updated_at'] = now();
+                if (!empty($keyExistsUpdates['duration'])) {
+                    $log .= ", has duration: {$keyExistsUpdates['duration']}";
+                    if ($metaExists->deadline && $metaExists->deadline->gte(now())) {
+                        $log .= ", not expire";
+                        $keyExistsUpdates['deadline'] = $metaExists->deadline->addDays($keyExistsUpdates['duration']);
+                    } else {
+                        $log .= ", expired or not set";
+                        $keyExistsUpdates['deadline'] = now()->addDays($keyExistsUpdates['duration']);
+                    }
+                    unset($keyExistsUpdates['duration']);
+                } else {
+                    $keyExistsUpdates['deadline'] = null;
                 }
+                $log .= ", update: " . json_encode($keyExistsUpdates);
                 $result = $metaExists->update($keyExistsUpdates);
             }
         }
         if ($result) {
             clear_user_cache($user->id, $user->passkey);
         }
+        do_log($log);
         return $result;
     }
 
