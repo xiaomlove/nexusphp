@@ -3701,7 +3701,7 @@ foreach ($rows as $row)
 
 		if (
 		    $row["anonymous"] == "yes"
-            && (user_can('torrentmanage') || (isset($row['owner']) && $row['owner'] == $CURUSER['id']))
+            && (user_can('viewanonymous') || (isset($row['owner']) && $row['owner'] == $CURUSER['id']))
         ) {
 			print("<td class=\"rowfollow\" align=\"center\"><i>".$lang_functions['text_anonymous']."</i><br />".(isset($row["owner"]) ? "(" . get_username($row["owner"]) .")" : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
 		}
