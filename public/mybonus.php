@@ -467,7 +467,7 @@ $summaryTable .= sprintf(
     $lang_mybonus['reward_type_basic'],
     $seedBonusResult['torrent_peer_count'],
     mksize($seedBonusResult['size']),
-    $seedBonusResult['A'],
+    number_format($seedBonusResult['A'], 3),
     number_format($seedBonusResult['seed_bonus'],3),
     $baseBonusFactor,
     number_format($baseBonus,3),
@@ -486,7 +486,7 @@ if ($hasOfficialAddition) {
         $lang_mybonus['reward_type_official_addition'],
         $seedBonusResult['official_torrent_peer_count'],
         mksize($seedBonusResult['official_size']),
-        $seedBonusResult['official_a'],
+        number_format($seedBonusResult['official_a'], 3),
         number_format($seedBonusResult['official_bonus'], 3),
         $officialAdditionalFactor,
         number_format($seedBonusResult['official_bonus'] * $officialAdditionalFactor, 3)
