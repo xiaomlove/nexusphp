@@ -867,8 +867,8 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
         throw new \InvalidArgumentException("user no '__is_donor' field");
     }
     $log = sprintf(
-        "torrent: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s",
-        $torrent['id'], $user['id'], $peer['uploaded'] ?? '', $peer['downloaded'] ?? '', $queries['uploaded'], $queries['downloaded']
+        "torrent: %s, owner: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s",
+        $torrent['id'], $torrent['owner'], $user['id'], $peer['uploaded'] ?? '', $peer['downloaded'] ?? '', $queries['uploaded'], $queries['downloaded']
     );
     if (!empty($peer)) {
         $realUploaded = max(bcsub($queries['uploaded'], $peer['uploaded']), 0);
@@ -930,7 +930,7 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
      */
     $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
     $log .= ", isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, user class: {$user['class']}, __is_donor: {$user['__is_donor']}";
-    if ($isSeedBoxRuleEnabled && !($user['class'] >= \App\Models\User::CLASS_VIP || $user['__is_donor'])) {
+    if ($isSeedBoxRuleEnabled && $torrent['owner'] != $user['id'] && !($user['class'] >= \App\Models\User::CLASS_VIP || $user['__is_donor'])) {
         $isIPSeedBox = isIPSeedBox($queries['ip'], $user['id']);
         $log .= ", isIPSeedBox: $isIPSeedBox";
         if ($isIPSeedBox) {

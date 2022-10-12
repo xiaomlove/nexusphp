@@ -461,10 +461,13 @@ if ($officialAdditionalFactor > 0 && $officialTag) {
     $hasOfficialAddition = true;
 }
 $summaryTable = '<table cellspacing="4" cellpadding="4" style="width: 50%"><tbody>';
-$summaryTable .= '<tr style="font-weight: bold"><td>'.$lang_mybonus['reward_type'].'</td><td>'.$lang_mybonus['bonus_base'].'</td><td>'.$lang_mybonus['factor'].'</td><td>'.$lang_mybonus['got_bonus'].'</td><td>'.$lang_mybonus['total'].'</td></tr>';
+$summaryTable .= '<tr style="font-weight: bold"><td>'.$lang_mybonus['reward_type'].'</td><td>'.$lang_mybonus['col_count'].'</td><td>'.$lang_mybonus['col_size'].'</td><td>'.$lang_mybonus['col_a'].'</td><td>'.$lang_mybonus['bonus_base'].'</td><td>'.$lang_mybonus['factor'].'</td><td>'.$lang_mybonus['got_bonus'].'</td><td>'.$lang_mybonus['total'].'</td></tr>';
 $summaryTable .= sprintf(
-    '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="%s">%s</td></tr>',
+    '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="%s">%s</td></tr>',
     $lang_mybonus['reward_type_basic'],
+    $seedBonusResult['torrent_peer_count'],
+    mksize($seedBonusResult['size']),
+    $seedBonusResult['A'],
     number_format($seedBonusResult['seed_bonus'],3),
     $baseBonusFactor,
     number_format($baseBonus,3),
@@ -479,8 +482,11 @@ if ($hasOfficialAddition) {
     print("<li>".$lang_mybonus['official_tag_bonus_additional_factor'].$officialAdditionalFactor."</li>");
     print("</ul>");
     $summaryTable .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
         $lang_mybonus['reward_type_official_addition'],
+        $seedBonusResult['official_torrent_peer_count'],
+        mksize($seedBonusResult['official_size']),
+        $seedBonusResult['official_a'],
         number_format($seedBonusResult['official_bonus'], 3),
         $officialAdditionalFactor,
         number_format($seedBonusResult['official_bonus'] * $officialAdditionalFactor, 3)
@@ -494,8 +500,11 @@ if ($hasHaremAddition) {
     print("<li>".$lang_mybonus['harem_additional_factor'].$haremFactor."</li>");
     print("</ul>");
     $summaryTable .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
         $lang_mybonus['reward_type_harem_addition'],
+        '--',
+        '--',
+        '--',
         number_format($haremAddition, 3),
         $haremFactor,
         number_format($haremAddition * $haremFactor, 3)

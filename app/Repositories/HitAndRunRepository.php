@@ -386,6 +386,7 @@ class HitAndRunRepository extends BaseRepository
             $sql = "select hit_and_runs.status, count(*) as counts from hit_and_runs where uid = $uid group by status";
         }
         $results = NexusDB::select($sql);
+        do_log("user: $uid, sql: $sql, results: " . json_encode($results));
         if (!$formatted) {
             return $results;
         }
@@ -406,12 +407,16 @@ class HitAndRunRepository extends BaseRepository
             }
             return implode(" ", $out);
         } else {
+            $grouped = [];
+            foreach ($results as $item) {
+                $grouped[$item['status']] = $item['counts'];
+            }
             foreach (SearchBox::listSections() as $key => $info) {
                 if ($key == SearchBox::SECTION_BROWSE) {
                     return sprintf(
                         '%s/%s/%s',
-                        $results[HitAndRun::STATUS_INSPECTING] ?? 0,
-                        $results[HitAndRun::STATUS_UNREACHED] ?? 0,
+                        $grouped[HitAndRun::STATUS_INSPECTING] ?? 0,
+                        $grouped[HitAndRun::STATUS_UNREACHED] ?? 0,
                         HitAndRun::getConfig('ban_user_when_counts_reach', $info['mode'])
                     );
                 }

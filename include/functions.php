@@ -5867,8 +5867,8 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $timenow = time();
     $sectoweek = 7*24*60*60;
 
-    $A = 0;
-    $count = $torrent_peer_count = 0;
+    $A = $official_a = $size = $official_size = 0;
+    $count = $torrent_peer_count = $official_torrent_peer_count = 0;
     $logPrefix = "[CALCULATE_SEED_BONUS], uid: $uid, torrentIdArr: " . json_encode($torrentIdArr);
     if ($torrentIdArr !== null) {
         if (empty($torrentIdArr)) {
@@ -5893,9 +5893,9 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
     $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor");
-    $official_a = 0;
     foreach ($torrentResult as $torrent)
     {
+        $size = bcadd($size, $torrent['size']);
         $weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
         $gb_size = $gb_size_raw = $torrent['size'] / 1073741824;
         if ($zeroBonusTag && isset($tagGrouped[$torrent['id']][$zeroBonusTag]) && is_numeric($zeroBonusFactor)) {
@@ -5908,6 +5908,8 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
         $officialAIncrease = 0;
         if ($officialTag && isset($tagGrouped[$torrent['id']][$officialTag])) {
             $officialAIncrease = $temp;
+            $official_torrent_peer_count++;
+            $official_size = bcadd($official_size, $torrent['size']);
         }
         $official_a += $officialAIncrease;
         do_log(sprintf(
@@ -5920,7 +5922,10 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
     //Official addition don't think about the minimum value
     $official_bonus =  $valuetwo * atan($official_a / $l_bonus);
-    $result = compact('seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'official_a', 'official_bonus');
+    $result = compact(
+        'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'size',
+        'official_bonus', 'official_a', 'official_torrent_peer_count', 'official_size'
+    );
     $result['donor_times'] = $donortimes_bonus;
     $result['official_additional_factor'] = $officialAdditionalFactor;
     do_log("$logPrefix, result: " . json_encode($result));
