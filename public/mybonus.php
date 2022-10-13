@@ -428,18 +428,8 @@ print("</ul>");
 
 $seedBonusResult = calculate_seed_bonus($CURUSER['id']);
 $A = $seedBonusResult['A'];
-$officialAdditionalFactor = get_setting('bonus.official_addition', 0);
-$officialTag = get_setting('bonus.official_tag');
-$haremFactor = get_setting('bonus.harem_addition');
-$haremAddition = calculate_harem_addition($CURUSER['id']);
-$isDonor = is_donor($CURUSER);
-$baseBonusFactor = 1;
-if ($isDonor) {
-    $baseBonusFactor = $donortimes_bonus;
-}
-$baseBonus = $seedBonusResult['seed_bonus'] * $baseBonusFactor;
-$totalBonus = number_format( $baseBonus + $haremAddition * $haremFactor + $seedBonusResult['official_bonus'] * $officialAdditionalFactor, 3);
 
+$bonusTableResult = build_bonus_table($CURUSER, $seedBonusResult, ['table_style' => 'width: 50%']);
 
 $percent = $seedBonusResult['seed_bonus'] * 100 / ($bzero_bonus + $perseeding_bonus * $maxseeding_bonus);
 print("<div align=\"center\">".$lang_mybonus['text_you_are_currently_getting'].round($seedBonusResult['seed_bonus'],3).$lang_mybonus['text_point'].add_s($seedBonusResult['seed_bonus']).$lang_mybonus['text_per_hour']." (A = ".round($A,1).")</div><table align=\"center\" border=\"0\" width=\"400\"><tr><td class=\"loadbarbg\" style='border: none; padding: 0px;'>");
@@ -450,70 +440,24 @@ else $loadpic = "loadbargreen";
 $width = $percent * 4;
 print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
 
-$rowSpan = 1;
-$hasHaremAddition = $hasOfficialAddition = false;
-if ($haremFactor > 0) {
-    $rowSpan++;
-    $hasHaremAddition = true;
-}
-if ($officialAdditionalFactor > 0 && $officialTag) {
-    $rowSpan++;
-    $hasOfficialAddition = true;
-}
-$summaryTable = '<table cellspacing="4" cellpadding="4" style="width: 50%"><tbody>';
-$summaryTable .= '<tr style="font-weight: bold"><td>'.$lang_mybonus['reward_type'].'</td><td>'.$lang_mybonus['col_count'].'</td><td>'.$lang_mybonus['col_size'].'</td><td>'.$lang_mybonus['col_a'].'</td><td>'.$lang_mybonus['bonus_base'].'</td><td>'.$lang_mybonus['factor'].'</td><td>'.$lang_mybonus['got_bonus'].'</td><td>'.$lang_mybonus['total'].'</td></tr>';
-$summaryTable .= sprintf(
-    '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="%s">%s</td></tr>',
-    $lang_mybonus['reward_type_basic'],
-    $seedBonusResult['torrent_peer_count'],
-    mksize($seedBonusResult['size']),
-    number_format($seedBonusResult['A'], 3),
-    number_format($seedBonusResult['seed_bonus'],3),
-    $baseBonusFactor,
-    number_format($baseBonus,3),
-    $rowSpan,
-    $totalBonus
-);
-
-if ($hasOfficialAddition) {
+if ($bonusTableResult['has_official_addition']) {
     print("<h1>".$lang_mybonus['text_get_by_seeding_official']."</h1>");
     print("<ul>");
     print("<li>".$lang_mybonus['official_calculate_method']."</li>");
-    print("<li>".$lang_mybonus['official_tag_bonus_additional_factor'].$officialAdditionalFactor."</li>");
+    print("<li>".$lang_mybonus['official_tag_bonus_additional_factor'].$bonusTableResult['official_addition_factor']."</li>");
     print("</ul>");
-    $summaryTable .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
-        $lang_mybonus['reward_type_official_addition'],
-        $seedBonusResult['official_torrent_peer_count'],
-        mksize($seedBonusResult['official_size']),
-        number_format($seedBonusResult['official_a'], 3),
-        number_format($seedBonusResult['official_bonus'], 3),
-        $officialAdditionalFactor,
-        number_format($seedBonusResult['official_bonus'] * $officialAdditionalFactor, 3)
-    );
 }
 
-if ($hasHaremAddition) {
+if ($bonusTableResult['has_harem_addition']) {
     print("<h1>".$lang_mybonus['text_get_by_harem']."</h1>");
     print("<ul>");
     print("<li>".sprintf($lang_mybonus['harem_additional_desc'], $CURUSER['id'])."</li>");
-    print("<li>".$lang_mybonus['harem_additional_factor'].$haremFactor."</li>");
+    print("<li>".$lang_mybonus['harem_additional_factor'].$bonusTableResult['harem_addition_factor']."</li>");
     print("</ul>");
-    $summaryTable .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
-        $lang_mybonus['reward_type_harem_addition'],
-        '--',
-        '--',
-        '--',
-        number_format($haremAddition, 3),
-        $haremFactor,
-        number_format($haremAddition * $haremFactor, 3)
-    );
 }
-$summaryTable .= '</tbody></table>';
 
 print("<h1>".$lang_mybonus['text_bonus_summary']."</h1>");
-print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$summaryTable.'</div>';
+print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$bonusTableResult['table'].'</div>';
 
 print("<h1>".$lang_mybonus['text_other_things_get_bonus']."</h1>");
 print("<ul>");

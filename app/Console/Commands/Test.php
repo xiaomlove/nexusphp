@@ -20,6 +20,7 @@ use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
+use App\Models\UserBanLog;
 use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\ExamRepository;
@@ -89,10 +90,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new \NexusPlugin\HitAndRun\HitAndRunRepository();
-        $rep->initSectionHitAndRunSetting(SearchBox::SECTION_BROWSE . "_");
-        $rep->initSectionHitAndRunSetting(SearchBox::SECTION_SPECIAL . "_");
-        clear_setting_cache();
+        UserBanLog::clearUserBanLogDuplicate();
     }
 
 

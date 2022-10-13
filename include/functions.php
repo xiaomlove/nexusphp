@@ -5969,4 +5969,95 @@ JS;
     \Nexus\Nexus::js($js, 'footer', false);
     return $input;
 }
+
+function build_bonus_table(array $user, array $bonusResult = [], array $options = [])
+{
+    if (empty($bonusResult)) {
+        $bonusResult = calculate_seed_bonus($user['id']);
+    }
+    $officialTag = get_setting('bonus.official_tag');
+    $officialAdditionalFactor = get_setting('bonus.official_addition', 0);
+    $haremFactor = get_setting('bonus.harem_addition');
+    $haremAddition = calculate_harem_addition($user['id']);
+    $isDonor = is_donor($user);
+    $donortimes_bonus = get_setting('bonus.donortimes');
+    $baseBonusFactor = 1;
+    if ($isDonor) {
+        $baseBonusFactor = $donortimes_bonus;
+    }
+    $baseBonus = $bonusResult['seed_bonus'] * $baseBonusFactor;
+    $totalBonus = number_format( $baseBonus + $haremAddition * $haremFactor + $bonusResult['official_bonus'] * $officialAdditionalFactor, 3);
+
+    $rowSpan = 1;
+    $hasHaremAddition = $hasOfficialAddition = false;
+    if ($haremFactor > 0) {
+        $rowSpan++;
+        $hasHaremAddition = true;
+    }
+    if ($officialAdditionalFactor > 0 && $officialTag) {
+        $rowSpan++;
+        $hasOfficialAddition = true;
+    }
+
+    $table = sprintf('<table cellpadding="5" style="%s">', $options['table_style'] ?? '');
+    $table .= '<tr>';
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.reward_type'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.count'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.size'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.a_value'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.bonus_base'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.factor'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.got_bonus'));
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.total'));
+    $table .= '</tr>';
+
+    $table .= sprintf(
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="%s">%s</td></tr>',
+        nexus_trans('bonus.reward_types.basic'),
+        $bonusResult['torrent_peer_count'],
+        mksize($bonusResult['size']),
+        number_format($bonusResult['A'], 3),
+        number_format($bonusResult['seed_bonus'],3),
+        $baseBonusFactor,
+        number_format($baseBonus,3),
+        $rowSpan,
+        $totalBonus
+    );
+
+    if ($hasOfficialAddition) {
+        $table .= sprintf(
+            '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            nexus_trans('bonus.reward_types.official_addition'),
+            $bonusResult['official_torrent_peer_count'],
+            mksize($bonusResult['official_size']),
+            number_format($bonusResult['official_a'], 3),
+            number_format($bonusResult['official_bonus'], 3),
+            $officialAdditionalFactor,
+            number_format($bonusResult['official_bonus'] * $officialAdditionalFactor, 3)
+        );
+    }
+
+    if ($hasHaremAddition) {
+        $table .= sprintf(
+            '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            nexus_trans('bonus.reward_types.harem_addition'),
+            '--',
+            '--',
+            '--',
+            number_format($haremAddition, 3),
+            $haremFactor,
+            number_format($haremAddition * $haremFactor, 3)
+        );
+    }
+    $table .= '</table>';
+
+    return [
+        'table' => $table,
+        'has_harem_addition' => $hasHaremAddition,
+        'harem_addition_factor' => $haremFactor,
+        'has_official_addition' => $hasOfficialAddition,
+        'official_addition_factor' => $officialAdditionalFactor,
+    ];
+
+}
 ?>

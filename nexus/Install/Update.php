@@ -15,6 +15,7 @@ use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
 use App\Models\User;
+use App\Models\UserBanLog;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\BonusRepository;
 use App\Repositories\ExamRepository;
@@ -391,6 +392,8 @@ class Update extends Install
                     $command .= " --exclude=$exclude";
                 }
                 $this->executeCommand($command);
+                //remove original file
+                unlink($filename);
                 break;
             }
         }
@@ -442,7 +445,6 @@ class Update extends Install
             $priority--;
         }
     }
-
 
 
 }

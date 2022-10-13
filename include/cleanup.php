@@ -1019,6 +1019,15 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+    //remove duplicate user ban logs
+    $log = "clear user ban log duplicate";
+	\App\Models\UserBanLog::clearUserBanLogDuplicate();
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
 	$log = 'Full cleanup is done';
 	do_log($log);
     if ($printProgress) {

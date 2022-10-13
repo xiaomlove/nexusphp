@@ -155,5 +155,6 @@ $lang_userdetails = array
     'row_user_props' => '道具',
     'meta_key_change_username_username' => '新用户名',
     'consume' => '使用',
+    'text_bonus_table' => '时魔',
 );
 ?>

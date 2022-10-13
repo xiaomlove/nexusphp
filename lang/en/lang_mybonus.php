@@ -146,7 +146,7 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'bonus_base' => 'Base bonus',
     'lock_text' => 'The system limits you to one click on the exchange button within %s seconds!',
     'text_get_by_seeding_official' => 'The official torrents will receive the following additional bonus value per hour',
-    'official_calculate_method' => 'The formula for calculating the official reward is the same as above, but only for the official type',
+    'official_calculate_method' => 'The formula for calculating the official reward is the same as above, but only for the official type, No consideration for low income',
     'official_tag_bonus_additional_factor' => 'The final reward is the calculated official type reward multiplied by the official type factor, the current official type factor is: ',
     'reward_type_official_addition' => 'Official addition',
     'text_get_by_harem' => 'The harem addition will give the following additional bonus value per hour',

@@ -394,6 +394,10 @@ if ($user["id"] == $CURUSER["id"] || user_can('viewhistory')) {
     tr_small($lang_functions['text_seed_points'], number_format($user['seed_points'], 1), 1);
 }
 
+if (user_can('prfmanage') && $user["class"] < get_user_class()) {
+    $bonusTable = build_bonus_table($user);
+    tr_small($lang_userdetails['text_bonus_table'], $bonusTable['table'], 1);
+}
 
 if ($user["ip"] && (user_can('torrenthistory') || $user["id"] == $CURUSER["id"])){
 
