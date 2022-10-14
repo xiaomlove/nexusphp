@@ -18,5 +18,6 @@ $lang_getusertorrentlistajax = array
 	'text_no_record' => "没有记录",
     'text_total_size' => " | 总大小：",
     'col_added' => "发布时间",
+    'col_client' => '客户端',
 );
 ?>

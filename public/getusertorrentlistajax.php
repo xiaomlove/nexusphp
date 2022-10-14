@@ -23,7 +23,7 @@ function maketable($res, $mode = 'seeding')
 {
 	global $lang_getusertorrentlistajax,$CURUSER,$smalldescription_main, $lang_functions, $id;
 	global $torrentRep, $claimRep, $claimTorrentTTL;
-	$showActionClaim = false;
+	$showActionClaim = $showClient = false;
 	switch ($mode)
 	{
 		case 'uploaded': {
@@ -55,6 +55,7 @@ function maketable($res, $mode = 'seeding')
         $showtotalsize = true;
 		$columncount = 8;
             $showActionClaim = true;
+            $showClient = true;
 		break;
 		}
 		case 'leeching': {
@@ -69,6 +70,7 @@ function maketable($res, $mode = 'seeding')
 		$showcotime = false;
 		$showanonymous = false;
         $showtotalsize = true;
+            $showClient = true;
 		$columncount = 8;
 		break;
 		}
@@ -129,6 +131,9 @@ function maketable($res, $mode = 'seeding')
 
 	$ret = "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"100%\"><tr><td class=\"colhead\" style=\"padding: 0px\">".$lang_getusertorrentlistajax['col_type']."</td><td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_name']."</td><td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_added']."</td>".
 	($showsize ? "<td class=\"colhead\" align=\"center\"><img class=\"size\" src=\"pic/trans.gif\" alt=\"size\" title=\"".$lang_getusertorrentlistajax['title_size']."\" /></td>" : "").($showsenum ? "<td class=\"colhead\" align=\"center\"><img class=\"seeders\" src=\"pic/trans.gif\" alt=\"seeders\" title=\"".$lang_getusertorrentlistajax['title_seeders']."\" /></td>" : "").($showlenum ? "<td class=\"colhead\" align=\"center\"><img class=\"leechers\" src=\"pic/trans.gif\" alt=\"leechers\" title=\"".$lang_getusertorrentlistajax['title_leechers']."\" /></td>" : "").($showuploaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_uploaded']."</td>" : "") . ($showdownloaded ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_downloaded']."</td>" : "").($showratio ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_ratio']."</td>" : "").($showsetime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_se_time']."</td>" : "").($showletime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_le_time']."</td>" : "").($showcotime ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_time_completed']."</td>" : "").($showanonymous ? "<td class=\"colhead\" align=\"center\">".$lang_getusertorrentlistajax['col_anonymous']."</td>" : "");
+    if ($showClient) {
+        $ret .= sprintf('<td class="colhead" align="center">%s</td><td class="colhead" align="center">IP</td>', $lang_getusertorrentlistajax['col_client']);
+    }
     $ret .= sprintf('<td class="colhead" align="center">%s</td>', $lang_functions['std_action']);
     $ret .= "</tr>";
     $total_size = 0;
@@ -212,6 +217,14 @@ function maketable($res, $mode = 'seeding')
 			$ret .= "<td class=\"rowfollow\" align=\"center\">"."". str_replace("&nbsp;", "<br />", gettime($arr['completedat'],false)). "</td>";
 		if ($showanonymous)
 			$ret .= "<td class=\"rowfollow\" align=\"center\">".$arr['anonymous']."</td>";
+		if ($showClient) {
+		    $ipArr = array_filter([$arr['ipv4'], $arr['ipv6']]);
+		    $ret .= sprintf(
+		        '<td class="rowfollow" align="center">%s<br/>%s</td><td class="rowfollow" align="center">%s</td>',
+                get_agent($arr['peer_id'], $arr['agent']), $arr['port'],
+                implode('<br/>', $ipArr)
+            );
+        }
         $claimButton = '';
 		if (
 		    $showActionClaim
@@ -258,7 +271,7 @@ switch ($type)
 	case 'seeding':
 	{
 //		$res = sql_query("SELECT torrent,added,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='yes' ORDER BY torrents.id DESC") or sqlerr();
-		$fields = "torrent,added,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers,snatched.seedtime,snatched.uploaded,snatched.userid, categories.mode as search_box_id";
+		$fields = "torrent,added,snatched.uploaded,snatched.downloaded,snatched.seedtime,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers,snatched.userid, categories.mode as search_box_id, peers.peer_id, peers.agent, peers.port, peers.ipv4, peers.ipv6";
 		$tableWhere = "peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='yes'";
 		$order = "torrents.id DESC";
 		break;
@@ -268,7 +281,7 @@ switch ($type)
 	case 'leeching':
 	{
 //		$res = sql_query("SELECT torrent,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers, torrents.added FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='no' ORDER BY torrents.id DESC") or sqlerr();
-		$fields = "torrent,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers, torrents.added,snatched.seedtime,snatched.uploaded,snatched.userid, categories.mode as search_box_id";
+		$fields = "torrent,snatched.uploaded,snatched.downloaded,snatched.seedtime,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers, torrents.added,snatched.userid, categories.mode as search_box_id, peers.peer_id, peers.agent, peers.port, peers.ipv4, peers.ipv6";
 		$tableWhere = "peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='no'";
         $order = "torrents.id DESC";
 		break;
@@ -288,7 +301,7 @@ switch ($type)
 	case 'incomplete':
 	{
 //		$res = sql_query("SELECT torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id ORDER BY snatched.id DESC") or sqlerr();
-		$fields = "torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime,snatched.seedtime,snatched.uploaded,snatched.userid, categories.mode as search_box_id";
+		$fields = "torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime,snatched.seedtime,snatched.userid, categories.mode as search_box_id";
 		$tableWhere = "torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id";
 		$order = "snatched.id DESC";
 		break;
