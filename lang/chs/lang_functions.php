@@ -329,6 +329,7 @@ $lang_functions = array
     'input_check_all' => "全选",
     'input_uncheck_all' => "全不选",
     'select_at_least_one_record' => '至少选择一条记录！',
+    'text_seed_box_record_to_approval' => '有 %s%u 条待审核的 SeedBox 记录%s',
 );
 
 ?>

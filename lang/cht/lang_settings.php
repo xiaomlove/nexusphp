@@ -791,6 +791,9 @@ $lang_settings = array
     'row_upload_deny_approval_deny_count' => '拒絕發布審核不通過數',
     'text_upload_deny_approval_deny_count_note' => "當審核不通過的種子數大於等於此數值時，不允許發布。設置為 '0' 不使用此規則",
     'row_nfo_view_style_default' => 'NFO 默認查看樣式',
+    'row_destroy_disabled' => '徹底刪除賬號',
+    'text_destroy_disabled_note_one' => '被封禁的賬號如果連續',
+    'text_destroy_disabled_note_two' => "天不登錄，將被從數據庫徹底物理刪除。默認'500'，請設置一個大於上邊任何一種導致封禁的值。設為'0'來禁止此規則。",
 );
 
 ?>

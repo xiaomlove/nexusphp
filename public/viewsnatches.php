@@ -13,7 +13,7 @@ begin_main_frame();
 $torrent_name = get_single_value("torrents", "name", "WHERE id = ".sqlesc($id));
 print("<h1 align=center>".$lang_viewsnatches['text_snatch_detail_for'] . "<a href=details.php?id=" . htmlspecialchars($id) . "><b>".htmlspecialchars($torrent_name)."</b></a></h1>");
 $count = get_row_count("snatched", "WHERE finished = 'yes' AND torrentid = ".sqlesc($id));
-
+$seedBoxRep = new \App\Repositories\SeedBoxRepository();
 if ($count){
 	$perpage = 25;
 	list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["SCRIPT_NAME"] . "?id=" . htmlspecialchars($id) . "&" );
@@ -53,7 +53,7 @@ if ($count){
 		}
 		else $username = get_username($arr['userid']);
 		$reportImage = "<img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_viewsnatches['title_report']."\" />";
-		print("<tr$highlight><td class=rowfollow align=center>" . $username ."</td>".(user_can('userprofile') ? "<td class=rowfollow align=center>".$arr['ip']."</td>" : "")."<td class=rowfollow align=center>".$uploaded."@".$uprate.$lang_viewsnatches['text_per_second']."<br />".$downloaded."@".$downrate.$lang_viewsnatches['text_per_second']."</td><td class=rowfollow align=center>$ratio</td><td class=rowfollow align=center>$seedtime</td><td class=rowfollow align=center>$leechtime</td><td class=rowfollow align=center>".gettime($arr['completedat'],true,false)."</td><td class=rowfollow align=center>".gettime($arr['last_action'],true,false)."</td><td class=rowfollow align=center style='padding: 0px'>".($userrow['privacy'] != 'strong' || user_can('viewanonymous') ? "<a href=report.php?user={$arr['userid']}>$reportImage</a>" : $reportImage)."</td></tr>\n");
+		print("<tr$highlight><td class=rowfollow align=center>" . $username ."</td>".(user_can('userprofile') || $arr['userid'] == $CURUSER['id'] ? "<td class=rowfollow align=center><span class='nowrap'>".$arr['ip'].$seedBoxRep->renderIcon($arr['ip'], $arr['userid'])."</span></td>" : "")."<td class=rowfollow align=center>".$uploaded."@".$uprate.$lang_viewsnatches['text_per_second']."<br />".$downloaded."@".$downrate.$lang_viewsnatches['text_per_second']."</td><td class=rowfollow align=center>$ratio</td><td class=rowfollow align=center>$seedtime</td><td class=rowfollow align=center>$leechtime</td><td class=rowfollow align=center>".gettime($arr['completedat'],true,false)."</td><td class=rowfollow align=center>".gettime($arr['last_action'],true,false)."</td><td class=rowfollow align=center style='padding: 0px'>".($userrow['privacy'] != 'strong' || user_can('viewanonymous') ? "<a href=report.php?user={$arr['userid']}>$reportImage</a>" : $reportImage)."</td></tr>\n");
 	}
 		print("</table>\n");
 		print($pagerbottom);

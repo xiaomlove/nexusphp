@@ -213,4 +213,12 @@ return [
         'text' => '允许个性条',
         'desc' => '允许用户使用个性条',
     ],
+//    'not-counting-downloaded' => [
+//        'text' => '不计下载量',
+//        'desc' => '用户下载量不增加',
+//    ],
+//    'not-counting-hit-and-run' => [
+//        'text' => '不计 H&R',
+//        'desc' => '下载带 H&R 标记的种子不记 H&R。注意：等级为 VIP 是固定不计的',
+//    ],
 ];

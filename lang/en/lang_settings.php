@@ -791,6 +791,9 @@ $lang_settings = array
     'row_upload_deny_approval_deny_count' => 'Refuse to upload approval deny count',
     'text_upload_deny_approval_deny_count_note' => "When the number of torrents approval deny is greater than or equal to this value, publishing is not allowed. Set to '0' to not use this rule",
     'row_nfo_view_style_default' => 'NFO view style default',
+    'row_destroy_disabled' => 'Delete account completely',
+    'text_destroy_disabled_note_one' => 'Disabled accounts if they are continuously',
+    'text_destroy_disabled_note_two' => "Days without logging in, will be physically deleted from the database completely. Default '500', please set a value greater than any of the above to cause disable. Set to '0' to disable this rule." ,
 );
 
 ?>

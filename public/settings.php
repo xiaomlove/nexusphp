@@ -134,7 +134,7 @@ elseif ($action == 'savesettings_account') 	// save account
         'exutime', 'exudl', \App\Models\User::CLASS_EXTREME_USER . '_min_seed_points', 'exuprratio', 'exuderatio', \App\Models\User::CLASS_EXTREME_USER . '_alias',
         'uutime', 'uudl', \App\Models\User::CLASS_ULTIMATE_USER . '_min_seed_points', 'uuprratio', 'uuderatio', \App\Models\User::CLASS_ULTIMATE_USER . '_alias',
         'nmtime', 'nmdl', \App\Models\User::CLASS_NEXUS_MASTER . '_min_seed_points', 'nmprratio', 'nmderatio', \App\Models\User::CLASS_NEXUS_MASTER . '_alias',
-        'getInvitesByPromotion'
+        'getInvitesByPromotion', 'destroy_disabled'
     );
 	GetVar($validConfig);
 	$ACCOUNT = [];
@@ -486,8 +486,12 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_see_banned_torrents'], $lang_settings['text_minimum_class'].classlist('seebanned',$maxclass,$AUTHORITY['seebanned'],0,true).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).$lang_settings['text_see_banned_torrents_note'],1);
 	tr($lang_settings['row_vote_against_offers'], $lang_settings['text_minimum_class'].classlist('againstoffer',$maxclass,$AUTHORITY['againstoffer'],0,true).$lang_settings['text_default'].get_user_class_name(UC_USER,false,true,true).$lang_settings['text_vote_against_offers_note'],1);
 	tr($lang_settings['row_allow_userbar'], $lang_settings['text_minimum_class'].classlist('userbar',$maxclass,$AUTHORITY['userbar'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_allow_userbar_note'],1);
-	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
-	print ("</form>");
+
+//    tr(nexus_trans('permission.not-counting-downloaded.text'), $lang_settings['text_minimum_class'].classlist('not-counting-downloaded',$maxclass,$AUTHORITY['not-counting-downloaded'] ?? '',0,true).nexus_trans('permission.not-counting-downloaded.desc'),1);
+//    tr(nexus_trans('permission.not-counting-hit-and-run.text'), $lang_settings['text_minimum_class'].classlist('not-counting-hit-and-run',$maxclass,$AUTHORITY['not-counting-hit-and-run'] ?? '',0,true).nexus_trans('permission.not-counting-hit-and-run.desc'),1);
+
+    tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
+    print ("</form>");
 }
 elseif ($action == 'basicsettings')	// basic settings
 {
@@ -651,6 +655,9 @@ elseif ($action == 'accountsettings'){
 	tr($lang_settings['row_delete_packed'],$lang_settings['text_delete_packed_note_one']."<input type='text' style=\"width: 50px\" name=deletepacked value='".(isset($ACCOUNT["deletepacked"]) ? $ACCOUNT["deletepacked"] : 400 )."'>".$lang_settings['text_delete_packed_note_two'], 1);
 	tr($lang_settings['row_delete_unpacked'],$lang_settings['text_delete_unpacked_note_one']."<input type='text' style=\"width: 50px\" name=deleteunpacked value='".(isset($ACCOUNT["deleteunpacked"]) ? $ACCOUNT["deleteunpacked"] : 150 )."'>".$lang_settings['text_delete_unpacked_note_two'], 1);
 	tr($lang_settings['row_delete_no_transfer'],$lang_settings['text_delete_transfer_note_one']."<input type='text' style=\"width: 50px\" name=deletenotransfer value='".(isset($ACCOUNT["deletenotransfer"]) ? $ACCOUNT["deletenotransfer"] : 60 )."'>".$lang_settings['text_delete_transfer_note_two']."<input type='text' style=\"width: 50px\" name=deletenotransfertwo value='".(isset($ACCOUNT["deletenotransfertwo"]) ? $ACCOUNT["deletenotransfertwo"] : 0 )."'>".$lang_settings['text_delete_transfer_note_three'], 1);
+	tr($lang_settings['row_destroy_disabled'],$lang_settings['text_destroy_disabled_note_one']."<input type='text' style=\"width: 50px\" name=destroy_disabled value='".(isset($ACCOUNT["destroy_disabled"]) ? $ACCOUNT["destroy_disabled"] : 500 )."'>".$lang_settings['text_destroy_disabled_note_two'], 1);
+
+
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_user_promotion_demotion']."</b></td></tr>");
 	tr($lang_settings['row_ban_peasant_one'].get_user_class_name(UC_PEASANT,false,false,true).$lang_settings['row_ban_peasant_two'],get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_ban_peasant_note_one']."<input type='text' style=\"width: 50px\" name=deletepeasant value='".(isset($ACCOUNT["deletepeasant"]) ? $ACCOUNT["deletepeasant"] : 30 )."'>".$lang_settings['text_ban_peasant_note_two'], 1);
     $inputAlias = "0_alias";

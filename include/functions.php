@@ -2800,6 +2800,19 @@ if ($msgalert)
         }
     }
 
+    //seed box approval
+    if (get_user_class() >= \App\Models\User::CLASS_ADMINISTRATOR && get_setting('seed_box.enabled') == 'yes') {
+        $cacheKey = 'SEED_BOX_RECORD_APPROVAL_NONE';
+        $toApprovalCounts = $Cache->get_value($cacheKey);
+        if ($toApprovalCounts === false) {
+            $toApprovalCounts = get_row_count('seed_box_records', 'where status = 0');
+            $Cache->cache_value($cacheKey, $toApprovalCounts, 60);
+        }
+        if ($toApprovalCounts) {
+            msgalert('/nexusphp/seed-box-records?tableFilters[status][value]=0', sprintf($lang_functions['text_seed_box_record_to_approval'], is_or_are($toApprovalCounts), $toApprovalCounts, add_s($toApprovalCounts)), 'darkred');
+        }
+    }
+
 	if (user_can('staffmem'))
 	{
 

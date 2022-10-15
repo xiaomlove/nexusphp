@@ -154,7 +154,7 @@ class SeedBoxRepository extends BaseRepository
 
     private function clearCache()
     {
-        return true;
+        NexusDB::cache_del('SEED_BOX_RECORD_APPROVAL_NONE');
 //        SeedBoxRecordUpdated::dispatch();
     }
 

@@ -204,7 +204,7 @@ function ban_user_with_leech_warning_expired()
 }
 
 
-function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
+function disable_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
 {
     $results = $query->where('enabled', \App\Models\User::ENABLED_YES)->get(['id', 'username', 'modcomment', 'lang']);
     if ($results->isEmpty()) {
@@ -228,7 +228,7 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
     );
     sql_query($sql);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
-    do_log("[DELETE_USER]($reasonKey): " . implode(', ', $uidArr));
+    do_log("[DISABLE_USER]($reasonKey): " . implode(', ', $uidArr));
     return $uidArr;
 }
 
@@ -537,7 +537,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
         ->whereRaw("added < FROM_UNIXTIME($deadtime)")
         ->whereRaw("last_login < FROM_UNIXTIME($deadtime)")
         ->whereRaw("last_access < FROM_UNIXTIME($deadtime)");
-    delete_user($query, "cleanup.delete_user_unconfirmed");
+    disable_user($query, "cleanup.disable_user_unconfirmed");
     $log = "delete unconfirmed accounts";
 	do_log($log);
 	if ($printProgress) {
@@ -590,7 +590,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
                 $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
             });
-        delete_user($query, "cleanup.delete_user_no_transfer_alt_last_access_time");
+        disable_user($query, "cleanup.disable_user_no_transfer_alt_last_access_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 1: last access time";
 	do_log($log);
@@ -613,7 +613,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
                 $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
             });
-        delete_user($query, "cleanup.delete_user_no_transfer_alt_register_time");
+        disable_user($query, "cleanup.disable_user_no_transfer_alt_register_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 2: registering time";
 	do_log($log);
@@ -632,7 +632,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where('status', 'confirmed')
             ->where("class","<", $maxclass)
             ->where("last_access","<", $dt);
-        delete_user($query, "cleanup.delete_user_not_parked");
+        disable_user($query, "cleanup.disable_user_not_parked");
 	}
 	$log = "delete inactive user accounts, not parked";
 	do_log($log);
@@ -651,13 +651,29 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where('status', 'confirmed')
             ->where("class","<", $maxclass)
             ->where("last_access","<", $dt);
-        delete_user($query, "cleanup.delete_user_parked");
+        disable_user($query, "cleanup.disable_user_parked");
 	}
 	$log = "delete parked user accounts, parked";
 	do_log($log);
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+	//destroy disabled accounts
+    $destroyDisabledDays = get_setting('account.destroy_disabled');
+    if ($destroyDisabledDays > 0) {
+        $secs = $destroyDisabledDays*24*60*60;
+        $dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
+        \App\Models\User::query()
+            ->where('enabled', 'no')
+            ->where("last_access","<", $dt)
+            ->delete();
+    }
+    $log = "destroy disabled accounts";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
 
 	//remove VIP status if time's up
 	$res = sql_query("SELECT id, modcomment FROM users WHERE vip_added='yes' AND vip_until < NOW()") or sqlerr(__FILE__, __LINE__);

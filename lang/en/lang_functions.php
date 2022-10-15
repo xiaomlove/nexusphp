@@ -337,6 +337,7 @@ $lang_functions = array
     'input_check_all' => "Check All",
     'input_uncheck_all' => "Uncheck All",
     'select_at_least_one_record' => 'Select at least one record!',
+    'text_seed_box_record_to_approval' => 'There %s%u not approval seed box record%s.',
 );
 
 ?>

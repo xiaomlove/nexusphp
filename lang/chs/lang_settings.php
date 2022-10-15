@@ -791,6 +791,9 @@ $lang_settings = array
     'row_upload_deny_approval_deny_count' => '拒绝发布审核不通过数',
     'text_upload_deny_approval_deny_count_note' => "当审核不通过的种子数大于等于此数值时，不允许发布。设置为 '0' 不使用此规则",
     'row_nfo_view_style_default' => 'NFO 默认查看样式',
+    'row_destroy_disabled' => '彻底删除账号',
+    'text_destroy_disabled_note_one' => '被封禁的账号如果连续',
+    'text_destroy_disabled_note_two' => "天不登录，将被从数据库彻底物理删除。默认'500'，请设置一个大于上边任何一种导致封禁的值。设为'0'来禁止此规则。",
 );
 
 ?>
