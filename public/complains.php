@@ -114,8 +114,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 if ($user) {
                     printf(' [<a href="user-ban-log.php?q=%s" class="faqlink" target="_blank">%s</a>]', urlencode($user->username), $lang_complains['text_view_band_log']);
                 }
+                printf('<br />IP: ' . htmlspecialchars($complain['ip']));
             }
-            printf('<br />IP: ' . htmlspecialchars($complain['ip']));
             echo '<hr />', format_comment($complain['body']);
             end_frame();
             // REPLIES
@@ -123,7 +123,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $res = sql_query(sprintf('SELECT * FROM `complain_replies` WHERE complain = %u ORDER BY id DESC', $complain['id'])) or sqlerr(__FILE__, __LINE__);
             if(mysql_num_rows($res)){
                 while($row = mysql_fetch_assoc($res)){
-                    printf('<b>%s @ %s (%s): </b>', $row['userid'] ? get_plain_username($row['userid']) : $lang_complains['text_complainer'], gettime($row['added']), htmlspecialchars($row['ip']));
+                    printf('<b>%s @ %s', $row['userid'] ? get_plain_username($row['userid']) : $lang_complains['text_complainer'], gettime($row['added']));
+                    if ($isAdmin) {
+                        printf(' (%s)', htmlspecialchars($row['ip']));
+                    }
+                    echo ': </b>';
                     echo format_comment($row['body']) . '<hr />';
                 }
             }else{
