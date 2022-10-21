@@ -4,6 +4,7 @@ namespace App\Filament\Resources\User;
 
 use App\Filament\Resources\User\ExamUserResource\Pages;
 use App\Filament\Resources\User\ExamUserResource\RelationManagers;
+use App\Models\Exam;
 use App\Models\ExamUser;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
@@ -66,6 +67,20 @@ class ExamUserResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
+                Tables\Filters\Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
+                    })
+                ,
+                Tables\Filters\SelectFilter::make('exam_id')
+                    ->options(Exam::query()->pluck('name', 'id')->toArray())
+                    ->label(__('exam.label'))
+                ,
                 Tables\Filters\SelectFilter::make('status')->options(ExamUser::listStatus(true))->label(__("label.status")),
                 Tables\Filters\SelectFilter::make('is_done')->options(['0' => 'No', '1' => 'yes'])->label(__('label.exam_user.is_done')),
             ])

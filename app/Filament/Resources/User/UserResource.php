@@ -80,6 +80,15 @@ class UserResource extends Resource
             ])
             ->defaultSort('added', 'desc')
             ->filters([
+                Tables\Filters\Filter::make('id')
+                    ->form([
+                        Forms\Components\TextInput::make('id')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['id'], fn (Builder $query, $id) => $query->where("id", $id));
+                    })
+                ,
                 Tables\Filters\SelectFilter::make('class')->options(array_column(User::$classes, 'text'))->label(__('label.user.class')),
                 Tables\Filters\SelectFilter::make('status')->options(['confirmed' => 'confirmed', 'pending' => 'pending'])->label(__('label.user.status')),
                 Tables\Filters\SelectFilter::make('enabled')->options(self::$yesOrNo)->label(__('label.user.enabled')),

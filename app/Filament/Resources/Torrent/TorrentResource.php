@@ -92,9 +92,13 @@ class TorrentResource extends Resource
                 Tables\Columns\BooleanColumn::make('hr')
                     ->label(__('label.torrent.hr'))
                 ,
-                Tables\Columns\TextColumn::make('size')->label(__('label.torrent.size'))->formatStateUsing(fn ($state) => mksize($state)),
-                Tables\Columns\TextColumn::make('seeders')->label(__('label.torrent.seeders')),
-                Tables\Columns\TextColumn::make('leechers')->label(__('label.torrent.leechers')),
+                Tables\Columns\TextColumn::make('size')
+                    ->label(__('label.torrent.size'))
+                    ->formatStateUsing(fn ($state) => mksize($state))
+                    ->sortable()
+                ,
+                Tables\Columns\TextColumn::make('seeders')->label(__('label.torrent.seeders'))->sortable(),
+                Tables\Columns\TextColumn::make('leechers')->label(__('label.torrent.leechers'))->sortable(),
                 Tables\Columns\BadgeColumn::make('approval_status')
                     ->visible($showApproval)
                     ->label(__('label.torrent.approval_status'))
@@ -108,6 +112,17 @@ class TorrentResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
+                Tables\Filters\Filter::make('owner')
+                    ->form([
+                        Forms\Components\TextInput::make('owner')
+                            ->label(__('label.torrent.owner'))
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['owner'], fn (Builder $query, $owner) => $query->where("owner", $owner));
+                    })
+                ,
+
                 Tables\Filters\SelectFilter::make('visible')
                     ->options(self::$yesOrNo)
                     ->label(__('label.torrent.visible')),

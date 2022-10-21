@@ -304,7 +304,7 @@ return array (
       8 => '5',
       9 => '10',
     ),
-      'destroy_disabled' => 500,
+      'destroy_disabled' => 0,
   ),
   'torrent' =>
   array (

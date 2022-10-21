@@ -4,6 +4,7 @@ namespace App\Filament\Resources\User;
 
 use App\Filament\Resources\User\UserMedalResource\Pages;
 use App\Filament\Resources\User\UserMedalResource\RelationManagers;
+use App\Models\Medal;
 use App\Models\UserMedal;
 use Filament\Forms;
 use Filament\Resources\Form;
@@ -59,7 +60,20 @@ class UserMedalResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
-
+                Tables\Filters\Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
+                    })
+                ,
+                Tables\Filters\SelectFilter::make('medal_id')
+                    ->options(Medal::query()->pluck('name', 'id')->toArray())
+                    ->label(__('medal.label'))
+                ,
             ])
             ->actions([
                 Tables\Actions\DeleteAction::make(),
