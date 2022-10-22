@@ -2650,6 +2650,7 @@ else {
                 <?php if(\App\Models\Claim::getConfigIsEnabled()) { ?><font class='color_bonus'><?php echo $lang_functions['menu_claim']?></font> <?php echo sprintf('[<a href="claim.php?uid=%s">%s</a>]', $CURUSER['id'], (new \App\Repositories\ClaimRepository())->getStats($CURUSER['id']))?><?php }?>
             </span>
         </td>
+                <?php if(get_setting('main.spsct') == 'yes'){?>
         <td class="bottom" align="left" style="border: none">
             <form action="search.php" method="get" target="<?php echo nexus()->getScript() == 'search' ? '_self' : '_blank'?>">
                 <div style="display: flex;align-items: center">
@@ -2665,6 +2666,7 @@ else {
                 </div>
             </form>
         </td>
+                <?php }?>
 	<td class="bottom" align="right"><span class="medium">
 <?php
 if (user_can('staffmem')) {
@@ -3364,12 +3366,13 @@ function torrenttable($rows, $variant = "torrent", $searchBoxId = 0) {
 	$torrentTagCollection = \App\Models\TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->get();
 	$torrentTagResult = $torrentTagCollection->groupBy('torrent_id');
 	$showCover = false;
-    $showSeedBoxIcon = get_setting('seed_box.enabled') == 'yes';
+    $showSeedBoxIcon = false;
 	if ($searchBoxId) {
 	    $searchBoxExtra = get_searchbox_value($searchBoxId, "extra");
 	    if (!empty($searchBoxExtra[\App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST])) {
 	        $showCover = true;
         }
+        $showSeedBoxIcon = get_setting('seed_box.enabled') == 'yes';
         if (empty($searchBoxExtra[\App\Models\SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST])) {
             $showSeedBoxIcon = false;
         }
@@ -5710,6 +5713,7 @@ function list_require_search_box_id()
         'userdetails' => [$setting['browsecat'], $setting['specialcat']],
         'offers' => [$setting['browsecat'], $setting['specialcat']],
         'details' => [$setting['browsecat'], $setting['specialcat']],
+        'search' => [$setting['browsecat'], $setting['specialcat']],
     ];
     return $maps[nexus()->getScript()] ?? [];
 }
@@ -5796,7 +5800,7 @@ function get_ip_location_from_geoip($ip): bool|array
 function msgalert($url, $text, $bgcolor = "red")
 {
     print("<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\"><tr><td style='border: none; padding: 10px; background: ".$bgcolor."'>\n");
-    print("<b><a href=\"".$url."\"><font color=\"white\">".$text."</font></a></b>");
+    print("<b><a href=\"".$url."\" target='_blank'><font color=\"white\">".$text."</font></a></b>");
     print("</td></tr></table><br />");
 }
 
