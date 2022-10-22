@@ -75,7 +75,7 @@ else $torrentsperpage = 50;
 // sorting by MarkoStamcar
 $column = 'id';
 $ascdesc = 'desc';
-$addparam = "?search=$search&";
+$addparam = "?search=$search&search_area=$searchArea&";
 if (isset($_GET['sort']) && $_GET['sort'] && isset($_GET['type']) && $_GET['type']) {
 
     switch($_GET['sort']) {
