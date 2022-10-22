@@ -2651,7 +2651,7 @@ else {
             </span>
         </td>
         <td class="bottom" align="left" style="border: none">
-            <form action="search.php" method="get" target="_blank">
+            <form action="search.php" method="get" target="<?php echo nexus()->getScript() == 'search' ? '_self' : '_blank'?>">
                 <div style="display: flex;align-items: center">
                     <div style="display: flex;flex-direction: column">
                         <div>
