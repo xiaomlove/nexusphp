@@ -2655,11 +2655,11 @@ else {
                 <div style="display: flex;align-items: center">
                     <div style="display: flex;flex-direction: column">
                         <div>
-                            <span style="display: inline-block;width:50px"><?php echo nexus_trans('search.search_keyword')?>: </span>
+                            <span style="display: inline-block;width:45px"><?php echo nexus_trans('search.search_keyword')?>: </span>
                             <span><input type="text" name="search" style="width: 100px;height: 12px" value="<?php echo $_GET['search'] ?? '' ?>"/></span>
                         </div>
                         <div>
-                            <span style="display: inline-block;width:50px"><?php echo nexus_trans('search.search_area')?>: </span>
+                            <span style="display: inline-block;width:45px"><?php echo nexus_trans('search.search_area')?>: </span>
                             <span><?php echo build_search_area($_GET['search_area'] ?? '', ['style' => 'width: 108px'])?></span>
                         </div>
                     </div>
