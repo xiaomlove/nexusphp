@@ -5,8 +5,6 @@ namespace App\Models;
 use App\Repositories\TagRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use JeroenG\Explorer\Application\Explored;
-use Laravel\Scout\Searchable;
 
 class Torrent extends NexusModel
 {

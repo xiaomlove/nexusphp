@@ -30,4 +30,7 @@ return [
     'remove_claim_confirm' => '確認要放棄認領？',
     'already_claimed' => '已認領',
     'not_claim_yet' => '未認領',
+    'fields' => [
+        'torrent_id' => '種子 ID',
+    ],
 ];

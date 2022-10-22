@@ -75,6 +75,16 @@ class ClaimResource extends Resource
                         return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
                     })
                 ,
+                Tables\Filters\Filter::make('torrent_id')
+                    ->form([
+                        Forms\Components\TextInput::make('torrent_id')
+                            ->label(__('claim.fields.torrent_id'))
+                            ->placeholder(__('claim.fields.torrent_id'))
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['torrent_id'], fn (Builder $query, $value) => $query->where("torrent_id", $value));
+                    })
+                ,
             ])
             ->actions([
 //                Tables\Actions\EditAction::make(),

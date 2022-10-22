@@ -2638,8 +2638,8 @@ else {
                 [<a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>]
                 <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <?php echo number_format($CURUSER['seedbonus'], 1)?>
                 <?php if($attendance){ printf(' <a href="attendance.php" class="">'.$lang_functions['text_attended'].'</a>', $attendance->points, $CURUSER['attendance_card']); }else{ printf(' <a href="attendance.php" class="faqlink">%s</a>', $lang_functions['text_attendance']);}?>
-                <font class = 'color_bonus'><?php echo $lang_functions['text_seed_points'] ?></font>: <?php echo number_format($CURUSER['seed_points'], 1)?>
                 <font class = 'color_invite'><?php echo $lang_functions['text_invite'] ?></font>[<a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_send'] ?></a>]: <?php echo $CURUSER['invites']?>
+                <?php if(get_user_class() >= \App\Models\User::CLASS_ADMINISTRATOR) printf('[<a href="%s" target="_blank">%s</a>]', nexus_env('FILAMENT_PATH', 'nexusphp'), $lang_functions['text_management_system'])?>
                 <br />
 	            <font class="color_ratio"><?php echo $lang_functions['text_ratio'] ?></font> <?php echo $ratio?>
                 <font class='color_uploaded'><?php echo $lang_functions['text_uploaded'] ?></font> <?php echo mksize($CURUSER['uploaded'])?>
@@ -2648,27 +2648,47 @@ else {
                 <font class='color_connectable'><?php echo $lang_functions['text_connectable'] ?></font><?php echo $connectable?> <?php echo maxslots();?>
                 <?php if(\App\Models\HitAndRun::getIsEnabled()) { ?><font class='color_bonus'>H&R: </font> <?php echo sprintf('[<a href="myhr.php">%s</a>]', (new \App\Repositories\HitAndRunRepository())->getStatusStats($CURUSER['id']))?><?php }?>
                 <?php if(\App\Models\Claim::getConfigIsEnabled()) { ?><font class='color_bonus'><?php echo $lang_functions['menu_claim']?></font> <?php echo sprintf('[<a href="claim.php?uid=%s">%s</a>]', $CURUSER['id'], (new \App\Repositories\ClaimRepository())->getStats($CURUSER['id']))?><?php }?>
-                <?php if(get_user_class() >= \App\Models\User::CLASS_ADMINISTRATOR) printf('[<a href="%s" target="_blank">%s</a>]', nexus_env('FILAMENT_PATH', 'nexusphp'), $lang_functions['text_management_system'])?>
             </span>
         </td>
-	<td class="bottom" align="right"><span class="medium"><?php echo $lang_functions['text_the_time_is_now'] ?><?php echo $datum['hours'].":".$datum['minutes']?><br />
+        <td class="bottom" align="left" style="border: none">
+            <form action="search.php" method="get" target="_blank">
+                <div style="display: flex;align-items: center">
+                    <div style="display: flex;flex-direction: column">
+                        <div>
+                            <span style="display: inline-block;width:50px"><?php echo nexus_trans('search.search_keyword')?>: </span>
+                            <span><input type="text" name="search" style="width: 100px;height: 12px" value="<?php echo $_GET['search'] ?? '' ?>"/></span>
+                        </div>
+                        <div>
+                            <span style="display: inline-block;width:50px"><?php echo nexus_trans('search.search_area')?>: </span>
+                            <span><?php echo build_search_area($_GET['search_area'] ?? '', ['style' => 'width: 108px'])?></span>
+                        </div>
+                    </div>
+                    <div><input type="submit" value="<?php echo nexus_trans('search.global_search')?>" style="width: 39px;white-space: break-spaces;padding: 0" /></div>
+                </div>
+            </form>
+        </td>
+	<td class="bottom" align="right"><span class="medium">
 <?php
-	if (user_can('staffmem')) {
-        $totalreports = $Cache->get_value('staff_report_count');
-        if ($totalreports == ""){
-            $totalreports = get_row_count("reports");
-            $Cache->cache_value('staff_report_count', $totalreports, 900);
-        }
-        $totalcheaters = $Cache->get_value('staff_cheater_count');
-        if ($totalcheaters == ""){
-            $totalcheaters = get_row_count("cheaters");
-            $Cache->cache_value('staff_cheater_count', $totalcheaters, 900);
-        }
-        print(
-            "<a href=\"cheaterbox.php\"><img class=\"cheaterbox\" alt=\"cheaterbox\" title=\"".$lang_functions['title_cheaterbox']."\" src=\"pic/trans.gif\" />  </a>".$totalcheaters
-            ."  <a href=\"reports.php\"><img class=\"reportbox\" alt=\"reportbox\" title=\"".$lang_functions['title_reportbox']."\" src=\"pic/trans.gif\" />  </a>".$totalreports
-            );
-	}
+if (user_can('staffmem')) {
+    $totalreports = $Cache->get_value('staff_report_count');
+    if ($totalreports == ""){
+        $totalreports = get_row_count("reports");
+        $Cache->cache_value('staff_report_count', $totalreports, 900);
+    }
+    $totalcheaters = $Cache->get_value('staff_cheater_count');
+    if ($totalcheaters == ""){
+        $totalcheaters = get_row_count("cheaters");
+        $Cache->cache_value('staff_cheater_count', $totalcheaters, 900);
+    }
+    print(
+        "<a href=\"cheaterbox.php\"><img class=\"cheaterbox\" alt=\"cheaterbox\" title=\"".$lang_functions['title_cheaterbox']."\" src=\"pic/trans.gif\" />  </a>".$totalcheaters
+        ."  <a href=\"reports.php\"><img class=\"reportbox\" alt=\"reportbox\" title=\"".$lang_functions['title_reportbox']."\" src=\"pic/trans.gif\" />  </a>".$totalreports
+    );
+}
+print(" <a href=\"friends.php\"><img class=\"buddylist\" alt=\"Buddylist\" title=\"".$lang_functions['title_buddylist']."\" src=\"pic/trans.gif\" /></a>");
+print(" <a href=\"getrss.php\"><img class=\"rss\" alt=\"RSS\" title=\"".$lang_functions['title_get_rss']."\" src=\"pic/trans.gif\" /></a>");
+print '<br/>';
+//echo $lang_functions['text_the_time_is_now'].$datum['hours'].":".$datum['minutes'] . '<br />';
 //	$cacheKey = "staff_message_count_" . $CURUSER['id'];
 //    $totalsm = $Cache->get_value($cacheKey);
     $totalsm = \App\Repositories\MessageRepository::getStaffMessageCountCache($CURUSER['id'], 'total');
@@ -2683,8 +2703,7 @@ else {
 
 	print("<a href=\"messages.php\">".$inboxpic."</a> ".($messages ? $messages." (".$unread.$lang_functions['text_message_new'].")" : "0"));
 	print("  <a href=\"messages.php?action=viewmailbox&amp;box=-1\"><img class=\"sentbox\" alt=\"sentbox\" title=\"".$lang_functions['title_sentbox']."\" src=\"pic/trans.gif\" /></a> ".($outmessages ? $outmessages : "0"));
-	print(" <a href=\"friends.php\"><img class=\"buddylist\" alt=\"Buddylist\" title=\"".$lang_functions['title_buddylist']."\" src=\"pic/trans.gif\" /></a>");
-	print(" <a href=\"getrss.php\"><img class=\"rss\" alt=\"RSS\" title=\"".$lang_functions['title_get_rss']."\" src=\"pic/trans.gif\" /></a>");
+
 ?>
 
 	</span></td>
@@ -3544,7 +3563,7 @@ foreach ($rows as $row)
     }
 	$stickyicon = apply_filter('sticky_icon', $stickyicon, $row);
     $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
-	$hrImg = get_hr_img($row, $searchBoxId);
+	$hrImg = get_hr_img($row, $row['search_box_id']);
 
 	//cover
     $coverSrc = $tdCover = '';
@@ -4730,7 +4749,7 @@ function get_hr_img(array $torrent, $searchBoxId)
     if ($mode == \App\Models\HitAndRun::MODE_GLOBAL || ($mode == \App\Models\HitAndRun::MODE_MANUAL && isset($torrent['hr']) && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
         $result = '<img class="hitandrun" src="pic/trans.gif" alt="H&R" title="H&R" />';
     }
-    do_log("mode: $mode, result: $result");
+    do_log("searchBoxId: $searchBoxId, mode: $mode, result: $result");
     return $result;
 }
 
@@ -6072,5 +6091,18 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         'official_addition_factor' => $officialAdditionalFactor,
     ];
 
+}
+
+function build_search_area($searchArea, array $options = [])
+{
+    $result = sprintf('<select name="search_area" style="%s">', $options['style'] ?? '');
+    foreach ([0, 1, 3, 4] as $item) {
+        $result .= sprintf(
+            '<option value="%s"%s>%s</option>',
+            $item, $item == $searchArea ? ' selected' : '', nexus_trans("search.search_area_options.$item")
+        );
+    }
+    $result .= '</select>';
+    return $result;
 }
 ?>

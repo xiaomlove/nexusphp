@@ -31,4 +31,7 @@ return [
     'remove_claim_confirm' => 'Confirm to give up the claim?',
     'already_claimed' => 'Claimed',
     'not_claim_yet' => 'Unclaimed',
+    'fields' => [
+        'torrent_id' => 'Torrent ID',
+    ],
 ];

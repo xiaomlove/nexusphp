@@ -913,11 +913,11 @@ if ($count)
 
 	list($pagertop, $pagerbottom, $limit, $offset, $size, $page) = pager($torrentsperpage, $count, "?" . $addparam);
 	$fieldsStr = implode(', ', \App\Models\Torrent::getFieldsForList(true));
-    if ($allsec == 1 || $enablespecial != 'yes') {
-        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
-    } else {
-        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
-    }
+//    if ($allsec == 1 || $enablespecial != 'yes') {
+//        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
+//    } else {
+        $query = "SELECT $fieldsStr, categories.mode as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
+//    }
     do_log("[TORRENT_LIST_SQL] $query", 'debug');
     if (!$elasticsearchEnabled) {
         $res = sql_query($query);
