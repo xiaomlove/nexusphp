@@ -7,4 +7,5 @@ return [
     'disable_user_no_transfer_alt_register_time' => '封禁非活躍的無流量賬號，由註冊時間時間斷定.',
     'disable_user_not_parked' => '定時封禁未掛起的非活躍賬號.',
     'disable_user_parked' => '定時封禁已掛起的非活躍賬號.',
+    'destroy_disabled_account' => '定時物理刪除已封禁賬號',
 ];

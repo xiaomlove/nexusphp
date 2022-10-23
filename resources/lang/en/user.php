@@ -27,4 +27,6 @@ return [
         \App\Models\User::CLASS_STAFF_LEADER => 'Staff Leader',
     ],
     'change_username_lte_min_interval' => 'Last change time: :last_change_time, unmet minimum interval: :interval days',
+    'destroy_by_admin' => 'Physical delete by administrator',
+    'disable_by_admin' => 'Disable by administrator',
 ];

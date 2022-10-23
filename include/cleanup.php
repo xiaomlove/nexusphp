@@ -664,10 +664,14 @@ function docleanup($forceAll = 0, $printProgress = false) {
     if ($destroyDisabledDays > 0) {
         $secs = $destroyDisabledDays*24*60*60;
         $dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
-        \App\Models\User::query()
+        $users = \App\Models\User::query()
             ->where('enabled', 'no')
             ->where("last_access","<", $dt)
-            ->delete();
+            ->get(['id']);
+        if ($users->isNotEmpty()) {
+            $userRep = new \App\Repositories\UserRepository();
+            $userRep->destroy($users->pluck('id')->toArray(), 'cleanup.destroy_disabled_account');
+        }
     }
     $log = "destroy disabled accounts";
     do_log($log);
@@ -1037,12 +1041,13 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
     //remove duplicate user ban logs
-    $log = "clear user ban log duplicate";
-	\App\Models\UserBanLog::clearUserBanLogDuplicate();
-    do_log($log);
-    if ($printProgress) {
-        printProgress($log);
-    }
+    //No need to do that, disable + destroy will have two records, sometimes disable will enable again
+//    $log = "clear user ban log duplicate";
+//	\App\Models\UserBanLog::clearUserBanLogDuplicate();
+//    do_log($log);
+//    if ($printProgress) {
+//        printProgress($log);
+//    }
 
 	$log = 'Full cleanup is done';
 	do_log($log);

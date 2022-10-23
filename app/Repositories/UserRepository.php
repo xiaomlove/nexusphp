@@ -162,11 +162,14 @@ class UserRepository extends BaseRepository
         return User::listClass();
     }
 
-    public function disableUser(User $operator, $uid, $reason)
+    public function disableUser(User $operator, $uid, $reason = '')
     {
         $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username', 'class']);
         if ($targetUser->enabled == User::ENABLED_NO) {
             throw new NexusException('Already disabled !');
+        }
+        if (empty($reason)) {
+            $reason = nexus_trans("user.disable_by_admin");
         }
         $this->checkPermission($operator, $targetUser);
         $banLog = [
@@ -519,9 +522,13 @@ class UserRepository extends BaseRepository
         return true;
     }
 
-    public function destroy($id)
+    public function destroy($id, $reasonKey = 'user.destroy_by_admin')
     {
-        user_can('user-delete', true);
+        if (!isRunningInConsole()) {
+            user_can('user-delete', true);
+        }
+        $uidArr = Arr::wrap($id);
+        $users = User::query()->with('language')->whereIn('id', $uidArr)->get(['id', 'username', 'lang']);
         $tables = [
             'users' => 'id',
             'hit_and_runs' => 'uid',
@@ -530,9 +537,18 @@ class UserRepository extends BaseRepository
             'exam_progress' => 'uid',
         ];
         foreach ($tables as $table => $key) {
-            \Nexus\Database\NexusDB::table($table)->where($key, $id)->delete();
+            \Nexus\Database\NexusDB::table($table)->whereIn($key, $uidArr)->delete();
         }
-        do_log("[DESTROY_USER]: $id", 'error');
+        do_log("[DESTROY_USER]: " . json_encode($uidArr), 'error');
+        $userBanLogs = [];
+        foreach ($users as $user) {
+            $userBanLogs[] = [
+                'uid' => $user->id,
+                'username' => $user->username,
+                'reason' => nexus_trans($reasonKey, [], $user->locale)
+            ];
+        }
+        UserBanLog::query()->insert($userBanLogs);
         return true;
     }
 
