@@ -810,7 +810,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//17.update total seeding and leeching time of users
-	$res = sql_query("SELECT * FROM users") or sqlerr(__FILE__, __LINE__);
+	$res = sql_query("SELECT id FROM users where enabled = 'yes' and status = 'confirmed'") or sqlerr(__FILE__, __LINE__);
 	while($arr = mysql_fetch_assoc($res))
 	{
 		//die("s" . $arr['id']);
