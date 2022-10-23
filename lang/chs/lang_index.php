@@ -105,6 +105,8 @@ $lang_index = array
     'top_uploader_toggle_time_range_tab' => '点击切换时间范围',
     'top_uploader_toggle_time_range_recently' => '最近 30 天',
     'top_uploader_toggle_time_range_all' => '全部时间',
+    'clear_shout_box' => '清空群聊区',
+    'sure_to_clear_shout_box' => '确定要清空群聊区吗？',
 
 );
 
