@@ -1664,13 +1664,13 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 	global $invitesystem, $registration, $maxusers, $SITENAME, $maxip;
 	if ($type == "invitesystem") {
 		if ($invitesystem == "no") {
-			stderr($lang_functions['std_oops'], $lang_functions['std_invite_system_disabled'], 0);
+			stderr($lang_functions['std_oops'], $lang_functions['std_invite_system_disabled'], 0, false);
 		}
 	}
 
 	if ($type == "normal") {
 		if ($registration == "no") {
-			stderr($lang_functions['std_sorry'], $lang_functions['std_open_registration_disabled'], 0);
+			stderr($lang_functions['std_sorry'], $lang_functions['std_open_registration_disabled'], 0, false);
 		}
 	}
 
@@ -1678,14 +1678,14 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 		$res = sql_query("SELECT COUNT(*) FROM users") or sqlerr(__FILE__, __LINE__);
 		$arr = mysql_fetch_row($res);
 		if ($arr[0] >= $maxusers)
-		stderr($lang_functions['std_sorry'], $lang_functions['std_account_limit_reached'], 0);
+		stderr($lang_functions['std_sorry'], $lang_functions['std_account_limit_reached'], 0, false);
 	}
 
 	if ($ipcheck) {
 		$ip = getip () ;
 		$a = (@mysql_fetch_row(@sql_query("select count(*) from users where ip='" . mysql_real_escape_string($ip) . "'"))) or sqlerr(__FILE__, __LINE__);
 		if ($a[0] > $maxip)
-		stderr($lang_functions['std_sorry'], $lang_functions['std_the_ip']."<b>" . htmlspecialchars($ip) ."</b>". $lang_functions['std_used_many_times'],false);
+		stderr($lang_functions['std_sorry'], $lang_functions['std_the_ip']."<b>" . htmlspecialchars($ip) ."</b>". $lang_functions['std_used_many_times'],false, false);
 	}
 	return true;
 }

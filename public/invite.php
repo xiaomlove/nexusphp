@@ -10,12 +10,12 @@ $menuSelected = $_REQUEST['menu'] ?? 'invitee';
 $pageSize = 50;
 
 function inviteMenu ($selected = "invitee") {
-    global $lang_invite, $id, $CURUSER;
+    global $lang_invite, $id, $CURUSER, $invitesystem;
     begin_main_frame("", false, "100%");
     print ("<div id=\"invitenav\" style='position: relative'><ul id=\"invitemenu\" class=\"menu\">");
     print ("<li" . ($selected == "invitee" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=invitee\">".$lang_invite['text_invite_status']."</a></li>");
     print ("<li" . ($selected == "sent" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=sent\">".$lang_invite['text_sent_invites_status']."</a></li>");
-    if (user_can('sendinvite')) {
+    if (user_can('sendinvite') && $invitesystem == 'yes') {
         print ("</ul><form style='position: absolute;top:0;right:0' method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".($CURUSER['invites'] <= 0 ? "disabled " : "")." value='".$lang_invite['sumbit_invite_someone']."'></form></div>");
     }
     end_main_frame();
