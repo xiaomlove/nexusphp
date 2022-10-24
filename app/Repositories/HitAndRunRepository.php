@@ -98,6 +98,7 @@ class HitAndRunRepository extends BaseRepository
         $setting['diff_in_section'] = $diffInSection;
         $setting['search_box_id'] = $browseMode;
         $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
+        $this->checkAndDisableUser($setting);
 
         $specialMode = Setting::get('main.specialcat');
         if ($diffInSection && $browseMode != $specialMode) {
@@ -105,6 +106,7 @@ class HitAndRunRepository extends BaseRepository
             $setting['diff_in_section'] = $diffInSection;
             $setting['search_box_id'] = $specialMode;
             $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
+            $this->checkAndDisableUser($setting);
         }
     }
 
@@ -333,37 +335,43 @@ class HitAndRunRepository extends BaseRepository
         ];
         Message::query()->insert($message);
 
-        if (!$disableUser) {
-            do_log("[DO_NOT_DISABLE_USER], return");
-            return true;
-        }
-        if ($hitAndRun->user->enabled == 'no') {
-            do_log("[USER_ALREADY_DISABLED], return");
-            return true;
-        }
-        //disable user
-        /** @var User $user */
-        $user = $hitAndRun->user;
-        $countsQuery = $user->hitAndRuns()->where('status', HitAndRun::STATUS_UNREACHED);
+        return true;
+    }
+
+    private function checkAndDisableUser(array $setting): void
+    {
+        $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $setting['search_box_id']);
+        $query = HitAndRun::query()
+            ->selectRaw("count(*) as counts, uid")
+            ->where('status', HitAndRun::STATUS_UNREACHED)
+            ->groupBy('uid')
+            ->having("counts", '>=', $disableCounts)
+        ;
         if ($setting['diff_in_section']) {
-            $countsQuery->whereHas('torrent.basic_category', function (Builder $query) use ($setting) {
+            $query->whereHas('torrent.basic_category', function (Builder $query) use ($setting) {
                 return $query->where('mode', $setting['search_box_id']);
             });
         }
-        $counts = $countsQuery->count();
-        $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $setting['search_box_id']);
-        do_log("user: {$user->id}, H&R counts: $counts, disableCounts: $disableCounts", 'notice');
-        if ($counts >= $disableCounts) {
-            do_log("[DISABLE_USER_DUE_TO_H&R_UNREACHED]", 'notice');
-            $comment = nexus_trans('hr.unreached_disable_comment', [], $user->locale);
-            $user->updateWithModComment(['enabled' => User::ENABLED_NO], $comment);
+        $result = $query->get();
+        if ($result->isEmpty()) {
+            do_log("No user to disable");
+            return;
+        }
+        $users = User::query()
+            ->with('language')
+            ->where('enabled', User::ENABLED_YES)
+            ->find($result->pluck('id')->toArray(), ['id', 'username', 'lang']);
+        foreach ($users as $user) {
+            $locale = $user->locale;
+            $comment = nexus_trans('hr.unreached_disable_comment', [], $locale);
+            $user->updateWithModComment(['enabled' => User::ENABLED_NO], sprintf('%s - %s', date('Y-m-d'), $comment));
             $message = [
-                'receiver' => $hitAndRun->uid,
+                'receiver' => $user->id,
                 'added' => Carbon::now()->toDateTimeString(),
                 'subject' => $comment,
                 'msg' => nexus_trans('hr.unreached_disable_message_content', [
                     'ban_user_when_counts_reach' => Setting::get('hr.ban_user_when_counts_reach'),
-                ], $hitAndRun->user->locale),
+                ], $locale),
             ];
             Message::query()->insert($message);
             $userBanLog = [
@@ -372,9 +380,8 @@ class HitAndRunRepository extends BaseRepository
                 'reason' => $comment
             ];
             UserBanLog::query()->insert($userBanLog);
+            do_log("Disable user: " . nexus_json_encode($userBanLog));
         }
-
-        return true;
     }
 
     public function getStatusStats($uid, $formatted = true)

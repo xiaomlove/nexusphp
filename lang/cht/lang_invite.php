@@ -49,6 +49,8 @@ $lang_invite = array
 	'std_or_above_can_invite' => "及以上的用戶才能發送邀請。",
 	'text_email_restriction_note' => "你只能發送邀請給以下郵箱：",
     'harem_addition' => '後宮加成',
+    'signup_link_help' => '右鍵復製',
+    'signup_link' => '註冊鏈接',
 );
 
 ?>

@@ -52,6 +52,8 @@ Best Regards,
 	'std_or_above_can_invite' => " or above can send invitation.",
 	'text_email_restriction_note' => "You could only send invitation to email from those domains: ",
     'harem_addition' => 'Harem addition',
+    'signup_link_help' => 'Right click to copy',
+    'signup_link' => 'Signup link',
 );
 
 ?>

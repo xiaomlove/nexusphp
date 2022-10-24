@@ -166,12 +166,17 @@ if ($type == 'new'){
             for ($i = 0; $i < $num1; ++$i)
             {
                 $arr1 = mysql_fetch_assoc($rer);
+                $isHashValid = $arr1['valid'] == \App\Models\Invite::VALID_YES;
+                $registerLink = '';
+                if ($isHashValid) {
+                    $registerLink = sprintf('&nbsp;<a href="signup.php?type=invite&invitenumber=%s" title="%s" target="_blank"><small>[%s]</small></a>', $arr1['hash'], $lang_invite['signup_link_help'], $lang_invite['signup_link']);
+                }
                 $tr = "<tr>";
                 $tr .= "<td class=rowfollow>{$arr1['invitee']}</td>";
-                $tr .= "<td class=rowfollow>{$arr1['hash']}</td>";
+                $tr .= sprintf('<td class="rowfollow">%s%s</td>', $arr1['hash'], $registerLink);
                 $tr .= "<td class=rowfollow>{$arr1['time_invited']}</td>";
                 $tr .= "<td class=rowfollow>".\App\Models\Invite::$validInfo[$arr1['valid']]['text']."</td>";
-                if ($arr1['valid'] == \App\Models\Invite::VALID_NO) {
+                if (!$isHashValid) {
                     $tr .= "<td class=rowfollow><a href=userdetails.php?id={$arr1['invitee_register_uid']}><font color=#1f7309>".$arr1['invitee_register_username']."</font></a></td>";
                 } else {
                     $tr .= "<td class='rowfollow'></td>";
