@@ -75,4 +75,10 @@ return [
         'deny_comment_show' => '審核不通過，原因：:reason',
         'logs_label' => '審核記錄'
     ],
+    'show_hide_media_info' => '顯示/隱藏原始 MediaInfo',
+    'promotion_time_types' => [
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_GLOBAL => '全局',
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_PERMANENT => '永久',
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_DEADLINE => '直到',
+    ],
 ];

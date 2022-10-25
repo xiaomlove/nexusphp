@@ -17,6 +17,7 @@ if (!$row) die();
  * @since v1.6
  */
 $customField = new \Nexus\Field\Field();
+$hitAndRunRep = new \App\Repositories\HitAndRunRepository();
 
 $tagIdArr = \App\Models\TorrentTag::query()->where('torrent_id', $id)->get()->pluck('tag_id')->toArray();
 $searchBoxRep = new \App\Repositories\SearchBoxRepository();
@@ -68,8 +69,6 @@ else {
         echo $ptGen->renderUploadPageFormInput($row['pt_gen']);
     }
 
-    $customField->renderOnUploadPage($id);
-
 	if ($enablenfo_main=='yes')
 		tr($lang_edit['row_nfo_file'], "<font class=\"medium\"><input type=\"radio\" name=\"nfoaction\" value=\"keep\" checked=\"checked\" />".$lang_edit['radio_keep_current'].
 	"<input type=\"radio\" name=\"nfoaction\" value=\"remove\" />".$lang_edit['radio_remove'].
@@ -82,7 +81,7 @@ else {
         tr($lang_functions['text_technical_info'], '<textarea name="technical_info" rows="8" style="width: 99%;">' . $row['technical_info'] . '</textarea><br/>' . $lang_functions['text_technical_info_help_text'], 1);
     }
 
-	$s = "<select name=\"type\" id=\"oricat\">";
+	$s = "<select name=\"type\" id=\"oricat\" data-mode='$sectionmode'>";
 
 	$cats = genrelist($sectionmode);
 	foreach ($cats as $subrow) {
@@ -94,7 +93,7 @@ else {
 
 	$s .= "</select>\n";
 	if ($allowmove){
-		$s2 = "<select name=\"type\" id=newcat disabled>\n";
+		$s2 = "<select name=\"type\" id=newcat disabled data-mode='$othermode'>\n";
 		$cats2 = genrelist($othermode);
 		foreach ($cats2 as $subrow) {
 			$s2 .= "<option value=\"" . $subrow["id"] . "\"";
@@ -153,10 +152,14 @@ else {
 
     $sectionCurrent = $searchBoxRep->renderQualitySelect($sectionmode);
     tr($lang_edit['row_quality'], $sectionCurrent, 1, "hide mode mode_$sectionmode");
+    echo $customField->renderOnUploadPage($id, $sectionmode);
+    echo $hitAndRunRep->renderOnUploadPage($row['hr'], $sectionmode);
 
     if ($allowmove && $othermode) {
         $selectOther = $searchBoxRep->renderQualitySelect($othermode);
         tr($lang_edit['row_quality'], $selectOther, 1, "hide mode mode_$othermode");
+        echo $customField->renderOnUploadPage($id, $othermode);
+        echo $hitAndRunRep->renderOnUploadPage($row['hr'], $othermode);
     }
 
     tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox($tagIdArr), 1);
@@ -194,7 +197,8 @@ else {
             foreach (\App\Models\Torrent::listPosStates() as $key => $value) {
                 $options[] = "<option" . (($row["pos_state"] == $key) ? " selected=\"selected\"" : "" ) . " value=\"" . $key . "\">".$value['text']."</option>";
             }
-			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"sel_posstate\" style=\"width: 100px;\">" . implode('', $options) . "</select>&nbsp;&nbsp;&nbsp;";
+			$pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"pos_state\" style=\"width: 100px;\">" . implode('', $options) . "</select>&nbsp;&nbsp;&nbsp;";
+            $pickcontent .= datetimepicker_input('pos_state_until', $row['pos_state_until'], nexus_trans('label.deadline') . ":&nbsp;");
 		}
 		if(user_can('torrentmanage') && ($CURUSER["picker"] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
 		{
@@ -208,11 +212,6 @@ else {
 		}
 		tr($lang_edit['row_pick'], $pickcontent, 1);
 	}
-	if (get_setting('hr.mode') == \App\Models\HitAndRun::MODE_MANUAL && user_can('torrent_hr')) {
-        $hrRadio = sprintf('<label><input type="radio" name="hr" value="0"%s />NO</label>', (string)$row['hr'] === '0' ? ' checked' : '');
-        $hrRadio .= sprintf('<label><input type="radio" name="hr" value="1"%s />YES</label>', (string)$row['hr'] === '1' ? ' checked' : '');
-        tr('H&R', $hrRadio, 1);
-    }
 
 	print("<tr><td class=\"toolbox\" colspan=\"2\" align=\"center\"><input id=\"qr\" type=\"submit\" value=\"".$lang_edit['submit_edit_it']."\" /> <input type=\"reset\" value=\"".$lang_edit['submit_revert_changes']."\" /></td></tr>\n");
 	print("</table>\n");
@@ -293,6 +292,26 @@ EOT;
 }
 \Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
 \Nexus\Nexus::js('js/ptgen.js', 'footer', true);
+$customFieldJs = <<<JS
+jQuery("#movecheck").on("change", function () {
+    let _this = jQuery(this);
+    let checked = _this.prop("checked");
+    let activeSelect
+    if (checked) {
+        activeSelect = jQuery("#newcat");
+    } else {
+        activeSelect = jQuery("#oricat");
+    }
+    let mode = activeSelect.attr("data-mode");
+    console.log(mode)
+    jQuery("tr[relation]").hide();
+    jQuery("tr[relation=mode_" + mode +"]").show();
+})
+jQuery("tr[relation]").hide();
+jQuery("tr[relation=mode_{$sectionmode}]").show();
+
+JS;
+\Nexus\Nexus::js($customFieldJs, 'footer', false);
 stdfoot();
 function getAddedTimeOption($timeStamp, $addSeconds) {
     $timeStamp += $addSeconds;

@@ -61,7 +61,7 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('username')->searchable()->label(__("label.user.username"))
-                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, false, true))),
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->id, false, true, true, true))),
                 Tables\Columns\TextColumn::make('email')->searchable()->label(__("label.email")),
                 Tables\Columns\TextColumn::make('class')->label('Class')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->classText)
@@ -80,6 +80,15 @@ class UserResource extends Resource
             ])
             ->defaultSort('added', 'desc')
             ->filters([
+                Tables\Filters\Filter::make('id')
+                    ->form([
+                        Forms\Components\TextInput::make('id')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['id'], fn (Builder $query, $id) => $query->where("id", $id));
+                    })
+                ,
                 Tables\Filters\SelectFilter::make('class')->options(array_column(User::$classes, 'text'))->label(__('label.user.class')),
                 Tables\Filters\SelectFilter::make('status')->options(['confirmed' => 'confirmed', 'pending' => 'pending'])->label(__('label.user.status')),
                 Tables\Filters\SelectFilter::make('enabled')->options(self::$yesOrNo)->label(__('label.user.enabled')),

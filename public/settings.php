@@ -41,7 +41,8 @@ if ($action == 'savesettings_main')	// save main
 		'showpolls','showstats','showlastxtorrents', 'showtrackerload','showshoutbox','showfunbox','showoffer','sptime','showhelpbox','enablebitbucket',
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
-		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language', 'offer_skip_approved_count'
+		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language', 'offer_skip_approved_count',
+        'upload_deny_approval_deny_count'
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -97,7 +98,7 @@ elseif ($action == 'savesettings_bonus') 	// save bonus
         'addcomment','pollvote','offervote', 'funboxvote','saythanks','receivethanks','funboxreward','onegbupload','fivegbupload',
         'tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage',
         'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max', 'cancel_hr', 'attendance_card',
-        'harem_addition'
+        'harem_addition', 'hundredgbupload', 'tengbdownload', 'hundredgbdownload', 'official_addition', 'official_tag', 'zero_bonus_tag', 'zero_bonus_factor',
     );
 	GetVar($validConfig);
 	$BONUS = [];
@@ -133,7 +134,7 @@ elseif ($action == 'savesettings_account') 	// save account
         'exutime', 'exudl', \App\Models\User::CLASS_EXTREME_USER . '_min_seed_points', 'exuprratio', 'exuderatio', \App\Models\User::CLASS_EXTREME_USER . '_alias',
         'uutime', 'uudl', \App\Models\User::CLASS_ULTIMATE_USER . '_min_seed_points', 'uuprratio', 'uuderatio', \App\Models\User::CLASS_ULTIMATE_USER . '_alias',
         'nmtime', 'nmdl', \App\Models\User::CLASS_NEXUS_MASTER . '_min_seed_points', 'nmprratio', 'nmderatio', \App\Models\User::CLASS_NEXUS_MASTER . '_alias',
-        'getInvitesByPromotion'
+        'getInvitesByPromotion', 'destroy_disabled'
     );
 	GetVar($validConfig);
 	$ACCOUNT = [];
@@ -155,7 +156,8 @@ elseif($action == 'savesettings_torrent') 	// save account
         'twoupbecome','twoupfreebecome', 'twouphalfleechbecome','normalbecome','uploaderdouble','deldeadtorrent', 'randomthirtypercentdown',
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
         'download_support_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
-        'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded', 'approval_status_icon_enabled', 'approval_status_none_visible'
+        'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded', 'approval_status_icon_enabled', 'approval_status_none_visible',
+        'nfo_view_style_default',
     );
 	$validConfig = apply_filter('setting_valid_config', $validConfig);
 	GetVar($validConfig);
@@ -222,7 +224,7 @@ elseif ($action == 'savesettings_authority') 	// save user authority
         'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage',
         'uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial',
         'view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar', 'torrent-approval',
-        'torrent-delete', 'user-delete', 'user-change-class',
+        'torrent-delete', 'user-delete', 'user-change-class', 'torrent-set-special-tag', 'torrent-approval-allow-automatic'
     );
 	GetVar($validConfig);
 	$AUTHORITY = [];
@@ -450,7 +452,10 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_torrent_sticky'], $lang_settings['text_minimum_class'].classlist('torrentsticky',$maxclass,$AUTHORITY['torrentsticky'],0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_sticky_note'],1);
 	tr($lang_settings['row_torrent_on_promotion'], $lang_settings['text_minimum_class'].classlist('torrentonpromotion',$maxclass,$AUTHORITY['torrentonpromotion'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_promotion_note'],1);
 	tr($lang_settings['row_torrent_hr'], $lang_settings['text_minimum_class'].classlist('torrent_hr',$maxclass,$AUTHORITY['torrent_hr'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).$lang_settings['text_torrent_hr_note'],1);
+	tr(nexus_trans('permission.torrent-set-special-tag.text'), $lang_settings['text_minimum_class'].classlist('torrent-set-special-tag',$maxclass,$AUTHORITY['torrent-set-special-tag'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).nexus_trans('permission.torrent-set-special-tag.desc'),1);
 	tr(nexus_trans('permission.torrent-approval.text'), $lang_settings['text_minimum_class'].classlist('torrent-approval',$maxclass,$AUTHORITY['torrent-approval'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).nexus_trans('permission.torrent-approval.desc'),1);
+	tr(nexus_trans('permission.torrent-approval-allow-automatic.text'), $lang_settings['text_minimum_class'].classlist('torrent-approval-allow-automatic',$maxclass,$AUTHORITY['torrent-approval-allow-automatic'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).nexus_trans('permission.torrent-approval-allow-automatic.desc'),1);
+
 	tr($lang_settings['row_ask_for_reseed'],  $lang_settings['text_minimum_class'].classlist('askreseed',$maxclass,$AUTHORITY['askreseed'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_ask_for_reseed_note'],1);
 	tr($lang_settings['row_view_nfo'], $lang_settings['text_minimum_class'].classlist('viewnfo',$maxclass,$AUTHORITY['viewnfo'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_view_nfo_note'],1);
 	tr($lang_settings['row_view_torrent_structure'], $lang_settings['text_minimum_class'].classlist('torrentstructure',$maxclass,$AUTHORITY['torrentstructure'],0,true).$lang_settings['text_default'].get_user_class_name(UC_ULTIMATE_USER,false,true,true).$lang_settings['text_view_torrent_structure_note'],1);
@@ -481,8 +486,12 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr($lang_settings['row_see_banned_torrents'], $lang_settings['text_minimum_class'].classlist('seebanned',$maxclass,$AUTHORITY['seebanned'],0,true).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).$lang_settings['text_see_banned_torrents_note'],1);
 	tr($lang_settings['row_vote_against_offers'], $lang_settings['text_minimum_class'].classlist('againstoffer',$maxclass,$AUTHORITY['againstoffer'],0,true).$lang_settings['text_default'].get_user_class_name(UC_USER,false,true,true).$lang_settings['text_vote_against_offers_note'],1);
 	tr($lang_settings['row_allow_userbar'], $lang_settings['text_minimum_class'].classlist('userbar',$maxclass,$AUTHORITY['userbar'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_allow_userbar_note'],1);
-	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
-	print ("</form>");
+
+//    tr(nexus_trans('permission.not-counting-downloaded.text'), $lang_settings['text_minimum_class'].classlist('not-counting-downloaded',$maxclass,$AUTHORITY['not-counting-downloaded'] ?? '',0,true).nexus_trans('permission.not-counting-downloaded.desc'),1);
+//    tr(nexus_trans('permission.not-counting-hit-and-run.text'), $lang_settings['text_minimum_class'].classlist('not-counting-hit-and-run',$maxclass,$AUTHORITY['not-counting-hit-and-run'] ?? '',0,true).nexus_trans('permission.not-counting-hit-and-run.desc'),1);
+
+    tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
+    print ("</form>");
 }
 elseif ($action == 'basicsettings')	// basic settings
 {
@@ -562,7 +571,18 @@ elseif ($action == 'bonussettings'){
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_bonus_by_seeding']."</b></td></tr>");
 	tr($lang_settings['row_donor_gets_double'], $lang_settings['text_donor_gets']."<input type='text' style=\"width: 50px\" name=donortimes value='".(isset($BONUS["donortimes"]) ? $BONUS["donortimes"] : 2 )."'>".$lang_settings['text_times_as_many'],1);
 	tr($lang_settings['row_basic_seeding_bonus'], $lang_settings['text_user_would_get']."<input type='text' style=\"width: 50px\" name=perseeding value='".(isset($BONUS["perseeding"]) ? $BONUS["perseeding"] : 1 )."'>".$lang_settings['text_bonus_points']."<input type='text' style=\"width: 50px\" name=maxseeding value='".(isset($BONUS["maxseeding"]) ? $BONUS["maxseeding"] : 7 )."'>".$lang_settings['text_torrents_default'], 1);
-	tr($lang_settings['row_seeding_formula'], $lang_settings['text_bonus_formula_one']."<br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulaa.png alt=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) )\" title=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) )\"><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulab.png alt=\"B = B0 * 2 / pi * arctan( A / L )\" title=\"B = B0 * 2 / pi * arctan( A / L )\"><br />".$lang_settings['text_where']."<ul><li>".$lang_settings['text_bonus_formula_two']."</li><li>".$lang_settings['text_bonus_formula_three']."<input type='text' style=\"width: 50px\" name=tzero value='".(isset($BONUS["tzero"]) ? $BONUS["tzero"] : 4 )."'>".$lang_settings['text_bonus_formula_four']."</li><li>".$lang_settings['text_bonus_formula_five']."</li><li>".$lang_settings['text_bonus_formula_six']."<input type='text' style=\"width: 50px\" name=nzero value='".(isset($BONUS["nzero"]) ? $BONUS["nzero"] : 7 )."'>".$lang_settings['text_bonus_formula_seven']."</li><li>".$lang_settings['text_bonus_formula_eight']."</li><li>".$lang_settings['text_bonus_formula_nine']."<input type='text' style=\"width: 50px\" name=bzero value='".(isset($BONUS["bzero"]) ? $BONUS["bzero"] : 100 )."'>".$lang_settings['text_bonus_formula_ten']."</li><li>".$lang_settings['text_bonus_formula_eleven']."<input type='text' style=\"width: 50px\" name=l value='".(isset($BONUS["l"]) ? $BONUS["l"] : 300 )."'>".$lang_settings['text_bonus_formula_twelve']."</li></ul>\n", 1);
+
+	$formulaLiArr = [];
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_two']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_three']."<input type='text' style=\"width: 50px\" name=tzero value='".(isset($BONUS["tzero"]) ? $BONUS["tzero"] : 4 )."'>".$lang_settings['text_bonus_formula_four']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_five']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_six']."<input type='text' style=\"width: 50px\" name=nzero value='".(isset($BONUS["nzero"]) ? $BONUS["nzero"] : 7 )."'>".$lang_settings['text_bonus_formula_seven']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_zero_bonus_factor']."<input type='text' style=\"width: 50px\" name=zero_bonus_factor value='".(isset($BONUS["zero_bonus_factor"]) ? $BONUS["zero_bonus_factor"] : 0.2 )."'>".$lang_settings['zero_bonus_factor_default']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_eight']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_nine']."<input type='text' style=\"width: 50px\" name=bzero value='".(isset($BONUS["bzero"]) ? $BONUS["bzero"] : 100 )."'>".$lang_settings['text_bonus_formula_ten']."</li>";
+	$formulaLiArr[] = "<li>".$lang_settings['text_bonus_formula_eleven']."<input type='text' style=\"width: 50px\" name=l value='".(isset($BONUS["l"]) ? $BONUS["l"] : 300 )."'>".$lang_settings['text_bonus_formula_twelve']."</li>";
+	tr($lang_settings['row_seeding_formula'], $lang_settings['text_bonus_formula_one']."<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulaa.svg title=\"A = sigma( ( 1 - 10 ^ ( - Ti / T0 ) ) * Si * ( 1 + sqrt( 2 ) * 10 ^ ( - ( Ni - 1 ) / ( N0 - 1 ) ) ) * Wi\"><br />&nbsp;&nbsp;&nbsp;&nbsp;<img src=pic/bonusformulab.png alt=\"B = B0 * 2 / pi * arctan( A / L )\" title=\"B = B0 * 2 / pi * arctan( A / L )\"><br />".$lang_settings['text_where']."<ul>".implode("", $formulaLiArr)."</ul>", 1);
+
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_misc_ways_get_bonus']."</b></td></tr>");
 	tr($lang_settings['row_uploading_torrent'],$lang_settings['text_user_would_get']."<input type='text' style=\"width: 50px\" name=uploadtorrent value='".(isset($BONUS["uploadtorrent"]) ? $BONUS["uploadtorrent"] : 15 )."'>".$lang_settings['text_uploading_torrent_note'], 1);
 	tr($lang_settings['row_uploading_subtitle'],$lang_settings['text_user_would_get']."<input type='text' style=\"width: 50px\" name=uploadsubtitle value='".(isset($BONUS["uploadsubtitle"]) ? $BONUS["uploadsubtitle"] : 5 )."'>".$lang_settings['text_uploading_subtitle_note'], 1);
@@ -576,12 +596,21 @@ elseif ($action == 'bonussettings'){
 	tr($lang_settings['row_funbox_stuff_reward'],$lang_settings['text_user_would_get']."<input type='text' style=\"width: 50px\" name=funboxreward value='".(isset($BONUS["funboxreward"]) ? $BONUS["funboxreward"] : 5 )."'>".$lang_settings['text_funbox_stuff_reward_note'], 1);
 	tr($lang_settings['row_promotion_link_click'],$lang_settings['text_user_would_get']."<input type='text' style=\"width: 50px\" name=prolinkpoint value='".(isset($BONUS["prolinkpoint"]) ? $BONUS["prolinkpoint"] : 0 )."'>".$lang_settings['text_promotion_link_note_one']."<input type='text' style=\"width: 50px\" name=prolinktime value='".(isset($BONUS["prolinktime"]) ? $BONUS["prolinktime"] : 600 )."'>".$lang_settings['text_promotion_link_note_two'], 1);
 	tr($lang_settings['row_harem_addition'],$lang_settings['text_user_would_get_by_harem']."<input type='text' style=\"width: 50px\" name=harem_addition value='".(isset($BONUS["harem_addition"]) ? $BONUS["harem_addition"] : 0 )."'>".$lang_settings['text_harem_addition_note'], 1);
+	tr($lang_settings['row_official_addition'],$lang_settings['text_user_would_get_by_official']."<input type='text' style=\"width: 50px\" name=official_addition value='".(isset($BONUS["official_addition"]) ? $BONUS["official_addition"] : 0.5 )."'>".$lang_settings['text_addition_addition_note'], 1);
 
+	$tagRep = new \App\Repositories\TagRepository();
+	tr($lang_settings['row_official_tag'], $tagRep->buildSelect('official_tag', $BONUS["official_tag"] ?? '') . $lang_settings['text_official_tag_note'], 1);
+	tr($lang_settings['row_zero_bonus_tag'], $tagRep->buildSelect('zero_bonus_tag', $BONUS["zero_bonus_tag"] ?? '') . $lang_settings['text_zero_bonus_tag_note'], 1);
 
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_things_cost_bonus']."</b></td></tr>");
 	tr($lang_settings['row_one_gb_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=onegbupload value='".(isset($BONUS["onegbupload"]) ? $BONUS["onegbupload"] : 300 )."'>".$lang_settings['text_one_gb_credit_note'], 1);
 	tr($lang_settings['row_five_gb_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=fivegbupload value='".(isset($BONUS["fivegbupload"]) ? $BONUS["fivegbupload"] : 800 )."'>".$lang_settings['text_five_gb_credit_note'], 1);
 	tr($lang_settings['row_ten_gb_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=tengbupload value='".(isset($BONUS["tengbupload"]) ? $BONUS["tengbupload"] : 1200 )."'>".$lang_settings['text_ten_gb_credit_note'], 1);
+	tr($lang_settings['row_hundred_gb_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=hundredgbupload value='".(isset($BONUS["hundredgbupload"]) ? $BONUS["hundredgbupload"] : 10000 )."'>".$lang_settings['text_hundred_gb_credit_note'], 1);
+	tr($lang_settings['row_ten_gb_download_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=tengbdownload value='".(isset($BONUS["tengbdownload"]) ? $BONUS["tengbdownload"] : 1000 )."'>".$lang_settings['text_ten_gb_download_credit_note'], 1);
+	tr($lang_settings['row_hundred_gb_download_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=hundredgbdownload value='".(isset($BONUS["hundredgbdownload"]) ? $BONUS["hundredgbdownload"] : 8000 )."'>".$lang_settings['text_hundred_gb_download_credit_note'], 1);
+
+
 	tr($lang_settings['row_ratio_limit'],$lang_settings['text_user_with_ratio']."<input type='text' style=\"width: 50px\" name=ratiolimit value='".(isset($BONUS["ratiolimit"]) ? $BONUS["ratiolimit"] : 6 )."'>".$lang_settings['text_uploaded_amount_above']."<input type='text' style=\"width: 50px\" name=dlamountlimit value='".(isset($BONUS["dlamountlimit"]) ? $BONUS["dlamountlimit"] : 50 )."'>".$lang_settings['text_ratio_limit_default'], 1);
 	tr($lang_settings['row_buy_an_invite'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=oneinvite value='".(isset($BONUS["oneinvite"]) ? $BONUS["oneinvite"] : 1000 )."'>".$lang_settings['text_buy_an_invite_note'], 1);
 	tr($lang_settings['row_custom_title'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=customtitle value='".(isset($BONUS["customtitle"]) ? $BONUS["customtitle"] : 5000 )."'>".$lang_settings['text_custom_title_note'], 1);
@@ -626,6 +655,9 @@ elseif ($action == 'accountsettings'){
 	tr($lang_settings['row_delete_packed'],$lang_settings['text_delete_packed_note_one']."<input type='text' style=\"width: 50px\" name=deletepacked value='".(isset($ACCOUNT["deletepacked"]) ? $ACCOUNT["deletepacked"] : 400 )."'>".$lang_settings['text_delete_packed_note_two'], 1);
 	tr($lang_settings['row_delete_unpacked'],$lang_settings['text_delete_unpacked_note_one']."<input type='text' style=\"width: 50px\" name=deleteunpacked value='".(isset($ACCOUNT["deleteunpacked"]) ? $ACCOUNT["deleteunpacked"] : 150 )."'>".$lang_settings['text_delete_unpacked_note_two'], 1);
 	tr($lang_settings['row_delete_no_transfer'],$lang_settings['text_delete_transfer_note_one']."<input type='text' style=\"width: 50px\" name=deletenotransfer value='".(isset($ACCOUNT["deletenotransfer"]) ? $ACCOUNT["deletenotransfer"] : 60 )."'>".$lang_settings['text_delete_transfer_note_two']."<input type='text' style=\"width: 50px\" name=deletenotransfertwo value='".(isset($ACCOUNT["deletenotransfertwo"]) ? $ACCOUNT["deletenotransfertwo"] : 0 )."'>".$lang_settings['text_delete_transfer_note_three'], 1);
+	tr($lang_settings['row_destroy_disabled'],$lang_settings['text_destroy_disabled_note_one']."<input type='text' style=\"width: 50px\" name=destroy_disabled value='".(isset($ACCOUNT["destroy_disabled"]) ? $ACCOUNT["destroy_disabled"] : 500 )."'>".$lang_settings['text_destroy_disabled_note_two'], 1);
+
+
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_user_promotion_demotion']."</b></td></tr>");
 	tr($lang_settings['row_ban_peasant_one'].get_user_class_name(UC_PEASANT,false,false,true).$lang_settings['row_ban_peasant_two'],get_user_class_name(UC_PEASANT,false,true,true).$lang_settings['text_ban_peasant_note_one']."<input type='text' style=\"width: 50px\" name=deletepeasant value='".(isset($ACCOUNT["deletepeasant"]) ? $ACCOUNT["deletepeasant"] : 30 )."'>".$lang_settings['text_ban_peasant_note_two'], 1);
     $inputAlias = "0_alias";
@@ -689,6 +721,17 @@ elseif ($action == 'torrentsettings')
     yesorno($lang_settings['row_download_support_passkey'], 'download_support_passkey', $TORRENT["download_support_passkey"], $lang_settings['text_download_support_passkey_note']);
     yesorno($lang_settings['row_approval_status_icon_enabled'], 'approval_status_icon_enabled', $TORRENT["approval_status_icon_enabled"], $lang_settings['text_approval_status_icon_enabled_note']);
     yesorno($lang_settings['row_approval_status_none_visible'], 'approval_status_none_visible', $TORRENT["approval_status_none_visible"], $lang_settings['text_approval_status_none_visible_note']);
+
+    $nfoViewStyleRadio = '';
+    $name = 'nfo_view_style_default';
+    foreach (\App\Models\Torrent::$nfoViewStyles as $style => $info) {
+        $nfoViewStyleRadio .= sprintf(
+            '<label><input type="radio" name="%s" value="%s"%s>%s</label>',
+            $name, $style, $TORRENT[$name] == $style ? ' checked' : '', $info['text']
+        );
+    }
+    tr($lang_settings['row_' . $name], $nfoViewStyleRadio, 1);
+
     yesorno($lang_settings['row_promotion_rules'], 'prorules', $TORRENT["prorules"], $lang_settings['text_promotion_rules_note']);
 	tr($lang_settings['row_random_promotion'], $lang_settings['text_random_promotion_note_one']."<ul><li><input type='text' style=\"width: 50px\" name=randomhalfleech value='".(isset($TORRENT["randomhalfleech"]) ? $TORRENT["randomhalfleech"] : 5 )."'>".$lang_settings['text_halfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomfree value='".(isset($TORRENT["randomfree"]) ? $TORRENT["randomfree"] : 2 )."'>".$lang_settings['text_free_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoup value='".(isset($TORRENT["randomtwoup"]) ? $TORRENT["randomtwoup"] : 2 )."'>".$lang_settings['text_twoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoupfree value='".(isset($TORRENT["randomtwoupfree"]) ? $TORRENT["randomtwoupfree"] : 1 )."'>".$lang_settings['text_freetwoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwouphalfdown value='".(isset($TORRENT["randomtwouphalfdown"]) ? $TORRENT["randomtwouphalfdown"] : 0 )."'>".$lang_settings['text_twouphalfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomthirtypercentdown value='".(isset($TORRENT["randomthirtypercentdown"]) ? $TORRENT["randomthirtypercentdown"] : 0 )."'>".$lang_settings['text_thirtypercentleech_chance_becoming']."</li></ul>".$lang_settings['text_random_promotion_note_two'], 1);
 	tr($lang_settings['row_large_torrent_promotion'], $lang_settings['text_torrent_larger_than']."<input type='text' style=\"width: 50px\" name=largesize value='".(isset($TORRENT["largesize"]) ? $TORRENT["largesize"] : 20 )."'>".$lang_settings['text_gb_promoted_to']."<select name=largepro>".promotion_selection((isset($TORRENT['largepro']) ? $TORRENT['largepro'] : 2), 1)."</select>".$lang_settings['text_by_system_upon_uploading']."<br />".$lang_settings['text_large_torrent_promotion_note'], 1);
@@ -851,6 +894,7 @@ JS;
 	tr($lang_settings['row_offer_vote_timeout'],"<input type='text' style=\"width: 100px\" name=offervotetimeout value='".(isset($MAIN["offervotetimeout"]) ? $MAIN["offervotetimeout"] : 259200)."'> ".$lang_settings['text_offer_vote_timeout_note'], 1);
 	tr($lang_settings['row_offer_upload_timeout'],"<input type='text' style=\"width: 100px\" name=offeruptimeout value='".(isset($MAIN["offeruptimeout"]) ? $MAIN["offeruptimeout"] : 86400)."'> ".$lang_settings['text_offer_upload_timeout_note'], 1);
 	tr($lang_settings['row_offer_skip_approved_count'],"<input type='text' style=\"width: 100px\" name=offer_skip_approved_count value='".($MAIN["offer_skip_approved_count"] ?? '')."'> ".$lang_settings['text_offer_skip_approved_count_note'], 1);
+	tr($lang_settings['row_upload_deny_approval_deny_count'],"<input type='text' style=\"width: 100px\" name=upload_deny_approval_deny_count value='".($MAIN["upload_deny_approval_deny_count"] ?? '')."'> ".$lang_settings['text_upload_deny_approval_deny_count_note'], 1);
 
 	tr($lang_settings['row_max_subtitle_size'],"<input type='text' style=\"width: 100px\" name=maxsubsize value='".(isset($MAIN["maxsubsize"]) ? $MAIN["maxsubsize"] : 3145728)."'> ". $lang_settings['text_max_subtitle_size_note'], 1);
 	tr($lang_settings['row_posts_per_page'],"<input type='text' style=\"width: 100px\" name=postsperpage value='".($MAIN["postsperpage"] ? $MAIN["postsperpage"] : 10)."'> ".$lang_settings['text_posts_per_page_note'], 1);

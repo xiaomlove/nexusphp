@@ -26,5 +26,6 @@ $lang_fields = [
     'field_type_checkbox' => '横向多选',
     'field_type_select' => '下拉单选',
     'field_type_image' => '图片',
+    'col_display' => '自定义展示',
 
 ];

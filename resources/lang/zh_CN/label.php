@@ -33,6 +33,7 @@ return [
     'submit' => '提交',
     'cancel' => '取消',
     'reset' => '重置',
+    'anonymous' => '匿名',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [
@@ -72,9 +73,11 @@ return [
             'no_promotion' => '无优惠',
             'no_promotion_help' => '不享受任何优惠，上传量/下载量按实际值计算',
             'max_uploaded' => '最大上传量倍数',
-            'max_uploaded_help' => '总上传量最多为其体积的多少倍',
+            'max_uploaded_help' => '总上传量最多为其体积的多少倍。设置为 0 无此限制',
             'not_seed_box_max_speed' => '非 SeedBox 最高限速',
             'not_seed_box_max_speed_help' => '单位：Mbps。若超过此值又不能匹配 SeedBox 记录，禁用下载权限',
+            'max_uploaded_duration' => '最大上传量倍数有效时间范围',
+            'max_uploaded_duration_help' => '单位：小时。种子发布后的这个时间范围内，最大上传量倍数生效，超过此范围不生效。设置为 0 一直生效',
         ],
         'system' => [
             'tab_header' => '系统',
@@ -154,6 +157,9 @@ return [
         'team' => '制作组',
         'processing' => '处理',
         'standard' => '分辨率',
+        'picktype' => '推荐',
+        'promotion_time_type' => '优惠时间类型',
+        'hr' => 'H&R',
     ],
     'hit_and_run' => [
         'label' => '用户 H&R',

@@ -27,12 +27,14 @@ if ($view == "latin-1" || $view == "fonthack") {
 // Do not convert from ibm-437, read bytes as is.
 // NOTICE: TBSource specifies Latin-1 encoding in include/bittorrent.php:
 // stdhead()
-$nfo = htmlspecialchars(($a["nfo"]));
+//$nfo = htmlspecialchars(($a["nfo"]));
+$nfo = code_new($a["nfo"], $view);
 }
 else {
 // Convert from ibm-437 to html unicode entities.
 // take special care of Swedish letters if in magic view.
-$nfo = code($a["nfo"], $view == "magic");
+//$nfo = code($a["nfo"], $view == "magic");
+$nfo = code_new($a["nfo"], $view);
 }
 
 stdhead($lang_viewnfo['head_view_nfo']);
@@ -65,14 +67,14 @@ if ($view == "fonthack") {
 // Please notice: MS LineDraw's glyphs are included in the Courier New font
 // as of Courier New version 2.0, but uses the correct mappings instead.
 // http://support.microsoft.com/kb/q179422/
-print("<pre style=\"font-size:10pt; font-family: 'MS LineDraw', 'Terminal', monospace;\">");
+print("<pre style=\"font-size:10pt; font-family: 'MS LineDraw', 'Terminal', monospace;white-space: break-spaces\">");
 }
 else {
 // IE6.0 need to know which font to use, Mozilla can figure it out in its own
 // (windows firefox at least)
 // Anything else than 'Courier New' looks pretty broken.
 // 'Lucida Console', 'FixedSys'
-print("<pre style=\"font-size:10pt; font-family: 'Courier New', monospace;\">");
+print("<pre style=\"font-size:10pt; font-family: 'Courier New', monospace;white-space: break-spaces\">");
 }
 // Writes the (eventually modified) nfo data to output, first formating urls.
 print(format_urls($nfo));

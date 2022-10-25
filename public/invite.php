@@ -10,19 +10,19 @@ $menuSelected = $_REQUEST['menu'] ?? 'invitee';
 $pageSize = 50;
 
 function inviteMenu ($selected = "invitee") {
-    global $lang_invite, $id, $CURUSER;
+    global $lang_invite, $id, $CURUSER, $invitesystem;
     begin_main_frame("", false, "100%");
     print ("<div id=\"invitenav\" style='position: relative'><ul id=\"invitemenu\" class=\"menu\">");
     print ("<li" . ($selected == "invitee" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=invitee\">".$lang_invite['text_invite_status']."</a></li>");
     print ("<li" . ($selected == "sent" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=sent\">".$lang_invite['text_sent_invites_status']."</a></li>");
-    print ("</ul><form style='position: absolute;top:0;right:0' method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".($CURUSER['invites'] <= 0 ? "disabled " : "")." value='".$lang_invite['sumbit_invite_someone']."'></form></div>");
+    if (user_can('sendinvite') && $invitesystem == 'yes') {
+        print ("</ul><form style='position: absolute;top:0;right:0' method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".($CURUSER['invites'] <= 0 ? "disabled " : "")." value='".$lang_invite['sumbit_invite_someone']."'></form></div>");
+    }
     end_main_frame();
 }
 
 if (($CURUSER['id'] != $id && !user_can('viewinvite')) || !is_valid_id($id))
 stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied']);
-if (!user_can('sendinvite'))
-stderr($lang_invite['std_sorry'],$lang_invite['std_only'].get_user_class_name($sendinvite_class,false,true,true).$lang_invite['std_or_above_can_invite'],false);
 $res = sql_query("SELECT username FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
 $user =  mysql_fetch_assoc($res);
 stdhead($lang_invite['head_invites']);
@@ -46,6 +46,8 @@ if ($inv["invites"] != 1){
 }
 
 if ($type == 'new'){
+    if (!user_can('sendinvite'))
+    stderr($lang_invite['std_sorry'],$lang_invite['std_only'].get_user_class_name($sendinvite_class,false,true,true).$lang_invite['std_or_above_can_invite'],false, false);
     registration_check('invitesystem',true,false);
 	if ($CURUSER['invites'] <= 0) {
 		stdmsg($lang_invite['std_sorry'],$lang_invite['std_no_invites_left'].
@@ -164,12 +166,17 @@ if ($type == 'new'){
             for ($i = 0; $i < $num1; ++$i)
             {
                 $arr1 = mysql_fetch_assoc($rer);
+                $isHashValid = $arr1['valid'] == \App\Models\Invite::VALID_YES;
+                $registerLink = '';
+                if ($isHashValid) {
+                    $registerLink = sprintf('&nbsp;<a href="signup.php?type=invite&invitenumber=%s" title="%s" target="_blank"><small>[%s]</small></a>', $arr1['hash'], $lang_invite['signup_link_help'], $lang_invite['signup_link']);
+                }
                 $tr = "<tr>";
                 $tr .= "<td class=rowfollow>{$arr1['invitee']}</td>";
-                $tr .= "<td class=rowfollow>{$arr1['hash']}</td>";
+                $tr .= sprintf('<td class="rowfollow">%s%s</td>', $arr1['hash'], $registerLink);
                 $tr .= "<td class=rowfollow>{$arr1['time_invited']}</td>";
                 $tr .= "<td class=rowfollow>".\App\Models\Invite::$validInfo[$arr1['valid']]['text']."</td>";
-                if ($arr1['valid'] == \App\Models\Invite::VALID_NO) {
+                if (!$isHashValid) {
                     $tr .= "<td class=rowfollow><a href=userdetails.php?id={$arr1['invitee_register_uid']}><font color=#1f7309>".$arr1['invitee_register_username']."</font></a></td>";
                 } else {
                     $tr .= "<td class='rowfollow'></td>";

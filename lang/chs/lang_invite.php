@@ -48,8 +48,9 @@ $lang_invite = array
 	'std_only' => "只有",
 	'std_or_above_can_invite' => "及以上的用户才能发送邀请。",
 	'text_email_restriction_note' => "你只能发送邀请给以下邮箱：",
-
     'harem_addition' => '后宫加成',
+    'signup_link_help' => '右键复制',
+    'signup_link' => '注册链接',
 );
 
 ?>

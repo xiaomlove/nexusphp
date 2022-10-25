@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use App\Repositories\TagRepository;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use JeroenG\Explorer\Application\Explored;
-use Laravel\Scout\Searchable;
 
 class Torrent extends NexusModel
 {
@@ -15,10 +14,8 @@ class Torrent extends NexusModel
         'size', 'added', 'type', 'numfiles', 'owner', 'nfo', 'sp_state', 'promotion_time_type',
         'promotion_until', 'anonymous', 'url', 'pos_state', 'cache_stamp', 'picktype', 'picktime',
         'last_reseed', 'pt_gen', 'technical_info', 'leechers', 'seeders', 'cover', 'last_action',
-        'times_completed', 'approval_status', 'banned', 'visible',
+        'times_completed', 'approval_status', 'banned', 'visible', 'pos_state_until',
     ];
-
-    private static $globalPromotionState;
 
     const VISIBLE_YES = 'yes';
     const VISIBLE_NO = 'no';
@@ -30,11 +27,13 @@ class Torrent extends NexusModel
         'added' => 'datetime',
         'pt_gen' => 'array',
         'promotion_until' => 'datetime',
+        'pos_state_until' => 'datetime',
     ];
 
     public static $commentFields = [
         'id', 'name', 'added', 'visible', 'banned', 'owner', 'sp_state', 'pos_state', 'hr', 'picktype', 'picktime',
-        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover', 'anonymous', 'approval_status'
+        'last_action', 'leechers', 'seeders', 'times_completed', 'views', 'size', 'cover', 'anonymous', 'approval_status',
+        'pos_state_until', 'category'
     ];
 
     public static $basicRelations = [
@@ -129,6 +128,16 @@ class Torrent extends NexusModel
         self::PICK_RECOMMENDED => ['text' => self::PICK_RECOMMENDED, 'color' => '#820084'],
     ];
 
+    const PROMOTION_TIME_TYPE_GLOBAL = 0;
+    const PROMOTION_TIME_TYPE_PERMANENT = 1;
+    const PROMOTION_TIME_TYPE_DEADLINE = 2;
+
+    public static array $promotionTimeTypes = [
+        self::PROMOTION_TIME_TYPE_GLOBAL => ['text' => 'Global'],
+        self::PROMOTION_TIME_TYPE_PERMANENT => ['text' => 'Permanent'],
+        self::PROMOTION_TIME_TYPE_DEADLINE => ['text' => 'Until'],
+    ];
+
     const BONUS_REWARD_VALUES = [50, 100, 200, 500, 1000];
 
     const APPROVAL_STATUS_NONE = 0;
@@ -151,6 +160,14 @@ class Torrent extends NexusModel
             'badge_color' => 'danger',
             'icon' => '<svg t="1655184952662" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="35029" width="16" height="16"><path d="M220.8 812.8l22.4 22.4 272-272 272 272 48-44.8-275.2-272 275.2-272-48-48-272 275.2-272-275.2-22.4 25.6-22.4 22.4 272 272-272 272z" fill="#d81e06" p-id="35030"></path></svg>',
         ],
+    ];
+
+    const NFO_VIEW_STYLE_DOS = 'magic';
+    const NFO_VIEW_STYLE_WINDOWS = 'latin-1';
+
+    public static array $nfoViewStyles = [
+        self::NFO_VIEW_STYLE_DOS => ['text' => 'DOS-vy'],
+        self::NFO_VIEW_STYLE_WINDOWS => ['text' => 'Windows-vy'],
     ];
 
     public function getPickInfoAttribute()
@@ -193,11 +210,18 @@ class Torrent extends NexusModel
         return $spState;
     }
 
-    protected function posStateText(): Attribute
+    protected function getPosStateTextAttribute()
     {
-        return new Attribute(
-            get: fn($value, $attributes) => nexus_trans('torrent.pos_state_' . $attributes['pos_state'])
-        );
+        $text = nexus_trans('torrent.pos_state_' . $this->pos_state);
+        if ($this->pos_state != Torrent::POS_STATE_STICKY_NONE) {
+            if ($this->pos_state_until) {
+                $append = format_datetime($this->pos_state_until);
+            } else {
+                $append = nexus_trans('label.permanent');
+            }
+            $text .= "($append)";
+        }
+        return $text;
     }
 
     protected function approvalStatusText(): Attribute
@@ -256,9 +280,30 @@ class Torrent extends NexusModel
         return $result;
     }
 
+    public static function listPromotionTimeTypes($onlyKeyValue = false, $valueField = 'text'): array
+    {
+        return self::listStaticProps(self::$promotionTimeTypes, 'torrent.promotion_time_types', $onlyKeyValue, $valueField);
+    }
+
+    public static function listPickInfo($onlyKeyValue = false, $valueField = 'text'): array
+    {
+        $result = self::$pickTypes;
+        $keyValue = [];
+        foreach ($result as $status => &$info) {
+            $text = nexus_trans('torrent.pick_info.' . $status);
+            $info['text'] = $text;
+            $keyValue[$status] = $info[$valueField];
+        }
+        if ($onlyKeyValue) {
+            return $keyValue;
+        }
+        return $result;
+    }
+
     public function getHrAttribute(): string
     {
-        $hrMode = Setting::get('hr.mode');
+//        $hrMode = Setting::get('hr.mode');
+        $hrMode = HitAndRun::getConfig('mode', $this->basic_category->mode);
         if ($hrMode == HitAndRun::MODE_GLOBAL) {
             return self::HR_YES;
         }

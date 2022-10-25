@@ -18,7 +18,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
             $body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             if(empty($email) || empty($body)) stderr($lang_functions['std_error'], $lang_complains['text_new_failure']);
-            sql_query(sprintf('INSERT INTO complains (uuid, email, body, added) VALUES (UUID(), %s, %s, NOW())', sqlesc($email), sqlesc($body))) or sqlerr(__FILE__, __LINE__);
+            $user = \App\Models\User::query()->where('email', $email)->first();
+            if (!$user) {
+                stderr($lang_functions['std_error'], $lang_complains['text_new_failure']);
+            }
+            sql_query(sprintf('INSERT INTO complains (uuid, email, body, added, ip) VALUES (UUID(), %s, %s, NOW(), %s)', sqlesc($email), sqlesc($body), sqlesc(getip()))) or sqlerr(__FILE__, __LINE__);
             $Cache->delete_value('COMPLAINTS_COUNT_CACHE');
             nexus_redirect(sprintf('complains.php?action=view&id=%s', get_single_value('complains', 'uuid', 'WHERE id = ' . mysql_insert_id())));
             break;
@@ -27,7 +31,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             $complain = \App\Models\Complain::query()->findOrFail($id);
             if(empty($id) || empty($body)) stderr($lang_functions['std_error'], $lang_complains['text_new_failure']);
-            sql_query(sprintf('INSERT INTO complain_replies (complain, userid, added, body) VALUES (%u, %u, NOW(), %s)', $id, $uid, sqlesc($body))) or sqlerr(__FILE__, __LINE__);
+            sql_query(sprintf('INSERT INTO complain_replies (complain, userid, added, body, ip) VALUES (%u, %u, NOW(), %s, %s)', $id, $uid, sqlesc($body), sqlesc(getip()))) or sqlerr(__FILE__, __LINE__);
             if ($uid > 0) {
                 try {
                     $toolRep = new \App\Repositories\ToolRepository();
@@ -110,6 +114,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 if ($user) {
                     printf(' [<a href="user-ban-log.php?q=%s" class="faqlink" target="_blank">%s</a>]', urlencode($user->username), $lang_complains['text_view_band_log']);
                 }
+                printf('<br />IP: ' . htmlspecialchars($complain['ip']));
             }
             echo '<hr />', format_comment($complain['body']);
             end_frame();
@@ -118,7 +123,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $res = sql_query(sprintf('SELECT * FROM `complain_replies` WHERE complain = %u ORDER BY id DESC', $complain['id'])) or sqlerr(__FILE__, __LINE__);
             if(mysql_num_rows($res)){
                 while($row = mysql_fetch_assoc($res)){
-                    printf('<b>%s @ %s</b>: ', $row['userid'] ? get_plain_username($row['userid']) : $lang_complains['text_complainer'], gettime($row['added']));
+                    printf('<b>%s @ %s', $row['userid'] ? get_plain_username($row['userid']) : $lang_complains['text_complainer'], gettime($row['added']));
+                    if ($isAdmin) {
+                        printf(' (%s)', htmlspecialchars($row['ip']));
+                    }
+                    echo ': </b>';
                     echo format_comment($row['body']) . '<hr />';
                 }
             }else{

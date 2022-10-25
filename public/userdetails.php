@@ -241,7 +241,7 @@ if (mysql_num_rows($res) > 0)
 	    $clientselect .= "<tr>";
 		$clientselect .= sprintf('<td>%s</td>', get_agent($arr['peer_id'], $arr['agent']));
 		if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"]) {
-            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'].$seedBoxRep->renderIcon($arr['ipv4'], $CURUSER['id']), $arr['ipv6'].$seedBoxRep->renderIcon($arr['ipv6'], $CURUSER['id']), $arr['port']);
+            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'].$seedBoxRep->renderIcon($arr['ipv4'], $user['id']), $arr['ipv6'].$seedBoxRep->renderIcon($arr['ipv6'], $user['id']), $arr['port']);
         } else {
             $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', '---', '---', '---');
         }
@@ -394,6 +394,10 @@ if ($user["id"] == $CURUSER["id"] || user_can('viewhistory')) {
     tr_small($lang_functions['text_seed_points'], number_format($user['seed_points'], 1), 1);
 }
 
+if (user_can('prfmanage') && $user["class"] < get_user_class()) {
+    $bonusTable = build_bonus_table($user);
+    tr_small($lang_userdetails['text_bonus_table'], $bonusTable['table'], 1);
+}
 
 if ($user["ip"] && (user_can('torrenthistory') || $user["id"] == $CURUSER["id"])){
 

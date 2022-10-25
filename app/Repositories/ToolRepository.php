@@ -24,7 +24,7 @@ class ToolRepository extends BaseRepository
 {
     const BACKUP_EXCLUDES = ['vendor', 'node_modules', '.git', '.idea', '.settings', '.DS_Store', '.github'];
 
-    public function backupWeb($method = null): array
+    public function backupWeb($method = null, $transfer = false): array
     {
         $webRoot = base_path();
         $dirName = basename($webRoot);
@@ -76,10 +76,13 @@ class ToolRepository extends BaseRepository
             $result_code = 0;
             do_log("No tar command, use zip.");
         }
-        return compact('result_code', 'filename');
+        if (!$transfer) {
+            return compact('result_code', 'filename');
+        }
+        return $this->transfer($filename, $result_code);
     }
 
-    public function backupDatabase(): array
+    public function backupDatabase($transfer = false): array
     {
         $connectionName = config('database.default');
         $config = config("database.connections.$connectionName");
@@ -93,10 +96,13 @@ class ToolRepository extends BaseRepository
             "command: %s, output: %s, result_code: %s, result: %s, filename: %s",
             $command, json_encode($output), $result_code, $result, $filename
         ));
-        return compact('result_code', 'filename');
+        if (!$transfer) {
+            return compact('result_code', 'filename');
+        }
+        return $this->transfer($filename, $result_code);
     }
 
-    public function backupAll($method = null): array
+    public function backupAll($method = null, $transfer = false): array
     {
         $backupWeb = $this->backupWeb($method);
         if ($backupWeb['result_code'] != 0) {
@@ -134,8 +140,10 @@ class ToolRepository extends BaseRepository
             $result_code = 0;
             do_log("No tar command, use zip.");
         }
-        return compact('result_code', 'filename');
-
+        if (!$transfer) {
+            return compact('result_code', 'filename');
+        }
+        return $this->transfer($filename, $result_code);
     }
 
     /**
@@ -178,27 +186,33 @@ class ToolRepository extends BaseRepository
         }
         $backupResult = $this->backupAll();
         do_log("Backup all result: " . json_encode($backupResult));
-        if ($backupResult['result_code'] != 0) {
-            throw new \RuntimeException("Backup all fail.");
-        }
-        $filename = $backupResult['filename'];
+        $transferResult = $this->transfer($backupResult['filename'], $backupResult['result_code'], $setting);
+        $backupResult['transfer_result'] = $transferResult;
+        do_log("[BACKUP_ALL_DONE]: " . json_encode($backupResult));
+        return $backupResult;
+    }
 
+    public function transfer($filename, $result_code, $setting = null): array
+    {
+        if ($result_code != 0) {
+            throw new \RuntimeException("file: $filename backup fail!");
+        }
+        $result = compact('filename', 'result_code');
+        if (empty($setting)) {
+            $setting = Setting::get('backup');
+        }
         $saveResult = $this->saveToGoogleDrive($setting, $filename);
         do_log("[BACKUP_GOOGLE_DRIVE]: $saveResult");
-        $backupResult['google_drive'] = $saveResult;
+        $result['google_drive'] = $saveResult;
 
         $saveResult = $this->saveToFtp($setting, $filename);
         do_log("[BACKUP_FTP]: $saveResult");
-        $backupResult['ftp'] = $saveResult;
+        $result['ftp'] = $saveResult;
 
         $saveResult = $this->saveToSftp($setting, $filename);
         do_log("[BACKUP_SFTP]: $saveResult");
-        $backupResult['sftp'] = $saveResult;
-
-        do_log("[BACKUP_ALL_DONE]: " . json_encode($backupResult));
-
-        return $backupResult;
-
+        $result['sftp'] = $saveResult;
+        return $result;
     }
 
     private function saveToGoogleDrive(array $setting, $filename): bool|string

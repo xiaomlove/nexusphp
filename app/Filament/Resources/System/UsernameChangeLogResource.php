@@ -12,6 +12,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class UsernameChangeLogResource extends Resource
 {
@@ -50,13 +51,30 @@ class UsernameChangeLogResource extends Resource
                 Tables\Columns\TextColumn::make('uid')->searchable(),
                 Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
                 Tables\Columns\TextColumn::make('username_old')->searchable()->label(__('username-change-log.labels.username_old')),
-                Tables\Columns\TextColumn::make('username_new')->searchable()->label(__('username-change-log.labels.username_new')),
-                Tables\Columns\TextColumn::make('operator')->searchable()->label(__('label.operator')),
+                Tables\Columns\TextColumn::make('username_new')
+                    ->searchable()
+                    ->label(__('username-change-log.labels.username_new'))
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->uid, false, true, true, true)))
+                ,
+                Tables\Columns\TextColumn::make('operator')
+                    ->searchable()
+                    ->label(__('label.operator'))
+                ,
                 Tables\Columns\TextColumn::make('created_at')->label(__('label.created_at'))->formatStateUsing(fn ($state) => format_datetime($state)),
 
             ])
             ->defaultSort('id', 'desc')
             ->filters([
+                Tables\Filters\Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
+                    })
+                ,
                 Tables\Filters\SelectFilter::make('change_type')->options(UsernameChangeLog::listChangeType())->label(__('username-change-log.labels.change_type')),
             ])
             ->actions([

@@ -204,7 +204,7 @@ function ban_user_with_leech_warning_expired()
 }
 
 
-function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
+function disable_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
 {
     $results = $query->where('enabled', \App\Models\User::ENABLED_YES)->get(['id', 'username', 'modcomment', 'lang']);
     if ($results->isEmpty()) {
@@ -228,7 +228,7 @@ function delete_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
     );
     sql_query($sql);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
-    do_log("[DELETE_USER]($reasonKey): " . implode(', ', $uidArr));
+    do_log("[DISABLE_USER]($reasonKey): " . implode(', ', $uidArr));
     return $uidArr;
 }
 
@@ -265,22 +265,36 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if (mysql_num_rows($res) > 0)
 	{
 	    $haremAdditionFactor = get_setting('bonus.harem_addition');
+	    $officialAdditionFactor = get_setting('bonus.official_addition');
 		while ($arr = mysql_fetch_assoc($res))	//loop for different users
 		{
+		    $userInfo = get_user_row($arr['userid']);
+            $isDonor = is_donor($userInfo);
             $seedBonusResult = calculate_seed_bonus($arr['userid']);
-            $dividend = 3600 / $autoclean_interval_one;
-            $all_bonus = $seedBonusResult['all_bonus'] / $dividend;
-            $seed_points = $seedBonusResult['seed_points'] / $dividend;
-            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult) . ", all_bonus: $all_bonus, seed_points: $seed_points";
-            if ($haremAdditionFactor > 0) {
-                $haremAddition = calculate_harem_addition($arr['userid']) * $haremAdditionFactor / $dividend;
-                $all_bonus += $haremAddition;
-                $bonusLog .= ", haremAddition: $haremAddition, new all_bonus: $all_bonus";
+            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult);
+            $all_bonus = $seedBonusResult['seed_bonus'];
+            $bonusLog .= ", all_bonus: $all_bonus";
+            if ($isDonor) {
+                $all_bonus = $all_bonus * $donortimes_bonus;
+                $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
             }
+            if ($officialAdditionFactor > 0) {
+                $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
+                $all_bonus += $officialAddition;
+                $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
+            }
+            if ($haremAdditionFactor > 0) {
+                $haremBonus = calculate_harem_addition($arr['userid']);
+                $haremAddition =  $haremBonus * $haremAdditionFactor;
+                $all_bonus += $haremAddition;
+                $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
+            }
+            $dividend = 3600 / $autoclean_interval_one;
+            $all_bonus = $all_bonus / $dividend;
+            $seed_points = $seedBonusResult['seed_points'] / $dividend;
             $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
             do_log("$bonusLog, query: $sql");
 			sql_query($sql);
-
 		}
 	}
 	$log = 'calculate seeding bonus';
@@ -462,6 +476,28 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+	//expire torrent sticky
+    $toBeExpirePosStates = [
+        \App\Models\Torrent::POS_STATE_STICKY_FIRST,
+        \App\Models\Torrent::POS_STATE_STICKY_SECOND,
+    ];
+	$update = [
+	    'pos_state' => \App\Models\Torrent::POS_STATE_STICKY_NONE,
+        'pos_state_until' => null,
+    ];
+    \App\Models\Torrent::query()
+        ->whereIn('pos_state', $toBeExpirePosStates)
+        ->whereNotNull('pos_state_until')
+        ->where('pos_state_until', '<', now())
+        ->update($update);
+    $log = "expire torrent pos state";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
+
 	//automatically pick hot
 	if ($hotdays_torrent)
 	{
@@ -501,7 +537,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
         ->whereRaw("added < FROM_UNIXTIME($deadtime)")
         ->whereRaw("last_login < FROM_UNIXTIME($deadtime)")
         ->whereRaw("last_access < FROM_UNIXTIME($deadtime)");
-    delete_user($query, "cleanup.delete_user_unconfirmed");
+    disable_user($query, "cleanup.disable_user_unconfirmed");
     $log = "delete unconfirmed accounts";
 	do_log($log);
 	if ($printProgress) {
@@ -554,7 +590,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
                 $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
             });
-        delete_user($query, "cleanup.delete_user_no_transfer_alt_last_access_time");
+        disable_user($query, "cleanup.disable_user_no_transfer_alt_last_access_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 1: last access time";
 	do_log($log);
@@ -577,7 +613,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where(function (\Illuminate\Database\Eloquent\Builder $query) use ($iniupload_main) {
                 $query->where('uploaded', 0)->orWhere('uploaded', $iniupload_main);
             });
-        delete_user($query, "cleanup.delete_user_no_transfer_alt_register_time");
+        disable_user($query, "cleanup.disable_user_no_transfer_alt_register_time");
 	}
 	$log = "delete inactive user accounts, no transfer. Alt. 2: registering time";
 	do_log($log);
@@ -596,7 +632,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where('status', 'confirmed')
             ->where("class","<", $maxclass)
             ->where("last_access","<", $dt);
-        delete_user($query, "cleanup.delete_user_not_parked");
+        disable_user($query, "cleanup.disable_user_not_parked");
 	}
 	$log = "delete inactive user accounts, not parked";
 	do_log($log);
@@ -615,13 +651,33 @@ function docleanup($forceAll = 0, $printProgress = false) {
             ->where('status', 'confirmed')
             ->where("class","<", $maxclass)
             ->where("last_access","<", $dt);
-        delete_user($query, "cleanup.delete_user_parked");
+        disable_user($query, "cleanup.disable_user_parked");
 	}
 	$log = "delete parked user accounts, parked";
 	do_log($log);
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+	//destroy disabled accounts
+    $destroyDisabledDays = get_setting('account.destroy_disabled');
+    if ($destroyDisabledDays > 0) {
+        $secs = $destroyDisabledDays*24*60*60;
+        $dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
+        $users = \App\Models\User::query()
+            ->where('enabled', 'no')
+            ->where("last_access","<", $dt)
+            ->get(['id']);
+        if ($users->isNotEmpty()) {
+            $userRep = new \App\Repositories\UserRepository();
+            $userRep->destroy($users->pluck('id')->toArray(), 'cleanup.destroy_disabled_account');
+        }
+    }
+    $log = "destroy disabled accounts";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
 
 	//remove VIP status if time's up
 	$res = sql_query("SELECT id, modcomment FROM users WHERE vip_added='yes' AND vip_until < NOW()") or sqlerr(__FILE__, __LINE__);
@@ -754,7 +810,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//17.update total seeding and leeching time of users
-	$res = sql_query("SELECT * FROM users") or sqlerr(__FILE__, __LINE__);
+	$res = sql_query("SELECT id FROM users where enabled = 'yes' and status = 'confirmed'") or sqlerr(__FILE__, __LINE__);
 	while($arr = mysql_fetch_assoc($res))
 	{
 		//die("s" . $arr['id']);
@@ -983,6 +1039,16 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
+
+    //remove duplicate user ban logs
+    //No need to do that, disable + destroy will have two records, sometimes disable will enable again
+//    $log = "clear user ban log duplicate";
+//	\App\Models\UserBanLog::clearUserBanLogDuplicate();
+//    do_log($log);
+//    if ($printProgress) {
+//        printProgress($log);
+//    }
+
 	$log = 'Full cleanup is done';
 	do_log($log);
     if ($printProgress) {

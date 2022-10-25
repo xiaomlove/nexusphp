@@ -15,4 +15,12 @@ trait OptionsTrait
             $disableValue => __('label.disabled'),
         ];
     }
+
+    private static function getYesNoOptions($yesValue = 1, $noValue = 0): array
+    {
+        return [
+            $yesValue => 'Yes',
+            $noValue => 'No',
+        ];
+    }
 }

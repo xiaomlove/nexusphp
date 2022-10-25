@@ -3,6 +3,7 @@
 namespace App\Filament;
 
 use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Filters\Layout;
 use Illuminate\Database\Eloquent\Model;
 
 class PageList extends ListRecords
@@ -14,5 +15,10 @@ class PageList extends ListRecords
         return function (Model $record): ?string {
             return null;
         };
+    }
+
+    protected function getTableFiltersLayout(): ?string
+    {
+        return Layout::AboveContent;
     }
 }

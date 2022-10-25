@@ -7,6 +7,7 @@ use App\Filament\Resources\User\UserResource;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Tables\Filters\Layout;
 
 class ListUsers extends PageList
 {
@@ -25,6 +26,9 @@ class ListUsers extends PageList
 //    }
 
 
-
+    protected function getTableFiltersLayout(): ?string
+    {
+        return Layout::AboveContent;
+    }
 
 }

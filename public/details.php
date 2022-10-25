@@ -70,7 +70,7 @@ if (!$row) {
         $banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
-        $hrImg = get_hr_img($row);
+        $hrImg = get_hr_img($row, $row['search_box_id']);
         $approvalStatusIcon = $torrentRep->renderApprovalStatus($row["approval_status"]);
 		$s=htmlspecialchars($row["name"]).$banned_torrent.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg . $approvalStatusIcon;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");
@@ -101,7 +101,7 @@ if (!$row) {
 
 		// ------------- start upped by block ------------------//
 		if($row['anonymous'] == 'yes') {
-			if (!user_can('viewanonymous'))
+			if (!user_can('viewanonymous') && $row['owner'] != $CURUSER['id'])
 			$uprow = "<i>".$lang_details['text_anonymous']."</i>";
 			else
 			$uprow = "<i>".$lang_details['text_anonymous']."</i> (" . get_username($row['owner'], false, true, true, false, false, true) . ")";
@@ -125,6 +125,13 @@ if (!$row) {
 			tr($lang_details['row_download'], $lang_details['text_downloading_not_allowed']);
 		if ($smalldescription_main == 'yes')
 			tr($lang_details['row_small_description'],htmlspecialchars(trim($row["small_descr"])),true);
+
+		//tag
+        $torrentTags = \App\Models\TorrentTag::query()->where('torrent_id', $row['id'])->get();
+        if ($torrentTags->isNotEmpty()) {
+            $tagRep = new \App\Repositories\TagRepository();
+            tr($lang_details['row_tags'], $tagRep->renderSpan($torrentTags->pluck('tag_id')->toArray()),true);
+        }
 
 		$size_info =  "<b>".$lang_details['text_size']."</b>" . mksize($row["size"]);
 		$type_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['row_type'].":</b>&nbsp;".$row["cat_name"];
@@ -267,8 +274,11 @@ JS;
 		print("</td></tr>\n");
 		// ---------------- end subtitle block -------------------//
 
+        //hook before desc
+        do_action('torrent_detail_before_desc', $row['id'], $CURUSER['id']);
+
         /**************start custom fields****************/
-        echo $customField->renderOnTorrentDetailsPage($id);
+        echo $customField->renderOnTorrentDetailsPage($id, $row['search_box_id']);
 
         /**************end custom fields****************/
 
@@ -290,10 +300,10 @@ JS;
 
 		if (user_can('viewnfo') && $CURUSER['shownfo'] != 'no' && $row["nfosz"] > 0){
 			if (!$nfo = $Cache->get_value('nfo_block_torrent_id_'.$id)){
-				$nfo = code($row["nfo"], $view == "magic");
+				$nfo = code_new($row["nfo"], get_setting('torrent.nfo_view_style_default'));
 				$Cache->cache_value('nfo_block_torrent_id_'.$id, $nfo, 604800);
 			}
-			tr("<a href=\"javascript: klappe_news('nfo')\"><img class=\"plus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picnfo\" title=\"".$lang_details['title_show_or_hide']."\" /> ".$lang_details['text_nfo']."</a><br /><a href=\"viewnfo.php?id=".$row['id']."\" class=\"sublink\">". $lang_details['text_view_nfo']. "</a>", "<div id='knfo' style=\"display: none;\"><pre style=\"font-size:10pt; font-family: 'Courier New', monospace;\">".$nfo."</pre></div>\n", 1);
+			tr("<a href=\"javascript: klappe_news('nfo')\"><img class=\"plus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picnfo\" title=\"".$lang_details['title_show_or_hide']."\" /> ".$lang_details['text_nfo']."</a><br /><a href=\"viewnfo.php?id=".$row['id']."\" class=\"sublink\">". $lang_details['text_view_nfo']. "</a>", "<div id='knfo' style=\"display: none;\"><pre style=\"font-size:10pt; font-family: 'Courier New', monospace;white-space: break-spaces\">".$nfo."</pre></div>\n", 1);
 		}
 
 	if ($imdb_id && $showextinfo['imdb'] == 'yes' && $CURUSER['showimdb'] != 'no')
@@ -376,7 +386,7 @@ JS;
 		{
 //			$where_area = " url = " . sqlesc((int)$imdb_id) ." AND torrents.id != ".sqlesc($id);
 			$where_area = sprintf('torrents.id in (%s)', implode(',', $otherCopiesIdArr));
-			$copies_res = sql_query("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name FROM torrents LEFT JOIN categories ON torrents.category=categories.id LEFT JOIN sources ON torrents.source = sources.id LEFT JOIN media ON torrents.medium = media.id  LEFT JOIN codecs ON torrents.codec = codecs.id LEFT JOIN standards ON torrents.standard = standards.id LEFT JOIN processings ON torrents.processing = processings.id WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
+			$copies_res = sql_query("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, categories.mode as search_box_id FROM torrents LEFT JOIN categories ON torrents.category=categories.id LEFT JOIN sources ON torrents.source = sources.id LEFT JOIN media ON torrents.medium = media.id  LEFT JOIN codecs ON torrents.codec = codecs.id LEFT JOIN standards ON torrents.standard = standards.id LEFT JOIN processings ON torrents.processing = processings.id WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
 
 			$copies_count = mysql_num_rows($copies_res);
 			if($copies_count > 0)
@@ -406,7 +416,7 @@ JS;
 
 					$sphighlight = get_torrent_bg_color($copy_row['sp_state']);
 					$sp_info = get_torrent_promotion_append($copy_row['sp_state'], '', false, '', 0, '', $copy_row['__ignore_global_sp_state'] ?? false);
-					$hrImg = get_hr_img($copy_row);
+					$hrImg = get_hr_img($copy_row, $copy_row['search_box_id']);
 
 					$s .= "<tr". $sphighlight."><td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>".return_category_image($copy_row["catid"], "torrents.php?allsec=1&amp;")."</td><td class=\"rowfollow\" align=\"left\"><a href=\"" . htmlspecialchars(get_protocol_prefix() . $BASEURL . "/details.php?id=" . $copy_row["id"]. "&hit=1")."\">" . $dispname ."</a>". $sp_info. $hrImg ."</td>" .
 					"<td class=\"rowfollow\" align=\"left\">" . rtrim(trim($other_source_info . $other_medium_info . $other_codec_info . $other_standard_info . $other_processing_info), ","). "</td>" .

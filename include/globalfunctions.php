@@ -730,6 +730,7 @@ function get_user_row($id)
         } else {
             $arr['__is_rainbow'] = 0;
         }
+        $arr['__is_donor'] = is_donor($arr);
         return apply_filter("user_row", $arr);
     });
 
@@ -866,8 +867,8 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
         throw new \InvalidArgumentException("user no '__is_donor' field");
     }
     $log = sprintf(
-        "torrent: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s",
-        $torrent['id'], $user['id'], $peer['uploaded'] ?? '', $peer['downloaded'] ?? '', $queries['uploaded'], $queries['downloaded']
+        "torrent: %s, owner: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s",
+        $torrent['id'], $torrent['owner'], $user['id'], $peer['uploaded'] ?? '', $peer['downloaded'] ?? '', $queries['uploaded'], $queries['downloaded']
     );
     if (!empty($peer)) {
         $realUploaded = max(bcsub($queries['uploaded'], $peer['uploaded']), 0);
@@ -929,7 +930,7 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
      */
     $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
     $log .= ", isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, user class: {$user['class']}, __is_donor: {$user['__is_donor']}";
-    if ($isSeedBoxRuleEnabled && !($user['class'] >= \App\Models\User::CLASS_VIP || $user['__is_donor'])) {
+    if ($isSeedBoxRuleEnabled && $torrent['owner'] != $user['id'] && !($user['class'] >= \App\Models\User::CLASS_VIP || $user['__is_donor'])) {
         $isIPSeedBox = isIPSeedBox($queries['ip'], $user['id']);
         $log .= ", isIPSeedBox: $isIPSeedBox";
         if ($isIPSeedBox) {
@@ -941,9 +942,20 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
                 $log .= ", isIPSeedBox && isSeedBoxNoPromotion, increment for user = real";
             }
             $maxUploadedTimes = get_setting('seed_box.max_uploaded');
-            if (!empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
-                $log .= ", snatchUploaded >= torrentSize * times($maxUploadedTimes), uploadedIncrementForUser = 0";
-                $uploadedIncrementForUser = 0;
+            $maxUploadedDurationSeconds = get_setting('seed_box.max_uploaded_duration', 0) * 3600;
+            $torrentTTL = time() - strtotime($torrent['added']);
+            $timeRangeValid = ($maxUploadedDurationSeconds == 0) || ($torrentTTL < $maxUploadedDurationSeconds);
+            $log .= ", maxUploadedTimes: $maxUploadedTimes, maxUploadedDurationSeconds: $maxUploadedDurationSeconds, timeRangeValid: $timeRangeValid";
+            if ($maxUploadedTimes > 0 && $timeRangeValid) {
+                $log .= ", [LIMIT_UPLOADED]";
+                if (!empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
+                    $log .= ", snatchUploaded({$snatch['uploaded']}) >= torrentSize({$torrent['size']}) * times($maxUploadedTimes), uploadedIncrementForUser = 0";
+                    $uploadedIncrementForUser = 0;
+                } else {
+                    $log .= ", snatchUploaded({$snatch['uploaded']}) < torrentSize({$torrent['size']}) * times($maxUploadedTimes), uploadedIncrementForUser do not change to 0";
+                }
+            } else {
+                $log .= ", [NOT_LIMIT_UPLOADED]";
             }
         }
     }
@@ -970,7 +982,7 @@ function clear_user_cache($uid, $passkey = '')
     }
 }
 
-function clear_setting_cache($buildPermissionCache = false)
+function clear_setting_cache()
 {
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
@@ -1036,4 +1048,9 @@ function user_can($permission, $fail = false, $uid = 0): bool
         }
     }
     throw new \App\Exceptions\InsufficientPermissionException();
+}
+
+function is_donor(array $userInfo): bool
+{
+    return $userInfo['donor'] == 'yes' && ($userInfo['donoruntil'] === null || $userInfo['donoruntil'] == '0000-00-00 00:00:00' || $userInfo['donoruntil'] >= date('Y-m-d H:i:s'));
 }

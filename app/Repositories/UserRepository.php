@@ -162,11 +162,14 @@ class UserRepository extends BaseRepository
         return User::listClass();
     }
 
-    public function disableUser(User $operator, $uid, $reason)
+    public function disableUser(User $operator, $uid, $reason = '')
     {
         $targetUser = User::query()->findOrFail($uid, ['id', 'enabled', 'username', 'class']);
         if ($targetUser->enabled == User::ENABLED_NO) {
             throw new NexusException('Already disabled !');
+        }
+        if (empty($reason)) {
+            $reason = nexus_trans("user.disable_by_admin");
         }
         $this->checkPermission($operator, $targetUser);
         $banLog = [
@@ -326,7 +329,7 @@ class UserRepository extends BaseRepository
     }
 
 
-    public function updateDownloadPrivileges($operator, $user, $status)
+    public function updateDownloadPrivileges($operator, $user, $status, $disableReasonKey = null)
     {
         if (!in_array($status, ['yes', 'no'])) {
             throw new \InvalidArgumentException("Invalid status: $status");
@@ -345,8 +348,12 @@ class UserRepository extends BaseRepository
         if ($status == 'no') {
             $update = ['downloadpos' => 'no'];
             $modComment = date('Y-m-d') . " - Download disable by " . $operatorUsername;
-            $message['subject'] = nexus_trans('message.download_disable.subject', [], $targetUser->locale);
-            $message['msg'] = nexus_trans('message.download_disable.body', ['operator' => $operatorUsername], $targetUser->locale);
+            $msgTransPrefix = "message.download_disable";
+            if ($disableReasonKey !== null) {
+                $msgTransPrefix .= "_$disableReasonKey";
+            }
+            $message['subject'] = nexus_trans("$msgTransPrefix.subject", [], $targetUser->locale);
+            $message['msg'] = nexus_trans("$msgTransPrefix.body", ['operator' => $operatorUsername], $targetUser->locale);
         } else {
             $update = ['downloadpos' => 'yes'];
             $modComment = date('Y-m-d') . " - Download enable by " . $operatorUsername;
@@ -463,23 +470,41 @@ class UserRepository extends BaseRepository
         $user = $this->getUser($user);
         $metaKey = $metaData['meta_key'];
         $allowMultiple = UserMeta::$metaKeys[$metaKey]['multiple'];
+        $log = "user: {$user->id}, metaKey: $metaKey, allowMultiple: $allowMultiple";
         if ($allowMultiple) {
             //Allow multiple, just insert
             $result = $user->metas()->create($metaData);
+            $log .= ", allowMultiple, just insert";
         } else {
             $metaExists = $user->metas()->where('meta_key', $metaKey)->first();
+            $log .= ", metaExists: " . ($metaExists->id ?? '');
             if (!$metaExists) {
                 $result = $user->metas()->create($metaData);
+                $log .= ", meta not exists, just create";
             } else {
-                if (empty($keyExistsUpdates)) {
-                    $keyExistsUpdates = ['updated_at' => now()];
+                $log .= ", meta exists";
+                $keyExistsUpdates['updated_at'] = now();
+                if (!empty($keyExistsUpdates['duration'])) {
+                    $log .= ", has duration: {$keyExistsUpdates['duration']}";
+                    if ($metaExists->deadline && $metaExists->deadline->gte(now())) {
+                        $log .= ", not expire";
+                        $keyExistsUpdates['deadline'] = $metaExists->deadline->addDays($keyExistsUpdates['duration']);
+                    } else {
+                        $log .= ", expired or not set";
+                        $keyExistsUpdates['deadline'] = now()->addDays($keyExistsUpdates['duration']);
+                    }
+                    unset($keyExistsUpdates['duration']);
+                } else {
+                    $keyExistsUpdates['deadline'] = null;
                 }
+                $log .= ", update: " . json_encode($keyExistsUpdates);
                 $result = $metaExists->update($keyExistsUpdates);
             }
         }
         if ($result) {
             clear_user_cache($user->id, $user->passkey);
         }
+        do_log($log);
         return $result;
     }
 
@@ -497,9 +522,13 @@ class UserRepository extends BaseRepository
         return true;
     }
 
-    public function destroy($id)
+    public function destroy($id, $reasonKey = 'user.destroy_by_admin')
     {
-        user_can('user-delete', true);
+        if (!isRunningInConsole()) {
+            user_can('user-delete', true);
+        }
+        $uidArr = Arr::wrap($id);
+        $users = User::query()->with('language')->whereIn('id', $uidArr)->get(['id', 'username', 'lang']);
         $tables = [
             'users' => 'id',
             'hit_and_runs' => 'uid',
@@ -508,9 +537,18 @@ class UserRepository extends BaseRepository
             'exam_progress' => 'uid',
         ];
         foreach ($tables as $table => $key) {
-            \Nexus\Database\NexusDB::table($table)->where($key, $id)->delete();
+            \Nexus\Database\NexusDB::table($table)->whereIn($key, $uidArr)->delete();
         }
-        do_log("[DESTROY_USER]: $id", 'error');
+        do_log("[DESTROY_USER]: " . json_encode($uidArr), 'error');
+        $userBanLogs = [];
+        foreach ($users as $user) {
+            $userBanLogs[] = [
+                'uid' => $user->id,
+                'username' => $user->username,
+                'reason' => nexus_trans($reasonKey, [], $user->locale)
+            ];
+        }
+        UserBanLog::query()->insert($userBanLogs);
         return true;
     }
 

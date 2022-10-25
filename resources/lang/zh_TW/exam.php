@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'label' => '考核',
     'name' => '考核名稱',
     'index' => '考核指標',
     'time_range' => '考核時間',

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'label' => '勋章',
     'action_wearing' => '佩戴',
     'admin' => [
         'list' => [

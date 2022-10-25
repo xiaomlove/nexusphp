@@ -31,4 +31,8 @@ return [
     'remove_claim_confirm' => '确认要放弃认领？',
     'already_claimed' => '已认领',
     'not_claim_yet' => '未认领',
+
+    'fields' => [
+        'torrent_id' => '种子 ID',
+    ],
 ];

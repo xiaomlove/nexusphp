@@ -123,3 +123,11 @@ function consumeBenefit($params)
     $rep = new \App\Repositories\UserRepository();
     return $rep->consumeBenefit($CURUSER['id'], $params);
 }
+
+function clearShoutBox($params)
+{
+    global $CURUSER;
+    user_can('sbmanage', true);
+    \Nexus\Database\NexusDB::table('shoutbox')->delete();
+    return true;
+}

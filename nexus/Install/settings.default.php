@@ -92,6 +92,7 @@ return array (
       'show_top_uploader' => 'no',
       'imdb_language' => 'en-US',
       'offer_skip_approved_count' => 5,
+      'upload_deny_approval_deny_count' => 2,
   ),
   'smtp' =>
   array (
@@ -179,6 +180,8 @@ return array (
       'torrent-delete' => User::CLASS_ADMINISTRATOR,
       'user-delete' => User::CLASS_ADMINISTRATOR,
       'user-change-class' => User::CLASS_ADMINISTRATOR,
+      'torrent-set-special-tag' => User::CLASS_ADMINISTRATOR,
+      'torrent-approval-allow-automatic' => User::CLASS_UPLOADER,
   ),
   'tweak' =>
   array (
@@ -233,6 +236,11 @@ return array (
       'cancel_hr' => BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN,
       'attendance_card' => BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD,
       'harem_addition' => 0,
+      'hundredgbupload' => 10000,
+      'tengbdownload' => 1000,
+      'hundredgbdownload' => 8000,
+      'official_addition' => '0.5',
+      'zero_bonus_factor' => '0.2',
   ),
   'account' =>
   array (
@@ -296,6 +304,7 @@ return array (
       8 => '5',
       9 => '10',
     ),
+      'destroy_disabled' => 0,
   ),
   'torrent' =>
   array (
@@ -341,6 +350,7 @@ return array (
       'claim_reach_standard_uploaded' => \App\Models\Claim::STANDARD_UPLOADED_TIMES,
       'approval_status_icon_enabled' => 'no',
       'approval_status_none_visible' => 'yes',
+      'nfo_view_style_default' => \App\Models\Torrent::NFO_VIEW_STYLE_DOS,
   ),
   'attachment' =>
   array (
@@ -418,6 +428,7 @@ return array (
         'no_promotion' => 'yes',
         'max_uploaded' => 3,
         'not_seed_box_max_speed' => 10240,
+        'max_uploaded_duration' => 0,
     ],
     'system' => [
         'change_username_min_interval_in_days' => '365',

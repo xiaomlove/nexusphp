@@ -5,6 +5,14 @@ return [
         'text' => '审核种子',
         'desc' => '通过种子、拒绝种子、或将种子标记为未审',
     ],
+    'torrent-set-special-tag' => [
+        'text' => '设定种子特殊标签',
+        'desc' => '设定种子的官方、零魔标签',
+    ],
+    'torrent-approval-allow-automatic' => [
+        'text' => '种子自动通过审核',
+        'desc' => '种子发布即为审核通过状态',
+    ],
     'defaultclass' => [
         'text' => '默认等级',
         'desc' => '注册时获得的等级',
@@ -205,4 +213,12 @@ return [
         'text' => '允许个性条',
         'desc' => '允许用户使用个性条',
     ],
+//    'not-counting-downloaded' => [
+//        'text' => '不计下载量',
+//        'desc' => '用户下载量不增加',
+//    ],
+//    'not-counting-hit-and-run' => [
+//        'text' => '不计 H&R',
+//        'desc' => '下载带 H&R 标记的种子不记 H&R。注意：等级为 VIP 是固定不计的',
+//    ],
 ];

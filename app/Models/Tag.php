@@ -48,6 +48,14 @@ class Tag extends NexusModel
         ],
     ];
 
+    public static function listSpecial(): array
+    {
+        return array_filter([
+            Setting::get('system.official_tag'),
+            Setting::get('system.zero_bonus_tag'),
+        ]);
+    }
+
     public function torrents(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Torrent::class, 'torrent_tags', 'tag_id', 'torrent_id');

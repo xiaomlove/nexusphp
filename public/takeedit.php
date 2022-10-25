@@ -53,13 +53,6 @@ if (!empty($_POST['pt_gen'])) {
 
 $updateset[] = "technical_info = " . sqlesc($_POST['technical_info'] ?? '');
 $torrentOperationLog = [];
-/**
- * hr
- * @since 1.6.0-beta12
- */
-if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']]) && user_can('torrent_hr')) {
-    $updateset[] = "hr = " . sqlesc($_POST['hr']);
-}
 
 
 if ($enablenfo_main=='yes'){
@@ -143,9 +136,22 @@ if(user_can('torrentonpromotion'))
 		}
 	}
 }
-if(user_can('torrentsticky') && isset($_POST['sel_posstate']) && isset(\App\Models\Torrent::$posStates[$_POST['sel_posstate']]))
+if(user_can('torrentsticky'))
 {
-    $updateset[] = "pos_state = '" . $_POST['sel_posstate'] . "'";
+    if (isset($_POST['pos_state']) && isset(\App\Models\Torrent::$posStates[$_POST['pos_state']])) {
+        $posStateUntil = $_POST['pos_state_until'] ?: null;
+        $posState = $_POST['pos_state'];
+        if ($posState == \App\Models\Torrent::POS_STATE_STICKY_NONE) {
+            $posStateUntil = null;
+        }
+        if ($posStateUntil && \Carbon\Carbon::parse($posStateUntil)->lte(now())) {
+            $posState = \App\Models\Torrent::POS_STATE_STICKY_NONE;
+            $posStateUntil = null;
+        }
+        $updateset[] = sprintf("pos_state = %s", sqlesc($posState));
+        $updateset[] = sprintf("pos_state_until = %s", sqlesc($posStateUntil));
+    }
+
 }
 
 $pick_info = "";
@@ -202,7 +208,17 @@ $descriptionArr = format_description($descr);
 $cover = get_image_from_description($descriptionArr, true, false);
 $updateset[] = "cover = " . sqlesc($cover);
 
-$affectedRows = sql_query("UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+/**
+ * hr
+ * @since 1.6.0-beta12
+ */
+if (isset($_POST['hr'][$newcatmode]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$newcatmode]]) && user_can('torrent_hr')) {
+    $updateset[] = "hr = " . sqlesc($_POST['hr'][$newcatmode]);
+}
+
+$sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
+do_log("[UPDATE_TORRENT]: $sql");
+$affectedRows = sql_query($sql) or sqlerr(__FILE__, __LINE__);
 
 $dateTimeStringNow = date("Y-m-d H:i:s");
 
@@ -210,20 +226,9 @@ $dateTimeStringNow = date("Y-m-d H:i:s");
  * add custom fields
  * @since v1.6
  */
-if (!empty($_POST['custom_fields'])) {
-    \Nexus\Database\NexusDB::delete('torrents_custom_field_values', "torrent_id = $id");
-    foreach ($_POST['custom_fields'] as $customField => $customValue) {
-        foreach ((array)$customValue as $value) {
-            $customData = [
-                'torrent_id' => $id,
-                'custom_field_id' => $customField,
-                'custom_field_value' => $value,
-                'created_at' => $dateTimeStringNow,
-                'updated_at' => $dateTimeStringNow,
-            ];
-            \Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
-        }
-    }
+if (!empty($_POST['custom_fields'][$newcatmode])) {
+    $customField = new \Nexus\Field\Field();
+    $customField->saveFieldValues($newcatmode, $id, $_POST['custom_fields'][$newcatmode]);
 }
 
 /**

@@ -12,7 +12,7 @@ class BackupDatabase extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:database';
+    protected $signature = 'backup:database {--transfer=}';
 
     /**
      * The console command description.
@@ -39,7 +39,9 @@ class BackupDatabase extends Command
     public function handle()
     {
         $rep = new ToolRepository();
-        $result = $rep->backupDatabase();
+        $transfer = $this->option('transfer');
+        $this->info("transfer: $transfer");
+        $result = $rep->backupDatabase($transfer);
         $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);

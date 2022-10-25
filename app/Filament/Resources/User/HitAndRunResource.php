@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class HitAndRunResource extends Resource
 {
@@ -42,7 +43,12 @@ class HitAndRunResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('uid')->searchable(),
-                Tables\Columns\TextColumn::make('user.username')->searchable()->label(__('label.username')),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->searchable()
+                    ->label(__('label.username'))
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->uid, false, true, true, true)))
+                ,
+
                 Tables\Columns\TextColumn::make('torrent.name')->limit(30)->label(__('label.torrent.label')),
                 Tables\Columns\TextColumn::make('snatch.uploadText')->label(__('label.uploaded')),
                 Tables\Columns\TextColumn::make('snatch.downloadText')->label(__('label.downloaded')),
@@ -53,6 +59,16 @@ class HitAndRunResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
+                Tables\Filters\Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
+                    })
+                ,
                 Tables\Filters\SelectFilter::make('status')->options(HitAndRun::listStatus(true))->label(__('label.status')),
             ])
             ->actions([
@@ -72,7 +88,7 @@ class HitAndRunResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['user', 'torrent', 'snatch']);
+        return parent::getEloquentQuery()->with(['user', 'torrent', 'snatch', 'torrent.basic_category']);
     }
 
     public static function getRelations(): array

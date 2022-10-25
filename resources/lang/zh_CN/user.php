@@ -27,4 +27,6 @@ return [
         \App\Models\User::CLASS_STAFF_LEADER => '主管',
     ],
     'change_username_lte_min_interval' => '上次修改时间：:last_change_time，未满足最小间隔：:interval 天',
+    'destroy_by_admin' => '被管理员物理删除',
+    'disable_by_admin' => '被管理員封禁',
 ];

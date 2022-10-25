@@ -155,5 +155,6 @@ $lang_userdetails = array
     'row_user_props' => 'Props',
     'meta_key_change_username_username' => 'New username',
     'consume' => 'Use',
+    'text_bonus_table' => 'Bonus per hour',
 );
 ?>

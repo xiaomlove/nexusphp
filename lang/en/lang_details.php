@@ -238,6 +238,7 @@ $lang_details = array
     'claim_label' => 'Claim torrent',
     'claim_confirm' => 'Are you sure to claim this torrent?',
     'action_approval' => 'Approval',
+    'row_tags' => 'Tags',
 );
 
 ?>

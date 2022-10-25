@@ -163,21 +163,27 @@ class TechnicalInformation
         $subtitles = $this->getSubtitles();
 //        dd($videos, $audios, $subtitles);
         if (empty($videos) && empty($audios) && empty($subtitles)) {
-//            return '';
-            return sprintf('<div style="padding: 0 0.5rem"><pre>%s</pre></div>', $this->mediaInfo);
+            return sprintf('<div class="nexus-media-info-raw"><pre>%s</pre></div>', $this->mediaInfo);
         }
 
         $result = '<table style="border: none;width: 100%"><tbody><tr>';
+        $cols = 0;
         if (!empty($videos)) {
+            $cols++;
             $result .= $this->buildTdTable($videos);
         }
         if (!empty($audios)) {
+            $cols++;
             $result .= $this->buildTdTable($audios);
         }
         if (!empty($subtitles)) {
+            $cols++;
             $result .= $this->buildTdTable($subtitles);
         }
-        $result .= '</tr></tbody></table>';
+        $result .= '</tr>';
+        $rawMediaInfo = sprintf('[spoiler=%s][raw]<pre>%s</pre>[/raw][/spoiler]',  nexus_trans('torrent.show_hide_media_info'), $this->mediaInfo);
+        $result .= sprintf('<tr><td colspan="%s" class="nexus-media-info-raw">%s</td></tr>', $cols, format_comment($rawMediaInfo, false));
+        $result .= '</tbody></table>';
         return $result;
     }
 
@@ -189,7 +195,8 @@ class TechnicalInformation
             $table .= sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px;"><b>%s: </b>%s</td>', $key, $value);
             $table .= '</tr>';
         }
-        $table .= '</tbody></table>';
+        $table .= '</tbody>';
+        $table .= '</table>';
         return sprintf('<td style="border: none; padding-right: 5px;padding-bottom: 5px">%s</td>', $table);
     }
 

@@ -12,7 +12,7 @@ class BackupWeb extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:web {--method=}';
+    protected $signature = 'backup:web {--method=} {--transfer=}';
 
     /**
      * The console command description.
@@ -39,9 +39,10 @@ class BackupWeb extends Command
     public function handle()
     {
         $method = $this->option('method');
-        $this->info("method: $method");
+        $transfer = $this->option('transfer');
+        $this->info("method: $method, transfer: $transfer");
         $rep = new ToolRepository();
-        $result = $rep->backupWeb($method);
+        $result = $rep->backupWeb($method, $transfer);
         $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);

@@ -104,6 +104,8 @@ $lang_index = array
     'top_uploader_toggle_time_range_tab' => 'Click to toggle the time range',
     'top_uploader_toggle_time_range_recently' => 'Last 30 days',
     'top_uploader_toggle_time_range_all' => 'All time',
+    'clear_shout_box' => 'Clear shout box',
+    'sure_to_clear_shout_box' => 'Are you sure you want to clear the shout box?',
 );
 
 ?>

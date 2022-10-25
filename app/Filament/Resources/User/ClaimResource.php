@@ -13,6 +13,7 @@ use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class ClaimResource extends Resource
 {
@@ -48,7 +49,11 @@ class ClaimResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('uid')->searchable(),
-                Tables\Columns\TextColumn::make('user.username')->label(__('label.user.label'))->searchable(),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->label(__('label.user.label'))
+                    ->searchable()
+                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->uid, false, true, true, true)))
+                ,
                 Tables\Columns\TextColumn::make('torrent.name')->limit(40)->label(__('label.torrent.label'))->searchable(),
                 Tables\Columns\TextColumn::make('torrent.size')->label(__('label.torrent.size'))->formatStateUsing(fn (Model $record) => mksize($record->torrent->size)),
                 Tables\Columns\TextColumn::make('torrent.added')->label(__('label.torrent.ttl'))->formatStateUsing(fn (Model $record) => mkprettytime($record->torrent->added->diffInSeconds())),
@@ -60,7 +65,26 @@ class ClaimResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
-                //
+                Tables\Filters\Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
+                    })
+                ,
+                Tables\Filters\Filter::make('torrent_id')
+                    ->form([
+                        Forms\Components\TextInput::make('torrent_id')
+                            ->label(__('claim.fields.torrent_id'))
+                            ->placeholder(__('claim.fields.torrent_id'))
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['torrent_id'], fn (Builder $query, $value) => $query->where("torrent_id", $value));
+                    })
+                ,
             ])
             ->actions([
 //                Tables\Actions\EditAction::make(),

@@ -75,4 +75,10 @@ return [
         'deny_comment_show' => 'Denied, reason: :reason',
         'logs_label' => 'Approval logs'
     ],
+    'show_hide_media_info' => 'Show/Hide raw MediaInfo',
+    'promotion_time_types' => [
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_GLOBAL => 'Global',
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_PERMANENT => 'Permanent',
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_DEADLINE => 'Until',
+    ],
 ];

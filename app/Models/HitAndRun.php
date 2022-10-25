@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidArgumentException;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class HitAndRun extends NexusModel
@@ -17,11 +19,16 @@ class HitAndRun extends NexusModel
     const STATUS_UNREACHED = 3;
     const STATUS_PARDONED = 4;
 
-    public static $status = [
+    public static array $status = [
         self::STATUS_INSPECTING => ['text' => 'Inspecting'],
         self::STATUS_REACHED => ['text' => 'Reached'],
         self::STATUS_UNREACHED => ['text' => 'Unreached'],
         self::STATUS_PARDONED => ['text' => 'Pardoned'],
+    ];
+
+    const CAN_PARDON_STATUS = [
+        self::STATUS_INSPECTING,
+        self::STATUS_UNREACHED,
     ];
 
     const MODE_DISABLED = 'disabled';
@@ -39,15 +46,35 @@ class HitAndRun extends NexusModel
     protected function seedTimeRequired(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => $this->status == self::STATUS_INSPECTING ? mkprettytime(3600 * Setting::get('hr.seed_time_minimum') - $this->snatch->seedtime) : '---'
+            get: fn($value, $attributes) => $this->doGetSeedTimeRequired()
         );
     }
 
     protected function inspectTimeLeft(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => $this->status == self::STATUS_INSPECTING ? mkprettytime(\Carbon\Carbon::now()->diffInSeconds($this->snatch->completedat->addHours(Setting::get('hr.inspect_time')))) : '---'
+            get: fn($value, $attributes) => $this->doGetInspectTimeLeft()
         );
+    }
+
+    private function doGetInspectTimeLeft(): string
+    {
+        if ($this->status != self::STATUS_INSPECTING) {
+            return '---';
+        }
+        $inspectTime = HitAndRun::getConfig('inspect_time', $this->torrent->basic_category->mode);
+        $diffInSeconds = Carbon::now()->diffInSeconds($this->snatch->completedat->addHours($inspectTime));
+        return mkprettytime($diffInSeconds);
+    }
+
+    private function doGetSeedTimeRequired(): string
+    {
+        if ($this->status != self::STATUS_INSPECTING) {
+            return '---';
+        }
+        $seedTimeMinimum = HitAndRun::getConfig('seed_time_minimum', $this->torrent->basic_category->mode);
+        $diffInSeconds = 3600 * $seedTimeMinimum - $this->snatch->seedtime;
+        return mkprettytime($diffInSeconds);
     }
 
     public function getStatusTextAttribute()
@@ -87,8 +114,35 @@ class HitAndRun extends NexusModel
 
     public static function getIsEnabled(): bool
     {
-        $result = Setting::get('hr.mode');
-        return $result && in_array($result, [self::MODE_GLOBAL, self::MODE_MANUAL]);
+        $enableSpecialSection = Setting::get('main.spsct') == 'yes';
+        $browseMode = self::getConfig('mode', Setting::get('main.browsecat'));
+        $browseEnabled = $browseMode && in_array($browseMode, [self::MODE_GLOBAL, self::MODE_MANUAL]);
+        if (!$enableSpecialSection) {
+            do_log("Not enable special section, browseEnabled: $browseEnabled");
+            return $browseEnabled;
+        }
+        $specialMode = self::getConfig('mode', Setting::get('main.specialcat'));
+        $specialEnabled =  $specialMode && in_array($specialMode, [self::MODE_GLOBAL, self::MODE_MANUAL]);
+        $result = $browseEnabled || $specialEnabled;
+        do_log("Enable special section, browseEnabled: $browseEnabled, specialEnabled: $specialEnabled, result: $result");
+        return $result;
+    }
+
+    public static function getConfig($name, $searchBoxId)
+    {
+        if ($name == '*') {
+            $key = "hr";
+        } else {
+            $key = "hr.$name";
+        }
+        $default = Setting::get($key);
+        return apply_filter("nexus_setting_get", $default, $name, ['mode' => $searchBoxId]);
+    }
+
+    public static function diffInSection(): bool
+    {
+        $enableSpecialSection = Setting::get('main.spsct') == 'yes';
+        return $enableSpecialSection && apply_filter("hit_and_run_diff_in_section", false);
     }
 
     public function torrent(): \Illuminate\Database\Eloquent\Relations\BelongsTo

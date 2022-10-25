@@ -80,14 +80,14 @@ $lang_functions = array
 	'text_logout' => "退出",
 	'text_bonus' => "魔力值 ",
 	'text_use' => "使用",
-	'text_ratio' => "分享率：",
-	'text_uploaded' => "上传量：",
-	'text_downloaded' => "下载量：",
-	'text_active_torrents' => "当前活动：",
+	'text_ratio' => "分享率:",
+	'text_uploaded' => "上传量:",
+	'text_downloaded' => "下载量:",
+	'text_active_torrents' => "当前活动:",
 	'title_torrents_seeding' => "当前做种",
 	'title_torrents_leeching' => "当前下载",
-	'text_connectable' => "可连接：",
-	'text_the_time_is_now' => "当前时间：",
+	'text_connectable' => "可连接:",
+	'text_the_time_is_now' => "时间:",
 	'text_message_new' => " 新",
 	'title_sentbox' => "发件箱",
 	'title_inbox' => "收件箱",
@@ -329,6 +329,7 @@ $lang_functions = array
     'input_check_all' => "全选",
     'input_uncheck_all' => "全不选",
     'select_at_least_one_record' => '至少选择一条记录！',
+    'text_seed_box_record_to_approval' => '有 %s%u 条待审核的 SeedBox 记录%s',
 );
 
 ?>

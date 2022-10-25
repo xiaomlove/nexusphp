@@ -7,6 +7,7 @@ use App\Filament\Resources\Torrent\TorrentResource;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\ListRecords;
 
+
 class ListTorrents extends PageList
 {
     protected static string $resource = TorrentResource::class;
@@ -17,4 +18,6 @@ class ListTorrents extends PageList
 //            Actions\CreateAction::make(),
         ];
     }
+
+
 }

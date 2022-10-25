@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'label' => 'Exam',
     'name' => 'Exam name',
     'index' => 'Exam index',
     'time_range' => 'Exam time',

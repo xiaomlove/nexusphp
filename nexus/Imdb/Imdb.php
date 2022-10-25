@@ -34,7 +34,8 @@ class Imdb
 
     public static function listSupportLanguages(): array
     {
-        $data = require_once sprintf('%s/resources/lang/%s/imdb.php', ROOT_PATH, get_langfolder_cookie(true));
+        $file = sprintf('%s/resources/lang/%s/imdb.php', ROOT_PATH, get_langfolder_cookie(true));
+        $data = include $file;
         return $data['languages'];
     }
 

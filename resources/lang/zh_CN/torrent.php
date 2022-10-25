@@ -75,4 +75,10 @@ return [
         'deny_comment_show' => '审核不通过，原因：:reason',
         'logs_label' => '审核记录',
     ],
+    'show_hide_media_info' => '显示/隐藏原始 MediaInfo',
+    'promotion_time_types' => [
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_GLOBAL => '全局',
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_PERMANENT => '永久',
+        \App\Models\Torrent::PROMOTION_TIME_TYPE_DEADLINE => '直到',
+    ],
 ];

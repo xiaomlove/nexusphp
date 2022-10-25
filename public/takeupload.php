@@ -339,9 +339,38 @@ $insert = [
     'technical_info' => $_POST['technical_info'] ?? '',
     'cover' => $cover,
 ];
-if (isset($_POST['hr']) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr']]) && user_can('torrent_hr')) {
-    $insert['hr'] = $_POST['hr'];
+if (isset($_POST['hr'][$catmod]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$catmod]]) && user_can('torrent_hr')) {
+    $insert['hr'] = $_POST['hr'][$catmod];
 }
+if(user_can('torrentsticky')) {
+    if (isset($_POST['pos_state']) && isset(\App\Models\Torrent::$posStates[$_POST['pos_state']])) {
+        $posStateUntil = $_POST['pos_state_until'] ?: null;
+        $posState = $_POST['pos_state'];
+        if ($posState == \App\Models\Torrent::POS_STATE_STICKY_NONE) {
+            $posStateUntil = null;
+        }
+        if ($posStateUntil && \Carbon\Carbon::parse($posStateUntil)->lte(now())) {
+            $posState = \App\Models\Torrent::POS_STATE_STICKY_NONE;
+            $posStateUntil = null;
+        }
+        $insert['pos_state'] = $posState;
+        $insert['pos_state_until'] = $posStateUntil;
+    }
+}
+if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP)) {
+    if (isset($_POST['picktype']) && isset(\App\Models\Torrent::$pickTypes[$_POST['picktype']])) {
+        $insert['picktype'] = $_POST['picktype'];
+        if ($insert['picktype'] == \App\Models\Torrent::PICK_NORMAL) {
+            $insert['picktime'] = null;
+        } else {
+            $insert['picktime'] = now()->toDateTimeString();
+        }
+    }
+}
+if (user_can('torrent-approval-allow-automatic')) {
+    $insert['approval_status'] = \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
+}
+do_log("[INSERT_TORRENT]: " . nexus_json_encode($insert));
 $id = \Nexus\Database\NexusDB::insert('torrents', $insert);
 
 //$ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
@@ -365,20 +394,9 @@ if ($saveResult === false) {
  * add custom fields
  * @since v1.6
  */
-if (!empty($_POST['custom_fields'])) {
-	$now = date('Y-m-d H:i:s');
-	foreach ($_POST['custom_fields'] as $customField => $customValue) {
-		foreach ((array)$customValue as $value) {
-			$customData = [
-				'torrent_id' => $id,
-				'custom_field_id' => $customField,
-				'custom_field_value' => $value,
-				'created_at' => $now,
-				'updated_at' => $now,
-			];
-			\Nexus\Database\NexusDB::insert('torrents_custom_field_values', $customData);
-		}
-	}
+if (!empty($_POST['custom_fields'][$catmod])) {
+	$customField = new \Nexus\Field\Field();
+	$customField->saveFieldValues($catmod, $id, $_POST['custom_fields'][$catmod]);
 }
 
 /**

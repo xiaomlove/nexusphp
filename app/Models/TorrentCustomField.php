@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Nexus\Database\NexusDB;
 
 class TorrentCustomField extends NexusModel
 {
     protected $table = 'torrents_custom_fields';
 
     protected $fillable = [
-        'name', 'label', 'type', 'required', 'is_single_row', 'options', 'help'
+        'name', 'label', 'type', 'required', 'is_single_row', 'options', 'help', 'display', 'priority'
     ];
 
     public static function getCheckboxOptions(): array
@@ -20,4 +21,7 @@ class TorrentCustomField extends NexusModel
         }
         return $result;
     }
+    public $timestamps = true;
+
+
 }

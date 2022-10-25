@@ -15,6 +15,7 @@ use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use phpDocumentor\Reflection\DocBlock\Tags\See;
+use PhpIP\IP;
 
 class SeedBoxRecordResource extends Resource
 {
@@ -55,12 +56,23 @@ class SeedBoxRecordResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('typeText')->label(__('label.seed_box_record.type')),
+                Tables\Columns\TextColumn::make('uid')->searchable(),
                 Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
                 Tables\Columns\TextColumn::make('operator')->label(__('label.seed_box_record.operator'))->searchable(),
                 Tables\Columns\TextColumn::make('bandwidth')->label(__('label.seed_box_record.bandwidth')),
                 Tables\Columns\TextColumn::make('ip')
                     ->label(__('label.seed_box_record.ip'))
-                    ->searchable()
+                    ->searchable(true, function (Builder $query, $search) {
+                        try {
+                            $ip = IP::create($search);
+                            $ipNumeric = $ip->numeric();
+                            return $query->orWhere(function (Builder $query) use ($ipNumeric) {
+                                return $query->where('ip_begin_numeric', '<=', $ipNumeric)->where('ip_end_numeric', '>=', $ipNumeric);
+                            });
+                        } catch (\Exception $exception) {
+                            do_log("Invalid IP: $search, error: " . $exception->getMessage());
+                        }
+                    })
                     ->formatStateUsing(fn ($record) => $record->ip ?: sprintf('%s ~ %s', $record->ip_begin, $record->ip_end)),
                 Tables\Columns\TextColumn::make('comment')->label(__('label.comment')),
                 Tables\Columns\BadgeColumn::make('status')
@@ -73,6 +85,16 @@ class SeedBoxRecordResource extends Resource
                     ->label(__('label.seed_box_record.status')),
             ])
             ->filters([
+                Tables\Filters\Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
+                    })
+                ,
                 Tables\Filters\SelectFilter::make('type')->options(SeedBoxRecord::listTypes('text'))->label(__('label.seed_box_record.type')),
                 Tables\Filters\SelectFilter::make('status')->options(SeedBoxRecord::listStatus('text'))->label(__('label.seed_box_record.status')),
             ])

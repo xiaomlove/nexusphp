@@ -87,7 +87,7 @@ $lang_functions = array
 	'title_torrents_seeding' => "當前做種",
 	'title_torrents_leeching' => "當前下載",
 	'text_connectable' => "可連接：",
-	'text_the_time_is_now' => "當前時間：",
+	'text_the_time_is_now' => "時間: ",
 	'text_message_new' => " 新",
 	'title_sentbox' => "發件箱",
 	'title_inbox' => "收件箱",
@@ -336,6 +336,7 @@ $lang_functions = array
     'input_check_all' => "全選",
     'input_uncheck_all' => "全不選",
     'select_at_least_one_record' => '至少選擇一條記錄！',
+    'text_seed_box_record_to_approval' => '有 %s%u 條待審核的 SeedBox 記錄%s',
 );
 
 ?>

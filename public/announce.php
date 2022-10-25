@@ -121,7 +121,7 @@ if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
 $userid = intval($az['id'] ?? 0);
 unset($GLOBALS['CURUSER']);
 $CURUSER = $GLOBALS["CURUSER"] = $az;
-$isDonor = $az['donor'] == 'yes' && ($az['donoruntil'] === null || $az['donoruntil'] == '0000-00-00 00:00:00' || $az['donoruntil'] > date('Y-m-d H:i:s'));
+$isDonor = is_donor($az);
 $az['__is_donor'] = $isDonor;
 $log = "user: $userid, isDonor: $isDonor, seeder: $seeder, ip: $ip, ipv4: $ipv4, ipv6: $ipv6";
 
@@ -156,7 +156,7 @@ elseif ($az['showclienterror'] == 'yes'){
 }
 
 // check torrent based on info_hash
-$checkTorrentSql = "SELECT id, size, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, banned, hr, approval_status FROM torrents WHERE " . hash_where("info_hash", $info_hash);
+$checkTorrentSql = "SELECT torrents.id, size, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, added, banned, hr, approval_status, categories.mode FROM torrents left join categories on torrents.category = categories.id WHERE " . hash_where("info_hash", $info_hash);
 if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$res = sql_query($checkTorrentSql);
 	$torrent = mysql_fetch_array($res);
@@ -405,7 +405,7 @@ else // continue an existing session
         $upSpeedMbps = number_format(($trueupthis / $self['announcetime'] / 1024 / 1024) * 8);
         do_log("notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps, upSpeedMbps: $upSpeedMbps");
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
-            (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no');
+            (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no', 'upload_over_speed');
             do_log("user: $userid downloading privileges have been disabled! (over speed), notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps > upSpeedMbps: $upSpeedMbps", 'error');
             err("Your downloading privileges have been disabled! (over speed)");
         }
@@ -553,9 +553,10 @@ elseif(isset($self))
 		if (!empty($snatchInfo)) {
             sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE torrentid = $torrentid AND userid = $userid") or err("SL Err 2");
             do_action('snatched_saved', $torrent, $snatchInfo);
-            if ($event == 'completed' && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS && !$isDonor) {
+            if ($event == 'completed' && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS && !$isDonor && isset($torrent['mode'])) {
                 //think about H&R
-                $hrMode = get_setting('hr.mode');
+//                $hrMode = get_setting('hr.mode');
+                $hrMode = \App\Models\HitAndRun::getConfig('mode', $torrent['mode']);
                 if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
                     $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
                     $affectedRows = sql_query($sql);

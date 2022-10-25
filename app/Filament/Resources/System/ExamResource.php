@@ -85,7 +85,7 @@ class ExamResource extends Resource
 
                 Forms\Components\Section::make(__('label.exam.section_time'))->schema([
                     Forms\Components\DateTimePicker::make('begin')->label(__('label.begin')),
-                    Forms\Components\DateTimePicker::make('end')->label(__('label.begin')),
+                    Forms\Components\DateTimePicker::make('end')->label(__('label.end')),
                     Forms\Components\TextInput::make('duration')
                         ->integer()
                         ->columnSpan(['sm' => 2])
@@ -118,7 +118,7 @@ class ExamResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable()->label(__('label.name')),
                 Tables\Columns\TextColumn::make('indexFormatted')->label(__('label.exam.index_formatted'))->html(),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin')),
-                Tables\Columns\TextColumn::make('end')->label(__('label.begin')),
+                Tables\Columns\TextColumn::make('end')->label(__('label.end')),
                 Tables\Columns\TextColumn::make('durationText')->label(__('label.duration')),
                 Tables\Columns\TextColumn::make('filterFormatted')->label(__('label.exam.filter_formatted'))->html(),
                 Tables\Columns\BooleanColumn::make('is_discovered')->label(__('label.exam.is_discovered')),

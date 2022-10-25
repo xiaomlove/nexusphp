@@ -51,4 +51,19 @@ class NexusModel extends Model
         return sprintf('%s: %s', nexus_trans('label.deadline'), $raw);
     }
 
+    public static function listStaticProps($dataSource, $textTransPrefix, $onlyKeyValue = false, $valueField = 'text'): array
+    {
+        $result = $dataSource;
+        $keyValue = [];
+        foreach ($result as $key => &$info) {
+            $text = $textTransPrefix ? nexus_trans("$textTransPrefix.$key") : $info['text'];
+            $info['text'] = $text;
+            $keyValue[$key] = $info[$valueField];
+        }
+        if ($onlyKeyValue) {
+            return $keyValue;
+        }
+        return $result;
+    }
+
 }

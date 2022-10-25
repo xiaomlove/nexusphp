@@ -18,5 +18,6 @@ $lang_getusertorrentlistajax = array
 	'text_no_record' => "No record.",
     'text_total_size' => " | Total size: ",
     'col_added' => "Added",
+    'col_client' => 'Client',
 );
 ?>

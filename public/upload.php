@@ -2,6 +2,7 @@
 require_once("../include/bittorrent.php");
 dbconn();
 require_once(get_langfile_path());
+require_once(get_langfile_path('edit.php'));
 loggedinorreturn();
 parked();
 $userInfo = \App\Models\User::query()->findOrFail($CURUSER['id']);
@@ -13,10 +14,15 @@ if ($enableoffer == 'yes')
 else $has_allowed_offer = 0;
 $uploadfreely = user_can_upload("torrents");
 $offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
-do_log("uploadfreely: $uploadfreely, has_allowed_offer: $has_allowed_offer, offerSkipApprovedCount: $offerSkipApprovedCount");
+$uploadDenyApprovalDenyCount = get_setting('main.upload_deny_approval_deny_count');
+$approvalDenyCount = \App\Models\Torrent::query()->where('owner', $CURUSER['id'])->where('approval_status', \App\Models\Torrent::APPROVAL_STATUS_DENY)->count();
+do_log("uploadfreely: $uploadfreely, has_allowed_offer: $has_allowed_offer, offerSkipApprovedCount: $offerSkipApprovedCount, uploadDenyApprovalDenyCount: $uploadDenyApprovalDenyCount, approvalDenyCount: $approvalDenyCount");
 $allowtorrents = ($has_allowed_offer || $uploadfreely || ($userInfo->offer_allowed_count >= $offerSkipApprovedCount));
 $allowspecial = user_can_upload("music");
 
+if ($uploadDenyApprovalDenyCount > 0 && $approvalDenyCount >= $uploadDenyApprovalDenyCount) {
+    stderr($lang_upload['std_sorry'],sprintf($lang_upload['approval_deny_reach_upper_limit'], $uploadDenyApprovalDenyCount),false);
+}
 if (!$allowtorrents && !$allowspecial)
 	stderr($lang_upload['std_sorry'],$lang_upload['std_please_offer'],false);
 $allowtwosec = ($allowtorrents && $allowspecial);
@@ -71,8 +77,6 @@ stdhead($lang_upload['head_upload']);
                     $ptGen = new \Nexus\PTGen\PTGen();
                     echo $ptGen->renderUploadPageFormInput("");
                 }
-                $field = new \Nexus\Field\Field();
-                $field->renderOnUploadPage();
 				if ($enablenfo_main=='yes') {
                     tr($lang_upload['row_nfo_file'], "<input type=\"file\" class=\"file\" name=\"nfo\" /><br /><font class=\"medium\">".$lang_upload['text_only_viewed_by'].get_user_class_name($viewnfo_class,false,true,true).$lang_upload['text_or_above']."</font>", 1);
                 }
@@ -86,7 +90,7 @@ stdhead($lang_upload['head_upload']);
 
 				if ($allowtorrents){
 					$disablespecial = " onchange=\"disableother('browsecat','specialcat')\"";
-					$s = "<select name=\"type\" id=\"browsecat\" data-mode='$browsecatmode'>\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
+					$s = "<select name=\"type\" id=\"browsecat\" data-mode='$browsecatmode' ".($allowtwosec ? $disablespecial : "").">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
 					$cats = genrelist($browsecatmode);
 					foreach ($cats as $row)
 						$s .= "<option value=\"" . $row["id"] . "\">" . htmlspecialchars($row["name"]) . "</option>\n";
@@ -95,7 +99,7 @@ stdhead($lang_upload['head_upload']);
 				else $s = "";
 				if ($allowspecial){
 					$disablebrowse = " onchange=\"disableother('specialcat','browsecat')\"";
-					$s2 = "<select name=\"type\" id=\"specialcat\" data-mode='$specialcatmode'>\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
+					$s2 = "<select name=\"type\" id=\"specialcat\" data-mode='$specialcatmode' ".$disablebrowse.">\n<option value=\"0\">".$lang_upload['select_choose_one']."</option>\n";
 					$cats2 = genrelist($specialcatmode);
 					foreach ($cats2 as $row)
 						$s2 .= "<option value=\"" . $row["id"] . "\">" . htmlspecialchars($row["name"]) . "</option>\n";
@@ -147,13 +151,19 @@ stdhead($lang_upload['head_upload']);
 					tr($lang_upload['row_content'],$team_select,1);
 				}
 */
+                $customField = new \Nexus\Field\Field();
+                $hitAndRunRep = new \App\Repositories\HitAndRunRepository();
                 if ($allowtorrents) {
                     $selectNormal = $searchBoxRep->renderQualitySelect($browsecatmode);
                     tr($lang_upload['row_quality'], $selectNormal, 1, "hide mode mode_$browsecatmode");
+                    echo $customField->renderOnUploadPage(0, $browsecatmode);
+                    echo $hitAndRunRep->renderOnUploadPage('', $browsecatmode);
                 }
                 if ($allowspecial) {
                     $selectNormal = $searchBoxRep->renderQualitySelect($specialcatmode);
                     tr($lang_upload['row_quality'], $selectNormal, 1, "hide mode mode_$specialcatmode");
+                    echo $customField->renderOnUploadPage(0, $specialcatmode);
+                    echo $hitAndRunRep->renderOnUploadPage('', $specialcatmode);
                 }
 
 				//==== offer dropdown for offer mod  from code by S4NE
@@ -191,16 +201,35 @@ JS;
 				}
 				//===end
 
+                //pick
+                $pickcontent = '';
+                if(user_can('torrentsticky'))
+                {
+                    $options = [];
+                    foreach (\App\Models\Torrent::listPosStates() as $key => $value) {
+                        $options[] = "<option" . (($row["pos_state"] == $key) ? " selected=\"selected\"" : "" ) . " value=\"" . $key . "\">".$value['text']."</option>";
+                    }
+                    $pickcontent .= "<b>".$lang_edit['row_torrent_position'].":&nbsp;</b>"."<select name=\"pos_state\" style=\"width: 100px;\">" . implode('', $options) . "</select>&nbsp;&nbsp;&nbsp;";
+                    $pickcontent .= datetimepicker_input('pos_state_until', '', nexus_trans('label.deadline') . ":&nbsp;");
+                }
+                if(user_can('torrentmanage') && ($CURUSER["picker"] == 'yes' || get_user_class() >= \App\Models\User::CLASS_SYSOP))
+                {
+                    if ($pickcontent) $pickcontent .= '<br />';
+                    $pickcontent .= "<b>".$lang_edit['row_recommended_movie'].":&nbsp;</b>"."<select name=\"picktype\" style=\"width: 100px;\">";
+                    foreach (\App\Models\Torrent::listPickInfo(true) as $_pick_type => $_pick_type_text) {
+                        $pickcontent .= sprintf('<option value="%s">%s</option>', $_pick_type, $_pick_type_text);
+                    }
+                    $pickcontent .= '</select>';
+                }
+                if ($pickcontent) {
+                    tr($lang_edit['row_pick'], $pickcontent, 1);
+                }
+
 				if(user_can('beanonymous'))
 				{
 					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" />".$lang_upload['checkbox_hide_uploader_note'], 1);
 				}
                 tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox(), 1);
-                if (get_setting('hr.mode') == \App\Models\HitAndRun::MODE_MANUAL && user_can('torrent_hr')) {
-                    $hrRadio = sprintf('<label><input type="radio" name="hr" value="0"%s />NO</label>', '');
-                    $hrRadio .= sprintf('<label><input type="radio" name="hr" value="1"%s />YES</label>', '');
-                    tr('H&R', $hrRadio, 1);
-                }
 				?>
 				<tr><td class="toolbox" align="center" colspan="2"><b><?php echo $lang_upload['text_read_rules']?></b> <input id="qr" type="submit" class="btn" value="<?php echo $lang_upload['submit_upload']?>" /></td></tr>
 		</table>
@@ -208,4 +237,18 @@ JS;
 <?php
 \Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
 \Nexus\Nexus::js('js/ptgen.js', 'footer', true);
+$customFieldJs = <<<JS
+jQuery("#compose").on("change", "select[name=type]", function () {
+    let _this = jQuery(this);
+    let mode = _this.attr("data-mode");
+    let value = _this.val();
+    console.log(mode)
+    jQuery("tr[relation]").hide();
+    if (value > 0) {
+        jQuery("tr[relation=mode_" + mode +"]").show();
+    }
+})
+jQuery("tr[relation]").hide();
+JS;
+\Nexus\Nexus::js($customFieldJs, 'footer', false);
 stdfoot();

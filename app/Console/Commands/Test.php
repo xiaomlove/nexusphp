@@ -14,15 +14,18 @@ use App\Models\HitAndRun;
 use App\Models\Medal;
 use App\Models\Peer;
 use App\Models\SearchBox;
+use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
+use App\Models\UserBanLog;
 use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
+use App\Repositories\PluginRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\SearchRepository;
 use App\Repositories\TagRepository;
@@ -87,8 +90,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new SearchBoxRepository();
-        $rep->migrateToModeRelated();
+
     }
 
 

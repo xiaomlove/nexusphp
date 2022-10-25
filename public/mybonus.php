@@ -39,6 +39,33 @@ function bonusarray($option = 0){
     $bonus['description'] = $lang_mybonus['text_uploaded_note'];
     $results[] = $bonus;
 
+    //100.0 GB Uploaded
+    $bonus = array();
+    $bonus['points'] = get_setting('bonus.hundredgbupload');
+    $bonus['art'] = 'traffic';
+    $bonus['menge'] = 107374182400;
+    $bonus['name'] = $lang_mybonus['text_uploaded_four'];
+    $bonus['description'] = $lang_mybonus['text_uploaded_note'];
+    $results[] = $bonus;
+
+    //10.0 GB Downloaded
+    $bonus = array();
+    $bonus['points'] = get_setting('bonus.tengbdownload');
+    $bonus['art'] = 'traffic_downloaded';
+    $bonus['menge'] = 10737418240;
+    $bonus['name'] = $lang_mybonus['text_downloaded_ten_gb'];
+    $bonus['description'] = $lang_mybonus['text_download_note'];
+    $results[] = $bonus;
+
+    //100.0 GB Downloaded
+    $bonus = array();
+    $bonus['points'] = get_setting('bonus.hundredgbdownload');
+    $bonus['art'] = 'traffic_downloaded';
+    $bonus['menge'] = 107374182400;
+    $bonus['name'] = $lang_mybonus['text_downloaded_hundred_gb'];
+    $bonus['description'] = $lang_mybonus['text_download_note'];
+    $results[] = $bonus;
+
     //Invite
     $bonus = array();
     $bonus['points'] = $oneinvite_bonus;
@@ -69,7 +96,7 @@ function bonusarray($option = 0){
 
     //Bonus Gift
     $bonus = array();
-    $bonus['points'] = 25;
+    $bonus['points'] = 100;
     $bonus['art'] = 'gift_1';
     $bonus['menge'] = 0;
     $bonus['name'] = $lang_mybonus['text_bonus_gift'];
@@ -246,6 +273,8 @@ unset($msg);
 if (isset($do)) {
 	if ($do == "upload")
 	$msg = $lang_mybonus['text_success_upload'];
+    if ($do == "download")
+    $msg = $lang_mybonus['text_success_download'];
 	elseif ($do == "invite")
 	$msg = $lang_mybonus['text_success_invites'];
 	elseif ($do == "vip")
@@ -310,8 +339,8 @@ for ($i=0; $i < count($allBonus); $i++)
 	    print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_titile'].$otheroption_title.$lang_mybonus['text_click_exchange']."</td><td class=\"rowfollow\" align='center'>".number_format($bonusarray['points'])."</td>");
 	}
 	elseif ($bonusarray['art'] == 'gift_1'){  //for Give A Karma Gift
-			$otheroption = "<table width=\"100%\"><tr><td class=\"embedded\"><b>".$lang_mybonus['text_username']."</b><input type=\"text\" name=\"username\" style=\"width: 200px\" maxlength=\"24\" /></td><td class=\"embedded\"><b>".$lang_mybonus['text_to_be_given']."</b><select name=\"bonusgift\" id=\"giftselect\" onchange=\"customgift();\"> <option value=\"25\"> 25</option><option value=\"50\"> 50</option><option value=\"100\"> 100</option> <option value=\"200\"> 200</option> <option value=\"300\"> 300</option> <option value=\"400\"> 400</option><option value=\"500\"> 500</option><option value=\"1000\" selected=\"selected\"> 1,000</option><option value=\"5000\"> 5,000</option><option value=\"10000\"> 10,000</option><option value=\"0\">".$lang_mybonus['text_custom']."</option></select><input type=\"text\" name=\"bonusgift\" id=\"giftcustom\" style='width: 80px' disabled=\"disabled\" />".$lang_mybonus['text_karma_points']."</td></tr><tr><td class=\"embedded\" colspan=\"2\"><b>".$lang_mybonus['text_message']."</b><input type=\"text\" name=\"message\" style=\"width: 400px\" maxlength=\"100\" /></td></tr></table>";
-			print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_receiver_name']."<br />$otheroption</td><td class=\"rowfollow nowrap\" align='center'>".$lang_mybonus['text_min']."25<br />".$lang_mybonus['text_max']."10,000</td>");
+			$otheroption = "<table width=\"100%\"><tr><td class=\"embedded\"><b>".$lang_mybonus['text_username']."</b><input type=\"text\" name=\"username\" style=\"width: 200px\" maxlength=\"24\" /></td><td class=\"embedded\"><b>".$lang_mybonus['text_to_be_given']."</b><input type=\"number\" name=\"bonusgift\" id=\"giftcustom\" style='width: 80px' min='100' />".$lang_mybonus['text_karma_points']."</td></tr><tr><td class=\"embedded\" colspan=\"2\"><b>".$lang_mybonus['text_message']."</b><input type=\"text\" name=\"message\" style=\"width: 400px\" maxlength=\"100\" /></td></tr></table>";
+			print("<td class=\"rowfollow\" align='left'><h1>".$bonusarray['name']."</h1>".$bonusarray['description']."<br /><br />".$lang_mybonus['text_enter_receiver_name']."<br />$otheroption</td><td class=\"rowfollow nowrap\" align='center'>".$lang_mybonus['text_min']."100</td>");
 	}
 	elseif ($bonusarray['art'] == 'gift_2'){  //charity giving
 			$otheroption = "<table width=\"100%\"><tr><td class=\"embedded\">".$lang_mybonus['text_ratio_below']."<select name=\"ratiocharity\"> <option value=\"0.1\"> 0.1</option><option value=\"0.2\"> 0.2</option><option value=\"0.3\" selected=\"selected\"> 0.3</option> <option value=\"0.4\"> 0.4</option> <option value=\"0.5\"> 0.5</option> <option value=\"0.6\"> 0.6</option><option value=\"0.7\"> 0.7</option><option value=\"0.8\"> 0.8</option></select>".$lang_mybonus['text_and_downloaded_above']." 10 GB</td><td class=\"embedded\"><b>".$lang_mybonus['text_to_be_given']."</b><select name=\"bonuscharity\" id=\"charityselect\" > <option value=\"1000\"> 1,000</option><option value=\"2000\"> 2,000</option><option value=\"3000\" selected=\"selected\"> 3000</option> <option value=\"5000\"> 5,000</option> <option value=\"8000\"> 8,000</option> <option value=\"10000\"> 10,000</option><option value=\"20000\"> 20,000</option><option value=\"50000\"> 50,000</option></select>".$lang_mybonus['text_karma_points']."</td></tr></table>";
@@ -391,74 +420,44 @@ print("<h1>".$lang_mybonus['text_get_by_seeding']."</h1>");
 print("<ul>");
 if ($perseeding_bonus > 0)
 	print("<li>".$perseeding_bonus.$lang_mybonus['text_point'].add_s($perseeding_bonus).$lang_mybonus['text_for_seeding_torrent'].$maxseeding_bonus.$lang_mybonus['text_torrent'].add_s($maxseeding_bonus).")</li>");
-print("<li>".$lang_mybonus['text_bonus_formula_one'].$tzero_bonus.$lang_mybonus['text_bonus_formula_two'].$nzero_bonus.$lang_mybonus['text_bonus_formula_three'].$bzero_bonus.$lang_mybonus['text_bonus_formula_four'].$l_bonus.$lang_mybonus['text_bonus_formula_five']."</li>");
+print("<li>".$lang_mybonus['text_bonus_formula_one'].$tzero_bonus.$lang_mybonus['text_bonus_formula_two'].$nzero_bonus.$lang_mybonus['text_bonus_formula_wi'].get_setting('bonus.zero_bonus_factor').$lang_mybonus['text_bonus_formula_three'].$bzero_bonus.$lang_mybonus['text_bonus_formula_four'].$l_bonus.$lang_mybonus['text_bonus_formula_five']."</li>");
 if ($donortimes_bonus)
 	print("<li>".$lang_mybonus['text_donors_always_get'].$donortimes_bonus.$lang_mybonus['text_times_of_bonus']."</li>");
 
 print("</ul>");
 
-//		$sqrtof2 = sqrt(2);
-//		$logofpointone = log(0.1);
-//		$valueone = $logofpointone / $tzero_bonus;
-//		$pi = 3.141592653589793;
-//		$valuetwo = $bzero_bonus * ( 2 / $pi);
-//		$valuethree = $logofpointone / ($nzero_bonus - 1);
-//		$timenow = strtotime(date("Y-m-d H:i:s"));
-//		$sectoweek = 7*24*60*60;
-//		$A = 0;
-//		$count = 0;
-//		$torrentres = sql_query("select torrents.id, torrents.added, torrents.size, torrents.seeders from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $CURUSER[id] AND peers.seeder ='yes' GROUP BY torrents.id")  or sqlerr(__FILE__, __LINE__);
-//		while ($torrent = mysql_fetch_array($torrentres))
-//		{
-//			$weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
-//			$gb_size = $torrent['size'] / 1073741824;
-//			$temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
-//			$A += $temp;
-//			$count++;
-//		}
-//		if ($count > $maxseeding_bonus)
-//			$count = $maxseeding_bonus;
-//		$all_bonus = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
-
 $seedBonusResult = calculate_seed_bonus($CURUSER['id']);
-$all_bonus = $seedBonusResult['all_bonus'];
 $A = $seedBonusResult['A'];
 
-		$percent = $all_bonus * 100 / ($bzero_bonus + $perseeding_bonus * $maxseeding_bonus);
-	print("<div align=\"center\">".$lang_mybonus['text_you_are_currently_getting'].round($all_bonus,3).$lang_mybonus['text_point'].add_s($all_bonus).$lang_mybonus['text_per_hour']." (A = ".round($A,1).")</div><table align=\"center\" border=\"0\" width=\"400\"><tr><td class=\"loadbarbg\" style='border: none; padding: 0px;'>");
+$bonusTableResult = build_bonus_table($CURUSER, $seedBonusResult, ['table_style' => 'width: 50%']);
 
-	if ($percent <= 30) $loadpic = "loadbarred";
-	elseif ($percent <= 60) $loadpic = "loadbaryellow";
-	else $loadpic = "loadbargreen";
-	$width = $percent * 4;
-	print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
+$percent = $seedBonusResult['seed_bonus'] * 100 / ($bzero_bonus + $perseeding_bonus * $maxseeding_bonus);
+print("<div align=\"center\">".$lang_mybonus['text_you_are_currently_getting'].round($seedBonusResult['seed_bonus'],3).$lang_mybonus['text_point'].add_s($seedBonusResult['seed_bonus']).$lang_mybonus['text_per_hour']." (A = ".round($A,1).")</div><table align=\"center\" border=\"0\" width=\"400\"><tr><td class=\"loadbarbg\" style='border: none; padding: 0px;'>");
 
-$factor = get_setting('bonus.harem_addition');
-$addition = calculate_harem_addition($CURUSER['id']);
-$totalBonus = number_format($all_bonus + $addition * $factor, 3);
-$summaryTable = '<table cellspacing="4" cellpadding="4" style="width: 50%"><tbody>';
-$summaryTable .= '<tr style="font-weight: bold"><td>'.$lang_mybonus['reward_type'].'</td><td>'.$lang_mybonus['bonus_base'].'</td><td>'.$lang_mybonus['addition'].'</td><td>'.$lang_mybonus['got_bonus'].'</td><td>'.$lang_mybonus['total'].'</td></tr>';
-$summaryTable .= sprintf(
-    '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="2">%s</td></tr>',
-    $lang_mybonus['reward_type_basic'],
-    round($all_bonus,3),
-    '-',
-    round($all_bonus,3),
-    $totalBonus
-);
-if ($factor > 0) {
-    $summaryTable .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
-        $lang_mybonus['reward_type_harem_addition'],
-        number_format($addition, 3),
-        number_format($factor * 100, 2) . '%',
-        number_format($addition * $factor, 3)
-    );
+if ($percent <= 30) $loadpic = "loadbarred";
+elseif ($percent <= 60) $loadpic = "loadbaryellow";
+else $loadpic = "loadbargreen";
+$width = $percent * 4;
+print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
+
+if ($bonusTableResult['has_official_addition']) {
+    print("<h1>".$lang_mybonus['text_get_by_seeding_official']."</h1>");
+    print("<ul>");
+    print("<li>".$lang_mybonus['official_calculate_method']."</li>");
+    print("<li>".$lang_mybonus['official_tag_bonus_additional_factor'].$bonusTableResult['official_addition_factor']."</li>");
+    print("</ul>");
 }
 
-$summaryTable .= '</tbody></table>';
+if ($bonusTableResult['has_harem_addition']) {
+    print("<h1>".$lang_mybonus['text_get_by_harem']."</h1>");
+    print("<ul>");
+    print("<li>".sprintf($lang_mybonus['harem_additional_desc'], $CURUSER['id'])."</li>");
+    print("<li>".$lang_mybonus['harem_additional_factor'].$bonusTableResult['harem_addition_factor']."</li>");
+    print("</ul>");
+}
 
-print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$summaryTable.'</div>';
+print("<h1>".$lang_mybonus['text_bonus_summary']."</h1>");
+print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$bonusTableResult['table'].'</div>';
 
 print("<h1>".$lang_mybonus['text_other_things_get_bonus']."</h1>");
 print("<ul>");
@@ -534,10 +533,16 @@ if ($action == "exchange") {
 			$up = $upload + $bonusarray['menge'];
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for upload bonus.\n " .$bonuscomment;
 //			sql_query("UPDATE users SET uploaded = ".sqlesc($up).", seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_UPLOAD, $points. " Points for upload bonus.", ['uploaded' => $up]);
+            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_UPLOAD, $points. " Points for uploaded.", ['uploaded' => $up]);
 			nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=upload");
 			}
 		}
+        if($art == "traffic_downloaded") {
+            $downloaded = $CURUSER['downloaded'];
+            $down = $downloaded + $bonusarray['menge'];
+            $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_DOWNLOAD, $points. " Points for downloaded.", ['downloaded' => $down]);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=download");
+        }
 		//=== trade for one month VIP status ***note "SET class = '10'" change "10" to whatever your VIP class number is
 		elseif($art == "class") {
 			if (get_user_class() >= UC_VIP) {
@@ -628,10 +633,15 @@ if ($action == "exchange") {
 			$usernamegift = sqlesc(trim($_POST["username"]));
 			$res = sql_query("SELECT id, bonuscomment FROM users WHERE username=" . $usernamegift);
 			$arr = mysql_fetch_assoc($res);
+            if (empty($arr)) {
+                stdmsg($lang_mybonus['text_error'], $lang_mybonus['text_receiver_not_exists'], 0);
+                stdfoot();
+                die;
+            }
 			$useridgift = $arr['id'];
 			$userseedbonus = $arr['seedbonus'];
 			$receiverbonuscomment = $arr['bonuscomment'];
-			if ($points < 25 || $points > 10000) {
+			if (!is_numeric($points) || $points < $bonusarray['points']) {
 				//write_log("User " . $CURUSER["username"] . "," . $CURUSER["ip"] . " is hacking bonus system",'mod');
 				stdmsg($lang_mybonus['text_error'], $lang_mybonus['bonus_amount_not_allowed']);
 				stdfoot();
@@ -651,11 +661,6 @@ if ($action == "exchange") {
 				$newreceiverbonuscomment = date("Y-m-d") . " + " .$points2receiver. " Points (after tax) as a gift from ".($CURUSER["username"]).".\n " .htmlspecialchars($receiverbonuscomment);
 				if ($userid==$useridgift){
 					stdmsg($lang_mybonus['text_huh'], $lang_mybonus['text_karma_self_giving_warning'], 0);
-					stdfoot();
-					die;
-				}
-				if (!$useridgift){
-					stdmsg($lang_mybonus['text_error'], $lang_mybonus['text_receiver_not_exists'], 0);
 					stdfoot();
 					die;
 				}

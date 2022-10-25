@@ -24,6 +24,13 @@ class SearchBox extends NexusModel
     ];
 
     const EXTRA_TAXONOMY_LABELS = 'taxonomy_labels';
+    const SECTION_BROWSE = 'browse';
+    const SECTION_SPECIAL = 'special';
+
+    public static array $sections = [
+        self::SECTION_BROWSE => ['text' => 'Browse'],
+        self::SECTION_SPECIAL => ['text' => 'Special'],
+    ];
 
     const EXTRA_DISPLAY_COVER_ON_TORRENT_LIST = 'display_cover_on_torrent_list';
     const EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST = 'display_seed_box_icon_on_torrent_list';
@@ -88,6 +95,36 @@ class SearchBox extends NexusModel
     {
         return array_combine(array_keys(self::$taxonomies), array_keys(self::$taxonomies));
     }
+
+    public static function listSections($field = null): array
+    {
+        $result = [];
+        foreach (self::$sections as $key => $value) {
+            $value['text'] = nexus_trans("searchbox.sections.$key");
+            $value['mode'] = Setting::get("main.{$key}cat");
+            if ($field !== null && isset($value[$field])) {
+                $result[$key] = $value[$field];
+            } else {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
+    }
+
+    public function getCustomFieldsAttribute($value): array
+    {
+        if (!is_array($value)) {
+            return explode(',', $value);
+        }
+    }
+
+    public function setCustomFieldsAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['custom_fields'] = implode(',', $value);
+        }
+    }
+
 
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

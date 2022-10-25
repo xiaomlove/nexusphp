@@ -10,8 +10,7 @@ parked();
  * tags
  */
 $tagRep = new \App\Repositories\TagRepository();
-$tagKeyById = $tagRep->createBasicQuery()->get()->keyBy('id');
-$renderKeyArr = $tagKeyById->keys()->toArray();
+$allTags = $tagRep->listAll();
 $elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
 
 //check searchbox
@@ -914,11 +913,11 @@ if ($count)
 
 	list($pagertop, $pagerbottom, $limit, $offset, $size, $page) = pager($torrentsperpage, $count, "?" . $addparam);
 	$fieldsStr = implode(', ', \App\Models\Torrent::getFieldsForList(true));
-    if ($allsec == 1 || $enablespecial != 'yes') {
-        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
-    } else {
-        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
-    }
+//    if ($allsec == 1 || $enablespecial != 'yes') {
+//        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
+//    } else {
+        $query = "SELECT $fieldsStr, categories.mode as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
+//    }
     do_log("[TORRENT_LIST_SQL] $query", 'debug');
     if (!$elasticsearchEnabled) {
         $res = sql_query($query);
@@ -1130,7 +1129,7 @@ if (!$Cache->get_page()){
 	$hotsearch = "";
 	while ($searchrow = mysql_fetch_assoc($searchres))
 	{
-		$hotsearch .= "<a href=\"".htmlspecialchars("?search=" . rawurlencode($searchrow["keywords"]) . "&notnewword=1")."\"><u>" . $searchrow["keywords"] . "</u></a>&nbsp;&nbsp;";
+		$hotsearch .= "<a href=\"".htmlspecialchars("?search=" . rawurlencode($searchrow["keywords"]) . "&notnewword=1")."\"><u>" . htmlspecialchars($searchrow["keywords"]) . "</u></a>&nbsp;&nbsp;";
 		$hotcount += mb_strlen($searchrow["keywords"],"UTF-8");
 		if ($hotcount > 60)
 			break;
@@ -1143,8 +1142,8 @@ if (!$Cache->get_page()){
 }
 echo $Cache->next_row();
 
-if ($tagKeyById->isNotEmpty()) {
-    echo '<tr><td colspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan($tagKeyById, $renderKeyArr, true) . '</td></tr>';
+if ($allTags->isNotEmpty()) {
+    echo '<tr><td colspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan(['*'], true) . '</td></tr>';
 }
 
 ?>

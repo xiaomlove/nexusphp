@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'label' => 'Medal',
     'action_wearing' => 'Wear',
     'admin' => [
         'list' => [
