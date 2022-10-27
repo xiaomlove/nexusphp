@@ -112,7 +112,7 @@ class HitAndRunRepository extends BaseRepository
 
     private function doCronjobUpdateStatus(array $setting, $uid = null, $torrentId = null, $ignoreTime = false)
     {
-        do_log("uid: $uid, torrentId: $torrentId, ignoreTime: " . var_export($ignoreTime, true));
+        do_log("setting: " . json_encode($setting) . ", uid: $uid, torrentId: $torrentId, ignoreTime: " . var_export($ignoreTime, true));
         $size = 1000;
         $page = 1;
         if (empty($setting['mode'])) {
@@ -340,6 +340,7 @@ class HitAndRunRepository extends BaseRepository
 
     private function checkAndDisableUser(array $setting): void
     {
+        $logPrefix = "setting: " . json_encode($setting);
         $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $setting['search_box_id']);
         $query = HitAndRun::query()
             ->selectRaw("count(*) as counts, uid")
@@ -354,13 +355,14 @@ class HitAndRunRepository extends BaseRepository
         }
         $result = $query->get();
         if ($result->isEmpty()) {
-            do_log("No user to disable");
+            do_log("$logPrefix, No user to disable: " . last_query());
             return;
         }
         $users = User::query()
             ->with('language')
             ->where('enabled', User::ENABLED_YES)
-            ->find($result->pluck('id')->toArray(), ['id', 'username', 'lang']);
+            ->find($result->pluck('uid')->toArray(), ['id', 'username', 'lang']);
+        do_log("$logPrefix, Going to disable user: " . json_encode($users->toArray()));
         foreach ($users as $user) {
             $locale = $user->locale;
             $comment = nexus_trans('hr.unreached_disable_comment', [], $locale);
@@ -370,7 +372,7 @@ class HitAndRunRepository extends BaseRepository
                 'added' => Carbon::now()->toDateTimeString(),
                 'subject' => $comment,
                 'msg' => nexus_trans('hr.unreached_disable_message_content', [
-                    'ban_user_when_counts_reach' => Setting::get('hr.ban_user_when_counts_reach'),
+                    'ban_user_when_counts_reach' => $disableCounts,
                 ], $locale),
             ];
             Message::query()->insert($message);
@@ -405,7 +407,7 @@ class HitAndRunRepository extends BaseRepository
             $out = [];
             foreach (SearchBox::listSections() as $key => $info) {
                 $out[] = sprintf(
-                    '%s: %s/%s/%s',
+                    '%s: %s/<font color="red">%s</font>/%s',
                     $info['text'],
                     $grouped[$info['mode']][HitAndRun::STATUS_INSPECTING] ?? 0,
                     $grouped[$info['mode']][HitAndRun::STATUS_UNREACHED] ?? 0,
@@ -421,7 +423,7 @@ class HitAndRunRepository extends BaseRepository
             foreach (SearchBox::listSections() as $key => $info) {
                 if ($key == SearchBox::SECTION_BROWSE) {
                     return sprintf(
-                        '%s/%s/%s',
+                        '%s/<font color="red">%s</font>/%s',
                         $grouped[HitAndRun::STATUS_INSPECTING] ?? 0,
                         $grouped[HitAndRun::STATUS_UNREACHED] ?? 0,
                         HitAndRun::getConfig('ban_user_when_counts_reach', $info['mode'])
