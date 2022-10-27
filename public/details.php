@@ -10,8 +10,9 @@ int_check($id);
 if (!isset($id) || !$id)
 die();
 
+$taxonomyFields = "sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name";
 $res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status,
-       categories.name AS cat_name, categories.mode as search_box_id, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name
+       categories.name AS cat_name, categories.mode as search_box_id, $taxonomyFields
 FROM torrents LEFT JOIN categories ON torrents.category = categories.id
     LEFT JOIN sources ON torrents.source = sources.id
     LEFT JOIN media ON torrents.medium = media.id
@@ -42,6 +43,7 @@ if (!$row) {
         $owner = \App\Models\User::defaultUser();
     }
     $torrentRep = new \App\Repositories\TorrentRepository();
+    $searchBoxRep = new \App\Repositories\SearchBoxRepository();
     $torrentUpdate = [];
 	if (!empty($_GET["hit"])) {
         $torrentUpdate[] = 'views = views + 1';
@@ -135,24 +137,30 @@ if (!$row) {
 
 		$size_info =  "<b>".$lang_details['text_size']."</b>" . mksize($row["size"]);
 		$type_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['row_type'].":</b>&nbsp;".$row["cat_name"];
-        $source_info = $medium_info = $codec_info = $audiocodec_info = $standard_info = $processing_info = $team_info = '';
-		if (isset($row["source_name"]))
-			$source_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_source']."&nbsp;</b>".$row['source_name'];
-		if (isset($row["medium_name"]))
-			$medium_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_medium']."&nbsp;</b>".$row['medium_name'];
-		if (isset($row["codec_name"]))
-			$codec_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_codec']."&nbsp;</b>".$row['codec_name'];
-		if (isset($row["standard_name"]))
-			$standard_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_stardard']."&nbsp;</b>".$row['standard_name'];
-		if (isset($row["processing_name"]))
-			$processing_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_processing']."&nbsp;</b>".$row['processing_name'];
-		if (isset($row["team_name"]))
-			$team_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_team']."&nbsp;</b>".$row['team_name'];
-		if (isset($row["audiocodec_name"]))
-			$audiocodec_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_audio_codec']."&nbsp;</b>".$row['audiocodec_name'];
+//        $source_info = $medium_info = $codec_info = $audiocodec_info = $standard_info = $processing_info = $team_info = '';
+//		if (isset($row["source_name"]))
+//			$source_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_source']."&nbsp;</b>".$row['source_name'];
+//		if (isset($row["medium_name"]))
+//			$medium_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_medium']."&nbsp;</b>".$row['medium_name'];
+//		if (isset($row["codec_name"]))
+//			$codec_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_codec']."&nbsp;</b>".$row['codec_name'];
+//		if (isset($row["standard_name"]))
+//			$standard_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_stardard']."&nbsp;</b>".$row['standard_name'];
+//		if (isset($row["processing_name"]))
+//			$processing_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_processing']."&nbsp;</b>".$row['processing_name'];
+//		if (isset($row["team_name"]))
+//			$team_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_team']."&nbsp;</b>".$row['team_name'];
+//		if (isset($row["audiocodec_name"]))
+//			$audiocodec_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_audio_codec']."&nbsp;</b>".$row['audiocodec_name'];
 
-		tr($lang_details['row_basic_info'], $size_info.$type_info.$source_info . $medium_info. $codec_info . $audiocodec_info. $standard_info . $processing_info . $team_info, 1);
+//		tr($lang_details['row_basic_info'], $size_info.$type_info.$source_info . $medium_info. $codec_info . $audiocodec_info. $standard_info . $processing_info . $team_info, 1);
 
+        $taxonomyInfo = $searchBoxRep->listTaxonomyInfo($row['search_box_id'], $row);
+        $taxonomyRendered = '';
+        foreach ($taxonomyInfo as $item) {
+            $taxonomyRendered .= sprintf('&nbsp;&nbsp;&nbsp;<b>%s: </b>%s', $item['label'], $item['value']);
+        }
+        tr($lang_details['row_basic_info'], $size_info.$type_info.$taxonomyRendered, 1);
 		$actions = [];
         if ($CURUSER["downloadpos"] != "no") {
             $actions[] = "<a title=\"".$lang_details['title_download_torrent']."\" href=\"download.php?id=".$id."\"><img class=\"dt_download\" src=\"pic/trans.gif\" alt=\"download\" />&nbsp;<b><font class=\"small\">".$lang_details['text_download_torrent']."</font></b></a>";
@@ -386,7 +394,16 @@ JS;
 		{
 //			$where_area = " url = " . sqlesc((int)$imdb_id) ." AND torrents.id != ".sqlesc($id);
 			$where_area = sprintf('torrents.id in (%s)', implode(',', $otherCopiesIdArr));
-			$copies_res = sql_query("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, categories.mode as search_box_id FROM torrents LEFT JOIN categories ON torrents.category=categories.id LEFT JOIN sources ON torrents.source = sources.id LEFT JOIN media ON torrents.medium = media.id  LEFT JOIN codecs ON torrents.codec = codecs.id LEFT JOIN standards ON torrents.standard = standards.id LEFT JOIN processings ON torrents.processing = processings.id WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
+			$copies_res = sql_query("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, $taxonomyFields, categories.mode as search_box_id FROM torrents
+    LEFT JOIN categories ON torrents.category=categories.id
+    LEFT JOIN sources ON torrents.source = sources.id
+    LEFT JOIN media ON torrents.medium = media.id
+    LEFT JOIN codecs ON torrents.codec = codecs.id
+    LEFT JOIN standards ON torrents.standard = standards.id
+    LEFT JOIN teams ON torrents.team = teams.id
+    LEFT JOIN audiocodecs ON torrents.audiocodec = audiocodecs.id
+    LEFT JOIN processings ON torrents.processing = processings.id
+WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
 
 			$copies_count = mysql_num_rows($copies_res);
 			if($copies_count > 0)
@@ -402,24 +419,26 @@ JS;
 					{
 						$dispname=substr($dispname, 0, $max_lenght_of_torrent_name) . "..";
 					}
-                    $other_source_info = $other_medium_info = $other_codec_info = $other_standard_info = $other_processing_info = '';
-					if (isset($copy_row["source_name"]))
-						$other_source_info = $copy_row['source_name'].", ";
-					if (isset($copy_row["medium_name"]))
-						$other_medium_info = $copy_row['medium_name'].", ";
-					if (isset($copy_row["codec_name"]))
-						$other_codec_info = $copy_row['codec_name'].", ";
-					if (isset($copy_row["standard_name"]))
-						$other_standard_info = $copy_row['standard_name'].", ";
-					if (isset($copy_row["processing_name"]))
-						$other_processing_info = $copy_row['processing_name'].", ";
+//                    $other_source_info = $other_medium_info = $other_codec_info = $other_standard_info = $other_processing_info = '';
+//					if (isset($copy_row["source_name"]))
+//						$other_source_info = $copy_row['source_name'].", ";
+//					if (isset($copy_row["medium_name"]))
+//						$other_medium_info = $copy_row['medium_name'].", ";
+//					if (isset($copy_row["codec_name"]))
+//						$other_codec_info = $copy_row['codec_name'].", ";
+//					if (isset($copy_row["standard_name"]))
+//						$other_standard_info = $copy_row['standard_name'].", ";
+//					if (isset($copy_row["processing_name"]))
+//						$other_processing_info = $copy_row['processing_name'].", ";
 
+                    $taxonomyInfo = $searchBoxRep->listTaxonomyInfo($copy_row['search_box_id'], $copy_row);
+                    $taxonomyValues = array_column($taxonomyInfo, 'value');
 					$sphighlight = get_torrent_bg_color($copy_row['sp_state']);
 					$sp_info = get_torrent_promotion_append($copy_row['sp_state'], '', false, '', 0, '', $copy_row['__ignore_global_sp_state'] ?? false);
 					$hrImg = get_hr_img($copy_row, $copy_row['search_box_id']);
 
 					$s .= "<tr". $sphighlight."><td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>".return_category_image($copy_row["catid"], "torrents.php?allsec=1&amp;")."</td><td class=\"rowfollow\" align=\"left\"><a href=\"" . htmlspecialchars(get_protocol_prefix() . $BASEURL . "/details.php?id=" . $copy_row["id"]. "&hit=1")."\">" . $dispname ."</a>". $sp_info. $hrImg ."</td>" .
-					"<td class=\"rowfollow\" align=\"left\">" . rtrim(trim($other_source_info . $other_medium_info . $other_codec_info . $other_standard_info . $other_processing_info), ","). "</td>" .
+					"<td class=\"rowfollow\" align=\"left\">" .implode(', ', $taxonomyValues). "</td>" .
 					"<td class=\"rowfollow\" align=\"center\">" . mksize($copy_row["size"]) . "</td>" .
 					"<td class=\"rowfollow nowrap\" align=\"center\">" . str_replace("&nbsp;", "<br />", gettime($copy_row["added"],false)). "</td>" .
 					"<td class=\"rowfollow\" align=\"center\">" . $copy_row["seeders"] . "</td>" .

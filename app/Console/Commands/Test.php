@@ -90,7 +90,8 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $r = SearchBox::getSubCatOptions();
+        dd($r);
     }
 
 

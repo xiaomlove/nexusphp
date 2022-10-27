@@ -22,6 +22,12 @@ return new class extends Migration
             $table->string('class_name')->nullable(true)->default('')->change();
             $table->string('image')->nullable(true)->default('')->change();
         });
+
+        Schema::table('caticons', function (Blueprint $table) {
+            $table->string('cssfile')->nullable(true)->default('')->change();
+            $table->string('designer')->nullable(true)->default('')->change();
+            $table->string('comment')->nullable(true)->default('')->change();
+        });
     }
 
     /**

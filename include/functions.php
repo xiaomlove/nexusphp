@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SearchBox;
 use Illuminate\Support\Str;
 
 function get_langfolder_cookie($transToLocale = false)
@@ -2298,6 +2299,7 @@ function menu ($selected = "home") {
 	if ($menu) {
 	    print $menu;
     } else {
+	    $lang = get_langfolder_cookie();
         $normalSectionName = get_searchbox_value(get_setting('main.browsecat'), 'section_name');
         $specialSectionName = get_searchbox_value(get_setting('main.specialcat'), 'section_name');
         print ("<ul id=\"mainmenu\" class=\"menu\">");
@@ -2306,9 +2308,9 @@ function menu ($selected = "home") {
             print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"forums.php\">".$lang_functions['text_forums']."</a></li>");
         else
             print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"" . $extforumurl."\" target=\"_blank\">".$lang_functions['text_forums']."</a></li>");
-        print ("<li" . ($selected == "torrents" ? " class=\"selected\"" : "") . "><a href=\"torrents.php\" rel='sub-menu'>".($normalSectionName ?: $lang_functions['text_torrents'])."</a></li>");
+        print ("<li" . ($selected == "torrents" ? " class=\"selected\"" : "") . "><a href=\"torrents.php\" rel='sub-menu'>".($normalSectionName[$lang] ?? $lang_functions['text_torrents'])."</a></li>");
         if ($enablespecial == 'yes' && user_can('view_special_torrent'))
-            print ("<li" . ($selected == "special" ? " class=\"selected\"" : "") . "><a href=\"special.php\">".($specialSectionName ?: $lang_functions['text_special'])."</a></li>");
+            print ("<li" . ($selected == "special" ? " class=\"selected\"" : "") . "><a href=\"special.php\">".($specialSectionName[$lang] ?? $lang_functions['text_special'])."</a></li>");
         if ($enableoffer == 'yes')
             print ("<li" . ($selected == "offers" ? " class=\"selected\"" : "") . "><a href=\"offers.php\">".$lang_functions['text_offers']."</a></li>");
         if ($enablerequest == 'yes')
@@ -2904,7 +2906,7 @@ function stdfoot() {
 	$yearfounded = ($year ? $year : 2007);
 	print(" (c) "." <a href=\"" . get_protocol_prefix() . $BASEURL."\" target=\"_self\">".$SITENAME."</a> ".($icplicense_main ? " ".$icplicense_main." " : "").(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y")." ".VERSION."<br /><br />");
 	printf ("[page created in <b> %s </b> sec", sprintf("%.3f", $totaltime));
-	print (" with <b>".count($query_name)."</b> db queries, <b>".$Cache->getCacheReadTimes()."</b> reads and <b>".$Cache->getCacheWriteTimes()."</b> writes of Redis and <b>".mksize(memory_get_usage())."</b> ram]");
+	print (", takes up <b>".mksize(memory_get_usage())."</b> ram]");
 	print ("</div>\n");
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
 		print("<div id=\"sql_debug\" style='text-align: left;'>SQL query list: <ul>");
@@ -3263,10 +3265,10 @@ function searchbox_item_list($table, $mode){
 	$cacheKey = "{$table}_list_mode_{$mode}";
 	if (!$ret = $Cache->get_value($cacheKey)){
 		$ret = array();
-		$res = sql_query("SELECT * FROM $table where mode = '$mode' ORDER BY sort_index, id");
+		$res = sql_query("SELECT * FROM $table where (mode = '$mode' or mode = 0) ORDER BY sort_index, id");
 		while ($row = mysql_fetch_array($res))
 			$ret[] = $row;
-		$Cache->cache_value($cacheKey, $ret, 152800);
+		$Cache->cache_value($cacheKey, $ret, 3600);
 	}
 	return $ret;
 }
@@ -4341,9 +4343,10 @@ function get_second_icon($row) //for CHDBits
 	$processing=$row['processing'];
 	$team=$row['team'];
 	$audiocodec=$row['audiocodec'];
+	$mode = $row['search_box_id'];
 	$cacheKey = 'secondicon_'.$source.'_'.$medium.'_'.$codec.'_'.$standard.'_'.$processing.'_'.$team.'_'.$audiocodec.'_content';
 	if (!$sirow = $Cache->get_value($cacheKey)){
-		$res = sql_query("SELECT * FROM secondicons WHERE (source = ".sqlesc($source)." OR source=0) AND (medium = ".sqlesc($medium)." OR medium=0) AND (codec = ".sqlesc($codec)." OR codec = 0) AND (standard = ".sqlesc($standard)." OR standard = 0) AND (processing = ".sqlesc($processing)." OR processing = 0) AND (team = ".sqlesc($team)." OR team = 0) AND (audiocodec = ".sqlesc($audiocodec)." OR audiocodec = 0) LIMIT 1");
+		$res = sql_query("SELECT * FROM secondicons WHERE (mode = ".sqlesc($mode)." OR mode = 0) AND (source = ".sqlesc($source)." OR source=0) AND (medium = ".sqlesc($medium)." OR medium=0) AND (codec = ".sqlesc($codec)." OR codec = 0) AND (standard = ".sqlesc($standard)." OR standard = 0) AND (processing = ".sqlesc($processing)." OR processing = 0) AND (team = ".sqlesc($team)." OR team = 0) AND (audiocodec = ".sqlesc($audiocodec)." OR audiocodec = 0) LIMIT 1");
 		$sirow = mysql_fetch_array($res);
 		if (!$sirow)
 			$sirow = 'not allowed';
@@ -4843,6 +4846,9 @@ function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 		while ($row = mysql_fetch_array($res)) {
 		    if (isset($row['extra'])) {
 		        $row['extra'] = json_decode($row['extra'], true);
+            }
+            if (isset($row['section_name'])) {
+                $row['section_name'] = json_decode($row['section_name'], true);
             }
 			$rows[$row['id']] = $row;
 		}
@@ -5988,20 +5994,34 @@ function calculate_harem_addition($uid)
 }
 
 
-function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPrefix, $taxonomyHrefPrefix, $taxonomyNameLength, $checkedValues = '')
+function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPrefix, $taxonomyHrefPrefix, $taxonomyNameLength, $checkedValues = '', array $options = [])
 {
     $searchBox = \App\Models\SearchBox::query()->with(['categories', 'categories.icon'])->findOrFail($mode);
+    $lang = get_langfolder_cookie();
     $withTaxonomies = [];
-    foreach (\App\Models\SearchBox::$taxonomies as $torrentField => $taxonomyTable) {
-        $showField = "show" . $torrentField;
-        if ($searchBox->{$showField}) {
-            $withTaxonomies[] = "taxonomy_{$torrentField}";
+    if ($searchBox->showsubcat) {
+        //Keep the order
+        if (!empty($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS])) {
+            foreach ($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS] as $taxonomyLabelInfo) {
+                $torrentField = $taxonomyLabelInfo["torrent_field"];
+                $showField = "show" . $torrentField;
+                if ($searchBox->{$showField}) {
+                    $withTaxonomies[$torrentField] = \App\Models\SearchBox::$taxonomies[$torrentField];
+                }
+            }
+        } else {
+            foreach (\App\Models\SearchBox::$taxonomies as $torrentField => $taxonomyTable) {
+                $showField = "show" . $torrentField;
+                if ($searchBox->{$showField}) {
+                    $withTaxonomies[$torrentField] = $taxonomyTable;
+                }
+            }
         }
     }
-    $searchBox->load($withTaxonomies);
-
     $html = '<table>';
-    $html .= sprintf('<caption><font class="big">%s</font></caption>', $searchBox->section_name);
+    if (!empty($options['section_name'])) {
+        $html .= sprintf('<caption><font class="big">%s</font></caption>', $searchBox->section_name[$lang] ?? '');
+    }
     //Category
     $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', nexus_trans('label.search_box.category'));
     $categoryChunks = $searchBox->categories->chunk($searchBox->catsperrow);
@@ -6010,7 +6030,7 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
         $html .= '<tr>';
         foreach ($chunk as $item) {
             $checked = '';
-            if (str_contains($checkedValues, "[cat{$item->id}]")) {
+            if (str_contains($checkedValues, "[cat{$item->id}]") || str_contains($checkedValues, "cat{$item->id}=1")) {
                 $checked = " checked";
             }
             $icon = $item->icon;
@@ -6018,7 +6038,7 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
             $td = <<<TD
 <td align="left" class="bottom" style="padding-bottom: 4px;padding-left: {$searchBox->catpadding}px">
     <input type="checkbox" id="cat{$item->id}" name="cat{$item->id}" value="{$checkboxValue}"{$checked} />
-    <a href="{$categoryHrefPrefix}&cat={$item->id}"><img src="pic/cattrans.gif" class="{$item->class_name}" alt="{$item->name}" title="{$item->name}" style="background-image: url({$backgroundImagePath})" /></a>
+    <a href="{$categoryHrefPrefix}cat={$item->id}"><img src="pic/cattrans.gif" class="{$item->class_name}" alt="{$item->name}" title="{$item->name}" style="background-image: url({$backgroundImagePath})" /></a>
 </td>
 TD;
             $html .= $td;
@@ -6026,29 +6046,33 @@ TD;
         $html .= '</tr>';
     }
     //Taxonomy
-    foreach ($withTaxonomies as $relation) {
-        $torrentField = str_replace("taxonomy_", '', $relation);
+    foreach ($withTaxonomies as $torrentField => $tableName) {
         if ($taxonomyNameLength > 0) {
             $namePrefix = substr($torrentField, 0, $taxonomyNameLength);
         } else {
             $namePrefix = $torrentField;
         }
         $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', $searchBox->getTaxonomyLabel($torrentField));
-        $taxonomyChunks = $searchBox->{$relation}->chunk($searchBox->catsperrow);
+        $taxonomyChunks = \Nexus\Database\NexusDB::table($tableName)
+            ->where(function (\Illuminate\Database\Query\Builder $query) use ($mode) {
+                return $query->where('mode', $mode)->orWhere('mode', 0);
+            })
+            ->get()
+            ->chunk($searchBox->catsperrow);
         foreach ($taxonomyChunks as $chunk) {
             $html .= '<tr>';
             foreach ($chunk as $item) {
                 if ($taxonomyHrefPrefix) {
-                    $afterInput = sprintf('<a href="%s&%s=%s">%s</a>', $taxonomyHrefPrefix, $namePrefix, $item->id, $item->name);
+                    $afterInput = sprintf('<a href="%s%s=%s">%s</a>', $taxonomyHrefPrefix, $namePrefix, $item->id, $item->name);
                 } else {
                     $afterInput = $item->name;
                 }
                 $checked = '';
-                if (str_contains($checkedValues, "[{$namePrefix}{$item->id}]")) {
+                if (str_contains($checkedValues, "[{$namePrefix}{$item->id}]") || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")) {
                     $checked = ' checked';
                 }
                 $td = <<<TD
-<td align="left" class="bottom" style="padding-bottom: 4px;padding-left: {$item->catpadding}px">
+<td align="left" class="bottom" style="padding-bottom: 4px;padding-left: {$searchBox->catpadding}px">
     <label><input type="checkbox" id="{$namePrefix}{$item->id}" name="{$namePrefix}{$item->id}" value="{$checkboxValue}"{$checked} />$afterInput</label>
 </td>
 TD;

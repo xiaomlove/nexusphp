@@ -2,14 +2,18 @@
 
 namespace App\Repositories;
 
+use App\Http\Middleware\Locale;
 use App\Models\Icon;
 use App\Models\NexusModel;
 use App\Models\SearchBox;
 use App\Models\SearchBoxField;
+use App\Models\SecondIcon;
 use App\Models\Setting;
 use Elasticsearch\Endpoints\Search;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use Nexus\Database\NexusDB;
+use Filament\Forms;
 
 class SearchBoxRepository extends BaseRepository
 {
@@ -103,6 +107,8 @@ class SearchBoxRepository extends BaseRepository
         return Icon::query()->find(array_keys($iconIdArr));
     }
 
+    /**
+     */
     public function migrateToModeRelated()
     {
         $secondIconTable = 'secondicons';
@@ -112,25 +118,25 @@ class SearchBoxRepository extends BaseRepository
         $tables = array_values(SearchBox::$taxonomies);
 
         foreach ($searchBoxList as $searchBox) {
-            if ($searchBox->id == $normalId) {
-                //all sub categories add `mode` field
-                foreach ($tables as  $table) {
-                    NexusDB::table($table)->update(['mode' => $normalId]);
-                    do_log("update table $table mode = $normalId");
-                }
-                //also second icons
-                NexusDB::table($secondIconTable)->update(['mode' => $normalId]);
-                do_log("update table $secondIconTable mode = $normalId");
-            } elseif ($searchBox->id == $specialId && $specialId != $normalId) {
-                //copy from normal section
-                foreach ($tables as $table) {
-                    $sql = sprintf(
-                        "insert into `%s` (name, sort_index, mode) select name, sort_index, '%s' from `%s`",
-                        $table, $specialId, $table
-                    );
-                    NexusDB::statement($sql);
-                    do_log("copy table $table, $sql");
-                }
+//            if ($searchBox->id == $normalId) {
+//                //all sub categories add `mode` field
+//                foreach ($tables as  $table) {
+//                    NexusDB::table($table)->update(['mode' => $normalId]);
+//                    do_log("update table $table mode = $normalId");
+//                }
+//                //also second icons
+//                NexusDB::table($secondIconTable)->update(['mode' => $normalId]);
+//                do_log("update table $secondIconTable mode = $normalId");
+//            } elseif ($searchBox->id == $specialId && $specialId != $normalId) {
+//                //copy from normal section
+//                foreach ($tables as $table) {
+//                    $sql = sprintf(
+//                        "insert into `%s` (name, sort_index, mode) select name, sort_index, '%s' from `%s`",
+//                        $table, $specialId, $table
+//                    );
+//                    NexusDB::statement($sql);
+//                    do_log("copy table $table, $sql");
+//                }
 //                $fields = array_keys(SearchBox::$taxonomies);
 //                $fields = array_merge($fields, ['name', 'class_name', 'image']);
 //                $fieldStr = implode(', ', $fields);
@@ -140,47 +146,152 @@ class SearchBoxRepository extends BaseRepository
 //                );
 //                NexusDB::statement($sql);
 //                do_log("copy table $secondIconTable, $sql");
-            }
+//            }
             $taxonomies = [];
-            foreach (SearchBox::$taxonomies as $field => $taxonomyTable) {
-                $showField = "show" . $field;
-                if ($searchBox->{$showField}) {
+            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTable) {
+                $searchBoxField = "show" . $torrentField;
+                if ($searchBox->showsubcat && $searchBox->{$searchBoxField}) {
                     $taxonomies[] = [
-                        'torrent_field' => $field,
-                        'display_text' => $field,
+                        'torrent_field' => $torrentField,
+                        'display_text' => [
+                            'en' => nexus_trans("searchbox.sub_category_{$torrentField}_label", [], Locale::$languageMaps['en']),
+                            'chs' => nexus_trans("searchbox.sub_category_{$torrentField}_label", [], Locale::$languageMaps['chs']),
+                            'cht' => nexus_trans("searchbox.sub_category_{$torrentField}_label", [], Locale::$languageMaps['cht']),
+                        ],
                     ];
                 }
             }
-            $searchBox->update(["extra->" . SearchBox::EXTRA_TAXONOMY_LABELS => $taxonomies]);
+            if (!empty($taxonomies)) {
+                $searchBox->update(["extra->" . SearchBox::EXTRA_TAXONOMY_LABELS => $taxonomies]);
+            }
         }
     }
 
-    public function renderQualitySelect($searchBox, array $torrentInfo = []): string
+    public function renderTaxonomySelect($searchBox, array $torrentInfo = []): string
     {
         if (!$searchBox instanceof SearchBox) {
-            $searchBox = SearchBox::query()->findOrFail(intval($searchBox));
+            $searchBox = SearchBox::get(intval($searchBox));
         }
         $results = [];
-        foreach (SearchBox::$taxonomies as $torrentField => $table) {
-            $searchBoxField = "show" . $torrentField;
-            if ($searchBox->{$searchBoxField}) {
-                $select = sprintf("<b>%s:</b>", $searchBox->getTaxonomyLabel($torrentField));
-                $select .= sprintf('<select name="%s" data-mode="%s">', $torrentField . "_sel", $searchBox->id);
-                $select .= sprintf('<option value="%s">%s</option>', 0, nexus_trans('nexus.select_one_please'));
-                $relation = "taxonomy_$torrentField";
-                $list = $searchBox->{$relation};
-                foreach ($list as $item) {
-                    $selected = '';
-                    if (isset($torrentInfo[$torrentField]) && $torrentInfo[$torrentField] == $item->id) {
-                        $selected = " selected";
-                    }
-                    $select .= sprintf('<option value="%s"%s>%s</option>', $item->id, $selected, $item->name);
+        //Keep the order
+        if (!empty($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS])) {
+            foreach ($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS] as $taxonomy) {
+                $select = $this->buildTaxonomySelect($searchBox, $taxonomy['torrent_field'], $torrentInfo);
+                if ($select) {
+                    $results[] = $select;
                 }
-                $select .= '</select>';
-                $results[] = $select;
+            }
+        } else {
+            foreach (SearchBox::$taxonomies as $torrentField => $table) {
+                $select = $this->buildTaxonomySelect($searchBox, $torrentField, $torrentInfo);
+                if ($select) {
+                    $results[] = $select;
+                }
             }
         }
+
         return implode('&nbsp;&nbsp;', $results);
     }
+
+    public function listTaxonomyInfo($searchBox, array $torrentWithTaxonomy): array
+    {
+        if (!$searchBox instanceof SearchBox) {
+            $searchBox = SearchBox::get(intval($searchBox));
+        }
+        $results = [];
+        //Keep the order
+        if (!empty($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS])) {
+            foreach ($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS] as $item) {
+                $taxonomy = $this->getTaxonomyInfo($searchBox, $torrentWithTaxonomy, $item['torrent_field']);
+                if ($taxonomy) {
+                    $results[] = $taxonomy;
+                }
+            }
+        } else {
+            foreach (SearchBox::$taxonomies as $torrentField => $table) {
+                $taxonomy = $this->getTaxonomyInfo($searchBox, $torrentWithTaxonomy, $torrentField);
+                if ($taxonomy) {
+                    $results[] = $taxonomy;
+                }
+            }
+        }
+        return $results;
+    }
+
+    private function getTaxonomyInfo(SearchBox $searchBox, array $torrentWithTaxonomy, $torrentField)
+    {
+        $searchBoxField = "show" . $torrentField;
+        $torrentTaxonomyField = $torrentField . "_name";
+        if ($searchBox->showsubcat && $searchBox->{$searchBoxField} && !empty($torrentWithTaxonomy[$torrentTaxonomyField])) {
+            return [
+                'field' => $torrentField,
+                'label' => $searchBox->getTaxonomyLabel($torrentField),
+                'value' => $torrentWithTaxonomy[$torrentTaxonomyField],
+            ];
+        }
+    }
+
+    private function buildTaxonomySelect(SearchBox $searchBox, $torrentField, array $torrentInfo)
+    {
+        $searchBoxId = $searchBox->id;
+        $searchBoxField = "show" . $torrentField;
+        if ($searchBox->showsubcat && $searchBox->{$searchBoxField}) {
+            $table = SearchBox::$taxonomies[$torrentField];
+            $select = sprintf("<b>%s: </b>", $searchBox->getTaxonomyLabel($torrentField));
+            $select .= sprintf('<select name="%s_sel[%s]" data-mode="%s_%s">',$torrentField, $searchBoxId, $torrentField, $searchBoxId);
+            $select .= sprintf('<option value="%s">%s</option>', 0, nexus_trans('nexus.select_one_please'));
+            $list = NexusDB::table($table)->where(function (Builder $query) use ($searchBox) {
+                return $query->where('mode', $searchBox->id)->orWhere('mode', 0);
+            })->get();
+            foreach ($list as $item) {
+                $selected = '';
+                if (isset($torrentInfo[$torrentField]) && $torrentInfo[$torrentField] == $item->id) {
+                    $selected = " selected";
+                }
+                $select .= sprintf('<option value="%s"%s>%s</option>', $item->id, $selected, $item->name);
+            }
+            $select .= '</select>';
+            return $select;
+        }
+    }
+
+    public function listTaxonomyFormSchema($searchBox): array
+    {
+        if (!$searchBox instanceof SearchBox) {
+            $searchBox = SearchBox::get(intval($searchBox));
+        }
+        $results = [];
+        //Keep the order
+        if (!empty($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS])) {
+            foreach ($searchBox->extra[SearchBox::EXTRA_TAXONOMY_LABELS] as $taxonomy) {
+                $select = $this->buildTaxonomyFormSchema($searchBox, $taxonomy['torrent_field']);
+                if ($select) {
+                    $results[] = $select;
+                }
+            }
+        } else {
+            foreach (SearchBox::$taxonomies as $torrentField => $table) {
+                $select = $this->buildTaxonomyFormSchema($searchBox, $torrentField);
+                if ($select) {
+                    $results[] = $select;
+                }
+            }
+        }
+        return $results;
+    }
+
+    private function buildTaxonomyFormSchema(SearchBox $searchBox, $torrentField)
+    {
+        $searchBoxId = $searchBox->id;
+        $searchBoxField = "show" . $torrentField;
+        $name = sprintf('%s.%s', $torrentField, $searchBoxId);
+        if ($searchBox->showsubcat && $searchBox->{$searchBoxField}) {
+            $items = SearchBox::listTaxonomyItems($searchBox, $torrentField);
+            return Forms\Components\Select::make($name)
+                ->options($items->pluck('name', 'id')->toArray())
+                ->label($searchBox->getTaxonomyLabel($torrentField));
+        }
+    }
+
 
 }

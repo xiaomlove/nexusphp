@@ -18,4 +18,9 @@ class Category extends NexusModel
     {
         return $this->belongsTo(Icon::class, 'icon_id');
     }
+
+    public function search_box()
+    {
+        return $this->belongsTo(SearchBox::class, 'mode', 'id');
+    }
 }

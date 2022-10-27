@@ -243,7 +243,7 @@ return [
         ],
     ],
     'search_box' => [
-        'label' => '分区',
+        'label' => '分类模式',
         'name' => '名称',
         'section_name' => '分区名称',
         'section_name_help' => '若设置，显示在菜单上',
@@ -271,6 +271,8 @@ return [
             'image' => '图片文件名',
             'image_help' => '图片文件的名字。允许的字符：[a-z]（小写），[0-9]，[_./]。',
             'icon_id' => '分类图标',
+            'mode' => '分区',
+            'mode_help' => '留空表示适用于全部分区',
         ],
     ],
     'icon' => [
@@ -300,5 +302,16 @@ return [
     多语言='否'
     第二图标='是'
 你应该将一个电影类型的图标（如'movies.png'）文件放入'pic/category/chd/nanosofts/'，将一个第二图标（如'bdh264.png'）放入'pic/category/chd/nanosofts/additional/'。",
+    ],
+    'second_icon' => [
+        'label' => '第二图标',
+        'name' => '名字',
+        'name_help' => '不要使用过长的名字。建议在10个字母内。',
+        'image' => "图片文件名",
+        'image_help' => "图片文件的名字。允许的字符：[a-z]（小写），[0-9]，[_./]。",
+        'class_name' => 'class属性值',
+        'class_name_help' => "为图片指定class属性值。若无请留空。允许的字符: [a-z]（小写），[0-9]，[_]，第一个字符必须是字母。",
+        'select_section' => '选择',
+        'select_section_help' => "如果某个选择未指定，其所有选项都符合此规则。必须至少指定一个选择。",
     ],
 ];

@@ -68,13 +68,17 @@ if (!$descr)
 bark($lang_takeupload['std_blank_description']);
 
 $catid = intval($_POST["type"] ?? 0);
-$sourceid = intval($_POST["source_sel"] ?? 0);
-$mediumid = intval($_POST["medium_sel"] ?? 0);
-$codecid = intval($_POST["codec_sel"] ?? 0);
-$standardid = intval($_POST["standard_sel"] ?? 0);
-$processingid = intval($_POST["processing_sel"] ?? 0);
-$teamid = intval($_POST["team_sel"] ?? 0);
-$audiocodecid = intval($_POST["audiocodec_sel"] ?? 0);
+$catmod = get_single_value("categories","mode","WHERE id=".sqlesc($catid));
+if (!$catmod) {
+    bark('Invalid category');
+}
+$sourceid = intval($_POST["source_sel"][$catmod] ?? 0);
+$mediumid = intval($_POST["medium_sel"][$catmod] ?? 0);
+$codecid = intval($_POST["codec_sel"][$catmod] ?? 0);
+$standardid = intval($_POST["standard_sel"][$catmod] ?? 0);
+$processingid = intval($_POST["processing_sel"][$catmod] ?? 0);
+$teamid = intval($_POST["team_sel"][$catmod] ?? 0);
+$audiocodecid = intval($_POST["audiocodec_sel"][$catmod] ?? 0);
 
 if (!is_valid_id($catid))
 bark($lang_takeupload['std_category_unselected']);
@@ -177,7 +181,6 @@ if (\App\Models\Torrent::query()->where('info_hash', $infohash)->exists()) {
 $allowtorrents = user_can_upload("torrents");
 $allowspecial = user_can_upload("music");
 
-$catmod = get_single_value("categories","mode","WHERE id=".sqlesc($catid));
 $offerid = intval($_POST['offer'] ?? 0);
 $is_offer=false;
 if ($browsecatmode != $specialcatmode && $catmod == $specialcatmode){//upload to special section

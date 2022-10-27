@@ -29,7 +29,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('exam:checkout_cronjob')->everyMinute()->withoutOverlapping();
         $schedule->command('exam:update_progress --bulk=1')->hourly()->withoutOverlapping();
         $schedule->command('backup:cronjob')->everyMinute()->withoutOverlapping();
-        $schedule->command('hr:update_status')->everyMinute()->withoutOverlapping();
+        $schedule->command('hr:update_status')->everyTenMinutes()->withoutOverlapping();
         $schedule->command('hr:update_status --ignore_time=1')->hourly()->withoutOverlapping();
         $schedule->command('user:delete_expired_token')->dailyAt('04:00');
         $schedule->command('claim:settle')->hourly()->when(function () {

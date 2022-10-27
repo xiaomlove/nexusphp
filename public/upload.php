@@ -154,14 +154,14 @@ stdhead($lang_upload['head_upload']);
                 $customField = new \Nexus\Field\Field();
                 $hitAndRunRep = new \App\Repositories\HitAndRunRepository();
                 if ($allowtorrents) {
-                    $selectNormal = $searchBoxRep->renderQualitySelect($browsecatmode);
-                    tr($lang_upload['row_quality'], $selectNormal, 1, "hide mode mode_$browsecatmode");
+                    $selectNormal = $searchBoxRep->renderTaxonomySelect($browsecatmode);
+                    tr($lang_upload['row_quality'], $selectNormal, 1, "mode_$browsecatmode");
                     echo $customField->renderOnUploadPage(0, $browsecatmode);
                     echo $hitAndRunRep->renderOnUploadPage('', $browsecatmode);
                 }
                 if ($allowspecial) {
-                    $selectNormal = $searchBoxRep->renderQualitySelect($specialcatmode);
-                    tr($lang_upload['row_quality'], $selectNormal, 1, "hide mode mode_$specialcatmode");
+                    $selectNormal = $searchBoxRep->renderTaxonomySelect($specialcatmode);
+                    tr($lang_upload['row_quality'], $selectNormal, 1, "mode_$specialcatmode");
                     echo $customField->renderOnUploadPage(0, $specialcatmode);
                     echo $hitAndRunRep->renderOnUploadPage('', $specialcatmode);
                 }

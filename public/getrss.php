@@ -300,10 +300,10 @@ if ($allowspecial) //print category list of Special section
 $categories .= "</table>";
 */
 
-$categories = build_search_box_category_table($browsecatmode, 'yes', 'torrents.php?allsec=1', false, 3);
+$categories = build_search_box_category_table($browsecatmode, 'yes', 'torrents.php?allsec=1&', false, 3, '', ['section_name' => true]);
 print($categories);
 print '<div style="height: 1px;background-color: #eee;margin: 10px 0"></div>';
-$categoriesSpecial = build_search_box_category_table($specialcatmode, 'yes', 'torrents.php?allsec=1', false, 3);
+$categoriesSpecial = build_search_box_category_table($specialcatmode, 'yes', 'torrents.php?allsec=1&', false, 3, '', ['section_name' => true]);
 print($categoriesSpecial);
 ?>
 </td>

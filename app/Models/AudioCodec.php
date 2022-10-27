@@ -13,4 +13,9 @@ class AudioCodec extends NexusModel
     {
         return nexus_trans('searchbox.sub_category_audio_codec_label');
     }
+
+    public function search_box()
+    {
+        return $this->belongsTo(SearchBox::class, 'mode', 'id');
+    }
 }

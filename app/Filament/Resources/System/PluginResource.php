@@ -24,8 +24,6 @@ class PluginResource extends Resource
 
     protected static ?int $navigationSort = 99;
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static function getNavigationLabel(): string
     {
         return __('admin.sidebar.plugin');

@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
+use Nexus\Database\NexusDB;
 
 class SearchBox extends NexusModel
 {
+    private static array $instances = [];
+
     protected $table = 'searchbox';
 
     protected $fillable = [
@@ -21,6 +25,7 @@ class SearchBox extends NexusModel
         'extra' => 'array',
         'is_default' => 'boolean',
         'showsubcat' => 'boolean',
+        'section_name' => 'json',
     ];
 
     const EXTRA_TAXONOMY_LABELS = 'taxonomy_labels';
@@ -40,9 +45,9 @@ class SearchBox extends NexusModel
         'medium' => 'media',
         'codec' => 'codecs',
         'audiocodec' => 'audiocodecs',
-        'team' => 'teams',
         'standard' => 'standards',
-        'processing' => 'processings'
+        'processing' => 'processings',
+        'team' => 'teams',
     ];
 
     public static array $extras = [
@@ -66,21 +71,23 @@ class SearchBox extends NexusModel
             foreach ($data['extra'][self::EXTRA_TAXONOMY_LABELS] ?? [] as $item) {
                 if ($field == $item['torrent_field']) {
                     $data["show{$field}"] = 1;
-                    $data["extra->" . self::EXTRA_TAXONOMY_LABELS][] = $item;
+//                    $data["extra->" . self::EXTRA_TAXONOMY_LABELS][] = $item;
                 }
             }
         }
+        $data["extra->" . self::EXTRA_TAXONOMY_LABELS] = $data['extra'][self::EXTRA_TAXONOMY_LABELS];
         return $data;
     }
 
     public function getTaxonomyLabel($torrentField)
     {
+        $lang = get_langfolder_cookie();
         foreach ($this->extra[self::EXTRA_TAXONOMY_LABELS] ?? [] as $item) {
             if ($item['torrent_field'] == $torrentField) {
-                return $item['display_text'];
+                return $item['display_text'][$lang] ?? 'Unknown';
             }
         }
-        return nexus_trans('label.torrent.' . $torrentField) ?: ucfirst($torrentField);
+        return nexus_trans("searchbox.sub_category_{$torrentField}_label") ?: ucfirst($torrentField);
     }
 
     protected function customFields(): Attribute
@@ -109,6 +116,25 @@ class SearchBox extends NexusModel
             }
         }
         return $result;
+    }
+
+    public static function get(int $id)
+    {
+        if (!isset(self::$instances[$id])) {
+            self::$instances[$id] = self::query()->find($id);
+        }
+        return self::$instances[$id];
+    }
+
+    public static function listTaxonomyItems($searchBox, $torrentField): \Illuminate\Support\Collection
+    {
+        if (!$searchBox instanceof self) {
+            $searchBox = self::get(intval($searchBox));
+        }
+        $table = self::$taxonomies[$torrentField];
+        return NexusDB::table($table)->where(function (Builder $query) use ($searchBox) {
+            return $query->where('mode', $searchBox->id)->orWhere('mode', 0);
+        })->get();
     }
 
     public function getCustomFieldsAttribute($value): array

@@ -92,13 +92,13 @@ $updateset[] = "url = " . sqlesc($url);
 $updateset[] = "small_descr = " . sqlesc($_POST["small_descr"]);
 //$updateset[] = "ori_descr = " . sqlesc($descr);
 $updateset[] = "category = " . sqlesc($catid);
-$updateset[] = "source = " . sqlesc(intval($_POST["source_sel"] ?? 0));
-$updateset[] = "medium = " . sqlesc(intval($_POST["medium_sel"] ?? 0));
-$updateset[] = "codec = " . sqlesc(intval($_POST["codec_sel"] ?? 0));
-$updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"] ?? 0));
-$updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"] ?? 0));
-$updateset[] = "team = " . sqlesc(intval($_POST["team_sel"] ?? 0));
-$updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"] ?? 0));
+$updateset[] = "source = " . sqlesc(intval($_POST["source_sel"][$newcatmode] ?? 0));
+$updateset[] = "medium = " . sqlesc(intval($_POST["medium_sel"][$newcatmode] ?? 0));
+$updateset[] = "codec = " . sqlesc(intval($_POST["codec_sel"][$newcatmode] ?? 0));
+$updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"][$newcatmode] ?? 0));
+$updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"][$newcatmode] ?? 0));
+$updateset[] = "team = " . sqlesc(intval($_POST["team_sel"][$newcatmode] ?? 0));
+$updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"][$newcatmode] ?? 0));
 if (user_can('torrentmanage')) {
     $updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";
 }

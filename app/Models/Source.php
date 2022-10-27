@@ -11,4 +11,9 @@ class Source extends NexusModel
     {
         return nexus_trans('searchbox.sub_category_source_label');
     }
+
+    public function search_box()
+    {
+        return $this->belongsTo(SearchBox::class, 'mode', 'id');
+    }
 }

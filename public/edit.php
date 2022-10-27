@@ -9,7 +9,7 @@ if (!$id)
 	die();
 
 $res = sql_query("SELECT torrents.*, categories.mode as cat_mode FROM torrents LEFT JOIN categories ON category = categories.id WHERE torrents.id = $id");
-$row = mysql_fetch_array($res);
+$row = mysql_fetch_assoc($res);
 if (!$row) die();
 
 /**
@@ -150,14 +150,14 @@ else {
 	}
 */
 
-    $sectionCurrent = $searchBoxRep->renderQualitySelect($sectionmode);
-    tr($lang_edit['row_quality'], $sectionCurrent, 1, "hide mode mode_$sectionmode");
+    $sectionCurrent = $searchBoxRep->renderTaxonomySelect($sectionmode, $row);
+    tr($lang_edit['row_quality'], $sectionCurrent, 1, "mode_$sectionmode");
     echo $customField->renderOnUploadPage($id, $sectionmode);
     echo $hitAndRunRep->renderOnUploadPage($row['hr'], $sectionmode);
 
     if ($allowmove && $othermode) {
-        $selectOther = $searchBoxRep->renderQualitySelect($othermode);
-        tr($lang_edit['row_quality'], $selectOther, 1, "hide mode mode_$othermode");
+        $selectOther = $searchBoxRep->renderTaxonomySelect($othermode, $row);
+        tr($lang_edit['row_quality'], $selectOther, 1, "mode_$othermode");
         echo $customField->renderOnUploadPage($id, $othermode);
         echo $hitAndRunRep->renderOnUploadPage($row['hr'], $othermode);
     }

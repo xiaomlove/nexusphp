@@ -14,8 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('searchbox', function (Blueprint $table) {
-            $table->string('section_name')->after('name')->default('');
-            $table->integer('is_default')->after('section_name')->default(0);
+            $table->json('section_name')->after('name')->nullable(true);
         });
     }
 
@@ -27,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('searchbox', function (Blueprint $table) {
-            $table->dropColumn('section_name', 'is_default');
+            $table->dropColumn('section_name');
         });
     }
 };
