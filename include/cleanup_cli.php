@@ -24,19 +24,12 @@ if (isset($_SERVER['argv'][1])) {
 }
 $logPrefix = "[CLEANUP_CLI]";
 $begin = time();
-try {
-    if ($force) {
-        $result = docleanup(1, true);
-    } else {
-        $result = autoclean(true);
-    }
-    $log = "$logPrefix, DONE: $result, cost time in seconds: " . (time() - $begin);
-    do_log($log);
-    printProgress($log);
-} catch (\Exception $exception) {
-    $log = "$logPrefix, ERROR: " . $exception->getMessage();
-    do_log($log);
-    printProgress($log);
-    throw new \RuntimeException($exception->getMessage());
+if ($force) {
+    $result = docleanup(1, true);
+} else {
+    $result = autoclean(true);
 }
+$log = "$logPrefix, DONE: $result, cost time in seconds: " . (time() - $begin);
+do_log($log);
+printProgress($log);
 

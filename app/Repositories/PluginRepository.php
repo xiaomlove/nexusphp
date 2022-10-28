@@ -46,6 +46,7 @@ class PluginRepository extends BaseRepository
 
     public function doInstall(Plugin $plugin)
     {
+        $plugin->update(['status' => Plugin::STATUS_INSTALLING]);
         $packageName = $plugin->package_name;
         try {
             $this->execComposerConfig($plugin);
@@ -72,6 +73,7 @@ class PluginRepository extends BaseRepository
 
     public function doDelete(Plugin $plugin)
     {
+        $plugin->update(['status' => Plugin::STATUS_DELETING]);
         $packageName = $plugin->package_name;
         $removeSuccess = true;
         try {
@@ -101,6 +103,7 @@ class PluginRepository extends BaseRepository
 
     public function doUpdate(Plugin $plugin)
     {
+        $plugin->update(['status' => Plugin::STATUS_UPDATING]);
         $packageName = $plugin->package_name;
         try {
             $output = $this->execComposerUpdate($plugin);

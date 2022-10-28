@@ -13,9 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('searchbox', function (Blueprint $table) {
-            $table->json('section_name')->after('name')->nullable(true);
-        });
+        if (!\Nexus\Database\NexusDB::hasColumn('searchbox', 'section_name')) {
+            Schema::table('searchbox', function (Blueprint $table) {
+                $table->json('section_name')->after('name')->nullable(true);
+            });
+        }
     }
 
     /**

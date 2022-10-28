@@ -12,6 +12,7 @@ return [
         'remote_url' => '仓库地址',
         'installed_version' => '已安装版本',
         'status' => '状态',
+        'updated_at' => '上次执行操作',
     ],
     'status' => [
         \App\Models\Plugin::STATUS_NORMAL => '正常',

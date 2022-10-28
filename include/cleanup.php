@@ -261,42 +261,60 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 //11.calculate seeding bonus
-	$res = sql_query("SELECT DISTINCT userid FROM peers WHERE seeder = 'yes'") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) > 0)
-	{
-	    $haremAdditionFactor = get_setting('bonus.harem_addition');
-	    $officialAdditionFactor = get_setting('bonus.official_addition');
-		while ($arr = mysql_fetch_assoc($res))	//loop for different users
-		{
-		    $userInfo = get_user_row($arr['userid']);
-            $isDonor = is_donor($userInfo);
-            $seedBonusResult = calculate_seed_bonus($arr['userid']);
-            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult);
-            $all_bonus = $seedBonusResult['seed_bonus'];
-            $bonusLog .= ", all_bonus: $all_bonus";
-            if ($isDonor) {
-                $all_bonus = $all_bonus * $donortimes_bonus;
-                $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
-            }
-            if ($officialAdditionFactor > 0) {
-                $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
-                $all_bonus += $officialAddition;
-                $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
-            }
-            if ($haremAdditionFactor > 0) {
-                $haremBonus = calculate_harem_addition($arr['userid']);
-                $haremAddition =  $haremBonus * $haremAdditionFactor;
-                $all_bonus += $haremAddition;
-                $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
-            }
-            $dividend = 3600 / $autoclean_interval_one;
-            $all_bonus = $all_bonus / $dividend;
-            $seed_points = $seedBonusResult['seed_points'] / $dividend;
-            $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
-            do_log("$bonusLog, query: $sql");
-			sql_query($sql);
-		}
-	}
+//	$res = sql_query("SELECT DISTINCT userid FROM peers WHERE seeder = 'yes'") or sqlerr(__FILE__, __LINE__);
+//	if (mysql_num_rows($res) > 0)
+//	{
+//	    $haremAdditionFactor = get_setting('bonus.harem_addition');
+//	    $officialAdditionFactor = get_setting('bonus.official_addition');
+//		while ($arr = mysql_fetch_assoc($res))	//loop for different users
+//		{
+//		    $userInfo = get_user_row($arr['userid']);
+//            $isDonor = is_donor($userInfo);
+//            $seedBonusResult = calculate_seed_bonus($arr['userid']);
+//            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult);
+//            $all_bonus = $seedBonusResult['seed_bonus'];
+//            $bonusLog .= ", all_bonus: $all_bonus";
+//            if ($isDonor) {
+//                $all_bonus = $all_bonus * $donortimes_bonus;
+//                $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
+//            }
+//            if ($officialAdditionFactor > 0) {
+//                $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
+//                $all_bonus += $officialAddition;
+//                $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
+//            }
+//            if ($haremAdditionFactor > 0) {
+//                $haremBonus = calculate_harem_addition($arr['userid']);
+//                $haremAddition =  $haremBonus * $haremAdditionFactor;
+//                $all_bonus += $haremAddition;
+//                $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
+//            }
+//            $dividend = 3600 / $autoclean_interval_one;
+//            $all_bonus = $all_bonus / $dividend;
+//            $seed_points = $seedBonusResult['seed_points'] / $dividend;
+//            $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
+//            do_log("$bonusLog, query: $sql");
+//			sql_query($sql);
+//		}
+//	}
+
+	//chunk async
+    $maxUidRes = mysql_fetch_assoc(sql_query("select max(id) as max_uid from users limit 1"));
+	$maxUid = $maxUidRes['max_uid'];
+	$phpPath = nexus_env('PHP_PATH', 'php');
+	$webRoot = rtrim(ROOT_PATH, '/');
+	$chunk = 2000;
+	$beginUid = 0;
+	do {
+	    $command = sprintf(
+	        '%s %s/artisan cleanup --action=seed_bonus --begin_uid=%s --end_uid=%s',
+            $phpPath, $webRoot, $beginUid, $beginUid + $chunk
+        );
+        $result = exec("$command 2>&1", $output, $result_code);
+        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+	    $beginUid += $chunk;
+    } while ($beginUid < $maxUid);
+
 	$log = 'calculate seeding bonus';
 	do_log($log);
 	if ($printProgress) {
@@ -810,18 +828,30 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//17.update total seeding and leeching time of users
-	$res = sql_query("SELECT id FROM users where enabled = 'yes' and status = 'confirmed'") or sqlerr(__FILE__, __LINE__);
-	while($arr = mysql_fetch_assoc($res))
-	{
-		//die("s" . $arr['id']);
-		$res2 = sql_query("SELECT SUM(seedtime) as st, SUM(leechtime) as lt FROM snatched where userid = " . $arr['id'] . " LIMIT 1") or sqlerr(__FILE__, __LINE__);
-		$arr2 = mysql_fetch_assoc($res2) or sqlerr(__FILE__, __LINE__);
+//	$res = sql_query("SELECT id FROM users where enabled = 'yes' and status = 'confirmed'") or sqlerr(__FILE__, __LINE__);
+//	while($arr = mysql_fetch_assoc($res))
+//	{
+//		//die("s" . $arr['id']);
+//		$res2 = sql_query("SELECT SUM(seedtime) as st, SUM(leechtime) as lt FROM snatched where userid = " . $arr['id'] . " LIMIT 1") or sqlerr(__FILE__, __LINE__);
+//		$arr2 = mysql_fetch_assoc($res2) or sqlerr(__FILE__, __LINE__);
+//
+//		//die("ss" . $arr2['st']);
+//		//die("sss" . "UPDATE users SET seedtime = " . $arr2['st'] . ", leechtime = " . $arr2['lt'] . " WHERE id = " . $arr['id']);
+//
+//		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
+//	}
 
-		//die("ss" . $arr2['st']);
-		//die("sss" . "UPDATE users SET seedtime = " . $arr2['st'] . ", leechtime = " . $arr2['lt'] . " WHERE id = " . $arr['id']);
+    $beginUid = 0;
+    do {
+        $command = sprintf(
+            '%s %s/artisan cleanup --action=seeding_leeching_time --begin_uid=%s --end_uid=%s',
+            $phpPath, $webRoot, $beginUid, $beginUid + $chunk
+        );
+        $result = exec("$command 2>&1", $output, $result_code);
+        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+        $beginUid += $chunk;
+    } while ($beginUid < $maxUid);
 
-		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
-	}
 	$log = "update total seeding and leeching time of users";
 	do_log($log);
 	if ($printProgress) {

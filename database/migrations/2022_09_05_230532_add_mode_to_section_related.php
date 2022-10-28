@@ -17,9 +17,11 @@ return new class extends Migration
     public function up()
     {
         foreach (self::$tables as $table) {
-            Schema::table($table, function (Blueprint $table) {
-                $table->integer('mode')->default(0);
-            });
+            if (!\Nexus\Database\NexusDB::hasColumn($table, 'mode')) {
+                Schema::table($table, function (Blueprint $table) {
+                    $table->integer('mode')->default(0);
+                });
+            }
         }
 
     }

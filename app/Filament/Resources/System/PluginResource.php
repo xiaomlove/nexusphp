@@ -4,6 +4,7 @@ namespace App\Filament\Resources\System;
 
 use App\Filament\Resources\System\PluginResource\Pages;
 use App\Filament\Resources\System\PluginResource\RelationManagers;
+use App\Jobs\ManagePlugin;
 use App\Models\Plugin;
 use Filament\Forms;
 use Filament\Resources\Form;
@@ -52,6 +53,7 @@ class PluginResource extends Resource
                 Tables\Columns\TextColumn::make('remote_url')->label(__('plugin.labels.remote_url')),
                 Tables\Columns\TextColumn::make('installed_version')->label(__('plugin.labels.installed_version')),
                 Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
+                Tables\Columns\TextColumn::make('updated_at')->label(__('plugin.labels.updated_at')),
             ])
             ->filters([
                 //
@@ -76,10 +78,11 @@ class PluginResource extends Resource
         $actions[] = self::buildInstallAction();
         $actions[] = self::buildUpdateAction();
         $actions[] = Tables\Actions\DeleteAction::make('delete')
-            ->hidden(fn ($record) => $record->status == Plugin::STATUS_NOT_INSTALLED)
+            ->hidden(fn ($record) => !in_array($record->status, Plugin::$showDeleteBtnStatus))
             ->using(function ($record) {
-            $record->update(['status' => Plugin::STATUS_PRE_DELETE]);
-        });
+                $record->update(['status' => Plugin::STATUS_PRE_DELETE]);
+                ManagePlugin::dispatch($record, 'delete');
+            });
         return $actions;
     }
 
@@ -89,9 +92,10 @@ class PluginResource extends Resource
             ->label(__('plugin.actions.install'))
             ->icon('heroicon-o-arrow-down')
             ->requiresConfirmation()
-            ->hidden(fn ($record) => $record->status == Plugin::STATUS_NORMAL)
+            ->hidden(fn ($record) => !in_array($record->status, Plugin::$showInstallBtnStatus))
             ->action(function ($record) {
                 $record->update(['status' => Plugin::STATUS_PRE_INSTALL]);
+                ManagePlugin::dispatch($record, 'install');
             })
         ;
     }
@@ -102,9 +106,10 @@ class PluginResource extends Resource
             ->label(__('plugin.actions.update'))
             ->icon('heroicon-o-arrow-up')
             ->requiresConfirmation()
-            ->hidden(fn ($record) => in_array($record->status, [Plugin::STATUS_NOT_INSTALLED, Plugin::STATUS_PRE_UPDATE]))
+            ->hidden(fn ($record) => !in_array($record->status, Plugin::$showUpdateBtnStatus))
             ->action(function ($record) {
                 $record->update(['status' => Plugin::STATUS_PRE_UPDATE]);
+                ManagePlugin::dispatch($record, 'update');
             })
         ;
     }
