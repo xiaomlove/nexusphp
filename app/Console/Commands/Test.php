@@ -90,8 +90,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = SearchBox::getSubCatOptions();
-        dd($r);
+        $columnInfo = NexusDB::getMysqlColumnInfo('searchbox', 'section_name');
+        dd($columnInfo);
     }
 
 

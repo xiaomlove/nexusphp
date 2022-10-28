@@ -262,12 +262,16 @@ class Update extends Install
         $shouldMigrateSearchBox = false;
         if (!NexusDB::hasColumn('searchbox', 'section_name')) {
             $shouldMigrateSearchBox = true;
+            $searchBoxLog = "no section_name field";
         } else {
             $columnInfo = NexusDB::getMysqlColumnInfo('searchbox', 'section_name');
+            $searchBoxLog = "has section_name, searchbox.section DATA_TYPE: " . $columnInfo['DATA_TYPE'];
             if ($columnInfo['DATA_TYPE'] != 'json') {
+                $searchBoxLog .= ", not json";
                 $shouldMigrateSearchBox = true;
             }
         }
+        $this->doLog("$searchBoxLog, shouldMigrateSearchBox: $shouldMigrateSearchBox");
         if ($shouldMigrateSearchBox) {
             $this->runMigrate('database/migrations/2022_09_05_230532_add_mode_to_section_related.php');
             $this->runMigrate('database/migrations/2022_09_06_004318_add_section_name_to_searchbox_table.php');
