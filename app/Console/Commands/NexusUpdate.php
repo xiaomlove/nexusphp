@@ -12,14 +12,14 @@ class NexusUpdate extends Command
      *
      * @var string
      */
-    protected $signature = 'nexus:update {--tag=} {--keep_tmp} {--include_composer}';
+    protected $signature = 'nexus:update {--tag=} {--branch=} {--keep_tmp} {--include_composer}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update nexusphp after code updated, remember run `composer update` first. Options: --tag=, --keep_tmp, --include_composer';
+    protected $description = 'Update nexusphp after code updated, remember run `composer update` first. Options: --tag=, --branch, --keep_tmp, --include_composer';
 
     private $update;
 
@@ -44,6 +44,7 @@ class NexusUpdate extends Command
         define('WITH_LARAVEL', true);
         require ROOT_PATH . 'nexus/Database/helpers.php';
         $tag = $this->option('tag');
+        $branch = $this->option('branch');
         $keepTmp = $this->option('keep_tmp');
         $includeComposer = $this->option('include_composer');
         $includes = [];
@@ -68,7 +69,11 @@ class NexusUpdate extends Command
         //Download
         if ($tag !== null) {
             if ($tag === 'dev') {
-                $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
+                if ($branch) {
+                    $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/{$branch}.zip";
+                } else {
+                    $url = "https://github.com/xiaomlove/nexusphp/archive/refs/heads/php8.zip";
+                }
             } else {
                 if (!str_starts_with($tag, 'v')) {
                     $tag = "v$tag";
