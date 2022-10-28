@@ -24,6 +24,13 @@ return [
         'menu' => 'Custom menu',
         'username_change_log' => 'Username change log',
         'torrent_deny_reason' => 'Deny Reasons',
+        'roles' => 'Role',
+        'permissions' => 'Permissions',
+        'section' => 'Search boxes',
+        'icon' => 'Category icons',
+        'plugin' => 'Plugins',
+        'category' => 'Categories',
+        'second_icon' => 'Second icons',
     ],
     'resources' => [
         'agent_allow' => [

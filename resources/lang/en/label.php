@@ -232,4 +232,80 @@ return [
             \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME => 'Rainbow ID',
         ],
     ],
+    'search_box' => [
+        'label' => 'Search box',
+        'name' => 'SearchBox Name',
+        'name_help' => 'Allowed Characters: [a-z] (in lower case), [0-9], [_./].',
+        'section_name' => 'Section name',
+        'section_name_help' => 'If set, displayed on the menu',
+        'is_default' => 'Default or not',
+        'showsubcat' => 'Show sub-category',
+        'taxonomies' => 'Taxonomy',
+        'taxonomy_display_text' => 'Display text',
+        'torrent_field' => 'Torrents table field',
+        'catsperrow' => 'Items per row',
+        'catsperrow_help' => "Set how many items should show in a row in searchbox, e.g. '8'.",
+        'catpadding' => "Padding between items",
+        'catpadding_help' => "In pixels. The horizional padding space between items in searchbox, e.g. '3'.",
+        'custom_fields' => 'Enable custom field	',
+        'custom_fields_display_name' => 'Custom field display name',
+        'custom_fields_display' => 'Custom field display',
+        'custom_fields_display_help' => "Use 'specific label' to represent custom field's label and value，such as one custom field's name is 'artist'，
+then it's label：<%artist.label%>，it's value：<%artist.value%>",
+        'category' => 'Category',
+        'torrent_field_duplicate' => 'Torrent table field::field cannot be reused!',
+        'taxonomy' => [
+            'name' => 'Name',
+            'sort_index' => 'Sort',
+            'sort_index_help' => "Ascendantly, i.e. '0' comes first.",
+            'class_name' => 'class attribute',
+            'class_name_help' => "The name of image file. Allowed Characters: [a-z] (in lower case), [0-9], [_./].",
+            'image' => 'Image',
+            'image_help' => 'The name of image file. Allowed Characters: [a-z] (in lower case), [0-9], [_./].',
+            'icon_id' => 'Category icon pack',
+            'mode' => 'SearchBox',
+            'mode_help' => 'Leave blank to indicate that it applies to all sections',
+        ],
+    ],
+    'icon' => [
+        'label' => 'Category icon',
+        'folder' => 'Icon Pack Folder',
+        'folder_help' => "The folder name of the icon pack. Allowed Characters: [a-z] (in lower case), [0-9], [_./].MUST add a trailing slash (/) at the end, e.g. 'mycaticon/'",
+        'cssfile' => 'CSS file',
+        'cssfile_help' => "CSS file for this icon pack. Enter the full path, e.g. 'styles/scenetorrents.css'. Leave it blank if none.
+Allowed Characters: [a-z] (in lower case), [0-9], [_./].",
+        'multilang' => 'Multi-lang.',
+        'multilang_help' => "Whether use different category icons for different languages. If set to 'yes', put several packs of icons in several folders named 'en', 'chs', etc.",
+        'secondicon' => 'Second Icon',
+        'secondicon_help' => "Whether use second icons for additional information. If set to 'yes', put second icons in a folder named 'additional' together with normal icons.",
+        'designer' => 'Designer',
+        'designer_help' => 'The person who designed the icon pack.',
+        'comment' => 'Comment',
+        'comment_help' => ' Infomation about the icon pack.',
+        'desc' => "You need to put the icons in the right directory for these settings to work. Put the normal icons in 'pic/category/searchbox_name/icon_pack_folder[language_short_name/]' and the second icons in 'pic/category/searchbox_name/icon_pack_folder[language_short_name/]additional/'.
+Don't get it? See if the following examples could help:
+When
+    searchbox_name='nhd'
+    icon_pack_folder='scenetorrents/'
+    multi-lang='yes'
+    second_icon='no'
+you should put an English normal icon file for movies (e.g. 'movies.png') in 'pic/category/nhd/scenetorrents/en/' .
+When
+    searchbox_name='chd'
+    icon_pack_folder='nanosofts/'
+    multi-lang='no'
+    second_icon='yes'
+you should put a normal icon file for movies (e.g. movies.png) in 'pic/category/chd/nanosofts/' and an additional icon file (e.g. 'bdh264.png') in 'pic/category/chd/nanosofts/additional/'.",
+    ],
+    'second_icon' => [
+        'label' => 'Second icon',
+        'name' => 'Name',
+        'name_help' => "Don't use long name. Recommend less than 10 letters.",
+        'image' => "Image",
+        'image_help' => "The name of image file. Allowed Characters: [a-z] (in lower case), [0-9], [_./].",
+        'class_name' => 'class attribute',
+        'class_name_help' => "The value of 'class' attribute of the image. Leave it blank if none. Allowed Characters: [a-z] (in lower case), [0-9], [_], and the first letter must be in [a-z].",
+        'select_section' => 'Selections',
+        'select_section_help' => "If a selection is not defined, all options from the selection are allowed for the rule. At least one selection should be defined.",
+    ],
 ];

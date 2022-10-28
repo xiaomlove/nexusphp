@@ -232,4 +232,76 @@ return [
             \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME => '彩虹 ID',
         ],
     ],
+    'search_box' => [
+        'label' => '分類模式',
+        'name' => '名稱',
+        'section_name' => '分區名稱',
+        'section_name_help' => '若設置，顯示在菜單上',
+        'is_default' => '是否默認',
+        'showsubcat' => '次分類',
+        'taxonomies' => '分類法',
+        'taxonomy_display_text' => '顯示文案',
+        'torrent_field' => '種子表字段',
+        'catsperrow' => '每行項目數',
+        'catsperrow_help' => "設置在搜索箱中每行顯示的項目數，如'8'。",
+        'catpadding' => "項目間距",
+        'catpadding_help' => "單位為像素。搜索箱中項目的水平間隔距離，如'3'。",
+        'custom_fields' => '啟用自字義字段',
+        'custom_fields_display_name' => '自定義字段展示名稱',
+        'custom_fields_display' => '自定義字段展示',
+        'custom_fields_display_help' => '使用特殊的標簽代表字段的名稱和值，如某字段其 Name 為 artist，則它的名稱為：<%artist.label%>，它的值為：<%artist.value%>',
+        'category' => '分類',
+        'torrent_field_duplicate' => '種子表字段：:field 不能重復使用！',
+        'taxonomy' => [
+            'name' => '名稱',
+            'sort_index' => '排序',
+            'sort_index_help' => "遞增排序，即'0'排在最前。",
+            'class_name' => 'class屬性值',
+            'class_name_help' => "為圖片指定class屬性值。若無請留空。允許的字符: [a-z]（小寫），[0-9]，[_]，第一個字符必須是字母。",
+            'image' => '圖片文件名',
+            'image_help' => '圖片文件的名字。允許的字符：[a-z]（小寫），[0-9]，[_./]。',
+            'icon_id' => '分類圖標',
+            'mode' => '分區',
+            'mode_help' => '留空表示適用於全部分區',
+        ],
+    ],
+    'icon' => [
+        'label' => '分類圖標',
+        'folder' => '圖標文件夾',
+        'folder_help' => "分類圖標所在的文件夾名。允許的字符：[a-z]（小寫），[0-9]，[_./]。必須在末尾添加斜杠(/)，如'mycaticon/'",
+        'cssfile' => 'CSS 文件',
+        'cssfile_help' => "為此分類圖標指定CSS文件。填寫完整路徑，如'styles/scenetorrents.css'。若無請留空。允許的字符：[a-z]（小寫），[0-9]，[_./]。",
+        'multilang' => '多語言',
+        'multilang_help' => "是否為不同語言使用不同的分類圖標。如果設為'是'，將多份圖標分別放入命名如'en'，'chs'等的文件夾中。",
+        'secondicon' => '第二圖標',
+        'secondicon_help' => "是否使用第二圖標顯示補充信息。如果設為'是'，將第二圖標放入普通圖標目錄下命名為'additional'的文件夾中。",
+        'designer' => '設計者',
+        'designer_help' => '此圖標集的設計者。',
+        'comment' => '說明',
+        'comment_help' => '此圖標集的說明。',
+        'desc' => "你必須將圖標文件放入服務器正確的目錄才能使得以下設定起作用。將普通的分類圖標放入'pic/category/分類模式名字/圖標文件夾[語言縮寫/]'，將第二圖標放入'pic/category/分類模式名字/圖標文件夾[語言縮寫/]additional/'.不明白？參考下面的例子：
+當
+    分類模式名字='nhd'
+    圖標文件夾='scenetorrents/'
+    多語言='是'
+    第二圖標='否'
+你應該將一個英語的電影類型的圖標（如'movies.png'）文件放入'pic/category/nhd/scenetorrents/en/'。
+當
+    分類模式名字='chd'
+    圖標文件夾='nanosofts/'
+    多語言='否'
+    第二圖標='是'
+你應該將一個電影類型的圖標（如'movies.png'）文件放入'pic/category/chd/nanosofts/'，將一個第二圖標（如'bdh264.png'）放入'pic/category/chd/nanosofts/additional/'。",
+    ],
+    'second_icon' => [
+        'label' => '第二圖標',
+        'name' => '名字',
+        'name_help' => '不要使用過長的名字。建議在10個字母內。',
+        'image' => "圖片文件名",
+        'image_help' => "圖片文件的名字。允許的字符：[a-z]（小寫），[0-9]，[_./]。",
+        'class_name' => 'class屬性值',
+        'class_name_help' => "為圖片指定class屬性值。若無請留空。允許的字符: [a-z]（小寫），[0-9]，[_]，第一個字符必須是字母。",
+        'select_section' => '選擇',
+        'select_section_help' => "如果某個選擇未指定，其所有選項都符合此規則。必須至少指定一個選擇。",
+    ],
 ];

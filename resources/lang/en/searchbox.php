@@ -8,7 +8,7 @@ return [
     'sub_category_team_label' => 'Team',
     'sub_category_processing_label' => 'Processing',
     'sub_category_codec_label' => 'Codec',
-    'sub_category_audio_codec_label' => 'AudioCodec',
+    'sub_category_audiocodec_label' => 'AudioCodec',
     'extras' => [
         \App\Models\SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => 'Display cover on torrent list',
         \App\Models\SearchBox::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => 'Display seed box icon on torrent list',

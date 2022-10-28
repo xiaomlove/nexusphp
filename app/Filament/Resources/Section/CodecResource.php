@@ -61,8 +61,10 @@ class CodecResource extends Resource
                     ->options(SearchBox::query()->pluck('name', 'id')->toArray())
                     ->label(__('label.search_box.taxonomy.mode'))
                     ->query(function (Builder $query, array $data) {
-                        return $query->where(function (Builder $query) use ($data) {
-                            return $query->where('mode', 0)->orWhere('mode', $data['value']);
+                        return $query->when($data['value'], function (Builder $query, $value) {
+                            return $query->where(function (Builder $query) use ($value) {
+                                return $query->where('mode', $value)->orWhere('mode', 0);
+                            });
                         });
                     })
                 ,

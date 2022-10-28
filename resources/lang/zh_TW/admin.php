@@ -24,6 +24,13 @@ return [
         'menu' => '自定義菜單',
         'username_change_log' => '改名記錄',
         'torrent_deny_reason' => '拒絕原因',
+        'roles' => '角色',
+        'permissions' => '權限',
+        'section' => '分類模式',
+        'icon' => '分類圖標',
+        'plugin' => '插件',
+        'category' => '主分類',
+        'second_icon' => '第二圖標',
     ],
     'resources' => [
         'agent_allow' => [
