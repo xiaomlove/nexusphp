@@ -3,7 +3,7 @@
 return [
     'category_label' => '分類',
     'sub_category_source_label' => '來源',
-    'sub_category_media_label' => '媒介',
+    'sub_category_medium_label' => '媒介',
     'sub_category_standard_label' => '分辨率',
     'sub_category_team_label' => '製作組',
     'sub_category_processing_label' => '處理',
