@@ -817,6 +817,7 @@ if ($approvalStatusIconEnabled == 'yes' || (user_can('torrent-approval') && $app
 if ($showApprovalStatusFilter && isset($_REQUEST['approval_status']) && is_numeric($_REQUEST['approval_status'])) {
     $approvalStatus = intval($_REQUEST['approval_status']);
     $wherea[] = "torrents.approval_status = $approvalStatus";
+    $addparam .= "approval_status=$approvalStatus&";
 } elseif ($approvalStatusNoneVisible == 'no' && !user_can('torrent-approval')) {
     $wherea[] = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }

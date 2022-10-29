@@ -407,7 +407,7 @@ class Update extends Install
 
         foreach (glob("$extractDir/*") as $path) {
             if (is_dir($path)) {
-                $excludes = array_merge(ToolRepository::BACKUP_EXCLUDES, ['public/favicon.ico', '.env']);
+                $excludes = array_merge(ToolRepository::BACKUP_EXCLUDES, ['public/favicon.ico', '.env', 'public/pic/category/chd']);
                 if (!in_array('composer', $includes)) {
                     $excludes[] = 'composer.lock';
                     $excludes[] = 'composer.json';
