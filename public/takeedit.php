@@ -236,7 +236,7 @@ if (!empty($_POST['custom_fields'][$newcatmode])) {
  *
  * @since v1.6
  */
-$tagIdArr = array_filter($_POST['tags'] ?? []);
+$tagIdArr = array_filter($_POST['tags'][$newcatmode] ?? []);
 insert_torrent_tags($id, $tagIdArr, true);
 
 if($CURUSER["id"] == $row["owner"])

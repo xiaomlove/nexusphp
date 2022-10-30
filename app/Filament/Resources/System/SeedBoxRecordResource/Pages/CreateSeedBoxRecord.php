@@ -22,7 +22,7 @@ class CreateSeedBoxRecord extends CreateRecord
         $rep = new SeedBoxRepository();
         try {
             $this->record = $rep->store($data);
-            $this->notify('success', $this->getCreatedNotificationMessage());
+            $this->notify('success', $this->getCreatedNotificationTitle());
             if ($another) {
                 // Ensure that the form record is anonymized so that relationships aren't loaded.
                 $this->form->model($this->record::class);

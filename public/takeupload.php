@@ -407,7 +407,7 @@ if (!empty($_POST['custom_fields'][$catmod])) {
  *
  * @since v1.6
  */
-$tagIdArr = array_filter($_POST['tags'] ?? []);
+$tagIdArr = array_filter($_POST['tags'][$catmod] ?? []);
 if (!empty($tagIdArr)) {
     insert_torrent_tags($id, $tagIdArr);
 }

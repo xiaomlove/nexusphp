@@ -264,7 +264,7 @@ then it's label：<%artist.label%>，it's value：<%artist.value%>",
             'image_help' => 'The name of image file. Allowed Characters: [a-z] (in lower case), [0-9], [_./].',
             'icon_id' => 'Category icon pack',
             'mode' => 'SearchBox',
-            'mode_help' => 'Leave blank to indicate that it applies to all sections',
+            'mode_help' => 'Leave blank to indicate that it applies to all SearchBox',
         ],
     ],
     'icon' => [

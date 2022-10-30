@@ -7,7 +7,7 @@ class AudioCodec extends NexusModel
 {
     protected $table = 'audiocodecs';
 
-    protected $fillable = ['name', 'sort_index'];
+    protected $fillable = ['name', 'sort_index', 'mode',];
 
     public static function getLabelName()
     {

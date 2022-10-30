@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Section;
 
-use App\Filament\Resources\System\SectionResource\Pages;
-use App\Filament\Resources\System\SectionResource\RelationManagers;
+use App\Filament\Resources\Section\SectionResource\Pages;
+use App\Filament\Resources\Section\SectionResource\RelationManagers;
 use App\Http\Middleware\Locale;
 use App\Models\Forum;
 use App\Models\SearchBox;

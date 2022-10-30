@@ -50,27 +50,27 @@ class TagRepository extends BaseRepository
         return Tag::query()->orderBy('priority', 'desc')->orderBy('id', 'desc');
     }
 
-    public function renderCheckbox(array $checked = [], $ignorePermission = false): string
+    public function renderCheckbox(int $searchBoxId, array $checked = [], $ignorePermission = false): string
     {
         $html = '';
-        $results = $this->listAll();
+        $results = $this->listAll($searchBoxId);
         if (!$ignorePermission && !user_can('torrent-set-special-tag')) {
             $specialTags = Tag::listSpecial();
             $results = $results->filter(fn ($item) => !in_array($item->id, $specialTags));
         }
         foreach ($results as $value) {
             $html .= sprintf(
-                '<label><input type="checkbox" name="tags[]" value="%s"%s />%s</label>',
-                $value->id, in_array($value->id, $checked) ? ' checked' : '', $value->name
+                '<label><input type="checkbox" name="tags[%s][]" value="%s"%s />%s</label>',
+                $searchBoxId, $value->id, in_array($value->id, $checked) ? ' checked' : '', $value->name
             );
         }
         return $html;
     }
 
-    public function renderSpan(array $renderIdArr = [], $withFilterLink = false): string
+    public function renderSpan(int $searchBoxId, array $renderIdArr = [], $withFilterLink = false): string
     {
         $html = '';
-        foreach ($this->listAll() as $value) {
+        foreach ($this->listAll($searchBoxId) as $value) {
             if (in_array($value->id, $renderIdArr) || (isset($renderIdArr[0]) && $renderIdArr[0] == '*')) {
                 $tagId = $value->id;
                 if ($value) {
@@ -149,17 +149,20 @@ class TagRepository extends BaseRepository
         return self::$orderByFieldIdString;
     }
 
-    public function listAll()
+    public function listAll(int $searchBoxId = 0): \Illuminate\Database\Eloquent\Collection|array
     {
         if (empty(self::$allTags)) {
             self::$allTags = self::createBasicQuery()->get();
         }
+        if ($searchBoxId > 0) {
+            return self::$allTags->filter(fn ($d) => in_array($d->mode, [0, $searchBoxId]));
+        }
         return self::$allTags;
     }
 
-    public function buildSelect($name, $value): string
+    public function buildSelect(int $searchBoxId, $name, $value): string
     {
-        $list = $this->listAll();
+        $list = $this->listAll($searchBoxId);
         $select = sprintf('<select name="%s"><option value="">%s</option>', $name, nexus_trans('nexus.select_one_please'));
         foreach ($list as $item) {
             $selected = '';

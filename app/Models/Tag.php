@@ -7,7 +7,9 @@ class Tag extends NexusModel
     public $timestamps = true;
 
     protected $fillable = [
-        'id', 'name', 'color', 'priority', 'created_at', 'updated_at', 'font_size', 'font_color', 'padding', 'margin', 'border_radius'
+        'id', 'name', 'color', 'priority', 'created_at', 'updated_at',
+        'font_size', 'font_color', 'padding', 'margin', 'border_radius',
+        'mode',
     ];
 
     const DEFAULTS = [
@@ -64,6 +66,11 @@ class Tag extends NexusModel
     public function torrent_tags(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TorrentTag::class, 'tag_id');
+    }
+
+    public function search_box(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(SearchBox::class, 'mode', 'id');
     }
 
 

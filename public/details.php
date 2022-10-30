@@ -132,7 +132,7 @@ if (!$row) {
         $torrentTags = \App\Models\TorrentTag::query()->where('torrent_id', $row['id'])->get();
         if ($torrentTags->isNotEmpty()) {
             $tagRep = new \App\Repositories\TagRepository();
-            tr($lang_details['row_tags'], $tagRep->renderSpan($torrentTags->pluck('tag_id')->toArray()),true);
+            tr($lang_details['row_tags'], $tagRep->renderSpan($row['search_box_id'], $torrentTags->pluck('tag_id')->toArray()),true);
         }
 
 		$size_info =  "<b>".$lang_details['text_size']."</b>" . mksize($row["size"]);

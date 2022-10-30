@@ -599,8 +599,8 @@ elseif ($action == 'bonussettings'){
 	tr($lang_settings['row_official_addition'],$lang_settings['text_user_would_get_by_official']."<input type='text' style=\"width: 50px\" name=official_addition value='".(isset($BONUS["official_addition"]) ? $BONUS["official_addition"] : 0.5 )."'>".$lang_settings['text_addition_addition_note'], 1);
 
 	$tagRep = new \App\Repositories\TagRepository();
-	tr($lang_settings['row_official_tag'], $tagRep->buildSelect('official_tag', $BONUS["official_tag"] ?? '') . $lang_settings['text_official_tag_note'], 1);
-	tr($lang_settings['row_zero_bonus_tag'], $tagRep->buildSelect('zero_bonus_tag', $BONUS["zero_bonus_tag"] ?? '') . $lang_settings['text_zero_bonus_tag_note'], 1);
+	tr($lang_settings['row_official_tag'], $tagRep->buildSelect(0,'official_tag', $BONUS["official_tag"] ?? '') . $lang_settings['text_official_tag_note'], 1);
+	tr($lang_settings['row_zero_bonus_tag'], $tagRep->buildSelect(0,'zero_bonus_tag', $BONUS["zero_bonus_tag"] ?? '') . $lang_settings['text_zero_bonus_tag_note'], 1);
 
 	print("<tr><td colspan=2 align=center><b>".$lang_settings['text_things_cost_bonus']."</b></td></tr>");
 	tr($lang_settings['row_one_gb_credit'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=onegbupload value='".(isset($BONUS["onegbupload"]) ? $BONUS["onegbupload"] : 300 )."'>".$lang_settings['text_one_gb_credit_note'], 1);

@@ -5,7 +5,7 @@ namespace App\Models;
 
 class Source extends NexusModel
 {
-    protected $fillable = ['name', 'sort_index'];
+    protected $fillable = ['name', 'sort_index', 'mode',];
 
     public static function getLabelName()
     {

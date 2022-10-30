@@ -7,7 +7,7 @@ class Processing extends NexusModel
 {
     protected $table = 'processings';
 
-    protected $fillable = ['name', 'sort_index'];
+    protected $fillable = ['name', 'sort_index', 'mode',];
 
     public static function getLabelName()
     {

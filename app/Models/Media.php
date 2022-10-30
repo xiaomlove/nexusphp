@@ -7,7 +7,7 @@ class Media extends NexusModel
 {
     protected $table = 'media';
 
-    protected $fillable = ['name', 'sort_index'];
+    protected $fillable = ['name', 'sort_index', 'mode',];
 
     public static function getLabelName()
     {

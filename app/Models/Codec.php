@@ -7,7 +7,7 @@ class Codec extends NexusModel
 {
     protected $table = 'codecs';
 
-    protected $fillable = ['name', 'sort_index'];
+    protected $fillable = ['name', 'sort_index', 'mode',];
 
     public static function getLabelName()
     {

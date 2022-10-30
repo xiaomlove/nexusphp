@@ -18,7 +18,7 @@ if (!$row) die();
  */
 $customField = new \Nexus\Field\Field();
 $hitAndRunRep = new \App\Repositories\HitAndRunRepository();
-
+$tagRep = new \App\Repositories\TagRepository();
 $tagIdArr = \App\Models\TorrentTag::query()->where('torrent_id', $id)->get()->pluck('tag_id')->toArray();
 $searchBoxRep = new \App\Repositories\SearchBoxRepository();
 if ($enablespecial == 'yes' && user_can('movetorrent'))
@@ -154,15 +154,15 @@ else {
     tr($lang_edit['row_quality'], $sectionCurrent, 1, "mode_$sectionmode");
     echo $customField->renderOnUploadPage($id, $sectionmode);
     echo $hitAndRunRep->renderOnUploadPage($row['hr'], $sectionmode);
+    tr($lang_functions['text_tags'], $tagRep->renderCheckbox($sectionmode, $tagIdArr), 1, "mode_$sectionmode");
 
     if ($allowmove && $othermode) {
         $selectOther = $searchBoxRep->renderTaxonomySelect($othermode, $row);
         tr($lang_edit['row_quality'], $selectOther, 1, "mode_$othermode");
         echo $customField->renderOnUploadPage($id, $othermode);
         echo $hitAndRunRep->renderOnUploadPage($row['hr'], $othermode);
+        tr($lang_functions['text_tags'], $tagRep->renderCheckbox($othermode, $tagIdArr), 1, "mode_$othermode");
     }
-
-    tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox($tagIdArr), 1);
 
 	$rowChecks = [];
 	if (user_can('beanonymous') || user_can('torrentmanage')) {

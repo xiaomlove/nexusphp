@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Torrent;
 
 use App\Filament\Resources\Torrent\TagResource\Pages;
 use App\Filament\Resources\Torrent\TagResource\RelationManagers;
+use App\Models\SearchBox;
 use App\Models\Tag;
 use Filament\Forms;
 use Filament\Resources\Form;
@@ -45,6 +46,11 @@ class TagResource extends Resource
                 Forms\Components\TextInput::make('padding')->required()->label(__('label.tag.padding')),
                 Forms\Components\TextInput::make('border_radius')->required()->label(__('label.tag.border_radius')),
                 Forms\Components\TextInput::make('priority')->integer()->required()->label(__('label.priority'))->default(0),
+                Forms\Components\Select::make('mode')
+                    ->options(SearchBox::query()->pluck('name', 'id')->toArray())
+                    ->label(__('label.search_box.taxonomy.mode'))
+                    ->helperText(__('label.search_box.taxonomy.mode_help'))
+                ,
             ]);
     }
 
@@ -53,6 +59,10 @@ class TagResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('search_box.name')
+                    ->label(__('label.search_box.label'))
+                    ->formatStateUsing(fn ($record) => $record->search_box->name ?? 'All')
+                ,
                 Tables\Columns\TextColumn::make('name')->label(__('label.name'))->searchable(),
                 Tables\Columns\TextColumn::make('color')->label(__('label.tag.color')),
                 Tables\Columns\TextColumn::make('font_color')->label(__('label.tag.font_color')),
@@ -66,7 +76,17 @@ class TagResource extends Resource
             ])
             ->defaultSort('priority', 'desc')
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('mode')
+                    ->options(SearchBox::query()->pluck('name', 'id')->toArray())
+                    ->label(__('label.search_box.taxonomy.mode'))
+                    ->query(function (Builder $query, array $data) {
+                        return $query->when($data['value'], function (Builder $query, $value) {
+                            return $query->where(function (Builder $query) use ($value) {
+                                return $query->where('mode', $value)->orWhere('mode', 0);
+                            });
+                        });
+                    })
+                ,
             ])
             ->actions(self::getActions())
             ->bulkActions([

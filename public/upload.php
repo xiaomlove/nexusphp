@@ -41,6 +41,7 @@ $showaudiocodec = (($allowtorrents && get_searchbox_value($brsectiontype, 'showa
 $settingMain = get_setting('main');
 $torrentRep = new \App\Repositories\TorrentRepository();
 $searchBoxRep = new \App\Repositories\SearchBoxRepository();
+$tagRep = new \App\Repositories\TagRepository();
 stdhead($lang_upload['head_upload']);
 ?>
 	<form id="compose" enctype="multipart/form-data" action="takeupload.php" method="post" name="upload">
@@ -158,12 +159,14 @@ stdhead($lang_upload['head_upload']);
                     tr($lang_upload['row_quality'], $selectNormal, 1, "mode_$browsecatmode");
                     echo $customField->renderOnUploadPage(0, $browsecatmode);
                     echo $hitAndRunRep->renderOnUploadPage('', $browsecatmode);
+                    tr($lang_functions['text_tags'], $tagRep->renderCheckbox($browsecatmode), 1, "mode_$browsecatmode");
                 }
                 if ($allowspecial) {
                     $selectNormal = $searchBoxRep->renderTaxonomySelect($specialcatmode);
                     tr($lang_upload['row_quality'], $selectNormal, 1, "mode_$specialcatmode");
                     echo $customField->renderOnUploadPage(0, $specialcatmode);
                     echo $hitAndRunRep->renderOnUploadPage('', $specialcatmode);
+                    tr($lang_functions['text_tags'], $tagRep->renderCheckbox($specialcatmode), 1, "mode_$specialcatmode");
                 }
 
 				//==== offer dropdown for offer mod  from code by S4NE
@@ -229,7 +232,6 @@ JS;
 				{
 					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" />".$lang_upload['checkbox_hide_uploader_note'], 1);
 				}
-                tr($lang_functions['text_tags'], (new \App\Repositories\TagRepository())->renderCheckbox(), 1);
 				?>
 				<tr><td class="toolbox" align="center" colspan="2"><b><?php echo $lang_upload['text_read_rules']?></b> <input id="qr" type="submit" class="btn" value="<?php echo $lang_upload['submit_upload']?>" /></td></tr>
 		</table>

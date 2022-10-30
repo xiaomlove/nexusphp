@@ -43,7 +43,12 @@ if ($row["enabled"] == "no")
 if (isset($_POST["securelogin"]) && $_POST["securelogin"] == "yes")
 {
 	$securelogin_indentity_cookie = true;
-	$passh = md5($row["passhash"].$ip);
+    /**
+     * Not IP related
+     * @since 1.8.0
+     */
+//	$passh = md5($row["passhash"].$ip);
+	$passh = md5($row["passhash"]);
 	$log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, md5: $passh";
 }
 else

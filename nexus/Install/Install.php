@@ -132,7 +132,10 @@ class Install
             $filename = basename($path);
             $count = preg_match('/create_(.*)_table.php/', $filename, $matches);
             if ($count) {
-                $tables[$matches[1]] = "database/migrations/$filename";
+                $tableName = $matches[1];
+                //Special treatment
+                $tableName = str_replace("seedbox_records", "seed_box_records", $tableName);
+                $tables[$tableName] = "database/migrations/$filename";
             }
         }
         return $tables;
@@ -535,7 +538,6 @@ class Install
     public function listShouldCreateTable()
     {
         $existsTable = $this->listExistsTable();
-//        $tableCreate = $this->listAllTableCreate();
         $tableCreate = $this->listAllTableCreateFromMigrations();
         $shouldCreateTable = [];
         foreach ($tableCreate as $table => $sql) {

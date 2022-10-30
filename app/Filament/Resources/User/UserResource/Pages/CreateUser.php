@@ -20,7 +20,7 @@ class CreateUser extends CreateRecord
             $this->record = $userRep->store($data);
             $this->notify(
                 'success ',
-                $this->getCreatedNotificationMessage(),
+                $this->getCreatedNotificationTitle(),
             );
             $this->redirect($this->getRedirectUrl());
         } catch (\Exception $exception) {

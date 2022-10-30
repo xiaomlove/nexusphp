@@ -5,14 +5,6 @@ require_once(get_langfile_path('torrents.php'));
 require_once(get_langfile_path('speical.php'));
 loggedinorreturn();
 parked();
-
-/**
- * tags
- */
-$tagRep = new \App\Repositories\TagRepository();
-$allTags = $tagRep->listAll();
-$elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
-
 //check searchbox
 switch (nexus()->getScript()) {
     case 'torrents':
@@ -30,6 +22,13 @@ switch (nexus()->getScript()) {
     default:
         $sectiontype = 0;
 }
+/**
+ * tags
+ */
+$tagRep = new \App\Repositories\TagRepository();
+$allTags = $tagRep->listAll($sectiontype);
+$elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
+
 $showsubcat = get_searchbox_value($sectiontype, 'showsubcat');//whether show subcategory (i.e. sources, codecs) or not
 $showsource = get_searchbox_value($sectiontype, 'showsource'); //whether show sources or not
 $showmedium = get_searchbox_value($sectiontype, 'showmedium'); //whether show media or not
@@ -1143,7 +1142,7 @@ if (!$Cache->get_page()){
 echo $Cache->next_row();
 
 if ($allTags->isNotEmpty()) {
-    echo '<tr><td colspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan(['*'], true) . '</td></tr>';
+    echo '<tr><td colspan="3" class="embedded" style="padding-top: 4px">' . $tagRep->renderSpan($sectiontype, ['*'], true) . '</td></tr>';
 }
 
 ?>

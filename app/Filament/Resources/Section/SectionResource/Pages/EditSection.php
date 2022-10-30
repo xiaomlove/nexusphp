@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\System\SectionResource\Pages;
+namespace App\Filament\Resources\Section\SectionResource\Pages;
 
 use App\Filament\Resources\Section\SectionResource;
 use App\Models\SearchBox;

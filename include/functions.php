@@ -1985,7 +1985,12 @@ function userlogin() {
 
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
-        $md5 = md5($row["passhash"].$ip);
+        /**
+         * Not IP related
+         * @since 1.8.0
+         */
+//        $md5 = md5($row["passhash"].$ip);
+        $md5 = md5($row["passhash"]);
         $log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, md5: $md5";
 		if ($_COOKIE["c_secure_pass"] != $md5) {
 		    do_log("$log, c_secure_pass != md5");
@@ -3619,7 +3624,7 @@ foreach ($rows as $row)
      */
     $tagOwns = $torrentTagResult->get($id);
     if ($tagOwns) {
-        $tags = $tagRep->renderSpan($tagOwns->pluck('tag_id')->toArray());
+        $tags = $tagRep->renderSpan($row['search_box_id'], $tagOwns->pluck('tag_id')->toArray());
     } else {
         $tags = '';
     }
@@ -6025,7 +6030,6 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
     //Category
     $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', nexus_trans('label.search_box.category'));
     $categoryChunks = $searchBox->categories->chunk($searchBox->catsperrow);
-    $lang = get_langfolder_cookie();
     foreach ($categoryChunks as $chunk) {
         $html .= '<tr>';
         foreach ($chunk as $item) {
