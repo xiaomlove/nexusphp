@@ -148,7 +148,7 @@ else {
 	}
     echo $customField->renderOnUploadPage($id, $browsecatmode);
 	echo $hitAndRunRep->renderOnUploadPage($row['hr'], $browsecatmode);
-	if ($enablespecial) {
+	if ($enablespecial == 'yes') {
 	    $customField->renderOnUploadPage($id, $specialcatmode);
         echo $hitAndRunRep->renderOnUploadPage($row['hr'], $specialcatmode);
     }

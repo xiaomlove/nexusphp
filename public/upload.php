@@ -152,7 +152,7 @@ stdhead($lang_upload['head_upload']);
 				$hitAndRunRep = new \App\Repositories\HitAndRunRepository();
                 echo $customField->renderOnUploadPage(0, $browsecatmode);
                 echo $hitAndRunRep->renderOnUploadPage('', $browsecatmode);
-                if ($enablespecial) {
+                if ($enablespecial == 'yes') {
                     echo $customField->renderOnUploadPage(0, $specialcatmode);
                     echo $hitAndRunRep->renderOnUploadPage('', $specialcatmode);
                 }
