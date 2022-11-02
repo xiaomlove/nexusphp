@@ -881,7 +881,7 @@ if ($CURUSER["torrentsperpage"])
 $torrentsperpage = (int)$CURUSER["torrentsperpage"];
 elseif ($torrentsperpage_main)
 	$torrentsperpage = $torrentsperpage_main;
-else $torrentsperpage = 50;
+else $torrentsperpage = 100;
 
 do_log("[TORRENT_COUNT_SQL] $sql", 'debug');
 

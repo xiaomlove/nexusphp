@@ -41,7 +41,7 @@ stdhead($lang_getrss['head_rss_feeds']);
 $query = [];
 $query[] = "passkey=" . $CURUSER['passkey'];
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-	$allowed_showrows=array('10','20','30','40','50');
+	$allowed_showrows=array('10','50','100','200');
 	$link = get_protocol_prefix(). $BASEURL ."/torrentrss.php";
 	if (isset($_POST['showrows']) && in_array($_POST['showrows'], $allowed_showrows, 1))
 		$query[] = "rows=".(int)$_POST['showrows'];
