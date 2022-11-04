@@ -301,8 +301,12 @@ class SearchRepository extends BaseRepository
             $idName => $this->getTorrentId($torrent->id),
             'routing' => $torrent->owner,
         ];
+        $searchBoxId = $torrent->basic_category->mode ?? 0;
+        if ($searchBoxId == 0) {
+            do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $torrent->id), 'error');
+        }
         $data = Arr::only($torrent->toArray(), $baseFields);
-        $data['mode'] = $torrent->basic_category->mode;
+        $data['mode'] = $searchBoxId;
         $body = array_merge($data, [
             '_doc_type' => $docType,
             'torrent_id' => $torrent->id,
