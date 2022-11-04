@@ -40,7 +40,7 @@ class CategoryResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('mode')
-                    ->options(SearchBox::query()->pluck('name', 'id')->toArray())
+                    ->options(SearchBox::listModeOptions())
                     ->label(__('label.search_box.label'))
                     ->required()
                 ,

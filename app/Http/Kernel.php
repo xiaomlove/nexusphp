@@ -45,6 +45,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Platform::class,
         ],
+        'filament' => [
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Filament\Http\Middleware\Authenticate::class,
+        ],
     ];
 
     /**
@@ -58,7 +62,6 @@ class Kernel extends HttpKernel
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.nexus' => \App\Http\Middleware\NexusAuth::class,
-        'auth.filament' => \Filament\Http\Middleware\Authenticate::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,

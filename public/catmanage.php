@@ -679,6 +679,7 @@ elseif($action == 'add')
 }
 elseif($action == 'submit')
 {
+    die("This method is deprecated! This method is no longer available in 1.8, it does not save data correctly, please go to the management system!");
 	$dbtablename=return_category_db_table_name($type);
 	if ($_POST['isedit']){
 		$id = intval($_POST['id'] ?? 0);

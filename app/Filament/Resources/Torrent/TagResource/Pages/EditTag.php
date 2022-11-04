@@ -21,4 +21,5 @@ class EditTag extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
 }

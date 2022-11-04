@@ -44,19 +44,13 @@ class SecondIconResource extends Resource
         $specialMode = Setting::get('main.specialcat');
         $torrentTaxonomySchema = $searchBoxRep->listTaxonomyFormSchema($torrentMode);
         $specialTaxonomySchema = $searchBoxRep->listTaxonomyFormSchema($specialMode);
-        $modeOptions = SearchBox::query()->whereIn('id', [$torrentMode, $specialMode])->pluck('name', 'id')->toArray();
+        $modeOptions = SearchBox::listModeOptions();
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label(__('label.name'))
                     ->required()
                     ->helperText(__('label.second_icon.name_help'))
-                ,
-                Forms\Components\Select::make('mode')
-                    ->label(__('label.search_box.label'))
-                    ->options($modeOptions)
-                    ->required()
-                    ->reactive()
                 ,
                 Forms\Components\TextInput::make('image')
                     ->label(__('label.second_icon.image'))
@@ -78,6 +72,11 @@ class SecondIconResource extends Resource
                     ->schema($specialTaxonomySchema)
                     ->columns(4)
                     ->hidden(fn (\Closure $get) => $get('mode') != $specialMode)
+                ,
+                Forms\Components\Select::make('mode')
+                    ->options($modeOptions)
+                    ->label(__('label.search_box.taxonomy.mode'))
+                    ->helperText(__('label.search_box.taxonomy.mode_help'))
                 ,
             ]);
     }
@@ -109,6 +108,7 @@ class SecondIconResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

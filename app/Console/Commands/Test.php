@@ -33,6 +33,7 @@ use App\Repositories\ToolRepository;
 use App\Repositories\TorrentRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
+use Filament\Notifications\Notification;
 use GeoIp2\Database\Reader;
 use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
@@ -90,8 +91,15 @@ class Test extends Command
      */
     public function handle()
     {
-        $columnInfo = NexusDB::getMysqlColumnInfo('searchbox', 'section_name');
-        dd($columnInfo);
+//        Notification::make()
+//            ->success()
+//            ->title('Test Test')
+//            ->send()
+//        ;
+        $key = 'sbsb';
+        $r = session()->push($key, [1,2,3]);
+        $r = session()->get($key);
+        dd($r);
     }
 
 

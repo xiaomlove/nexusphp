@@ -114,6 +114,7 @@ return [
     ],
     'exam' => [
         'label' => '考核',
+        'is_done' => '是否完成',
         'is_discovered' => '自动发现',
         'register_time_range' => [
             'begin' => '注册时间开始',
@@ -262,6 +263,7 @@ return [
         'custom_fields_display_help' => '使用特殊的标签代表字段的名称和值，如某字段其 Name 为 artist，则它的名称为：<%artist.label%>，它的值为：<%artist.value%>',
         'category' => '分类',
         'torrent_field_duplicate' => '种子表字段：:field 不能重复使用！',
+        'other' => '其他',
         'taxonomy' => [
             'name' => '名称',
             'sort_index' => '排序',

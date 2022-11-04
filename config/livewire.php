@@ -81,8 +81,8 @@ return [
     |
     */
 
-    'middleware_group' => 'auth.filament',
 //    'middleware_group' => 'web',
+    'middleware_group' => 'filament',
 
     /*
     |--------------------------------------------------------------------------

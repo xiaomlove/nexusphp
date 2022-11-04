@@ -87,6 +87,12 @@ class SectionResource extends Resource
                     ->label(__('label.search_box.custom_fields_display'))
                     ->helperText(__('label.search_box.custom_fields_display_help'))
                 ,
+                Forms\Components\CheckboxList::make('other')
+                    ->options(SearchBox::listExtraText())
+                    ->columns(2)
+                    ->label(__('label.search_box.other'))
+                ,
+
                 Forms\Components\Section::make(__('label.search_box.section_name'))
                     ->schema($sectionNameLocalSchema)
                     ->columns(count($sectionNameLocalSchema))

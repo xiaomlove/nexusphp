@@ -11,6 +11,8 @@ class SearchBox extends NexusModel
 {
     private static array $instances = [];
 
+    private static array $modeOptions = [];
+
     protected $table = 'searchbox';
 
     protected $fillable = [
@@ -18,7 +20,8 @@ class SearchBox extends NexusModel
         'showsource', 'showmedium', 'showcodec', 'showstandard', 'showprocessing', 'showteam', 'showaudiocodec',
         'custom_fields', 'custom_fields_display_name', 'custom_fields_display',
         'extra->' . self::EXTRA_TAXONOMY_LABELS,
-        'extra->' . self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST
+        'extra->' . self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST,
+        'extra->' . self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST,
     ];
 
     protected $casts = [
@@ -55,27 +58,36 @@ class SearchBox extends NexusModel
         self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST => ['text' => 'Display seed box icon on torrent list'],
     ];
 
-    public static function listExtraText(): array
+    public static function listExtraText($fullName = false): array
     {
         $result = [];
-        foreach (self::$extras as $extra => $info) {
-            $result[$extra] = nexus_trans("searchbox.extras.$extra");
+        foreach (self::$extras as $field => $info) {
+            if ($fullName) {
+                $name = "extra[$field]";
+            } else {
+                $name = $field;
+            }
+            $result[$name] = nexus_trans("searchbox.extras.$field");
         }
         return $result;
     }
 
     public static function formatTaxonomyExtra(array $data): array
     {
+        do_log("data: " . json_encode($data));
         foreach (self::$taxonomies as $field => $table) {
             $data["show{$field}"] = 0;
             foreach ($data['extra'][self::EXTRA_TAXONOMY_LABELS] ?? [] as $item) {
                 if ($field == $item['torrent_field']) {
                     $data["show{$field}"] = 1;
-//                    $data["extra->" . self::EXTRA_TAXONOMY_LABELS][] = $item;
                 }
             }
         }
         $data["extra->" . self::EXTRA_TAXONOMY_LABELS] = $data['extra'][self::EXTRA_TAXONOMY_LABELS];
+        $other = $data['other'] ?? [];
+        $data["extra->" . self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST] = in_array(self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST, $other) ? 1 : 0;
+        $data["extra->" . self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST] = in_array(self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST, $other) ? 1 : 0;
+
         return $data;
     }
 
@@ -135,6 +147,17 @@ class SearchBox extends NexusModel
         return NexusDB::table($table)->where(function (Builder $query) use ($searchBox) {
             return $query->where('mode', $searchBox->id)->orWhere('mode', 0);
         })->get();
+    }
+
+    public static function listModeOptions(): array
+    {
+        if (!empty(self::$modeOptions)) {
+            return self::$modeOptions;
+        }
+        self::$modeOptions = SearchBox::query()
+            ->pluck('name', 'id')
+            ->toArray();
+        return self::$modeOptions;
     }
 
     public function getCustomFieldsAttribute($value): array

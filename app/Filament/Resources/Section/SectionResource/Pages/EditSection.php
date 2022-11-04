@@ -28,4 +28,15 @@ class EditSection extends EditRecord
         clear_search_box_cache($this->record->id);
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        foreach (SearchBox::$extras as $field => $text) {
+            if (!empty($data['extra'][$field])) {
+                $data['other'][] = $field;
+            }
+            unset($data['extra'][$field]);
+        }
+        return $data;
+    }
+
 }
