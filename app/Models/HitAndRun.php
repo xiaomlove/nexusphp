@@ -62,7 +62,12 @@ class HitAndRun extends NexusModel
         if ($this->status != self::STATUS_INSPECTING) {
             return '---';
         }
-        $inspectTime = HitAndRun::getConfig('inspect_time', $this->torrent->basic_category->mode);
+        $searchBoxId = $this->torrent->basic_category->mode ?? 0;
+        if ($searchBoxId == 0) {
+            do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $this->torrent_id), 'error');
+            return '---';
+        }
+        $inspectTime = HitAndRun::getConfig('inspect_time', $searchBoxId);
         $diffInSeconds = Carbon::now()->diffInSeconds($this->snatch->completedat->addHours($inspectTime));
         return mkprettytime($diffInSeconds);
     }
@@ -72,7 +77,12 @@ class HitAndRun extends NexusModel
         if ($this->status != self::STATUS_INSPECTING) {
             return '---';
         }
-        $seedTimeMinimum = HitAndRun::getConfig('seed_time_minimum', $this->torrent->basic_category->mode);
+        $searchBoxId = $this->torrent->basic_category->mode ?? 0;
+        if ($searchBoxId == 0) {
+            do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $this->torrent_id), 'error');
+            return '---';
+        }
+        $seedTimeMinimum = HitAndRun::getConfig('seed_time_minimum', $searchBoxId);
         $diffInSeconds = 3600 * $seedTimeMinimum - $this->snatch->seedtime;
         return mkprettytime($diffInSeconds);
     }

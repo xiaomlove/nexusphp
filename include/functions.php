@@ -5742,7 +5742,12 @@ function can_access_torrent($torrent)
     if (is_array($torrent) && isset($torrent['search_box_id'])) {
         $searchBoxId = $torrent['search_box_id'];
     } elseif (is_numeric($torrent)) {
-        $searchBoxId = \App\Models\Torrent::query()->findOrFail(intval($torrent), ['id', 'category'])->basic_category->mode;
+        $torrent = \App\Models\Torrent::query()->findOrFail(intval($torrent), ['id', 'category']);
+        $searchBoxId = $torrent->basic_category->mode ?? 0;
+        if ($searchBoxId == 0) {
+            do_log("[INVALID_CATEGORY], torrent: " . $torrent->id, 'error');
+            return false;
+        }
     } else {
         throw new \InvalidArgumentException("Unsupported argument: " . json_encode($torrent));
     }

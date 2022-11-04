@@ -1093,7 +1093,12 @@ class TrackerRepository extends BaseRepository
             return;
         }
 //        $hrMode = Setting::get('hr.mode');
-        $hrMode = HitAndRun::getConfig('mode', $torrent->basic_category->mode);
+        $searchBoxId = $torrent->basic_category->mode ?? 0;
+        if ($searchBoxId == 0) {
+            do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $torrent->id), 'error');
+            return;
+        }
+        $hrMode = HitAndRun::getConfig('mode', $searchBoxId);
         if ($hrMode == HitAndRun::MODE_DISABLED) {
             return;
         }
