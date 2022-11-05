@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Torrent;
 use App\Filament\OptionsTrait;
 use App\Filament\Resources\Torrent\TorrentResource\Pages;
 use App\Filament\Resources\Torrent\TorrentResource\RelationManagers;
+use App\Models\Category;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Torrent;
@@ -122,6 +123,9 @@ class TorrentResource extends Resource
                         return $query->when($data['owner'], fn (Builder $query, $owner) => $query->where("owner", $owner));
                     })
                 ,
+                Tables\Filters\SelectFilter::make('category')
+                    ->options(Category::query()->pluck('name', 'id')->toArray())
+                    ->label(__('label.torrent.category')),
 
                 Tables\Filters\SelectFilter::make('visible')
                     ->options(self::$yesOrNo)
@@ -381,7 +385,8 @@ class TorrentResource extends Resource
 
     private static function shouldShowApproval(): bool
     {
-        return Setting::get('torrent.approval_status_none_visible') == 'no' || Setting::get('torrent.approval_status_icon_enabled') == 'yes';
+        return false;
+//        return Setting::get('torrent.approval_status_none_visible') == 'no' || Setting::get('torrent.approval_status_icon_enabled') == 'yes';
     }
 
 }

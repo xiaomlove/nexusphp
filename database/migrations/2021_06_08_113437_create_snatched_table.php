@@ -17,7 +17,7 @@ class CreateSnatchedTable extends Migration
             return;
         }
         Schema::create('snatched', function (Blueprint $table) {
-            $table->integer('id', true);
+            $table->bigIncrements('id', true);
             $table->unsignedMediumInteger('torrentid')->default(0);
             $table->unsignedMediumInteger('userid')->default(0)->index('userid');
             $table->string('ip', 64)->default('');

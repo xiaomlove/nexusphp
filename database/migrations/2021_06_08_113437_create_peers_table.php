@@ -17,7 +17,7 @@ class CreatePeersTable extends Migration
             return;
         }
         Schema::create('peers', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->unsignedMediumInteger('torrent')->default(0);
             $table->char('peer_id', 20)->charset('binary')->index();
             $table->string('ip', 64)->default('');

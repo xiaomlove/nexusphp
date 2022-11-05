@@ -299,16 +299,18 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //	}
 
 	//chunk async
+    $requestId = nexus()->getRequestId();
     $maxUidRes = mysql_fetch_assoc(sql_query("select max(id) as max_uid from users limit 1"));
 	$maxUid = $maxUidRes['max_uid'];
 	$phpPath = nexus_env('PHP_PATH', 'php');
 	$webRoot = rtrim(ROOT_PATH, '/');
 	$chunk = 2000;
 	$beginUid = 0;
+    do_log("maxUid: $maxUid, chunk: $chunk");
 	do {
 	    $command = sprintf(
-	        '%s %s/artisan cleanup --action=seed_bonus --begin_uid=%s --end_uid=%s',
-            $phpPath, $webRoot, $beginUid, $beginUid + $chunk
+	        '%s %s/artisan cleanup --action=seed_bonus --begin_id=%s --end_id=%s --request_id=%s',
+            $phpPath, $webRoot, $beginUid, $beginUid + $chunk, $requestId
         );
         $result = exec("$command 2>&1", $output, $result_code);
         do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
@@ -366,38 +368,53 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//4.update count of seeders, leechers, comments for torrents
-	$torrents = array();
-	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
-	while ($row = mysql_fetch_assoc($res)) {
-		if ($row["seeder"] == "yes")
-		$key = "seeders";
-		else
-		$key = "leechers";
-		$torrents[$row["torrent"]][$key] = $row["c"];
-	}
+//	$torrents = array();
+//	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
+//	while ($row = mysql_fetch_assoc($res)) {
+//		if ($row["seeder"] == "yes")
+//		$key = "seeders";
+//		else
+//		$key = "leechers";
+//		$torrents[$row["torrent"]][$key] = $row["c"];
+//	}
+//
+//	$res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
+//	while ($row = mysql_fetch_assoc($res)) {
+//		$torrents[$row["torrent"]]["comments"] = $row["c"];
+//	}
+//
+//	$fields = explode(":", "comments:leechers:seeders");
+//	$res = sql_query("SELECT id, seeders, leechers, comments FROM torrents") or sqlerr(__FILE__, __LINE__);
+//	while ($row = mysql_fetch_assoc($res)) {
+//		$id = $row["id"];
+//		$torr = $torrents[$id] ?? [];
+//		foreach ($fields as $field) {
+//			if (!isset($torr[$field]))
+//			$torr[$field] = 0;
+//		}
+//		$update = array();
+//		foreach ($fields as $field) {
+//			if ($torr[$field] != $row[$field])
+//			$update[] = "$field = " . $torr[$field];
+//		}
+//		if (count($update))
+//		sql_query("UPDATE torrents SET " . implode(",", $update) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+//	}
 
-	$res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
-	while ($row = mysql_fetch_assoc($res)) {
-		$torrents[$row["torrent"]]["comments"] = $row["c"];
-	}
-
-	$fields = explode(":", "comments:leechers:seeders");
-	$res = sql_query("SELECT id, seeders, leechers, comments FROM torrents") or sqlerr(__FILE__, __LINE__);
-	while ($row = mysql_fetch_assoc($res)) {
-		$id = $row["id"];
-		$torr = $torrents[$id] ?? [];
-		foreach ($fields as $field) {
-			if (!isset($torr[$field]))
-			$torr[$field] = 0;
-		}
-		$update = array();
-		foreach ($fields as $field) {
-			if ($torr[$field] != $row[$field])
-			$update[] = "$field = " . $torr[$field];
-		}
-		if (count($update))
-		sql_query("UPDATE torrents SET " . implode(",", $update) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
-	}
+    $maxTorrentIdRes = mysql_fetch_assoc(sql_query("select max(id) as max_torrent_id from torrents limit 1"));
+    $maxTorrentId = $maxTorrentIdRes['max_torrent_id'];
+    $chunk = 5000;
+    $beginTorrentId = 0;
+    do_log("maxTorrentId: $maxTorrentId, chunk: $chunk");
+    do {
+        $command = sprintf(
+            '%s %s/artisan cleanup --action=seeders_etc --begin_id=%s --end_id=%s --request_id=%s',
+            $phpPath, $webRoot, $beginTorrentId, $beginTorrentId + $chunk, $requestId
+        );
+        $result = exec("$command 2>&1", $output, $result_code);
+        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+        $beginTorrentId += $chunk;
+    } while ($beginTorrentId < $maxTorrentId);
 	$log = "update count of seeders, leechers, comments for torrents";
 	do_log($log);
 	if ($printProgress) {
@@ -841,11 +858,13 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
 //	}
 
+    $chunk = 2000;
     $beginUid = 0;
+    do_log("maxUid: $maxUid, chunk: $chunk");
     do {
         $command = sprintf(
-            '%s %s/artisan cleanup --action=seeding_leeching_time --begin_uid=%s --end_uid=%s',
-            $phpPath, $webRoot, $beginUid, $beginUid + $chunk
+            '%s %s/artisan cleanup --action=seeding_leeching_time --begin_id=%s --end_id=%s --request_id=%s',
+            $phpPath, $webRoot, $beginUid, $beginUid + $chunk, $requestId
         );
         $result = exec("$command 2>&1", $output, $result_code);
         do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));

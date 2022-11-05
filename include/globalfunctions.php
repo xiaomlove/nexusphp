@@ -986,7 +986,14 @@ function clear_setting_cache()
 {
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
+}
 
+/**
+ * @see functions.php::get_category_row()
+ */
+function clear_category_cache()
+{
+    \Nexus\Database\NexusDB::cache_del('category_content');
 }
 
 function clear_staff_message_cache()

@@ -2,16 +2,21 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\InsufficientPermissionException;
 use App\Http\Middleware\Locale;
+use App\Models\Category;
 use App\Models\Icon;
 use App\Models\NexusModel;
 use App\Models\SearchBox;
 use App\Models\SearchBoxField;
 use App\Models\SecondIcon;
 use App\Models\Setting;
+use App\Models\Torrent;
+use App\Models\User;
 use Elasticsearch\Endpoints\Search;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Nexus\Database\NexusDB;
 use Filament\Forms;
 
@@ -258,6 +263,21 @@ class SearchBoxRepository extends BaseRepository
                 ->options($items->pluck('name', 'id')->toArray())
                 ->label($searchBox->getTaxonomyLabel($torrentField));
         }
+    }
+
+    public function deleteCategory($id)
+    {
+        if (get_user_class() < User::CLASS_SYSOP) {
+            throw new InsufficientPermissionException();
+        }
+        $idArr = Arr::wrap($id);
+        $exists = Torrent::query()->whereHas('basic_category', function (\Illuminate\Database\Eloquent\Builder $query) use ($idArr) {
+            return $query->whereIn('id', $idArr);
+        })->exists();
+        if ($exists) {
+            throw new \RuntimeException("There are torrents that belong to this category and cannot be deleted!");
+        }
+        return Category::query()->whereIn('id', $idArr)->delete();
     }
 
 

@@ -2,8 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\CalculateSeedBonus;
-use App\Jobs\UpdateSeedingLeechingTime;
+use App\Jobs\CalculateUserSeedBonus;
+use App\Jobs\UpdateTorrentSeedersEtc;
+use App\Jobs\UpdateUserSeedingLeechingTime;
 use Illuminate\Console\Command;
 
 class Cleanup extends Command
@@ -13,14 +14,14 @@ class Cleanup extends Command
      *
      * @var string
      */
-    protected $signature = 'cleanup {--action=} {--begin_uid=} {--end_uid=}';
+    protected $signature = 'cleanup {--action=} {--begin_id=} {--end_id=} {--request_id=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Cleanup async job trigger, options: --begin_uid, --end_uid, --action (seed_bonus, seeding_leeching_time)';
+    protected $description = 'Cleanup async job trigger, options: --begin_id, --end_id, --request_id, --action (seed_bonus, seeding_leeching_time, seeders_etc)';
 
     /**
      * Execute the console command.
@@ -30,15 +31,18 @@ class Cleanup extends Command
     public function handle()
     {
         $action = $this->option('action');
-        $beginUid = $this->option('begin_uid');
-        $endUid = $this->option('end_uid');
-        $this->info("beginUid: $beginUid, endUid: $endUid, action: $action");
+        $beginId = $this->option('begin_id');
+        $endId = $this->option('end_id');
+        $commentRequestId = $this->option('request_id');
+        $this->info("beginId: $beginId, endId: $endId, commentRequestId: $commentRequestId, action: $action");
         if ($action == 'seed_bonus') {
-            CalculateSeedBonus::dispatch($beginUid, $endUid);
+            CalculateUserSeedBonus::dispatch($beginId, $endId, $commentRequestId);
         } elseif ($action == 'seeding_leeching_time') {
-            UpdateSeedingLeechingTime::dispatch($beginUid, $endUid);
+            UpdateUserSeedingLeechingTime::dispatch($beginId, $endId, $commentRequestId);
+        }elseif ($action == 'seeders_etc') {
+            UpdateTorrentSeedersEtc::dispatch($beginId, $endId, $commentRequestId);
         } else {
-            $msg = "Invalid action: $action";
+            $msg = "[$commentRequestId], Invalid action: $action";
             do_log($msg, 'error');
             $this->error($msg);
         }

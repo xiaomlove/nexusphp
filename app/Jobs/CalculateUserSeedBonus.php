@@ -12,7 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Nexus\Database\NexusDB;
 
-class CalculateSeedBonus implements ShouldQueue
+class CalculateUserSeedBonus implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -20,15 +20,28 @@ class CalculateSeedBonus implements ShouldQueue
 
     private int $endUid;
 
+    private string $requestId;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginUid, int $endUid)
+    public function __construct(int $beginUid, int $endUid, string $requestId = '')
     {
         $this->beginUid = $beginUid;
         $this->endUid = $endUid;
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * Determine the time at which the job should timeout.
+     *
+     * @return \DateTime
+     */
+    public function retryUntil()
+    {
+        return now()->addSeconds(Setting::get('main.autoclean_interval_one'));
     }
 
     /**
@@ -39,7 +52,7 @@ class CalculateSeedBonus implements ShouldQueue
     public function handle()
     {
         $beginTimestamp = time();
-        $logPrefix = sprintf("[CLEANUP_CLI_CALCULATE_SEED_BONUS], beginUid: %s, endUid: %s", $this->beginUid, $this->endUid);
+        $logPrefix = sprintf("[CLEANUP_CLI_CALCULATE_SEED_BONUS], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
         $sql = sprintf("select userid from peers where userid > %s and userid <= %s and seeder = 'yes' group by userid", $this->beginUid, $this->endUid);
         $results = NexusDB::select($sql);
         $count = count($results);

@@ -6,7 +6,10 @@ use App\Filament\Resources\Section\CategoryResource\Pages;
 use App\Filament\Resources\Section\CategoryResource\RelationManagers;
 use App\Models\Category;
 use App\Models\Icon;
+use App\Models\NexusModel;
 use App\Models\SearchBox;
+use App\Repositories\SearchBoxRepository;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
@@ -14,6 +17,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 
 class CategoryResource extends Resource
 {
@@ -89,10 +93,24 @@ class CategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()->using(function (NexusModel $record) {
+                    try {
+                        $rep = new SearchBoxRepository();
+                        $rep->deleteCategory($record->id);
+                    } catch (\Exception $exception) {
+                        Filament::notify('danger', $exception->getMessage() ?: class_basename($exception));
+                    }
+                }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()->using(function (Collection $records) {
+                    try {
+                        $rep = new SearchBoxRepository();
+                        $rep->deleteCategory($records->pluck('id')->toArray());
+                    } catch (\Exception $exception) {
+                        Filament::notify('danger', $exception->getMessage() ?: class_basename($exception));
+                    }
+                }),
             ]);
     }
 

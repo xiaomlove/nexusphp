@@ -2911,7 +2911,7 @@ function stdfoot() {
 	$yearfounded = ($year ? $year : 2007);
 	print(" (c) "." <a href=\"" . get_protocol_prefix() . $BASEURL."\" target=\"_self\">".$SITENAME."</a> ".($icplicense_main ? " ".$icplicense_main." " : "").(date("Y") != $yearfounded ? $yearfounded."-" : "").date("Y")." ".VERSION."<br /><br />");
 	printf ("[page created in <b> %s </b> sec", sprintf("%.3f", $totaltime));
-	print (", takes up <b>".mksize(memory_get_usage())."</b> ram]");
+    print (" with <b>".count($query_name)."</b> db queries, <b>".$Cache->getCacheReadTimes()."</b> reads and <b>".$Cache->getCacheWriteTimes()."</b> writes of Redis and <b>".mksize(memory_get_usage())."</b> ram]");
 	print ("</div>\n");
 	if ($enablesqldebug_tweak == 'yes' && get_user_class() >= $sqldebug_tweak) {
 		print("<div id=\"sql_debug\" style='text-align: left;'>SQL query list: <ul>");
