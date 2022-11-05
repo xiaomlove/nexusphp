@@ -17,9 +17,9 @@ $showstandard = (get_searchbox_value($brsectiontype, 'showstandard') || ($allows
 $showprocessing = (get_searchbox_value($brsectiontype, 'showprocessing') || ($allowspecial && get_searchbox_value($spsectiontype, 'showprocessing'))); //whether show processings or not
 $showteam = (get_searchbox_value($brsectiontype, 'showteam') || ($allowspecial && get_searchbox_value($spsectiontype, 'showteam'))); //whether show teams or not
 $showaudiocodec = (get_searchbox_value($brsectiontype, 'showaudiocodec') || ($allowspecial && get_searchbox_value($spsectiontype, 'showaudiocodec'))); //whether show audio codecs or not
-$brcatsperror = get_searchbox_value($brsectiontype, 'catsperrow');
-$catsperrow = get_searchbox_value($spsectiontype, 'catsperrow');
-$catsperrow = (!$allowspecial ? $brcatsperror : ($catsperrow > $catsperrow ? $catsperrow : $catsperrow)); //show how many cats per line
+$brcatsperror = (int)get_searchbox_value($brsectiontype, 'catsperrow');
+$catsperrow = (int)get_searchbox_value($spsectiontype, 'catsperrow');
+$catsperrow = !$allowspecial ? $brcatsperror : $catsperrow; //show how many cats per line
 
 $brcatpadding = get_searchbox_value($brsectiontype, 'catpadding');
 $spcatpadding = get_searchbox_value($spsectiontype, 'catpadding');
