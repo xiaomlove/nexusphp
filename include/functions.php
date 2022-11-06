@@ -4844,7 +4844,7 @@ function get_plain_username($id){
 function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 	global $Cache;
 	static $rows;
-	$cacheKey = "search_box_content_{$mode}";
+	$cacheKey = "search_box_content";
 	if (!$rows && !$rows = $Cache->get_value($cacheKey)){
 		$rows = array();
 		$res = sql_query("SELECT * FROM searchbox ORDER BY id ASC");

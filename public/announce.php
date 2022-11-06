@@ -1,49 +1,19 @@
 <?php
 require '../include/bittorrent_announce.php';
-$apiLocalHost = nexus_env('TRACKER_API_LOCAL_HOST');
-if ($apiLocalHost) {
-    do_log("[TRACKER_API_LOCAL_HOST] $apiLocalHost");
-    $response = request_local_api(trim($apiLocalHost, '/') . '/api/announce');
-    if (empty($response)) {
-        err("error from TRACKER_API_LOCAL_HOST");
-    } else {
-        exit(benc_resp_raw($response));
-    }
-}
-//continue the normal process
 require ROOT_PATH . 'include/core.php';
-dbconn_announce();
 do_log(nexus_json_encode($_SERVER));
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"];
 block_browser();
-
+dbconn_announce();
 //check authkey
 if (!empty($_REQUEST['authkey'])) {
-    $arr = explode('|', $_REQUEST['authkey']);
-    if (count($arr) != 3) {
-        err('Invalid authkey');
-    }
-    $torrentId = $arr[0];
-    $uid = $arr[1];
-    $torrentRep = new \App\Repositories\TorrentRepository();
     try {
-        $decrypted = $torrentRep->checkTrackerReportAuthKey($_REQUEST['authkey']);
+        $_GET['passkey'] = get_passkey_by_authkey($_REQUEST['authkey']);
     } catch (\Exception $exception) {
         err($exception->getMessage());
     }
-    if (empty($decrypted)) {
-        err('Invalid authkey');
-    }
-    $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 3600, function () use ($uid) {
-        return \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
-    });
-    if (!$userInfo) {
-        err('Invalid authkey');
-    }
-    $_GET['passkey'] = $userInfo->passkey;
 }
-
 
 //2. GET ANNOUNCE VARIABLES
 // get string type passkey, info_hash, peer_id, event, ip from client
@@ -168,8 +138,7 @@ if (!$torrent) {
     $start = strpos($queryString, $firstNeedle) + strlen($firstNeedle);
     $end = strpos($queryString, "&", $start);
     $infoHashUrlEncode = substr($queryString, $start, $end - $start);
-    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString", 'error');
-    do_log("[TORRENT NOT EXISTS] infoHashUrlEncode: $infoHashUrlEncode", 'error');
+    do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString, infoHashUrlEncode: $infoHashUrlEncode");
 
     err("torrent not registered with this tracker");
 }

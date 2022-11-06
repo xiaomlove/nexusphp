@@ -72,12 +72,12 @@ class IconResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('folder'),
-                Tables\Columns\TextColumn::make('cssfile'),
-                Tables\Columns\TextColumn::make('multilang'),
-                Tables\Columns\TextColumn::make('secondicon'),
-                Tables\Columns\TextColumn::make('designer'),
+                Tables\Columns\TextColumn::make('name')->label(__('label.name')),
+                Tables\Columns\TextColumn::make('folder')->label(__('label.icon.folder')),
+                Tables\Columns\TextColumn::make('multilang')->label(__('label.icon.multilang')),
+                Tables\Columns\TextColumn::make('secondicon')->label(__('label.icon.secondicon')),
+                Tables\Columns\TextColumn::make('cssfile')->label(__('label.icon.cssfile')),
+                Tables\Columns\TextColumn::make('designer')->label(__('label.icon.designer')),
             ])
             ->filters([
                 //

@@ -1002,10 +1002,10 @@ function clear_staff_message_cache()
     \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
 }
 
-function clear_search_box_cache($id)
+function clear_search_box_cache()
 {
-    do_log("clear_search_box_cache: $id");
-    \Nexus\Database\NexusDB::cache_del("search_box_content_{$id}");
+    do_log("clear_search_box_cache");
+    \Nexus\Database\NexusDB::cache_del("search_box_content");
 }
 
 function user_can($permission, $fail = false, $uid = 0): bool
@@ -1060,4 +1060,30 @@ function user_can($permission, $fail = false, $uid = 0): bool
 function is_donor(array $userInfo): bool
 {
     return $userInfo['donor'] == 'yes' && ($userInfo['donoruntil'] === null || $userInfo['donoruntil'] == '0000-00-00 00:00:00' || $userInfo['donoruntil'] >= date('Y-m-d H:i:s'));
+}
+
+/**
+ * @param $authkey
+ * @return false|int|mixed|string|null
+ * @throws \App\Exceptions\NexusException
+ * @see download.php
+ */
+function get_passkey_by_authkey($authkey)
+{
+    return \Nexus\Database\NexusDB::remember("authkey2passkey:$authkey", 3600*24, function () use ($authkey) {
+        $arr = explode('|', $authkey);
+        if (count($arr) != 3) {
+            throw new \InvalidArgumentException("Invalid authkey: $authkey, format error");
+        }
+        $uid = $arr[1];
+        $torrentRep = new \App\Repositories\TorrentRepository();
+        $decrypted = $torrentRep->checkTrackerReportAuthKey($_REQUEST['authkey']);
+        if (empty($decrypted)) {
+            throw new \InvalidArgumentException("Invalid authkey: $authkey");
+        }
+        $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 3600, function () use ($uid) {
+            return \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+        });
+        return $userInfo->passkey;
+    });
 }

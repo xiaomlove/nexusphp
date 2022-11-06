@@ -202,5 +202,6 @@ else
 //header ("Content-Disposition: attachment; filename=".$row["filename"]."");
 //ob_implicit_flush(true);
 //print(benc($dict));
+\Nexus\Database\NexusDB::cache_put("authkey2passkey:$trackerReportAuthKey", $CURUSER['passkey'], 3600*24);
 echo \Rhilip\Bencode\Bencode::encode($dict);
 ?>
