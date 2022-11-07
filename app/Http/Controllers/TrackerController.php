@@ -21,7 +21,6 @@ class TrackerController extends Controller
      */
     public function announce(Request $request): \Illuminate\Http\Response
     {
-        throw new \RuntimeException("Deprecated! Reference to: https://nexusphp.org/2022/07/18/tracker-url-recommend-to-use-old-announce-php/");
         return $this->repository->announce($request);
     }
 
@@ -32,7 +31,6 @@ class TrackerController extends Controller
      */
     public function scrape(Request $request): \Illuminate\Http\Response
     {
-        throw new \RuntimeException("Deprecated! Reference to: https://nexusphp.org/2022/07/18/tracker-url-recommend-to-use-old-announce-php/");
         return $this->repository->scrape($request);
     }
 }

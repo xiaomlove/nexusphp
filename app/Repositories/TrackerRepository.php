@@ -56,11 +56,13 @@ class TrackerRepository extends BaseRepository
     public function announce(Request $request): \Illuminate\Http\Response
     {
         do_log("queryString: " . $request->getQueryString());
+
         /**
          * Note: In Octane this class will be reused, use variable is better !!!
          */
         $userUpdates = [];
         try {
+            throw new TrackerException("Deprecated! Please announce to: " . getSchemeAndHttpHost() . DEFAULT_TRACKER_URI);
             $withPeers = false;
             $queries = $this->checkAnnounceFields($request);
             $user = $this->checkUser($request);
@@ -999,6 +1001,7 @@ class TrackerRepository extends BaseRepository
          */
         $userUpdates = [];
         try {
+            throw new TrackerException("Deprecated! Please announce to: " . getSchemeAndHttpHost() . DEFAULT_TRACKER_URI);
             $infoHashArr = $this->checkScrapeFields($request);
             $user = $this->checkUser($request);
             $clientAllow = $this->checkClient($request);
