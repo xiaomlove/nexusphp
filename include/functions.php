@@ -2659,7 +2659,7 @@ else {
                 <?php if(\App\Models\Claim::getConfigIsEnabled()) { ?><font class='color_bonus'><?php echo $lang_functions['menu_claim']?></font> <?php echo sprintf('[<a href="claim.php?uid=%s">%s</a>]', $CURUSER['id'], (new \App\Repositories\ClaimRepository())->getStats($CURUSER['id']))?><?php }?>
             </span>
         </td>
-                <?php if(get_setting('main.spsct') == 'yes'){?>
+                <?php if(get_setting('main.spsct') == 'yes' && get_setting('main.enable_global_search') == 'yes'){?>
         <td class="bottom" align="left" style="border: none">
             <form action="search.php" method="get" target="<?php echo nexus()->getScript() == 'search' ? '_self' : '_blank'?>">
                 <div style="display: flex;align-items: center">

@@ -42,7 +42,7 @@ if ($action == 'savesettings_main')	// save main
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
 		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language', 'offer_skip_approved_count',
-        'upload_deny_approval_deny_count'
+        'upload_deny_approval_deny_count', 'enable_global_search'
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -811,21 +811,20 @@ elseif ($action == 'mainsettings')	// main settings
 	yesorno($lang_settings['row_enable_nfo'],'enablenfo', $MAIN['enablenfo'], $lang_settings['text_enable_nfo_note']);
 	yesorno($lang_settings['row_enable_technical_info'],'enable_technical_info', $MAIN['enable_technical_info'], $lang_settings['text_enable_technical_info']);
 	yesorno($lang_settings['row_enable_school_system'],'enableschool', $MAIN['enableschool'], $lang_settings['text_school_system_note']);
+	yesorno($lang_settings['row_enable_global_search_system'],'enable_global_search', $MAIN['enable_global_search'], $lang_settings['text_global_search_system_note']);
 	yesorno($lang_settings['row_restrict_email_domain'],'restrictemail', $MAIN['restrictemail'], $lang_settings['text_restrict_email_domain_note']);
 	yesorno($lang_settings['row_show_shoutbox'],'showshoutbox', $MAIN['showshoutbox'], $lang_settings['text_show_shoutbox_note']);
 	yesorno($lang_settings['row_show_funbox'],'showfunbox', $MAIN['showfunbox'], $lang_settings['text_show_funbox_note']);
 	yesorno($lang_settings['row_enable_offer_section'],'showoffer', $MAIN['showoffer'], $lang_settings['text_offer_section_note']);
 	yesorno($lang_settings['row_show_donation'],'donation', $MAIN['donation'], $lang_settings['text_show_donation_note']);
-//	if (THISTRACKER == "HDStar")
-	yesorno($lang_settings['row_show_special_section'],'spsct', $MAIN['spsct'], $lang_settings['text_show_special_section_note']);
 	yesorno($lang_settings['row_weekend_free_uploading'],'sptime', $MAIN['sptime'], $lang_settings['text_weekend_free_uploading_note']);
 	yesorno($lang_settings['row_enable_helpbox'],'showhelpbox', $MAIN['showhelpbox'], $lang_settings['text_helpbox_note']);
 	yesorno($lang_settings['row_enable_bitbucket'],'enablebitbucket', $MAIN['enablebitbucket'], $lang_settings['text_bitbucket_note']);
 	yesorno($lang_settings['row_enable_small_description'],'smalldescription', $MAIN['smalldescription'], $lang_settings['text_small_description_note']);
-//	if (THISTRACKER == "PTShow")
 	yesorno($lang_settings['row_ptshow_naming_style'],'altname', $MAIN['altname'], $lang_settings['text_ptshow_naming_style_note']);
 	yesorno($lang_settings['row_use_external_forum'],'extforum', $MAIN['extforum'], $lang_settings['text_use_external_forum_note']);
 	tr($lang_settings['row_external_forum_url'],"<input type='text' style=\"width: 300px\" name=extforumurl value='".($MAIN["extforumurl"] ? $MAIN["extforumurl"] : "")."'> ".$lang_settings['text_external_forum_url_note'], 1);
+    yesorno($lang_settings['row_show_special_section'],'spsct', $MAIN['spsct'], $lang_settings['text_show_special_section_note']);
 	$res = sql_query("SELECT id, name FROM searchbox") or sqlerr(__FILE__, __LINE__);
 	$catlist = "";
 	$bcatlist = $scatlist = '';
@@ -834,7 +833,6 @@ elseif ($action == 'mainsettings')	// main settings
 		$scatlist .= "<input type=radio name=specialcat value='".$array['id']."'".($MAIN["specialcat"] == $array['id'] ? " checked" : "").">".$array['name']."&nbsp;";
 	}
 	tr($lang_settings['row_torrents_category_mode'], $bcatlist."<br />".$lang_settings['text_torrents_category_mode_note'], 1);
-//	if (THISTRACKER == "HDStar")
 	tr($lang_settings['row_special_category_mode'], $scatlist."<br />".$lang_settings['text_special_category_mode_note'], 1);
 
     $allSiteLanguages = \App\Models\Language::query()->where('site_lang', 1)->get();

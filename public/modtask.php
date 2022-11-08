@@ -75,7 +75,8 @@ if ($action == "edituser")
 	$updateset[] = "stafffor = " . sqlesc($stafffor);
 	$updateset[] = "pickfor = " . sqlesc($pickfor);
 	$updateset[] = "picker = " . sqlesc($moviepicker);
-	$updateset[] = "enabled = " . sqlesc($enabled);
+	//migrate to management
+//	$updateset[] = "enabled = " . sqlesc($enabled);
 	$updateset[] = "uploadpos = " . sqlesc($uploadpos);
 	$updateset[] = "downloadpos = " . sqlesc($downloadpos);
 	$updateset[] = "forumpost = " . sqlesc($forumpost);
@@ -126,38 +127,41 @@ if ($action == "edituser")
             ];
 			\App\Models\UsernameChangeLog::query()->create($changeLog);
 		}
-		if ($ori_downloaded != $downloaded){
-			$updateset[] = "downloaded = " . sqlesc($downloaded);
-			$modcomment = date("Y-m-d") . " - Downloaded amount changed from $arr[downloaded] to $downloaded by {$CURUSER['username']}.\n". $modcomment;
-			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_downloaded_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_downloaded_changed_from'].mksize($arr['downloaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($downloaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		}
-		if ($ori_uploaded != $uploaded){
-			$updateset[] = "uploaded = " . sqlesc($uploaded);
-			$modcomment = date("Y-m-d") . " - Uploaded amount changed from $arr[uploaded] to $uploaded by {$CURUSER['username']}.\n". $modcomment;
-			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_uploaded_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_uploaded_changed_from'].mksize($arr['uploaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($uploaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		}
-		if ($ori_bonus != $bonus){
-			$updateset[] = "seedbonus = " . sqlesc($bonus);
-			$modcomment = date("Y-m-d") . " - Bonus amount changed from $arr[seedbonus] to $bonus by {$CURUSER['username']}.\n". $modcomment;
-			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_bonus_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_bonus_changed_from'].$arr['seedbonus'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $bonus .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		}
-		if ($arr['invites'] != $invites){
-			$updateset[] = "invites = " . sqlesc($invites);
-			$modcomment = date("Y-m-d") . " - Invite amount changed from $arr[invites] to $invites by {$CURUSER['username']}.\n". $modcomment;
-			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_invite_change']);
-			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_invite_changed_from'].$arr['invites'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $invites .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		}
+        //migrate to management
+//		if ($ori_downloaded != $downloaded){
+//			$updateset[] = "downloaded = " . sqlesc($downloaded);
+//			$modcomment = date("Y-m-d") . " - Downloaded amount changed from $arr[downloaded] to $downloaded by {$CURUSER['username']}.\n". $modcomment;
+//			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_downloaded_change']);
+//			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_downloaded_changed_from'].mksize($arr['downloaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($downloaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
+//			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+//		}
+//
+//		if ($ori_uploaded != $uploaded){
+//			$updateset[] = "uploaded = " . sqlesc($uploaded);
+//			$modcomment = date("Y-m-d") . " - Uploaded amount changed from $arr[uploaded] to $uploaded by {$CURUSER['username']}.\n". $modcomment;
+//			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_uploaded_change']);
+//			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_uploaded_changed_from'].mksize($arr['uploaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($uploaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
+//			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+//		}
+//		if ($ori_bonus != $bonus){
+//			$updateset[] = "seedbonus = " . sqlesc($bonus);
+//			$modcomment = date("Y-m-d") . " - Bonus amount changed from $arr[seedbonus] to $bonus by {$CURUSER['username']}.\n". $modcomment;
+//			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_bonus_change']);
+//			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_bonus_changed_from'].$arr['seedbonus'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $bonus .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
+//			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+//		}
+//		if ($arr['invites'] != $invites){
+//			$updateset[] = "invites = " . sqlesc($invites);
+//			$modcomment = date("Y-m-d") . " - Invite amount changed from $arr[invites] to $invites by {$CURUSER['username']}.\n". $modcomment;
+//			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_invite_change']);
+//			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_invite_changed_from'].$arr['invites'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $invites .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
+//			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+//		}
 	}
 	if(get_user_class() == UC_STAFFLEADER)
 	{
 		$donor = $_POST["donor"];
+		$donoruntil = !empty($_POST['donoruntil']) ? $_POST['donoruntil'] : null;
 		$donated = $_POST["donated"];
 		$donated_cny = $_POST["donated_cny"];
 		$this_donated_usd = $donated - $arr["donated"];
@@ -171,7 +175,15 @@ if ($action == "edituser")
 			$updateset[] = "donated_cny = " . sqlesc($donated_cny);
 		}
 		$updateset[] = "donor = " . sqlesc($donor);
-		$updateset[] = "donoruntil = " . sqlesc(!empty($_POST['donoruntil']) ? $_POST['donoruntil'] : null);
+		$updateset[] = "donoruntil = " . sqlesc($donoruntil);
+
+		if (($donor != $arr['donor']) && (($donor == 'yes' && $donoruntil && $donoruntil >= date('Y-m-d H:i:s')) || ($donor == 'no'))) {
+            $subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_donor_status_changed']);
+            $msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_donor_status_changed_by'].$CURUSER['username']);
+            $added = sqlesc(date("Y-m-d H:i:s"));
+            sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+            $modcomment = date("Y-m-d") . " - donor status changed by {$CURUSER['username']}. Current donor status: $donor \n". $modcomment;
+        }
 	}
 
 	if ($chpassword != "" AND $passagain != "") {
@@ -251,28 +263,29 @@ if ($action == "edituser")
 		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
 		$updateset[] = "warned = 'yes', timeswarned = timeswarned+1, lastwarned=$added, warnedby={$CURUSER['id']}";
 	}
-	if ($enabled != $curenabled)
-	{
-		if ($enabled == 'yes') {
-			$modcomment = date("Y-m-d") . " - Enabled by " . $CURUSER['username']. ".\n". $modcomment;
-			if (get_single_value("users","class","WHERE id = ".sqlesc($userid)) == UC_PEASANT){
-				$length = 30*86400; // warn users until 30 days
-				$until = sqlesc(date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $length)));
-				sql_query("UPDATE users SET enabled='yes', leechwarn='yes', leechwarnuntil=$until WHERE id = ".sqlesc($userid));
-			}
-			else{
-				sql_query("UPDATE users SET enabled='yes', leechwarn='no' WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-			}
-		} else {
-			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;
-			$banLog = [
-			    'uid' => $userid,
-                'username' => $user->username,
-                'operator' => $CURUSER['id'],
-                'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
-            ];
-		}
-	}
+	//migrate to management
+//	if ($enabled != $curenabled)
+//	{
+//		if ($enabled == 'yes') {
+//			$modcomment = date("Y-m-d") . " - Enabled by " . $CURUSER['username']. ".\n". $modcomment;
+//			if (get_single_value("users","class","WHERE id = ".sqlesc($userid)) == UC_PEASANT){
+//				$length = 30*86400; // warn users until 30 days
+//				$until = sqlesc(date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $length)));
+//				sql_query("UPDATE users SET enabled='yes', leechwarn='yes', leechwarnuntil=$until WHERE id = ".sqlesc($userid));
+//			}
+//			else{
+//				sql_query("UPDATE users SET enabled='yes', leechwarn='no' WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
+//			}
+//		} else {
+//			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;
+//			$banLog = [
+//			    'uid' => $userid,
+//                'username' => $user->username,
+//                'operator' => $CURUSER['id'],
+//                'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
+//            ];
+//		}
+//	}
 	if ($arr['noad'] != $noad){
 		$updateset[]='noad = '.sqlesc($noad);
 		$modcomment = date("Y-m-d") . " - No Ad set to ".$noad." by ". $CURUSER['username']. ".\n". $modcomment;

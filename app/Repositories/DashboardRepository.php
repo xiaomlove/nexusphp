@@ -177,6 +177,9 @@ class DashboardRepository extends BaseRepository
 
         $statGender = User::query()->groupBy('gender')->selectRaw('gender, count(*) as counts')->get()->pluck('counts','gender');
         foreach ($statGender as $gender => $value) {
+            if (!isset(User::$genders[$gender])) {
+                $gender = User::GENDER_UNKNOWN;
+            }
             $name = "gender_$gender";
             $result[$name] = [
                 'name' => $name,

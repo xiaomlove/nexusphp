@@ -794,6 +794,8 @@ $lang_settings = array
     'row_destroy_disabled' => 'Delete account completely',
     'text_destroy_disabled_note_one' => 'Disabled accounts if they are continuously',
     'text_destroy_disabled_note_two' => "Days without logging in, will be physically deleted from the database completely. Default '500', please set a value greater than any of the above to cause disable. Set to '0' to disable this rule." ,
+    'row_enable_global_search_system' => 'Enable global search',
+    'text_global_search_system_note' => "Default: 'Yes'. If enabled, when there are multiple sections, the global search portal is displayed in the bottom right corner of the main menu.",
 );
 
 ?>

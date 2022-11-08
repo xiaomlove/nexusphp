@@ -360,7 +360,9 @@ class HitAndRunRepository extends BaseRepository
         }
         $users = User::query()
             ->with('language')
+            ->where('class', '<', User::CLASS_VIP)
             ->where('enabled', User::ENABLED_YES)
+            ->where('donor', 'no')
             ->find($result->pluck('uid')->toArray(), ['id', 'username', 'lang']);
         do_log("$logPrefix, Going to disable user: " . json_encode($users->toArray()));
         foreach ($users as $user) {

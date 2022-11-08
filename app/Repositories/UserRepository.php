@@ -468,9 +468,22 @@ class UserRepository extends BaseRepository
     public function addMeta($user, array $metaData, array $keyExistsUpdates = [])
     {
         $user = $this->getUser($user);
+        $locale = $user->locale;
         $metaKey = $metaData['meta_key'];
+        $metaName = nexus_trans("label.user_meta.meta_keys.$metaKey", [], $locale);
         $allowMultiple = UserMeta::$metaKeys[$metaKey]['multiple'];
-        $log = "user: {$user->id}, metaKey: $metaKey, allowMultiple: $allowMultiple";
+        $log = "user: {$user->id}, locale: $locale, metaKey: $metaKey, allowMultiple: $allowMultiple";
+        $message = [
+            'receiver' => $user->id,
+            'added' => now(),
+            'subject' => nexus_trans('user.grant_props_notification.subject', ['name' => $metaName], $locale),
+        ];
+        if (!empty($keyExistsUpdates['duration']) && $metaKey != UserMeta::META_KEY_CHANGE_USERNAME) {
+            $durationText = $keyExistsUpdates['duration'] . " Days";
+        } else {
+            $durationText = nexus_trans('label.permanent', [], $locale);
+        }
+        $message['msg'] = nexus_trans('user.grant_props_notification.body', ['name' => $metaName, 'operator' => Auth::user()->username, 'duration' => $durationText], $locale);
         if ($allowMultiple) {
             //Allow multiple, just insert
             $result = $user->metas()->create($metaData);
@@ -503,6 +516,7 @@ class UserRepository extends BaseRepository
         }
         if ($result) {
             clear_user_cache($user->id, $user->passkey);
+            Message::query()->insert($message);
         }
         do_log($log);
         return $result;

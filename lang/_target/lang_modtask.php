@@ -51,6 +51,8 @@ $lang_modtask_target = array
 	'msg_to_new' =>" to ",
 	'msg_your_vip_status_changed' => "Your VIP status changed",
 	'msg_vip_status_changed_by' => "Your VIP status changed by ",
+        'msg_your_donor_status_changed' => "Your donor status changed",
+        'msg_donor_status_changed_by' => "Your donor status changed by ",
 ),
 	'chs' => array(
 	'msg_promoted' => "提升",
@@ -101,6 +103,8 @@ $lang_modtask_target = array
 	'msg_to_new' =>"改为",
 	'msg_your_vip_status_changed' => "你的贵宾资格状态被改变",
 	'msg_vip_status_changed_by' => "你的贵宾资格状态被改变。管理员：",
+        'msg_your_donor_status_changed' => "你的捐赠者资格状态被改变",
+        'msg_donor_status_changed_by' => "你的捐赠者资格状态被改变。管理员：",
 ),
 	'cht' => array(
 	'msg_promoted' => "提升",
@@ -151,6 +155,8 @@ $lang_modtask_target = array
 	'msg_to_new' =>"改為",
 	'msg_your_vip_status_changed' => "你的貴賓資格狀態被改變",
 	'msg_vip_status_changed_by' => "你的貴賓資格狀態被改變。管理員：",
+        'msg_your_donor_status_changed' => "你的捐贈資格狀態被改變",
+        'msg_donor_status_changed_by' => "你的捐贈資格狀態被改變。管理員：",
 ),
 	'ko' => array(
 	'msg_promoted' => "승급",

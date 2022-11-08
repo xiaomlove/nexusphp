@@ -738,6 +738,30 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
+    //remove donor status if time's up
+    $res = sql_query("SELECT id, modcomment FROM users WHERE donor='yes' AND donoruntil is not null and donoruntil != '0000-00-00 00:00:00' and donoruntil < NOW()") or sqlerr(__FILE__, __LINE__);
+    if (mysql_num_rows($res) > 0)
+    {
+        while ($arr = mysql_fetch_assoc($res))
+        {
+            $dt = sqlesc(date("Y-m-d H:i:s"));
+            $subject = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_donor_status_removed']);
+            $msg = sqlesc($lang_cleanup_target[get_user_lang($arr['id'])]['msg_donor_status_removed_body']);
+            ///---AUTOSYSTEM MODCOMMENT---//
+            $modcomment = htmlspecialchars($arr["modcomment"]);
+            $modcomment =  date("Y-m-d") . " - donor status removed by - AutoSystem.\n". $modcomment;
+            $modcom =  sqlesc($modcomment);
+            ///---end
+            sql_query("UPDATE users SET donor = 'no', modcomment = $modcom WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
+            sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['id']}, $dt, $msg, $subject)") or sqlerr(__FILE__, __LINE__);
+        }
+    }
+    $log = "remove donor status if time's up";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
 	// promote peasant back to user
 
 	peasant_to_user($psdlfive_account,0, $psratiofive_account);

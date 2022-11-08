@@ -82,6 +82,16 @@ class User extends Authenticatable implements FilamentUser, HasName
         self::DONATE_NO => ['text' => 'No'],
     ];
 
+    const GENDER_FEMALE = 'Female';
+    const GENDER_MALE = 'Male';
+    const GENDER_UNKNOWN = 'N/A';
+
+    public static array $genders = [
+        self::GENDER_MALE => 'Male',
+        self::GENDER_FEMALE => 'Female',
+        self::GENDER_UNKNOWN => 'N/A',
+    ];
+
     public static array $cardTitles = [
         'uploaded_human' => '上传量',
         'downloaded_human' => '下载量',
@@ -269,12 +279,16 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function getLocaleAttribute()
     {
-        $locale = Locale::getLocaleFromCookie();
-        $log = "locale from cookie: $locale";
+        $locale = null;
+        $log = "user: " . $this->id;
+        if (get_user_id() == $this->id) {
+            $locale = Locale::getLocaleFromCookie();
+            $log .= ", locale from cookie: $locale";
+        }
         if (!$locale) {
             $lang = $this->language->site_lang_folder;
             $locale = Locale::$languageMaps[$lang] ?? 'en';
-            $log .= ", [NO_DATA], lang from database: $lang, locale: $locale";
+            $log .= ", [NO_DATA_FROM_COOKIE], lang from database: $lang, locale: $locale";
         }
         do_log($log);
         return $locale;
@@ -300,6 +314,13 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return new Attribute(
             get: fn($value, $attributes) => mksize($attributes['downloaded'])
+        );
+    }
+
+    protected function genderText(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => nexus_trans('user.genders.' . $attributes['gender'])
         );
     }
 

@@ -29,4 +29,13 @@ return [
     'change_username_lte_min_interval' => 'Last change time: :last_change_time, unmet minimum interval: :interval days',
     'destroy_by_admin' => 'Physical delete by administrator',
     'disable_by_admin' => 'Disable by administrator',
+    'genders' => [
+        \App\Models\User::GENDER_MALE => 'Male',
+        \App\Models\User::GENDER_FEMALE => 'Female',
+        \App\Models\User::GENDER_UNKNOWN => 'Unknown',
+    ],
+    'grant_props_notification' => [
+        'subject' => 'Get Props：:name',
+        'body' => ':operator Grant you :name, Validity period: :duration.',
+    ],
 ];

@@ -794,6 +794,8 @@ $lang_settings = array
     'row_destroy_disabled' => '彻底删除账号',
     'text_destroy_disabled_note_one' => '被封禁的账号如果连续',
     'text_destroy_disabled_note_two' => "天不登录，将被从数据库彻底物理删除。默认'500'，请设置一个大于上边任何一种导致封禁的值。设为'0'来禁止此规则。",
+    'row_enable_global_search_system' => '启用全站搜索',
+    'text_global_search_system_note' => "默认：'是'。若启用，当有多个分区时，主菜单右下角显示全站搜索入口。",
 );
 
 ?>

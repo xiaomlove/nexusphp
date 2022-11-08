@@ -4,13 +4,23 @@ namespace App\Providers;
 
 use App\Auth\NexusWebGuard;
 use App\Auth\NexusWebUserProvider;
-use App\Models\Permission;
-use App\Models\Role;
+use App\Models\AudioCodec;
+use App\Models\Category;
+use App\Models\Codec;
+use App\Models\Icon;
+use App\Models\Media;
+use App\Models\Plugin;
+use App\Models\Processing;
+use App\Models\SearchBox;
+use App\Models\SecondIcon;
+use App\Models\Source;
+use App\Models\Standard;
+use App\Models\Team;
 use App\Models\User;
+use App\Policies\CodecPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -20,7 +30,20 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        SearchBox::class => CodecPolicy::class,
+        Category::class => CodecPolicy::class,
+        Icon::class => CodecPolicy::class,
+        SecondIcon::class => CodecPolicy::class,
+
+        Codec::class => CodecPolicy::class,
+        AudioCodec::class => CodecPolicy::class,
+        Source::class => CodecPolicy::class,
+        Media::class => CodecPolicy::class,
+        Standard::class => CodecPolicy::class,
+        Team::class => CodecPolicy::class,
+        Processing::class => CodecPolicy::class,
+
+        Plugin::class => CodecPolicy::class,
     ];
 
     /**
@@ -58,7 +81,11 @@ class AuthServiceProvider extends ServiceProvider
             return null;
         }
         if ($cookie["c_secure_login"] == base64("yeah")) {
-            if ($cookie["c_secure_pass"] != md5($user->passhash . getip())) {
+            /**
+             * Not IP related
+             * @since 1.8.0
+             */
+            if ($cookie["c_secure_pass"] != md5($user->passhash)) {
                 return null;
             }
         } else {

@@ -35,12 +35,14 @@ class PluginResource extends Resource
         return self::getNavigationLabel();
     }
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('package_name')->label(__('label.plugin.package_name')),
-                Forms\Components\TextInput::make('remote_url')->label(__('label.plugin.remote_url')),
+                Forms\Components\TextInput::make('package_name')->label(__('plugin.labels.package_name')),
+                Forms\Components\TextInput::make('remote_url')->label(__('plugin.labels.remote_url')),
             ]);
     }
 

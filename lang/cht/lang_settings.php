@@ -794,6 +794,8 @@ $lang_settings = array
     'row_destroy_disabled' => '徹底刪除賬號',
     'text_destroy_disabled_note_one' => '被封禁的賬號如果連續',
     'text_destroy_disabled_note_two' => "天不登錄，將被從數據庫徹底物理刪除。默認'500'，請設置一個大於上邊任何一種導致封禁的值。設為'0'來禁止此規則。",
+    'row_enable_global_search_system' => '啟用全站搜索',
+    'text_global_search_system_note' => "默認：'是'。若啟用，當有多個分區時，主菜單右下角顯示全站搜索入口。",
 );
 
 ?>

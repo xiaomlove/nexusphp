@@ -29,4 +29,13 @@ return [
     'change_username_lte_min_interval' => '上次修改時間：:last_change_time，未滿足最小間隔：:interval 天',
     'destroy_by_admin' => '被管理員物理刪除',
     'disable_by_admin' => '被管理员封禁',
+    'genders' => [
+        \App\Models\User::GENDER_MALE => '男',
+        \App\Models\User::GENDER_FEMALE => '女',
+        \App\Models\User::GENDER_UNKNOWN => '未知',
+    ],
+    'grant_props_notification' => [
+        'subject' => '獲得道具：:name',
+        'body' => ':operator 授予你 :name， 有效期：:duration。',
+    ],
 ];
