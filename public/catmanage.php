@@ -7,6 +7,8 @@ loggedinorreturn();
 if (get_user_class() < UC_ADMINISTRATOR)
     permissiondenied();
 
+$perpage = 2;
+$pagerParam = '?action=view&type=' . ($_GET['type'] ?? 'searchbox') . '&';
 function return_category_db_table_name($type)
 {
 	switch($type)
@@ -153,14 +155,13 @@ function check_valid_type($type)
 }
 function print_sub_category_list($type)
 {
-	global $lang_catmanage;
+	global $lang_catmanage, $perpage, $pagerParam;
 	$dbtablename = return_category_db_table_name($type);
-	$perpage = 50;
 	$num = get_row_count($dbtablename);
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
+		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id DESC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
@@ -406,13 +407,12 @@ if ($action == 'view')
 	}
 	elseif ($type=='searchbox')
 	{
-	$perpage = 50;
 	$dbtablename=return_category_db_table_name($type);
 	$num = get_row_count($dbtablename);
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
+		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
@@ -460,13 +460,12 @@ print($pagerbottom);
 	}
 	elseif($type=='caticon')
 	{
-	$perpage = 50;
 	$dbtablename=return_category_db_table_name($type);
 	$num = get_row_count($dbtablename);
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
+		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
@@ -513,13 +512,12 @@ print($pagerbottom);
 	    $allProcessing = \App\Models\Processing::query()->get()->keyBy('id');
 	    $allTeam = \App\Models\Team::query()->get()->keyBy('id');
 	    $allAudioCodec = \App\Models\AudioCodec::query()->get()->keyBy('id');
-	$perpage = 50;
 	$dbtablename=return_category_db_table_name($type);
 	$num = get_row_count($dbtablename);
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
+		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
 		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
@@ -565,13 +563,12 @@ print($pagerbottom);
 	}
 	elseif($type=='category')
 	{
-	$perpage = 50;
 	$dbtablename=return_category_db_table_name($type);
 	$num = get_row_count($dbtablename);
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, "?");
+		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
         $res = sql_query("SELECT ".$dbtablename.".*, searchbox.name AS catmodename, caticons.name as icon_name FROM ".$dbtablename." LEFT JOIN searchbox ON ".$dbtablename.".mode=searchbox.id left join caticons on caticons.id = $dbtablename.icon_id ORDER BY ".$dbtablename.".mode ASC, ".$dbtablename.".id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
 
 ?>
