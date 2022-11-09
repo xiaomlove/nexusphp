@@ -95,18 +95,21 @@ class HitAndRunRepository extends BaseRepository
         $diffInSection = HitAndRun::diffInSection();
         $browseMode = Setting::get('main.browsecat');
         $setting = HitAndRun::getConfig('*', $browseMode);
-        $setting['diff_in_section'] = $diffInSection;
-        $setting['search_box_id'] = $browseMode;
-        $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
-        $this->checkAndDisableUser($setting);
-
+        if ($setting['mode'] != HitAndRun::MODE_DISABLED) {
+            $setting['diff_in_section'] = $diffInSection;
+            $setting['search_box_id'] = $browseMode;
+            $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
+            $this->checkAndDisableUser($setting);
+        }
         $specialMode = Setting::get('main.specialcat');
         if ($diffInSection && $browseMode != $specialMode) {
             $setting = HitAndRun::getConfig('*', $specialMode);
-            $setting['diff_in_section'] = $diffInSection;
-            $setting['search_box_id'] = $specialMode;
-            $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
-            $this->checkAndDisableUser($setting);
+            if ($setting['mode'] != HitAndRun::MODE_DISABLED) {
+                $setting['diff_in_section'] = $diffInSection;
+                $setting['search_box_id'] = $specialMode;
+                $this->doCronjobUpdateStatus($setting, $uid, $torrentId, $ignoreTime);
+                $this->checkAndDisableUser($setting);
+            }
         }
     }
 
@@ -342,6 +345,10 @@ class HitAndRunRepository extends BaseRepository
     {
         $logPrefix = "setting: " . json_encode($setting);
         $disableCounts = HitAndRun::getConfig('ban_user_when_counts_reach', $setting['search_box_id']);
+        if ($disableCounts <= 0) {
+            do_log("$logPrefix, disableCounts: $disableCounts <= 0, invalid, return", 'error');
+            return;
+        }
         $query = HitAndRun::query()
             ->selectRaw("count(*) as counts, uid")
             ->where('status', HitAndRun::STATUS_UNREACHED)
