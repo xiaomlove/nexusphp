@@ -156,6 +156,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 			$query[] = "search_mode=".$search_mode;
 		}
 	}
+	if (!empty($_POST['sort']) && in_array($_POST['sort'], ['newest', 'sticky'])) {
+	    $query[] = "sort=" . $_POST['sort'];
+    } else {
+	    $query[] = "sort=sticky";
+    }
 	$inclbookmarked=intval($_POST['inclbookmarked'] ?? 0);
 	if($inclbookmarked)
 	{
@@ -317,6 +322,14 @@ if (get_setting('main.spsct') == 'yes') {
 <input type="radio" name="inclbookmarked" id="inclbookmarked0" value="0" checked="checked" /><label for="inclbookmarked0"><?php echo $lang_getrss['text_all']?></label>&nbsp;<input type="radio" name="inclbookmarked" id="inclbookmarked1" value="1" /><label for="inclbookmarked1"><?php echo $lang_getrss['text_only_bookmarked']?></label><div><?php echo $lang_getrss['text_show_bookmarked_note']?></div>
 </td>
 </tr>
+    <tr>
+        <td class="rowhead"><?php echo $lang_getrss['row_sort']?>
+        </td>
+        <td class="rowfollow" align="left">
+            <label><input type="radio" name="sort" value="sticky"><?php echo $lang_getrss['sort_sticky']?></label>
+            <label><input type="radio" name="sort" value="newest"><?php echo $lang_getrss['sort_newest']?></label>
+        </td>
+    </tr>
 <tr>
 <td class="rowhead"><?php echo $lang_getrss['row_item_title_type']?>
 </td>

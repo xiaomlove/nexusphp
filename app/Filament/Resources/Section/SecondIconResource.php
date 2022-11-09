@@ -61,6 +61,12 @@ class SecondIconResource extends Resource
                     ->label(__('label.second_icon.class_name'))
                     ->helperText(__('label.second_icon.class_name_help'))
                 ,
+                Forms\Components\Select::make('mode')
+                    ->options($modeOptions)
+                    ->label(__('label.search_box.taxonomy.mode'))
+                    ->helperText(__('label.search_box.taxonomy.mode_help'))
+                    ->reactive()
+                ,
                 Forms\Components\Section::make(__('label.second_icon.select_section'))
                     ->id("taxonomy_$torrentMode")
                     ->schema($torrentTaxonomySchema)
@@ -73,11 +79,7 @@ class SecondIconResource extends Resource
                     ->columns(4)
                     ->hidden(fn (\Closure $get) => $get('mode') != $specialMode)
                 ,
-                Forms\Components\Select::make('mode')
-                    ->options($modeOptions)
-                    ->label(__('label.search_box.taxonomy.mode'))
-                    ->helperText(__('label.search_box.taxonomy.mode_help'))
-                ,
+
             ]);
     }
 

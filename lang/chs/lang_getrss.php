@@ -39,7 +39,10 @@ $lang_getrss = array
 	'select_or' => "或",
 	'select_exact' => "准确",
 	'text_mode' => "",
-	'text_keyword_note' => "只订阅标题中包含此关键字的项目"
+	'text_keyword_note' => "只订阅标题中包含此关键字的项目",
+    'row_sort' => '排序',
+    'sort_sticky' => '置顶优先（默认）',
+    'sort_newest' => '最新优先',
 );
 
 ?>

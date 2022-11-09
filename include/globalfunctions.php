@@ -972,7 +972,7 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
 
 function clear_user_cache($uid, $passkey = '')
 {
-    do_log("uid: $uid, passkey: $passkey");
+    do_log("clear_user_cache, uid: $uid, passkey: $passkey");
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_content");
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_roles");
     \Nexus\Database\NexusDB::cache_del("announce_user_passkey_$uid");//announce.php
@@ -984,6 +984,7 @@ function clear_user_cache($uid, $passkey = '')
 
 function clear_setting_cache()
 {
+    do_log("clear_setting_cache");
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
 }
@@ -993,7 +994,21 @@ function clear_setting_cache()
  */
 function clear_category_cache()
 {
+    do_log("clear_category_cache");
     \Nexus\Database\NexusDB::cache_del('category_content');
+}
+
+/**
+ * @see functions.php::searchbox_item_list()
+ */
+function clear_taxonomy_cache($table)
+{
+    do_log("clear_taxonomy_cache: $table");
+    $list = \App\Models\SearchBox::query()->get(['id']);
+    foreach ($list as $item) {
+        \Nexus\Database\NexusDB::cache_del("{$table}_list_mode_{$item->id}");
+    }
+    \Nexus\Database\NexusDB::cache_del("{$table}_list_mode_0");
 }
 
 function clear_staff_message_cache()
@@ -1002,6 +1017,9 @@ function clear_staff_message_cache()
     \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
 }
 
+/**
+ * @see functions.php::get_searchbox_value()
+ */
 function clear_search_box_cache()
 {
     do_log("clear_search_box_cache");

@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('exam:assign_cronjob')->everyMinute()->withoutOverlapping();
-        $schedule->command('exam:checkout_cronjob')->everyMinute()->withoutOverlapping();
+        $schedule->command('exam:checkout_cronjob')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('exam:update_progress --bulk=1')->hourly()->withoutOverlapping();
         $schedule->command('backup:cronjob')->everyMinute()->withoutOverlapping();
         $schedule->command('hr:update_status')->everyTenMinutes()->withoutOverlapping();

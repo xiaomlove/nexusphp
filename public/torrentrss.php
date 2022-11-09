@@ -94,7 +94,7 @@ if ($approvalStatusNoneVisible == 'no' && !user_can('staffmem')) {
 function get_where($tablename = "sources", $itemname = "source", $getname = "sou")
 {
 	global $where;
-	$items = searchbox_item_list($tablename);
+	$items = searchbox_item_list($tablename, 0);
 	$whereitemina = array();
 	foreach ($items as $item)
 	{
@@ -118,8 +118,14 @@ get_where("teams", "team", "tea");
 get_where("audiocodecs", "audiocodec", "aud");
 if ($where)
 	$where = "WHERE ".$where;
-$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY torrents.added DESC LIMIT $limit";
+if (!empty($_GET['sort']) && $_GET['sort'] == 'newest') {
+    $sort = "id desc";
+} else {
+    $sort = "pos_state desc, id desc";
+}
+$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY $sort LIMIT $limit";
 $list = \Nexus\Database\NexusDB::select($query);
+$list = apply_filter('torrent_list', $list, $startindex == 0 ? 0 : 1, null);
 $torrentRep = new \App\Repositories\TorrentRepository();
 $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);

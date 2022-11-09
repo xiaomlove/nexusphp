@@ -16,11 +16,14 @@ class SecondIcon extends NexusModel
     {
         foreach (SearchBox::$taxonomies as $torrentField => $table) {
             $mode = $data['mode'];
-            if (empty($data[$torrentField][$mode])) {
+            if ($mode === null || empty($data[$torrentField][$mode])) {
                 unset($data[$torrentField]);
             } else {
                 $data[$torrentField] = $data[$torrentField][$mode];
             }
+        }
+        if ($data['mode'] === null) {
+            $data['mode'] = 0;
         }
         return $data;
     }

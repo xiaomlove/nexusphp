@@ -3265,12 +3265,17 @@ function genrelist($catmode = 1) {
 	return $ret;
 }
 
-function searchbox_item_list($table, $mode){
+function searchbox_item_list(string $table, int $mode){
 	global $Cache;
 	$cacheKey = "{$table}_list_mode_{$mode}";
 	if (!$ret = $Cache->get_value($cacheKey)){
 		$ret = array();
-		$res = sql_query("SELECT * FROM $table where (mode = '$mode' or mode = 0) ORDER BY sort_index, id");
+		$sql = "SELECT * FROM $table";
+		if ($mode > 0) {
+		    $sql .= " where (mode = '$mode' or mode = 0)";
+        }
+		$sql .= " ORDER BY sort_index, id";
+		$res = sql_query($sql);
 		while ($row = mysql_fetch_array($res))
 			$ret[] = $row;
 		$Cache->cache_value($cacheKey, $ret, 3600);
@@ -6066,6 +6071,8 @@ TD;
             ->where(function (\Illuminate\Database\Query\Builder $query) use ($mode) {
                 return $query->where('mode', $mode)->orWhere('mode', 0);
             })
+            ->orderBy('sort_index', 'asc')
+            ->orderBy('id', 'asc')
             ->get()
             ->chunk($searchBox->catsperrow);
         foreach ($taxonomyChunks as $chunk) {

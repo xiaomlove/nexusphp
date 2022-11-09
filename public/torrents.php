@@ -207,7 +207,7 @@ elseif ($CURUSER['notifs']){
 		$special_state = 5;
 	elseif (strpos($CURUSER['notifs'], "[spstate=6]") !== false)
 		$special_state = 6;
-	elseif (strpos($CURUSER['notifs'], "[spstate=6]") !== false)
+	elseif (strpos($CURUSER['notifs'], "[spstate=7]") !== false)
 		$special_state = 7;
 }
 
