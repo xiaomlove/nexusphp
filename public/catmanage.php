@@ -7,7 +7,7 @@ loggedinorreturn();
 if (get_user_class() < UC_ADMINISTRATOR)
     permissiondenied();
 
-$perpage = 2;
+$perpage = 50;
 $pagerParam = '?action=view&type=' . ($_GET['type'] ?? 'searchbox') . '&';
 function return_category_db_table_name($type)
 {
