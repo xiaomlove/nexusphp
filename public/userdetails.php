@@ -32,10 +32,12 @@ $medalType = 'valid_medals';
 $userInfo = \App\Models\User::query()->with($medalType)->findOrFail($user['id']);
 $userRep = new \App\Repositories\UserRepository();
 
-if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
-$joindate = $lang_userdetails['text_not_available'];
-else
-$joindate = $user['added']." (" . gettime($user["added"], true, false, true).")";
+if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null) {
+    $joindate = $lang_userdetails['text_not_available'];
+} else {
+    $weeks = $userInfo->added->diffInWeeks() . nexus_trans('nexus.time_units.week');
+    $joindate = $user['added']." (" . gettime($user["added"], true, false, true).", $weeks)";
+}
 $lastseen = $user["last_access"];
 if ($lastseen == "0000-00-00 00:00:00" || $lastseen == null)
 $lastseen = $lang_userdetails['text_not_available'];

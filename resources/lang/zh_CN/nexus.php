@@ -5,4 +5,7 @@ return [
     'require_argument' => ':argument 不能为空',
     'select_one_please' => '请选择一项',
     'user_not_exists' => '(无此帐户)',
+    'time_units' => [
+        'week' => '周',
+    ],
 ];

@@ -326,7 +326,7 @@ if (get_setting('main.spsct') == 'yes') {
         <td class="rowhead"><?php echo $lang_getrss['row_sort']?>
         </td>
         <td class="rowfollow" align="left">
-            <label><input type="radio" name="sort" value="sticky"><?php echo $lang_getrss['sort_sticky']?></label>
+            <label><input type="radio" name="sort" value="sticky" checked><?php echo $lang_getrss['sort_sticky']?></label>
             <label><input type="radio" name="sort" value="newest"><?php echo $lang_getrss['sort_newest']?></label>
         </td>
     </tr>
