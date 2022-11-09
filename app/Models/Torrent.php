@@ -300,9 +300,8 @@ class Torrent extends NexusModel
         return $result;
     }
 
-    public function getHrAttribute(): string
+    public function getHrRealAttribute(): string
     {
-//        $hrMode = Setting::get('hr.mode');
         $searchBoxId = $this->basic_category->mode ?? 0;
         if ($searchBoxId == 0) {
             do_log(sprintf('[INVALID_CATEGORY], Torrent: %s, category: %s invalid', $this->id, $this->category), 'error');

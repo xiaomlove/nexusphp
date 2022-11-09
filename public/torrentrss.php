@@ -123,9 +123,11 @@ if (!empty($_GET['sort']) && $_GET['sort'] == 'newest') {
 } else {
     $sort = "pos_state desc, id desc";
 }
-$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY $sort LIMIT $limit";
+//$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY $sort LIMIT $limit";
+$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name FROM torrents LEFT JOIN categories ON category = categories.id $where ORDER BY $sort LIMIT $limit";
 $list = \Nexus\Database\NexusDB::select($query);
-$list = apply_filter('torrent_list', $list, $startindex == 0 ? 0 : 1, null);
+$list = apply_filter('torrent_list', $list, $startindex == 0 ? 0 : 1, null, $_GET['search'] ?? '');
+//dd($list);
 $torrentRep = new \App\Repositories\TorrentRepository();
 $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);
@@ -162,15 +164,16 @@ $xml .= '<channel>
 //');
 foreach ($list as $row)
 {
+    $ownerInfo = get_user_row($row['owner']);
 	$title = "";
 	if ($row['anonymous'] == 'yes')
 		$author = 'anonymous';
-	else $author = $row['username'];
+	else $author = $ownerInfo['username'];
 	$itemurl = $url."/details.php?id=".$row['id'];
 	if ($dllink)
 		$itemdlurl = $url."/download.php?id=".$row['id']."&amp;downhash=" . rawurlencode( $user['id'] . '|'. $torrentRep->encryptDownHash($row['id'], $user));
 	else $itemdlurl = $url."/download.php?id=".$row['id'];
-	if (!empty($_GET['icat'])) $title .= "[".$row['cat_name']."]";
+	if (!empty($_GET['icat'])) $title .= "[".$row['category_name']."]";
 	$title .= $row['name'];
 	if (!empty($_GET['ismalldescr']) && !empty($row['small_descr'])) $title .= "[".$row['small_descr']."]";
 	if (!empty($_GET['isize'])) $title .= "[".mksize($row['size'])."]";
@@ -183,7 +186,7 @@ foreach ($list as $row)
 ';
 //print('			<dc:creator>'.$author.'</dc:creator>');
 $xml .= '<author>'.$author.'@'.$_SERVER['HTTP_HOST'].' ('.$author.')</author>';
-$xml .= '<category domain="'.$url.'/torrents.php?cat='.$row['cat_id'].'">'.$row['cat_name'].'</category>
+$xml .= '<category domain="'.$url.'/torrents.php?cat='.$row['category'].'">'.$row['category_name'].'</category>
 			<comments><![CDATA['.$url.'/details.php?id='.$row['id'].'&cmtpage=0#startcomments]]></comments>
 			<enclosure url="'.$itemdlurl.'" length="'.$row['size'].'" type="application/x-bittorrent" />
 			<guid isPermaLink="false">'.preg_replace_callback('/./s', 'hex_esc', hash_pad($row['info_hash'])).'</guid>
