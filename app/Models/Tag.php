@@ -51,8 +51,8 @@ class Tag extends NexusModel
     public static function listSpecial(): array
     {
         return array_filter([
-            Setting::get('system.official_tag'),
-            Setting::get('system.zero_bonus_tag'),
+            Setting::get('bonus.official_tag'),
+            Setting::get('bonus.zero_bonus_tag'),
         ]);
     }
 
