@@ -8,4 +8,6 @@ return [
     'time_units' => [
         'week' => '周',
     ],
+    'select_all' => '全选',
+    'unselect_all' => '全不选',
 ];

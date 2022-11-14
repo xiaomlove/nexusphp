@@ -98,7 +98,7 @@ class SecondIconResource extends Resource
             Tables\Columns\TextColumn::make('class_name')->label(__('label.second_icon.class_name')),
         ];
         $taxonomyList = self::listTaxonomy();
-        foreach (SearchBox::$taxonomies as $torrentField => $tableName) {
+        foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
             $columns[] = Tables\Columns\TextColumn::make($torrentField)->formatStateUsing(function ($state) use ($taxonomyList, $torrentField) {
                  return $taxonomyList[$torrentField]->get($state);
             });
@@ -121,8 +121,8 @@ class SecondIconResource extends Resource
     {
         static $taxonomyList = [];
         if (empty($taxonomyList)) {
-            foreach (SearchBox::$taxonomies as $torrentField => $tableName) {
-                $taxonomyList[$torrentField] = NexusDB::table($tableName)->pluck('name', 'id');
+            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
+                $taxonomyList[$torrentField] = NexusDB::table($taxonomyTableModel['table'])->pluck('name', 'id');
             }
         }
         return $taxonomyList;

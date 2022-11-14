@@ -303,7 +303,10 @@ When
     icon_pack_folder='nanosofts/'
     multi-lang='no'
     second_icon='yes'
-you should put a normal icon file for movies (e.g. movies.png) in 'pic/category/chd/nanosofts/' and an additional icon file (e.g. 'bdh264.png') in 'pic/category/chd/nanosofts/additional/'.",
+you should put a normal icon file for movies (e.g. movies.png) in 'pic/category/chd/nanosofts/' and an additional icon file (e.g. 'bdh264.png') in 'pic/category/chd/nanosofts/additional/'.
+
+Note: In 1.8, the 'searchbox_name' part can be omitted, i.e. the rule is 'pic/category/icon_pack_folder[language_short_name/].'
+",
     ],
     'second_icon' => [
         'label' => 'Second icon',

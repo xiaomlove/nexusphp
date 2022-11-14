@@ -303,7 +303,10 @@ return [
     图标文件夹='nanosofts/'
     多语言='否'
     第二图标='是'
-你应该将一个电影类型的图标（如'movies.png'）文件放入'pic/category/chd/nanosofts/'，将一个第二图标（如'bdh264.png'）放入'pic/category/chd/nanosofts/additional/'。",
+你应该将一个电影类型的图标（如'movies.png'）文件放入'pic/category/chd/nanosofts/'，将一个第二图标（如'bdh264.png'）放入'pic/category/chd/nanosofts/additional/'。
+
+注意：在 1.8 中，可以省略'分类模式名字'这一部分，即规则是'pic/category/图标文件夹[语言缩写/]'。
+",
     ],
     'second_icon' => [
         'label' => '第二图标',

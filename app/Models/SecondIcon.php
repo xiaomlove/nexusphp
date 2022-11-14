@@ -14,7 +14,7 @@ class SecondIcon extends NexusModel
 
     public static function formatFormData(array $data): array
     {
-        foreach (SearchBox::$taxonomies as $torrentField => $table) {
+        foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
             $mode = $data['mode'];
             if ($mode === null || empty($data[$torrentField][$mode])) {
                 unset($data[$torrentField]);

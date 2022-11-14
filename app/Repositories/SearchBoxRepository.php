@@ -119,7 +119,7 @@ class SearchBoxRepository extends BaseRepository
         $searchBoxList = SearchBox::query()->get();
         foreach ($searchBoxList as $searchBox) {
             $taxonomies = [];
-            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTable) {
+            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
                 $searchBoxField = "show" . $torrentField;
                 if ($searchBox->showsubcat && $searchBox->{$searchBoxField}) {
                     $taxonomies[] = [
@@ -154,7 +154,7 @@ class SearchBoxRepository extends BaseRepository
                 }
             }
         } else {
-            foreach (SearchBox::$taxonomies as $torrentField => $table) {
+            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
                 $select = $this->buildTaxonomySelect($searchBox, $torrentField, $torrentInfo);
                 if ($select) {
                     $results[] = $select;
@@ -180,7 +180,7 @@ class SearchBoxRepository extends BaseRepository
                 }
             }
         } else {
-            foreach (SearchBox::$taxonomies as $torrentField => $table) {
+            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
                 $taxonomy = $this->getTaxonomyInfo($searchBox, $torrentWithTaxonomy, $torrentField);
                 if ($taxonomy) {
                     $results[] = $taxonomy;
@@ -208,7 +208,7 @@ class SearchBoxRepository extends BaseRepository
         $searchBoxId = $searchBox->id;
         $searchBoxField = "show" . $torrentField;
         if ($searchBox->showsubcat && $searchBox->{$searchBoxField}) {
-            $table = SearchBox::$taxonomies[$torrentField];
+            $table = SearchBox::$taxonomies[$torrentField]['table'];
             $select = sprintf("<b>%s: </b>", $searchBox->getTaxonomyLabel($torrentField));
             $select .= sprintf('<select name="%s_sel[%s]" data-mode="%s_%s">',$torrentField, $searchBoxId, $torrentField, $searchBoxId);
             $select .= sprintf('<option value="%s">%s</option>', 0, nexus_trans('nexus.select_one_please'));
@@ -242,7 +242,7 @@ class SearchBoxRepository extends BaseRepository
                 }
             }
         } else {
-            foreach (SearchBox::$taxonomies as $torrentField => $table) {
+            foreach (SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
                 $select = $this->buildTaxonomyFormSchema($searchBox, $torrentField);
                 if ($select) {
                     $results[] = $select;

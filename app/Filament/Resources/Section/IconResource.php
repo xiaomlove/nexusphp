@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Section;
 
 use App\Filament\OptionsTrait;
+use App\Filament\RedirectIndexTrait;
 use App\Filament\Resources\Section\IconResource\Pages;
 use App\Filament\Resources\Section\IconResource\RelationManagers;
 use App\Models\Icon;

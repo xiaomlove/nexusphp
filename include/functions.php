@@ -6021,14 +6021,14 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
                 $torrentField = $taxonomyLabelInfo["torrent_field"];
                 $showField = "show" . $torrentField;
                 if ($searchBox->{$showField}) {
-                    $withTaxonomies[$torrentField] = \App\Models\SearchBox::$taxonomies[$torrentField];
+                    $withTaxonomies[$torrentField] = \App\Models\SearchBox::$taxonomies[$torrentField]['table'];
                 }
             }
         } else {
-            foreach (\App\Models\SearchBox::$taxonomies as $torrentField => $taxonomyTable) {
+            foreach (\App\Models\SearchBox::$taxonomies as $torrentField => $taxonomyTableModel) {
                 $showField = "show" . $torrentField;
                 if ($searchBox->{$showField}) {
-                    $withTaxonomies[$torrentField] = $taxonomyTable;
+                    $withTaxonomies[$torrentField] = $taxonomyTableModel['table'];
                 }
             }
         }
@@ -6039,20 +6039,41 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
     }
     //Category
     $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', nexus_trans('label.search_box.category'));
-    $categoryChunks = $searchBox->categories->chunk($searchBox->catsperrow);
+    /** @var \Illuminate\DataBase\Eloquent\Collection $categoryCollection */
+    $categoryCollection = $searchBox->categories;
+    if (!empty($options['select_unselect'])) {
+        $categoryCollection->push(new \App\Models\Category(['mode' => -1]));
+    }
+    $categoryChunks = $categoryCollection->chunk($searchBox->catsperrow);
+    $checkPrefix = 'cat';
     foreach ($categoryChunks as $chunk) {
         $html .= '<tr>';
         foreach ($chunk as $item) {
-            $checked = '';
-            if (str_contains($checkedValues, "[cat{$item->id}]") || str_contains($checkedValues, "cat{$item->id}=1")) {
-                $checked = " checked";
+            if ($item->mode != -1) {
+                $checked = '';
+                if (str_contains($checkedValues, "[cat{$item->id}]") || str_contains($checkedValues, "cat{$item->id}=1")) {
+                    $checked = " checked";
+                }
+                $icon = $item->icon;
+                $iconFolder = trim($icon->folder, '/');
+                if (is_dir(getFullDirectory("pic/category/$iconFolder"))) {
+                    $backgroundImagePath = sprintf('pic/category/%s/%s%s', $iconFolder, $icon->multilang == 'yes' ? "$lang/" : "", $item->image);
+                } else {
+                    $backgroundImagePath = sprintf('pic/category/%s/%s/%s%s', $searchBox->name, $iconFolder, $icon->multilang == 'yes' ? "$lang/" : "", $item->image);
+                }
+                $tdContent = <<<TDCONTENT
+<input type="checkbox" id="cat{$item->id}" name="cat{$item->id}" value="{$checkboxValue}"{$checked} />
+<a href="{$categoryHrefPrefix}cat={$item->id}"><img src="pic/cattrans.gif" class="{$item->class_name}" alt="{$item->name}" title="{$item->name}" style="background-image: url({$backgroundImagePath})" /></a>
+TDCONTENT;
+            } else {
+                $tdContent = sprintf(
+                    "<input name=\"%s_check\" value=\"%s\" class=\"btn medium\" type=\"button\" onclick=\"javascript:SetChecked('%s','%s_check','%s','%s',-1,10)\">",
+                    $checkPrefix, nexus_trans('nexus.select_all'), $checkPrefix, $checkPrefix, nexus_trans('nexus.select_all'), nexus_trans('nexus.unselect_all')
+                );
             }
-            $icon = $item->icon;
-            $backgroundImagePath = sprintf('pic/category/%s/%s/%s%s', $searchBox->name, trim($icon->folder, '/'), $icon->multilang == 'yes' ? "$lang/" : "", $item->image);
             $td = <<<TD
 <td align="left" class="bottom" style="padding-bottom: 4px;padding-left: {$searchBox->catpadding}px">
-    <input type="checkbox" id="cat{$item->id}" name="cat{$item->id}" value="{$checkboxValue}"{$checked} />
-    <a href="{$categoryHrefPrefix}cat={$item->id}"><img src="pic/cattrans.gif" class="{$item->class_name}" alt="{$item->name}" title="{$item->name}" style="background-image: url({$backgroundImagePath})" /></a>
+    $tdContent
 </td>
 TD;
             $html .= $td;
@@ -6067,29 +6088,46 @@ TD;
             $namePrefix = $torrentField;
         }
         $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', $searchBox->getTaxonomyLabel($torrentField));
-        $taxonomyChunks = \Nexus\Database\NexusDB::table($tableName)
+        /** @var \Illuminate\DataBase\Eloquent\Collection $taxonomyCollection */
+        $taxonomyCollection = \Nexus\Database\NexusDB::table($tableName)
             ->where(function (\Illuminate\Database\Query\Builder $query) use ($mode) {
                 return $query->where('mode', $mode)->orWhere('mode', 0);
             })
             ->orderBy('sort_index', 'asc')
             ->orderBy('id', 'asc')
             ->get()
-            ->chunk($searchBox->catsperrow);
+        ;
+        $modelName = \App\Models\SearchBox::$taxonomies[$torrentField]['model'];
+        $checkPrefix = $torrentField;
+        if (!empty($options['select_unselect'])) {
+            $taxonomyCollection->push(new $modelName(['mode' => -1]));
+        }
+        $taxonomyChunks = $taxonomyCollection->chunk($searchBox->catsperrow);
         foreach ($taxonomyChunks as $chunk) {
             $html .= '<tr>';
             foreach ($chunk as $item) {
-                if ($taxonomyHrefPrefix) {
-                    $afterInput = sprintf('<a href="%s%s=%s">%s</a>', $taxonomyHrefPrefix, $namePrefix, $item->id, $item->name);
+                if ($item->mode != -1) {
+                    if ($taxonomyHrefPrefix) {
+                        $afterInput = sprintf('<a href="%s%s=%s">%s</a>', $taxonomyHrefPrefix, $namePrefix, $item->id, $item->name);
+                    } else {
+                        $afterInput = $item->name;
+                    }
+                    $checked = '';
+                    if (str_contains($checkedValues, "[{$namePrefix}{$item->id}]") || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")) {
+                        $checked = ' checked';
+                    }
+                    $tdContent = <<<TDCONTENT
+<label><input type="checkbox" id="{$namePrefix}{$item->id}" name="{$namePrefix}{$item->id}" value="{$checkboxValue}"{$checked} />$afterInput</label>
+TDCONTENT;
                 } else {
-                    $afterInput = $item->name;
-                }
-                $checked = '';
-                if (str_contains($checkedValues, "[{$namePrefix}{$item->id}]") || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")) {
-                    $checked = ' checked';
+                    $tdContent = sprintf(
+                        "<input name=\"%s_check\" value=\"%s\" class=\"btn medium\" type=\"button\" onclick=\"javascript:SetChecked('%s','%s_check','%s','%s',-1,10)\">",
+                        $checkPrefix, nexus_trans('nexus.select_all'), $checkPrefix, $checkPrefix, nexus_trans('nexus.select_all'), nexus_trans('nexus.unselect_all')
+                    );
                 }
                 $td = <<<TD
 <td align="left" class="bottom" style="padding-bottom: 4px;padding-left: {$searchBox->catpadding}px">
-    <label><input type="checkbox" id="{$namePrefix}{$item->id}" name="{$namePrefix}{$item->id}" value="{$checkboxValue}"{$checked} />$afterInput</label>
+    $tdContent
 </td>
 TD;
                 $html .= $td;

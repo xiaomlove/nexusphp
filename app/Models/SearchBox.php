@@ -44,13 +44,13 @@ class SearchBox extends NexusModel
     const EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST = 'display_seed_box_icon_on_torrent_list';
 
     public static array $taxonomies = [
-        'source' => 'sources',
-        'medium' => 'media',
-        'codec' => 'codecs',
-        'audiocodec' => 'audiocodecs',
-        'standard' => 'standards',
-        'processing' => 'processings',
-        'team' => 'teams',
+        'source' => ['table' => 'sources', 'model' => Source::class],
+        'medium' => ['table' => 'media', 'model' => Media::class],
+        'codec' => ['table' => 'codecs', 'model' => Codec::class],
+        'audiocodec' => ['table' => 'audiocodecs', 'model' => AudioCodec::class],
+        'standard' => ['table' => 'standards', 'model' => Standard::class],
+        'processing' => ['table' => 'processings', 'model' => Processing::class],
+        'team' => ['table' => 'teams', 'model' => Team::class]
     ];
 
     public static array $extras = [
@@ -143,7 +143,7 @@ class SearchBox extends NexusModel
         if (!$searchBox instanceof self) {
             $searchBox = self::get(intval($searchBox));
         }
-        $table = self::$taxonomies[$torrentField];
+        $table = self::$taxonomies[$torrentField]['table'];
         return NexusDB::table($table)->where(function (Builder $query) use ($searchBox) {
             return $query->where('mode', $searchBox->id)->orWhere('mode', 0);
         })->get();
