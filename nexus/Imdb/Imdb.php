@@ -29,6 +29,7 @@ class Imdb
         $config->photodir = $photoDir;
         $config->photoroot = $photoRoot;
         $config->language = get_setting('main.imdb_language', 'en-US');
+        $config->cache_expire = 0;
         $this->config = $config;
     }
 
