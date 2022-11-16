@@ -403,7 +403,7 @@ JS;
             }
             $result[$row['torrent_id']][$row['id']] = $row;
             if ($typeInfo['is_value_multiple']) {
-                $values[$row['torrent_id']][$row['id']][] = $row['custom_field_value'];
+                $values[$row['torrent_id']][$row['id']] = json_decode($row['custom_field_value'], true);
             } else {
                 $values[$row['torrent_id']][$row['id']] = $row['custom_field_value'];
             }
@@ -529,7 +529,7 @@ JS;
             $insert[] = [
                 'torrent_id' => $torrentId,
                 'custom_field_id' => $field->id,
-                'custom_field_value' => $data[$field->id],
+                'custom_field_value' => is_array($data[$field->id]) ? json_encode($data[$field->id]) : $data[$field->id],
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
