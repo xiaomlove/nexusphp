@@ -53,8 +53,8 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
         $beginTimestamp = time();
         $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
         $sql = sprintf(
-            "update users set seedtime = (select sum(seedtime) from snatched where userid = users.id), leechtime=(select sum(leechtime) from snatched where userid = users.id) where id > %s and id <= %s and status = 'confirmed' and enabled = 'yes'",
-            $this->beginUid, $this->endUid
+            "update users set seedtime = (select sum(seedtime) from snatched where userid = users.id), leechtime=(select sum(leechtime) from snatched where userid = users.id), seed_time_updated_at = '%s' where id > %s and id <= %s and status = 'confirmed' and enabled = 'yes'",
+            $this->beginUid, $this->endUid, now()->toDateTimeString()
         );
         $results = NexusDB::statement($sql);
         $costTime = time() - $beginTimestamp;

@@ -94,7 +94,8 @@ class CalculateUserSeedBonus implements ShouldQueue
             $dividend = 3600 / $autoclean_interval_one;
             $all_bonus = $all_bonus / $dividend;
             $seed_points = $seedBonusResult['seed_points'] / $dividend;
-            $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = $uid limit 1";
+            $updatedAt = now()->toDateTimeString();
+            $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus, seed_points_updated_at = '$updatedAt' where id = $uid limit 1";
             do_log("$bonusLog, query: $sql");
             NexusDB::statement($sql);
         }

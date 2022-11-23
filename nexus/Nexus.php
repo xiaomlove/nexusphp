@@ -303,9 +303,11 @@ final class Nexus
 
     private static function loadTranslations($path, $namespace = null)
     {
+        do_log("path: $path, namespace: $namespace", 'debug');
         $files = glob($path . '*/*');
         foreach ($files as $file) {
             if (!is_file($file)) {
+                do_log("file: $file, is not file", 'debug');
                 continue;
             }
             if (!is_readable($file)) {
@@ -320,7 +322,7 @@ final class Nexus
             if ($namespace !== null) {
                 $setKey = "$namespace.$setKey";
             }
-//            do_log("path: $path, namespace: $namespace, file: $file, setKey: $setKey", 'debug');
+            do_log("path: $path, namespace: $namespace, file: $file, setKey: $setKey", 'debug');
             arr_set(self::$translations, $setKey, $values);
         }
     }

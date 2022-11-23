@@ -283,7 +283,7 @@ if ($user["downloaded"] > 0 && $true_download > 0)
 //end
 
 $xfer = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_uploaded'] . "</strong>:  ". mksize($user["uploaded"]) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['row_downloaded'] . "</strong>:  " . mksize($user["downloaded"]) . "</td></tr>";
-$true_xfer = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_real_uploaded'] . "</strong>:  ". mksize($true_upload) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['row_real_downloaded'] . "</strong>:  " . mksize($true_download) . "</td><td class=\"embedded\" style=\"color: #7d7b7b;\">&nbsp;&nbsp;" . $lang_userdetails['row_real_ps'] . "</td></tr>";
+$true_xfer = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['row_real_uploaded'] . "</strong>:  ". mksize($true_upload) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['row_real_downloaded'] . "</strong>:  " . mksize($true_download) . "</td><td class=\"embedded text-muted\">&nbsp;&nbsp;" . $lang_userdetails['row_real_ps'] . "</td></tr>";
 tr_small($lang_userdetails['row_transfer'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . ($sr ?? '') . $xfer .  $true_xfer . "</table>", 1);
 
 
@@ -293,7 +293,7 @@ if ($user["leechtime"] > 0)
 	$slr = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['text_seeding_leeching_time_ratio'] . "</strong>:  <font color=\"" . get_ratio_color($slr) . "\">" . number_format($slr, 3) . "</font></td><td class=\"embedded\">&nbsp;&nbsp;" . get_ratio_img($slr) . "</td></tr>";
 }
 
-$slt = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['text_seeding_time'] . "</strong>:  ". mkprettytime($user["seedtime"]) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['text_leeching_time'] . "</strong>:  " . mkprettytime($user["leechtime"]) . "</td></tr>";
+$slt = "<tr><td class=\"embedded\"><strong>" . $lang_userdetails['text_seeding_time'] . "</strong>:  ". mkprettytime($user["seedtime"]) . "</td><td class=\"embedded\">&nbsp;&nbsp;<strong>" . $lang_userdetails['text_leeching_time'] . "</strong>:  " . mkprettytime($user["leechtime"]) . "</td><td class=\"embedded text-muted\">&nbsp;&nbsp;(" . nexus_trans('label.updated_at') . ": " . $user['seed_time_updated_at'] . ")</td></tr>";
 
 	tr_small($lang_userdetails['row_sltime'], "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" . ($slr ?? '') . $slt . "</table>", 1);
 
@@ -400,7 +400,7 @@ if ($user["id"] == $CURUSER["id"] || user_can('viewhistory')) {
         tr_small($lang_functions['menu_claim'], sprintf('<a href="claim.php?uid=%s" target="_blank">%s</a>', $user['id'], $states), 1);
     }
     tr_small($lang_userdetails['row_karma_points'], number_format($user['seedbonus'], 1), 1);
-    tr_small($lang_functions['text_seed_points'], number_format($user['seed_points'], 1), 1);
+    tr_small($lang_functions['text_seed_points'], number_format($user['seed_points'], 1) . "&nbsp;&nbsp;<span class='text-muted'>(" . nexus_trans('label.updated_at') . ": " . $user['seed_points_updated_at'] . ")</span>", 1);
 }
 
 if (user_can('prfmanage') && $user["class"] < get_user_class()) {
