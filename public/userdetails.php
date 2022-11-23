@@ -17,14 +17,9 @@ function bark($msg)
 $id = intval($_GET["id"] ?? 0);
 int_check($id,true);
 
-if ($id != $CURUSER['id']){
-	$r = sql_query("SELECT * FROM users WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-	$user = mysql_fetch_array($r) or bark($lang_userdetails['std_no_such_user']);
-}
-else
-{
-	$user = $CURUSER;
-}
+$r = sql_query("SELECT * FROM users WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+$user = mysql_fetch_array($r) or bark($lang_userdetails['std_no_such_user']);
+
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
 
