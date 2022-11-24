@@ -100,6 +100,8 @@ return [
         'two_step_authentication' => '两步验证',
         'seed_points' => '做种积分',
         'downloadpos' => '下载权限',
+        'parked' => '挂起',
+        'offer_allowed_count' => '候选通过数',
     ],
     'medal' => [
         'label' => '勋章',
@@ -174,6 +176,7 @@ return [
         'padding' => '内边距',
         'border_radius' => '边框圆角',
         'torrents_count' => '种子数',
+        'torrents_sum_size' => '种子体积',
     ],
     'agent_allow' => [
         'label' => '允许客户端',

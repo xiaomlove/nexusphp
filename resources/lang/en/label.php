@@ -100,6 +100,8 @@ return [
         'two_step_authentication' => 'Two-step authentication',
         'seed_points' => 'Seed points',
         'downloadpos' => 'Download privileges',
+        'parked' => 'Parked',
+        'offer_allowed_count' => 'Offer allowed count',
     ],
     'medal' => [
         'label' => 'Medal',
@@ -174,6 +176,7 @@ return [
         'padding' => 'Padding',
         'border_radius' => 'Border radius',
         'torrents_count' => 'Torrents count',
+        'torrents_sum_size' => 'Torrents size',
     ],
     'agent_allow' => [
         'label' => 'Agent allow',

@@ -983,7 +983,7 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 //					}
 //					?>
 <!--				</table>-->
-                <?php echo build_search_box_category_table($sectiontype, '1', '?', '?', 0, $_SERVER['QUERY_STRING'], ['select_unselect' => true])?>
+                <?php echo build_search_box_category_table($sectiontype, '1', '?', '?', 0, $_SERVER['QUERY_STRING'], ['select_unselect' => true, 'user_notifs' => $CURUSER['notifs']])?>
 			</td>
 
 			<td class="rowfollow" valign="middle">

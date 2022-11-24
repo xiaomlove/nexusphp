@@ -72,7 +72,8 @@ class TagResource extends Resource
                 Tables\Columns\TextColumn::make('border_radius')->label(__('label.tag.border_radius')),
                 Tables\Columns\TextColumn::make('priority')->label(__('label.priority'))->sortable(),
                 Tables\Columns\TextColumn::make('torrents_count')->label(__('label.tag.torrents_count')),
-                Tables\Columns\TextColumn::make('updated_at')->dateTime()->label(__('label.updated_at')),
+                Tables\Columns\TextColumn::make('torrents_sum_size')->label(__('label.tag.torrents_sum_size'))->formatStateUsing(fn ($state) => mksize($state)),
+//                Tables\Columns\TextColumn::make('updated_at')->dateTime()->label(__('label.updated_at')),
             ])
             ->defaultSort('priority', 'desc')
             ->filters([

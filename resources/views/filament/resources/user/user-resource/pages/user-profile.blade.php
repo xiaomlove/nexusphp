@@ -66,6 +66,16 @@
                 <td></td>
             </tr>
             <tr>
+                <th>{{__('label.user.parked')}}</th>
+                <td>{{$record->parked}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>{{__('label.user.offer_allowed_count')}}</th>
+                <td>{{$record->offer_allowed_count}}</td>
+                <td></td>
+            </tr>
+            <tr>
                 <th>{{__('label.user.seed_points')}}</th>
                 <td>{{$record->seed_points}}</td>
                 <td></td>

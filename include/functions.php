@@ -1481,10 +1481,21 @@ function safe_email($email) {
 }
 
 function check_email ($email) {
-	if(preg_match('/^[A-Za-z0-9][A-Za-z0-9_.+\-]*@[A-Za-z0-9][A-Za-z0-9_+\-]*(\.[A-Za-z0-9][A-Za-z0-9_+\-]*)+$/', $email))
+	if(!preg_match('/^[A-Za-z0-9][A-Za-z0-9_.+\-]*@[A-Za-z0-9][A-Za-z0-9_+\-]*(\.[A-Za-z0-9][A-Za-z0-9_+\-]*)+$/', $email)) {
+        return false;
+    }
+    $bannedEmails = mysql_fetch_assoc(sql_query('select * from bannedemails'));
+    $bannedEmailsArr = preg_split('/[\s]+/', $bannedEmails['value'] ?? '');
+    if (empty($bannedEmailsArr)) {
+        return true;
+    }
+    foreach ($bannedEmailsArr as $ban) {
+        if (str_ends_with($email, $ban)) {
+            do_log("[BANNED_EMAIL] email: $email is banned by record: $ban");
+            return false;
+        }
+    }
 	return true;
-	else
-	return false;
 }
 
 function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation",$showmsg=true,$multiple=false,$multiplemail='',$hdr_encoding = 'UTF-8', $specialcase = '') {
@@ -6011,6 +6022,7 @@ function calculate_harem_addition($uid)
 
 function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPrefix, $taxonomyHrefPrefix, $taxonomyNameLength, $checkedValues = '', array $options = [])
 {
+//    dd($checkedValues, $taxonomyNameLength);
     $searchBox = \App\Models\SearchBox::query()->with(['categories', 'categories.icon'])->findOrFail($mode);
     $lang = get_langfolder_cookie();
     $withTaxonomies = [];
@@ -6115,6 +6127,11 @@ TD;
                     $checked = '';
                     if (str_contains($checkedValues, "[{$namePrefix}{$item->id}]") || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")) {
                         $checked = ' checked';
+                    } elseif (!empty($options['user_notifs'])) {
+                        $userNotifsKey = sprintf('[%s%s]', substr($torrentField, 0, 3), $item->id);
+                        if (str_contains($options['user_notifs'], $userNotifsKey)) {
+                            $checked = ' checked';
+                        }
                     }
                     $tdContent = <<<TDCONTENT
 <label><input type="checkbox" id="{$namePrefix}{$item->id}" name="{$namePrefix}{$item->id}" value="{$checkboxValue}"{$checked} />$afterInput</label>

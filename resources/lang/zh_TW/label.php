@@ -100,6 +100,8 @@ return [
         'two_step_authentication' => '兩步驗證',
         'seed_points' => '做種積分',
         'downloadpos' => '下載權限',
+        'parked' => '掛起',
+        'offer_allowed_count' => '候選通過數',
     ],
     'medal' => [
         'label' => '勛章',
@@ -174,6 +176,7 @@ return [
         'padding' => '內邊距',
         'border_radius' => '邊框圓角',
         'torrents_count' => '種子數',
+        'torrents_sum_size' => '種子體積',
     ],
     'agent_allow' => [
         'label' => '允許客戶端',

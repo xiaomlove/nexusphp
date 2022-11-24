@@ -151,6 +151,11 @@ class TorrentResource extends Resource
                 Tables\Filters\SelectFilter::make('hr')
                     ->options(self::getYesNoOptions())
                     ->label(__('label.torrent.hr')),
+
+                Tables\Filters\SelectFilter::make('tags')
+                    ->relationship('tags', 'name')
+                    ->label(__('label.tag.label'))
+                ,
             ])
             ->actions(self::getActions())
             ->bulkActions(self::getBulkActions());
