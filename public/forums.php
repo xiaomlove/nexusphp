@@ -751,7 +751,8 @@ if ($action == "viewtopic")
 		print("</table></div>\n");
 
 		print("<table class=\"main\" width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
-		
+				
+		$body = "<div id=\"pid".$postid."body\">";
 		//hidden content applied to second or higher floor post (for whose user class below Ad , not poster , not mods ,not reply's author) 
 		if ($protected_enabled && $pn+$offset>1 && get_user_class()<UC_ADMINISTRATOR && $userid != $base_posterid && $posterid!=$userid && !$is_forummod){
 			//enable content protection
@@ -760,9 +761,6 @@ if ($action == "viewtopic")
 			//display normal content
 			$bodyContent = format_comment($arr["body"]);
 		}
-				
-		$body = "<div id=\"pid".$postid."body\">";
-        $bodyContent = format_comment($arr["body"]);
 		if ($highlight){
             $bodyContent = highlight($highlight,$body);
 		}
