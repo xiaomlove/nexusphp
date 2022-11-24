@@ -198,6 +198,7 @@ $lang_forums = array
 	'text_topic_asc' => "发布时间升序",
 	'text_post_asc' => "最近回复升序",
 	'text_post_desc' => "最近回复降序",
+	'text_post_protected' => "[size=3][b]--本版块为隐私保护版块---[/b]\n当前帖子内容仅楼主、回复作者、本版版主、管理员以上可见[/size]",
 );
 
 ?>

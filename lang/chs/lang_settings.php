@@ -796,6 +796,9 @@ $lang_settings = array
     'text_destroy_disabled_note_two' => "天不登录，将被从数据库彻底物理删除。默认'500'，请设置一个大于上边任何一种导致封禁的值。设为'0'来禁止此规则。",
     'row_enable_global_search_system' => '启用全站搜索',
     'text_global_search_system_note' => "默认：'是'。若启用，当有多个分区时，主菜单右下角显示全站搜索入口。",
+	'row_protected_forum' => '隐私保护论坛板块',
+	'text_protected_forum' => '输入开启隐私保护的论坛板块ID，该版块的回复仅楼主作者及管理员以上可见，使用逗号分割(如:1,2,3)',
+	'forum_format_error' => '论坛ID格式错误，请检查输入!',
 );
 
 ?>
