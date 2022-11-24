@@ -198,6 +198,7 @@ $lang_forums = array
 	'text_topic_asc' => "發布時間升序",
 	'text_post_asc' => "最近回覆升序",
 	'text_post_desc' => "最近回覆降序",
+	'text_post_protected' => "[size=3][b]--本版為隱私保護版---[/b]\n當前帖子內容僅樓主、回復作者、本版版主、管理員以上等級可查看[/size]",
 );
 
 ?>

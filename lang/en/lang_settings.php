@@ -796,6 +796,9 @@ $lang_settings = array
     'text_destroy_disabled_note_two' => "Days without logging in, will be physically deleted from the database completely. Default '500', please set a value greater than any of the above to cause disable. Set to '0' to disable this rule." ,
     'row_enable_global_search_system' => 'Enable global search',
     'text_global_search_system_note' => "Default: 'Yes'. If enabled, when there are multiple sections, the global search portal is displayed in the bottom right corner of the main menu.",
+	'row_protected_forum' => 'Privacy Protection Forums',
+	'text_protected_forum' => 'The IDs of forums\' which enables privacy protection , seperated by commas(e.g. 1,2,3)',
+	'forum_format_error' => 'The format of forums is wrong, please check it again!',
 );
 
 ?>
