@@ -288,9 +288,12 @@ elseif ($action == 'savesettings_advertisement')	// save advertisement
 elseif ($action == 'savesettings_misc')
 {
     stdhead($lang_settings['row_misc_settings']);
-    $validConfig = array('donation_custom', );
+	$validConfig = array('donation_custom', 'protected_forum',);
     GetVar($validConfig);
     $data = [];
+	if (!empty($protected_forum) && !preg_match("/^[,\\d]*[\\d]+$/",$protected_forum)){
+		stderr($lang_settings['std_error'],$lang_settings['forum_format_error'].'<br>'.$lang_settings['std_click']."<a class=\"altlink\" href=\"settings.php\">".$lang_settings['std_here']."</a>".$lang_settings['std_to_go_back'],false,false);
+	}
     foreach($validConfig as $config) {
         $data[$config] = $$config ?? null;
     }
@@ -923,7 +926,8 @@ elseif ($action == 'miscsettings')
     print ($notice);
     print ("<form method='post' action='".$_SERVER["SCRIPT_NAME"]."'><input type='hidden' name='action' value='savesettings_misc'>");
     tr($lang_settings['row_misc_donation_custom'],"<textarea cols=\"100\"  rows=\"10\" name='donation_custom'>".($misc['donation_custom'] ?? '')."</textarea><br/>".$lang_settings['text_donation_custom_note'], 1);
-    tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
+	tr($lang_settings['row_protected_forum'], "<input type='text' style=\"width: 100px\" name='protected_forum' value='".($misc["protected_forum"] ??'')."'> ".$lang_settings['text_protected_forum'], 1);
+	tr($lang_settings['row_save_settings'],"<input type='submit' name='save' value='".$lang_settings['submit_save_settings']."'>", 1);
     print ("</form>");
 }
 elseif ($action == 'showmenu')	// settings main page

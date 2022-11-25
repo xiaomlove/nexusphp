@@ -796,6 +796,9 @@ $lang_settings = array
     'text_destroy_disabled_note_two' => "天不登錄，將被從數據庫徹底物理刪除。默認'500'，請設置一個大於上邊任何一種導致封禁的值。設為'0'來禁止此規則。",
     'row_enable_global_search_system' => '啟用全站搜索',
     'text_global_search_system_note' => "默認：'是'。若啟用，當有多個分區時，主菜單右下角顯示全站搜索入口。",
+	'row_protected_forum' => '隱私保護論壇板塊',
+	'text_protected_forum' => '輸入開啟隱私保護的論壇板塊ID，該版塊的回覆僅樓主作者及管理員以上可見，使用逗號分割(如:1,2,3)',
+	'forum_format_error' => '論壇ID格式錯誤，請核查校對!',
 );
 
 ?>

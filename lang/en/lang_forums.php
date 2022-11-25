@@ -198,6 +198,7 @@ $lang_forums = array
 	'text_topic_asc' => "Topic Time Ascendant",
 	'text_post_asc' => "Last Post Time Ascendant",
 	'text_post_desc' => "Last Post Time Descendant",
+	'text_post_protected' => "[size=3][b]--Privacy protection is enabled in this forum---[/b]\nOnly topic poster,mods,admins and reply's author can read the content.[/size]",
 );
 
 ?>
