@@ -126,6 +126,19 @@ if ($action){
 
 				$updateset[] = "info = " . sqlesc($info);
 
+				//notifs
+                if (!empty($_POST['notifs'])) {
+                    preg_match_all('/\[(.*)\]/Ui', $CURUSER['notifs'], $notifsArr);
+                    $notifsArr = array_fill_keys($notifsArr[1], 1);
+                    foreach (\App\Models\User::$notificationOptions as $option) {
+                        if (isset($_POST['notifs'][$option])) {
+                            $notifsArr[$option] = 1;
+                        } else {
+                            unset($notifsArr[$option]);
+                        }
+                    }
+                    $updateset[] = "notifs = " . sqlesc('[' . implode('][', array_keys($notifsArr)) . ']');
+                }
 				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id = ".sqlesc($CURUSER["id"]);
 				$result = sql_query($query);
 				if (!$result)
@@ -169,7 +182,15 @@ if ($action){
 			tr_small($lang_usercp['row_account_parked'],
 			"<input type=checkbox name=parked" . ($CURUSER["parked"] == "yes" ? " checked" : "") . " value=yes>".$lang_usercp['checkbox_pack_my_account']."<br /><font class=small size=1>".$lang_usercp['text_account_pack_note']."</font>"
 			,1);
-			tr_small($lang_usercp['row_pms'],$lang_usercp['text_accept_pms']."<input type=radio name=acceptpms" . ($CURUSER["acceptpms"] == "yes" ? " checked" : "") . " value=yes>".$lang_usercp['radio_all_except_blocks']."<input type=radio name=acceptpms" .  ($CURUSER["acceptpms"] == "friends" ? " checked" : "") . " value=friends>".$lang_usercp['radio_friends_only']."<input type=radio name=acceptpms" .  ($CURUSER["acceptpms"] == "no" ? " checked" : "") . " value=no>".$lang_usercp['radio_staff_only']."<br /><input type=checkbox name=deletepms" . ($CURUSER["deletepms"] == "yes" ? " checked" : "") . "> ".$lang_usercp['checkbox_delete_pms']."<br /><input type=checkbox name=savepms" . ($CURUSER["savepms"] == "yes" ? " checked" : "") . "> ".$lang_usercp['checkbox_save_pms']."<br /><input type=checkbox name=commentpm" . ($CURUSER["commentpm"] == "yes" ? " checked" : "") . " value=yes> ".$lang_usercp['checkbox_pm_on_comments'],1);
+			$pmY = $lang_usercp['text_accept_pms']."<input type=radio name=acceptpms" . ($CURUSER["acceptpms"] == "yes" ? " checked" : "") . " value=yes>".$lang_usercp['radio_all_except_blocks']."<input type=radio name=acceptpms" .  ($CURUSER["acceptpms"] == "friends" ? " checked" : "") . " value=friends>".$lang_usercp['radio_friends_only']."<input type=radio name=acceptpms" .  ($CURUSER["acceptpms"] == "no" ? " checked" : "") . " value=no>".$lang_usercp['radio_staff_only']
+                ."<br /><input type=checkbox name=deletepms" . ($CURUSER["deletepms"] == "yes" ? " checked" : "") . "> ".$lang_usercp['checkbox_delete_pms']
+                ."<br /><input type=checkbox name=savepms" . ($CURUSER["savepms"] == "yes" ? " checked" : "") . "> ".$lang_usercp['checkbox_save_pms']
+                ."<br /><input type=checkbox name=commentpm" . ($CURUSER["commentpm"] == "yes" ? " checked" : "") . " value=yes> ".$lang_usercp['checkbox_pm_on_comments']
+            ;
+			foreach (\App\Models\User::$notificationOptions as $option) {
+			    $pmY .= sprintf('<br /><input type="checkbox" name="notifs[%s]"%s value="yes" /> %s', $option, str_contains($CURUSER['notifs'], "[{$option}]") == "yes" ? " checked" : "", $lang_usercp["checkbox_pm_on_{$option}"]);
+            }
+			tr_small($lang_usercp['row_pms'], $pmY,1);
 
 			tr_small($lang_usercp['row_gender'],
 			"<input type=radio name=gender" . ($CURUSER["gender"] == "N/A" ? " checked" : "") . " value=N/A>".$lang_usercp['radio_not_available']."
@@ -212,47 +233,62 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				$updateset = array();
 				$pmnotif = $_POST["pmnotif"] ?? '';
 				$emailnotif = $_POST["emailnotif"] ?? '';
-				$notifs = ($pmnotif == 'yes' ? "[pm]" : "");
-				$notifs .= ($emailnotif == 'yes' ? "[email]" : "");
 
-			function browsecheck($dbtable = "categories", $cbname = "cat"){
+                preg_match_all('/\[(.*)\]/Ui', $CURUSER['notifs'], $notifs);
+                $notifs = array_fill_keys($notifs[1], 1);
+                foreach ($notifs as $key => $value) {
+                    foreach (['incldead', 'spstate', 'inclbookmarked'] as $item) {
+                        if (str_starts_with($key, $item)) {
+                            unset($notifs[$key]);
+                        }
+                    }
+                }
+
+				if ($pmnotif == 'yes') {
+                    $notifs['pm'] = 1;
+                } else {
+				    unset($notifs['pm']);
+                }
+				if ($emailnotif == 'yes') {
+                    $notifs['email'] = 1;
+                } else {
+				    unset($notifs['email']);
+                }
+
+			function browsecheck($dbtable = "categories", $cbname = "cat", array &$result){
 				global $_POST;
-				$return = "";
 				$r = sql_query("SELECT id FROM ".$dbtable) or sqlerr();
 				$rows = mysql_num_rows($r);
 				for ($i = 0; $i < $rows; ++$i)
 					{
 						$a = mysql_fetch_assoc($r);
-						if (isset($_POST[$cbname.$a['id']]) && $_POST[$cbname.$a['id']] == 'yes')
-						$return .= "[".$cbname.$a['id']."]";
+						if (isset($_POST[$cbname.$a['id']]) && $_POST[$cbname.$a['id']] == 'yes') {
+						    $result[$cbname.$a['id']] = 1;
+                        } else {
+						    unset($result[$cbname.$a['id']]);
+                        }
 					}
-				return $return;
 				}
-				/*$r = sql_query("SELECT id FROM categories") or sqlerr();
-				$rows = mysql_num_rows($r);
-				for ($i = 0; $i < $rows; ++$i)
-				{
-					$a = mysql_fetch_assoc($r);
-					if ($_POST["cat$a['id']"] == 'yes')
-					$notifs .= "[cat$a['id']]";
-				}*/
-				$notifs .= browsecheck("categories", "cat");
-				$notifs .= browsecheck("sources", "sou");
-				$notifs .= browsecheck("media", "med");
-				$notifs .= browsecheck("codecs", "cod");
-				$notifs .= browsecheck("standards", "sta");
-				$notifs .= browsecheck("processings", "pro");
-				$notifs .= browsecheck("teams", "tea");
-				$notifs .= browsecheck("audiocodecs", "aud");
+                browsecheck("categories", "cat", $notifs);
+				browsecheck("sources", "sou", $notifs);
+				browsecheck("media", "med", $notifs);
+				browsecheck("codecs", "cod", $notifs);
+				browsecheck("standards", "sta", $notifs);
+				browsecheck("processings", "pro", $notifs);
+				browsecheck("teams", "tea", $notifs);
+				browsecheck("audiocodecs", "aud", $notifs);
 				$incldead = $_POST["incldead"];
-				if (isset($incldead) && $incldead != 1)
-					$notifs .= "[incldead=".$incldead."]";
+				if (isset($incldead) && $incldead != 1) {
+				    $notifs["incldead=$incldead"] = 1;
+                }
 				$spstate = $_POST["spstate"];
-				if ($spstate)
-					$notifs .= "[spstate=".$spstate."]";
+				if ($spstate) {
+                    $notifs["spstate=$spstate"] = 1;
+                }
 				$inclbookmarked = $_POST["inclbookmarked"];
-				if ($inclbookmarked)
-					$notifs .= "[inclbookmarked=".$inclbookmarked."]";
+				if ($inclbookmarked) {
+                    $notifs["inclbookmarked=$inclbookmarked"] = 1;
+                }
 				$stylesheet = $_POST["stylesheet"];
 //				$caticon = $_POST["caticon"];
 				$sitelanguage = $_POST["sitelanguage"];
@@ -262,7 +298,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				elseif ($fontsize == 'small')
 					$updateset[] = "fontsize = 'small'";
 				else $updateset[] = "fontsize = 'medium'";
-				$updateset[] = "notifs = " . sqlesc($notifs);
+				$updateset[] = "notifs = " . sqlesc('[' . implode('][', array_keys($notifs)) . ']');
 
 				if (is_valid_id($stylesheet))
 				$updateset[] = "stylesheet = " . sqlesc($stylesheet);
@@ -367,6 +403,23 @@ $spsectiontype = $specialcatmode;
 if ($enablespecial == 'yes' && get_user_class() >= get_setting('authority.view_special_torrent'))
 	$allowspecial = true;
 else $allowspecial = false;
+if (strpos($CURUSER['notifs'], "[spstate=0]") !== false)
+    $special_state = 0;
+elseif (strpos($CURUSER['notifs'], "[spstate=1]") !== false)
+    $special_state = 1;
+elseif (strpos($CURUSER['notifs'], "[spstate=2]") !== false)
+    $special_state = 2;
+elseif (strpos($CURUSER['notifs'], "[spstate=3]") !== false)
+    $special_state = 3;
+elseif (strpos($CURUSER['notifs'], "[spstate=4]") !== false)
+    $special_state = 4;
+elseif (strpos($CURUSER['notifs'], "[spstate=5]") !== false)
+    $special_state = 5;
+elseif (strpos($CURUSER['notifs'], "[spstate=6]") !== false)
+    $special_state = 6;
+elseif (strpos($CURUSER['notifs'], "[spstate=7]") !== false)
+    $special_state = 7;
+else $special_state = 0;
 /*
 $showsubcat = (get_searchbox_value($brsectiontype, 'showsubcat') || ($allowspecial && get_searchbox_value($spsectiontype, 'showsubcat')));
 $showsource = (get_searchbox_value($brsectiontype, 'showsource') || ($allowspecial && get_searchbox_value($spsectiontype, 'showsource'))); //whether show sources or not
@@ -521,25 +574,11 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 			$categories .= "</table><table>";
 			$categories .= "<tr><td colspan=3 class=embedded align=left><font class=big>".$lang_usercp['text_additional_selection']."</font></td></tr>";
 
-	if (strpos($CURUSER['notifs'], "[spstate=0]") !== false)
-		$special_state = 0;
-	elseif (strpos($CURUSER['notifs'], "[spstate=1]") !== false)
-		$special_state = 1;
-	elseif (strpos($CURUSER['notifs'], "[spstate=2]") !== false)
-		$special_state = 2;
-	elseif (strpos($CURUSER['notifs'], "[spstate=3]") !== false)
-		$special_state = 3;
-	elseif (strpos($CURUSER['notifs'], "[spstate=4]") !== false)
-		$special_state = 4;
-	elseif (strpos($CURUSER['notifs'], "[spstate=5]") !== false)
-		$special_state = 5;
-	elseif (strpos($CURUSER['notifs'], "[spstate=6]") !== false)
-		$special_state = 6;
-	else $special_state = 0;
 
 			$categories .= "<tr><td class=bottom><b>".$lang_usercp['text_show_dead_active']."</b><br /><select name=\"incldead\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[incldead=0]") !== false ? " selected" : "").">".$lang_usercp['select_including_dead']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[incldead=1]") !== false ||  strpos($CURUSER['notifs'], "incldead") == false ? " selected" : "").">".$lang_usercp['select_active']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[incldead=2]") !== false  ? " selected" : "").">".$lang_usercp['select_dead']."</option></select></td><td class=bottom align=left><b>".$lang_usercp['text_show_special_torrents']."</b><br /><select name=\"spstate\"><option value=\"0\" ".($special_state == 0 ? " selected" : "").">".$lang_usercp['select_all']."</option>".promotion_selection($special_state)."</select></td><td class=bottom><b>".$lang_usercp['text_show_bookmarked']."</b><br /><select name=\"inclbookmarked\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=0]") !== false ? " selected" : "").">".$lang_usercp['select_all']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=1]") !== false ? " selected" : "")." >".$lang_usercp['select_bookmarked']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=2]") !== false ? " selected" : "").">".$lang_usercp['select_bookmarked_exclude']."</option></select></td></tr>";
 			$categories .= "</table>";
 */
+
             $categories = build_search_box_category_table($browsecatmode, 'yes','torrents.php?allsec=1', false, 3, $CURUSER['notifs'], ['section_name' => true]);
             $delimiter = '<div style="height: 1px;background-color: #eee;margin: 10px 0"></div>';
             if (get_setting('main.spsct') == 'yes') {

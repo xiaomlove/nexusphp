@@ -254,6 +254,8 @@ $lang_usercp = array
     'row_passkey_login_url' => 'Passkey 登录链接',
     'row_seed_box' => 'SeedBox',
     'add_seed_box_btn' => '登记',
+    'checkbox_pm_on_topic_reply' => '论坛帖子有新回复时通知我',
+    'checkbox_pm_on_hr_reached' => 'H&R 达标时通知我',
 );
 
 ?>

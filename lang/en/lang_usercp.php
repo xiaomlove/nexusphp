@@ -254,6 +254,8 @@ $lang_usercp = array
     'row_passkey_login_url' => 'Passkey login URL',
     'row_seed_box' => 'SeedBox',
     'add_seed_box_btn' => 'Register',
+    'checkbox_pm_on_topic_reply' => 'Notify me when there are new replies to forum posts',
+    'checkbox_pm_on_hr_reached' => 'Notify me when H&R reaches target',
 );
 
 ?>

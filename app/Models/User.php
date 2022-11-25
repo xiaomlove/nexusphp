@@ -102,6 +102,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'invites' => '邀请',
     ];
 
+    public static array $notificationOptions = ['topic_reply', 'hr_reached'];
 
     public function getClassTextAttribute(): string
     {
@@ -553,6 +554,14 @@ class User extends Authenticatable implements FilamentUser, HasName
             return true;
         }
         return false;
+    }
+
+    public function acceptNotification($name): bool
+    {
+        if (!isset($this->original['notifs'])) {
+            throw new \RuntimeException("Not fetch field: notifs");
+        }
+        return str_contains($this->notifs, "[{$name}]");
     }
 
 

@@ -282,6 +282,14 @@ class Update extends Install
         }
         $this->removeMenu(['catmanage.php']);
 
+        if (!NexusDB::hasColumn('users', 'seed_points_updated_at')) {
+            $this->runMigrate('database/migrations/2022_11_23_042152_add_seed_points_seed_times_update_time_to_users_table.php');
+            foreach (User::$notificationOptions as $option) {
+                $sql = "update users set notifs = concat(nofifs, '[$option]') where instr(nofifs, '[$option]') = 0";
+                NexusDB::statement($sql);
+            }
+        }
+
     }
 
     public function runExtraMigrate()

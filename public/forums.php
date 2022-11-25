@@ -458,18 +458,21 @@ if ($action == "post")
         $topicInfo = \App\Models\Topic::query()->findOrFail($topicid);
         $postUrl = sprintf('[url=forums.php?action=viewtopic&topicid=%s&page=p%s#pid%s]%s[/url]', $topicid, $postid, $postid, $topicInfo->subject);
         if ($type == 'reply' && $topicInfo->userid != $CURUSER['id']) {
+            /** @var \App\Models\User $receiver */
             $receiver = $topicInfo->user;
-            $locale = $receiver->locale;
-            $notify = [
-                'sender' => 0,
-                'receiver' => $receiver->id,
-                'subject' => nexus_trans('forum.topic.replied_notify_subject', [], $locale),
-                'msg' => nexus_trans('forum.topic.replied_notify_body', ['topic_subject' => $postUrl], $locale),
-                'added' => now(),
-            ];
-            \App\Models\Message::query()->insert($notify);
-            \Nexus\Database\NexusDB::cache_del("user_{$topicInfo->userid}_unread_message_count");
-            \Nexus\Database\NexusDB::cache_del("user_{$topicInfo->userid}_inbox_count");
+            if ($receiver->acceptNotification('topic_reply')) {
+                $locale = $receiver->locale;
+                $notify = [
+                    'sender' => 0,
+                    'receiver' => $receiver->id,
+                    'subject' => nexus_trans('forum.topic.replied_notify_subject', [], $locale),
+                    'msg' => nexus_trans('forum.topic.replied_notify_body', ['topic_subject' => $postUrl], $locale),
+                    'added' => now(),
+                ];
+                \App\Models\Message::query()->insert($notify);
+                \Nexus\Database\NexusDB::cache_del("user_{$topicInfo->userid}_unread_message_count");
+                \Nexus\Database\NexusDB::cache_del("user_{$topicInfo->userid}_inbox_count");
+            }
         }
 
 		$Cache->delete_value('forum_'.$forumid.'_post_'.$today_date.'_count');

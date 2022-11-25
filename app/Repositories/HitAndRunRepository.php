@@ -135,7 +135,7 @@ class HitAndRunRepository extends BaseRepository
             ->with([
                 'torrent' => function ($query) {$query->select(['id', 'size', 'name', 'category']);},
                 'snatch',
-                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class', 'donoruntil', 'enabled']);},
+                'user' => function ($query) {$query->select(['id', 'username', 'lang', 'class', 'donoruntil', 'enabled', 'notifs']);},
                 'user.language',
             ]);
         if (!is_null($uid)) {
@@ -297,8 +297,12 @@ class HitAndRunRepository extends BaseRepository
             do_log($hitAndRun->toJson() . ", [$logPrefix], affectedRows != 1, skip!", 'notice');
             return false;
         }
-        $message = $this->geReachedMessage($hitAndRun);
-        Message::query()->insert($message);
+        if ($hitAndRun->user->acceptNotification('hr_reached')) {
+            $message = $this->geReachedMessage($hitAndRun);
+            Message::query()->insert($message);
+        } else {
+            do_log($hitAndRun->toJson() . ", [$logPrefix], user do not accept hr_reached notification", 'notice');
+        }
         return true;
     }
 
