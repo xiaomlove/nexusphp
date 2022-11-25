@@ -327,10 +327,10 @@ class Update extends Install
 
     private function removeMenu(array $menus, array $tables = ['sysoppanel', 'adminpanel', 'modpanel'])
     {
+        $this->doLog("[REMOVE MENU]: " . json_encode($menus));
         if (empty($menus)) {
             return;
         }
-        $this->doLog("[REMOVE MENU]: " . json_encode($menus));
         foreach ($tables as $table) {
             NexusDB::table($table)->whereIn('url', $menus)->delete();
         }
