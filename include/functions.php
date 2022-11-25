@@ -6068,10 +6068,11 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
                 }
                 $icon = $item->icon;
                 $iconFolder = trim($icon->folder, '/');
-                if (is_dir(getFullDirectory("pic/category/$iconFolder"))) {
-                    $backgroundImagePath = sprintf('pic/category/%s/%s%s', $iconFolder, $icon->multilang == 'yes' ? "$lang/" : "", $item->image);
+                $langAndFile = sprintf('%s%s',  $icon->multilang == 'yes' ? "$lang/" : "", $item->image);
+                if (file_exists(getFullDirectory("pic/category/$iconFolder/$langAndFile"))) {
+                    $backgroundImagePath = "pic/category/$iconFolder/$langAndFile";
                 } else {
-                    $backgroundImagePath = sprintf('pic/category/%s/%s/%s%s', $searchBox->name, $iconFolder, $icon->multilang == 'yes' ? "$lang/" : "", $item->image);
+                    $backgroundImagePath = "pic/category/{$searchBox->name}/$iconFolder/$langAndFile";
                 }
                 $tdContent = <<<TDCONTENT
 <input type="checkbox" id="cat{$item->id}" name="cat{$item->id}" value="{$checkboxValue}"{$checked} />
