@@ -82,6 +82,14 @@ class NexusUpdate extends Command
             }
             $this->doLog("Specific tag: '$tag', download from '$url' and extra code, includes: " . implode(', ', $includes));
             $tmpPath = $this->update->downAndExtractCode($url, $includes);
+            if (!$keepTmp) {
+                $this->doLog("Delete tmp files in: $tmpPath");
+                $this->update->executeCommand("rm -rf " . rtrim($tmpPath, '/'));
+            } else {
+                $this->doLog("Keep tmp files in: $tmpPath");
+            }
+            $this->doLog("Code update successfully, run this command without --tag option to run the upgrade please!", 'warn');
+            return 0;
         }
         if ($includeComposer) {
             $requireCommand = 'composer';
@@ -150,15 +158,6 @@ class NexusUpdate extends Command
         $this->doLog("runExtraMigrate done!");
 
         $this->doLog("All done!");
-
-        if (isset($tmpPath)) {
-            if (!$keepTmp) {
-                $this->doLog("Delete tmp files in: $tmpPath");
-                $this->update->executeCommand("rm -rf " . rtrim($tmpPath, '/'));
-            } else {
-                $this->doLog("Keep tmp files in: $tmpPath");
-            }
-        }
 
         return 0;
     }
