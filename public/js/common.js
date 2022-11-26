@@ -308,7 +308,7 @@ function SetChecked(chkName,ctrlName,checkall_name,uncheckall_name,start,count) 
 
 	}
 	for( i=begin ; i<end ; i++) {
-		if (dml.elements[i].name.indexOf(chkName) != -1) {
+		if (dml.elements[i].name.indexOf(chkName) == 0) {
 			dml.elements[i].checked=check_state;
 		}
 	}

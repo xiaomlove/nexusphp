@@ -79,6 +79,7 @@ class SectionResource extends Resource
                 Forms\Components\CheckboxList::make('custom_fields')
                     ->options(TorrentCustomField::getCheckboxOptions())
                     ->label(__('label.search_box.custom_fields'))
+                    ->columns(4)
                 ,
                 Forms\Components\TextInput::make('custom_fields_display_name')
                     ->label(__('label.search_box.custom_fields_display_name'))

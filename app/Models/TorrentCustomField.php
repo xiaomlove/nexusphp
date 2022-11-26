@@ -8,6 +8,8 @@ class TorrentCustomField extends NexusModel
 {
     protected $table = 'torrents_custom_fields';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'name', 'label', 'type', 'required', 'is_single_row', 'options', 'help', 'display', 'priority'
     ];
@@ -21,7 +23,5 @@ class TorrentCustomField extends NexusModel
         }
         return $result;
     }
-    public $timestamps = true;
-
 
 }

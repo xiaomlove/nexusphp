@@ -87,7 +87,7 @@ class SearchBox extends NexusModel
         $other = $data['other'] ?? [];
         $data["extra->" . self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST] = in_array(self::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST, $other) ? 1 : 0;
         $data["extra->" . self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST] = in_array(self::EXTRA_DISPLAY_SEED_BOX_ICON_ON_TORRENT_LIST, $other) ? 1 : 0;
-
+        $data['custom_fields'] = array_filter($data['custom_fields']);
         return $data;
     }
 

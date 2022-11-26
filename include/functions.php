@@ -6063,8 +6063,19 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
         foreach ($chunk as $item) {
             if ($item->mode != -1) {
                 $checked = '';
-                if (str_contains($checkedValues, "[cat{$item->id}]") || str_contains($checkedValues, "cat{$item->id}=1")) {
-                    $checked = " checked";
+                if ($checkedValues) {
+                    if (
+                        str_contains($checkedValues, "[cat{$item->id}]")
+                        || str_contains($checkedValues, "cat{$item->id}=1")
+                        || str_contains($checkedValues, "cat={$item->id}")
+                    ) {
+                        $checked = " checked";
+                    }
+                } elseif (!empty($options['user_notifs'])) {
+                    $userNotifsKey = sprintf('[%s%s]', 'cat', $item->id);
+                    if (str_contains($options['user_notifs'], $userNotifsKey)) {
+                        $checked = ' checked';
+                    }
                 }
                 $icon = $item->icon;
                 $iconFolder = trim($icon->folder, '/');
@@ -6126,8 +6137,14 @@ TD;
                         $afterInput = $item->name;
                     }
                     $checked = '';
-                    if (str_contains($checkedValues, "[{$namePrefix}{$item->id}]") || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")) {
-                        $checked = ' checked';
+                    if ($checkedValues) {
+                        if (
+                            str_contains($checkedValues, "[{$namePrefix}{$item->id}]")
+                            || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")
+                            || str_contains($checkedValues, "{$namePrefix}={$item->id}")
+                        ) {
+                            $checked = ' checked';
+                        }
                     } elseif (!empty($options['user_notifs'])) {
                         $userNotifsKey = sprintf('[%s%s]', substr($torrentField, 0, 3), $item->id);
                         if (str_contains($options['user_notifs'], $userNotifsKey)) {
