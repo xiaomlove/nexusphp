@@ -6022,7 +6022,7 @@ function calculate_harem_addition($uid)
 
 function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPrefix, $taxonomyHrefPrefix, $taxonomyNameLength, $checkedValues = '', array $options = [])
 {
-//    dd($checkedValues, $taxonomyNameLength);
+    parse_str($checkedValues, $checkedValuesArr);
     $searchBox = \App\Models\SearchBox::query()->with(['categories', 'categories.icon'])->findOrFail($mode);
     $lang = get_langfolder_cookie();
     $withTaxonomies = [];
@@ -6066,8 +6066,8 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
                 if ($checkedValues) {
                     if (
                         str_contains($checkedValues, "[cat{$item->id}]")
-                        || str_contains($checkedValues, "cat{$item->id}=1")
-                        || str_contains($checkedValues, "cat={$item->id}")
+                        || (isset($checkedValuesArr["cat{$item->id}"]) && $checkedValuesArr["cat{$item->id}"] == 1)
+                        || (isset($checkedValuesArr["cat"]) && $checkedValuesArr["cat"] == $item->id)
                     ) {
                         $checked = " checked";
                     }
@@ -6137,11 +6137,12 @@ TD;
                         $afterInput = $item->name;
                     }
                     $checked = '';
+                    do_log("toCheck: $checkedValues, $namePrefix - {$item->id}");
                     if ($checkedValues) {
                         if (
                             str_contains($checkedValues, "[{$namePrefix}{$item->id}]")
-                            || str_contains($checkedValues, "{$namePrefix}{$item->id}=1")
-                            || str_contains($checkedValues, "{$namePrefix}={$item->id}")
+                            || (isset($checkedValuesArr["{$namePrefix}{$item->id}"]) && $checkedValuesArr["{$namePrefix}{$item->id}"] == 1)
+                            || (isset($checkedValuesArr[$namePrefix]) && $checkedValuesArr[$namePrefix] == $item->id)
                         ) {
                             $checked = ' checked';
                         }
