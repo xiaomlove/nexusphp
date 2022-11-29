@@ -178,7 +178,13 @@ if (\App\Models\Torrent::query()->where('info_hash', $infohash)->exists()) {
 }
 
 // ------------- start: check upload authority ------------------//
-$allowtorrents = user_can_upload("torrents");
+$offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
+$uploadDenyApprovalDenyCount = get_setting('main.upload_deny_approval_deny_count');
+$approvalDenyCount = \App\Models\Torrent::query()->where('owner', $CURUSER['id'])->where('approval_status', \App\Models\Torrent::APPROVAL_STATUS_DENY)->count();
+if ($uploadDenyApprovalDenyCount > 0 && $approvalDenyCount >= $uploadDenyApprovalDenyCount){
+	bark($lang_takeupload['std_unauthorized_upload_freely']);
+}
+$allowtorrents = (user_can_upload("torrents")||($offerSkipApprovedCount>0 && $CURUSER['offer_allowed_count']>=$offerSkipApprovedCount));
 $allowspecial = user_can_upload("music");
 
 $offerid = intval($_POST['offer'] ?? 0);
