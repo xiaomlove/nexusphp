@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Section\SecondIconResource\Pages;
 
-use App\Filament\RedirectIndexTrait;
+use App\Filament\EditRedirectIndexTrait;
 use App\Filament\Resources\Section\SecondIconResource;
 use App\Models\SearchBox;
 use App\Models\SecondIcon;
@@ -11,7 +11,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSecondIcon extends EditRecord
 {
-    use RedirectIndexTrait;
+    use EditRedirectIndexTrait;
 
     protected static string $resource = SecondIconResource::class;
 

@@ -2,7 +2,7 @@
 
 namespace App\Filament;
 
-trait RedirectIndexTrait
+trait EditRedirectIndexTrait
 {
     protected function getRedirectUrl(): ?string
     {

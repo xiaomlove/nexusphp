@@ -146,7 +146,7 @@ class SearchBox extends NexusModel
         $table = self::$taxonomies[$torrentField]['table'];
         return NexusDB::table($table)->where(function (Builder $query) use ($searchBox) {
             return $query->where('mode', $searchBox->id)->orWhere('mode', 0);
-        })->get();
+        })->orderBy('sort_index')->orderBy('id')->get();
     }
 
     public static function listModeOptions(): array
@@ -174,15 +174,25 @@ class SearchBox extends NexusModel
         }
     }
 
+    public static function isSpecialEnabled(): bool
+    {
+        return Setting::get('main.spsct') == 'yes';
+    }
+
+    public static function getBrowseMode()
+    {
+        return Setting::get('main.browsecat');
+    }
+
+    public static function getSpecialMode()
+    {
+        return Setting::get('main.specialcat');
+    }
+
 
     public function categories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Category::class, 'mode');
-    }
-
-    public function normal_fields(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(SearchBoxField::class, 'searchbox_id');
     }
 
     public function taxonomy_source(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -218,11 +228,6 @@ class SearchBox extends NexusModel
     public function taxonomy_processing(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Processing::class, 'mode');
-    }
-
-    public function taxonomies(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(Taxonomy::class, 'mode');
     }
 
 

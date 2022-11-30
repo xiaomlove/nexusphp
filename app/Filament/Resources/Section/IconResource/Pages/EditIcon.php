@@ -2,14 +2,14 @@
 
 namespace App\Filament\Resources\Section\IconResource\Pages;
 
-use App\Filament\RedirectIndexTrait;
+use App\Filament\EditRedirectIndexTrait;
 use App\Filament\Resources\Section\IconResource;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditIcon extends EditRecord
 {
-    use RedirectIndexTrait;
+    use EditRedirectIndexTrait;
 
     protected static string $resource = IconResource::class;
 

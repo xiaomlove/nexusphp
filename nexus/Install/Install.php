@@ -4,6 +4,7 @@ namespace Nexus\Install;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Repositories\SearchBoxRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
@@ -709,6 +710,13 @@ class Install
     public function getStepName($step): string
     {
         return $this->steps[$step - 1] ?? '';
+    }
+
+    public function migrateSearchBoxModeRelated()
+    {
+        $this->doLog("[migrateSearchBoxModeRelated]");
+        $searchBoxRep = new SearchBoxRepository();
+        $searchBoxRep->migrateToModeRelated();
     }
 
 }

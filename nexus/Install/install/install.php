@@ -111,6 +111,7 @@ if ($currentStep == 4) {
             $install->createSymbolicLinks($symbolicLinks);
             $install->runDatabaseSeeder();
             $install->saveSettings($settings);
+            $install->migrateSearchBoxModeRelated();
             $install->nextStep();
         } catch (\Exception $e) {
             $error = $e->getMessage();

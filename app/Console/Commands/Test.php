@@ -7,6 +7,7 @@ use App\Filament\Resources\System\AgentAllowResource;
 use App\Http\Resources\TagResource;
 use App\Models\AgentAllow;
 use App\Models\Attendance;
+use App\Models\Category;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
@@ -91,15 +92,11 @@ class Test extends Command
      */
     public function handle()
     {
-//        Notification::make()
-//            ->success()
-//            ->title('Test Test')
-//            ->send()
-//        ;
-        $key = 'sbsb';
-        $r = session()->push($key, [1,2,3]);
-        $r = session()->get($key);
-        dd($r);
+        $categoryTaxonomies = [
+            'category' => ['table' => 'categories', 'model' => Category::class],
+        ];
+        $categoryTaxonomies = array_merge($categoryTaxonomies, SearchBox::$taxonomies);
+        dd($categoryTaxonomies);
     }
 
 

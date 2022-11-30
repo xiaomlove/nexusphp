@@ -2,14 +2,14 @@
 
 namespace App\Filament\Resources\Section\CodecResource\Pages;
 
-use App\Filament\RedirectIndexTrait;
+use App\Filament\EditRedirectIndexTrait;
 use App\Filament\Resources\Section\CodecResource;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCodec extends EditRecord
 {
-    use RedirectIndexTrait;
+    use EditRedirectIndexTrait;
 
     protected static string $resource = CodecResource::class;
 

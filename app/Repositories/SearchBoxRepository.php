@@ -56,44 +56,6 @@ class SearchBoxRepository extends BaseRepository
         return $success;
     }
 
-    public function buildSearchBox($id)
-    {
-        $searchBox = SearchBox::query()->with(['categories', 'normal_fields'])->findOrFail($id);
-        $fieldData = [];
-        foreach ($searchBox->normal_fields as $normalField) {
-            $fieldType = $normalField->field_type;
-            $info = SearchBoxField::$fieldTypes[$fieldType] ?? null;
-            if ($info) {
-                /** @var NexusModel $model */
-                $model = new $info[$fieldType]['model'];
-                $fieldData[$fieldType] = $model::query()->get();
-            }
-        }
-        $searchBox->setRelation('normal_fields_data', $fieldData);
-        return $searchBox;
-    }
-
-    public function initSearchBoxField($id)
-    {
-        $searchBox = SearchBox::query()->findOrFail($id);
-        $logPrefix = "searchBox: $id";
-        $result = $searchBox->normal_fields()->delete();
-        do_log("$logPrefix, remove all normal fields: $result");
-        foreach (SearchBoxField::$fieldTypes as $fieldType => $info) {
-            if ($fieldType == SearchBoxField::FIELD_TYPE_CUSTOM) {
-                continue;
-            }
-            $name = str_replace('_', '', "show{$fieldType}");
-            $log = "$logPrefix, name: $name, fieldType: $fieldType";
-            if ($searchBox->{$name}) {
-                $searchBox->normal_fields()->create([
-                    'field_type' => $fieldType,
-                ]);
-                do_log("$log, create.");
-            }
-        }
-    }
-
     public function listIcon(array $idArr)
     {
         $searchBoxList = SearchBox::query()->with('categories')->find($idArr);
