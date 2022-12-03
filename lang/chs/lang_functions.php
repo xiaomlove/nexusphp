@@ -330,6 +330,7 @@ $lang_functions = array
     'input_uncheck_all' => "全不选",
     'select_at_least_one_record' => '至少选择一条记录！',
     'text_seed_box_record_to_approval' => '有 %s%u 条待审核的 SeedBox 记录%s',
+    'approval_deny_reach_upper_limit' => '当前审核被拒绝的种子数：%s 达到上限，不允许发布。',
 );
 
 ?>

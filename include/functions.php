@@ -4959,12 +4959,24 @@ function get_user_class_image($class){
 }
 
 function user_can_upload($where = "torrents"){
-	global $CURUSER,$upload_class,$enablespecial,$uploadspecial_class;
-
-	if ($CURUSER["uploadpos"] != 'yes')
-		return false;
+	global $CURUSER,$upload_class,$enablespecial,$uploadspecial_class, $lang_functions;
+	if ($CURUSER["uploadpos"] != 'yes') {
+        return false;
+    }
+    $uploadDenyApprovalDenyCount = get_setting('main.upload_deny_approval_deny_count');
+    $approvalDenyCount = \App\Models\Torrent::query()->where('owner', $CURUSER['id'])
+        ->where('approval_status', \App\Models\Torrent::APPROVAL_STATUS_DENY)
+        ->count()
+    ;
+    if ($uploadDenyApprovalDenyCount > 0 && $approvalDenyCount >= $uploadDenyApprovalDenyCount) {
+        stderr($lang_functions['std_sorry'], sprintf($lang_functions['approval_deny_reach_upper_limit'], $uploadDenyApprovalDenyCount),false);
+    }
 	if ($where == "torrents")
 	{
+        $offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
+        if ($CURUSER['offer_allowed_count'] >= $offerSkipApprovedCount) {
+            return true;
+        }
 		if (user_can('upload'))
 			return true;
 		if (get_if_restricted_is_open())

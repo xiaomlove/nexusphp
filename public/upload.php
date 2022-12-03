@@ -5,7 +5,6 @@ require_once(get_langfile_path());
 require_once(get_langfile_path('edit.php'));
 loggedinorreturn();
 parked();
-$userInfo = \App\Models\User::query()->findOrFail($CURUSER['id']);
 if ($CURUSER["uploadpos"] == 'no')
 	stderr($lang_upload['std_sorry'], $lang_upload['std_unauthorized_to_upload'],false);
 
@@ -13,16 +12,9 @@ if ($enableoffer == 'yes')
     $has_allowed_offer = get_row_count("offers","WHERE allowed='allowed' AND userid = ". sqlesc($CURUSER["id"]));
 else $has_allowed_offer = 0;
 $uploadfreely = user_can_upload("torrents");
-$offerSkipApprovedCount = get_setting('main.offer_skip_approved_count');
-$uploadDenyApprovalDenyCount = get_setting('main.upload_deny_approval_deny_count');
-$approvalDenyCount = \App\Models\Torrent::query()->where('owner', $CURUSER['id'])->where('approval_status', \App\Models\Torrent::APPROVAL_STATUS_DENY)->count();
-do_log("uploadfreely: $uploadfreely, has_allowed_offer: $has_allowed_offer, offerSkipApprovedCount: $offerSkipApprovedCount, uploadDenyApprovalDenyCount: $uploadDenyApprovalDenyCount, approvalDenyCount: $approvalDenyCount");
-$allowtorrents = ($has_allowed_offer || $uploadfreely || ($userInfo->offer_allowed_count >= $offerSkipApprovedCount));
+$allowtorrents = ($has_allowed_offer || $uploadfreely);
 $allowspecial = user_can_upload("music");
 
-if ($uploadDenyApprovalDenyCount > 0 && $approvalDenyCount >= $uploadDenyApprovalDenyCount) {
-    stderr($lang_upload['std_sorry'],sprintf($lang_upload['approval_deny_reach_upper_limit'], $uploadDenyApprovalDenyCount),false);
-}
 if (!$allowtorrents && !$allowspecial)
 	stderr($lang_upload['std_sorry'],$lang_upload['std_please_offer'],false);
 $allowtwosec = ($allowtorrents && $allowspecial);
