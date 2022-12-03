@@ -55,6 +55,8 @@ use NexusPlugin\Permission\Models\Role;
 use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
+use NexusPlugin\Work\Models\RoleWork;
+use NexusPlugin\Work\WorkRepository;
 use PhpIP\IP;
 use PhpIP\IPBlock;
 use Rhilip\Bencode\Bencode;
@@ -92,11 +94,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $categoryTaxonomies = [
-            'category' => ['table' => 'categories', 'model' => Category::class],
-        ];
-        $categoryTaxonomies = array_merge($categoryTaxonomies, SearchBox::$taxonomies);
-        dd($categoryTaxonomies);
+        $rep = new WorkRepository();
+        $rep->settleRole(5);
     }
 
 
