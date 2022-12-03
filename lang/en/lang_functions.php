@@ -338,6 +338,7 @@ $lang_functions = array
     'input_uncheck_all' => "Uncheck All",
     'select_at_least_one_record' => 'Select at least one record!',
     'text_seed_box_record_to_approval' => 'There %s%u not approval seed box record%s.',
+    'approval_deny_reach_upper_limit' => 'The number of torrents whose current approval was denied: %s reached the upper limit and is not allowed to be upload.',
 );
 
 ?>
