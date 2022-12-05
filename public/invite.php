@@ -118,7 +118,7 @@ if ($type == 'new'){
 
                 print("<tr class=rowfollow>$user<td>{$arr['email']}</td><td class=rowfollow>" . mksize($arr['uploaded']) . "</td><td class=rowfollow>" . mksize($arr['downloaded']) . "</td><td class=rowfollow>$ratio</td>");
                 if ($haremAdditionFactor > 0) {
-                    print ("<td class=rowfollow>".number_format(calculate_seed_bonus($arr['id'])['all_bonus'] * $haremAdditionFactor, 3)."</td>");
+                    print ("<td class=rowfollow>".number_format(calculate_seed_bonus($arr['id'])['seed_points'] * $haremAdditionFactor, 3)."</td>");
                 }
                 print("<td class=rowfollow>$status</td>");
                 if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP){
