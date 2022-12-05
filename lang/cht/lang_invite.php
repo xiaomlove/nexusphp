@@ -51,6 +51,12 @@ $lang_invite = array
     'harem_addition' => '後宮加成',
     'signup_link_help' => '右鍵復製',
     'signup_link' => '註冊鏈接',
+    'text_seed_torrent_count' => '當前做種數',
+    'text_seed_torrent_size' => '當前做種體積',
+    'text_seed_torrent_bonus_per_hour' => '當前純做種時魔',
+    'text_seed_torrent_bonus_per_hour_help' => '即做種積分，單純做種的值，不考慮捐贈、官種、後宮等任何加成',
+    'text_seed_torrent_last_announce_at' => '最後做種匯報時間',
+    'text_enabled' => '啟用',
 );
 
 ?>

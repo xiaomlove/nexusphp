@@ -54,6 +54,12 @@ Best Regards,
     'harem_addition' => 'Harem addition',
     'signup_link_help' => 'Right click to copy',
     'signup_link' => 'Signup link',
+    'text_seed_torrent_count' => 'Seeding counts',
+    'text_seed_torrent_size' => 'Seeding size',
+    'text_seed_torrent_bonus_per_hour' => 'Seeding bonus per hour',
+    'text_seed_torrent_bonus_per_hour_help' => 'That is, seed points, do not consider donations, official torrent, harems and any other additions',
+    'text_seed_torrent_last_announce_at' => 'Last announce time',
+    'text_enabled' => 'Enabled',
 );
 
 ?>

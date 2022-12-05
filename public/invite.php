@@ -70,11 +70,61 @@ if ($type == 'new'){
 } else {
     inviteMenu($menuSelected);
     if ($menuSelected == 'invitee') {
-        $rel = sql_query("SELECT COUNT(*) FROM users WHERE invited_by = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
+        $whereStr = "invited_by = " . sqlesc($id);
+        if (!empty($_GET['status'])) {
+            $whereStr .= " and status = " . sqlesc($_GET['status']);
+        }
+        if (!empty($_GET['enabled'])) {
+            $whereStr .= " and enabled = " . sqlesc($_GET['enabled']);
+        }
+        $rel = sql_query("SELECT COUNT(*) FROM users WHERE $whereStr") or sqlerr(__FILE__, __LINE__);
         $arro = mysql_fetch_row($rel);
         $number = $arro[0];
-
-        print("<table border=1 width=100% cellspacing=0 cellpadding=5>".
+        $textSelectOnePlease = nexus_trans('nexus.select_one_please');
+        $enabledOptions = $statusOptions = '';
+        foreach (['yes', 'no'] as $item) {
+            $enabledOptions .= sprintf(
+                '<option value="%s"%s>%s</option>',
+                $item, $_GET['enabled'] == $item ? ' selected' : '', strtoupper($item)
+            );
+        }
+        foreach (['pending' => $lang_invite['text_pending'], 'confirmed' => $lang_invite['text_confirmed']] as $name => $text) {
+            $statusOptions .= sprintf(
+                '<option value="%s"%s>%s</option>',
+                $name, $_GET['status'] == $name ? ' selected' : '', $text
+            );
+        }
+        $resetText = nexus_trans('label.reset');
+        $filterForm = <<<FORM
+<div>
+    <form id="filterForm" action="{$_SERVER['REQUEST_URI']}" method="get">
+        <input type="hidden" name="menu" value="{$menuSelected}" />
+        <input type="hidden" name="id" value="{$id}" />
+        <span>{$lang_invite['text_enabled']}:</span>
+        <select name="enabled">
+            <option value="">-{$textSelectOnePlease}-</option>
+            {$enabledOptions}
+        </select>
+        &nbsp;&nbsp;
+        <span>{$lang_invite['text_status']}:</span>
+        <select name="status">
+            <option value="">-{$textSelectOnePlease}-</option>
+            {$statusOptions}
+        </select>
+        &nbsp;&nbsp;
+        <input type="submit">
+        <input type="button" id="reset" value="{$resetText}">
+    </form>
+</div>
+FORM;
+        $resetJs = <<<JS
+jQuery("#reset").on('click', function () {
+    jQuery("select[name=status]").val('')
+    jQuery("select[name=enabled]").val('')
+})
+JS;
+        \Nexus\Nexus::js($resetJs, 'footer', false);
+        print($filterForm."<table border=1 width=100% cellspacing=0 cellpadding=5>".
             "<form method=post action=takeconfirm.php?id=".htmlspecialchars($id).">");
 
         if(!$number){
@@ -82,13 +132,25 @@ if ($type == 'new'){
         } else {
             list($pagertop, $pagerbottom, $limit) = pager($pageSize, $number, "?id=$id&menu=$menuSelected&");
             $haremAdditionFactor = get_setting('bonus.harem_addition');
-            $ret = sql_query("SELECT id, username, email, uploaded, downloaded, status, warned, enabled, donor, email FROM users WHERE invited_by = ".mysql_real_escape_string($id) . " $limit") or sqlerr();
+            $ret = sql_query("SELECT id, username, email, uploaded, downloaded, status, warned, enabled, donor, email FROM users WHERE $whereStr $limit") or sqlerr();
             $num = mysql_num_rows($ret);
 
-            print("<tr><td class=colhead><b>".$lang_invite['text_username']."</b></td><td class=colhead><b>".$lang_invite['text_email']."</b></td><td class=colhead><b>".$lang_invite['text_uploaded']."</b></td><td class=colhead><b>".$lang_invite['text_downloaded']."</b></td><td class=colhead><b>".$lang_invite['text_ratio']."</b></td>");
+            print("<tr>
+<td class=colhead><b>".$lang_invite['text_username']."</b></td>
+<td class=colhead><b>".$lang_invite['text_email']."</b></td>
+<td class=colhead><b>".$lang_invite['text_enabled']."</b></td>
+<td class=colhead><b>".$lang_invite['text_uploaded']."</b></td>
+<td class=colhead><b>".$lang_invite['text_downloaded']."</b></td>
+<td class=colhead><b>".$lang_invite['text_ratio']."</b></td>
+<td class=colhead><b>".$lang_invite['text_seed_torrent_count']."</b></td>
+<td class=colhead><b>".$lang_invite['text_seed_torrent_size']."</b></td>
+<td class=colhead title={$lang_invite['text_seed_torrent_bonus_per_hour_help']}><b>".$lang_invite['text_seed_torrent_bonus_per_hour']."</b></td>
+"
+            );
             if ($haremAdditionFactor > 0) {
                 print('<td class="colhead">'.$lang_invite['harem_addition'].'</td>');
             }
+            print("<td class=colhead><b>".$lang_invite['text_seed_torrent_last_announce_at']."</b></td>");
             print("<td class=colhead><b>".$lang_invite['text_status']."</b></td>");
             if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP) {
                 print("<td class=colhead><b>".$lang_invite['text_confirm']."</b></td>");
@@ -98,7 +160,6 @@ if ($type == 'new'){
             for ($i = 0; $i < $num; ++$i)
             {
                 $arr = mysql_fetch_assoc($ret);
-                $user = "<td class=rowfollow>" . get_username($arr['id']) . "</td>";
 
                 if ($arr["downloaded"] > 0) {
                     $ratio = number_format($arr["uploaded"] / $arr["downloaded"], 3);
@@ -115,11 +176,23 @@ if ($type == 'new'){
                     $status = "<a href=userdetails.php?id={$arr['id']}><font color=#1f7309>".$lang_invite['text_confirmed']."</font></a>";
                 else
                     $status = "<a href=checkuser.php?id={$arr['id']}><font color=#ca0226>".$lang_invite['text_pending']."</font></a>";
+                $seedBonusResult = calculate_seed_bonus($arr['id']);
+                print("<tr class=rowfollow>
+<td class=rowfollow>".get_username($arr['id'])."</td>
+<td>{$arr['email']}</td>
+<td class=rowfollow>".$arr['enabled']."</td>
+<td class=rowfollow>" . mksize($arr['uploaded']) . "</td>
+<td class=rowfollow>" . mksize($arr['downloaded']) . "</td>
+<td class=rowfollow>$ratio</td>
+<td class=rowfollow>{$seedBonusResult['count']}</td>
+<td class=rowfollow>".mksize($seedBonusResult['size'])."</td>
+<td class=rowfollow>".number_format($seedBonusResult['seed_points'], 3)."</td>
+");
 
-                print("<tr class=rowfollow>$user<td>{$arr['email']}</td><td class=rowfollow>" . mksize($arr['uploaded']) . "</td><td class=rowfollow>" . mksize($arr['downloaded']) . "</td><td class=rowfollow>$ratio</td>");
                 if ($haremAdditionFactor > 0) {
-                    print ("<td class=rowfollow>".number_format(calculate_seed_bonus($arr['id'])['all_bonus'] * $haremAdditionFactor, 3)."</td>");
+                    print ("<td class=rowfollow>".number_format($seedBonusResult['seed_points'] * $haremAdditionFactor, 3)."</td>");
                 }
+                print("<td class=rowfollow>{$seedBonusResult['last_action']}</td>");
                 print("<td class=rowfollow>$status</td>");
                 if ($CURUSER['id'] == $id || get_user_class() >= UC_SYSOP){
                     print("<td>");

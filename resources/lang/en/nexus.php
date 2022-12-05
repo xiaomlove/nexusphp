@@ -8,4 +8,6 @@ return [
     'time_units' => [
         'week' => 'weeks',
     ],
+    'select_all' => 'Select all',
+    'unselect_all' => 'Unselect all',
 ];

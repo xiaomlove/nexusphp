@@ -5957,9 +5957,9 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
             $torrentIdArr = [-1];
         }
         $idStr = implode(',', \Illuminate\Support\Arr::wrap($torrentIdArr));
-        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID from torrents  WHERE id in ($idStr)";
+        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID, '' as last_action from torrents  WHERE id in ($idStr)";
     } else {
-        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
+        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID, peers.last_action from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
     }
     $tagGrouped = [];
     $torrentResult = \Nexus\Database\NexusDB::select($sql);
@@ -5975,8 +5975,12 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
     $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor");
+    $last_action = "";
     foreach ($torrentResult as $torrent)
     {
+        if ($torrent['last_action'] > $last_action) {
+            $last_action = $torrent['last_action'];
+        }
         $size = bcadd($size, $torrent['size']);
         $weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
         $gb_size = $gb_size_raw = $torrent['size'] / 1073741824;
@@ -6005,7 +6009,7 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     //Official addition don't think about the minimum value
     $official_bonus =  $valuetwo * atan($official_a / $l_bonus);
     $result = compact(
-        'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'size',
+        'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'size', 'last_action',
         'official_bonus', 'official_a', 'official_torrent_peer_count', 'official_size'
     );
     $result['donor_times'] = $donortimes_bonus;
