@@ -31,6 +31,7 @@ return [
         'plugin' => 'Plugins',
         'category' => 'Categories',
         'second_icon' => 'Second icons',
+        'torrent_operation_log' => 'Torrent operation logs',
     ],
     'resources' => [
         'agent_allow' => [

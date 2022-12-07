@@ -31,6 +31,7 @@ return [
         'plugin' => '插件',
         'category' => '主分類',
         'second_icon' => '第二圖標',
+        'torrent_operation_log' => '種子操作記錄',
     ],
     'resources' => [
         'agent_allow' => [

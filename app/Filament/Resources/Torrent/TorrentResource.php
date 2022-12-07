@@ -6,6 +6,7 @@ use App\Filament\OptionsTrait;
 use App\Filament\Resources\Torrent\TorrentResource\Pages;
 use App\Filament\Resources\Torrent\TorrentResource\RelationManagers;
 use App\Models\Category;
+use App\Models\SearchBox;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Torrent;
@@ -27,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Nexus\Database\NexusDB;
 
 class TorrentResource extends Resource
 {
@@ -75,23 +77,18 @@ class TorrentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('basic_category.name')->label(__('label.torrent.category')),
-                Tables\Columns\TextColumn::make('name')->formatStateUsing(function (Torrent $record) {
-                    $name = sprintf(
-                        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank" title="%s">%s</a></div>',
-                        $record->id, $record->name, Str::limit($record->name, 40)
-                    );
-                    $tags = sprintf('&nbsp;<div>%s</div>', $record->tagsFormatted);
-
-                    return new HtmlString('<div class="flex">' . $name . $tags . '</div>');
-                })->label(__('label.name'))->searchable(),
+                Tables\Columns\TextColumn::make('name')->formatStateUsing(fn ($record) => torrent_name_for_admin($record, true))
+                    ->label(__('label.name'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('posStateText')->label(__('label.torrent.pos_state')),
                 Tables\Columns\TextColumn::make('spStateText')->label(__('label.torrent.sp_state')),
                 Tables\Columns\TextColumn::make('pickInfoText')
                     ->label(__('label.torrent.picktype'))
                     ->formatStateUsing(fn ($record) => $record->pickInfo['text'])
                 ,
-                Tables\Columns\BooleanColumn::make('hr')
+                Tables\Columns\IconColumn::make('hr')
                     ->label(__('label.torrent.hr'))
+                    ->boolean()
                 ,
                 Tables\Columns\TextColumn::make('size')
                     ->label(__('label.torrent.size'))
@@ -108,55 +105,11 @@ class TorrentResource extends Resource
                 Tables\Columns\TextColumn::make('added')->label(__('label.added'))->dateTime(),
                 Tables\Columns\TextColumn::make('user.username')
                     ->label(__('label.torrent.owner'))
-                    ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->owner, false, true, true, true)))
+                    ->formatStateUsing(fn ($record) => username_for_admin($record->owner))
                 ,
             ])
             ->defaultSort('id', 'desc')
-            ->filters([
-                Tables\Filters\Filter::make('owner')
-                    ->form([
-                        Forms\Components\TextInput::make('owner')
-                            ->label(__('label.torrent.owner'))
-                            ->placeholder('UID')
-                        ,
-                    ])->query(function (Builder $query, array $data) {
-                        return $query->when($data['owner'], fn (Builder $query, $owner) => $query->where("owner", $owner));
-                    })
-                ,
-                Tables\Filters\SelectFilter::make('category')
-                    ->options(Category::query()->pluck('name', 'id')->toArray())
-                    ->label(__('label.torrent.category')),
-
-                Tables\Filters\SelectFilter::make('visible')
-                    ->options(self::$yesOrNo)
-                    ->label(__('label.torrent.visible')),
-
-                Tables\Filters\SelectFilter::make('pos_state')
-                    ->options(Torrent::listPosStates(true))
-                    ->label(__('label.torrent.pos_state')),
-
-                Tables\Filters\SelectFilter::make('sp_state')
-                    ->options(Torrent::listPromotionTypes(true))
-                    ->label(__('label.torrent.sp_state')),
-
-                Tables\Filters\SelectFilter::make('picktype')
-                    ->options(Torrent::listPickInfo(true))
-                    ->label(__('label.torrent.picktype')),
-
-                Tables\Filters\SelectFilter::make('approval_status')
-                    ->options(Torrent::listApprovalStatus(true))
-                    ->visible($showApproval)
-                    ->label(__('label.torrent.approval_status')),
-
-                Tables\Filters\SelectFilter::make('hr')
-                    ->options(self::getYesNoOptions())
-                    ->label(__('label.torrent.hr')),
-
-                Tables\Filters\SelectFilter::make('tags')
-                    ->relationship('tags', 'name')
-                    ->label(__('label.tag.label'))
-                ,
-            ])
+            ->filters(self::getFilters())
             ->actions(self::getActions())
             ->bulkActions(self::getBulkActions());
 
@@ -392,6 +345,119 @@ class TorrentResource extends Resource
     {
         return false;
 //        return Setting::get('torrent.approval_status_none_visible') == 'no' || Setting::get('torrent.approval_status_icon_enabled') == 'yes';
+    }
+
+    private static function getFilters()
+    {
+        $filters = [
+            Tables\Filters\Filter::make('owner')
+                ->form([
+                    Forms\Components\TextInput::make('owner')
+                        ->label(__('label.torrent.owner'))
+                        ->placeholder('UID')
+                    ,
+                ])->query(function (Builder $query, array $data) {
+                    return $query->when($data['owner'], fn (Builder $query, $owner) => $query->where("owner", $owner));
+                })
+            ,
+
+            Tables\Filters\SelectFilter::make('visible')
+                ->options(self::$yesOrNo)
+                ->label(__('label.torrent.visible'))
+            ,
+            Tables\Filters\SelectFilter::make('hr')
+                ->options(self::getYesNoOptions())
+                ->label(__('label.torrent.hr'))
+            ,
+
+            Tables\Filters\SelectFilter::make('pos_state')
+                ->options(Torrent::listPosStates(true))
+                ->label(__('label.torrent.pos_state'))
+                ->multiple()
+            ,
+
+            Tables\Filters\SelectFilter::make('sp_state')
+                ->options(Torrent::listPromotionTypes(true))
+                ->label(__('label.torrent.sp_state'))
+                ->multiple()
+            ,
+
+            Tables\Filters\SelectFilter::make('picktype')
+                ->options(Torrent::listPickInfo(true))
+                ->label(__('label.torrent.picktype'))
+                ->multiple()
+            ,
+
+            Tables\Filters\SelectFilter::make('approval_status')
+                ->options(Torrent::listApprovalStatus(true))
+                ->label(__('label.torrent.approval_status'))
+                ->multiple()
+            ,
+
+            Tables\Filters\SelectFilter::make('tags')
+                ->relationship('tags', 'name')
+                ->label(__('label.tag.label'))
+                ->multiple()
+            ,
+            Tables\Filters\SelectFilter::make('category')
+                ->options(Category::query()->pluck('name', 'id')->toArray())
+                ->label(__('label.torrent.category'))
+                ->multiple()
+            ,
+        ];
+        foreach (SearchBox::$taxonomies as $torrentField => $tableModel) {
+            $filters[] = Tables\Filters\SelectFilter::make($torrentField)
+                ->options(NexusDB::table($tableModel['table'])->orderBy('sort_index')->orderBy('id')->pluck('name', 'id'))
+                ->multiple()
+            ;
+        }
+
+        $filters[] = Tables\Filters\Filter::make('added_begin')
+            ->form([
+                Forms\Components\DatePicker::make('added_begin')
+                    ->maxDate(now())
+                    ->label(__('label.torrent.added_begin'))
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['added_begin'], fn (Builder $query, $value) => $query->where("added", '>=', $value));
+            })
+        ;
+        $filters[] = Tables\Filters\Filter::make('added_end')
+            ->form([
+                Forms\Components\DatePicker::make('added_end')
+                    ->maxDate(now())
+                    ->label(__('label.torrent.added_end'))
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['added_end'], fn (Builder $query, $value) => $query->where("added", '<=', $value));
+            })
+        ;
+        $filters[] = Tables\Filters\Filter::make('size_begin')
+            ->form([
+                Forms\Components\TextInput::make('size_begin')
+                    ->numeric()
+                    ->placeholder('GB')
+                    ->label(__('label.torrent.size_begin'))
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['size_begin'], fn (Builder $query, $value) => $query->where("size", '>=', $value * 1024 * 1024 * 1024));
+            })
+        ;
+        $filters[] = Tables\Filters\Filter::make('size_end')
+            ->form([
+                Forms\Components\TextInput::make('size_end')
+                    ->numeric()
+                    ->placeholder('GB')
+                    ->label(__('label.torrent.size_end'))
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['size_end'], fn (Builder $query, $value) => $query->where("size", '<=', $value * 1024 * 1024 * 1024));
+            })
+        ;
+
+
+        return $filters;
+
     }
 
 }

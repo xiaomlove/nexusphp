@@ -95,7 +95,7 @@ class Test extends Command
     public function handle()
     {
         $rep = new WorkRepository();
-        $rep->settleRole(5);
+        $rep->settleRole(4);
     }
 
 

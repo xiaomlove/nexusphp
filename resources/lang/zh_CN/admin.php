@@ -29,6 +29,7 @@ return [
         'plugin' => '插件',
         'category' => '主分类',
         'second_icon' => '第二图标',
+        'torrent_operation_log' => '种子操作记录',
     ],
     'resources' => [
         'agent_allow' => [

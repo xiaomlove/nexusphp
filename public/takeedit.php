@@ -258,16 +258,27 @@ else
 $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->updateTorrent($id);
 
-if ($affectedRows == 1 && $row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
+if ($affectedRows == 1) {
     $torrentUrl = sprintf('details.php?id=%s', $row['id']);
-    \App\Models\StaffMessage::query()->insert([
-        'sender' => $CURUSER['id'],
-        'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
-        'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
-        'added' => now(),
-        'permission' => 'torrent-approval',
-    ]);
-    clear_staff_message_cache();
+    if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
+        \App\Models\StaffMessage::query()->insert([
+            'sender' => $CURUSER['id'],
+            'subject' => nexus_trans('torrent.owner_update_torrent_subject', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
+            'msg' => nexus_trans('torrent.owner_update_torrent_msg', ['detail_url' => $torrentUrl, 'torrent_name' => $_POST['name']]),
+            'added' => now(),
+            'permission' => 'torrent-approval',
+        ]);
+        clear_staff_message_cache();
+    }
+    if ($row['owner'] != $CURUSER['id']) {
+        \App\Models\TorrentOperationLog::add([
+            'torrent_id' => $row['id'],
+            'uid' => $CURUSER['id'],
+            'action_type' => \App\Models\TorrentOperationLog::ACTION_TYPE_EDIT,
+            'comment' => '',
+        ], true);
+    }
+
 }
 
 $returl = "details.php?id=$id&edited=1";

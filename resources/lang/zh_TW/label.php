@@ -163,6 +163,10 @@ return [
         'picktype' => '推薦',
         'promotion_time_type' => '優惠時間類型',
         'hr' => 'H&R',
+        'added_begin' => '發布時間大於',
+        'added_end' => '發布時間小於',
+        'size_begin' => '體積大於',
+        'size_end' => '體積小於',
     ],
     'hit_and_run' => [
         'label' => '用戶 H&R',

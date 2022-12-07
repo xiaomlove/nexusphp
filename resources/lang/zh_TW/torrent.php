@@ -59,6 +59,16 @@ return [
             'type_text' => '標記未審核',
             'notify_subject' => '種子標記未審核',
             'notify_msg' => '妳的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 標記未審核',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_EDIT => [
+            'type_text' => '編輯',
+            'notify_subject' => '種子被編輯',
+            'notify_msg' => '你的種子：[url=:detail_url]:torrent_name[/url] 被 :operator 編輯',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_DELETE => [
+            'type_text' => '刪除',
+            'notify_subject' => '種子被刪除',
+            'notify_msg' => '你的種子：:torrent_name 被 :operator 刪除',
         ]
     ],
     'owner_update_torrent_subject' => '審核拒絕種子已更新',

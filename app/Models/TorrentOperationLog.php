@@ -15,11 +15,15 @@ class TorrentOperationLog extends NexusModel
     const ACTION_TYPE_APPROVAL_NONE = 'approval_none';
     const ACTION_TYPE_APPROVAL_ALLOW = 'approval_allow';
     const ACTION_TYPE_APPROVAL_DENY = 'approval_deny';
+    const ACTION_TYPE_EDIT = 'edit';
+    const ACTION_TYPE_DELETE = 'delete';
 
     public static array $actionTypes = [
         self::ACTION_TYPE_APPROVAL_NONE => ['text' => 'Approval none'],
         self::ACTION_TYPE_APPROVAL_ALLOW => ['text' => 'Approval allow'],
         self::ACTION_TYPE_APPROVAL_DENY => ['text' => 'Approval deny'],
+        self::ACTION_TYPE_EDIT => ['text' => 'Edit'],
+        self::ACTION_TYPE_DELETE => ['text' => 'Delete'],
     ];
 
     public function getActionTypeTextAttribute()

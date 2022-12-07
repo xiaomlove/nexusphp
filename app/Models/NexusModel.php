@@ -56,7 +56,12 @@ class NexusModel extends Model
         $result = $dataSource;
         $keyValue = [];
         foreach ($result as $key => &$info) {
-            $text = $textTransPrefix ? nexus_trans("$textTransPrefix.$key") : $info['text'];
+            if (str_contains($textTransPrefix, '%s')) {
+                $transKey = sprintf($textTransPrefix, $key);
+            } else {
+                $transKey = "$textTransPrefix.$key";
+            }
+            $text = $textTransPrefix ? nexus_trans($transKey) : $info['text'];
             $info['text'] = $text;
             $keyValue[$key] = $info[$valueField];
         }

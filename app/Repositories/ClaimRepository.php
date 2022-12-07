@@ -154,7 +154,7 @@ class ClaimRepository extends BaseRepository
     public function settleUser($uid, $force = false, $test = false): bool
     {
         $user = User::query()->with('language')->findOrFail($uid);
-        $list = Claim::query()->where('uid', $uid)->with(['snatch'])->get();
+        $list = Claim::query()->where('uid', $uid)->with(['snatch', 'torrent' => fn ($query) => $query->select(Torrent::$commentFields)])->get();
         $now = Carbon::now();
         $startOfThisMonth = $now->clone()->startOfMonth();
         $seedTimeRequiredHours = Claim::getConfigStandardSeedTimeHours();
@@ -210,7 +210,7 @@ class ClaimRepository extends BaseRepository
             "reachedTorrentIdArr: %s, unReachedIdArr: %s, bonusResult: %s, seedTimeHours: %s",
             json_encode($reachedTorrentIdArr), json_encode($unReachedIdArr), json_encode($bonusResult), $seedTimeHoursAvg
         ), 'alert');
-        $bonusFinal = $bonusResult['seed_bonus'] * $seedTimeHoursAvg * $bonusMultiplier;
+        $bonusFinal = $bonusResult['seed_points'] * $seedTimeHoursAvg * $bonusMultiplier;
         do_log("bonus final: $bonusFinal", 'alert');
 
         $totalDeduct = $bonusDeduct * count($unReachedIdArr);

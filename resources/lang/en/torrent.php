@@ -59,6 +59,16 @@ return [
             'type_text' => 'Not reviewed',
             'notify_subject' => 'Torrent was mark as not reviewed',
             'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] was mark as not reviewed by :operator',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_EDIT => [
+            'type_text' => 'Edit',
+            'notify_subject' => 'Torrent was edited',
+            'notify_msg' => 'Your torrent: [url=:detail_url]:torrent_name[/url] was edited by :operator',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_DELETE => [
+            'type_text' => 'Delete',
+            'notify_subject' => 'Torrent was deleted',
+            'notify_msg' => 'Your torrent: :torrent_name was deleted by :operator',
         ]
     ],
     'owner_update_torrent_subject' => 'Denied torrent have been updated',

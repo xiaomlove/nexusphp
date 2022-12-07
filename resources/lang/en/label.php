@@ -163,6 +163,10 @@ return [
         'picktype' => 'Recommend',
         'promotion_time_type' => 'Promotion type time',
         'hr' => 'H&R',
+        'added_begin' => 'Added greater than',
+        'added_end' => 'Added less than',
+        'size_begin' => 'Size greater than',
+        'size_end' => 'Size less than',
     ],
     'hit_and_run' => [
         'label' => 'User H&R',

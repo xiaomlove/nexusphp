@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\SearchBox;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 function get_langfolder_cookie($transToLocale = false)
@@ -3100,7 +3101,7 @@ function loggedinorreturn($mainpage = false) {
 //	do_log("[USER]: " . $CURUSER['id']);
 }
 
-function deletetorrent($id) {
+function deletetorrent($id, $notify = false) {
     $idArr = \Illuminate\Support\Arr::wrap($id);
 	$idStr = implode(', ', $idArr ?: [0]);
 	$torrent_dir = get_setting('main.torrent_dir');
@@ -3115,6 +3116,12 @@ function deletetorrent($id) {
         do_action("torrent_delete", $_id);
         do_log("delete torrent: $_id", "error");
         unlink(getFullDirectory("$torrent_dir/$_id.torrent"));
+        \App\Models\TorrentOperationLog::add([
+            'torrent_id' => $_id,
+            'uid' => get_user_id(),
+            'action_type' => \App\Models\TorrentOperationLog::ACTION_TYPE_DELETE,
+            'comment' => '',
+        ], $notify);
     }
 }
 
@@ -6316,4 +6323,23 @@ function build_search_area($searchArea, array $options = [])
     $result .= '</select>';
     return $result;
 }
+
+function torrent_name_for_admin(\App\Models\Torrent $torrent, $withTags = false)
+{
+    $name = sprintf(
+        '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank" title="%s">%s</a></div>',
+        $torrent->id, $torrent->name, Str::limit($torrent->name, 40)
+    );
+    $tags = '';
+    if ($withTags) {
+        $tags = sprintf('&nbsp;<div>%s</div>', $torrent->tagsFormatted);
+    }
+    return new HtmlString('<div class="flex">' . $name . $tags . '</div>');
+}
+
+function username_for_admin(int $id)
+{
+    return new HtmlString(get_username($id, false, true, true, true));
+}
+
 ?>

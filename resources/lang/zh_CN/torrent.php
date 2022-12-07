@@ -59,6 +59,16 @@ return [
             'type_text' => '标记未审核',
             'notify_subject' => '种子标记未审核',
             'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 标记未审核',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_EDIT => [
+            'type_text' => '编辑',
+            'notify_subject' => '种子被编辑',
+            'notify_msg' => '你的种子：[url=:detail_url]:torrent_name[/url] 被 :operator 编辑',
+        ],
+        \App\Models\TorrentOperationLog::ACTION_TYPE_DELETE => [
+            'type_text' => '删除',
+            'notify_subject' => '种子被删除',
+            'notify_msg' => '你的种子：:torrent_name 被 :operator 删除',
         ]
     ],
     'owner_update_torrent_subject' => '审核拒绝种子已更新',

@@ -163,6 +163,10 @@ return [
         'picktype' => '推荐',
         'promotion_time_type' => '优惠时间类型',
         'hr' => 'H&R',
+        'added_begin' => '发布时间大于',
+        'added_end' => '发布时间小于',
+        'size_begin' => '体积大于',
+        'size_end' => '体积小于',
     ],
     'hit_and_run' => [
         'label' => '用户 H&R',
