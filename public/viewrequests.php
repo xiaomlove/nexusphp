@@ -6,7 +6,9 @@ require_once(get_langfile_path('details.php'));
 loggedinorreturn();
 parked();
 
-
+if (isset($_GET['id'])) {
+    $_GET['id'] = htmlspecialchars($_GET['id']);
+}
 $action = isset($_POST['action']) ? htmlspecialchars($_POST['action']) : (isset($_GET['action']) ? htmlspecialchars($_GET['action']) : '');
 $allowed_actions = array("list", "new", "newmessage", "view", "edit", "takeedit", "takeadded", "res", "takeres", "addamount", "delete", "confirm", "message", "search");
 if (!$action)

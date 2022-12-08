@@ -376,9 +376,13 @@ if ($action == "post")
 	//------ Make sure sure user has write access in forum
 	$arr = get_forum_row($forumid) or die($lang_forums['std_bad_forum_id']);
 
-	if (get_user_class() < $arr["minclasswrite"] || ($type =='new' && get_user_class() < $arr["minclasscreate"]))
-		permissiondenied();
-
+	if (
+	    get_user_class() < $arr["minclassread"]
+        || get_user_class() < $arr["minclasswrite"]
+        || ($type =='new' && get_user_class() < $arr["minclasscreate"])
+    ) {
+        permissiondenied();
+    }
 	if ($body == "")
 		stderr($lang_forums['std_error'], $lang_forums['std_no_body_text']);
 
@@ -396,6 +400,12 @@ if ($action == "post")
 
 	if ($type == 'edit')
 	{
+        $postid = $id;
+        $topicInfo = \App\Models\Topic::query()->findOrFail($topicid);
+        $postInfo = \App\Models\Post::query()->findOrFail($id);
+        if ($postInfo->userid != $CURUSER['id'] && !is_forum_moderator($postid, 'post') && !user_can('postmanage')) {
+            permissiondenied();
+        }
 		if ($hassubject){
 			sql_query("UPDATE topics SET subject=".sqlesc($subject)." WHERE id=".sqlesc($topicid)) or sqlerr(__FILE__, __LINE__);
 			$forum_last_replied_topic_row = $Cache->get_value('forum_'.$forumid.'_last_replied_topic_content');
@@ -403,11 +413,8 @@ if ($action == "post")
 				$Cache->delete_value('forum_'.$forumid.'_last_replied_topic_content');
 		}
 		sql_query("UPDATE posts SET body=".sqlesc($body).", editdate=".sqlesc($date).", editedby=".sqlesc($CURUSER['id'])." WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-		$postid = $id;
 		$Cache->delete_value('post_'.$postid.'_content');
         //send pm
-        $topicInfo = \App\Models\Topic::query()->findOrFail($topicid);
-        $postInfo = \App\Models\Post::query()->findOrFail($id);
         $postUrl = sprintf('[url=forums.php?action=viewtopic&topicid=%s&page=p%s#pid%s]%s[/url]', $topicid, $id, $id, $topicInfo->subject);
         if ($postInfo->userid != $CURUSER['id']) {
             $receiver = $postInfo->user;

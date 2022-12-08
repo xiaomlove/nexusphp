@@ -12,18 +12,25 @@ if (!empty($_POST['setdealt'])) {
     if (empty($_POST['delcheater'])) {
         stderr("Error", $lang_functions['select_at_least_one_record']);
     }
-	$res = sql_query ("SELECT id FROM cheaters WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST['delcheater']) . ")");
-	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("UPDATE cheaters SET dealtwith=1, dealtby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
+//	$res = sql_query ("SELECT id FROM cheaters WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST['delcheater']) . ")");
+//	while ($arr = mysql_fetch_assoc($res))
+//		sql_query ("UPDATE cheaters SET dealtwith=1, dealtby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
+
+	\App\Models\Cheater::query()->whereIn('id', $_POST['delcheater'])
+        ->where('dealtwith', 0)
+        ->update(['dealtwith' => 1, 'dealtby' => $CURUSER['id']])
+    ;
 	$Cache->delete_value('staff_new_cheater_count');
 }
 elseif (!empty($_POST['delete'])) {
     if (empty($_POST['delcheater'])) {
         stderr("Error", $lang_functions['select_at_least_one_record']);
     }
-	$res = sql_query ("SELECT id FROM cheaters WHERE id IN (" . implode(", ", $_POST['delcheater']) . ")");
-	while ($arr = mysql_fetch_assoc($res))
-		sql_query ("DELETE from cheaters WHERE id = {$arr['id']}") or sqlerr();
+//	$res = sql_query ("SELECT id FROM cheaters WHERE id IN (" . implode(", ", $_POST['delcheater']) . ")");
+//	while ($arr = mysql_fetch_assoc($res))
+//		sql_query ("DELETE from cheaters WHERE id = {$arr['id']}") or sqlerr();
+
+	\App\Models\Cheater::query()->whereIn('id', $_POST['delcheater'])->delete();
 	$Cache->delete_value('staff_new_cheater_count');
 }
 

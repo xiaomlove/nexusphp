@@ -8,6 +8,8 @@ if (!user_can('log'))
 stderr($lang_log['std_sorry'],$lang_log['std_permission_denied_only'].get_user_class_name($log_class,false,true,true).$lang_log['std_or_above_can_view'],false);
 }
 
+$q = htmlspecialchars(trim($_GET['query'] ?? ''));
+
 function permissiondeny(){
 	global $lang_log;
 	stderr($lang_log['std_sorry'],$lang_log['std_permission_denied'],false);
@@ -29,11 +31,11 @@ function logmenu($selected = "dailylog"){
 }
 
 function searchtable($title, $action, $opts = array()){
-		global $lang_log;
+		global $lang_log, $q;
 		print("<table border=1 cellspacing=0 width=940 cellpadding=5>\n");
 		print("<tr><td class=colhead align=left>".$title."</td></tr>\n");
 		print("<tr><td class=toolbox align=left><form method=\"get\" action='" . $_SERVER['REQUEST_URI'] . "'>\n");
-		print("<input type=\"text\" name=\"query\" style=\"width:500px\" value=\"".($_GET['query'] ?? '')."\">\n");
+		print("<input type=\"text\" name=\"query\" style=\"width:500px\" value=\"".$q."\">\n");
 		if ($opts) {
 			print($lang_log['text_in']."<select name=search>");
 			foreach($opts as $value => $text)
@@ -84,7 +86,7 @@ else {
 	case "dailylog":
 		stdhead($lang_log['head_site_log']);
 
-		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$query = mysql_real_escape_string($q);
 		$search = $_GET["search"] ?? '';
 
 		$addparam = "";
@@ -151,7 +153,7 @@ else {
 		break;
 	case "chronicle":
 		stdhead($lang_log['head_chronicle']);
-		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$query = mysql_real_escape_string($q);
 		if($query){
 		$wherea=" WHERE txt LIKE '%$query%' ";
 		$addparam = "query=".rawurlencode($query)."&";
@@ -222,7 +224,7 @@ else {
 		break;
 	case "funbox":
 		stdhead($lang_log['head_funbox']);
-		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$query = mysql_real_escape_string($q);
 		$search = $_GET["search"] ?? '';
 		if($query){
 			switch ($search){
@@ -267,7 +269,7 @@ else {
 		break;
 	case "news":
 		stdhead($lang_log['head_news']);
-		$query = mysql_real_escape_string(trim($_GET["query"] ?? ''));
+		$query = mysql_real_escape_string($q);
 		$search = $_GET["search"] ?? '';
 		if($query){
 			switch ($search){

@@ -5,12 +5,16 @@ require_once(get_langfile_path());
 $id =  isset($_POST['id']) ? intval($_POST['id']) : (isset($_GET['id']) ? intval($_GET['id']) : die());
 int_check($id,true);
 $email = unesc(htmlspecialchars(trim($_POST["email"])));
-if(isset($_POST['conusr']))
-	sql_query("UPDATE users SET status = 'confirmed', editsecret = '' WHERE id IN (" . implode(", ", $_POST['conusr']) . ") AND status='pending'");
-else
-	stderr($lang_takeconfirm['std_sorry'],$lang_takeconfirm['std_no_buddy_to_confirm'].
- "<a class=altlink href=invite.php?id={$CURUSER['id']}>".$lang_takeconfirm['std_here_to_go_back'],false);
-
+if(!empty($_POST['conusr'])) {
+//    sql_query("UPDATE users SET status = 'confirmed', editsecret = '' WHERE id IN (" . implode(", ", $_POST['conusr']) . ") AND status='pending'");
+    \App\Models\User::query()->whereIn('id', $_POST['conusr'])
+        ->where('status', 'pending')
+        ->update(['status' => 'confirmed', 'editsecret' => ''])
+    ;
+} else {
+    stderr($lang_takeconfirm['std_sorry'],$lang_takeconfirm['std_no_buddy_to_confirm'].
+        "<a class=altlink href=invite.php?id={$CURUSER['id']}>".$lang_takeconfirm['std_here_to_go_back'],false);
+}
 $title = $SITENAME.$lang_takeconfirm['mail_title'];
 $baseUrl = getSchemeAndHttpHost();
 $body = <<<EOD

@@ -3929,7 +3929,7 @@ function validusername($username)
 	if (strpos($allowedchars, $username[$i]) === false)
 	return false;
 
-	if ($length < 4 || $length > 20) {
+	if ($length < 3 || $length > 20) {
 	    return false;
     }
 

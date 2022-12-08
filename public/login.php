@@ -23,7 +23,7 @@ cur_user_check () ;
 stdhead($lang_login['head_login']);
 
 $s = "<select name=\"sitelanguage\" onchange='submit()'>\n";
-
+$secret = htmlspecialchars($_GET['secret'] ?? '');
 $langs = langlist("site_lang", true);
 foreach ($langs as $row)
 {
@@ -33,7 +33,7 @@ foreach ($langs as $row)
 $s .= "\n</select>";
 ?>
 <form method="get" action="<?php echo $_SERVER['REQUEST_URI'] ?>">
-    <input type="hidden" name="secret" value="<?php echo $_GET['secret'] ?? '' ?>">
+    <input type="hidden" name="secret" value="<?php echo $secret ?>">
 <?php
 print("<div align=\"right\">".$lang_login['text_select_lang']. $s . "</div>");
 ?>
@@ -50,7 +50,7 @@ if (!empty($_GET["returnto"])) {
 }
 ?>
 <form method="post" action="takelogin.php">
-    <input type="hidden" name="secret" value="<?php echo $_GET['secret'] ?? ''?>">
+    <input type="hidden" name="secret" value="<?php echo $secret?>">
 <p><?php echo $lang_login['p_need_cookies_enables']?><br /> [<b><?php echo $maxloginattempts;?></b>] <?php echo $lang_login['p_fail_ban']?></p>
 <p><?php echo $lang_login['p_you_have']?> <b><?php echo remaining ();?></b> <?php echo $lang_login['p_remaining_tries']?></p>
 <table border="0" cellpadding="5">
