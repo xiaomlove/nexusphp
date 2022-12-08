@@ -41,7 +41,7 @@
         "geoip2/geoip2": "~2.0",
         "hashids/hashids": "^4.1",
         "imdbphp/imdbphp": "^7.0",
-        "laravel/framework": "^9.0",
+        "laravel/framework": "9.20.0",
         "laravel/octane": "^1.2",
         "laravel/sanctum": "^2.10",
         "laravel/tinker": "^2.5",

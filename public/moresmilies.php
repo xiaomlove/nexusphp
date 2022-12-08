@@ -29,7 +29,7 @@ for($i=1; $i<192; $i++) {
   if ($count % 3==0)
      print("\n<tr>");
 
-     print("\n\t<td class=\"lista\" align=\"center\"><a href=\"javascript: SmileIT('[em$i]','".$_GET["form"]."','".$_GET["text"]."')\"><img src=\"pic/smilies/$i.gif\" alt=\"\" ></a></td>");
+     print("\n\t<td class=\"lista\" align=\"center\"><a href=\"javascript: SmileIT('[em$i]','".htmlspecialchars($_GET["form"])."','".htmlspecialchars($_GET["text"])."')\"><img src=\"pic/smilies/$i.gif\" alt=\"\" ></a></td>");
      $count++;
 
   if ($count % 3==0)

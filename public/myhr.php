@@ -34,7 +34,7 @@ foreach ($allStatus as $key => $value) {
 }
 
 print("<p>" . implode(' | ', $headerFilters) . "</p>");
-$q = $_GET['q'] ?? '';
+$q = htmlspecialchars($_GET['q'] ?? '');
 $filterForm = <<<FORM
 <form id="filterForm" action="{$_SERVER['REQUEST_URI']}" method="get">
     <input id="q" type="text" name="q" value="{$q}" placeholder="{$lang_myhr['th_hr_id']}">

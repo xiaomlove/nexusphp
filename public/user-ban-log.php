@@ -2,7 +2,7 @@
 require "../include/bittorrent.php";
 
 $query = \App\Models\UserBanLog::query();
-$q = $_REQUEST['q'] ?? '';
+$q = htmlspecialchars($_REQUEST['q'] ?? '');
 if (!empty($q)) {
     $query->where('username', 'like', "%{$q}%");
 }
