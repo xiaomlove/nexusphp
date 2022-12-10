@@ -41,10 +41,11 @@
 - Redis：2.6.12 或以上版本
 
 ## 快速开始
-安装 docker。  
-其中 DOMAIN 是你要使用的域名，先做好解析。 没有域名使用 IP 亦可。   
-端口按需要指定，如果本地 80 端口已经使用，请更换，保证端口对外开放。  
-第 2 步创建 .env 选择正确的时区 TIMEZONE，其他默认即可。
+1. 安装 docker。
+2. 其中 DOMAIN 是你要使用的域名，将你要使用的域名（例如：example.com）先做好解析，或者没有域名使用 IP 亦可。
+3. 创建 .env 文件，并指定正确的时区（TIMEZONE）。其他配置可以使用默认值。
+4. 根据需要修改端口，确保端口对外开放。如果本地的 80 端口已经被占用，请更换其他的端口。
+
 ```
 docker pull xiaomlove/nexusphp:latest
 docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:latest
