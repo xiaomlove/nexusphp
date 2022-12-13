@@ -9,6 +9,10 @@ class Invite extends NexusModel
     const VALID_YES = 1;
     const VALID_NO = 0;
 
+    protected $casts = [
+        'expired_at' => 'datetime',
+    ];
+
     public static $validInfo = [
         self::VALID_NO => ['text' => 'No'],
         self::VALID_YES => ['text' => 'Yes'],

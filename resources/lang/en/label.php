@@ -102,6 +102,7 @@ return [
         'downloadpos' => 'Download privileges',
         'parked' => 'Parked',
         'offer_allowed_count' => 'Offer allowed count',
+        'tmp_invites' => 'Temporary invite',
     ],
     'medal' => [
         'label' => 'Medal',

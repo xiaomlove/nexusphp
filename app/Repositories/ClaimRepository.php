@@ -153,6 +153,11 @@ class ClaimRepository extends BaseRepository
 
     public function settleUser($uid, $force = false, $test = false): bool
     {
+        $shouldDoSettle = apply_filter('user_should_do_claim_settle', true, $uid);
+        if (!$shouldDoSettle) {
+            do_log("uid: $uid, filter: user_should_do_claim_settle => false");
+            return false;
+        }
         $user = User::query()->with('language')->findOrFail($uid);
         $list = Claim::query()->where('uid', $uid)->with(['snatch', 'torrent' => fn ($query) => $query->select(Torrent::$commentFields)])->get();
         $now = Carbon::now();

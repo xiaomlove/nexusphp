@@ -23,4 +23,8 @@ return [
         'subject' => '下载权限恢复',
         'body' => '你的下载权限恢复，你现在可以下载种子。By: :operator',
     ],
+    'temporary_invite_change' => [
+        'subject' => '临时邀请:change_type',
+        'body' => '你的临时邀请被管理员 :operator :change_type :count 个，理由：:reason。',
+    ],
 ];

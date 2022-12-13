@@ -32,6 +32,7 @@ return [
         'category' => 'Categories',
         'second_icon' => 'Second icons',
         'torrent_operation_log' => 'Torrent operation logs',
+        'invite' => 'Invites',
     ],
     'resources' => [
         'agent_allow' => [
@@ -76,6 +77,8 @@ return [
                 'grant_prop_form_duration' => 'Duration',
                 'grant_prop_form_duration_help' => 'Unit: days. If left blank, the user has it permanently. Note: There is no time limit for Name Change Card, ignore this value.' ,
                 'confirm_bulk' => 'Bulk confirm',
+                'change_bonus_etc_duration_label' => 'Duration',
+                'change_bonus_etc_duration_help' => 'Required when adding temporary invitation, in days',
             ]
         ],
         'exam_user' => [

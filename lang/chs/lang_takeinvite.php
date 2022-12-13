@@ -24,6 +24,9 @@ $lang_takeinvite = array
 	'std_no_invite' => "你没有剩余邀请名额。你怎么到这来的？",
 	'std_invitation_already_sent_to' => "发送失败！此邮箱",
 	'std_await_user_registeration' => "已收到过邀请函，请勿重复发送。请等待用户注册。",
+    'std_must_select_invite' => "请选择要使用的邀请。",
+    'hash_not_exists' => "hash 不存在。",
+    'hash_expired' => "hash 已经过期。",
 );
 
 ?>

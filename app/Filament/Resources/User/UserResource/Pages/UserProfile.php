@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\User\UserResource\Pages;
 
 use App\Filament\Resources\User\UserResource;
+use App\Models\Invite;
 use App\Models\Medal;
 use App\Models\User;
 use App\Models\UserMeta;
 use App\Repositories\ExamRepository;
 use App\Repositories\MedalRepository;
 use App\Repositories\UserRepository;
+use Carbon\Carbon;
 use Filament\Resources\Pages\Concerns\HasRelationManagers;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
@@ -129,20 +131,44 @@ class UserProfile extends ViewRecord
                     'invites' => __('label.user.invites'),
                     'seedbonus' => __('label.user.seedbonus'),
                     'attendance_card' => __('label.user.attendance_card'),
-                ])->label(__('admin.resources.user.actions.change_bonus_etc_field_label'))->inline()->required(),
+                    'tmp_invites' => __('label.user.tmp_invites'),
+                ])
+                    ->label(__('admin.resources.user.actions.change_bonus_etc_field_label'))
+                    ->inline()
+                    ->required()
+                    ->reactive()
+                ,
                 Forms\Components\Radio::make('action')->options([
                     'Increment' => __("admin.resources.user.actions.change_bonus_etc_action_increment"),
                     'Decrement' => __("admin.resources.user.actions.change_bonus_etc_action_decrement"),
-                ])->label(__('admin.resources.user.actions.change_bonus_etc_action_label'))->inline()->required(),
+                ])
+                    ->label(__('admin.resources.user.actions.change_bonus_etc_action_label'))
+                    ->inline()
+                    ->required()
+                ,
                 Forms\Components\TextInput::make('value')->integer()->required()
                     ->label(__('admin.resources.user.actions.change_bonus_etc_value_label'))
-                    ->helperText(__('admin.resources.user.actions.change_bonus_etc_value_help')),
-                Forms\Components\Textarea::make('reason')->label(__('admin.resources.user.actions.change_bonus_etc_reason_label')),
+                    ->helperText(__('admin.resources.user.actions.change_bonus_etc_value_help'))
+                ,
+
+                Forms\Components\TextInput::make('duration')->integer()
+                    ->label(__('admin.resources.user.actions.change_bonus_etc_duration_label'))
+                    ->helperText(__('admin.resources.user.actions.change_bonus_etc_duration_help'))
+                    ->hidden(fn (\Closure $get) => $get('field') != 'tmp_invites')
+                ,
+
+                Forms\Components\Textarea::make('reason')
+                    ->label(__('admin.resources.user.actions.change_bonus_etc_reason_label'))
+                ,
             ])
             ->action(function ($data) {
                 $userRep = $this->getRep();
                 try {
-                    $userRep->incrementDecrement(Auth::user(), $this->record->id, $data['action'], $data['field'], $data['value'], $data['reason']);
+                    if ($data['field'] == 'tmp_invites') {
+                        $userRep->addTemporaryInvite(Auth::user(), $this->record->id, $data['action'], $data['value'], $data['duration'], $data['reason']);
+                    } else {
+                        $userRep->incrementDecrement(Auth::user(), $this->record->id, $data['action'], $data['field'], $data['value'], $data['reason']);
+                    }
                     $this->notify('success', 'Success!');
                     $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
                 } catch (\Exception $exception) {
@@ -298,6 +324,7 @@ class UserProfile extends ViewRecord
     {
         return [
             'props' => $this->listUserProps(),
+            'temporary_invite_count' => $this->countTemporaryInvite()
         ];
     }
 
@@ -318,5 +345,14 @@ class UserProfile extends ViewRecord
             $props[] = "<div>{$text}</div>";
         }
         return $props;
+    }
+
+    private function countTemporaryInvite()
+    {
+        return Invite::query()->where('inviter', $this->record->id)
+            ->where('invitee', '')
+            ->whereNotNull('expired_at')
+            ->where('expired_at', '>', Carbon::now())
+            ->count();
     }
 }

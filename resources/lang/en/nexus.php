@@ -10,4 +10,6 @@ return [
     ],
     'select_all' => 'Select all',
     'unselect_all' => 'Unselect all',
+    'increment' => 'increment',
+    'decrement' => 'decrement',
 ];

@@ -13,6 +13,7 @@ $validTypeMap = [
     'attendance_card' => 'Attend card',
     'invites' => 'Invite',
     'uploaded' => 'Upload',
+    'tmp_invites' => 'Temporary invite',
 ];
 $sender_id = ($_POST['sender'] == 'system' ? 0 : (int)$CURUSER['id']);
 $dt = sqlesc(date("Y-m-d H:i:s"));
@@ -29,8 +30,9 @@ if (!isset($validTypeMap[$type])) {
 if ($type == 'uploaded') {
     $amount = sqlesc(getsize_int($amount,"G"));
 }
+$isTypeTmpInvite = $type == 'tmp_invites';
 $subject = trim($_POST['subject']);
-$size = 10000;
+$size = 2000;
 $page = 1;
 set_time_limit(300);
 $conditions = [];
@@ -41,7 +43,12 @@ $conditions = apply_filter("role_query_conditions", $conditions, $_POST);
 if (empty($conditions)) {
     stderr("Error","No valid filter");
 }
+if ($isTypeTmpInvite && (empty($_POST['duration']) || $_POST['duration'] < 1)) {
+    stderr("Error","Invalid duration");
+}
 $whereStr = implode(' OR ', $conditions);
+$phpPath = nexus_env('PHP_PATH', 'php');
+$webRoot = rtrim(ROOT_PATH, '/');
 while (true) {
     $msgValues = $idArr = [];
     $offset = ($page - 1) * $size;
@@ -54,10 +61,19 @@ while (true) {
     if (empty($idArr)) {
         break;
     }
-    $idStr = implode(', ', $idArr);
+    $idStr = implode(',', $idArr);
+    if ($isTypeTmpInvite) {
+        $command = sprintf(
+            '%s %s/artisan invite:tmp %s %s %s',
+            $phpPath, $webRoot, $idStr, $_POST['duration'], $amount
+        );
+        $result = exec("$command 2>&1", $output, $result_code);
+        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+    } else {
+        sql_query("UPDATE users SET $type = $type + $amount WHERE id in ($idStr)");
+    }
     $sql = "INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES " . implode(', ', $msgValues);
     sql_query($sql);
-    sql_query("UPDATE users SET $type = $type + $amount WHERE id in ($idStr)");
     $page++;
 }
 

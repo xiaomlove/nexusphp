@@ -87,7 +87,7 @@
             </tr>
             <tr>
                 <th>{{ __('label.user.invites') }}</th>
-                <td>{{$record->invites}}</td>
+                <td>{{sprintf('%s(%s)', $record->invites, $temporary_invite_count)}}</td>
                 <td></td>
             </tr>
             <tr>

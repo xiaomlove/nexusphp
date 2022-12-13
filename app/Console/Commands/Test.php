@@ -12,6 +12,7 @@ use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\HitAndRun;
+use App\Models\Invite;
 use App\Models\Medal;
 use App\Models\Peer;
 use App\Models\SearchBox;
@@ -94,10 +95,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new WorkRepository();
-        $rep->settleRole(4);
+        $uid = "2,3,4";
+        $uidArr = preg_split('/[\s,]+/', $uid);
+        dd($uidArr);
     }
-
-
 
 }

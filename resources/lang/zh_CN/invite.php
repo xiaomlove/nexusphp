@@ -2,4 +2,20 @@
 
 return [
     'invalid_inviter' => '非法邀请者！此邀请码已被禁用！',
+    'fields' => [
+        'inviter' => '发邀者',
+        'invitee' => '接收邮箱',
+        'time_invited' => '发邀时间',
+        'valid' => '是否有效',
+        'invitee_register_uid' => '注册用户 UID',
+        'invitee_register_email' => '注册用户邮箱',
+        'invitee_register_username' => '注册用户名',
+        'expired_at' => 'hash 过期时间',
+    ],
+    'send_deny_reasons' => [
+        'invite_system_closed' => '邀请系统已关闭',
+        'no_permission' => ':class 或以上等级才可以发送邀请',
+        'invite_not_enough' => '邀请数量不足',
+    ],
+    'send_allow_text' => '邀请其他人',
 ];

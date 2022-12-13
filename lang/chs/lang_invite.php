@@ -57,6 +57,11 @@ $lang_invite = array
     'text_seed_torrent_bonus_per_hour_help' => '即做种积分，单纯做种的值，不考虑捐赠、官种、后宫等任何加成',
     'text_seed_torrent_last_announce_at' => '最后做种汇报时间',
     'text_enabled' => '启用',
+    'text_tmp_status' => '临时邀请状态',
+    'text_expired_at' => 'hash 过期时间',
+    'text_permanent' => '永久有效邀请',
+    'text_consume_invite' => '使用邀请',
+    'text_temporary_left' => '%s个临时邀请',
 );
 
 ?>

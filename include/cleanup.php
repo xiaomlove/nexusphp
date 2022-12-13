@@ -248,6 +248,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	set_time_limit(0);
 	ignore_user_abort(1);
 	$now = time();
+	$nowStr = \Carbon\Carbon::now()->toDateTimeString();
 	do_log("start docleanup(), forceAll: $forceAll, printProgress: $printProgress, now: $now, " . date('Y-m-d H:i:s', $now));
 
 //Priority Class 1: cleanup every 15 mins
@@ -592,7 +593,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	//6.delete old invite codes
 	$secs = $invite_timeout*24*60*60; // when?
 	$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs))); // calculate date.
-	sql_query("DELETE FROM invites WHERE time_invited < $dt") or sqlerr(__FILE__, __LINE__);
+	sql_query("DELETE FROM invites WHERE ((time_invited < $dt and time_invited is not null and invitee != '') or (invitee = '' and expired_at < '$nowStr' and expired_at is not null))") or sqlerr(__FILE__, __LINE__);
 	$log = "delete old invite codes";
 	do_log($log);
 	if ($printProgress) {

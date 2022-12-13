@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Models\Invite;
 use App\Models\Message;
 use App\Models\News;
 use App\Models\Poll;
@@ -11,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 use Nexus\Plugin\Plugin;
 use NexusPlugin\Permission\PermissionRepository;
@@ -415,5 +417,26 @@ class ToolRepository extends BaseRepository
         $result = array_combine($allPermissions, $allPermissions);
         $uidPermissionsCached[$uid] = $result;
         return $result;
+    }
+
+    public function generateUniqueInviteHash(array $hashArr, int $total, int $left, int $deep = 0): array
+    {
+        do_log("total: $total, left: $left, deep: $deep");
+        if ($deep > 10) {
+            throw new \RuntimeException("deep: $deep > 10");
+        }
+        if (count($hashArr) >= $total) {
+            return array_slice(array_values($hashArr), 0, $total);
+        }
+        for ($i = 0; $i < $left; $i++) {
+            $hash = Str::random(32);
+            $hashArr[$hash] =  $hash;
+        }
+        $exists = Invite::query()->whereIn('hash', array_values($hashArr))->get(['id', 'hash']);
+        foreach($exists as $value) {
+            unset($hashArr[$value->hash]);
+        }
+        return $this->generateUniqueInviteHash($hashArr, $total, $total - count($hashArr), ++$deep);
+
     }
 }

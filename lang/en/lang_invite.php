@@ -60,6 +60,8 @@ Best Regards,
     'text_seed_torrent_bonus_per_hour_help' => 'That is, seed points, do not consider donations, official torrent, harems and any other additions',
     'text_seed_torrent_last_announce_at' => 'Last announce time',
     'text_enabled' => 'Enabled',
+    'text_tmp_status' => 'Temporary invite status',
+    'text_expired_at' => 'Expired at',
 );
 
 ?>

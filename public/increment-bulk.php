@@ -10,6 +10,7 @@ $validTypeMap = [
     'attendance_card' => 'Attend card',
     'invites' => 'Invite',
     'uploaded' => 'Upload',
+    'tmp_invites' => 'Temporary invite',
 ];
 $type = $_REQUEST['type'] ?? '';
 stdhead("Add Bonus/Attend card/Invite/upload", false);
@@ -49,6 +50,7 @@ $classes = array_chunk(\App\Models\User::$classes, 4, true);
                                 </td>
                             </tr>
                             <tr><td class="rowhead" valign="top">Amount </td><td class="rowfollow"><input type=text name=amount size=10></td></tr>
+                            <tr><td class="rowhead" valign="top">Duration </td><td class="rowfollow"><input type=number min="1" name=duration size=10> Only required when Type = 'Temporary invite', Unit: Day</td></tr>
                             <tr>
                                 <td class="rowhead" valign="top">Add to Class</td><td class="rowfollow">
                                     <table style="border: 0" width="100%" cellpadding="0" cellspacing="0">

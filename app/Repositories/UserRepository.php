@@ -6,6 +6,7 @@ use App\Exceptions\NexusException;
 use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
 use App\Models\ExamUser;
+use App\Models\Invite;
 use App\Models\Message;
 use App\Models\Setting;
 use App\Models\User;
@@ -564,6 +565,83 @@ class UserRepository extends BaseRepository
         }
         UserBanLog::query()->insert($userBanLogs);
         return true;
+    }
+
+    public function addTemporaryInvite(User $operator, int $uid, string $action, int $count, int|null $days, string|null $reason = '')
+    {
+        do_log("uid: $uid, action: $action, count: $count, days: $days, reason: $reason");
+        $action = strtolower($action);
+        if ($count <= 0 || ($action == 'increment' && $days <= 0)) {
+            throw new \InvalidArgumentException("days or count lte 0");
+        }
+        $targetUser = User::query()->findOrFail($uid, User::$commonFields);
+        $this->checkPermission($operator, $targetUser);
+        $toolRep = new ToolRepository();
+        $locale = $targetUser->locale;
+
+        $changeType = nexus_trans("nexus.$action", [], $locale);
+        $subject = nexus_trans('message.temporary_invite_change.subject', ['change_type' => $changeType], $locale);
+        $body = nexus_trans('message.temporary_invite_change.body', [
+            'change_type' => $changeType,
+            'count' => $count,
+            'operator' => $operator->username,
+            'reason' => $reason,
+        ], $locale);
+        $message = [
+            'sender' => 0,
+            'receiver' => $targetUser->id,
+            'subject' => $subject,
+            'msg' => $body,
+            'added' => Carbon::now(),
+        ];
+        $inviteData = [];
+        if ($action == 'increment') {
+            $hashArr = $toolRep->generateUniqueInviteHash([], $count, $count);
+            foreach ($hashArr as $hash) {
+                $inviteData[] = [
+                    'inviter' => $uid,
+                    'invitee' => '',
+                    'hash' => $hash,
+                    'valid' => 0,
+                    'expired_at' => Carbon::now()->addDays($days),
+                    'created_at' => Carbon::now(),
+                ];
+            }
+        }
+        NexusDB::transaction(function () use ($uid, $message, $inviteData, $count) {
+            if (!empty($inviteData)) {
+                Invite::query()->insert($inviteData);
+                do_log("[INSERT TEMPORARY INVITE] to $uid, count: $count");
+            } else {
+                Invite::query()->where('inviter', $uid)
+                    ->where('invitee', '')
+                    ->orderBy('expired_at', 'asc')
+                    ->limit($count)
+                    ->delete()
+                ;
+                do_log("[DELETE TEMPORARY INVITE] of $uid, count: $count");
+            }
+            Message::add($message);
+        });
+        return true;
+    }
+
+    public function getInviteBtnText(int $uid)
+    {
+        if (Setting::get('main.invitesystem') != 'yes') {
+            throw new NexusException(nexus_trans('invite.send_deny_reasons.invite_system_closed'));
+        }
+        $permission = 'sendinvite';
+        if (!user_can($permission, false, $uid)) {
+            $requireClass = get_setting("authority.$permission");
+            throw new NexusException(nexus_trans('invite.send_deny_reasons.no_permission', ['class' => User::getClassText($requireClass)]));
+        }
+        $userInfo = User::query()->findOrFail($uid, User::$commonFields);
+        $temporaryInviteCount = $userInfo->temporary_invites()->count();
+        if ($userInfo->invites + $temporaryInviteCount < 1) {
+            throw new NexusException(nexus_trans('invite.send_deny_reasons.invite_not_enough'));
+        }
+        return nexus_trans('invite.send_allow_text');
     }
 
 }

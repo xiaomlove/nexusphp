@@ -3,10 +3,12 @@ require_once("../include/bittorrent.php");
 dbconn();
 require_once(get_langfile_path());
 registration_check('invitesystem', true, false);
-if (!user_can('sendinvite'))
-stderr($lang_takeinvite['std_error'],$lang_takeinvite['std_invite_denied']);
-if ($CURUSER['invites'] < 1)
-	stderr($lang_takeinvite['std_error'],$lang_takeinvite['std_no_invite']);
+$userRep = new \App\Repositories\UserRepository();
+try {
+    $sendText = $userRep->getInviteBtnText($CURUSER['id']);
+} catch (\Exception $exception) {
+    stderr($lang_takeinvite['std_error'], $exception->getMessage());
+}
 function bark($msg) {
   stdhead();
 	stdmsg($lang_takeinvite['head_invitation_failed'], $msg);
@@ -43,7 +45,24 @@ if ($b[0] != 0)
 $ret = sql_query("SELECT username FROM users WHERE id = ".sqlesc($id)) or sqlerr();
 $arr = mysql_fetch_assoc($ret);
 
-$hash  = md5(mt_rand(1,10000).$CURUSER['username'].TIMENOW.$CURUSER['passhash']);
+if (empty($_POST['hash'])) {
+    bark($lang_takeinvite['std_must_select_invite']);
+}
+if ($_POST['hash'] == 'permanent') {
+    $hash  = md5(mt_rand(1,10000).$CURUSER['username'].TIMENOW.$CURUSER['passhash']);
+} else {
+    $hashRecord = \App\Models\Invite::query()->where('inviter', $CURUSER['id'])->where('hash', $_POST['hash'])->first();
+    if (!$hashRecord) {
+        bark($lang_takeinvite['hash_not_exists']);
+    }
+    if ($hashRecord->invitee != '') {
+        bark('hash '.$lang_takeinvite['std_is_in_use']);
+    }
+    if ($hashRecord->expired_at->lt(now())) {
+        bark($lang_takeinvite['hash_expired']);
+    }
+    $hash = $_POST['hash'];
+}
 
 $title = $SITENAME.$lang_takeinvite['mail_tilte'];
 
@@ -60,8 +79,16 @@ EOD;
 $sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
 //this email is sent only when someone give out an invitation
 if ($sendResult === true) {
-    sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
-    sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
+    if (isset($hashRecord)) {
+        $hashRecord->update([
+            'invitee' => $email,
+            'time_invited' => now(),
+            'valid' => 1,
+        ]);
+    } else {
+        sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
+        sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
+    }
 }
 
 header("Refresh: 0; url=invite.php?id=".htmlspecialchars($id)."&sent=1");

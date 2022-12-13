@@ -10,4 +10,6 @@ return [
     ],
     'select_all' => '全選',
     'unselect_all' => '全不選',
+    'increment' => '增加',
+    'decrement' => '減少',
 ];

@@ -22,4 +22,8 @@ return [
         'subject' => '下載權限恢復',
         'body' => '你的下載權限恢復，你現在可以下載種子。By: :operator',
     ],
+    'temporary_invite_change' => [
+        'subject' => '臨時邀請:change_type',
+        'body' => '你的臨時邀請被管理員 :operator :change_type :count 個，理由：:reason。',
+    ],
 ];

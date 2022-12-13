@@ -57,6 +57,8 @@ $lang_invite = array
     'text_seed_torrent_bonus_per_hour_help' => '即做種積分，單純做種的值，不考慮捐贈、官種、後宮等任何加成',
     'text_seed_torrent_last_announce_at' => '最後做種匯報時間',
     'text_enabled' => '啟用',
+    'text_tmp_status' => '臨時邀請狀態',
+    'text_expired_at' => '過期時間',
 );
 
 ?>

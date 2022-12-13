@@ -360,6 +360,15 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->belongsTo(User::class, 'invited_by');
     }
 
+    public function temporary_invites()
+    {
+        return $this->hasMany(Invite::class, 'inviter')
+            ->where('invitee', '')
+            ->whereNotNull('expired_at')
+            ->where('expired_at', '>=', Carbon::now())
+        ;
+    }
+
     public function send_messages()
     {
         return $this->hasMany(Message::class, 'sender');

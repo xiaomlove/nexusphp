@@ -102,6 +102,7 @@ return [
         'downloadpos' => '下载权限',
         'parked' => '挂起',
         'offer_allowed_count' => '候选通过数',
+        'tmp_invites' => '临时邀请',
     ],
     'medal' => [
         'label' => '勋章',

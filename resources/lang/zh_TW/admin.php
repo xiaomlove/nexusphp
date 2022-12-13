@@ -32,6 +32,7 @@ return [
         'category' => '主分類',
         'second_icon' => '第二圖標',
         'torrent_operation_log' => '種子操作記錄',
+        'invite' => '用戶邀請',
     ],
     'resources' => [
         'agent_allow' => [
@@ -76,6 +77,8 @@ return [
                 'grant_prop_form_duration' => '有效時長',
                 'grant_prop_form_duration_help' => '單位：天。如果留空，用戶永久擁有。註：改名卡沒有時間限製，忽略該值。',
                 'confirm_bulk' => '批量確認',
+                'change_bonus_etc_duration_label' => '有效期',
+                'change_bonus_etc_duration_help' => '增加臨時邀請時必須，單位：天',
             ]
         ],
         'exam_user' => [

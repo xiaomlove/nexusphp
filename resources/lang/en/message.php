@@ -23,4 +23,8 @@ return [
         'subject' => 'Download permission restored',
         'body' => 'Your download privileges restored, you can now download torrents. By: :operator',
     ],
+    'temporary_invite_change' => [
+        'subject' => 'Temporary invite :change_type',
+        'body' => 'Your temporary invite count had :change_type :count by :operator, reason: :reason.',
+    ],
 ];
