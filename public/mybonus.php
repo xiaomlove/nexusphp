@@ -523,9 +523,16 @@ if ($action == "exchange") {
         }
 		//=== trade for upload
 		if($art == "traffic") {
-			if ($CURUSER['uploaded'] > $dlamountlimit_bonus * 1073741824)//uploaded amount reach limit
-			$ratio = $CURUSER['uploaded']/$CURUSER['downloaded'];
-			else $ratio = 0;
+			if ($CURUSER['uploaded'] > $dlamountlimit_bonus * 1073741824) {
+                //uploaded amount reach limit
+                if ($CURUSER['downloaded'] > 0) {
+                    $ratio = $CURUSER['uploaded']/$CURUSER['downloaded'];
+                } else {
+                    $ratio = PHP_INT_MAX;
+                }
+            } else {
+                $ratio = 0;
+            }
 			if ($ratiolimit_bonus > 0 && $ratio > $ratiolimit_bonus)
 				die($lang_mybonus['text_cheat_alert']);
 			else {
