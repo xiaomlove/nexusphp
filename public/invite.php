@@ -28,7 +28,7 @@ function inviteMenu ($selected = "invitee") {
     end_main_frame();
 }
 
-$res = sql_query("SELECT username FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
+$res = sql_query("SELECT * FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
 $user =  mysql_fetch_assoc($res);
 if (!$user) {
     stderr($lang_invite['std_sorry'], 'Invalid id');
@@ -43,8 +43,7 @@ print("<h1 align=center><a href=\"invite.php?id=".$id."\">".$user['username'].$l
 		print("<p align=center><font color=red>".$msg."</font></p>");
 	}
 
-$res = sql_query("SELECT invites FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
-$inv = mysql_fetch_assoc($res);
+$inv = $user;
 
 //for one or more. "invite"/"invites"
 if ($inv["invites"] != 1){
@@ -72,9 +71,12 @@ if ($type == 'new'){
     ;
 	$invitation_body =  $lang_invite['text_invitation_body'].$CURUSER['username'];
 	//$invitation_body_insite = str_replace("<br />","\n",$invitation_body);
-    $inviteSelectOptions = '<option value="permanent">'.$lang_invite['text_permanent'].'</option>';
+    $inviteSelectOptions = '';
+    if ($inv['invites'] > 0) {
+        $inviteSelectOptions = '<option value="permanent">'.$lang_invite['text_permanent'].'</option>';
+    }
     foreach ($temporaryInvites as $tmp) {
-        $inviteSelectOptions .= sprintf('<option value="%s">%s(%s: %s)</option>', $tmp->hash, $tmp->hash, $lang_invite['text_expired_at'], $tmp->expired_at);
+        $inviteSelectOptions .= sprintf('<option value="%s">%s (%s: %s)</option>', $tmp->hash, $tmp->hash, $lang_invite['text_expired_at'], $tmp->expired_at);
     }
 	print("<form method=post action=takeinvite.php?id=".htmlspecialchars($id).">".
 	"<table border=1 width=100% cellspacing=0 cellpadding=5>".
