@@ -8,8 +8,9 @@ $id = intval($_GET["id"] ?? 0);
 $type = unesc($_GET["type"] ?? '');
 $menuSelected = $_REQUEST['menu'] ?? 'invitee';
 $pageSize = 50;
+if (($CURUSER['id'] != $id && !user_can('viewinvite')) || !is_valid_id($id))
+    stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied']);
 $userRep = new \App\Repositories\UserRepository();
-
 function inviteMenu ($selected = "invitee") {
     global $lang_invite, $id, $CURUSER, $invitesystem, $userRep;
     begin_main_frame("", false, "100%");

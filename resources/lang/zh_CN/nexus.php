@@ -12,4 +12,5 @@ return [
     'unselect_all' => '全不选',
     'increment' => '增加',
     'decrement' => '减少',
+    'action' => '操作',
 ];

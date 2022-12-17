@@ -12,4 +12,13 @@ return [
         \App\Models\Medal::GET_TYPE_EXCHANGE => '兑换',
         \App\Models\Medal::GET_TYPE_GRANT => '授予',
     ],
+    'fields' => [
+        'get_type' => '获取方式',
+        'description' => '描述',
+        'image_large' => '图片',
+        'price' => '价格',
+        'duration' => '购买后有效期(天)',
+    ],
+    'buy_already' => '已经购买',
+    'but_btn' => '购买',
 ];
