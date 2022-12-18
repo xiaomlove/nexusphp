@@ -16,7 +16,7 @@ $num = mysql_num_rows($res);
 print("<table border=1 width=675 cellspacing=0 cellpadding=2><form action=\"nowarn.php\" method=post>\n");
 print("<tr align=center><td class=colhead width=90>User Name</td>
  <td class=colhead width=70>Registered</td>
- <td class=colhead width=75>Last access</td>  
+ <td class=colhead width=75>Last access</td>
  <td class=colhead width=75>User Class</td>
  <td class=colhead width=70>Downloaded</td>
  <td class=colhead width=70>UpLoaded</td>
@@ -63,6 +63,6 @@ print("<input type=\"hidden\" name=\"nowarned\" value=\"nowarned\"></form></tabl
 }
 print("<p>" . ($pagemenu ?? '') . "<br>" . ($browsemenu ?? '') . "</p>");
 
-die;
+stdfoot();
 
 ?>
