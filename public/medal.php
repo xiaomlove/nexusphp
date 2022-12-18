@@ -7,7 +7,7 @@ if (!empty($q)) {
     $query->where('username', 'name', "%{$q}%");
 }
 $total = (clone $query)->count();
-$perPage = 50;
+$perPage = 20;
 list($paginationTop, $paginationBottom, $limit, $offset) = pager($perPage, $total, "?");
 $rows = (clone $query)->offset($offset)->take($perPage)->orderBy('id', 'desc')->get();
 $q = htmlspecialchars($q);
@@ -44,25 +44,48 @@ $table = <<<TABLE
 </thead>
 TABLE;
 $table .= '<tbody>';
-$userMedals = \App\Models\UserMedal::query()->where('uid', $CURUSER['id'])->get()->keyBy('medal_id');
+$userMedals = \App\Models\UserMedal::query()->where('uid', $CURUSER['id'])->orderBy('id', 'desc')->get()->keyBy('medal_id');
 foreach ($rows as $row) {
     if ($userMedals->has($CURUSER['id'])) {
         $btnText = nexus_trans('medal.buy_already');
         $disabled = ' disabled';
+        $class = '';
     } else {
         $btnText = nexus_trans('medal.buy_btn');
         $disabled = '';
+        $class = 'buy';
     }
     $action = sprintf(
-        '<input type="button" value="%s"%s>',
-        $btnText, $disabled
+        '<input type="button" class="%s" data-id="%s" value="%s"%s>',
+        $class, $row->id, $btnText, $disabled
     );
     $table .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 100px" /></td><td>%s</td><td>%s</td><td>%s</td>',
+        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s</td><td>%s</td><td>%s</td>',
         $row->id, $row->name, $row->image_large, $row->duration, $row->description, $action
     );
 }
 $table .= '</tbody></table>';
-echo $filterForm . $table . $paginationBottom;
+echo $table . $paginationBottom;
+$js = <<<JS
+jQuery('.buy').on('click', function (e) {
+    let medalId = jQuery(this).attr('data-id')
+    layer.confirm("确定要购买吗？", function (index) {
+        let params = {
+            action: "buyMedal",
+            params: {medal_id: medalId}
+        }
+        console.log(params)
+        jQuery.post('ajax.php', params, function(response) {
+            console.log(response)
+            if (response.ret != 0) {
+                layer.alert(response.msg)
+                return
+            }
+            window.location.reload()
+        }, 'json')
+    })
+})
+JS;
+\Nexus\Nexus::js($js, 'footer', false);
 stdfoot();
 

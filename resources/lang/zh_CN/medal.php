@@ -20,5 +20,5 @@ return [
         'duration' => '购买后有效期(天)',
     ],
     'buy_already' => '已经购买',
-    'but_btn' => '购买',
+    'buy_btn' => '购买',
 ];

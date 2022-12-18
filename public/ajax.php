@@ -131,3 +131,10 @@ function clearShoutBox($params)
     \Nexus\Database\NexusDB::table('shoutbox')->delete();
     return true;
 }
+
+function buyMedal($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\BonusRepository();
+    return $rep->consumeToBuyMedal($CURUSER['id'], $params['medal_id']);
+}
