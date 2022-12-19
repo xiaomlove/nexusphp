@@ -710,13 +710,13 @@ function get_row_count($table, $suffix = "")
 function get_user_row($id)
 {
     global $Cache, $CURUSER;
-    static $userRows=[];
+    static $userRows = [];
     static $curuserRowUpdated = false;
     static $neededColumns = array(
         'id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor',
         'donoruntil', 'leechwarn', 'warned', 'title', 'downloadpos', 'parked', 'clientselect', 'showclienterror',
     );
-    if(isset($userRows[$id]))return $userRows[$id];
+    if (isset($userRows[$id])) return $userRows[$id];
     $cacheKey = 'user_'.$id.'_content';
     $row = \Nexus\Database\NexusDB::remember($cacheKey, 3600, function () use ($id, $neededColumns) {
         $user = \App\Models\User::query()->with(['wearing_medals'])->find($id, $neededColumns);
@@ -753,7 +753,7 @@ function get_user_row($id)
 
     if (!$row)
         return false;
-    else return $userRows[$id]=$row;
+    else return $userRows[$id] = $row;
 }
 
 function get_user_class()
