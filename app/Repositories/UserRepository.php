@@ -485,6 +485,9 @@ class UserRepository extends BaseRepository
             $durationText = nexus_trans('label.permanent', [], $locale);
         }
         $message['msg'] = nexus_trans('user.grant_props_notification.body', ['name' => $metaName, 'operator' => Auth::user()->username, 'duration' => $durationText], $locale);
+        if (!empty($metaData['duration'])) {
+            $metaData['deadline'] = now()->addDays($metaData['duration']);
+        }
         if ($allowMultiple) {
             //Allow multiple, just insert
             $result = $user->metas()->create($metaData);
