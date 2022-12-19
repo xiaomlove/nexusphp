@@ -471,6 +471,9 @@ class UserRepository extends BaseRepository
         $metaKey = $metaData['meta_key'];
         $allowMultiple = UserMeta::$metaKeys[$metaKey]['multiple'];
         $log = "user: {$user->id}, metaKey: $metaKey, allowMultiple: $allowMultiple";
+        if (!empty($metaData['duration'])) {
+            $metaData['deadline'] = now()->addDays($metaData['duration']);
+        }
         if ($allowMultiple) {
             //Allow multiple, just insert
             $result = $user->metas()->create($metaData);
