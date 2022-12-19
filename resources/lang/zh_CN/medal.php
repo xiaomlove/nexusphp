@@ -21,4 +21,6 @@ return [
     ],
     'buy_already' => '已经购买',
     'buy_btn' => '购买',
+    'confirm_to_buy' => '确定要购买吗？',
+    'require_more_bonus' => '需要更多魔力值',
 ];

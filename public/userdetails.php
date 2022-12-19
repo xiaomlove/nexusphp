@@ -75,7 +75,7 @@ $moviepicker = $user["picker"] == 'yes';
 
 print("<h1 style='margin:0px'>" . get_username($user['id'], true,false) . $country."</h1>");
 if ($userInfo->valid_medals->isNotEmpty()) {
-    print build_medal_image($userInfo->{$medalType}, 200, $CURUSER['id'] == $user['id']);
+    print build_medal_image($userInfo->{$medalType}, 120, $CURUSER['id'] == $user['id']);
     $warnMedalJs = <<<JS
 jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
     let input = jQuery(this);

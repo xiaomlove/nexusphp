@@ -55,6 +55,9 @@ class BonusRepository extends BaseRepository
         if ($exists) {
             throw new \LogicException("user: $uid already own this medal: $medalId.");
         }
+        if ($medal->get_type != Medal::GET_TYPE_EXCHANGE) {
+            throw new \LogicException("This medal can not be buy.");
+        }
         $requireBonus = $medal->price;
         NexusDB::transaction(function () use ($user, $medal, $requireBonus) {
             $comment = nexus_trans('bonus.comment_buy_medal', [

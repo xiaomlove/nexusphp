@@ -149,20 +149,21 @@ function bonusarray($option = 0){
     $results[] = $bonus;
 
     //Buy medal
-    $medals = \App\Models\Medal::query()->where('get_type', \App\Models\Medal::GET_TYPE_EXCHANGE)->get();
-    foreach ($medals as $medal) {
-        $results[] = [
-            'points' => $medal->price,
-            'art' => 'buy_medal',
-            'menge' => 0,
-            'name' => $medal->name,
-            'description' => sprintf(
-                '<div style="display: flex;align-items: center"><div style="padding: 10px">%s</div><div><img src="%s" style="max-height: 120px"/></div></div><input type="hidden" name="medal_id" value="%s">',
-                $medal->description, $medal->image_large, $medal->id
-            ),
-            'medal_id' => $medal->id,
-        ];
-    }
+    //migrate to medal.php since v1.8
+//    $medals = \App\Models\Medal::query()->where('get_type', \App\Models\Medal::GET_TYPE_EXCHANGE)->get();
+//    foreach ($medals as $medal) {
+//        $results[] = [
+//            'points' => $medal->price,
+//            'art' => 'buy_medal',
+//            'menge' => 0,
+//            'name' => $medal->name,
+//            'description' => sprintf(
+//                '<div style="display: flex;align-items: center"><div style="padding: 10px">%s</div><div><img src="%s" style="max-height: 120px"/></div></div><input type="hidden" name="medal_id" value="%s">',
+//                $medal->description, $medal->image_large, $medal->id
+//            ),
+//            'medal_id' => $medal->id,
+//        ];
+//    }
 
     return $results;
 
