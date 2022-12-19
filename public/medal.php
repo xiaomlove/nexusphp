@@ -75,6 +75,7 @@ foreach ($rows as $row) {
 }
 $table .= '</tbody></table>';
 echo $header . $table . $paginationBottom;
+end_main_frame();
 $confirmMsg = nexus_trans('medal.confirm_to_buy');
 $js = <<<JS
 jQuery('.buy').on('click', function (e) {
