@@ -567,10 +567,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function acceptNotification($name): bool
     {
-        if (!isset($this->original['notifs'])) {
-            throw new \RuntimeException("Not fetch field: notifs");
-        }
-        return str_contains($this->notifs, "[{$name}]");
+        return is_null($this->original['notifs']) || str_contains($this->notifs, "[{$name}]");
     }
 
 

@@ -59,6 +59,11 @@ $lang_torrents = array
 	'text_music' => "Music:",
 	'text_software' => "Software:",
     'text_approval_status' => 'Approval status:',
+    'size_range' => 'Size range(GB):',
+    'leechers_range' => 'Leechers range:',
+    'seeders_range' => 'Seeders range:',
+    'times_completed_range' => 'Times completed range:',
+    'added_range' => 'Added range:',
 );
 
 ?>

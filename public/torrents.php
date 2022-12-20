@@ -28,6 +28,7 @@ switch (nexus()->getScript()) {
 $tagRep = new \App\Repositories\TagRepository();
 $allTags = $tagRep->listAll($sectiontype);
 $elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
+$filterInputWidth = 62;
 
 $showsubcat = get_searchbox_value($sectiontype, 'showsubcat');//whether show subcategory (i.e. sources, codecs) or not
 $showsource = get_searchbox_value($sectiontype, 'showsource'); //whether show sources or not
@@ -821,6 +822,41 @@ if ($showApprovalStatusFilter && isset($_REQUEST['approval_status']) && is_numer
     $wherea[] = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
 
+if (isset($_GET['size_begin']) && ctype_digit($_GET['size_begin'])) {
+    $wherea[] = "torrents.size >= " . intval($_GET['size_begin']) * 1024 * 1024 * 1024;
+}
+if (isset($_GET['size_end']) && ctype_digit($_GET['size_end'])) {
+    $wherea[] = "torrents.size <= " . intval($_GET['size_end']) * 1024 * 1024 * 1024;
+}
+
+if (isset($_GET['seeders_begin']) && ctype_digit($_GET['seeders_begin'])) {
+    $wherea[] = "torrents.seeders >= " . (int)$_GET['seeders_begin'];
+}
+if (isset($_GET['seeders_end']) && ctype_digit($_GET['seeders_end'])) {
+    $wherea[] = "torrents.seeders <= " . (int)$_GET['seeders_end'];
+}
+
+if (isset($_GET['leechers_begin']) && ctype_digit($_GET['leechers_begin'])) {
+    $wherea[] = "torrents.leechers >= " . (int)$_GET['leechers_begin'];
+}
+if (isset($_GET['leechers_end']) && ctype_digit($_GET['leechers_end'])) {
+    $wherea[] = "torrents.leechers <= " . (int)$_GET['leechers_end'];
+}
+
+if (isset($_GET['times_completed_begin']) && ctype_digit($_GET['times_completed_begin'])) {
+    $wherea[] = "torrents.times_completed >= " . (int)$_GET['times_completed_begin'];
+}
+if (isset($_GET['times_completed_end']) && ctype_digit($_GET['times_completed_end'])) {
+    $wherea[] = "torrents.times_completed <= " . (int)$_GET['times_completed_end'];
+}
+
+if (isset($_GET['added_begin']) && !empty($_GET['added_begin'])) {
+    $wherea[] = "torrents.added >= " . sqlesc($_GET['added_begin']);
+}
+if (isset($_GET['added_end']) && !empty($_GET['added_end'])) {
+    $wherea[] = "torrents.added <= " . sqlesc(\Carbon\Carbon::parse($_GET['added_end'])->endOfDay()->toDateTimeString());
+}
+
 $where = implode(" AND ", $wherea);
 
 if ($wherecatin)
@@ -1002,11 +1038,6 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 							</select>
 						</td>
 				 	</tr>
-				 	<tr>
-						<td class="bottom" style="padding: 1px;padding-left: 10px">
-							<br />
-						</td>
-				 	</tr>
 					<tr>
 						<td class="bottom" style="padding: 1px;padding-left: 10px">
 							<font class="medium"><?php echo $lang_torrents['text_show_special_torrents'] ?></font>
@@ -1018,11 +1049,6 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 								<option value="0"><?php echo $lang_torrents['select_all'] ?></option>
 <?php echo promotion_selection($special_state, 0)?>
 							</select>
-						</td>
-					</tr>
-				 	<tr>
-						<td class="bottom" style="padding: 1px;padding-left: 10px">
-							<br />
 						</td>
 					</tr>
 					<tr>
@@ -1042,11 +1068,6 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
                     <?php if ($showApprovalStatusFilter) {?>
                     <tr>
                         <td class="bottom" style="padding: 1px;padding-left: 10px">
-                            <br />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
                             <font class="medium"><?php echo $lang_torrents['text_approval_status'] ?></font>
                         </td>
                     </tr>
@@ -1063,6 +1084,65 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
                         </td>
                     </tr>
                     <?php }?>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['size_range'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <input type="number" min="1" name="size_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['size_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="size_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['size_end'] ?? '') ?>"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['leechers_range'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <input type="number" min="1" name="leechers_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="leechers_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_end'] ?? '') ?>"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['seeders_range'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <input type="number" min="1" name="seeders_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['seeders_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="seeders_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['seeders_end'] ?? '') ?>"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['times_completed_range'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <input type="number" min="1" name="times_completed_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['times_completed_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="times_completed_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['times_completed_end'] ?? '') ?>"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['added_range'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <?php echo sprintf(
+                                '%s ~ %s',
+                                datetimepicker_input('added_begin', htmlspecialchars($_GET['added_begin'] ?? ''), '', ['require_files' => true, 'format' => 'Y-m-d', 'style' => 'width: '.$filterInputWidth.'px']),
+                                datetimepicker_input('added_end', htmlspecialchars($_GET['added_end'] ?? ''), '', ['require_files' => false, 'format' => 'Y-m-d', 'style' => 'width: '.$filterInputWidth.'px']),
+                            ) ?>
+                        </td>
+                    </tr>
+
 				</table>
 			</td>
 		</tr>

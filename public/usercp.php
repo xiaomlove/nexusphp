@@ -188,7 +188,7 @@ if ($action){
                 ."<br /><input type=checkbox name=commentpm" . ($CURUSER["commentpm"] == "yes" ? " checked" : "") . " value=yes> ".$lang_usercp['checkbox_pm_on_comments']
             ;
 			foreach (\App\Models\User::$notificationOptions as $option) {
-			    $pmY .= sprintf('<br /><input type="checkbox" name="notifs[%s]"%s value="yes" /> %s', $option, str_contains($CURUSER['notifs'], "[{$option}]") == "yes" ? " checked" : "", $lang_usercp["checkbox_pm_on_{$option}"]);
+			    $pmY .= sprintf('<br /><input type="checkbox" name="notifs[%s]"%s value="yes" /> %s', $option, is_null($CURUSER['notifs']) || str_contains($CURUSER['notifs'], "[{$option}]") == "yes" ? " checked" : "", $lang_usercp["checkbox_pm_on_{$option}"]);
             }
 			tr_small($lang_usercp['row_pms'], $pmY,1);
 

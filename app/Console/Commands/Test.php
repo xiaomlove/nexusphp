@@ -95,9 +95,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $uid = "2,3,4";
-        $uidArr = preg_split('/[\s,]+/', $uid);
-        dd($uidArr);
+        $rep = new WorkRepository();
+        $rep->settleRole(2, null, true);
     }
 
 }

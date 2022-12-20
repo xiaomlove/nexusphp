@@ -12,4 +12,5 @@ return [
     'unselect_all' => 'Unselect all',
     'increment' => 'increment',
     'decrement' => 'decrement',
+    'action' => 'Action',
 ];
