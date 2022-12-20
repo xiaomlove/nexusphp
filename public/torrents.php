@@ -1097,23 +1097,23 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 
                     <tr>
                         <td class="bottom" style="padding: 1px;padding-left: 10px">
-                            <font class="medium"><?php echo $lang_torrents['leechers_range'] ?></font>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
-                            <input type="number" min="1" name="leechers_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="leechers_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_end'] ?? '') ?>"/>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
                             <font class="medium"><?php echo $lang_torrents['seeders_range'] ?></font>
                         </td>
                     </tr>
                     <tr>
                         <td class="bottom" style="padding: 1px;padding-left: 10px">
                             <input type="number" min="1" name="seeders_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['seeders_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="seeders_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['seeders_end'] ?? '') ?>"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <font class="medium"><?php echo $lang_torrents['leechers_range'] ?></font>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                            <input type="number" min="1" name="leechers_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="leechers_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_end'] ?? '') ?>"/>
                         </td>
                     </tr>
 

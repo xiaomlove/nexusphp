@@ -60,8 +60,8 @@ $lang_torrents = array
 	'text_software' => "軟件:",
     'text_approval_status' => '審核狀態：',
     'size_range' => '體積範圍(GB)：',
-    'leechers_range' => '做種人數範圍：',
-    'seeders_range' => '下載人數範圍：',
+    'leechers_range' => '下載人數範圍：',
+    'seeders_range' => '做種人數範圍：',
     'times_completed_range' => '完成次數範圍：',
     'added_range' => '發布時間範圍：',
 );
