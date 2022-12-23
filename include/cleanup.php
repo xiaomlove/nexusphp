@@ -859,6 +859,25 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
+	//delete duplicated snatched
+    $snatchRes = sql_query('select userid, torrentid, group_concat(id) as ids from snatched group by userid, torrentid having(count(*)) > 1');
+    while ($snatchRow = mysql_fetch_assoc($snatchRes)) {
+        $torrentId = $snatchRow['torrentid'];
+        $userId = $snatchRow['userid'];
+        $idArr = explode(',', $snatchRes['ids']);
+        sort($idArr, SORT_NUMERIC);
+        $remainId = array_pop($idArr);
+        $delIdStr = implode(',', $idArr);
+        do_log("[DELETE_DUPLICATED_SNATCH], torrent: $torrentId, user: $userId");
+        sql_query("delete from snatched where id in ($delIdStr)");
+        sql_query("update claims set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
+    }
+    $log = "delete duplicated snatched";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
 //Priority Class 5: cleanup every 15 days
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime5'");
 	$row = mysql_fetch_array($res);
