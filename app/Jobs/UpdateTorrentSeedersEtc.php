@@ -53,14 +53,47 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
     {
         $beginTimestamp = time();
         $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s", $this->requestId, $this->beginTorrentId, $this->endTorrentId);
-        $sql = sprintf("update torrents set seeders = (select count(*) from peers where torrent = torrents.id and seeder = 'yes'), leechers = (select count(*) from peers where torrent = torrents.id and seeder = 'no'), comments = (select count(*) from comments where torrent = torrents.id) where id > %s and id <= %s",
-            $this->beginTorrentId, $this->endTorrentId
-        );
-        $result = NexusDB::statement($sql);
+//        $sql = sprintf("update torrents set seeders = (select count(*) from peers where torrent = torrents.id and seeder = 'yes'), leechers = (select count(*) from peers where torrent = torrents.id and seeder = 'no'), comments = (select count(*) from comments where torrent = torrents.id) where id > %s and id <= %s",
+//            $this->beginTorrentId, $this->endTorrentId
+//        );
+//        $result = NexusDB::statement($sql);
+
+        $torrents = NexusDB::table('torrents')
+            ->where('id', '>', $this->beginTorrentId)
+            ->where('id', '<=', $this->endTorrentId)
+            ->get(['id'])
+        ;
+        foreach ($torrents as $torrent) {
+            $peerResult = NexusDB::table('peers')
+                ->where('torrent', $torrent->id)
+                ->selectRaw("count(*) as count, seeder")
+                ->groupBy('seeder')
+                ->get()
+            ;
+            $commentResult = NexusDB::table('comments')
+                ->where('torrent', $torrent->id)
+                ->selectRaw("count(*) as count")
+                ->first()
+            ;
+            $update = [
+                'comments' => $commentResult && $commentResult->count !== null ? $commentResult->count : 0,
+                'seeders' => 0,
+                'leechers' => 0,
+            ];
+            foreach ($peerResult as $item) {
+                if ($item->seeder == 'yes') {
+                    $update['seeders'] = $item->count;
+                } elseif ($item->seeder == 'no') {
+                    $update['leechers'] = $item->count;
+                }
+            }
+            NexusDB::table('torrents')->where('id', $torrent->id)->update($update);
+            do_log("$logPrefix, [SUCCESS]: $torrent->id => " . json_encode($update));
+        }
         $costTime = time() - $beginTimestamp;
         do_log(sprintf(
-            "$logPrefix, [DONE], sql: %s, result: %s, cost time: %s seconds",
-            preg_replace('/[\r\n\t]+/', ' ', $sql), var_export($result, true), $costTime
+            "$logPrefix, [DONE], update torrent count: %s, cost time: %s seconds",
+            count($torrents), $costTime
         ));
     }
 }
