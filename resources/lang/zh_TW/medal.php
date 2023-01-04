@@ -23,4 +23,5 @@ return [
     'buy_btn' => '購買',
     'confirm_to_buy' => '確定要購買嗎？',
     'require_more_bonus' => '需要更多魔力值',
+    'grant_only' => '僅授予',
 ];

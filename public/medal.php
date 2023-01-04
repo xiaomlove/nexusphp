@@ -1,7 +1,7 @@
 <?php
 require "../include/bittorrent.php";
 
-$query = \App\Models\Medal::query()->where('get_type', \App\Models\Medal::GET_TYPE_EXCHANGE);
+$query = \App\Models\Medal::query();
 $q = htmlspecialchars($_REQUEST['q'] ?? '');
 if (!empty($q)) {
     $query->where('username', 'name', "%{$q}%");
@@ -51,14 +51,14 @@ $userMedals = \App\Models\UserMedal::query()->where('uid', $CURUSER['id'])
     ->keyBy('medal_id')
 ;
 foreach ($rows as $row) {
-    if ($userMedals->has($row->id) || $CURUSER['seedbonus'] < $row->price) {
-        if ($userMedals->has($row->id)) {
-            $btnText = nexus_trans('medal.buy_already');
-        } else {
-            $btnText = nexus_trans('medal.require_more_bonus');
-        }
-        $disabled = ' disabled';
-        $class = '';
+    $disabled = ' disabled';
+    $class = '';
+    if ($userMedals->has($row->id)) {
+        $btnText = nexus_trans('medal.buy_already');
+    } elseif ($row->get_type == \App\Models\Medal::GET_TYPE_GRANT) {
+        $btnText = nexus_trans('medal.grant_only');
+    } elseif ($CURUSER['seedbonus'] < $row->price) {
+        $btnText = nexus_trans('medal.require_more_bonus');
     } else {
         $btnText = nexus_trans('medal.buy_btn');
         $disabled = '';

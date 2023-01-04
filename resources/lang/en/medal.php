@@ -23,4 +23,5 @@ return [
     'buy_btn' => 'Buy',
     'confirm_to_buy' => 'Sure you want to buy?',
     'require_more_bonus' => 'Require more bonus',
+    'grant_only' => 'Grant only',
 ];

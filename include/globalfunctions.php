@@ -992,12 +992,17 @@ function clear_setting_cache()
 }
 
 /**
- * @see functions.php::get_category_row()
+ * @see functions.php::get_category_row(), genrelist()
  */
 function clear_category_cache()
 {
     do_log("clear_category_cache");
     \Nexus\Database\NexusDB::cache_del('category_content');
+    $searchBoxList = \App\Models\SearchBox::query()->get(['id']);
+    foreach ($searchBoxList as $item) {
+        \Nexus\Database\NexusDB::cache_del("category_list_mode_{$item->id}");
+    }
+
 }
 
 /**

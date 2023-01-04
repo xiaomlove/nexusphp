@@ -95,7 +95,8 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $r = NexusDB::cache_get('category_content');
+        dd($r);
     }
 
 }
