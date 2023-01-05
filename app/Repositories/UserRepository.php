@@ -466,7 +466,7 @@ class UserRepository extends BaseRepository
         return true;
     }
 
-    public function addMeta($user, array $metaData, array $keyExistsUpdates = [])
+    public function addMeta($user, array $metaData, array $keyExistsUpdates = [], $notify = true)
     {
         $user = $this->getUser($user);
         $locale = $user->locale;
@@ -484,7 +484,9 @@ class UserRepository extends BaseRepository
         } else {
             $durationText = nexus_trans('label.permanent', [], $locale);
         }
-        $message['msg'] = nexus_trans('user.grant_props_notification.body', ['name' => $metaName, 'operator' => Auth::user()->username, 'duration' => $durationText], $locale);
+        $operatorId = get_user_id();
+        $operatorInfo = get_user_row($operatorId);
+        $message['msg'] = nexus_trans('user.grant_props_notification.body', ['name' => $metaName, 'operator' => $operatorInfo['username'], 'duration' => $durationText], $locale);
         if (!empty($metaData['duration'])) {
             $metaData['deadline'] = now()->addDays($metaData['duration']);
         }
@@ -520,7 +522,9 @@ class UserRepository extends BaseRepository
         }
         if ($result) {
             clear_user_cache($user->id, $user->passkey);
-            Message::query()->insert($message);
+            if ($notify) {
+                Message::add($message);
+            }
         }
         do_log($log);
         return $result;
@@ -570,7 +574,7 @@ class UserRepository extends BaseRepository
         return true;
     }
 
-    public function addTemporaryInvite(User $operator, int $uid, string $action, int $count, int|null $days, string|null $reason = '')
+    public function addTemporaryInvite(User|null $operator, int $uid, string $action, int $count, int|null $days, string|null $reason = '')
     {
         do_log("uid: $uid, action: $action, count: $count, days: $days, reason: $reason");
         $action = strtolower($action);
@@ -578,7 +582,9 @@ class UserRepository extends BaseRepository
             throw new \InvalidArgumentException("days or count lte 0");
         }
         $targetUser = User::query()->findOrFail($uid, User::$commonFields);
-        $this->checkPermission($operator, $targetUser);
+        if ($operator) {
+            $this->checkPermission($operator, $targetUser);
+        }
         $toolRep = new ToolRepository();
         $locale = $targetUser->locale;
 
@@ -587,7 +593,7 @@ class UserRepository extends BaseRepository
         $body = nexus_trans('message.temporary_invite_change.body', [
             'change_type' => $changeType,
             'count' => $count,
-            'operator' => $operator->username,
+            'operator' => $operator->username ?? '',
             'reason' => $reason,
         ], $locale);
         $message = [
@@ -611,7 +617,7 @@ class UserRepository extends BaseRepository
                 ];
             }
         }
-        NexusDB::transaction(function () use ($uid, $message, $inviteData, $count) {
+        NexusDB::transaction(function () use ($uid, $message, $inviteData, $count, $operator) {
             if (!empty($inviteData)) {
                 Invite::query()->insert($inviteData);
                 do_log("[INSERT TEMPORARY INVITE] to $uid, count: $count");
@@ -624,7 +630,9 @@ class UserRepository extends BaseRepository
                 ;
                 do_log("[DELETE TEMPORARY INVITE] of $uid, count: $count");
             }
-            Message::add($message);
+            if ($operator) {
+                Message::add($message);
+            }
         });
         return true;
     }

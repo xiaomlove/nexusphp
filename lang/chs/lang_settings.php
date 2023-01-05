@@ -799,6 +799,14 @@ $lang_settings = array
 	'row_protected_forum' => '隐私保护论坛板块',
 	'text_protected_forum' => '输入开启隐私保护的论坛板块ID，该版块的回复仅楼主作者及管理员以上可见，使用逗号分割(如:1,2,3)',
 	'forum_format_error' => '论坛ID格式错误，请检查输入!',
+    'row_buy_an_tmp_invite' => '购买临时邀请名额',
+    'text_buy_an_tmp_invite_note' => "个魔力值，如果他选择交换一个临时邀请名额。默认'500'。",
+    'row_buy_rainbow_id' => '购买彩虹 ID',
+    'text_buy_rainbow_id_note' => "个魔力值，如果他选择交换一个彩虹 ID，有效期 30 天。默认'5,000'。",
+    'row_buy_change_username_card' => '购买改名卡',
+    'text_buy_change_username_card_note' => "个魔力值，如果他选择交换一个改名卡，永久有效。默认'100,000'。",
+    'row_initial_tmp_invites' => '初始临时邀请名额',
+    'text_initial_tmp_invites_note' => "新注册用户的初始临时邀请名额，有效期 7 天。默认'0'。",
 );
 
 ?>

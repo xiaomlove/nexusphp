@@ -799,6 +799,14 @@ $lang_settings = array
 	'row_protected_forum' => 'Privacy Protection Forums',
 	'text_protected_forum' => 'The IDs of forums\' which enables privacy protection , seperated by commas(e.g. 1,2,3)',
 	'forum_format_error' => 'The format of forums is wrong, please check it again!',
+    'row_buy_an_tmp_invite' => 'Buy an temporary invite',
+    'text_buy_an_tmp_invite_note' => " bonus points to get a temporary invite. Default '500'.",
+    'row_buy_rainbow_id' => 'Buy Rainbow ID',
+    'text_buy_rainbow_id_note' => " bonus points to get a rainbow ID, valid for 30 days. Default '5,000'.",
+    'row_buy_change_username_card' => 'Buy Change username card',
+    'text_buy_change_username_card_note' => " bonus points to get a Change username card, valid forever. Default '100,000'.",
+    'row_initial_tmp_invites' => "Initial Number of Temporary Invites",
+    'text_initial_tmp_invites_note' => "How many temporary invites should each user be given upon registration? Default '0'.",
 );
 
 ?>

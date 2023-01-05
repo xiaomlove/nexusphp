@@ -156,6 +156,16 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'col_count' => 'Counts',
     'col_size' => 'Size',
     'col_a' => 'A Value',
+    'text_buy_tmp_invite' => '1 Temporary Invite',
+    'text_buy_tmp_invite_note' => "With enough bonus points acquired, you are able to exchange them for a few temporary invites, valid for 7 days. The points are then removed from your Bonus Bank and the temporary invitations are added to your temporary invites amount.",
+    'text_success_tmp_invites' => "Congratulations! You have got yourself <b>1</b> new temporary invite!",
+    'text_buy_rainbow_id' => "Buy Rainbow ID",
+    'text_buy_rainbow_id_note' => 'Adds a rainbow-like shimmering effect to usernames, valid for 30 days and cumulative over time with repeat purchases.',
+    'text_success_buy_rainbow_id' => "Congratulations, Rainbow ID added <b>30</b> days!",
+    'text_buy_change_username_card' => "Buy change username card",
+    'text_buy_change_username_card_note' => 'Change your username once and it will be valid forever.',
+    'text_success_buy_change_username_card' => "Congratulations on your successful purchase of a <b>change username card</b>!",
+    'text_change_username_card_already_has' => 'Already have a change username card',
 );
 
 ?>

@@ -11,6 +11,9 @@ class BonusLogs extends NexusModel
 
     const DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN = 10000;
     const DEFAULT_BONUS_BUY_ATTENDANCE_CARD = 1000;
+    const DEFAULT_BONUS_BUY_TEMPORARY_INVITE = 500;
+    const DEFAULT_BONUS_BUY_RAINBOW_ID = 5000;
+    const DEFAULT_BONUS_BUY_CHANGE_USERNAME_CARD = 100000;
 
     const BUSINESS_TYPE_CANCEL_HIT_AND_RUN = 1;
     const BUSINESS_TYPE_BUY_MEDAL = 2;
@@ -26,6 +29,9 @@ class BonusLogs extends NexusModel
     const BUSINESS_TYPE_GIFT_TO_LOW_SHARE_RATIO = 12;
     const BUSINESS_TYPE_LUCKY_DRAW = 13;
     const BUSINESS_TYPE_EXCHANGE_DOWNLOAD = 14;
+    const BUSINESS_TYPE_BUY_TEMPORARY_INVITE = 15;
+    const BUSINESS_TYPE_BUY_RAINBOW_ID = 16;
+    const BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD = 17;
 
     public static array $businessTypes = [
         self::BUSINESS_TYPE_CANCEL_HIT_AND_RUN => ['text' => 'Cancel H&R'],
@@ -42,6 +48,9 @@ class BonusLogs extends NexusModel
         self::BUSINESS_TYPE_GIFT_TO_LOW_SHARE_RATIO => ['text' => 'Gift to low share ratio'],
         self::BUSINESS_TYPE_LUCKY_DRAW => ['text' => 'Lucky draw'],
         self::BUSINESS_TYPE_EXCHANGE_DOWNLOAD => ['text' => 'Exchange download'],
+        self::BUSINESS_TYPE_BUY_TEMPORARY_INVITE => ['text' => 'Buy temporary invite'],
+        self::BUSINESS_TYPE_BUY_RAINBOW_ID => ['text' => 'Buy rainbow ID'],
+        self::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD => ['text' => 'Buy change username card'],
     ];
 
     public static function getBonusForCancelHitAndRun()
@@ -54,6 +63,24 @@ class BonusLogs extends NexusModel
     {
         $result = Setting::get('bonus.attendance_card');
         return $result ?? self::DEFAULT_BONUS_BUY_ATTENDANCE_CARD;
+    }
+
+    public static function getBonusForBuyTemporaryInvite()
+    {
+        $result = Setting::get('bonus.one_tmp_invite');
+        return $result ?? self::DEFAULT_BONUS_BUY_TEMPORARY_INVITE;
+    }
+
+    public static function getBonusForBuyRainbowId()
+    {
+        $result = Setting::get('bonus.rainbow_id');
+        return $result ?? self::DEFAULT_BONUS_BUY_RAINBOW_ID;
+    }
+
+    public static function getBonusForBuyChangeUsernameCard()
+    {
+        $result = Setting::get('bonus.change_username_card');
+        return $result ?? self::DEFAULT_BONUS_BUY_CHANGE_USERNAME_CARD;
     }
 
 

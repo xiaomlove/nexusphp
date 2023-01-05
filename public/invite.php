@@ -263,7 +263,11 @@ JS;
             $rer = sql_query("SELECT * FROM invites WHERE $whereStr $limit") or sqlerr();
             $num1 = mysql_num_rows($rer);
 
-            print("<tr><td class=colhead>".$lang_invite['text_email']."</td><td class=colhead>".$lang_invite['text_hash']."</td><td class=colhead>".$lang_invite['text_send_date']."</td><td class='colhead'>".$lang_invite['text_hash_status']."</td><td class='colhead'>".$lang_invite['text_invitee_user']."</td>");
+            print("<tr><td class=colhead>".$lang_invite['text_email']."</td><td class=colhead>".$lang_invite['text_hash']."</td><td class=colhead>".$lang_invite['text_send_date']."</td>");
+            if ($menuSelected == 'sent') {
+                print("<td class='colhead'>".$lang_invite['text_hash_status']."</td>");
+            }
+            print "<td class='colhead'>".$lang_invite['text_invitee_user']."</td>";
             if ($menuSelected == 'tmp') {
                 print("<td class='colhead'>".$lang_invite['text_expired_at']."</td>");
                 print("<td class='colhead'>".nexus_trans('label.created_at')."</td>");
@@ -281,7 +285,9 @@ JS;
                 $tr .= "<td class=rowfollow>{$arr1['invitee']}</td>";
                 $tr .= sprintf('<td class="rowfollow">%s%s</td>', $arr1['hash'], $registerLink);
                 $tr .= "<td class=rowfollow>{$arr1['time_invited']}</td>";
-                $tr .= "<td class=rowfollow>".\App\Models\Invite::$validInfo[$arr1['valid']]['text']."</td>";
+                if ($menuSelected == 'sent') {
+                    $tr .= "<td class=rowfollow>".\App\Models\Invite::$validInfo[$arr1['valid']]['text']."</td>";
+                }
                 if (!$isHashValid) {
                     $tr .= "<td class=rowfollow><a href=userdetails.php?id={$arr1['invitee_register_uid']}><font color=#1f7309>".$arr1['invitee_register_username']."</font></a></td>";
                 } else {

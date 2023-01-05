@@ -94,6 +94,7 @@ return array (
       'offer_skip_approved_count' => 5,
       'upload_deny_approval_deny_count' => 2,
       'enable_global_search' => 'yes',
+      'tmp_invite_count' => 0,
   ),
   'smtp' =>
   array (
@@ -242,6 +243,9 @@ return array (
       'hundredgbdownload' => 8000,
       'official_addition' => '0.5',
       'zero_bonus_factor' => '0.2',
+      'one_tmp_invite' => BonusLogs::DEFAULT_BONUS_BUY_TEMPORARY_INVITE,
+      'rainbow_id' => BonusLogs::DEFAULT_BONUS_BUY_RAINBOW_ID,
+      'change_username_card' => BonusLogs::DEFAULT_BONUS_BUY_CHANGE_USERNAME_CARD,
   ),
   'account' =>
   array (

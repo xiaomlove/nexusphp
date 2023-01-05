@@ -799,6 +799,14 @@ $lang_settings = array
 	'row_protected_forum' => '隱私保護論壇板塊',
 	'text_protected_forum' => '輸入開啟隱私保護的論壇板塊ID，該版塊的回覆僅樓主作者及管理員以上可見，使用逗號分割(如:1,2,3)',
 	'forum_format_error' => '論壇ID格式錯誤，請核查校對!',
+    'row_buy_an_tmp_invite' => '購買臨時邀請名額',
+    'text_buy_an_tmp_invite_note' => "個魔力值，如果他選擇交換一個臨時邀請名額。默認'500'。",
+    'row_buy_rainbow_id' => '購買彩虹 ID',
+    'text_buy_rainbow_id_note' => "個魔力值，如果他選擇交換一個彩虹 ID，有效期 30 天。默認'5,000'。",
+    'row_buy_change_username_card' => '購買改名卡',
+    'text_buy_change_username_card_note' => "個魔力值，如果他選擇交換一個改名卡，永久有效。默認'100,000'。",
+    'row_initial_tmp_invites' => '初始臨時邀請名額',
+    'text_initial_tmp_invites_note' => "新註冊用戶的初始臨時邀請名額，有效期 7 天。默認'0'。",
 );
 
 ?>

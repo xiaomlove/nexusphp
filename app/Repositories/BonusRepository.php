@@ -1,12 +1,15 @@
 <?php
 namespace App\Repositories;
 
+use App\Exceptions\NexusException;
 use App\Models\BonusLogs;
 use App\Models\HitAndRun;
+use App\Models\Invite;
 use App\Models\Medal;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserMedal;
+use App\Models\UserMeta;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Nexus\Database\NexusDB;
@@ -89,6 +92,85 @@ class BonusRepository extends BaseRepository
             do_log("comment: $comment");
             $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_ATTENDANCE_CARD, $comment);
             User::query()->where('id', $user->id)->increment('attendance_card');
+        });
+
+        return true;
+
+    }
+
+
+    public function consumeToBuyTemporaryInvite($uid, $count = 1): bool
+    {
+        $user = User::query()->findOrFail($uid);
+        $requireBonus = BonusLogs::getBonusForBuyTemporaryInvite();
+        $toolRep = new ToolRepository();
+        $hashArr = $toolRep->generateUniqueInviteHash([], $count, $count);
+        NexusDB::transaction(function () use ($user, $requireBonus, $hashArr) {
+            $comment = nexus_trans('bonus.comment_buy_temporary_invite', [
+                'bonus' => $requireBonus,
+                'count' => count($hashArr)
+            ], $user->locale);
+            do_log("comment: $comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_TEMPORARY_INVITE, $comment);
+            $invites = [];
+            foreach ($hashArr as $hash) {
+                $invites[] = [
+                    'inviter' => $user->id,
+                    'invitee' => '',
+                    'hash' => $hash,
+                    'valid' => 0,
+                    'expired_at' => Carbon::now()->addDays(Invite::TEMPORARY_INVITE_VALID_DAYS),
+                    'created_at' => Carbon::now(),
+                ];
+            }
+            Invite::query()->insert($invites);
+        });
+
+        return true;
+
+    }
+
+    public function consumeToBuyRainbowId($uid, $duration = 30): bool
+    {
+        $user = User::query()->findOrFail($uid);
+        $requireBonus = BonusLogs::getBonusForBuyRainbowId();
+        NexusDB::transaction(function () use ($user, $requireBonus, $duration) {
+            $comment = nexus_trans('bonus.comment_buy_rainbow_id', [
+                'bonus' => $requireBonus,
+                'duration' => $duration,
+            ], $user->locale);
+            do_log("comment: $comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_RAINBOW_ID, $comment);
+            $metaData = [
+                'meta_key' => UserMeta::META_KEY_PERSONALIZED_USERNAME,
+                'duration' => $duration,
+            ];
+            $userRep = new UserRepository();
+            $userRep->addMeta($user, $metaData, $metaData, false);
+        });
+
+        return true;
+
+    }
+
+    public function consumeToBuyChangeUsernameCard($uid): bool
+    {
+        $user = User::query()->findOrFail($uid);
+        $requireBonus = BonusLogs::getBonusForBuyChangeUsernameCard();
+        if (UserMeta::query()->where('uid', $uid)->where('meta_key', UserMeta::META_KEY_CHANGE_USERNAME)->exists()) {
+            throw new NexusException("user already has change username card");
+        }
+        NexusDB::transaction(function () use ($user, $requireBonus) {
+            $comment = nexus_trans('bonus.comment_buy_change_username_card', [
+                'bonus' => $requireBonus,
+            ], $user->locale);
+            do_log("comment: $comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD, $comment);
+            $metaData = [
+                'meta_key' => UserMeta::META_KEY_CHANGE_USERNAME,
+            ];
+            $userRep = new UserRepository();
+            $userRep->addMeta($user, $metaData, $metaData, false);
         });
 
         return true;

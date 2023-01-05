@@ -42,7 +42,7 @@ if ($action == 'savesettings_main')	// save main
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
 		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language', 'offer_skip_approved_count',
-        'upload_deny_approval_deny_count', 'enable_global_search'
+        'upload_deny_approval_deny_count', 'enable_global_search', 'tmp_invite_count',
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -99,6 +99,7 @@ elseif ($action == 'savesettings_bonus') 	// save bonus
         'tengbupload', 'ratiolimit','dlamountlimit','oneinvite','customtitle','vipstatus','bonusgift', 'basictax', 'taxpercentage',
         'prolinkpoint', 'prolinktime', 'attendance_initial', 'attendance_step', 'attendance_max', 'cancel_hr', 'attendance_card',
         'harem_addition', 'hundredgbupload', 'tengbdownload', 'hundredgbdownload', 'official_addition', 'official_tag', 'zero_bonus_tag', 'zero_bonus_factor',
+        'one_tmp_invite', 'rainbow_id', 'change_username_card',
     );
 	GetVar($validConfig);
 	$BONUS = [];
@@ -616,12 +617,16 @@ elseif ($action == 'bonussettings'){
 
 	tr($lang_settings['row_ratio_limit'],$lang_settings['text_user_with_ratio']."<input type='text' style=\"width: 50px\" name=ratiolimit value='".(isset($BONUS["ratiolimit"]) ? $BONUS["ratiolimit"] : 6 )."'>".$lang_settings['text_uploaded_amount_above']."<input type='text' style=\"width: 50px\" name=dlamountlimit value='".(isset($BONUS["dlamountlimit"]) ? $BONUS["dlamountlimit"] : 50 )."'>".$lang_settings['text_ratio_limit_default'], 1);
 	tr($lang_settings['row_buy_an_invite'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=oneinvite value='".(isset($BONUS["oneinvite"]) ? $BONUS["oneinvite"] : 1000 )."'>".$lang_settings['text_buy_an_invite_note'], 1);
+	tr($lang_settings['row_buy_an_tmp_invite'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=one_tmp_invite value='".(isset($BONUS["one_tmp_invite"]) ? $BONUS["one_tmp_invite"] : \App\Models\BonusLogs::DEFAULT_BONUS_BUY_TEMPORARY_INVITE )."'>".$lang_settings['text_buy_an_tmp_invite_note'], 1);
+
 	tr($lang_settings['row_custom_title'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=customtitle value='".(isset($BONUS["customtitle"]) ? $BONUS["customtitle"] : 5000 )."'>".$lang_settings['text_custom_title_note'], 1);
 	tr($lang_settings['row_vip_status'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=vipstatus value='".(isset($BONUS["vipstatus"]) ? $BONUS["vipstatus"] : 8000 )."'>".$lang_settings['text_vip_status_note'], 1);
 	yesorno($lang_settings['row_allow_giving_bonus_gift'], 'bonusgift', $BONUS["bonusgift"], $lang_settings['text_giving_bonus_gift_note']);
 	tr($lang_settings['row_bonus_gift_tax'], $lang_settings['text_system_charges']."<input type='text' style=\"width: 50px\" name='basictax' value='".(isset($BONUS["basictax"]) ? $BONUS["basictax"] : 5 )."'>".$lang_settings['text_bonus_points_plus']."<input type='text' style=\"width: 50px\" name='taxpercentage' value='".(isset($BONUS["taxpercentage"]) ? $BONUS["taxpercentage"] : 10 )."'>".$lang_settings['text_bonus_gift_tax_note'], 1);
     tr($lang_settings['row_cancel_hr'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=cancel_hr value='".(isset($BONUS["cancel_hr"]) ? $BONUS["cancel_hr"] : \App\Models\BonusLogs::DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN )."'>".$lang_settings['text_cancel_hr_note'], 1);
     tr($lang_settings['row_attendance_card'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=attendance_card value='".(isset($BONUS["attendance_card"]) ? $BONUS["attendance_card"] : \App\Models\BonusLogs::DEFAULT_BONUS_BUY_ATTENDANCE_CARD )."'>".$lang_settings['text_attendance_card_note'], 1);
+    tr($lang_settings['row_buy_rainbow_id'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=rainbow_id value='".(isset($BONUS["rainbow_id"]) ? $BONUS["rainbow_id"] : \App\Models\BonusLogs::DEFAULT_BONUS_BUY_RAINBOW_ID )."'>".$lang_settings['text_buy_rainbow_id_note'], 1);
+    tr($lang_settings['row_buy_change_username_card'],$lang_settings['text_it_costs_user']."<input type='text' style=\"width: 50px\" name=change_username_card value='".(isset($BONUS["change_username_card"]) ? $BONUS["change_username_card"] : \App\Models\BonusLogs::DEFAULT_BONUS_BUY_CHANGE_USERNAME_CARD )."'>".$lang_settings['text_buy_change_username_card_note'], 1);
 
 
     echo '<tr><td colspan="2" align="center"><b>' . $lang_settings['text_attendance_get_bonus'] . '</b></td></tr>';
@@ -786,6 +791,7 @@ elseif ($action == 'mainsettings')	// main settings
 	yesorno($lang_settings['row_enable_invite_system'], 'invitesystem', $MAIN['invitesystem'], $lang_settings['text_invite_system_note']);
 	tr($lang_settings['row_initial_uploading_amount'],"<input type='text' name=iniupload style=\"width: 100px\" value={$MAIN['iniupload']}> ".$lang_settings['text_initial_uploading_amount_note'], 1);
 	tr($lang_settings['row_initial_invites'],"<input type='text' name=invite_count style=\"width: 50px\" value={$MAIN['invite_count']}> ".$lang_settings['text_initial_invites_note'], 1);
+	tr($lang_settings['row_initial_tmp_invites'],"<input type='text' name=tmp_invite_count style=\"width: 50px\" value={$MAIN['tmp_invite_count']}> ".$lang_settings['text_initial_tmp_invites_note'], 1);
 	tr($lang_settings['row_invite_timeout'],"<input type='text' name=invite_timeout style=\"width: 50px\" value={$MAIN['invite_timeout']}> ".$lang_settings['text_invite_timeout_note'], 1);
 	yesorno($lang_settings['row_enable_registration_system'], 'registration', $MAIN['registration'], $lang_settings['row_allow_registrations']);
 	tr($lang_settings['row_verification_type'],"<input type='radio' name='verification'" . ($MAIN["verification"] == "email" ? " checked" : " checked") . " value='email'> ".$lang_settings['text_email'] ." <input type='radio' name='verification'" . ($MAIN["verification"] == "admin" ? " checked" : "") . " value='admin'> ".$lang_settings['text_admin']." <input type='radio' name='verification'" . ($MAIN["verification"] == "automatic" ? " checked" : "") . " value='automatic'> ".$lang_settings['text_automatically']."<br />".$lang_settings['text_verification_type_note'], 1);

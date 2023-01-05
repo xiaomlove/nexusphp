@@ -9,6 +9,8 @@ class Invite extends NexusModel
     const VALID_YES = 1;
     const VALID_NO = 0;
 
+    const TEMPORARY_INVITE_VALID_DAYS = 7;
+
     protected $casts = [
         'expired_at' => 'datetime',
     ];

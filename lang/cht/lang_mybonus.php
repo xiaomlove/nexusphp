@@ -156,6 +156,16 @@ $lang_mybonus = array
     'col_count' => '數量',
     'col_size' => '體積',
     'col_a' => 'A 值',
+    'text_buy_tmp_invite' => '1個臨時邀請名額',
+    'text_buy_tmp_invite_note' => '如果有足夠的魔力值，你可以用它來換取臨時邀請名額，有效期 7 天。交易完成後，你的魔力值會減少，邀請臨時名額數則會增加。',
+    'text_success_tmp_invites' => "祝賀你，你獲得了<b>1</b>個新的臨時邀請名額！",
+    'text_buy_rainbow_id' => "購買彩虹 ID",
+    'text_buy_rainbow_id_note' => '為用戶名增加如彩虹般閃爍的效果，有效期 30 天，重復購買時間累加。',
+    'text_success_buy_rainbow_id' => "祝賀你，彩虹 ID 增加了<b>30</b>天！",
+    'text_buy_change_username_card' => "購買改名卡",
+    'text_buy_change_username_card_note' => '修改用戶名一次，永久有效。',
+    'text_success_buy_change_username_card' => "祝賀你，成功購買了<b>改名卡</b>！",
+    'text_change_username_card_already_has' => '已經擁有改名卡',
 );
 
 ?>

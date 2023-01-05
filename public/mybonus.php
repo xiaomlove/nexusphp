@@ -75,6 +75,15 @@ function bonusarray($option = 0){
     $bonus['description'] = $lang_mybonus['text_buy_invite_note'];
     $results[] = $bonus;
 
+    //Tmp Invite
+    $bonus = array();
+    $bonus['points'] = \App\Models\BonusLogs::getBonusForBuyTemporaryInvite();
+    $bonus['art'] = 'tmp_invite';
+    $bonus['menge'] = 1;
+    $bonus['name'] = $lang_mybonus['text_buy_tmp_invite'];
+    $bonus['description'] = $lang_mybonus['text_buy_tmp_invite_note'];
+    $results[] = $bonus;
+
     //Custom Title
     $bonus = array();
     $bonus['points'] = $customtitle_bonus;
@@ -124,6 +133,24 @@ function bonusarray($option = 0){
     $bonus['menge'] = 0;
     $bonus['name'] = $lang_mybonus['text_attendance_card'];
     $bonus['description'] = $lang_mybonus['text_attendance_card_note'];
+    $results[] = $bonus;
+
+    //Rainbow ID
+    $bonus = array();
+    $bonus['points'] = \App\Models\BonusLogs::getBonusForBuyRainbowId();
+    $bonus['art'] = 'rainbow_id';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_buy_rainbow_id'];
+    $bonus['description'] = $lang_mybonus['text_buy_rainbow_id_note'];
+    $results[] = $bonus;
+
+    //Change username card
+    $bonus = array();
+    $bonus['points'] = \App\Models\BonusLogs::getBonusForBuyChangeUsernameCard();
+    $bonus['art'] = 'change_username_card';
+    $bonus['menge'] = 0;
+    $bonus['name'] = $lang_mybonus['text_buy_change_username_card'];
+    $bonus['description'] = $lang_mybonus['text_buy_change_username_card_note'];
     $results[] = $bonus;
 
     //Donate
@@ -278,6 +305,8 @@ if (isset($do)) {
     $msg = $lang_mybonus['text_success_download'];
 	elseif ($do == "invite")
 	$msg = $lang_mybonus['text_success_invites'];
+    elseif ($do == "tmp_invite")
+        $msg = $lang_mybonus['text_success_tmp_invites'];
 	elseif ($do == "vip")
 	$msg =  $lang_mybonus['text_success_vip']."<b>".get_user_class_name(UC_VIP,false,false,true)."</b>".$lang_mybonus['text_success_vip_two'];
 	elseif ($do == "vipfalse")
@@ -296,6 +325,10 @@ if (isset($do)) {
         $msg =  $lang_mybonus['text_success_buy_medal'];
     elseif ($do == "attendance_card")
         $msg =  $lang_mybonus['text_success_buy_attendance_card'];
+    elseif ($do == "rainbow_id")
+        $msg =  $lang_mybonus['text_success_buy_rainbow_id'];
+    elseif ($do == "change_username_card")
+        $msg =  $lang_mybonus['text_success_buy_change_username_card'];
     elseif ($do == 'duplicated')
         $msg = $lockText;
 	else
@@ -397,6 +430,12 @@ for ($i=0; $i < count($allBonus); $i++)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['text_ratio_too_high']."\" disabled=\"disabled\" /></td>");
 			}
 			else print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
+		} elseif ($bonusarray['art'] == 'change_username_card') {
+		    if (\App\Models\UserMeta::query()->where('uid', $CURUSER['id'])->where('meta_key', \App\Models\UserMeta::META_KEY_CHANGE_USERNAME)->exists()) {
+                print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['text_change_username_card_already_has']."\" disabled=\"disabled\"/></td>");
+            } else {
+                print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
+            }
 		} else {
             print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
         }
@@ -575,6 +614,17 @@ if ($action == "exchange") {
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_INVITE, $points. " Points for invites.", ['invites' => $inv, ]);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=invite");
 		}
+        //=== temporary invite
+        elseif($art == "tmp_invite") {
+//            if(!user_can('buyinvite'))
+//                die(get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']);
+//            $invites = $CURUSER['invites'];
+//            $inv = $invites+$bonusarray['menge'];
+//			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
+//			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
+            $bonusRep->consumeToBuyTemporaryInvite($CURUSER['id']);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=tmp_invite");
+        }
 		//=== trade for special title
 		/**** the $words array are words that you DO NOT want the user to have... use to filter "bad words" & user class...
 		the user class is just for show, but what the hell tongue.gif Add more or edit to your liking.
@@ -696,32 +746,23 @@ if ($action == "exchange") {
 		    if (empty($_POST['hr_id'])) {
 		        stderr("Error","Invalid H&R ID: " . ($_POST['hr_id'] ?? ''), false, false);
             }
-		    try {
-		        $bonusRep->consumeToCancelHitAndRun($userid, $_POST['hr_id']);
-                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=cancel_hr");
-            } catch (\Exception $exception) {
-		        do_log($exception->getMessage(), 'error');
-		        stderr('Error', "Something wrong...", false, false);
-            }
+            $bonusRep->consumeToCancelHitAndRun($userid, $_POST['hr_id']);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=cancel_hr");
         } elseif ($art == 'buy_medal') {
             if (empty($_POST['medal_id'])) {
                 stderr("Error","Invalid Medal ID: " . ($_POST['medal_id'] ?? ''), false, false);
             }
-            try {
-                $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
-                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
-            } catch (\Exception $exception) {
-                do_log($exception->getMessage(), 'error');
-                stderr('Error', "Something wrong...", false, false);
-            }
+            $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
         } elseif ($art == 'attendance_card') {
-            try {
-                $bonusRep->consumeToBuyAttendanceCard($userid);
-                nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=attendance_card");
-            } catch (\Exception $exception) {
-                do_log($exception->getMessage(), 'error');
-                stderr('Error', "Something wrong...", false, false);
-            }
+            $bonusRep->consumeToBuyAttendanceCard($userid);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=attendance_card");
+        } elseif ($art == 'rainbow_id') {
+            $bonusRep->consumeToBuyRainbowId($userid);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=rainbow_id");
+        } elseif ($art == 'change_username_card') {
+            $bonusRep->consumeToBuyChangeUsernameCard($userid);
+            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=change_username_card");
         }
 	}
 }
