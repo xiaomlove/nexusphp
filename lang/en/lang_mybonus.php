@@ -166,6 +166,7 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'text_buy_change_username_card_note' => 'Change your username once and it will be valid forever.',
     'text_success_buy_change_username_card' => "Congratulations on your successful purchase of a <b>change username card</b>!",
     'text_change_username_card_already_has' => 'Already have a change username card',
+    'text_rainbow_id_already_valid_forever' => 'Already have a permanent Rainbow ID',
 );
 
 ?>

@@ -38,4 +38,7 @@ return [
         'subject' => 'Get Props：:name',
         'body' => ':operator Grant you :name, Validity period: :duration.',
     ],
+    'metas' => [
+        'already_valid_forever' => ':meta_key_text 已經永久有效',
+    ],
 ];

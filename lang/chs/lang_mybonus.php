@@ -166,6 +166,7 @@ $lang_mybonus = array
     'text_buy_change_username_card_note' => '修改用户名一次，永久有效。',
     'text_success_buy_change_username_card' => "祝贺你，成功购买了<b>改名卡</b>！",
     'text_change_username_card_already_has' => '已经拥有改名卡',
+    'text_rainbow_id_already_valid_forever' => '已永久拥有彩虹 ID',
 );
 
 ?>

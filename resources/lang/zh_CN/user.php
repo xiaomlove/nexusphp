@@ -38,4 +38,7 @@ return [
         'subject' => '获得道具：:name',
         'body' => ':operator 授予你 :name， 有效期：:duration。',
     ],
+    'metas' => [
+        'already_valid_forever' => ':meta_key_text already valid forever',
+    ],
 ];

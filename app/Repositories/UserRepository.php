@@ -504,6 +504,9 @@ class UserRepository extends BaseRepository
                 $log .= ", meta exists";
                 $keyExistsUpdates['updated_at'] = now();
                 if (!empty($keyExistsUpdates['duration'])) {
+                    if ($metaExists->deadline === null) {
+                        throw new \RuntimeException(nexus_trans('user.metas.already_valid_forever', ['meta_key_text' => $metaExists->metaKeyText]));
+                    }
                     $log .= ", has duration: {$keyExistsUpdates['duration']}";
                     if ($metaExists->deadline && $metaExists->deadline->gte(now())) {
                         $log .= ", not expire";
