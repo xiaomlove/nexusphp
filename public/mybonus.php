@@ -76,13 +76,16 @@ function bonusarray($option = 0){
     $results[] = $bonus;
 
     //Tmp Invite
-    $bonus = array();
-    $bonus['points'] = \App\Models\BonusLogs::getBonusForBuyTemporaryInvite();
-    $bonus['art'] = 'tmp_invite';
-    $bonus['menge'] = 1;
-    $bonus['name'] = $lang_mybonus['text_buy_tmp_invite'];
-    $bonus['description'] = $lang_mybonus['text_buy_tmp_invite_note'];
-    $results[] = $bonus;
+    $tmpInviteBonus = \App\Models\BonusLogs::getBonusForBuyTemporaryInvite();
+    if ($tmpInviteBonus > 0) {
+        $bonus = array();
+        $bonus['points'] = $tmpInviteBonus;
+        $bonus['art'] = 'tmp_invite';
+        $bonus['menge'] = 1;
+        $bonus['name'] = $lang_mybonus['text_buy_tmp_invite'];
+        $bonus['description'] = $lang_mybonus['text_buy_tmp_invite_note'];
+        $results[] = $bonus;
+    }
 
     //Custom Title
     $bonus = array();

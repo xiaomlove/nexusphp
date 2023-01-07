@@ -1112,3 +1112,19 @@ function get_passkey_by_authkey($authkey)
         return $userInfo->passkey;
     });
 }
+
+function executeCommand($command, $format = 'string'): string|array
+{
+    $append = " 2>&1";
+    if (!str_ends_with($command, $append)) {
+        $command .= $append;
+    }
+    do_log("command: $command");
+    $result = exec($command, $output, $result_code);
+    $outputString = implode("\n", $output);
+    do_log(sprintf('result_code: %s, result: %s, output: %s', $result_code, $result, $outputString));
+    if ($result_code != 0) {
+        throw new \RuntimeException($outputString);
+    }
+    return $format == 'string' ? $outputString : $output;
+}

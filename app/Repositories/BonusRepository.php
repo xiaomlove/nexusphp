@@ -101,8 +101,11 @@ class BonusRepository extends BaseRepository
 
     public function consumeToBuyTemporaryInvite($uid, $count = 1): bool
     {
-        $user = User::query()->findOrFail($uid);
         $requireBonus = BonusLogs::getBonusForBuyTemporaryInvite();
+        if ($requireBonus <= 0) {
+            throw new \RuntimeException("Temporary invite require bonus <= 0 !");
+        }
+        $user = User::query()->findOrFail($uid);
         $toolRep = new ToolRepository();
         $hashArr = $toolRep->generateUniqueInviteHash([], $count, $count);
         NexusDB::transaction(function () use ($user, $requireBonus, $hashArr) {

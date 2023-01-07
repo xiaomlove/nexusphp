@@ -1485,8 +1485,8 @@ function check_email ($email) {
 	if(!preg_match('/^[A-Za-z0-9][A-Za-z0-9_.+\-]*@[A-Za-z0-9][A-Za-z0-9_+\-]*(\.[A-Za-z0-9][A-Za-z0-9_+\-]*)+$/', $email)) {
         return false;
     }
-    $bannedEmails = mysql_fetch_assoc(sql_query('select * from bannedemails'));
-    $bannedEmailsArr = preg_split('/[\s]+/', $bannedEmails['value'] ?? '');
+    $bannedEmails = \Nexus\Database\NexusDB::select('select * from bannedemails');
+    $bannedEmailsArr = preg_split('/[\s]+/', $bannedEmails[0]['value'] ?? '');
     if (empty($bannedEmailsArr)) {
         return true;
     }
