@@ -67,6 +67,9 @@ class UserProfile extends ViewRecord
             $actions[] = $this->buildResetPasswordAction();
             $actions[] = $this->buildEnableDisableAction();
             $actions[] = $this->buildEnableDisableDownloadPrivilegesAction();
+            if (user_can('user-change-class')) {
+                $actions[] = $this->buildChangeClassAction();
+            }
             if (user_can('user-delete')) {
                 $actions[] = $this->buildDeleteAction();
             }
@@ -354,5 +357,33 @@ class UserProfile extends ViewRecord
             ->whereNotNull('expired_at')
             ->where('expired_at', '>', Carbon::now())
             ->count();
+    }
+
+    private function buildChangeClassAction(): Actions\Action
+    {
+        return Actions\Action::make('change_class')
+            ->label(__('admin.resources.user.actions.change_class_btn'))
+            ->form([
+                Forms\Components\Select::make('class')
+                    ->options(User::listClass())
+                    ->default($this->record->class)
+                    ->label(__('user.labels.class'))
+                    ->required()
+                ,
+                Forms\Components\TextInput::make('reason')
+                    ->label(__('admin.resources.user.actions.enable_disable_reason'))
+                    ->placeholder(__('admin.resources.user.actions.enable_disable_reason_placeholder'))
+                ,
+            ])
+            ->action(function ($data) {
+                $userRep = $this->getRep();
+                try {
+                    $userRep->changeClass(Auth::user(), $this->record, $data['class'], $data['reason']);
+                    $this->notify('success', 'Success!');
+                    $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
+                } catch (\Exception $exception) {
+                    $this->notify('danger', $exception->getMessage());
+                }
+            });
     }
 }

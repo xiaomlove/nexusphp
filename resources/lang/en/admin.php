@@ -79,6 +79,7 @@ return [
                 'confirm_bulk' => 'Bulk confirm',
                 'change_bonus_etc_duration_label' => 'Duration',
                 'change_bonus_etc_duration_help' => 'Required when adding temporary invitation, in days',
+                'change_class_btn' => 'Change class',
             ]
         ],
         'exam_user' => [

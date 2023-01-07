@@ -16,6 +16,7 @@ return [
         'invites' => 'Invites',
         'attendance_card' => 'Attend card',
         'props' => 'Props',
+        'class' => 'Class',
     ],
     'class_names' => [
         \App\Models\User::CLASS_VIP => 'Vip',
@@ -39,6 +40,14 @@ return [
         'body' => ':operator Grant you :name, Validity period: :duration.',
     ],
     'metas' => [
-        'already_valid_forever' => ':meta_key_text 已經永久有效',
+        'already_valid_forever' => ':meta_key_text already valid forever',
+    ],
+    'edit_notifications' => [
+        'change_class' => [
+            'promote' => 'Promote',
+            'demote' => 'Demote',
+            'subject' => 'Class changed',
+            'body' => 'You had been :action to :new_class, administrator: :operator, reason: :reason.',
+        ],
     ],
 ];

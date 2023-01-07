@@ -1730,13 +1730,15 @@ function check_code ($imagehash, $imagestring, $where = 'signup.php',$maxattempt
         return true;
     }
 	$query = sprintf("SELECT * FROM regimages WHERE imagehash='%s' AND imagestring='%s'",
-	mysql_real_escape_string($imagehash),
-	mysql_real_escape_string($imagestring));
+        mysql_real_escape_string((string)$imagehash),
+        mysql_real_escape_string((string)$imagestring)
+    );
 	$sql = sql_query($query);
 	$imgcheck = mysql_fetch_array($sql);
 	if(!$imgcheck['dateline']) {
 		$delete = sprintf("DELETE FROM regimages WHERE imagehash='%s'",
-		mysql_real_escape_string($imagehash));
+		    mysql_real_escape_string((string)$imagehash)
+        );
 		sql_query($delete);
 		if (!$maxattemptlog)
 		stderr('Error',$lang_functions['std_invalid_image_code']."<a href=\"".htmlspecialchars($where)."\">".$lang_functions['std_here_to_request_new'], false);
@@ -1744,7 +1746,8 @@ function check_code ($imagehash, $imagestring, $where = 'signup.php',$maxattempt
 		failedlogins($lang_functions['std_invalid_image_code']."<a href=\"".htmlspecialchars($where)."\">".$lang_functions['std_here_to_request_new'],true,$head);
 	}else{
 		$delete = sprintf("DELETE FROM regimages WHERE imagehash='%s'",
-		mysql_real_escape_string($imagehash));
+		    mysql_real_escape_string((string)$imagehash)
+        );
 		sql_query($delete);
 		return true;
 	}
@@ -4271,9 +4274,13 @@ function getSmileIt($formname, $taname, $smilyNumber) {
 	return "<a href=\"javascript: SmileIT('[em$smilyNumber]','".$formname."','".$taname."')\"  onmouseover=\"domTT_activate(this, event, 'content', '".htmlspecialchars("<table><tr><td><img src=\'pic/smilies/$smilyNumber.gif\' alt=\'\' /></td></tr></table>")."', 'trail', false, 'delay', 0,'lifetime',10000,'styleClass','smilies','maxWidth', 400);\"><img style=\"max-width: 25px;\" src=\"pic/smilies/$smilyNumber.gif\" alt=\"\" /></a>";
 }
 
-function classlist($selectname,$maxclass, $selected, $minClass = 0, $includeNoClass = false){
+function classlist($selectname,$maxclass, $selected, $minClass = 0, $includeNoClass = false, $disabled = false){
     global $lang_functions;
-	$list = "<select name=\"".$selectname."\">";
+    $disabledText = '';
+    if ($disabled) {
+        $disabledText = ' disabled = "disabled"';
+    }
+	$list = "<select name=\"".$selectname."\"$disabledText>";
 	if ($includeNoClass) {
         $list .= sprintf('<option value="%s">%s</option>', \App\Models\Setting::PERMISSION_NO_CLASS, $lang_functions['select_an_user_class']);
     }

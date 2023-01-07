@@ -206,17 +206,18 @@ if ($action == "edituser")
 	if ($curclass >= get_user_class())
 		puke();
 
-	if (user_can('user-change-class') && $curclass != $class)
-	{
-		$what = ($class > $curclass ? $lang_modtask_target[get_user_lang($userid)]['msg_promoted'] : $lang_modtask_target[get_user_lang($userid)]['msg_demoted']);
-		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_class_change']);
-		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_have_been'].$what.$lang_modtask_target[get_user_lang($userid)]['msg_to'] . get_user_class_name($class) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-		$added = sqlesc(date("Y-m-d H:i:s"));
-		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-		$updateset[] = "class = $class";
-		$what = ($class > $curclass ? "Promoted" : "Demoted");
-		$modcomment = date("Y-m-d") . " - $what to '" . get_user_class_name($class) . "' by {$CURUSER['username']}.\n". $modcomment;
-	}
+    //migrate to management
+//	if (user_can('user-change-class') && $curclass != $class)
+//	{
+//		$what = ($class > $curclass ? $lang_modtask_target[get_user_lang($userid)]['msg_promoted'] : $lang_modtask_target[get_user_lang($userid)]['msg_demoted']);
+//		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_class_change']);
+//		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_have_been'].$what.$lang_modtask_target[get_user_lang($userid)]['msg_to'] . get_user_class_name($class) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
+//		$added = sqlesc(date("Y-m-d H:i:s"));
+//		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
+//		$updateset[] = "class = $class";
+//		$what = ($class > $curclass ? "Promoted" : "Demoted");
+//		$modcomment = date("Y-m-d") . " - $what to '" . get_user_class_name($class) . "' by {$CURUSER['username']}.\n". $modcomment;
+//	}
 	if ($class == UC_VIP)
 	{
 		$updateset[] = "vip_added = ".sqlesc($vip_added);

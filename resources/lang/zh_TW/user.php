@@ -16,6 +16,7 @@ return [
         'invites' => '邀請',
         'attendance_card' => '補簽卡',
         'props' => '道具',
+        'class' => '等級',
     ],
     'class_names' => [
         \App\Models\User::CLASS_VIP => '貴賓',
@@ -40,5 +41,13 @@ return [
     ],
     'metas' => [
         'already_valid_forever' => ':meta_key_text 已經永久有效',
+    ],
+    'edit_notifications' => [
+        'change_class' => [
+            'promote' => '提升',
+            'demote' => '降級',
+            'subject' => '等級變化',
+            'body' => '你被:action為:new_class，管理員：:operator, 原因：:reason。',
+        ],
     ],
 ];

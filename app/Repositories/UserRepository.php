@@ -466,6 +466,39 @@ class UserRepository extends BaseRepository
         return true;
     }
 
+    public function changeClass($operator, $targetUser, $newClass, $reason = ''): bool
+    {
+        user_can('user-change-class', true);
+        $operator = $this->getUser($operator);
+        $targetUser = $this->getUser($targetUser);
+        if ($targetUser->class == $newClass) {
+            return  true;
+        }
+        $locale = $targetUser->locale;
+        $subject = nexus_trans('user.edit_notifications.change_class.subject', [], $locale);
+        $body = nexus_trans('user.edit_notifications.change_class.body', [
+            'action' => nexus_trans( 'user.edit_notifications.change_class.' . ($newClass > $targetUser->class ? 'promote' : 'demote')),
+            'new_class' => User::getClassText($newClass),
+            'operator' => $operator->username ?? '',
+            'reason' => $reason,
+        ], $locale);
+        $message = [
+            'sender' => 0,
+            'receiver' => $targetUser->id,
+            'subject' => $subject,
+            'msg' => $body,
+            'added' => Carbon::now(),
+        ];
+
+        NexusDB::transaction(function () use ($targetUser, $newClass, $message) {
+            $modComment = date('Y-m-d') . " - " . $message['msg'];
+            $targetUser->updateWithModComment(['class' => $newClass], $modComment);
+            Message::add($message);
+        });
+
+        return true;
+    }
+
     public function addMeta($user, array $metaData, array $keyExistsUpdates = [], $notify = true)
     {
         $user = $this->getUser($user);

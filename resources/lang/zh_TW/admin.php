@@ -79,6 +79,7 @@ return [
                 'confirm_bulk' => '批量確認',
                 'change_bonus_etc_duration_label' => '有效期',
                 'change_bonus_etc_duration_help' => '增加臨時邀請時必須，單位：天',
+                'change_class_btn' => '修改等級',
             ]
         ],
         'exam_user' => [

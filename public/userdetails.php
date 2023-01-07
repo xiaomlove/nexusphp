@@ -474,8 +474,8 @@ if (user_can('prfmanage') && $user["class"] < get_user_class())
 	}
 	if (user_can('user-change-class')) {
         $maxclass = get_user_class() - 1;
-        $classselect=classlist('class', $maxclass, $user["class"]);
-        tr($lang_userdetails['row_class'], $classselect, 1);
+        $classselect=classlist('class', $maxclass, $user["class"], 0, false, true);
+        tr($lang_userdetails['row_class'], $classselect . $migratedHelp, 1);
     }
 	tr($lang_userdetails['row_vip_by_bonus'], "<input type=\"radio\" name=\"vip_added\" value=\"yes\"" .($user["vip_added"] == "yes" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_yes']." <input type=\"radio\" name=\"vip_added\" value=\"no\"" .($user["vip_added"] == "no" ? " checked=\"checked\"" : "")." />".$lang_userdetails['radio_no']."<br />".$lang_userdetails['text_vip_by_bonus_note'], 1);
 	tr($lang_userdetails['row_vip_until'], "<input type=\"text\" name=\"vip_until\" value=\"".htmlspecialchars($user["vip_until"])."\" /> ".$lang_userdetails['text_vip_until_note'], 1);

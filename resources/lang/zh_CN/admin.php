@@ -77,6 +77,7 @@ return [
                 'confirm_bulk' => '批量确认',
                 'change_bonus_etc_duration_label' => '有效期',
                 'change_bonus_etc_duration_help' => '增加临时邀请时必须，单位：天',
+                'change_class_btn' => '修改等级',
             ]
         ],
         'exam_user' => [
