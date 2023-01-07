@@ -22,4 +22,12 @@ class EditTag extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if ($data['mode'] === null) {
+            $data['mode'] = 0;
+        }
+        return $data;
+    }
+
 }

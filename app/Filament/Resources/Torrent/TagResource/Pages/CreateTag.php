@@ -14,4 +14,12 @@ class CreateTag extends CreateRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if ($data['mode'] === null) {
+            $data['mode'] = 0;
+        }
+        return $data;
+    }
 }

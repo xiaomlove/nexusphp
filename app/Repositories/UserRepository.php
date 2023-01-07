@@ -471,6 +471,9 @@ class UserRepository extends BaseRepository
         user_can('user-change-class', true);
         $operator = $this->getUser($operator);
         $targetUser = $this->getUser($targetUser);
+        if ($operator && $operator->class <= $targetUser->class) {
+            throw new InsufficientPermissionException();
+        }
         if ($targetUser->class == $newClass) {
             return  true;
         }
