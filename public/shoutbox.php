@@ -21,6 +21,7 @@ $refresh = ($CURUSER['sbrefresh'] ? $CURUSER['sbrefresh'] : 120)
 <link rel="stylesheet" href="<?php echo get_font_css_uri()?>" type="text/css">
 <link rel="stylesheet" href="<?php echo get_css_uri()."theme.css"?>" type="text/css">
 <link rel="stylesheet" href="styles/curtain_imageresizer.css" type="text/css">
+<link rel="stylesheet" href="styles/nexus.css" type="text/css">
 <script src="js/curtain_imageresizer.js" type="text/javascript"></script><style type="text/css">body {overflow-y:scroll; overflow-x: hidden}</style>
 <?php
 print(get_style_addicode());
