@@ -6336,8 +6336,11 @@ function build_search_area($searchArea, array $options = [])
     return $result;
 }
 
-function torrent_name_for_admin(\App\Models\Torrent $torrent, $withTags = false)
+function torrent_name_for_admin(\App\Models\Torrent|null $torrent, $withTags = false)
 {
+    if (empty($torrent)) {
+        return '';
+    }
     $name = sprintf(
         '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank" title="%s">%s</a></div>',
         $torrent->id, $torrent->name, Str::limit($torrent->name, 40)

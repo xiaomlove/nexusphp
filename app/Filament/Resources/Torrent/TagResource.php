@@ -51,6 +51,7 @@ class TagResource extends Resource
                     ->label(__('label.search_box.taxonomy.mode'))
                     ->helperText(__('label.search_box.taxonomy.mode_help'))
                 ,
+                Forms\Components\Textarea::make('description')->label(__('label.description')),
             ]);
     }
 
