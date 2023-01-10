@@ -15,7 +15,7 @@ class Medal extends NexusModel
         self::GET_TYPE_GRANT => ['text' => 'Grant'],
     ];
 
-    protected $fillable = ['name', 'description', 'image_large', 'image_small', 'price', 'duration', 'get_type'];
+    protected $fillable = ['name', 'description', 'image_large', 'image_small', 'price', 'duration', 'get_type', 'display_on_medal_page'];
 
     public $timestamps = true;
 

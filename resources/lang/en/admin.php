@@ -33,6 +33,7 @@ return [
         'second_icon' => 'Second icons',
         'torrent_operation_log' => 'Torrent operation logs',
         'invite' => 'Invites',
+        'user_props' => 'User props',
     ],
     'resources' => [
         'agent_allow' => [

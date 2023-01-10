@@ -22,7 +22,7 @@ class UsernameChangeLogResource extends Resource
 
     protected static ?string $navigationGroup = 'User';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 100;
 
     protected static function getNavigationLabel(): string
     {

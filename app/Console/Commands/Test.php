@@ -95,8 +95,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = getLogFile();
-        dd($r);
+        $work = new WorkRepository();
+        $work->settleRole(6, 1, true);
     }
 
 }

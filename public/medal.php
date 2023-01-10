@@ -1,7 +1,7 @@
 <?php
 require "../include/bittorrent.php";
 
-$query = \App\Models\Medal::query();
+$query = \App\Models\Medal::query()->where('display_on_medal_page', 1);
 $q = htmlspecialchars($_REQUEST['q'] ?? '');
 if (!empty($q)) {
     $query->where('username', 'name', "%{$q}%");

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\User;
 
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\User\InviteResource\Pages;
 use App\Filament\Resources\User\InviteResource\RelationManagers;
 use App\Models\Invite;
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InviteResource extends Resource
 {
+    use OptionsTrait;
+
     protected static ?string $model = Invite::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-add';
@@ -52,6 +55,7 @@ class InviteResource extends Resource
                 ,
                 Tables\Columns\TextColumn::make('invitee')
                     ->label(__('invite.fields.invitee'))
+                    ->searchable()
                 ,
                 Tables\Columns\TextColumn::make('hash')
                 ,
@@ -64,15 +68,15 @@ class InviteResource extends Resource
                 ,
                 Tables\Columns\TextColumn::make('invitee_register_uid')
                     ->label(__('invite.fields.invitee_register_uid'))
+                    ->searchable()
                 ,
                 Tables\Columns\TextColumn::make('invitee_register_email')
                     ->label(__('invite.fields.invitee_register_email'))
-                ,
-                Tables\Columns\TextColumn::make('invitee_register_email')
-                    ->label(__('invite.fields.invitee_register_email'))
+                    ->searchable()
                 ,
                 Tables\Columns\TextColumn::make('invitee_register_username')
                     ->label(__('invite.fields.invitee_register_username'))
+                    ->searchable()
                 ,
                 Tables\Columns\TextColumn::make('expired_at')
                     ->label(__('invite.fields.expired_at'))
@@ -84,7 +88,20 @@ class InviteResource extends Resource
                 ,
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('inviter')
+                    ->form([
+                        Forms\Components\TextInput::make('inviter')
+                            ->label(__('invite.fields.inviter'))
+                            ->placeholder('UID')
+                        ,
+                    ])->query(function (Builder $query, array $data) {
+                        return $query->when($data['inviter'], fn (Builder $query, $value) => $query->where("inviter", $value));
+                    })
+                ,
+                Tables\Filters\SelectFilter::make('valid')
+                    ->options(self::getYesNoOptions())
+                    ->label(__('invite.fields.valid'))
+                ,
             ])
             ->actions([
 //                Tables\Actions\EditAction::make(),

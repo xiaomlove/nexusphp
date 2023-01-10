@@ -160,7 +160,7 @@ class UserProfile extends ViewRecord
                     ->hidden(fn (\Closure $get) => $get('field') != 'tmp_invites')
                 ,
 
-                Forms\Components\Textarea::make('reason')
+                Forms\Components\TextInput::make('reason')
                     ->label(__('admin.resources.user.actions.change_bonus_etc_reason_label'))
                 ,
             ])
@@ -365,7 +365,7 @@ class UserProfile extends ViewRecord
             ->label(__('admin.resources.user.actions.change_class_btn'))
             ->form([
                 Forms\Components\Select::make('class')
-                    ->options(User::listClass())
+                    ->options(User::listClass(User::CLASS_PEASANT, Auth::user()->class - 1))
                     ->default($this->record->class)
                     ->label(__('user.labels.class'))
                     ->required()

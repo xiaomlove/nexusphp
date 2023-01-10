@@ -111,6 +111,7 @@ return [
         'get_type' => '获取方式',
         'duration' => '有效时长',
         'duration_help' => '单位：天。如果留空，用户永久拥有',
+        'display_on_medal_page' => '展示在勋章页面',
     ],
     'user_medal' => [
         'label' => '用户勋章',

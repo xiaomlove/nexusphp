@@ -43,4 +43,9 @@ class UserMeta extends NexusModel
         return $this->status == self::STATUS_NORMAL && ($this->getRawOriginal('deadline') === null || ($this->deadline && $this->deadline->gte(now())));
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'uid');
+    }
+
 }

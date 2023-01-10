@@ -44,15 +44,18 @@ class MedalResource extends Resource
                 Forms\Components\Radio::make('get_type')
                     ->options(Medal::listGetTypes(true))
                     ->inline()
-                    ->columnSpan(['sm' => 2])
                     ->label(__('label.medal.get_type'))
+                    ->required(),
+                Forms\Components\Toggle::make('display_on_medal_page')
+                    ->label(__('label.medal.display_on_medal_page'))
                     ->required(),
                 Forms\Components\TextInput::make('duration')
                     ->integer()
-                    ->columnSpan(['sm' => 2])
                     ->label(__('label.medal.duration'))
                     ->helperText(__('label.medal.duration_help')),
-                Forms\Components\Textarea::make('description')->columnSpan(['sm' => 2])->label(__('label.description')),
+                Forms\Components\Textarea::make('description')
+                    ->label(__('label.description'))
+                ,
             ]);
     }
 
@@ -67,6 +70,7 @@ class MedalResource extends Resource
                 Tables\Columns\TextColumn::make('getTypeText')->label('Get type')->label(__('label.medal.get_type')),
                 Tables\Columns\TextColumn::make('price')->label(__('label.price')),
                 Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
+                Tables\Columns\IconColumn::make('display_on_medal_page')->label(__('label.medal.display_on_medal_page'))->boolean(),
             ])
             ->defaultSort('id', 'desc')
             ->filters([

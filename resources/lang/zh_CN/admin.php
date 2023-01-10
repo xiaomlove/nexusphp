@@ -31,6 +31,7 @@ return [
         'second_icon' => '第二图标',
         'torrent_operation_log' => '种子操作记录',
         'invite' => '用户邀请',
+        'user_props' => '用户道具',
     ],
     'resources' => [
         'agent_allow' => [

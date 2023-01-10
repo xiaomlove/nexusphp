@@ -33,6 +33,7 @@ return [
         'second_icon' => '第二圖標',
         'torrent_operation_log' => '種子操作記錄',
         'invite' => '用戶邀請',
+        'user_props' => '用戶道具',
     ],
     'resources' => [
         'agent_allow' => [
