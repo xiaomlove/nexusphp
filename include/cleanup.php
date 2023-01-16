@@ -567,13 +567,13 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
 	//3.delete unconfirmed accounts
 	$deadtime = time() - $signup_timeout;
-//	sql_query("DELETE FROM users WHERE status = 'pending' AND added < FROM_UNIXTIME($deadtime) AND last_login < FROM_UNIXTIME($deadtime) AND last_access < FROM_UNIXTIME($deadtime)") or sqlerr(__FILE__, __LINE__);
-	$query = \App\Models\User::query()
-        ->where('status', 'pending')
-        ->whereRaw("added < FROM_UNIXTIME($deadtime)")
-        ->whereRaw("last_login < FROM_UNIXTIME($deadtime)")
-        ->whereRaw("last_access < FROM_UNIXTIME($deadtime)");
-    disable_user($query, "cleanup.disable_user_unconfirmed");
+	sql_query("DELETE FROM users WHERE status = 'pending' AND added < FROM_UNIXTIME($deadtime) AND last_login < FROM_UNIXTIME($deadtime) AND last_access < FROM_UNIXTIME($deadtime)") or sqlerr(__FILE__, __LINE__);
+//	$query = \App\Models\User::query()
+//        ->where('status', 'pending')
+//        ->whereRaw("added < FROM_UNIXTIME($deadtime)")
+//        ->whereRaw("last_login < FROM_UNIXTIME($deadtime)")
+//        ->whereRaw("last_access < FROM_UNIXTIME($deadtime)");
+//    disable_user($query, "cleanup.disable_user_unconfirmed");
     $log = "delete unconfirmed accounts";
 	do_log($log);
 	if ($printProgress) {

@@ -111,8 +111,12 @@ if (!$hasSticky) {
 
 //approval status
 $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
-if ($approvalStatusNoneVisible == 'no' && !user_can('staffmem')) {
+if ($approvalStatusNoneVisible == 'no' && !user_can('staffmem', false, $user['id'])) {
     $where .= ($where ? " AND " : "") . "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
+}
+//check special section permission
+if (get_setting('main.spsct') == 'yes' && !user_can('view_special_torrent', false, $user['id'])) {
+    $where .= ($where ? " AND " : "") . "categories.mode = " . get_setting('main.browsecat');
 }
 
 function get_where($tablename = "sources", $itemname = "source", $getname = "sou")
