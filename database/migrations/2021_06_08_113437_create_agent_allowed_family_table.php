@@ -17,7 +17,7 @@ class CreateAgentAllowedFamilyTable extends Migration
             return;
         }
         Schema::create('agent_allowed_family', function (Blueprint $table) {
-            $table->tinyIncrements('id');
+            $table->increments('id');
             $table->string('family', 50)->default('');
             $table->string('start_name', 100)->default('');
             $table->string('peer_id_pattern', 200)->default('');

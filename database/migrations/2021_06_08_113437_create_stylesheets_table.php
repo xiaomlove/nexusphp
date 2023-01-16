@@ -17,7 +17,7 @@ class CreateStylesheetsTable extends Migration
             return;
         }
         Schema::create('stylesheets', function (Blueprint $table) {
-            $table->tinyIncrements('id');
+            $table->increments('id');
             $table->string('uri')->default('');
             $table->string('name', 64)->default('');
             $table->text('addicode')->nullable();

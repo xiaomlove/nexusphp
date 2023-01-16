@@ -17,7 +17,7 @@ class CreateCaticonsTable extends Migration
             return;
         }
         Schema::create('caticons', function (Blueprint $table) {
-            $table->tinyIncrements('id');
+            $table->increments('id');
             $table->string('name', 64)->default('');
             $table->string('folder')->default('');
             $table->string('cssfile')->default('');

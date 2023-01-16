@@ -40,7 +40,8 @@ $lang_getrss = array
 	'select_or' => "或",
 	'select_exact' => "准確",
 	'text_mode' => "",
-	'text_keyword_note' => "只訂閱標題中包含此關鍵字的項目"
+	'text_keyword_note' => "只訂閱標題中包含此關鍵字的項目",
+    'row_sticky' => '置頂',
 );
 
 ?>

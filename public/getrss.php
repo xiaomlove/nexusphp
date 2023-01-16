@@ -39,9 +39,10 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs", $brsectio
 }
 stdhead($lang_getrss['head_rss_feeds']);
 $query = [];
+$allowed_showrows=array('10','50','100','200');
+$stickyTypes = apply_filter('rss_sticky_types', ['first' => nexus_trans('torrent.pos_state_sticky'), 'second' => nexus_trans('torrent.pos_state_r_sticky')]);
 $query[] = "passkey=" . $CURUSER['passkey'];
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-	$allowed_showrows=array('10','50','100','200');
 	$link = get_protocol_prefix(). $BASEURL ."/torrentrss.php";
 	if (isset($_POST['showrows']) && in_array($_POST['showrows'], $allowed_showrows, 1))
 		$query[] = "rows=".(int)$_POST['showrows'];
@@ -156,10 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 			$query[] = "search_mode=".$search_mode;
 		}
 	}
-	if (!empty($_POST['sort']) && in_array($_POST['sort'], ['newest', 'sticky'])) {
-	    $query[] = "sort=" . $_POST['sort'];
-    } else {
-	    $query[] = "sort=sticky";
+	if (!empty($_POST['sticky']) && is_array($_POST['sticky'])) {
+	    $query[] = "sticky=" . implode(',', $_POST['sticky']);
     }
 	$inclbookmarked=intval($_POST['inclbookmarked'] ?? 0);
 	if($inclbookmarked)
@@ -323,11 +322,14 @@ if (get_setting('main.spsct') == 'yes') {
 </td>
 </tr>
     <tr>
-        <td class="rowhead"><?php echo $lang_getrss['row_sort']?>
+        <td class="rowhead"><?php echo $lang_getrss['row_sticky']?>
         </td>
         <td class="rowfollow" align="left">
-            <label><input type="radio" name="sort" value="sticky" checked><?php echo $lang_getrss['sort_sticky']?></label>
-            <label><input type="radio" name="sort" value="newest"><?php echo $lang_getrss['sort_newest']?></label>
+            <?php
+                foreach ($stickyTypes as $key => $value) {
+                    echo sprintf('<label><input type="checkbox" name="sticky[]" value="%s">%s</label>', $key, $value);
+                }
+            ?>
         </td>
     </tr>
 <tr>
@@ -338,11 +340,11 @@ if (get_setting('main.spsct') == 'yes') {
 </td>
 </tr>
 <tr><td class="rowhead"><?php echo $lang_getrss['row_rows_per_page']?></td><td class="rowfollow" align="left"><select name="showrows">
-<option value="10">10</option>
-<option value="20">20</option>
-<option value="30">30</option>
-<option value="40">40</option>
-<option value="50">50</option>
+<?php
+    foreach ($allowed_showrows as $showrow) {
+        echo sprintf('<option value="%s">%s</option>', $showrow, $showrow);
+    }
+?>
 </select></td></tr>
 <tr><td class="rowhead"><?php echo $lang_getrss['row_keyword']?></td>
 <td class="rowfollow" align="left">

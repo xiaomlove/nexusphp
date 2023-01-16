@@ -17,7 +17,7 @@ class CreateMediaTable extends Migration
             return;
         }
         Schema::create('media', function (Blueprint $table) {
-            $table->tinyIncrements('id');
+            $table->increments('id');
             $table->string('name', 30)->default('');
             $table->unsignedTinyInteger('sort_index')->default(0);
         });

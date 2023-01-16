@@ -31,7 +31,7 @@ class CreateSnatchedTable extends Migration
             $table->dateTime('startdat')->nullable();
             $table->dateTime('completedat')->nullable();
             $table->enum('finished', ['yes', 'no'])->default('no');
-            $table->index(['torrentid', 'userid'], 'torrentid_userid');
+            $table->unique(['torrentid', 'userid'], 'torrentid_userid');
         });
     }
 

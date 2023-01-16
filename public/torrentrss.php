@@ -6,7 +6,7 @@ if (!$passkey) {
 }
 $cacheKey = "nexus_rss:$passkey:" . md5(http_build_query($_GET));
 $cacheData = \Nexus\Database\NexusDB::cache_get($cacheKey);
-if ($cacheData) {
+if ($cacheData && nexus_env('APP_ENV') != 'local') {
     do_log("rss get from cache");
     header ("Content-type: text/xml");
     die($cacheData);
@@ -75,15 +75,39 @@ if (isset($searchstr)){
 	$wherea[] = implode($ANDOR, $like_expression_array);
 	$where .= ($where ? " AND " : "") . implode(" AND ", $wherea);
 }
+$hasSticky = false;
+if (!empty($_GET['sticky'])) {
+    $stickyArr = explode(',', $_GET['sticky']);
+    $posStates = [];
+    if (in_array('first', $stickyArr)) {
+        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_FIRST;
+    }
+    if (in_array('second', $stickyArr)) {
+        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_SECOND;
+    }
+    $idArr = [];
+    if (!empty($posStates)) {
+        $idArr = \App\Models\Torrent::query()->whereIn('pos_state', $posStates)->pluck('id')->toArray();
+    }
+    $idArr = apply_filter("rss_sticky_promotion_torrent_ids", $idArr, $stickyArr);
+    if (!empty($idArr)) {
+        $hasSticky = true;
+        $where .= ($where ? " AND " : "") . "torrents.id in (" . implode(',', $idArr) . ")";
+    }
+}
 
 $limit = "";
-$startindex = intval($_GET['startindex'] ?? 0);
-if ($startindex)
-$limit .= $startindex.", ";
-$showrows = intval($_GET['rows'] ?? 0);
-if($showrows < 1 || $showrows > 50)
-	$showrows = 10;
-$limit .= $showrows;
+if (!$hasSticky) {
+    $startindex = intval($_GET['startindex'] ?? 0);
+    if ($startindex) {
+        $limit .= $startindex.", ";
+    }
+    $showrows = intval($_GET['rows'] ?? 0);
+    if($showrows < 1 || $showrows > 200) {
+        $showrows = 10;
+    }
+    $limit .= $showrows;
+}
 
 //approval status
 $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
@@ -118,17 +142,10 @@ get_where("teams", "team", "tea");
 get_where("audiocodecs", "audiocodec", "aud");
 if ($where)
 	$where = "WHERE ".$where;
-if (!empty($_GET['sort']) && $_GET['sort'] == 'newest') {
-    $sort = "id desc";
-} else {
-    $sort = "pos_state desc, id desc";
-}
+$sort = "id desc";
 //$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY $sort LIMIT $limit";
-$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name FROM torrents LEFT JOIN categories ON category = categories.id $where ORDER BY $sort LIMIT $limit";
+$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name FROM torrents LEFT JOIN categories ON category = categories.id $where ORDER BY $sort" . ($limit ? " LIMIT $limit" : "");
 $list = \Nexus\Database\NexusDB::select($query);
-if ($inclbookmarked == 0) {
-    $list = apply_filter('torrent_list', $list, $startindex == 0 ? 0 : 1, null, $_GET['search'] ?? '');
-}
 
 //dd($list);
 $torrentRep = new \App\Repositories\TorrentRepository();

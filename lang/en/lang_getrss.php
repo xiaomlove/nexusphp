@@ -39,7 +39,8 @@ $lang_getrss = array
 	'select_or' => "OR",
 	'select_exact' => "Exact",
 	'text_mode' => "matching mode ",
-	'text_keyword_note' => "Ony subscribe to items with these keywords in titles."
+	'text_keyword_note' => "Ony subscribe to items with these keywords in titles.",
+    'row_sticky' => 'Sticky',
 );
 
 ?>
