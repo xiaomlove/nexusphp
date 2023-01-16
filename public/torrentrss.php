@@ -17,7 +17,7 @@ function hex_esc($matches) {
 }
 $dllink = false;
 
-$where = "";
+$where = "torrents.visible = 'yes'";
 if ($passkey){
 	$res = sql_query("SELECT id, enabled, parked, passkey FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$user = mysql_fetch_array($res);
@@ -75,39 +75,16 @@ if (isset($searchstr)){
 	$wherea[] = implode($ANDOR, $like_expression_array);
 	$where .= ($where ? " AND " : "") . implode(" AND ", $wherea);
 }
-$hasSticky = false;
-if (!empty($_GET['sticky'])) {
-    $stickyArr = explode(',', $_GET['sticky']);
-    $posStates = [];
-    if (in_array('first', $stickyArr)) {
-        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_FIRST;
-    }
-    if (in_array('second', $stickyArr)) {
-        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_SECOND;
-    }
-    $idArr = [];
-    if (!empty($posStates)) {
-        $idArr = \App\Models\Torrent::query()->whereIn('pos_state', $posStates)->pluck('id')->toArray();
-    }
-    $idArr = apply_filter("rss_sticky_promotion_torrent_ids", $idArr, $stickyArr);
-    if (!empty($idArr)) {
-        $hasSticky = true;
-        $where .= ($where ? " AND " : "") . "torrents.id in (" . implode(',', $idArr) . ")";
-    }
-}
-
 $limit = "";
-if (!$hasSticky) {
-    $startindex = intval($_GET['startindex'] ?? 0);
-    if ($startindex) {
-        $limit .= $startindex.", ";
-    }
-    $showrows = intval($_GET['rows'] ?? 0);
-    if($showrows < 1 || $showrows > 200) {
-        $showrows = 10;
-    }
-    $limit .= $showrows;
+$startindex = intval($_GET['startindex'] ?? 0);
+if ($startindex) {
+    $limit .= $startindex.", ";
 }
+$showrows = intval($_GET['rows'] ?? 0);
+if($showrows < 1 || $showrows > 200) {
+    $showrows = 10;
+}
+$limit .= $showrows;
 
 //approval status
 $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
@@ -115,8 +92,10 @@ if ($approvalStatusNoneVisible == 'no' && !user_can('staffmem', false, $user['id
     $where .= ($where ? " AND " : "") . "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
 //check special section permission
-if (get_setting('main.spsct') == 'yes' && !user_can('view_special_torrent', false, $user['id'])) {
-    $where .= ($where ? " AND " : "") . "categories.mode = " . get_setting('main.browsecat');
+$browseMode = get_setting('main.browsecat');
+$onlyBrowseSection = get_setting('main.spsct') != 'yes' || !user_can('view_special_torrent', false, $user['id']);
+if ($onlyBrowseSection) {
+    $where .= ($where ? " AND " : "") . "categories.mode = $browseMode";
 }
 
 function get_where($tablename = "sources", $itemname = "source", $getname = "sou")
@@ -144,14 +123,64 @@ get_where("standards", "standard", "sta");
 get_where("processings", "processing", "pro");
 get_where("teams", "team", "tea");
 get_where("audiocodecs", "audiocodec", "aud");
-if ($where)
-	$where = "WHERE ".$where;
-$sort = "id desc";
-//$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY $sort LIMIT $limit";
-$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name FROM torrents LEFT JOIN categories ON category = categories.id $where ORDER BY $sort" . ($limit ? " LIMIT $limit" : "");
-$list = \Nexus\Database\NexusDB::select($query);
 
-//dd($list);
+$hasStickyFirst = $hasStickySecond = $hasStickyNormal = $noNormalResults = false;
+$prependIdArr = $prependRows = $normalRows = [];
+$stickyWhere = $normalWhere = '';
+if (isset($_GET['sticky'])) {
+    $stickyArr = explode(',', $_GET['sticky']);
+    //Only handle sticky first + second
+    $posStates = [];
+    if (in_array('0', $stickyArr, true)) {
+        $hasStickyNormal = true;
+    }
+    if (in_array('1', $stickyArr, true)) {
+        $hasStickyFirst = true;
+        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_FIRST;
+    }
+    if (in_array('2', $stickyArr, true)) {
+        $hasStickySecond = true;
+        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_SECOND;
+    }
+    if (!empty($posStates)) {
+        $prependIdArr = \App\Models\Torrent::query()->whereIn('pos_state', $posStates)->pluck('id')->toArray();
+    }
+}
+$prependIdArr = apply_filter("sticky_promotion_torrent_ids", $prependIdArr);
+if ($hasStickyNormal) {
+    $stickyWhere = sprintf("torrents.pos_state = '%s'", \App\Models\Torrent::POS_STATE_STICKY_NONE);
+} elseif ($hasStickyFirst || $hasStickySecond) {
+    $noNormalResults = true;
+}
+
+if ($where) {
+    $normalWhere = "WHERE ".$where;
+    if ($stickyWhere) {
+        $normalWhere .= " and $stickyWhere";
+    }
+}
+$sort = "id desc";
+$fieldStr = "torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name";
+//$query = "SELECT torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, users.username AS username, categories.id AS cat_id, categories.name AS cat_name FROM torrents LEFT JOIN categories ON category = categories.id LEFT JOIN users ON torrents.owner = users.id $where ORDER BY $sort LIMIT $limit";
+if (!$noNormalResults) {
+    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON category = categories.id $normalWhere ORDER BY $sort LIMIT $limit";
+    $normalRows = \Nexus\Database\NexusDB::select($query);
+}
+if (!empty($prependIdArr) && $startindex > 0) {
+    $prependIdStr = implode(',', $prependIdArr);
+    $prependRows = \Nexus\Database\NexusDB::select("SELECT $fieldStr FROM torrents LEFT JOIN categories ON category = categories.id where torrents.id in ($prependIdStr) and $where ORDER BY field(torrents.id, $prependIdStr)");
+}
+$list = [];
+foreach ($prependRows as $row) {
+    $list[$row['id']] = $row;
+}
+foreach ($normalRows as $row) {
+    if (!isset($list[$row['id']])) {
+        $list[$row['id']] = $row;
+    }
+}
+
+//dd($prependIdArr, $prependRows, $normalRows, $list);
 $torrentRep = new \App\Repositories\TorrentRepository();
 $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);

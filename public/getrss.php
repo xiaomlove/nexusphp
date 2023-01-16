@@ -40,7 +40,11 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs", $brsectio
 stdhead($lang_getrss['head_rss_feeds']);
 $query = [];
 $allowed_showrows=array('10','50','100','200');
-$stickyTypes = apply_filter('rss_sticky_types', ['first' => nexus_trans('torrent.pos_state_sticky'), 'second' => nexus_trans('torrent.pos_state_r_sticky')]);
+$stickyTypes = [
+    0 => nexus_trans('torrent.pos_state_normal'),
+    1 => nexus_trans('torrent.pos_state_sticky'),
+    2 => nexus_trans('torrent.pos_state_r_sticky')
+];
 $query[] = "passkey=" . $CURUSER['passkey'];
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	$link = get_protocol_prefix(). $BASEURL ."/torrentrss.php";
