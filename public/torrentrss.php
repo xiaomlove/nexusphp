@@ -166,7 +166,7 @@ if (!$noNormalResults) {
     $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON category = categories.id $normalWhere ORDER BY $sort LIMIT $limit";
     $normalRows = \Nexus\Database\NexusDB::select($query);
 }
-if (!empty($prependIdArr) && $startindex > 0) {
+if (!empty($prependIdArr) && $startindex == 0) {
     $prependIdStr = implode(',', $prependIdArr);
     $prependRows = \Nexus\Database\NexusDB::select("SELECT $fieldStr FROM torrents LEFT JOIN categories ON category = categories.id where torrents.id in ($prependIdStr) and $where ORDER BY field(torrents.id, $prependIdStr)");
 }
@@ -180,7 +180,8 @@ foreach ($normalRows as $row) {
     }
 }
 
-//dd($prependIdArr, $prependRows, $normalRows, $list);
+//dd($prependIdArr, $prependRows, $normalRows, $list, $startindex,last_query());
+
 $torrentRep = new \App\Repositories\TorrentRepository();
 $url = get_protocol_prefix().$BASEURL;
 $year = substr($datefounded, 0, 4);
