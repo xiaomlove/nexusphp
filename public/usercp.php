@@ -255,7 +255,7 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				    unset($notifs['email']);
                 }
 
-			function browsecheck($dbtable = "categories", $cbname = "cat", array &$result){
+			function browsecheck($dbtable, $cbname, array &$result){
 				global $_POST;
 				$r = sql_query("SELECT id FROM ".$dbtable) or sqlerr();
 				$rows = mysql_num_rows($r);
