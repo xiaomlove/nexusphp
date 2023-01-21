@@ -127,7 +127,7 @@ get_where("audiocodecs", "audiocodec", "aud");
 $hasStickyFirst = $hasStickySecond = $hasStickyNormal = $noNormalResults = false;
 $prependIdArr = $prependRows = $normalRows = [];
 $stickyWhere = $normalWhere = '';
-if (isset($_GET['sticky'])) {
+if (isset($_GET['sticky']) && $inclbookmarked == 0) {
     $stickyArr = explode(',', $_GET['sticky']);
     //Only handle sticky first + second
     $posStates = [];

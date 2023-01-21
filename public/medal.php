@@ -71,7 +71,7 @@ foreach ($rows as $row) {
     );
     $table .= sprintf(
         '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
-        $row->id, $row->name, $row->image_large, number_format($row->price), $row->duration, $row->description, $action
+        $row->id, $row->name, $row->image_large, number_format($row->price), $row->durationText, $row->description, $action
     );
 }
 $table .= '</tbody></table>';

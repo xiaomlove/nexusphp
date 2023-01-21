@@ -39,6 +39,14 @@ class Medal extends NexusModel
         return nexus_trans("medal.get_types." . $this->get_type);
     }
 
+    public function getDurationTextAttribute($value): string
+    {
+        if ($this->duration > 0) {
+            return $this->duration;
+        }
+        return nexus_trans("label.permanent");
+    }
+
     public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_medals', 'medal_id', 'uid')->withTimestamps();
