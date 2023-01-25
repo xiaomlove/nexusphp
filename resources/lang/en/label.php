@@ -34,6 +34,7 @@ return [
     'cancel' => 'Cancel',
     'reset' => 'Reset',
     'anonymous' => 'Anonymous',
+    'infinite' => 'Infinite',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

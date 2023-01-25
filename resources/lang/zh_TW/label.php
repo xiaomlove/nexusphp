@@ -34,6 +34,7 @@ return [
     'cancel' => '取消',
     'reset' => '重置',
     'anonymous' => '匿名',
+    'infinite' => '無限',
     'setting' => [
         'nav_text' => '設置',
         'backup' => [

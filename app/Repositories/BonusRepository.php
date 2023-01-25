@@ -61,6 +61,16 @@ class BonusRepository extends BaseRepository
         if ($medal->get_type != Medal::GET_TYPE_EXCHANGE) {
             throw new \LogicException("This medal can not be buy.");
         }
+        if ($medal->inventory !== null && $medal->inventory <= 0) {
+            throw new \LogicException("Inventory empty.");
+        }
+        $now = now();
+        if ($medal->sale_begin_time && $medal->sale_begin_time->gt($now)) {
+            throw new \LogicException("Before sale begin time.");
+        }
+        if ($medal->sale_end_time && $medal->sale_end_time->lt($now)) {
+            throw new \LogicException("After sale end time.");
+        }
         $requireBonus = $medal->price;
         NexusDB::transaction(function () use ($user, $medal, $requireBonus) {
             $comment = nexus_trans('bonus.comment_buy_medal', [
@@ -74,6 +84,16 @@ class BonusRepository extends BaseRepository
                 $expireAt = Carbon::now()->addDays($medal->duration)->toDateTimeString();
             }
             $user->medals()->attach([$medal->id => ['expire_at' => $expireAt, 'status' => UserMedal::STATUS_NOT_WEARING]]);
+            if ($medal->inventory !== null) {
+                $affectedRows = NexusDB::table('medals')
+                    ->where('id', $medal->id)
+                    ->where('inventory', $medal->inventory)
+                    ->decrement('inventory')
+                ;
+                if ($affectedRows != 1) {
+                    throw new \RuntimeException("Decrement medal({$medal->id}) inventory affected rows != 1($affectedRows)");
+                }
+            }
 
         });
 

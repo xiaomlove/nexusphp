@@ -12,6 +12,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class MedalResource extends Resource
 {
@@ -45,14 +46,30 @@ class MedalResource extends Resource
                     ->options(Medal::listGetTypes(true))
                     ->inline()
                     ->label(__('label.medal.get_type'))
-                    ->required(),
+                    ->required()
+                ,
                 Forms\Components\Toggle::make('display_on_medal_page')
                     ->label(__('label.medal.display_on_medal_page'))
-                    ->required(),
+                    ->required()
+                ,
                 Forms\Components\TextInput::make('duration')
                     ->integer()
                     ->label(__('label.medal.duration'))
-                    ->helperText(__('label.medal.duration_help')),
+                    ->helperText(__('label.medal.duration_help'))
+                ,
+                Forms\Components\TextInput::make('inventory')
+                    ->integer()
+                    ->label(__('medal.fields.inventory'))
+                    ->helperText(__('medal.fields.inventory_help'))
+                ,
+                Forms\Components\DateTimePicker::make('sale_begin_time')
+                    ->label(__('medal.fields.sale_begin_time'))
+                    ->helperText(__('medal.fields.sale_begin_time_help'))
+                ,
+                Forms\Components\DateTimePicker::make('sale_end_time')
+                    ->label(__('medal.fields.sale_end_time'))
+                    ->helperText(__('medal.fields.sale_end_time_help'))
+                ,
                 Forms\Components\Textarea::make('description')
                     ->label(__('label.description'))
                 ,
@@ -65,12 +82,22 @@ class MedalResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('name')->label(__('label.name'))->searchable(),
-                Tables\Columns\ImageColumn::make('image_large')->height(120)->label(__('label.medal.image_large')),
-                Tables\Columns\ImageColumn::make('image_small')->height(120)->label(__('label.medal.image_small')),
+                Tables\Columns\ImageColumn::make('image_large')->height(60)->label(__('label.medal.image_large')),
                 Tables\Columns\TextColumn::make('getTypeText')->label('Get type')->label(__('label.medal.get_type')),
-                Tables\Columns\TextColumn::make('price')->label(__('label.price')),
-                Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
                 Tables\Columns\IconColumn::make('display_on_medal_page')->label(__('label.medal.display_on_medal_page'))->boolean(),
+                Tables\Columns\TextColumn::make('sale_begin_end_time')
+                    ->label(__('medal.fields.sale_begin_end_time'))
+                    ->formatStateUsing(fn ($record) => new HtmlString(sprintf('%s ~<br/>%s', $record->sale_begin_time ?? '--', $record->sale_end_time ?? '--')))
+                ,
+                Tables\Columns\TextColumn::make('price')->label(__('label.price')),
+
+                Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
+
+                Tables\Columns\TextColumn::make('inventory')
+                    ->label(__('medal.fields.inventory'))
+                    ->formatStateUsing(fn ($record) => $record->inventory ?? nexus_trans('label.infinite'))
+                ,
+                Tables\Columns\TextColumn::make('users_count')->label(__('medal.fields.users_count')),
             ])
             ->defaultSort('id', 'desc')
             ->filters([

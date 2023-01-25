@@ -19,6 +19,8 @@ $columnPriceLabel = nexus_trans('medal.fields.price');
 $columnDurationLabel = nexus_trans('medal.fields.duration');
 $columnDescriptionLabel = nexus_trans('medal.fields.description');
 $columnActionLabel = nexus_trans('nexus.action');
+$columnSaleBeginEndTimeLabel = nexus_trans('medal.fields.sale_begin_end_time');
+$columnInventoryLabel = nexus_trans('medal.fields.inventory');
 $header = '<h1 style="text-align: center">'.$title.'</h1>';
 $filterForm = <<<FORM
 <div>
@@ -38,13 +40,16 @@ $table = <<<TABLE
 <td class="colhead">ID</td>
 <td class="colhead">$columnNameLabel</td>
 <td class="colhead">$columnImageLargeLabel</td>
+<td class="colhead">$columnSaleBeginEndTimeLabel</td>
 <td class="colhead">$columnPriceLabel</td>
 <td class="colhead">$columnDurationLabel</td>
+<td class="colhead">$columnInventoryLabel</td>
 <td class="colhead">$columnDescriptionLabel</td>
 <td class="colhead">$columnActionLabel</td>
 </tr>
 </thead>
 TABLE;
+$now = now();
 $table .= '<tbody>';
 $userMedals = \App\Models\UserMedal::query()->where('uid', $CURUSER['id'])
     ->orderBy('id', 'desc')
@@ -58,6 +63,12 @@ foreach ($rows as $row) {
         $btnText = nexus_trans('medal.buy_already');
     } elseif ($row->get_type == \App\Models\Medal::GET_TYPE_GRANT) {
         $btnText = nexus_trans('medal.grant_only');
+    } elseif ($row->sale_begin_time && $row->sale_begin_time->gt($now)) {
+        $btnText = nexus_trans('medal.before_sale_begin_time');
+    } elseif ($row->sale_end_time && $row->sale_end_time->lt($now)) {
+        $btnText = nexus_trans('medal.after_sale_end_time');
+    } elseif ($row->inventory !== null && $row->inventory <= 0) {
+        $btnText = nexus_trans('medal.inventory_empty');
     } elseif ($CURUSER['seedbonus'] < $row->price) {
         $btnText = nexus_trans('medal.require_more_bonus');
     } else {
@@ -70,8 +81,8 @@ foreach ($rows as $row) {
         $class, $row->id, $btnText, $disabled
     );
     $table .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
-        $row->id, $row->name, $row->image_large, number_format($row->price), $row->durationText, $row->description, $action
+        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
+        $row->id, $row->name, $row->image_large, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', number_format($row->price), $row->durationText, $row->inventory ?? nexus_trans('label.infinite'), $row->description, $action
     );
 }
 $table .= '</tbody></table>';
