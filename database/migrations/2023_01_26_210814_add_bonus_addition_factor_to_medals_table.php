@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('medals', function (Blueprint $table) {
-            $table->float('bonus_addition_factor')->default(0);
+            $table->float('bonus_addition_factor', 10, 6)->default(0);
         });
     }
 
