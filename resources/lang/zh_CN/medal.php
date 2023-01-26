@@ -26,6 +26,8 @@ return [
         'inventory_help' => '留空表示无限',
         'sale_begin_end_time' => '可购买时间',
         'users_count' => '已售数量',
+        'bonus_addition_factor' => '魔力加成系数',
+        'bonus_addition_factor_help' => '如：0.01 表示 1% 的加成，留空无加成',
     ],
     'buy_already' => '已经购买',
     'buy_btn' => '购买',

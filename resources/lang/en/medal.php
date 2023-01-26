@@ -26,6 +26,8 @@ return [
         'inventory_help' => 'Leave blank without restriction',
         'sale_begin_end_time' => 'Available for sale',
         'users_count' => 'Sold counts',
+        'bonus_addition_factor' => 'Bonus addition factor',
+        'bonus_addition_factor_help' => 'For example: 0.01 means 1% addition, leave blank no addition',
     ],
     'buy_already' => 'Already buy',
     'buy_btn' => 'Buy',

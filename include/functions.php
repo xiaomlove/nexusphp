@@ -5989,7 +5989,9 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $officialAdditionalFactor = \App\Models\Setting::get('bonus.official_addition');
     $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
     $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');
-    do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor");
+    $userMedalResult = \Nexus\Database\NexusDB::select("select sum(bonus_addition_factor) as factor from medals where id in (select medal_id from user_medals where uid = $uid)");
+    $medalAdditionalFactor = $userMedalResult[0]['factor'] ?? 0;
+    do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor, medalAdditionalFactor: $medalAdditionalFactor");
     $last_action = "";
     foreach ($torrentResult as $torrent)
     {
@@ -6023,12 +6025,14 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
     //Official addition don't think about the minimum value
     $official_bonus =  $valuetwo * atan($official_a / $l_bonus);
+    $medal_bonus = $valuetwo * atan($A / $l_bonus);
     $result = compact(
         'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'size', 'last_action',
-        'official_bonus', 'official_a', 'official_torrent_peer_count', 'official_size'
+        'official_bonus', 'official_a', 'official_torrent_peer_count', 'official_size', 'medal_bonus'
     );
     $result['donor_times'] = $donortimes_bonus;
     $result['official_additional_factor'] = $officialAdditionalFactor;
+    $result['medal_additional_factor'] = $medalAdditionalFactor;
     do_log("$logPrefix, result: " . json_encode($result));
     return $result;
 }
@@ -6248,10 +6252,16 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         $baseBonusFactor = $donortimes_bonus;
     }
     $baseBonus = $bonusResult['seed_bonus'] * $baseBonusFactor;
-    $totalBonus = number_format( $baseBonus + $haremAddition * $haremFactor + $bonusResult['official_bonus'] * $officialAdditionalFactor, 3);
+    $totalBonus = number_format(
+        $baseBonus
+        + $haremAddition * $haremFactor
+        + $bonusResult['official_bonus'] * $officialAdditionalFactor
+        + $bonusResult['medal_bonus'] * $bonusResult['medal_additional_factor']
+        , 3
+    );
 
     $rowSpan = 1;
-    $hasHaremAddition = $hasOfficialAddition = false;
+    $hasHaremAddition = $hasOfficialAddition = $hasMedalAddition = false;
     if ($haremFactor > 0) {
         $rowSpan++;
         $hasHaremAddition = true;
@@ -6259,6 +6269,10 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
     if ($officialAdditionalFactor > 0 && $officialTag) {
         $rowSpan++;
         $hasOfficialAddition = true;
+    }
+    if ($bonusResult['medal_additional_factor'] > 0) {
+        $rowSpan++;
+        $hasMedalAddition = true;
     }
 
     $table = sprintf('<table cellpadding="5" style="%s">', $options['table_style'] ?? '');
@@ -6285,6 +6299,18 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         $rowSpan,
         $totalBonus
     );
+    if ($hasMedalAddition) {
+        $table .= sprintf(
+            '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            nexus_trans('bonus.reward_types.medal_addition'),
+            $bonusResult['torrent_peer_count'],
+            mksize($bonusResult['size']),
+            number_format($bonusResult['A'], 3),
+            number_format($bonusResult['medal_bonus'], 3),
+            $bonusResult['medal_additional_factor'],
+            number_format($bonusResult['medal_bonus'] * $bonusResult['medal_additional_factor'], 3)
+        );
+    }
 
     if ($hasOfficialAddition) {
         $table .= sprintf(
@@ -6311,6 +6337,7 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
             number_format($haremAddition * $haremFactor, 3)
         );
     }
+
     $table .= '</table>';
 
     return [
@@ -6319,6 +6346,8 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         'harem_addition_factor' => $haremFactor,
         'has_official_addition' => $hasOfficialAddition,
         'official_addition_factor' => $officialAdditionalFactor,
+        'has_medal_addition' => $hasMedalAddition,
+        'medal_addition_factor' => $bonusResult['medal_additional_factor'],
     ];
 
 }

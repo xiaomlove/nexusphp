@@ -489,6 +489,13 @@ else $loadpic = "loadbargreen";
 $width = $percent * 4;
 print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
 
+if ($bonusTableResult['has_medal_addition']) {
+    print("<h1>".$lang_mybonus['text_get_by_medal']."</h1>");
+    print("<ul>");
+    print("<li>".sprintf($lang_mybonus['medal_additional_desc'], $CURUSER['id'])."</li>");
+    print("<li>".$lang_mybonus['medal_additional_factor'].$bonusTableResult['medal_addition_factor']."</li>");
+    print("</ul>");
+}
 if ($bonusTableResult['has_official_addition']) {
     print("<h1>".$lang_mybonus['text_get_by_seeding_official']."</h1>");
     print("<ul>");
@@ -757,12 +764,12 @@ if ($action == "exchange") {
             }
             $bonusRep->consumeToCancelHitAndRun($userid, $_POST['hr_id']);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=cancel_hr");
-        } elseif ($art == 'buy_medal') {
-            if (empty($_POST['medal_id'])) {
-                stderr("Error","Invalid Medal ID: " . ($_POST['medal_id'] ?? ''), false, false);
-            }
-            $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
-            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
+//        } elseif ($art == 'buy_medal') {
+//            if (empty($_POST['medal_id'])) {
+//                stderr("Error","Invalid Medal ID: " . ($_POST['medal_id'] ?? ''), false, false);
+//            }
+//            $bonusRep->consumeToBuyMedal($userid, $_POST['medal_id']);
+//            nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=buy_medal");
         } elseif ($art == 'attendance_card') {
             $bonusRep->consumeToBuyAttendanceCard($userid);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=attendance_card");

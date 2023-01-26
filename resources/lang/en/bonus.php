@@ -20,5 +20,6 @@ return [
         'basic' => 'Basic reward',
         'harem_addition' => 'Harem addition',
         'official_addition' => 'Official addition',
+        'medal_addition' => 'Medal addition',
     ],
 ];

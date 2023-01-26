@@ -20,5 +20,6 @@ return [
         'basic' => '基本獎勵',
         'harem_addition' => '後宮加成',
         'official_addition' => '官種加成',
+        'medal_addition' => '勛章加成',
     ],
 ];

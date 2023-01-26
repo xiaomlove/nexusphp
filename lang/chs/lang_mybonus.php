@@ -167,6 +167,9 @@ $lang_mybonus = array
     'text_success_buy_change_username_card' => "祝贺你，成功购买了<b>改名卡</b>！",
     'text_change_username_card_already_has' => '已经拥有改名卡',
     'text_rainbow_id_already_valid_forever' => '已永久拥有彩虹 ID',
+    'text_get_by_medal' => '勋章加成每小时将额外得到如下的魔力值',
+    'medal_additional_desc' => '勋章奖励计算公式同上，不考虑低保',
+    'medal_additional_factor' => '最终奖励为计算所得勋章奖励乘以勋章加成系数，当前勋章加成系数为: ',
 );
 
 ?>

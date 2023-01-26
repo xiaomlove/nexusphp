@@ -21,6 +21,7 @@ $columnDescriptionLabel = nexus_trans('medal.fields.description');
 $columnActionLabel = nexus_trans('nexus.action');
 $columnSaleBeginEndTimeLabel = nexus_trans('medal.fields.sale_begin_end_time');
 $columnInventoryLabel = nexus_trans('medal.fields.inventory');
+$columnBonusAdditionFactorLabel = nexus_trans('medal.fields.bonus_addition_factor');
 $header = '<h1 style="text-align: center">'.$title.'</h1>';
 $filterForm = <<<FORM
 <div>
@@ -41,6 +42,7 @@ $table = <<<TABLE
 <td class="colhead">$columnNameLabel</td>
 <td class="colhead">$columnImageLargeLabel</td>
 <td class="colhead">$columnSaleBeginEndTimeLabel</td>
+<td class="colhead">$columnBonusAdditionFactorLabel</td>
 <td class="colhead">$columnPriceLabel</td>
 <td class="colhead">$columnDurationLabel</td>
 <td class="colhead">$columnInventoryLabel</td>
@@ -81,8 +83,8 @@ foreach ($rows as $row) {
         $class, $row->id, $btnText, $disabled
     );
     $table .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
-        $row->id, $row->name, $row->image_large, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', number_format($row->price), $row->durationText, $row->inventory ?? nexus_trans('label.infinite'), $row->description, $action
+        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
+        $row->id, $row->name, $row->image_large, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', $row->bonus_addition_factor, number_format($row->price), $row->durationText, $row->inventory ?? nexus_trans('label.infinite'), $row->description, $action
     );
 }
 $table .= '</tbody></table>';

@@ -70,6 +70,12 @@ class MedalResource extends Resource
                     ->label(__('medal.fields.sale_end_time'))
                     ->helperText(__('medal.fields.sale_end_time_help'))
                 ,
+                Forms\Components\TextInput::make('bonus_addition_factor')
+                    ->label(__('medal.fields.bonus_addition_factor'))
+                    ->helperText(__('medal.fields.bonus_addition_factor_help'))
+                    ->numeric()
+                    ->default(0)
+                ,
                 Forms\Components\Textarea::make('description')
                     ->label(__('label.description'))
                 ,
@@ -89,6 +95,7 @@ class MedalResource extends Resource
                     ->label(__('medal.fields.sale_begin_end_time'))
                     ->formatStateUsing(fn ($record) => new HtmlString(sprintf('%s ~<br/>%s', $record->sale_begin_time ?? '--', $record->sale_end_time ?? '--')))
                 ,
+                Tables\Columns\TextColumn::make('bonus_addition_factor')->label(__('medal.fields.bonus_addition_factor')),
                 Tables\Columns\TextColumn::make('price')->label(__('label.price')),
 
                 Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
