@@ -138,3 +138,26 @@ function buyMedal($params)
     $rep = new \App\Repositories\BonusRepository();
     return $rep->consumeToBuyMedal($CURUSER['id'], $params['medal_id']);
 }
+
+function giftMedal($params)
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\BonusRepository();
+    return $rep->consumeToGiftMedal($CURUSER['id'], $params['medal_id'], $params['uid']);
+}
+
+function saveUserMedal($params)
+{
+    global $CURUSER;
+    $data = [];
+    foreach ($params as $param) {
+        $fieldAndId = explode('_', $param['name']);
+        $field = $fieldAndId[0];
+        $id = $fieldAndId[1];
+        $value = $param['value'];
+        $data[$id][$field] = $value;
+    }
+//    dd($params, $data);
+    $rep = new \App\Repositories\MedalRepository();
+    return $rep->saveUserMedal($CURUSER['id'], $data);
+}

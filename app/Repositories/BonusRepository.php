@@ -6,6 +6,7 @@ use App\Models\BonusLogs;
 use App\Models\HitAndRun;
 use App\Models\Invite;
 use App\Models\Medal;
+use App\Models\Message;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserMedal;
@@ -58,19 +59,7 @@ class BonusRepository extends BaseRepository
         if ($exists) {
             throw new \LogicException("user: $uid already own this medal: $medalId.");
         }
-        if ($medal->get_type != Medal::GET_TYPE_EXCHANGE) {
-            throw new \LogicException("This medal can not be buy.");
-        }
-        if ($medal->inventory !== null && $medal->inventory <= 0) {
-            throw new \LogicException("Inventory empty.");
-        }
-        $now = now();
-        if ($medal->sale_begin_time && $medal->sale_begin_time->gt($now)) {
-            throw new \LogicException("Before sale begin time.");
-        }
-        if ($medal->sale_end_time && $medal->sale_end_time->lt($now)) {
-            throw new \LogicException("After sale end time.");
-        }
+        $medal->checkCanBeBuy();
         $requireBonus = $medal->price;
         NexusDB::transaction(function () use ($user, $medal, $requireBonus) {
             $comment = nexus_trans('bonus.comment_buy_medal', [
@@ -84,6 +73,67 @@ class BonusRepository extends BaseRepository
                 $expireAt = Carbon::now()->addDays($medal->duration)->toDateTimeString();
             }
             $user->medals()->attach([$medal->id => ['expire_at' => $expireAt, 'status' => UserMedal::STATUS_NOT_WEARING]]);
+            if ($medal->inventory !== null) {
+                $affectedRows = NexusDB::table('medals')
+                    ->where('id', $medal->id)
+                    ->where('inventory', $medal->inventory)
+                    ->decrement('inventory')
+                ;
+                if ($affectedRows != 1) {
+                    throw new \RuntimeException("Decrement medal({$medal->id}) inventory affected rows != 1($affectedRows)");
+                }
+            }
+
+        });
+
+        return true;
+
+    }
+
+    public function consumeToGiftMedal($uid, $medalId, $toUid): bool
+    {
+        $user = User::query()->findOrFail($uid);
+        $toUser = User::query()->findOrFail($toUid);
+        $medal = Medal::query()->findOrFail($medalId);
+        $exists = $toUser->valid_medals()->where('medal_id', $medalId)->exists();
+        do_log(last_query());
+        if ($exists) {
+            throw new \LogicException("user: $toUid already own this medal: $medalId.");
+        }
+        $medal->checkCanBeBuy();
+        $giftFee = $medal->price * ($medal->gift_fee_factor ?? 0);
+        $requireBonus = $medal->price + $giftFee;
+        NexusDB::transaction(function () use ($user, $toUser, $medal, $requireBonus, $giftFee) {
+            $comment = nexus_trans('bonus.comment_gift_medal', [
+                'bonus' => $requireBonus,
+                'medal_name' => $medal->name,
+                'to_username' => $toUser->username,
+            ], $user->locale);
+            do_log("comment: $comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_GIFT_MEDAL, "$comment(medal ID: {$medal->id})");
+
+            $expireAt = null;
+            if ($medal->duration > 0) {
+                $expireAt = Carbon::now()->addDays($medal->duration)->toDateTimeString();
+            }
+            $msg = [
+                'sender' => 0,
+                'receiver' => $toUser->id,
+                'subject' => nexus_trans('message.receive_medal.subject', [], $toUser->locale),
+                'msg' => nexus_trans('message.receive_medal.body', [
+                    'username' => $user->username,
+                    'cost_bonus' => $requireBonus,
+                    'medal_name' => $medal->name,
+                    'price' => $medal->price,
+                    'gift_fee_total' => $giftFee,
+                    'gift_fee_factor' => $medal->gift_fee_factor ?? 0,
+                    'expire_at' => $expireAt ?? nexus_trans('label.permanent'),
+                    'bonus_addition_factor' => $medal->bonus_addition_factor ?? 0,
+                ], $toUser->locale),
+                'added' => now()
+            ];
+            Message::add($msg);
+            $toUser->medals()->attach([$medal->id => ['expire_at' => $expireAt, 'status' => UserMedal::STATUS_NOT_WEARING]]);
             if ($medal->inventory !== null) {
                 $affectedRows = NexusDB::table('medals')
                     ->where('id', $medal->id)

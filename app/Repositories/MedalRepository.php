@@ -74,7 +74,7 @@ class MedalRepository extends BaseRepository
         return $user->medals()->attach([$medal->id => ['expire_at' => $expireAt, 'status' => UserMedal::STATUS_NOT_WEARING]]);
     }
 
-    function toggleUserMedalStatus($id, $userId)
+    public function toggleUserMedalStatus($id, $userId)
     {
         $userMedal = UserMedal::query()->findOrFail($id);
         if ($userMedal->uid != $userId) {
@@ -89,6 +89,34 @@ class MedalRepository extends BaseRepository
         $userMedal->save();
         clear_user_cache($userId);
         return $userMedal;
+    }
+
+    public function saveUserMedal(int $userId, array $userMedalData)
+    {
+        $user = User::query()->findOrFail($userId);
+        $validMedals = $user->valid_medals;
+        if ($validMedals->isEmpty()) {
+            return true;
+        }
+        $statusCaseWhens = $priorityCaseWhens = $idArr = [];
+        foreach ($validMedals as $medal) {
+            $id = $medal->pivot->id;
+            $idArr[] = $id;
+            if (isset($userMedalData[$id]['status'])) {
+                $status = UserMedal::STATUS_WEARING;
+            } else {
+                $status = UserMedal::STATUS_NOT_WEARING;
+            }
+            $statusCaseWhens[] = sprintf('when `id` = %s then %s', $id, $status);
+            $priorityCaseWhens[] = sprintf('when `id` = %s then %s', $id, $userMedalData[$id]['priority'] ?? 0);
+        }
+        $sql = sprintf(
+            'update user_medals set `status` = case %s end, `priority` = case %s end where id in (%s)',
+            implode(' ', $statusCaseWhens), implode(' ', $priorityCaseWhens), implode(',', $idArr)
+        );
+        do_log("sql: $sql");
+        clear_user_cache($userId);
+        return NexusDB::statement($sql);
     }
 
 }

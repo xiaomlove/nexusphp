@@ -32,6 +32,7 @@ class BonusLogs extends NexusModel
     const BUSINESS_TYPE_BUY_TEMPORARY_INVITE = 15;
     const BUSINESS_TYPE_BUY_RAINBOW_ID = 16;
     const BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD = 17;
+    const BUSINESS_TYPE_GIFT_MEDAL = 18;
 
     public static array $businessTypes = [
         self::BUSINESS_TYPE_CANCEL_HIT_AND_RUN => ['text' => 'Cancel H&R'],
@@ -51,6 +52,7 @@ class BonusLogs extends NexusModel
         self::BUSINESS_TYPE_BUY_TEMPORARY_INVITE => ['text' => 'Buy temporary invite'],
         self::BUSINESS_TYPE_BUY_RAINBOW_ID => ['text' => 'Buy rainbow ID'],
         self::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD => ['text' => 'Buy change username card'],
+        self::BUSINESS_TYPE_GIFT_MEDAL => ['text' => 'Gift medal to someone'],
     ];
 
     public static function getBonusForCancelHitAndRun()

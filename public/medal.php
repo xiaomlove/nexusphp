@@ -18,10 +18,12 @@ $columnImageLargeLabel = nexus_trans('medal.fields.image_large');
 $columnPriceLabel = nexus_trans('medal.fields.price');
 $columnDurationLabel = nexus_trans('medal.fields.duration');
 $columnDescriptionLabel = nexus_trans('medal.fields.description');
-$columnActionLabel = nexus_trans('nexus.action');
+$columnBuyLabel = nexus_trans('medal.buy_btn');
 $columnSaleBeginEndTimeLabel = nexus_trans('medal.fields.sale_begin_end_time');
 $columnInventoryLabel = nexus_trans('medal.fields.inventory');
 $columnBonusAdditionFactorLabel = nexus_trans('medal.fields.bonus_addition_factor');
+$columnGiftLabel = nexus_trans('medal.gift_btn');
+$columnGiftFeeFactorLabel = nexus_trans('medal.fields.gift_fee_factor');
 $header = '<h1 style="text-align: center">'.$title.'</h1>';
 $filterForm = <<<FORM
 <div>
@@ -41,13 +43,15 @@ $table = <<<TABLE
 <td class="colhead">ID</td>
 <td class="colhead">$columnNameLabel</td>
 <td class="colhead">$columnImageLargeLabel</td>
-<td class="colhead">$columnSaleBeginEndTimeLabel</td>
+<td class="colhead" style="width: 115px">$columnSaleBeginEndTimeLabel</td>
 <td class="colhead">$columnBonusAdditionFactorLabel</td>
+<td class="colhead">$columnGiftFeeFactorLabel</td>
 <td class="colhead">$columnPriceLabel</td>
 <td class="colhead">$columnDurationLabel</td>
 <td class="colhead">$columnInventoryLabel</td>
 <td class="colhead">$columnDescriptionLabel</td>
-<td class="colhead">$columnActionLabel</td>
+<td class="colhead">$columnBuyLabel</td>
+<td class="colhead">$columnGiftLabel</td>
 </tr>
 </thead>
 TABLE;
@@ -59,45 +63,77 @@ $userMedals = \App\Models\UserMedal::query()->where('uid', $CURUSER['id'])
     ->keyBy('medal_id')
 ;
 foreach ($rows as $row) {
-    $disabled = ' disabled';
-    $class = '';
-    if ($userMedals->has($row->id)) {
-        $btnText = nexus_trans('medal.buy_already');
-    } elseif ($row->get_type == \App\Models\Medal::GET_TYPE_GRANT) {
-        $btnText = nexus_trans('medal.grant_only');
-    } elseif ($row->sale_begin_time && $row->sale_begin_time->gt($now)) {
-        $btnText = nexus_trans('medal.before_sale_begin_time');
-    } elseif ($row->sale_end_time && $row->sale_end_time->lt($now)) {
-        $btnText = nexus_trans('medal.after_sale_end_time');
-    } elseif ($row->inventory !== null && $row->inventory <= 0) {
-        $btnText = nexus_trans('medal.inventory_empty');
-    } elseif ($CURUSER['seedbonus'] < $row->price) {
-        $btnText = nexus_trans('medal.require_more_bonus');
-    } else {
-        $btnText = nexus_trans('medal.buy_btn');
-        $disabled = '';
-        $class = 'buy';
+    $buyDisabled = $giftDisabled = ' disabled';
+    $buyClass = $giftClass = '';
+    try {
+        $row->checkCanBeBuy();
+        if ($userMedals->has($row->id)) {
+            $buyBtnText = nexus_trans('medal.buy_already');
+        } elseif ($CURUSER['seedbonus'] < $row->price) {
+            $buyBtnText = nexus_trans('medal.require_more_bonus');
+        } else {
+            $buyBtnText = nexus_trans('medal.buy_btn');
+            $buyDisabled = '';
+            $buyClass = 'buy';
+        }
+        if ($CURUSER['seedbonus'] < $row->price * (1 + ($row->gift_fee_factor ?? 0))) {
+            $giftBtnText = nexus_trans('medal.require_more_bonus');
+        } else {
+            $giftBtnText = nexus_trans('medal.gift_btn');
+            $giftDisabled = '';
+            $giftClass = 'gift';
+        }
+    } catch (\Exception $exception) {
+        $buyBtnText = $giftBtnText = $exception->getMessage();
     }
-    $action = sprintf(
+    $buyAction = sprintf(
         '<input type="button" class="%s" data-id="%s" value="%s"%s>',
-        $class, $row->id, $btnText, $disabled
+        $buyClass, $row->id, $buyBtnText, $buyDisabled
+    );
+    $giftAction = sprintf(
+        '<input type="number" class="uid" %s style="width: 60px" placeholder="UID"><input type="button" class="%s" data-id="%s" value="%s"%s>',
+         $giftDisabled, $giftClass, $row->id, $giftBtnText, $giftDisabled
     );
     $table .= sprintf(
-        '<tr><td>%s</td><td>%s</td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
-        $row->id, $row->name, $row->image_large, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', $row->bonus_addition_factor, number_format($row->price), $row->durationText, $row->inventory ?? nexus_trans('label.infinite'), $row->description, $action
+        '<tr><td><span class="nowrap">%s</span></td><td><span class="nowrap">%s</span></td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
+        $row->id, $row->name, $row->image_large, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', $row->bonus_addition_factor, $row->gift_fee_factor ?? 0, number_format($row->price), $row->durationText, $row->inventory ?? nexus_trans('label.infinite'), $row->description, $buyAction, $giftAction
     );
 }
 $table .= '</tbody></table>';
 echo $header . $table . $paginationBottom;
 end_main_frame();
-$confirmMsg = nexus_trans('medal.confirm_to_buy');
+$confirmBuyMsg = nexus_trans('medal.confirm_to_buy');
+$confirmGiftMsg = nexus_trans('medal.confirm_to_gift');
 $js = <<<JS
 jQuery('.buy').on('click', function (e) {
     let medalId = jQuery(this).attr('data-id')
-    layer.confirm("{$confirmMsg}", function (index) {
+    layer.confirm("{$confirmBuyMsg}", function (index) {
         let params = {
             action: "buyMedal",
             params: {medal_id: medalId}
+        }
+        console.log(params)
+        jQuery.post('ajax.php', params, function(response) {
+            console.log(response)
+            if (response.ret != 0) {
+                layer.alert(response.msg)
+                return
+            }
+            window.location.reload()
+        }, 'json')
+    })
+})
+jQuery('.gift').on('click', function (e) {
+    let medalId = jQuery(this).attr('data-id')
+    let uid = jQuery(this).prev().val()
+    if (!uid) {
+        layer.alert('Require UID')
+        return
+    }
+    layer.confirm("{$confirmGiftMsg}" + uid + " ?", function (index) {
+        let params = {
+            action: "giftMedal",
+            params: {medal_id: medalId, uid: uid}
         }
         console.log(params)
         jQuery.post('ajax.php', params, function(response) {

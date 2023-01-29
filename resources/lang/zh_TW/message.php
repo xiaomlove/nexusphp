@@ -26,4 +26,8 @@ return [
         'subject' => '臨時邀請:change_type',
         'body' => '你的臨時邀請被管理員 :operator :change_type :count 個，理由：:reason。',
     ],
+    'receive_medal' => [
+        'subject' => '收到贈送勛章',
+        'body' => '用戶 :username 花費魔力 :cost_bonus 購買了勛章[:medal_name]並贈送與你。此勛章價值 :price，手續費 :gift_fee_total(系數：:gift_fee_factor)，你將擁有此勛章有效期至: :expire_at，勛章的魔力加成系數為: :bonus_addition_factor。',
+    ],
 ];

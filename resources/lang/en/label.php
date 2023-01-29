@@ -35,6 +35,7 @@ return [
     'reset' => 'Reset',
     'anonymous' => 'Anonymous',
     'infinite' => 'Infinite',
+    'save' => 'Save',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

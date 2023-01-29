@@ -18,6 +18,7 @@ class Medal extends NexusModel
     protected $fillable = [
         'name', 'description', 'image_large', 'image_small', 'price', 'duration', 'get_type',
         'display_on_medal_page', 'sale_begin_time', 'sale_end_time', 'inventory', 'bonus_addition_factor',
+        'gift_fee_factor',
     ];
 
     public $timestamps = true;
@@ -53,6 +54,23 @@ class Medal extends NexusModel
             return $this->duration;
         }
         return nexus_trans("label.permanent");
+    }
+
+    public function checkCanBeBuy()
+    {
+        if ($this->get_type == self::GET_TYPE_GRANT) {
+            throw new \RuntimeException(nexus_trans('medal.grant_only'));
+        }
+        $now = now();
+        if ($this->sale_begin_time && $this->sale_begin_time->gt($now)) {
+            throw new \RuntimeException(nexus_trans('medal.before_sale_begin_time'));
+        }
+        if ($this->sale_end_time && $this->sale_end_time->lt($now)) {
+            throw new \RuntimeException(nexus_trans('medal.after_sale_end_time'));
+        }
+        if ($this->inventory !== null && $this->inventory <= 0) {
+            throw new \RuntimeException(nexus_trans('medal.inventory_empty'));
+        }
     }
 
     public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

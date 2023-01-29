@@ -28,6 +28,8 @@ return [
         'users_count' => '已售数量',
         'bonus_addition_factor' => '魔力加成系数',
         'bonus_addition_factor_help' => '如：0.01 表示 1% 的加成，留空无加成',
+        'gift_fee_factor' => '赠送手续费系数',
+        'gift_fee_factor_help' => '赠送给其他用户时额外收取手续费等于价格乘以此系数',
     ],
     'buy_already' => '已经购买',
     'buy_btn' => '购买',
@@ -37,4 +39,6 @@ return [
     'before_sale_begin_time' => '未到可购买时间',
     'after_sale_end_time' => '已过可购买时间',
     'inventory_empty' => '库存不足',
+    'gift_btn' => '赠送',
+    'confirm_to_gift' => '确定要赠送给用户 ',
 ];

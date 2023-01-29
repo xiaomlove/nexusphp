@@ -27,4 +27,8 @@ return [
         'subject' => 'Temporary invite :change_type',
         'body' => 'Your temporary invite count had :change_type :count by :operator, reason: :reason.',
     ],
+    'receive_medal' => [
+        'subject' => 'Receive gift medal',
+        'body' => "User :username purchased a medal [:medal_name] at a cost of :cost_bonus and gave it to you. The medal is worth :price, the fee is :gift_fee_total(factor: :gift_fee_factor), you will have this medal until: :expire_at, and the medal's bonus addition factor is: :bonus_addition_factor.",
+    ],
 ];

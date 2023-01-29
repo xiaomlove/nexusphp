@@ -6,6 +6,7 @@ return [
     'comment_buy_temporary_invite' => 'Spend :bonus bonus buy :count temporary invite',
     'comment_buy_rainbow_id' => 'Spend :bonus bonus buy :duration days rainbow ID',
     'comment_buy_change_username_card' => 'Spend :bonus bonus buy change username card',
+    'comment_gift_medal' => 'Spend :bonus bonus buy :medal_name and gift to :to_username',
     'table_thead' => [
         'reward_type' => 'Reward type',
         'count' => 'Count',

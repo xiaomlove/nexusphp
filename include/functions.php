@@ -5870,20 +5870,33 @@ function msgalert($url, $text, $bgcolor = "red")
 function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false): string
 {
     $medalImages = [];
-    $wrapBefore = '<div style="display: flex;justify-content: center;align-items: baseline;margin-top: 10px;">';
-    $wrapAfter = '</div>';
+    $wrapBefore = '<form><div style="display: flex;justify-content: center;margin-top: 10px;">';
+    $wrapAfter = '</div></form>';
     foreach ($medals as $medal) {
-        $html = sprintf('<div style="display: inline"><img src="%s" title="%s" class="preview" style="max-height: %spx"/>', $medal->image_large, $medal->name, $maxHeight);
+        $html = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><img src="%s" title="%s" class="preview" style="max-height: %spx;max-width: %spx"/>', $medal->image_large, $medal->name, $maxHeight, $maxHeight);
         if ($withActions) {
+            $html .= sprintf(
+                '<div style="display: flex;flex-direction: column;align-items:flex-start"><span>%s: %s</span><span>%s: %s</span><label>%s: <input type="number" name="priority_%s" value="%s" style="width: 50px" placeholder="%s"></label>',
+                nexus_trans('label.expire_at'),
+                $medal->pivot->expire_at ? format_datetime($medal->pivot->expire_at) : nexus_trans('label.permanent'),
+                nexus_trans('medal.fields.bonus_addition_factor'),
+                $medal->bonus_addition_factor ?? 0,
+                nexus_trans('label.priority'),
+                $medal->pivot->id,
+                $medal->pivot->priority ?? 0,
+                nexus_trans('label.priority_help')
+            );
             $checked = '';
             if ($medal->pivot->status == \App\Models\UserMedal::STATUS_WEARING) {
                 $checked = ' checked';
             }
-            $html .= sprintf('<label>%s<input type="checkbox" name="medal_wearing_status" value="%s"%s></label>', nexus_trans('medal.action_wearing'), $medal->pivot->id, $checked);
+            $html .= sprintf('<label>%s<input type="checkbox" name="status_%s" value="1"%s></label>', nexus_trans('medal.action_wearing'), $medal->pivot->id, $checked);
+            $html .= '</div>';
         }
         $html .= '</div>';
         $medalImages[] = $html;
     }
+    $medalImages[] = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><span></span><input type="button" id="save-user-medal-btn" value="%s"/></div>', nexus_trans('label.save'));
     return $wrapBefore . implode('', $medalImages) . $wrapAfter;
 }
 
@@ -5962,6 +5975,7 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $valuetwo = $bzero_bonus * ( 2 / $pi);
     $valuethree = $logofpointone / ($nzero_bonus - 1);
     $timenow = time();
+    $nowStr = date('Y-m-d H:i:s');
     $sectoweek = 7*24*60*60;
 
     $A = $official_a = $size = $official_size = 0;
@@ -5989,8 +6003,8 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $officialAdditionalFactor = \App\Models\Setting::get('bonus.official_addition');
     $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
     $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');
-    $userMedalResult = \Nexus\Database\NexusDB::select("select sum(bonus_addition_factor) as factor from medals where id in (select medal_id from user_medals where uid = $uid)");
-    $medalAdditionalFactor = $userMedalResult[0]['factor'] ?? 0;
+    $userMedalResult = \Nexus\Database\NexusDB::select("select sum(bonus_addition_factor) as factor from medals where id in (select medal_id from user_medals where uid = $uid and (expire_at is null or expire_at > '$nowStr'))");
+    $medalAdditionalFactor = floatval($userMedalResult[0]['factor'] ?? 0);
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor, medalAdditionalFactor: $medalAdditionalFactor");
     $last_action = "";
     foreach ($torrentResult as $torrent)

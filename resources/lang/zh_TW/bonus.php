@@ -6,6 +6,7 @@ return [
     'comment_buy_temporary_invite' => '花費 :bonus 魔力購買了 :count 個臨時邀請',
     'comment_buy_rainbow_id' => '花費 :bonus 魔力購買了 :duration 天的彩虹 ID',
     'comment_buy_change_username_card' => '花費 :bonus 魔力購買了改名卡',
+    'comment_gift_medal' => '花費 :bonus 魔力購買了 :medal_name 並贈送給 :to_username',
     'table_thead' => [
         'reward_type' => '獎勵類型',
         'count' => '數量',

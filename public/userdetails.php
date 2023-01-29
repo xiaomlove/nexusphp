@@ -77,14 +77,16 @@ print("<h1 style='margin:0px'>" . get_username($user['id'], true,false) . $count
 if ($userInfo->valid_medals->isNotEmpty()) {
     print build_medal_image($userInfo->{$medalType}, 120, $CURUSER['id'] == $user['id']);
     $warnMedalJs = <<<JS
-jQuery('input[type="checkbox"][name="medal_wearing_status"]').on("change", function (e) {
-    let input = jQuery(this);
-    let checked = input.prop("checked")
-    jQuery.post('ajax.php', {params: {id: this.value}, action: 'toggleUserMedalStatus'}, function (response) {
+jQuery('#save-user-medal-btn').on("click", function (e) {
+    let form = jQuery(this).closest('form');
+    let data = form.serializeArray();
+    console.log(data)
+    jQuery.post('ajax.php', {params: data, action: 'saveUserMedal'}, function (response) {
         console.log(response)
         if (response.ret != 0) {
-            input.prop("checked", !checked)
             layer.alert(response.msg)
+        } else {
+            window.location.reload()
         }
     }, 'json')
 })

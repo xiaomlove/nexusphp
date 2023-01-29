@@ -35,6 +35,7 @@ return [
     'reset' => '重置',
     'anonymous' => '匿名',
     'infinite' => '無限',
+    'save' => '保存',
     'setting' => [
         'nav_text' => '設置',
         'backup' => [
