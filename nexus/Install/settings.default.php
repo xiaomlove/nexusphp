@@ -438,5 +438,6 @@ return array (
     'system' => [
         'change_username_min_interval_in_days' => '365',
         'change_username_card_allow_characters_outside_the_alphabets' => 'no',
+        'maximum_number_of_medals_can_be_worn' => 3,
     ],
 );

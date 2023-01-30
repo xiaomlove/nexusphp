@@ -127,6 +127,10 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->integer()
                     ->label(__('label.setting.system.change_username_min_interval_in_days'))
                 ,
+                Forms\Components\TextInput::make('system.maximum_number_of_medals_can_be_worn')
+                    ->integer()
+                    ->label(__('label.setting.system.maximum_number_of_medals_can_be_worn'))
+                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);

@@ -1,7 +1,9 @@
 <?php
 namespace App\Repositories;
 
+use App\Exceptions\NexusException;
 use App\Models\Medal;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserMedal;
 use Carbon\Carbon;
@@ -99,16 +101,22 @@ class MedalRepository extends BaseRepository
             return true;
         }
         $statusCaseWhens = $priorityCaseWhens = $idArr = [];
+        $wearCount = 0;
         foreach ($validMedals as $medal) {
             $id = $medal->pivot->id;
             $idArr[] = $id;
             if (isset($userMedalData[$id]['status'])) {
                 $status = UserMedal::STATUS_WEARING;
+                $wearCount++;
             } else {
                 $status = UserMedal::STATUS_NOT_WEARING;
             }
             $statusCaseWhens[] = sprintf('when `id` = %s then %s', $id, $status);
             $priorityCaseWhens[] = sprintf('when `id` = %s then %s', $id, $userMedalData[$id]['priority'] ?? 0);
+        }
+        $maxWearAllow = Setting::get('system.maximum_number_of_medals_can_be_worn');
+        if ($maxWearAllow && $wearCount > $maxWearAllow) {
+            throw new NexusException(nexus_trans('medal.max_allow_wearing', ['count' => $maxWearAllow]));
         }
         $sql = sprintf(
             'update user_medals set `status` = case %s end, `priority` = case %s end where id in (%s)',

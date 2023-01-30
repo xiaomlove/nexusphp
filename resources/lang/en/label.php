@@ -84,7 +84,8 @@ return [
         'system' => [
             'tab_header' => 'System',
             'change_username_card_allow_characters_outside_the_alphabets' => 'Does the name change card allow characters other than English letters',
-            'change_username_min_interval_in_days' => 'the minimum interval days of Change user name',
+            'change_username_min_interval_in_days' => 'The minimum interval days of Change user name',
+            'maximum_number_of_medals_can_be_worn' => 'Maximum number of medals that can be worn',
         ],
     ],
     'user' => [

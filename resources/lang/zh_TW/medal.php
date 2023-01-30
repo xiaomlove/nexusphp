@@ -43,4 +43,5 @@ return [
     'inventory_empty' => '庫存不足',
     'gift_btn' => '贈送',
     'confirm_to_gift' => '確定要贈送給用戶 ',
+    'max_allow_wearing' => '最多允許同時佩戴 :count 個勛章',
 ];

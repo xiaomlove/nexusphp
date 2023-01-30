@@ -43,4 +43,5 @@ return [
     'inventory_empty' => 'Inventory empty',
     'gift_btn' => 'Gift',
     'confirm_to_gift' => 'Confirm to gift to user ',
+    'max_allow_wearing' => 'A maximum of :count medals can be worn at the same time',
 ];

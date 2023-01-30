@@ -43,4 +43,5 @@ return [
     'inventory_empty' => '库存不足',
     'gift_btn' => '赠送',
     'confirm_to_gift' => '确定要赠送给用户 ',
+    'max_allow_wearing' => '最多允许同时佩戴 :count 个勋章',
 ];
