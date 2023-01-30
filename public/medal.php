@@ -21,9 +21,9 @@ $columnDescriptionLabel = nexus_trans('medal.fields.description');
 $columnBuyLabel = nexus_trans('medal.buy_btn');
 $columnSaleBeginEndTimeLabel = nexus_trans('medal.fields.sale_begin_end_time');
 $columnInventoryLabel = nexus_trans('medal.fields.inventory');
-$columnBonusAdditionFactorLabel = nexus_trans('medal.fields.bonus_addition_factor');
+$columnBonusAdditionLabel = nexus_trans('medal.fields.bonus_addition');
 $columnGiftLabel = nexus_trans('medal.gift_btn');
-$columnGiftFeeFactorLabel = nexus_trans('medal.fields.gift_fee_factor');
+$columnGiftFeeLabel = nexus_trans('medal.fields.gift_fee');
 $header = '<h1 style="text-align: center">'.$title.'</h1>';
 $filterForm = <<<FORM
 <div>
@@ -40,16 +40,13 @@ $table = <<<TABLE
 <table border="1" cellspacing="0" cellpadding="5" width="100%">
 <thead>
 <tr>
-<td class="colhead">ID</td>
-<td class="colhead">$columnNameLabel</td>
 <td class="colhead">$columnImageLargeLabel</td>
-<td class="colhead" style="width: 115px">$columnSaleBeginEndTimeLabel</td>
-<td class="colhead">$columnBonusAdditionFactorLabel</td>
-<td class="colhead">$columnGiftFeeFactorLabel</td>
-<td class="colhead">$columnPriceLabel</td>
-<td class="colhead">$columnDurationLabel</td>
-<td class="colhead">$columnInventoryLabel</td>
 <td class="colhead">$columnDescriptionLabel</td>
+<td class="colhead" style="width: 115px">$columnSaleBeginEndTimeLabel</td>
+<td class="colhead">$columnDurationLabel</td>
+<td class="colhead">$columnBonusAdditionLabel</td>
+<td class="colhead">$columnPriceLabel</td>
+<td class="colhead">$columnInventoryLabel</td>
 <td class="colhead">$columnBuyLabel</td>
 <td class="colhead">$columnGiftLabel</td>
 </tr>
@@ -91,12 +88,12 @@ foreach ($rows as $row) {
         $buyClass, $row->id, $buyBtnText, $buyDisabled
     );
     $giftAction = sprintf(
-        '<input type="number" class="uid" %s style="width: 60px" placeholder="UID"><input type="button" class="%s" data-id="%s" value="%s"%s>',
-         $giftDisabled, $giftClass, $row->id, $giftBtnText, $giftDisabled
+        '<input type="number" class="uid" %s style="width: 60px" placeholder="UID"><input type="button" class="%s" data-id="%s" value="%s"%s><span class="nowrap">%s: %s</span>',
+         $giftDisabled, $giftClass, $row->id, $giftBtnText, $giftDisabled, $columnGiftFeeLabel, (($row->gift_fee_factor ?? 0) * 100).'%'
     );
     $table .= sprintf(
-        '<tr><td><span class="nowrap">%s</span></td><td><span class="nowrap">%s</span></td><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
-        $row->id, $row->name, $row->image_large, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', $row->bonus_addition_factor, $row->gift_fee_factor ?? 0, number_format($row->price), $row->durationText, $row->inventory ?? nexus_trans('label.infinite'), $row->description, $buyAction, $giftAction
+        '<tr><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td><h1>%s</h1>%s</td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
+        $row->image_large, $row->name, $row->description, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', $row->durationText, (($row->bonus_addition_factor ?? 0) * 100).'%', number_format($row->price),  $row->inventory ?? nexus_trans('label.infinite'), $buyAction, $giftAction
     );
 }
 $table .= '</tbody></table>';
