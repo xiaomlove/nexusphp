@@ -239,6 +239,8 @@ return [
         'ip_end' => '结束 IP',
         'ip_help' => '填写起始 IP + 结束 IP，或 IP(段)，不要同时填写',
         'status' => '状态',
+        'is_allowed' => '是否白名单',
+        'is_allowed_help' => '位于白名单中的 IP 不受 SeedBox 规则影响',
     ],
     'menu' => [
         'label' => '自定义菜单',

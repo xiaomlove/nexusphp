@@ -233,6 +233,8 @@ return [
         'ip_end' => '結束 IP',
         'ip_help' => '填寫起始 IP + 結束 IP，或 IP(段)，不要同時填寫',
         'status' => '狀態',
+        'is_allowed' => '是否白名單',
+        'is_allowed_help' => '位於白名單中的 IP 不受 SeedBox 規則影響',
     ],
     'menu' => [
         'label' => '自定義菜單',

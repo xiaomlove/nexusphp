@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\System;
 
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\SeedBoxRecordResource\Pages;
 use App\Filament\Resources\System\SeedBoxRecordResource\RelationManagers;
 use App\Models\SeedBoxRecord;
@@ -19,6 +20,8 @@ use PhpIP\IP;
 
 class SeedBoxRecordResource extends Resource
 {
+    use OptionsTrait;
+
     protected static ?string $model = SeedBoxRecord::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive';
@@ -46,6 +49,10 @@ class SeedBoxRecordResource extends Resource
                 Forms\Components\TextInput::make('ip_begin')->label(__('label.seed_box_record.ip_begin')),
                 Forms\Components\TextInput::make('ip_end')->label(__('label.seed_box_record.ip_end')),
                 Forms\Components\TextInput::make('ip')->label(__('label.seed_box_record.ip'))->helperText(__('label.seed_box_record.ip_help')),
+                Forms\Components\Toggle::make('is_allowed')
+                    ->label(__('label.seed_box_record.is_allowed'))
+                    ->helperText(__('label.seed_box_record.is_allowed_help'))
+                ,
                 Forms\Components\Textarea::make('comment')->label(__('label.comment')),
             ])->columns(1);
     }
@@ -74,7 +81,8 @@ class SeedBoxRecordResource extends Resource
                         }
                     })
                     ->formatStateUsing(fn ($record) => $record->ip ?: sprintf('%s ~ %s', $record->ip_begin, $record->ip_end)),
-                Tables\Columns\TextColumn::make('comment')->label(__('label.comment')),
+                Tables\Columns\TextColumn::make('comment')->label(__('label.comment'))->searchable(),
+                Tables\Columns\IconColumn::make('is_allowed')->boolean()->label(__('label.seed_box_record.is_allowed')),
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors([
                         'success' => SeedBoxRecord::STATUS_ALLOWED,
@@ -96,7 +104,9 @@ class SeedBoxRecordResource extends Resource
                     })
                 ,
                 Tables\Filters\SelectFilter::make('type')->options(SeedBoxRecord::listTypes('text'))->label(__('label.seed_box_record.type')),
+                Tables\Filters\SelectFilter::make('is_allowed')->options(self::getYesNoOptions())->label(__('label.seed_box_record.is_allowed')),
                 Tables\Filters\SelectFilter::make('status')->options(SeedBoxRecord::listStatus('text'))->label(__('label.seed_box_record.status')),
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -233,6 +233,8 @@ return [
         'ip_end' => 'End IP',
         'ip_help' => 'Fill in the begin IP + end IP, or IP (Block), not both',
         'status' => 'Status',
+        'is_allowed' => 'Is whitelisted',
+        'is_allowed_help' => 'IPs in the whitelist are not affected by the SeedBox rule',
     ],
     'menu' => [
         'label' => 'Custom menu',

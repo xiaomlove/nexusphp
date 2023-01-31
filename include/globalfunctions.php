@@ -836,8 +836,19 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
     $ipObject = \PhpIP\IP::create($ip);
     $ipNumeric = $ipObject->numeric();
     $ipVersion = $ipObject->getVersion();
+    //check allow list first, not consider specific user
+    $checkSeedBoxAllowedSql = sprintf(
+        'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `version` = %s and `status` = %s and `is_allowed` = 1 limit 1',
+        $ipNumeric, $ipNumeric, $ipVersion, \App\Models\SeedBoxRecord::STATUS_ALLOWED
+    );
+    $res = \Nexus\Database\NexusDB::select($checkSeedBoxAllowedSql);
+    if (!empty($res)) {
+        \Nexus\Database\NexusDB::cache_put($key, 1, 300);
+        do_log("$key, get result from database, is_allowed = 1, false");
+        return false;
+    }
     $checkSeedBoxAdminSql = sprintf(
-        'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `type` = %s and `version` = %s and `status` = %s limit 1',
+        'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `type` = %s and `version` = %s and `status` = %s and `is_allowed` = 0 limit 1',
         $ipNumeric, $ipNumeric, \App\Models\SeedBoxRecord::TYPE_ADMIN, $ipVersion, \App\Models\SeedBoxRecord::STATUS_ALLOWED
     );
     $res = \Nexus\Database\NexusDB::select($checkSeedBoxAdminSql);
@@ -848,7 +859,7 @@ function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
     }
     if ($uid !== null) {
         $checkSeedBoxUserSql = sprintf(
-            'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `uid` = %s and `type` = %s and `version` = %s and `status` = %s limit 1',
+            'select id from seed_box_records where `ip_begin_numeric` <= "%s" and `ip_end_numeric` >= "%s" and `uid` = %s and `type` = %s and `version` = %s and `status` = %s and `is_allowed` = 0  limit 1',
             $ipNumeric, $ipNumeric, $uid, \App\Models\SeedBoxRecord::TYPE_USER, $ipVersion, \App\Models\SeedBoxRecord::STATUS_ALLOWED
         );
         $res = \Nexus\Database\NexusDB::select($checkSeedBoxUserSql);
