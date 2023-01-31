@@ -55,6 +55,11 @@ class BonusLogs extends NexusModel
         self::BUSINESS_TYPE_GIFT_MEDAL => ['text' => 'Gift medal to someone'],
     ];
 
+    public function getBusinessTypeTextAttribute()
+    {
+        return nexus_trans('bonus-log.business_types.' . $this->business_type);
+    }
+
     public static function getBonusForCancelHitAndRun()
     {
         $result = Setting::get('bonus.cancel_hr');

@@ -5831,6 +5831,8 @@ function get_ip_location_from_geoip($ip): bool|array
             'version' => '',
             'country' => '',
             'city' => '',
+            'country_en' => '',
+            'city_en' => '',
         ];
         try {
             $record = $reader->city($ip);
@@ -5842,7 +5844,10 @@ function get_ip_location_from_geoip($ip): bool|array
                 $info['version'] = 6;
             }
             $info['country'] = $countryName;
+            $info['country_en'] = $record->country->names['en'] ?? '';
             $info['city'] = $cityName;
+            $info['city_en'] = $record->city->names['en'] ?? '';
+
         } catch (\Exception $exception) {
             do_log($exception->getMessage() . $exception->getTraceAsString(), 'error');
         }
@@ -5857,6 +5862,9 @@ function get_ip_location_from_geoip($ip): bool|array
         'flagpic' => '',
         'start_ip' => $ip,
         'end_ip' => $ip,
+        'ip_version' => $locationInfo['version'],
+        'country_en' => $locationInfo['country_en'],
+        'city_en' => $locationInfo['city_en'],
     ];
 }
 

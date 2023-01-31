@@ -36,6 +36,9 @@ return [
     'anonymous' => '匿名',
     'infinite' => '无限',
     'save' => '保存',
+    'country' => '国家',
+    'city' => '城市',
+    'client' => '客户端',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [

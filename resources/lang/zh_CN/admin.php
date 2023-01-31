@@ -32,6 +32,8 @@ return [
         'torrent_operation_log' => '种子操作记录',
         'invite' => '用户邀请',
         'user_props' => '用户道具',
+        'login_log' => '登录记录',
+        'bonus_log' => '魔力记录',
     ],
     'resources' => [
         'agent_allow' => [

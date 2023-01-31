@@ -222,7 +222,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
-        'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos', 'donoruntil', 'donor'
+        'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos', 'donoruntil', 'donor', 'language'
     ];
 
     public static function getDefaultUserAttributes(): array

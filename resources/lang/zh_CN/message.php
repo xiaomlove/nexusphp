@@ -31,4 +31,12 @@ return [
         'subject' => '收到赠送勋章',
         'body' => '用户 :username 花费魔力 :cost_bonus 购买了勋章[:medal_name]并赠送与你。此勋章价值 :price，手续费 :gift_fee_total(系数：:gift_fee_factor)，你将拥有此勋章有效期至: :expire_at，勋章的魔力加成系数为: :bonus_addition_factor。',
     ],
+    'login_notify' => [
+        'subject' => ':site_name 异地登录提醒',
+        'body' => <<<BODY
+你于 :this_login_time 进行了登录操作，IP：:this_ip，位置：:this_location。
+上次登录时间：:last_login_time，IP：:last_ip，位置：:last_location。
+若不是你本人操作，账号密码可能已经泄露，请及时修改！
+BODY,
+    ],
 ];

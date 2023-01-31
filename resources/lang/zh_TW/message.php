@@ -30,4 +30,12 @@ return [
         'subject' => '收到贈送勛章',
         'body' => '用戶 :username 花費魔力 :cost_bonus 購買了勛章[:medal_name]並贈送與你。此勛章價值 :price，手續費 :gift_fee_total(系數：:gift_fee_factor)，你將擁有此勛章有效期至: :expire_at，勛章的魔力加成系數為: :bonus_addition_factor。',
     ],
+    'login_notify' => [
+        'subject' => ':site_name 異地登錄提醒',
+        'body' => <<<BODY
+你於 :this_login_time 進行了登錄操作，IP：:this_ip，位置：:this_location。
+上次登錄時間：:last_login_time，IP：:last_ip，位置：:last_location。
+若不是你本人操作，賬號密碼可能已經泄露，請及時修改！
+BODY,
+    ]
 ];

@@ -36,6 +36,9 @@ return [
     'anonymous' => 'Anonymous',
     'infinite' => 'Infinite',
     'save' => 'Save',
+    'country' => 'Country',
+    'city' => 'City',
+    'client' => 'Client',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

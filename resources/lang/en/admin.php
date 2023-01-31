@@ -34,6 +34,8 @@ return [
         'torrent_operation_log' => 'Torrent operation logs',
         'invite' => 'Invites',
         'user_props' => 'User props',
+        'login_log' => 'Login logs',
+        'bonus_log' => 'Bonus logs',
     ],
     'resources' => [
         'agent_allow' => [
