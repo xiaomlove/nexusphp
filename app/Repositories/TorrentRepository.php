@@ -687,4 +687,28 @@ HTML;
         return $input;
     }
 
+    public function removeDuplicateSnatch()
+    {
+        $size = 2000;
+        $stickyPromotionExists = NexusDB::hasTable('');
+        while (true) {
+            $snatchRes = NexusDB::select("select userid, torrentid, group_concat(id) as ids from snatched group by userid, torrentid having(count(*)) > 1 limit $size");
+            if (empty($snatchRes)) {
+                break;
+            }
+            do_log("[DELETE_DUPLICATED_SNATCH], count: " . count($snatchRes));
+            foreach ($snatchRes as $snatchRow) {
+                $torrentId = $snatchRow['torrentid'];
+                $userId = $snatchRow['userid'];
+                $idArr = explode(',', $snatchRow['ids']);
+                sort($idArr, SORT_NUMERIC);
+                $remainId = array_pop($idArr);
+                $delIdStr = implode(',', $idArr);
+                do_log("[DELETE_DUPLICATED_SNATCH], torrent: $torrentId, user: $userId, snatchIdStr: $delIdStr");
+                NexusDB::statement("delete from snatched where id in ($delIdStr)");
+                NexusDB::statement("update claims set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
+            }
+        }
+    }
+
 }
