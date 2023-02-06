@@ -75,7 +75,7 @@ class Torrent
             $ptGen = new PTGen();
         }
         $ptGenInfo = $torrentInfo['pt_gen'];
-        if (!is_array($torrentInfo['pt_gen'])) {
+        if (!is_array($torrentInfo['pt_gen']) && is_string($torrentInfo['pt_gen'])) {
             $ptGenInfo = json_decode($ptGenInfo, true);
         }
 

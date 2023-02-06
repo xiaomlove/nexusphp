@@ -18,4 +18,9 @@ class CreateIcon extends CreateRecord
             'desc' => nexus_trans('label.icon.desc')
         ];
     }
+
+    public function afterCreate()
+    {
+        clear_icon_cache();
+    }
 }

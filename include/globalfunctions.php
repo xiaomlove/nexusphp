@@ -1044,6 +1044,15 @@ function clear_search_box_cache()
     \Nexus\Database\NexusDB::cache_del("search_box_content");
 }
 
+/**
+ * @see functions.php::get_category_icon_row()
+ */
+function clear_icon_cache()
+{
+    do_log("clear_icon_cache");
+    \Nexus\Database\NexusDB::cache_del("category_icon_content");
+}
+
 function user_can($permission, $fail = false, $uid = 0): bool
 {
     $log = "permission: $permission, fail: $fail, user: $uid";

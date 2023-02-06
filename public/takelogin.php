@@ -41,8 +41,8 @@ $locationInfo = get_ip_location_from_geoip($ip);
 $thisLoginLog = \App\Models\LoginLog::query()->create([
     'ip' => $ip,
     'uid' => $row['id'],
-    'country' => $locationInfo['country_en'],
-    'city' => $locationInfo['city_en'],
+    'country' => $locationInfo['country_en'] ?? '',
+    'city' => $locationInfo['city_en'] ?? '',
     'client' => 'Web',
 ]);
 $lastLoginLog = \App\Models\LoginLog::query()->where('uid', $row['id'])->orderBy('id', 'desc')->first();

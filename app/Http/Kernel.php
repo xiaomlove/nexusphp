@@ -43,7 +43,7 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\Platform::class,
+//            \App\Http\Middleware\Platform::class,
         ],
         'filament' => [
             \Illuminate\Session\Middleware\StartSession::class,

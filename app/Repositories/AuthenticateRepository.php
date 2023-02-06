@@ -17,9 +17,9 @@ class AuthenticateRepository extends BaseRepository
         if (!$user || md5($user->secret . $password . $user->secret) != $user->passhash) {
             throw new \InvalidArgumentException('Username or password invalid.');
         }
-        if (nexus()->isPlatformAdmin() && !$user->canAccessAdmin()) {
-            throw new UnauthorizedException('Unauthorized!');
-        }
+//        if (nexus()->isPlatformAdmin() && !$user->canAccessAdmin()) {
+//            throw new UnauthorizedException('Unauthorized!');
+//        }
         $user->checkIsNormal();
         $tokenName = __METHOD__ . __LINE__;
         $token = DB::transaction(function () use ($user, $tokenName) {

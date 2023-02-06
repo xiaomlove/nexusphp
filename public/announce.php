@@ -3,7 +3,7 @@ require '../include/bittorrent_announce.php';
 require ROOT_PATH . 'include/core.php';
 do_log(nexus_json_encode($_SERVER));
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
-$agent = $_SERVER["HTTP_USER_AGENT"];
+$agent = $_SERVER["HTTP_USER_AGENT"] ?? '';
 block_browser();
 dbconn_announce();
 //check authkey
@@ -32,7 +32,7 @@ foreach (array("passkey","info_hash","peer_id","port","downloaded","uploaded","l
 	if (!isset($x)) err("Missing key: $x");
 foreach (array("info_hash","peer_id") as $x)
 	if (strlen($GLOBALS[$x]) != 20) err("Invalid $x (" . strlen($GLOBALS[$x]) . " - " . rawurlencode($GLOBALS[$x]) . ")");
-if (strlen($passkey) != 32) err("Invalid passkey (" . strlen($passkey) . " - $passkey)");
+if (isset($passkey) && strlen($passkey) != 32) err("Invalid passkey (" . strlen($passkey) . " - $passkey)");
 
 //4. GET IP AND CHECK PORT
 $ip = getip();	// avoid to get the spoof ip from some agent

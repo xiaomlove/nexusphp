@@ -26,7 +26,7 @@ function emu_getallheaders() {
 
 function block_browser()
 {
-	$agent = $_SERVER["HTTP_USER_AGENT"];
+	$agent = $_SERVER["HTTP_USER_AGENT"] ?? '';
 	if (preg_match("/^Mozilla/", $agent) || preg_match("/^Opera/", $agent) || preg_match("/^Links/", $agent) || preg_match("/^Lynx/", $agent) )
 		err("Browser access blocked!");
 // check headers

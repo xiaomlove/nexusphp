@@ -28,4 +28,9 @@ class EditIcon extends EditRecord
             'desc' => nexus_trans('label.icon.desc')
         ];
     }
+
+    public function afterSave()
+    {
+        clear_icon_cache();
+    }
 }
