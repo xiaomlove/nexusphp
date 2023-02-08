@@ -46,7 +46,7 @@ class UserMetaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('uid')
                     ->searchable()
                     ->label(__('label.username'))
@@ -63,6 +63,7 @@ class UserMetaResource extends Resource
                     ->formatStateUsing(fn ($state) => format_datetime($state))
                 ,
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 Tables\Filters\Filter::make('uid')
                     ->form([

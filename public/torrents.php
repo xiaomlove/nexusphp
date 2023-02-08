@@ -968,7 +968,7 @@ else stdhead($lang_torrents['head_special']);
 print("<table width=\"97%\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
 
 displayHotAndClassic();
-
+$searchBoxRightTdStyle = 'padding: 1px;padding-left: 10px;white-space: nowrap';
 if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showing bookmarked torrents from all sections;
 ?>
 <form method="get" name="searchbox" action="?">
@@ -1085,56 +1085,56 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
                     </tr>
                     <?php }?>
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <font class="medium"><?php echo $lang_torrents['size_range'] ?></font>
                         </td>
                     </tr>
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <input type="number" min="1" name="size_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['size_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="size_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['size_end'] ?? '') ?>"/>
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <font class="medium"><?php echo $lang_torrents['seeders_range'] ?></font>
                         </td>
                     </tr>
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <input type="number" min="1" name="seeders_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['seeders_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="seeders_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['seeders_end'] ?? '') ?>"/>
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <font class="medium"><?php echo $lang_torrents['leechers_range'] ?></font>
                         </td>
                     </tr>
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <input type="number" min="1" name="leechers_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="leechers_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['leechers_end'] ?? '') ?>"/>
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <font class="medium"><?php echo $lang_torrents['times_completed_range'] ?></font>
                         </td>
                     </tr>
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <input type="number" min="1" name="times_completed_begin" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['times_completed_begin'] ?? '') ?>"/> ~ <input type="number" min="1" name="times_completed_end" style="width: <?php echo $filterInputWidth?>px" value="<?php echo htmlspecialchars($_GET['times_completed_end'] ?? '') ?>"/>
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <font class="medium"><?php echo $lang_torrents['added_range'] ?></font>
                         </td>
                     </tr>
                     <tr>
-                        <td class="bottom" style="padding: 1px;padding-left: 10px">
+                        <td class="bottom" style="<?php echo $searchBoxRightTdStyle ?>">
                             <?php echo sprintf(
                                 '%s ~ %s',
                                 datetimepicker_input('added_begin', htmlspecialchars($_GET['added_begin'] ?? ''), '', ['require_files' => true, 'format' => 'Y-m-d', 'style' => 'width: '.$filterInputWidth.'px']),

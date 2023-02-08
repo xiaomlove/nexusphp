@@ -110,7 +110,7 @@ if (filesize($fn) == 0) {
 $approvalNotAllowed = $row['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no';
 $allowOwnerDownload = $row['owner'] == $CURUSER['id'];
 $canSeedBanned = user_can('seebanned');
-$canAccessTorrent = can_access_torrent($row);
+$canAccessTorrent = can_access_torrent($row, $CURUSER['id']);
 if ((($row['banned'] == 'yes' || ($approvalNotAllowed && !$allowOwnerDownload)) && !$canSeedBanned) || !$canAccessTorrent) {
     do_log("[DENY_DOWNLOAD], user: {$CURUSER['id']}, approvalNotAllowed: $approvalNotAllowed, allowOwnerDownload: $allowOwnerDownload, canSeedBanned: $canSeedBanned, canAccessTorrent: $canAccessTorrent", 'error');
     denyDownload();

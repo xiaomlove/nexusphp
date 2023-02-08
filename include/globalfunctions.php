@@ -1053,6 +1053,16 @@ function clear_icon_cache()
     \Nexus\Database\NexusDB::cache_del("category_icon_content");
 }
 
+function clear_inbox_count_cache($uid)
+{
+    do_log("clear_inbox_count_cache");
+    foreach (\Illuminate\Support\Arr::wrap($uid) as $id) {
+        \Nexus\Database\NexusDB::cache_del('user_'.$id.'_inbox_count');
+        \Nexus\Database\NexusDB::cache_del('user_'.$id.'_unread_message_count');
+    }
+}
+
+
 function user_can($permission, $fail = false, $uid = 0): bool
 {
     $log = "permission: $permission, fail: $fail, user: $uid";

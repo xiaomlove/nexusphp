@@ -20,6 +20,8 @@ return [
         \App\Models\BonusLogs::BUSINESS_TYPE_BUY_RAINBOW_ID => '购买彩虹 ID',
         \App\Models\BonusLogs::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD => '购买改名卡',
         \App\Models\BonusLogs::BUSINESS_TYPE_GIFT_MEDAL => '赠送勋章',
+
+        \App\Models\BonusLogs::BUSINESS_TYPE_ROLE_WORK_SALARY => '工作组工资',
     ],
     'fields' => [
         'business_type' => '业务类型',

@@ -5776,7 +5776,7 @@ function list_require_search_box_id()
     return $maps[nexus()->getScript()] ?? [];
 }
 
-function can_access_torrent($torrent)
+function can_access_torrent($torrent, $uid)
 {
     global $specialcatmode;
     if (get_setting('main.spsct') != 'yes') {
@@ -5797,7 +5797,7 @@ function can_access_torrent($torrent)
     if ($searchBoxId != $specialcatmode) {
         return true;
     }
-    if (get_user_class() >= get_setting('authority.view_special_torrent')) {
+    if (user_can('view_special_torrent', false, $uid)) {
         return true;
     }
     return false;

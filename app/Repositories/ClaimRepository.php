@@ -259,7 +259,7 @@ class ClaimRepository extends BaseRepository
             }
 
             //Send message
-            Message::query()->insert($message);
+            Message::add($message);
         });
         do_log("[DONE], cost time: " . (time() - $now->timestamp) . " seconds");
         return true;

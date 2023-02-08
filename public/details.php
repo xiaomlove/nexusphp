@@ -33,7 +33,7 @@ if (!$row) {
     stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
 } elseif (
     ($row['banned'] == 'yes' && !user_can('seebanned') && $row['owner'] != $CURUSER['id'])
-    || (!can_access_torrent($row) && $row['owner'] != $CURUSER['id'])
+    || (!can_access_torrent($row, $CURUSER['id']) && $row['owner'] != $CURUSER['id'])
 ) {
     permissiondenied();
 } else {

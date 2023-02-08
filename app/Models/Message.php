@@ -28,8 +28,7 @@ class Message extends NexusModel
 
     public static function add(array $data): bool
     {
-        NexusDB::cache_del('user_'.$data["receiver"].'_inbox_count');
-        NexusDB::cache_del('user_'.$data["receiver"].'_unread_message_count');
+        clear_inbox_count_cache($data["receiver"]);
         return self::query()->insert($data);
     }
 

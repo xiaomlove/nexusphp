@@ -57,6 +57,7 @@ class BonusLogResource extends Resource
                     ->label(__('bonus-log.fields.old_total_value'))
                 ,
                 Tables\Columns\TextColumn::make('value')
+                    ->formatStateUsing(fn ($record) => $record->old_total_value > $record->new_total_value ? "-" . $record->value : "+" . $record->value)
                     ->label(__('bonus-log.fields.value'))
                 ,
                 Tables\Columns\TextColumn::make('new_total_value')
