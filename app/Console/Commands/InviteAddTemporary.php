@@ -31,7 +31,9 @@ class InviteAddTemporary extends Command
         $uid = $this->argument('uid');
         $days = $this->argument('days');
         $count = $this->argument('count');
-        $this->info("uid: $uid, days: $days, count: $count");
+        $log = "uid: $uid, days: $days, count: $count";
+        $this->info($log);
+        do_log($log);
         $uidArr = preg_split('/[\s,]+/', $uid);
         GenerateTemporaryInvite::dispatch($uidArr, $days, $count);
         return Command::SUCCESS;

@@ -3,18 +3,13 @@ require "../include/bittorrent.php";
 if ($_SERVER["REQUEST_METHOD"] != "POST")
     stderr("Error", "Permission denied!");
 dbconn();
+require_once(get_langfile_path('increment-bulk.php'));
 loggedinorreturn();
 
 if (get_user_class() < UC_SYSOP)
     stderr("Sorry", "Permission denied.");
 
-$validTypeMap = [
-    'seedbonus' => 'Bonus',
-    'attendance_card' => 'Attend card',
-    'invites' => 'Invite',
-    'uploaded' => 'Upload',
-    'tmp_invites' => 'Temporary invite',
-];
+$validTypeMap = $lang_increment_bulk['types'];
 $sender_id = ($_POST['sender'] == 'system' ? 0 : (int)$CURUSER['id']);
 $dt = sqlesc(date("Y-m-d H:i:s"));
 $msg = trim($_POST['msg']);
