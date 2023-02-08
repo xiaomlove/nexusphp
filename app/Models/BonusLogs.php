@@ -9,6 +9,8 @@ class BonusLogs extends NexusModel
 
     protected $fillable = ['uid', 'business_type', 'old_total_value', 'value', 'new_total_value', 'comment'];
 
+    public $timestamps = true;
+
     const DEFAULT_BONUS_CANCEL_ONE_HIT_AND_RUN = 10000;
     const DEFAULT_BONUS_BUY_ATTENDANCE_CARD = 1000;
     const DEFAULT_BONUS_BUY_TEMPORARY_INVITE = 500;

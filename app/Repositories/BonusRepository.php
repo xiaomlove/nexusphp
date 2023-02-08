@@ -283,6 +283,7 @@ class BonusRepository extends BaseRepository
                 do_log("update user seedbonus affected rows != 1, query: " . last_query(), 'error');
                 throw new \RuntimeException("Update user seedbonus fail.");
             }
+            $nowStr = now()->toDateTimeString();
             $bonusLog = [
                 'business_type' => $logBusinessType,
                 'uid' => $user->id,
@@ -290,6 +291,8 @@ class BonusRepository extends BaseRepository
                 'value' => $requireBonus,
                 'new_total_value' => $newUserBonus,
                 'comment' => sprintf('[%s] %s', BonusLogs::$businessTypes[$logBusinessType]['text'], $logComment),
+                'created_at' => $nowStr,
+                'updated_at' => $nowStr,
             ];
             BonusLogs::query()->insert($bonusLog);
             do_log("bonusLog: " . nexus_json_encode($bonusLog));
