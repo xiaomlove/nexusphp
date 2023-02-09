@@ -151,6 +151,7 @@ $lang_mybonus = array
     'reward_type_official_addition' => '官种加成',
     'text_get_by_harem' => '后宫加成每小时将额外得到如下的魔力值',
     'harem_additional_desc' => '后宫只考虑直属后宫。每个后宫加成值可<a href="invite.php?id=%s" target="_blank" class="altlink">在此</a>查看',
+    'harem_additional_note' => '注意：如果自己不做种，此加成值不会增加到用户账号上',
     'harem_additional_factor' => '所得奖励为全部后宫的时魔（不考虑加成）之和，乘以后宫加成系数，当前值为：',
     'text_bonus_summary' => '每小时获得的合计魔力值',
     'col_count' => '数量',

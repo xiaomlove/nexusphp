@@ -509,6 +509,7 @@ if ($bonusTableResult['has_harem_addition']) {
     print("<ul>");
     print("<li>".sprintf($lang_mybonus['harem_additional_desc'], $CURUSER['id'])."</li>");
     print("<li>".$lang_mybonus['harem_additional_factor'].$bonusTableResult['harem_addition_factor']."</li>");
+    print("<li>".$lang_mybonus['harem_additional_note']."</li>");
     print("</ul>");
 }
 

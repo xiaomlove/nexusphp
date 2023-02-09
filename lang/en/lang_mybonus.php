@@ -151,6 +151,7 @@ where<ul><li><b>A</b> is an intermediate variable</li><li><b>Ti</b> is the <b>i<
     'reward_type_official_addition' => 'Official addition',
     'text_get_by_harem' => 'The harem addition will give the following additional bonus value per hour',
     'harem_additional_desc' => "Only direct harems will be considered for the harem. Each harem's bonus addition value can be viewed <a href=\"invite.php?id=%s\" class='altlink' target='_blank'>here</a>",
+    'harem_additional_note' => 'Note: If you do not do the seeding yourself, this bonus value will not be added to the user account',
     'harem_additional_factor' => 'The reward obtained is the sum of the hourly bonus of all the harems (regardless of the addition), multiplied by the harem bonus factor, with the current value of ',
     'text_bonus_summary' => 'Total bonus gained per hour',
     'col_count' => 'Counts',

@@ -9,7 +9,7 @@ $type = unesc($_GET["type"] ?? '');
 $menuSelected = $_REQUEST['menu'] ?? 'invitee';
 $pageSize = 50;
 if (($CURUSER['id'] != $id && !user_can('viewinvite')) || !is_valid_id($id))
-    stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied']);
+    stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied'], true, false);
 $userRep = new \App\Repositories\UserRepository();
 function inviteMenu ($selected = "invitee") {
     global $lang_invite, $id, $CURUSER, $invitesystem, $userRep;
@@ -25,7 +25,9 @@ function inviteMenu ($selected = "invitee") {
         $sendBtnText = $exception->getMessage();
         $disabled = ' disabled';
     }
-    print ("</ul><form style='position: absolute;top:0;right:0' method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".$disabled." value='".$sendBtnText."'></form></div>");
+    if ($CURUSER['id'] == $id) {
+        print ("</ul><form style='position: absolute;top:0;right:0' method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".$disabled." value='".$sendBtnText."'></form></div>");
+    }
     end_main_frame();
 }
 
@@ -54,6 +56,9 @@ if ($inv["invites"] != 1){
 }
 
 if ($type == 'new'){
+    if ($CURUSER['id'] != $id) {
+        stderr($lang_invite['std_sorry'],$lang_invite['std_permission_denied'], true, false);
+    }
     try {
         $sendBtnText = $userRep->getInviteBtnText($CURUSER['id']);
     } catch (\Exception $exception) {

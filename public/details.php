@@ -111,7 +111,6 @@ if (!$row) {
 		else {
 			$uprow = (isset($row['owner']) ? get_username($row['owner'], false, true, true, false, false, true) : "<i>".$lang_details['text_unknown']."</i>");
 		}
-
 		if ($CURUSER["id"] == $row["owner"])
 			$CURUSER["downloadpos"] = "yes";
 		if ($CURUSER["downloadpos"] != "no")

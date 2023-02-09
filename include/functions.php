@@ -523,7 +523,7 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 		case UC_SYSOP: {$class_name = $this_lang_functions['text_sysops']; break;}
 		case UC_STAFFLEADER: {$class_name = $this_lang_functions['text_staff_leader']; break;}
 	}
-	if ($class < UC_VIP && isset($settingAccount["{$class}_alias"])) {
+	if (isset($options['with_alias']) && $options['with_alias'] && $class < UC_VIP && isset($settingAccount["{$class}_alias"])) {
 	    $alias = trim($settingAccount["{$class}_alias"]);
 	    if (!empty($alias)) {
 	        $class_name = sprintf('%s(%s)', $class_name, $alias);
@@ -3872,11 +3872,7 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
         }
 
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
-		$options = [
-//		    'uid' => $id,
-//            'with_role' => true,
-        ];
-		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true, false, false, $options) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true, $options) : "<span class='".get_user_class_name($arr['class'],true, false, false, $options) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
+		$username = ($link == true ? "<a ". $link_ext . " href=\"" . $href . "\"" . ($target == true ? " target=\"_blank\"" : "") . " class='". get_user_class_name($arr['class'],true, false, false) . "_Name'>" . $username . "</a>" : $username) . $pics . ($withtitle == true ? " (" . ($arr['title'] == "" ?  get_user_class_name($arr['class'],false,true,true, ['with_alias' => true]) : "<span class='".get_user_class_name($arr['class'],true, false, false) . "_Name'><b>".htmlspecialchars($arr['title'])) . "</b></span>)" : "");
 
 		$username = "<span class=\"nowrap\">" . ( $bracket == true ? "(" . $username . ")" : $username) . "$medalHtml</span>";
 	}

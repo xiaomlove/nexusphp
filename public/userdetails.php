@@ -195,11 +195,12 @@ if (($user["privacy"] != "strong") OR (user_can('prfmanage')) || $CURUSER['id'] 
 	}
 */
     tr_small($lang_userdetails['text_user_id'], $userIdDisplay, 1);
+    $tmpInviteCount = $userInfo->temporary_invites()->count();
 	if ($CURUSER['id'] == $user['id'] || user_can('viewinvite')){
-	if ($user["invites"] <= 0)
+	if ($user["invites"] <= 0 && $tmpInviteCount <= 0)
 	tr_small($lang_userdetails['row_invitation'], $lang_userdetails['text_no_invitation'], 1);
 	else
-	tr_small($lang_userdetails['row_invitation'], "<a href=\"invite.php?id=".$user['id']."\" title=\"".$lang_userdetails['link_send_invitation']."\">".$user['invites']."</a>", 1);}
+	tr_small($lang_userdetails['row_invitation'], "<a href=\"invite.php?id=".$user['id']."\" title=\"".$lang_userdetails['link_send_invitation']."\">".sprintf('%s(%s)', $user['invites'], $tmpInviteCount)."</a>", 1);}
 	else{
 	if ($CURUSER['id'] != $user['id'] || get_user_class() != $viewinvite_class){
 	if ($user["invites"] <= 0)
