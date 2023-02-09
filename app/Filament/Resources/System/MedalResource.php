@@ -99,11 +99,11 @@ class MedalResource extends Resource
                 Tables\Columns\IconColumn::make('display_on_medal_page')->label(__('label.medal.display_on_medal_page'))->boolean(),
                 Tables\Columns\TextColumn::make('sale_begin_end_time')
                     ->label(__('medal.fields.sale_begin_end_time'))
-                    ->formatStateUsing(fn ($record) => new HtmlString(sprintf('%s ~<br/>%s', $record->sale_begin_time ?? '--', $record->sale_end_time ?? '--')))
+                    ->formatStateUsing(fn ($record) => new HtmlString(sprintf('%s ~<br/>%s', $record->sale_begin_time ?? nexus_trans('nexus.no_limit'), $record->sale_end_time ?? nexus_trans('nexus.no_limit'))))
                 ,
                 Tables\Columns\TextColumn::make('bonus_addition_factor')->label(__('medal.fields.bonus_addition_factor')),
                 Tables\Columns\TextColumn::make('gift_fee_factor')->label(__('medal.fields.gift_fee_factor')),
-                Tables\Columns\TextColumn::make('price')->label(__('label.price')),
+                Tables\Columns\TextColumn::make('price')->label(__('label.price'))->formatStateUsing(fn ($state) => number_format($state)),
 
                 Tables\Columns\TextColumn::make('duration')->label(__('label.medal.duration')),
 

@@ -13,4 +13,5 @@ return [
     'increment' => 'increment',
     'decrement' => 'decrement',
     'action' => 'Action',
+    'no_limit' => 'No limit',
 ];

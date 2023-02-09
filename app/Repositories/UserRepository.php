@@ -462,6 +462,7 @@ class UserRepository extends BaseRepository
             $targetUser->usernameChangeLogs()->create($changeLog);
             $targetUser->username = $changeLog['username_new'];
             $targetUser->save();
+            $this->clearCache($targetUser);
         });
         return true;
     }
@@ -498,6 +499,7 @@ class UserRepository extends BaseRepository
             $modComment = date('Y-m-d') . " - " . $message['msg'];
             $targetUser->updateWithModComment(['class' => $newClass], $modComment);
             Message::add($message);
+            $this->clearCache($targetUser);
         });
 
         return true;
@@ -561,7 +563,7 @@ class UserRepository extends BaseRepository
             }
         }
         if ($result) {
-            clear_user_cache($user->id, $user->passkey);
+            $this->clearCache($user);
             if ($notify) {
                 Message::add($message);
             }

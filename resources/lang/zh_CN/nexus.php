@@ -13,4 +13,5 @@ return [
     'increment' => '增加',
     'decrement' => '减少',
     'action' => '操作',
+    'no_limit' => '不限',
 ];

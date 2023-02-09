@@ -5881,7 +5881,7 @@ function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 
     $wrapBefore = '<form><div style="display: flex;justify-content: center;margin-top: 10px;">';
     $wrapAfter = '</div></form>';
     foreach ($medals as $medal) {
-        $html = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><img src="%s" title="%s" class="preview" style="max-height: %spx;max-width: %spx"/>', $medal->image_large, $medal->name, $maxHeight, $maxHeight);
+        $html = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><div><img src="%s" title="%s" class="preview" style="max-height: %spx;max-width: %spx"/></div>', $medal->image_large, $medal->name, $maxHeight, $maxHeight);
         if ($withActions) {
             $html .= sprintf(
                 '<div style="display: flex;flex-direction: column;align-items:flex-start"><span>%s: %s</span><span>%s: %s</span><label>%s: <input type="number" name="priority_%s" value="%s" style="width: 50px" placeholder="%s"></label>',

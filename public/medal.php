@@ -93,7 +93,7 @@ foreach ($rows as $row) {
     );
     $table .= sprintf(
         '<tr><td><img src="%s" style="max-width: 60px;max-height: 60px;" class="preview" /></td><td><h1>%s</h1>%s</td><td>%s ~<br>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
-        $row->image_large, $row->name, $row->description, $row->sale_begin_time ?? '--', $row->sale_end_time ?? '--', $row->durationText, (($row->bonus_addition_factor ?? 0) * 100).'%', number_format($row->price),  $row->inventory ?? nexus_trans('label.infinite'), $buyAction, $giftAction
+        $row->image_large, $row->name, $row->description, $row->sale_begin_time ?? nexus_trans('nexus.no_limit'), $row->sale_end_time ?? nexus_trans('nexus.no_limit'), $row->durationText, (($row->bonus_addition_factor ?? 0) * 100).'%', number_format($row->price),  $row->inventory ?? nexus_trans('label.infinite'), $buyAction, $giftAction
     );
 }
 $table .= '</tbody></table>';

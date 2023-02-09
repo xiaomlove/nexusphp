@@ -95,8 +95,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $work = new WorkRepository();
-        $work->settleRole(6, 1, true);
+        $r = extension_loaded('Zend OPcache');
+        dd($r);
     }
 
 }
