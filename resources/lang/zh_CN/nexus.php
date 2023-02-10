@@ -14,4 +14,5 @@ return [
     'decrement' => '减少',
     'action' => '操作',
     'no_limit' => '不限',
+    'sum' => '累计',
 ];

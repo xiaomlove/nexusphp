@@ -14,4 +14,5 @@ return [
     'decrement' => 'decrement',
     'action' => 'Action',
     'no_limit' => 'No limit',
+    'sum' => 'Sum',
 ];
