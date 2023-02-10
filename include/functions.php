@@ -5901,7 +5901,7 @@ function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 
         $medalImages[] = $html;
     }
     if ($withActions) {
-        $medalImages[] = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><span></span><input type="button" id="save-user-medal-btn" value="%s"/></div>', nexus_trans('label.save'));
+        $medalImages[] = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><div></div><div><input type="button" id="save-user-medal-btn" value="%s"/></div></div>', nexus_trans('label.save'));
     }
     return $wrapBefore . implode('', $medalImages) . $wrapAfter;
 }

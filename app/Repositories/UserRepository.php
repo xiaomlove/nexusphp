@@ -613,6 +613,7 @@ class UserRepository extends BaseRepository
             ];
         }
         UserBanLog::query()->insert($userBanLogs);
+        do_action("user_delete", $id);
         return true;
     }
 
