@@ -42,7 +42,7 @@ if ($isTypeTmpInvite && (empty($_POST['duration']) || $_POST['duration'] < 1)) {
     stderr("Error","Invalid duration");
 }
 $whereStr = implode(' OR ', $conditions);
-$phpPath = nexus_env('PHP_PATH', 'php');
+$phpPath = nexus_env('PHP_PATH') ?: 'php';
 $webRoot = rtrim(ROOT_PATH, '/');
 while (true) {
     $msgValues = $idArr = [];

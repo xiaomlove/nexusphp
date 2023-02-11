@@ -1150,7 +1150,7 @@ function executeCommand($command, $format = 'string', $artisan = false, $excepti
         $command .= $append;
     }
     if ($artisan) {
-        $phpPath = nexus_env('PHP_PATH', 'php');
+        $phpPath = nexus_env('PHP_PATH') ?: 'php';
         $webRoot = rtrim(ROOT_PATH, '/');
         $command = "$phpPath $webRoot/artisan $command";
     }

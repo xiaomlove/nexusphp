@@ -303,7 +303,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
     $requestId = nexus()->getRequestId();
     $maxUidRes = mysql_fetch_assoc(sql_query("select max(id) as max_uid from users limit 1"));
 	$maxUid = $maxUidRes['max_uid'];
-	$phpPath = nexus_env('PHP_PATH', 'php');
+	$phpPath = nexus_env('PHP_PATH') ?: 'php';
 	$webRoot = rtrim(ROOT_PATH, '/');
 	$chunk = 2000;
 	$beginUid = 0;

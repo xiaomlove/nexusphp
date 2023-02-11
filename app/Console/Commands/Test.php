@@ -95,7 +95,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = extension_loaded('Zend OPcache');
+        $r = nexus_env('PHP_PATH') ?: 'php';
         dd($r);
     }
 
