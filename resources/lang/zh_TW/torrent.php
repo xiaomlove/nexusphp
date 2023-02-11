@@ -91,4 +91,5 @@ return [
         \App\Models\Torrent::PROMOTION_TIME_TYPE_PERMANENT => '永久',
         \App\Models\Torrent::PROMOTION_TIME_TYPE_DEADLINE => '直到',
     ],
+    'paid_torrent' => '收費種子',
 ];

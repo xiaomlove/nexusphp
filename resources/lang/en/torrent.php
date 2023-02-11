@@ -91,4 +91,5 @@ return [
         \App\Models\Torrent::PROMOTION_TIME_TYPE_PERMANENT => 'Permanent',
         \App\Models\Torrent::PROMOTION_TIME_TYPE_DEADLINE => 'Until',
     ],
+    'paid_torrent' => 'Paid torrent',
 ];

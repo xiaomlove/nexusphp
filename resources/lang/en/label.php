@@ -174,6 +174,8 @@ return [
         'added_end' => 'Added less than',
         'size_begin' => 'Size greater than',
         'size_end' => 'Size less than',
+        'price' => 'Price',
+        'price_help' => 'When a user downloads a torrent, the uploader will receive revenue, less the corresponding tax rate, the current tax rate: :tax_factor',
     ],
     'hit_and_run' => [
         'label' => 'User H&R',

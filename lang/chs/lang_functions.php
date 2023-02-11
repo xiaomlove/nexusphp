@@ -313,7 +313,7 @@ $lang_functions = array
 	'text_required' => '不能为空',
 	'text_invalid' => '非法',
 	'text_technical_info' => 'MediaInfo',
-	'text_technical_info_help_text' => 'MediaInfo 来自软件 <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，用该软件打开文件，点击菜单视图(View)->文件(Text)，在框中右键->全选，再右键->复制，粘贴到这里来。',
+	'text_technical_info_help_text' => 'MediaInfo 来自软件 <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，用该软件打开文件，语言选择英语，点击菜单视图(View)->文件(Text)，在框中右键->全选，再右键->复制，粘贴到这里来。',
     'text_management_system' => '管理系统',
     'text_seed_points' => '做种积分',
     'spoiler_expand_collapse' => '点击展开/收缩',

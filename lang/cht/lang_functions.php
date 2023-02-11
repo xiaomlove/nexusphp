@@ -320,7 +320,7 @@ $lang_functions = array
 	'text_required' => '不能為空',
 	'text_invalid' => '非法',
 	'text_technical_info' => 'MediaInfo',
-	'text_technical_info_help_text' => 'MediaInfo 來自軟件 <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，用該軟件打開文件，點擊菜單視圖(View)->文件(Text)，在框中右鍵->全選，再右鍵->復制，粘貼到這裏來。',
+	'text_technical_info_help_text' => 'MediaInfo 來自軟件 <b><a href="https://mediaarea.net/en/MediaInfo" target=\'_blank\'>MediaInfo</a></b>，用該軟件打開文件，語言選擇英語，點擊菜單視圖(View)->文件(Text)，在框中右鍵->全選，再右鍵->復制，粘貼到這裏來。',
     'text_management_system' => '管理系統',
     'text_seed_points' => '做種積分',
     'spoiler_expand_collapse' => '點擊展開/收縮',

@@ -174,6 +174,8 @@ return [
         'added_end' => '發布時間小於',
         'size_begin' => '體積大於',
         'size_end' => '體積小於',
+        'price' => '價格',
+        'price_help' => '用戶下載種子時，發布者將獲得收入，但要扣除相應稅率，當前稅率：:tax_factor',
     ],
     'hit_and_run' => [
         'label' => '用戶 H&R',
