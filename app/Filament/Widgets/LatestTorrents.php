@@ -30,8 +30,14 @@ class LatestTorrents extends BaseWidget
     protected function getTableColumns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('name')->limit(30)->label(__('label.name')),
-            Tables\Columns\TextColumn::make('user.username')->label(__('label.torrent.owner')),
+            Tables\Columns\TextColumn::make('name')
+                ->label(__('label.name'))
+                ->formatStateUsing(fn ($record) => torrent_name_for_admin($record, false, 30))
+            ,
+            Tables\Columns\TextColumn::make('owner')
+                ->label(__('label.torrent.owner'))
+                ->formatStateUsing(fn ($state) => username_for_admin($state))
+            ,
             Tables\Columns\TextColumn::make('size')->formatStateUsing(fn ($state) => mksize($state))->label(__('label.torrent.size')),
             Tables\Columns\TextColumn::make('added')->dateTime()->label(__('label.added')),
         ];

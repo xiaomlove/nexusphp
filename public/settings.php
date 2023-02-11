@@ -158,7 +158,7 @@ elseif($action == 'savesettings_torrent') 	// save account
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
         'download_support_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
         'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded', 'approval_status_icon_enabled', 'approval_status_none_visible',
-        'nfo_view_style_default',
+        'nfo_view_style_default', 'tax_factor',
     );
 	$validConfig = apply_filter('setting_valid_config', $validConfig);
 	GetVar($validConfig);
@@ -225,7 +225,7 @@ elseif ($action == 'savesettings_authority') 	// save user authority
         'torrentstructure','sendinvite','viewhistory','topten','log','confilog','userprofile', 'torrenthistory','prfmanage', 'cruprfmanage',
         'uploadsub','delownsub','submanage','updateextinfo', 'viewanonymous','beanonymous','addoffer','offermanage', 'upload','uploadspecial',
         'view_special_torrent','movetorrent','chrmanage','viewinvite', 'buyinvite','seebanned','againstoffer','userbar', 'torrent-approval',
-        'torrent-delete', 'user-delete', 'user-change-class', 'torrent-set-special-tag', 'torrent-approval-allow-automatic'
+        'torrent-delete', 'user-delete', 'user-change-class', 'torrent-set-special-tag', 'torrent-approval-allow-automatic', 'torrent-set-price'
     );
 	GetVar($validConfig);
 	$AUTHORITY = [];
@@ -459,6 +459,7 @@ elseif ($action == 'authoritysettings')	//Authority settings
 	tr(nexus_trans('permission.torrent-set-special-tag.text'), $lang_settings['text_minimum_class'].classlist('torrent-set-special-tag',$maxclass,$AUTHORITY['torrent-set-special-tag'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).nexus_trans('permission.torrent-set-special-tag.desc'),1);
 	tr(nexus_trans('permission.torrent-approval.text'), $lang_settings['text_minimum_class'].classlist('torrent-approval',$maxclass,$AUTHORITY['torrent-approval'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_ADMINISTRATOR,false,true,true).nexus_trans('permission.torrent-approval.desc'),1);
 	tr(nexus_trans('permission.torrent-approval-allow-automatic.text'), $lang_settings['text_minimum_class'].classlist('torrent-approval-allow-automatic',$maxclass,$AUTHORITY['torrent-approval-allow-automatic'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).nexus_trans('permission.torrent-approval-allow-automatic.desc'),1);
+	tr(nexus_trans('permission.torrent-set-price.text'), $lang_settings['text_minimum_class'].classlist('torrent-set-price',$maxclass,$AUTHORITY['torrent-set-price'] ?? '',0,true).$lang_settings['text_default'].get_user_class_name(UC_UPLOADER,false,true,true).nexus_trans('permission.torrent-set-price.desc'),1);
 
 	tr($lang_settings['row_ask_for_reseed'],  $lang_settings['text_minimum_class'].classlist('askreseed',$maxclass,$AUTHORITY['askreseed'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_ask_for_reseed_note'],1);
 	tr($lang_settings['row_view_nfo'], $lang_settings['text_minimum_class'].classlist('viewnfo',$maxclass,$AUTHORITY['viewnfo'],0,true).$lang_settings['text_default'].get_user_class_name(UC_POWER_USER,false,true,true).$lang_settings['text_view_nfo_note'],1);
@@ -739,6 +740,8 @@ elseif ($action == 'torrentsettings')
         );
     }
     tr($lang_settings['row_' . $name], $nfoViewStyleRadio, 1);
+
+    tr($lang_settings['row_tax_factor'],"<input type='text' name=tax_factor style=\"width: 100px\" value={$TORRENT['tax_factor']}> ".$lang_settings['text_tax_factor_note'], 1);
 
     yesorno($lang_settings['row_promotion_rules'], 'prorules', $TORRENT["prorules"], $lang_settings['text_promotion_rules_note']);
 	tr($lang_settings['row_random_promotion'], $lang_settings['text_random_promotion_note_one']."<ul><li><input type='text' style=\"width: 50px\" name=randomhalfleech value='".(isset($TORRENT["randomhalfleech"]) ? $TORRENT["randomhalfleech"] : 5 )."'>".$lang_settings['text_halfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomfree value='".(isset($TORRENT["randomfree"]) ? $TORRENT["randomfree"] : 2 )."'>".$lang_settings['text_free_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoup value='".(isset($TORRENT["randomtwoup"]) ? $TORRENT["randomtwoup"] : 2 )."'>".$lang_settings['text_twoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoupfree value='".(isset($TORRENT["randomtwoupfree"]) ? $TORRENT["randomtwoupfree"] : 1 )."'>".$lang_settings['text_freetwoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwouphalfdown value='".(isset($TORRENT["randomtwouphalfdown"]) ? $TORRENT["randomtwouphalfdown"] : 0 )."'>".$lang_settings['text_twouphalfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomthirtypercentdown value='".(isset($TORRENT["randomthirtypercentdown"]) ? $TORRENT["randomthirtypercentdown"] : 0 )."'>".$lang_settings['text_thirtypercentleech_chance_becoming']."</li></ul>".$lang_settings['text_random_promotion_note_two'], 1);

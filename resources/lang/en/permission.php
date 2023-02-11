@@ -13,6 +13,10 @@ return [
         'text' => 'Torrent approval allow automatically',
         'desc' => 'Torrent is the approval allow status after upload automatically',
     ],
+    'torrent-set-price' => [
+        'text' => 'Set torrent paid',
+        'desc' => 'Set torrent paid',
+    ],
     'defaultclass' => [
         'text' => 'Default Class',
         'desc' => ' Class upon registration',

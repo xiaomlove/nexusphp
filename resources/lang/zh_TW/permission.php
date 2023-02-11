@@ -13,6 +13,10 @@ return [
         'text' => '種子自動通過審核',
         'desc' => '種子發布即為審核通過狀態',
     ],
+    'torrent-set-price' => [
+        'text' => '設置種子收費',
+        'desc' => '設置種子收費',
+    ],
     'defaultclass' => [
         'text' => '預設等級',
         'desc' => '註冊時獲得的等級',

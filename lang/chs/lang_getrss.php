@@ -41,6 +41,10 @@ $lang_getrss = array
 	'text_mode' => "",
 	'text_keyword_note' => "只订阅标题中包含此关键字的项目",
     'row_sticky' => '置顶',
+    'row_paid' => '收费',
+    'paid_no' => '免费',
+    'paid_yes' => '收费',
+    'paid_all' => '全部',
 );
 
 ?>

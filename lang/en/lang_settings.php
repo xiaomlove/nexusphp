@@ -807,6 +807,8 @@ $lang_settings = array
     'text_buy_change_username_card_note' => " bonus points to get a Change username card, valid forever. Default '100,000'.",
     'row_initial_tmp_invites' => "Initial Number of Temporary Invites",
     'text_initial_tmp_invites_note' => "How many temporary invites should each user be given upon registration? Default '0'.",
+    'row_tax_factor' => 'Tax factor for paid torrents',
+    'text_tax_factor_note' => 'If the price is 100, this factor is 0.1 and the actual revenue of the uploader is 100 - 100 x 0.1 = 90, note that it should not be greater than 1 or less than 0.',
 );
 
 ?>

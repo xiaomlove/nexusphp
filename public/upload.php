@@ -73,6 +73,11 @@ stdhead($lang_upload['head_upload']);
 				if ($enablenfo_main=='yes') {
                     tr($lang_upload['row_nfo_file'], "<input type=\"file\" class=\"file\" name=\"nfo\" /><br /><font class=\"medium\">".$lang_upload['text_only_viewed_by'].get_user_class_name($viewnfo_class,false,true,true).$lang_upload['text_or_above']."</font>", 1);
                 }
+                //price
+                if (user_can('torrent-set-price')) {
+                    tr(nexus_trans('label.torrent.price'), '<input type="number" min="0" name="price" />&nbsp;&nbsp;' . nexus_trans('label.torrent.price_help', ['tax_factor' => (floatval(get_setting('torrent.tax_factor', 0)) * 100) . '%']), 1);
+                }
+
 				print("<tr><td class=\"rowhead\" style='padding: 3px' valign=\"top\">".$lang_upload['row_description']."<font color=\"red\">*</font></td><td class=\"rowfollow\">");
 				textbbcode("upload","descr", "", false, 130, true);
 				print("</td></tr>\n");

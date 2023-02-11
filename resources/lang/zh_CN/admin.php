@@ -34,6 +34,7 @@ return [
         'user_props' => '用户道具',
         'login_log' => '登录记录',
         'bonus_log' => '魔力记录',
+        'torrent_buy_log' => '种子购买',
     ],
     'resources' => [
         'agent_allow' => [

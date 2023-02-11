@@ -41,6 +41,10 @@ $lang_getrss = array
 	'text_mode' => "matching mode ",
 	'text_keyword_note' => "Ony subscribe to items with these keywords in titles.",
     'row_sticky' => 'Sticky',
+    'row_paid' => 'Paid',
+    'paid_no' => 'Free',
+    'paid_yes' => 'Paid',
+    'paid_all' => 'All',
 );
 
 ?>

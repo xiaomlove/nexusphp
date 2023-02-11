@@ -184,6 +184,7 @@ return array (
       'user-change-class' => User::CLASS_ADMINISTRATOR,
       'torrent-set-special-tag' => User::CLASS_ADMINISTRATOR,
       'torrent-approval-allow-automatic' => User::CLASS_UPLOADER,
+      'torrent-set-price' => User::CLASS_UPLOADER,
   ),
   'tweak' =>
   array (
@@ -356,6 +357,7 @@ return array (
       'approval_status_icon_enabled' => 'no',
       'approval_status_none_visible' => 'yes',
       'nfo_view_style_default' => \App\Models\Torrent::NFO_VIEW_STYLE_DOS,
+      'tax_factor' => '0.3',
   ),
   'attachment' =>
   array (

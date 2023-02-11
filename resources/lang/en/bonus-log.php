@@ -20,8 +20,10 @@ return [
         \App\Models\BonusLogs::BUSINESS_TYPE_BUY_RAINBOW_ID => 'Buy rainbow ID',
         \App\Models\BonusLogs::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD => 'Buy change username card',
         \App\Models\BonusLogs::BUSINESS_TYPE_GIFT_MEDAL => 'Gift medal',
+        \App\Models\BonusLogs::BUSINESS_TYPE_BUY_TORRENT => 'Buy torrent',
 
         \App\Models\BonusLogs::BUSINESS_TYPE_ROLE_WORK_SALARY => 'Role work salary',
+        \App\Models\BonusLogs::BUSINESS_TYPE_TORRENT_BE_DOWNLOADED => 'Torrent be downloaded',
     ],
     'fields' => [
         'business_type' => 'Business type',

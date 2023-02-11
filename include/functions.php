@@ -3642,7 +3642,8 @@ foreach ($rows as $row)
     } else {
         $seedBoxIcon = '';
     }
-	$titleSuffix = $banned_torrent.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $seedBoxIcon . $approvalStatusIcon;
+    $paidIcon = $torrentRep->getPaidIcon($row);
+	$titleSuffix = $banned_torrent.$paidIcon.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $seedBoxIcon . $approvalStatusIcon;
 	$titleSuffix = apply_filter('torrent_title_suffix', $titleSuffix, $row);
 	print($titleSuffix);
 	//$tags = torrentTags($row['tags'], 'span');
@@ -6385,14 +6386,14 @@ function build_search_area($searchArea, array $options = [])
     return $result;
 }
 
-function torrent_name_for_admin(\App\Models\Torrent|null $torrent, $withTags = false)
+function torrent_name_for_admin(\App\Models\Torrent|null $torrent, $withTags = false, $length = 40)
 {
     if (empty($torrent)) {
         return '';
     }
     $name = sprintf(
         '<div class="text-primary-600 transition hover:underline hover:text-primary-500 focus:underline focus:text-primary-500"><a href="/details.php?id=%s" target="_blank" title="%s">%s</a></div>',
-        $torrent->id, $torrent->name, Str::limit($torrent->name, 40)
+        $torrent->id, $torrent->name, Str::limit($torrent->name, $length)
     );
     $tags = '';
     if ($withTags) {

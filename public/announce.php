@@ -126,7 +126,7 @@ elseif ($az['showclienterror'] == 'yes'){
 }
 
 // check torrent based on info_hash
-$checkTorrentSql = "SELECT torrents.id, size, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, added, banned, hr, approval_status, categories.mode FROM torrents left join categories on torrents.category = categories.id WHERE " . hash_where("info_hash", $info_hash);
+$checkTorrentSql = "SELECT torrents.id, size, owner, sp_state, seeders, leechers, UNIX_TIMESTAMP(added) AS ts, added, banned, hr, approval_status, price, categories.mode FROM torrents left join categories on torrents.category = categories.id WHERE " . hash_where("info_hash", $info_hash);
 if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
 	$res = sql_query($checkTorrentSql);
 	$torrent = mysql_fetch_array($res);
@@ -150,6 +150,12 @@ if ($torrent['banned'] == 'yes') {
 if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no') {
     if (!user_can('seebanned', false, $az['id'])) {
         err("torrent review not approved");
+    }
+}
+if (isset($torrent['price']) && $torrent['price'] > 0 && $torrent['owner'] != $userid) {
+    $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrent['id'])->exists();
+    if (!$hasBuy) {
+        err("You have not buy the torrent yet");
     }
 }
 

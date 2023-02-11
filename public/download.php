@@ -88,7 +88,7 @@ $trackerSchemaAndHost = get_tracker_schema_and_host();
 $ssl_torrent = $trackerSchemaAndHost['ssl_torrent'];
 $base_announce_url = $trackerSchemaAndHost['base_announce_url'];
 
-$res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, torrents.approval_status, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+$res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, torrents.approval_status, torrents.price, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 $row = mysql_fetch_assoc($res);
 if (!$row) {
     do_log("[TORRENT_NOT_EXISTS_IN_DATABASE] $id", 'error');
@@ -107,6 +107,7 @@ if (filesize($fn) == 0) {
     do_log("[TORRENT_NOT_VALID_SIZE_ZERO] $fn",'error');
     httperr();
 }
+
 $approvalNotAllowed = $row['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW && get_setting('torrent.approval_status_none_visible') == 'no';
 $allowOwnerDownload = $row['owner'] == $CURUSER['id'];
 $canSeedBanned = user_can('seebanned');
@@ -114,6 +115,17 @@ $canAccessTorrent = can_access_torrent($row, $CURUSER['id']);
 if ((($row['banned'] == 'yes' || ($approvalNotAllowed && !$allowOwnerDownload)) && !$canSeedBanned) || !$canAccessTorrent) {
     do_log("[DENY_DOWNLOAD], user: {$CURUSER['id']}, approvalNotAllowed: $approvalNotAllowed, allowOwnerDownload: $allowOwnerDownload, canSeedBanned: $canSeedBanned, canAccessTorrent: $canAccessTorrent", 'error');
     denyDownload();
+}
+
+if ($row['price'] > 0 && $CURUSER['id'] != $row['owner']) {
+    $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $CURUSER['id'])->where('torrent_id', $id)->exists();
+    if (!$hasBuy) {
+        if ($CURUSER['seedbonus'] < $row['price']) {
+            stderr('Error', nexus_trans('bonus.not_enough', ['require_bonus' => number_format($row['price']), 'now_bonus' => number_format($CURUSER['seedbonus'])]));
+        }
+        $bonusRep = new \App\Repositories\BonusRepository();
+        $bonusRep->consumeToBuyTorrent($CURUSER['id'], $id, 'Web');
+    }
 }
 
 sql_query("UPDATE torrents SET hits = hits + 1 WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);

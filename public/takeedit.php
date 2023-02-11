@@ -215,6 +215,13 @@ $updateset[] = "cover = " . sqlesc($cover);
 if (isset($_POST['hr'][$newcatmode]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$newcatmode]]) && user_can('torrent_hr')) {
     $updateset[] = "hr = " . sqlesc($_POST['hr'][$newcatmode]);
 }
+/**
+ * price
+ * @since 1.8.0
+ */
+if (user_can('torrent-set-price')) {
+    $updateset[] = "price = " . sqlesc($_POST['price'] ?? 0);
+}
 
 $sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
 do_log("[UPDATE_TORRENT]: $sql");

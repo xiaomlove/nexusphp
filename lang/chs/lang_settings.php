@@ -807,6 +807,8 @@ $lang_settings = array
     'text_buy_change_username_card_note' => "个魔力值，如果他选择交换一个改名卡，永久有效。默认'100,000'。",
     'row_initial_tmp_invites' => '初始临时邀请名额',
     'text_initial_tmp_invites_note' => "新注册用户的初始临时邀请名额，有效期 7 天。默认'0'。",
+    'row_tax_factor' => '收费种子收税系数',
+    'text_tax_factor_note' => '假如价格100, 此系数为 0.1，发布者实际收入为 100 - 100 x 0.1 = 90，注意不要大于 1 或小于 0。',
 );
 
 ?>

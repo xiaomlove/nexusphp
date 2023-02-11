@@ -22,7 +22,7 @@ return [
         'download_speed' => 'Download speed',
         'isp' => 'ISP',
         'menu' => 'Custom menu',
-        'username_change_log' => 'Username change log',
+        'username_change_log' => 'Username change logs',
         'torrent_deny_reason' => 'Deny Reasons',
         'roles' => 'Role',
         'permissions' => 'Permissions',
@@ -36,6 +36,7 @@ return [
         'user_props' => 'User props',
         'login_log' => 'Login logs',
         'bonus_log' => 'Bonus logs',
+        'torrent_buy_log' => 'Torrent buy logs',
     ],
     'resources' => [
         'agent_allow' => [

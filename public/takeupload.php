@@ -373,6 +373,9 @@ if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class()
 if (user_can('torrent-approval-allow-automatic')) {
     $insert['approval_status'] = \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
+if (user_can('torrent-set-price')) {
+    $insert['price'] = $_POST['price'] ?? 0;
+}
 do_log("[INSERT_TORRENT]: " . nexus_json_encode($insert));
 $id = \Nexus\Database\NexusDB::insert('torrents', $insert);
 

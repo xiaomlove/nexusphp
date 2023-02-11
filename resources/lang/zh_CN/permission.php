@@ -13,6 +13,10 @@ return [
         'text' => '种子自动通过审核',
         'desc' => '种子发布即为审核通过状态',
     ],
+    'torrent-set-price' => [
+        'text' => '设置种子收费',
+        'desc' => '设置种子收费',
+    ],
     'defaultclass' => [
         'text' => '默认等级',
         'desc' => '注册时获得的等级',

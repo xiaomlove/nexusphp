@@ -35,8 +35,10 @@ class BonusLogs extends NexusModel
     const BUSINESS_TYPE_BUY_RAINBOW_ID = 16;
     const BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD = 17;
     const BUSINESS_TYPE_GIFT_MEDAL = 18;
+    const BUSINESS_TYPE_BUY_TORRENT = 19;
 
     const BUSINESS_TYPE_ROLE_WORK_SALARY = 1000;
+    const BUSINESS_TYPE_TORRENT_BE_DOWNLOADED = 1001;
 
     public static array $businessTypes = [
         self::BUSINESS_TYPE_CANCEL_HIT_AND_RUN => ['text' => 'Cancel H&R'],
@@ -57,8 +59,10 @@ class BonusLogs extends NexusModel
         self::BUSINESS_TYPE_BUY_RAINBOW_ID => ['text' => 'Buy rainbow ID'],
         self::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD => ['text' => 'Buy change username card'],
         self::BUSINESS_TYPE_GIFT_MEDAL => ['text' => 'Gift medal to someone'],
+        self::BUSINESS_TYPE_BUY_TORRENT => ['text' => 'Buy torrent'],
 
         self::BUSINESS_TYPE_ROLE_WORK_SALARY => ['text' => 'Role work salary'],
+        self::BUSINESS_TYPE_TORRENT_BE_DOWNLOADED => ['text' => 'Torrent be downloaded'],
     ];
 
     public function getBusinessTypeTextAttribute()

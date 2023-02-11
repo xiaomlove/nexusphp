@@ -42,6 +42,10 @@ $lang_getrss = array
 	'text_mode' => "",
 	'text_keyword_note' => "只訂閱標題中包含此關鍵字的項目",
     'row_sticky' => '置頂',
+    'row_paid' => '收費',
+    'paid_no' => '免費',
+    'paid_yes' => '收費',
+    'paid_all' => '全部',
 );
 
 ?>

@@ -8,6 +8,8 @@ use App\Models\Invite;
 use App\Models\Medal;
 use App\Models\Message;
 use App\Models\Setting;
+use App\Models\Torrent;
+use App\Models\TorrentBuyLog;
 use App\Models\User;
 use App\Models\UserMedal;
 use App\Models\UserMeta;
@@ -244,6 +246,57 @@ class BonusRepository extends BaseRepository
             ];
             $userRep = new UserRepository();
             $userRep->addMeta($user, $metaData, $metaData, false);
+        });
+
+        return true;
+
+    }
+
+    public function consumeToBuyTorrent($uid, $torrentId, $channel = 'Web'): bool
+    {
+        $user = User::query()->findOrFail($uid);
+        $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
+        $requireBonus = $torrent->price;
+        NexusDB::transaction(function () use ($user, $requireBonus, $torrent, $channel) {
+            $comment = nexus_trans('bonus.comment_buy_torrent', [
+                'bonus' => $requireBonus,
+                'torrent_id' => $torrent->id,
+            ], $user->locale);
+            do_log("comment: $comment");
+            $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_TORRENT, $comment);
+            TorrentBuyLog::query()->create([
+                'uid' => $user->id,
+                'torrent_id' => $torrent->id,
+                'price' => $requireBonus,
+                'channel' => $channel,
+            ]);
+            //increment owner bonus
+            $taxFactor = Setting::get('torrent.tax_factor');
+            if (!is_numeric($taxFactor) || $taxFactor < 0 || $taxFactor > 1) {
+                throw new \RuntimeException("Invalid tax_factor: $taxFactor");
+            }
+            $increaseBonus = $requireBonus * (1 - $taxFactor);
+            $owner = $torrent->user;
+            if ($owner->id) {
+                $nowStr = now()->toDateTimeString();
+                $businessType = BonusLogs::BUSINESS_TYPE_TORRENT_BE_DOWNLOADED;
+                $owner->increment('seedbonus', $increaseBonus);
+                $comment = nexus_trans('bonus.comment_torrent_be_downloaded', [
+                    'username' => $user->username,
+                    'uid' => $user->id,
+                ], $owner->locale);
+                $bonusLog = [
+                    'business_type' => $businessType,
+                    'uid' => $owner->id,
+                    'old_total_value' => $owner->seedbonus,
+                    'value' => $increaseBonus,
+                    'new_total_value' => bcadd($owner->seedbonus, $increaseBonus),
+                    'comment' => sprintf('[%s] %s', BonusLogs::$businessTypes[$businessType]['text'], $comment),
+                    'created_at' => $nowStr,
+                    'updated_at' => $nowStr,
+                ];
+                BonusLogs::query()->insert($bonusLog);
+            }
         });
 
         return true;

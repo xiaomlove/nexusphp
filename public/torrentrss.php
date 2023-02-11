@@ -97,6 +97,17 @@ $onlyBrowseSection = get_setting('main.spsct') != 'yes' || !user_can('view_speci
 if ($onlyBrowseSection) {
     $where .= ($where ? " AND " : "") . "categories.mode = $browseMode";
 }
+//check price
+if (isset($_GET['paid']) && in_array($_GET['paid'], ['0', '1', '2'], true)) {
+    $paidFilter = $_GET['paid'];
+} else {
+    $paidFilter = '0';
+}
+if ($paidFilter === '0') {
+    $where .= ($where ? " AND " : "") . "torrents.price = 0";
+} elseif ($paidFilter === '1') {
+    $where .= ($where ? " AND " : "") . "torrents.price > 0";
+}
 
 function get_where($tablename = "sources", $itemname = "source", $getname = "sou")
 {

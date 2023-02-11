@@ -11,7 +11,7 @@ if (!isset($id) || !$id)
 die();
 
 $taxonomyFields = "sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name";
-$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status,
+$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, nfo, LENGTH(torrents.nfo) AS nfosz, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.descr, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.pt_gen, torrents.technical_info, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status, torrents.price,
        categories.name AS cat_name, categories.mode as search_box_id, $taxonomyFields
 FROM torrents LEFT JOIN categories ON torrents.category = categories.id
     LEFT JOIN sources ON torrents.source = sources.id
@@ -74,7 +74,8 @@ if (!$row) {
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
         $hrImg = get_hr_img($row, $row['search_box_id']);
         $approvalStatusIcon = $torrentRep->renderApprovalStatus($row["approval_status"]);
-		$s=htmlspecialchars($row["name"]).$banned_torrent.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg . $approvalStatusIcon;
+        $paidIcon = $torrentRep->getPaidIcon($row, 20);
+		$s=htmlspecialchars($row["name"]).$banned_torrent.$paidIcon.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg . $approvalStatusIcon;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");
 
         //Banned reason
@@ -162,7 +163,17 @@ if (!$row) {
         tr($lang_details['row_basic_info'], $size_info.$type_info.$taxonomyRendered, 1);
 		$actions = [];
         if ($CURUSER["downloadpos"] != "no") {
-            $actions[] = "<a title=\"".$lang_details['title_download_torrent']."\" href=\"download.php?id=".$id."\"><img class=\"dt_download\" src=\"pic/trans.gif\" alt=\"download\" />&nbsp;<b><font class=\"small\">".$lang_details['text_download_torrent']."</font></b></a>";
+            $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $CURUSER['id'])->where('torrent_id', $id)->exists();
+            if ($row['price'] > 0) {
+                if ($hasBuy) {
+                    $downloadBtn = $lang_details['text_download_bought_torrent'];
+                } else {
+                    $downloadBtn = sprintf($lang_details['text_download_paid_torrent'], number_format($row['price']));
+                }
+            } else {
+                $downloadBtn = $lang_details['text_download_torrent'];
+            }
+            $actions[] = "<a title=\"".$lang_details['title_download_torrent']."\" href=\"download.php?id=".$id."\"><img class=\"dt_download\" src=\"pic/trans.gif\" alt=\"download\" />&nbsp;<b><font class=\"small\">".$downloadBtn."</font></b></a>";
         }
         if ($owned == 1) {
             $actions[] = "<$editlink><img class=\"dt_edit\" src=\"pic/trans.gif\" alt=\"edit\" />&nbsp;<b><font class=\"small\">".(user_can('torrentmanage') ? $lang_details['text_edit_and_delete_torrent'] : $lang_details['text_edit_torrent']). "</font></b></a>";
