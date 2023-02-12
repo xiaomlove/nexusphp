@@ -479,7 +479,7 @@ class TorrentRepository extends BaseRepository
     {
         $user = $this->getUser($user);
         user_can('torrent-approval', true);
-        $torrent = Torrent::query()->findOrFail($params['torrent_id'], ['id', 'banned', 'approval_status', 'visible', 'owner']);
+        $torrent = Torrent::query()->findOrFail($params['torrent_id'], Torrent::$commentFields);
         $lastLog = TorrentOperationLog::query()
             ->where('torrent_id', $params['torrent_id'])
             ->where('uid', $user->id)
@@ -497,6 +497,21 @@ class TorrentRepository extends BaseRepository
             $torrentUpdate['visible'] = 'yes';
             if ($torrent->approval_status != $params['approval_status']) {
                 $torrentOperationLog['action_type'] = TorrentOperationLog::ACTION_TYPE_APPROVAL_ALLOW;
+                //increase promotion time
+                if (
+                    Setting::get('torrent.approval_status_none_visible') == 'no'
+                    && $torrent->sp_state != Torrent::PROMOTION_NORMAL
+                    && $torrent->promotion_until
+                ) {
+                    $hasBeenDownloaded = Snatch::query()->where('torrentid', $torrent->id)->exists();
+                    $log = "Torrent: {$torrent->id} is in promotion, hasBeenDownloaded: $hasBeenDownloaded";
+                    if (!$hasBeenDownloaded) {
+                        $diffInSeconds = $torrent->promotion_until->diffInSeconds($torrent->added);
+                        $log .= ", addSeconds: $diffInSeconds";
+                        $torrentUpdate['promotion_until'] = $torrent->promotion_until->addSeconds($diffInSeconds);
+                    }
+                    do_log($log);
+                }
             }
             if ($torrent->approval_status == Torrent::APPROVAL_STATUS_DENY) {
                 $notifyUser = true;
@@ -519,6 +534,7 @@ class TorrentRepository extends BaseRepository
         } else {
             throw new \InvalidArgumentException("Invalid approval_status: " . $params['approval_status']);
         }
+
         if (isset($torrentOperationLog['action_type'])) {
             $torrentOperationLog['uid'] = $user->id;
             $torrentOperationLog['torrent_id'] = $torrent->id;

@@ -95,8 +95,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = nexus_env('PHP_PATH') ?: 'php';
-        dd($r);
+        $now = Carbon::now();
+        $now->addSeconds();
+        dd($diffInSeconds);
     }
 
 }

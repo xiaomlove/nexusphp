@@ -152,7 +152,7 @@ if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW &&
         err("torrent review not approved");
     }
 }
-if (isset($torrent['price']) && $torrent['price'] > 0 && $torrent['owner'] != $userid) {
+if ($seeder == 'no' && isset($torrent['price']) && $torrent['price'] > 0 && $torrent['owner'] != $userid) {
     $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrent['id'])->exists();
     if (!$hasBuy) {
         err("You have not buy the torrent yet");
