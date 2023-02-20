@@ -52,7 +52,7 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
     public function handle()
     {
         $beginTimestamp = time();
-        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s", $this->requestId, $this->beginTorrentId, $this->endTorrentId);
+        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_JOB], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s", $this->requestId, $this->beginTorrentId, $this->endTorrentId);
 //        $sql = sprintf("update torrents set seeders = (select count(*) from peers where torrent = torrents.id and seeder = 'yes'), leechers = (select count(*) from peers where torrent = torrents.id and seeder = 'no'), comments = (select count(*) from comments where torrent = torrents.id) where id > %s and id <= %s",
 //            $this->beginTorrentId, $this->endTorrentId
 //        );
@@ -88,12 +88,23 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
                 }
             }
             NexusDB::table('torrents')->where('id', $torrent->id)->update($update);
-            do_log("$logPrefix, [SUCCESS]: $torrent->id => " . json_encode($update));
+            do_log("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_TORRENT], [SUCCESS]: $torrent->id => " . json_encode($update));
         }
         $costTime = time() - $beginTimestamp;
         do_log(sprintf(
             "$logPrefix, [DONE], update torrent count: %s, cost time: %s seconds",
             count($torrents), $costTime
         ));
+    }
+
+    /**
+     * Handle a job failure.
+     *
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    public function failed(\Throwable $exception)
+    {
+        do_log("failed: " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
     }
 }

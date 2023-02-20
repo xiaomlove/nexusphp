@@ -52,7 +52,7 @@ class CalculateUserSeedBonus implements ShouldQueue
     public function handle()
     {
         $beginTimestamp = time();
-        $logPrefix = sprintf("[CLEANUP_CLI_CALCULATE_SEED_BONUS], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
+        $logPrefix = sprintf("[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
         $sql = sprintf("select userid from peers where userid > %s and userid <= %s and seeder = 'yes' group by userid", $this->beginUid, $this->endUid);
         $results = NexusDB::select($sql);
         $count = count($results);
@@ -73,7 +73,7 @@ class CalculateUserSeedBonus implements ShouldQueue
             $uid = $userInfo['id'];
             $isDonor = is_donor($userInfo);
             $seedBonusResult = calculate_seed_bonus($uid);
-            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
+            $bonusLog = "[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_USER], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
             $all_bonus = $seedBonusResult['seed_bonus'];
             $bonusLog .= ", all_bonus: $all_bonus";
             if ($isDonor) {
@@ -106,5 +106,16 @@ class CalculateUserSeedBonus implements ShouldQueue
         }
         $costTime = time() - $beginTimestamp;
         do_log("$logPrefix, [DONE], cost time: $costTime seconds");
+    }
+
+    /**
+     * Handle a job failure.
+     *
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    public function failed(\Throwable $exception)
+    {
+        do_log("failed: " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
     }
 }

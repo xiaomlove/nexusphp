@@ -225,7 +225,6 @@ if (user_can('userprofile')) {
 
 	if ($iphistory > 0)
 	tr_small($lang_userdetails['row_ip_history'], $lang_userdetails['text_user_earlier_used']."<b><a href=\"iphistory.php?id=" . $user['id'] . "\">" . $iphistory. $lang_userdetails['text_different_ips'].add_s($iphistory, true)."</a></b>", 1);
-
 }
 $seedBoxRep = new \App\Repositories\SeedBoxRepository();
 if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"])

@@ -35,15 +35,17 @@ class ClaimRepository extends BaseRepository
         if ($exists) {
             throw new \RuntimeException(nexus_trans("torrent.claim_already"));
         }
-        $max = Claim::getConfigTorrentUpLimit();
-        $count = Claim::query()->where('uid', $uid)->count();
-        if ($count >= $max) {
-            throw new \RuntimeException(nexus_trans("torrent.claim_number_reach_torrent_maximum"));
-        }
-        $max = Claim::getConfigUserUpLimit();
-        $count = Claim::query()->where('torrent_id', $torrentId)->count();
-        if ($count >= $max) {
-            throw new \RuntimeException(nexus_trans("torrent.claim_number_reach_user_maximum"));
+        if (!apply_filter('user_has_role_work_seeding', false, $uid)) {
+            $max = Claim::getConfigTorrentUpLimit();
+            $count = Claim::query()->where('uid', $uid)->count();
+            if ($count >= $max) {
+                throw new \RuntimeException(nexus_trans("torrent.claim_number_reach_torrent_maximum"));
+            }
+            $max = Claim::getConfigUserUpLimit();
+            $count = Claim::query()->where('torrent_id', $torrentId)->count();
+            if ($count >= $max) {
+                throw new \RuntimeException(nexus_trans("torrent.claim_number_reach_user_maximum"));
+            }
         }
         $snatch = Snatch::query()->where('userid', $uid)->where('torrentid', $torrentId)->first();
         if (!$snatch) {
@@ -153,9 +155,9 @@ class ClaimRepository extends BaseRepository
 
     public function settleUser($uid, $force = false, $test = false): bool
     {
-        $shouldDoSettle = apply_filter('user_should_do_claim_settle', true, $uid);
-        if (!$shouldDoSettle) {
-            do_log("uid: $uid, filter: user_should_do_claim_settle => false");
+        $hasRoleWorkSeeding = apply_filter('user_has_role_work_seeding', false, $uid);
+        if ($hasRoleWorkSeeding) {
+            do_log("uid: $uid, filter: user_has_role_work_seeding => true, skip");
             return false;
         }
         $user = User::query()->with('language')->findOrFail($uid);
