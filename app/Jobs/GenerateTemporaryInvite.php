@@ -45,6 +45,10 @@ class GenerateTemporaryInvite implements ShouldQueue
         return now()->addHours(1);
     }
 
+    public $tries = 1;
+
+    public $timeout = 1800;
+
     /**
      * Execute the job.
      *

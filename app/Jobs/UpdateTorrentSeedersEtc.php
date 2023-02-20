@@ -44,6 +44,10 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
         return now()->addSeconds(Setting::get('main.autoclean_interval_three'));
     }
 
+    public $tries = 1;
+
+    public $timeout = 1800;
+
     /**
      * Execute the job.
      *

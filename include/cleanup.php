@@ -305,7 +305,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$maxUid = $maxUidRes['max_uid'];
 	$phpPath = nexus_env('PHP_PATH') ?: 'php';
 	$webRoot = rtrim(ROOT_PATH, '/');
-	$chunk = 2000;
+	$chunk = 1000;
 	$beginUid = 0;
     do_log("maxUid: $maxUid, chunk: $chunk");
 	do {
@@ -404,7 +404,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
     $maxTorrentIdRes = mysql_fetch_assoc(sql_query("select max(id) as max_torrent_id from torrents limit 1"));
     $maxTorrentId = $maxTorrentIdRes['max_torrent_id'];
-    $chunk = 5000;
+    $chunk = 1000;
     $beginTorrentId = 0;
     do_log("maxTorrentId: $maxTorrentId, chunk: $chunk");
     do {
@@ -883,7 +883,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
 //	}
 
-    $chunk = 2000;
+    $chunk = 1000;
     $beginUid = 0;
     do_log("maxUid: $maxUid, chunk: $chunk");
     do {

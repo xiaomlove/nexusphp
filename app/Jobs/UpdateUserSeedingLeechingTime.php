@@ -44,6 +44,10 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
         return now()->addSeconds(Setting::get('main.autoclean_interval_four'));
     }
 
+    public $tries = 1;
+
+    public $timeout = 3600;
+
     /**
      * Execute the job.
      *
@@ -52,7 +56,7 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
     public function handle()
     {
         $beginTimestamp = time();
-        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
+        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
 //        $sql = sprintf(
 //            "update users set seedtime = (select sum(seedtime) from snatched where userid = users.id), leechtime=(select sum(leechtime) from snatched where userid = users.id), seed_time_updated_at = '%s' where id > %s and id <= %s and status = 'confirmed' and enabled = 'yes'",
 //            now()->toDateTimeString(), $this->beginUid, $this->endUid
@@ -81,7 +85,7 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
                 NexusDB::table('users')
                     ->where('id', $user->id)
                     ->update($update);
-                do_log("$logPrefix, [SUCCESS]: $user->id => " . json_encode($update));
+                do_log("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_USER], [SUCCESS]: $user->id => " . json_encode($update));
                 $count++;
             }
         }

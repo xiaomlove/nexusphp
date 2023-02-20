@@ -44,6 +44,10 @@ class CalculateUserSeedBonus implements ShouldQueue
         return now()->addSeconds(Setting::get('main.autoclean_interval_one'));
     }
 
+    public $tries = 1;
+
+    public $timeout = 600;
+
     /**
      * Execute the job.
      *
