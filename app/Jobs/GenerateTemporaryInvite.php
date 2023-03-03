@@ -82,4 +82,15 @@ class GenerateTemporaryInvite implements ShouldQueue
 
     }
 
+    /**
+     * Handle a job failure.
+     *
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    public function failed(\Throwable $exception)
+    {
+        do_log("failed: " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
+    }
+
 }

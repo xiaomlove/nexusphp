@@ -92,4 +92,15 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
         $costTime = time() - $beginTimestamp;
         do_log("$logPrefix, [DONE], user total count: " . count($users) . ", success update count: $count, cost time: $costTime seconds");
     }
+
+    /**
+     * Handle a job failure.
+     *
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    public function failed(\Throwable $exception)
+    {
+        do_log("failed: " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
+    }
 }
