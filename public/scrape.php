@@ -1,16 +1,5 @@
 <?php
 require_once('../include/bittorrent_announce.php');
-$apiLocalHost = nexus_env('TRACKER_API_LOCAL_HOST');
-if ($apiLocalHost) {
-    do_log("[TRACKER_API_LOCAL_HOST] $apiLocalHost");
-    $response = request_local_api(trim($apiLocalHost, '/') . '/api/scrape');
-    if (empty($response)) {
-        err("error from TRACKER_API_LOCAL_HOST");
-    } else {
-        exit(benc_resp_raw($response));
-    }
-}
-
 require ROOT_PATH . 'include/core.php';
 //require_once('../include/benc.php');
 dbconn_announce();
@@ -29,6 +18,14 @@ else {
 	$query = "SELECT $fields FROM torrents WHERE " . hash_where_arr('info_hash', $info_hash_array[1]);
 }
 
+$cacheKey = md5($query);
+$cacheData = \Nexus\Database\NexusDB::cache_get($cacheKey);
+if ($cacheData) {
+    do_log("[SCRAPE_FROM_CACHE]: " . json_encode($info_hash_array[1]));
+    benc_resp($cacheData);
+    exit(0);
+}
+
 $res = sql_query($query);
 
 if (mysql_num_rows($res) < 1){
@@ -45,4 +42,5 @@ while ($row = mysql_fetch_assoc($res)) {
 }
 
 $d = ['files' => $torrent_details];
+\Nexus\Database\NexusDB::cache_put($cacheKey, $d, 900);
 benc_resp($d);
