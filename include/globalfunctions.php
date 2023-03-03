@@ -1132,7 +1132,7 @@ function get_passkey_by_authkey($authkey)
         }
         $uid = $arr[1];
         $torrentRep = new \App\Repositories\TorrentRepository();
-        $decrypted = $torrentRep->checkTrackerReportAuthKey($_REQUEST['authkey']);
+        $decrypted = $torrentRep->checkTrackerReportAuthKey($authkey);
         if (empty($decrypted)) {
             throw new \InvalidArgumentException("Invalid authkey: $authkey");
         }
