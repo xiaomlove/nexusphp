@@ -131,6 +131,15 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->integer()
                     ->label(__('label.setting.system.maximum_number_of_medals_can_be_worn'))
                 ,
+                Forms\Components\TextInput::make('system.cookie_valid_days')
+                    ->integer()
+                    ->label(__('label.setting.system.cookie_valid_days'))
+                ,
+                Forms\Components\TextInput::make('system.maximum_upload_speed')
+                    ->integer()
+                    ->label(__('label.setting.system.maximum_upload_speed'))
+                    ->helperText(__('label.setting.system.maximum_upload_speed_help'))
+                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);

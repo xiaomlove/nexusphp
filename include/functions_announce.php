@@ -69,8 +69,10 @@ function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $s
 
 	$time = date("Y-m-d H:i:s");
 	$upspeed = ($uploaded > 0 ? $uploaded / $anctime : 0);
-	$mustBeCheaterSpeed = 1024 * 1024 * 1000; //1000 MB/s
-	$mayBeCheaterSpeed = 1024 * 1024 * 100; //100 MB/s
+//	$mustBeCheaterSpeed = 1024 * 1024 * 1000; //1000 MB/s
+	$mustBeCheaterSpeed = get_setting('system.maximum_upload_speed', 8000) * 1024 * 1024 / 8;
+//	$mayBeCheaterSpeed = 1024 * 1024 * 100; //100 MB/s
+	$mayBeCheaterSpeed = $mustBeCheaterSpeed / 2;
 
 	if ($uploaded > 1073741824 && $upspeed > ($mustBeCheaterSpeed/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is no doubt cheating.
 	{

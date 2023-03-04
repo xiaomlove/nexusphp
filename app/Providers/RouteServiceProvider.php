@@ -50,6 +50,11 @@ class RouteServiceProvider extends ServiceProvider
             Route::prefix('api')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/tracker.php'));
+
+            Route::prefix('api')
+                ->namespace($this->namespace)
+                ->middleware('throttle:third-party')
+                ->group(base_path('routes/third-party.php'));
         });
     }
 
@@ -62,6 +67,10 @@ class RouteServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        RateLimiter::for('third-party', function (Request $request) {
+            return Limit::perMinute(10)->by(getip());
         });
     }
 }

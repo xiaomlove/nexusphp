@@ -16,7 +16,6 @@ class UserResource extends JsonResource
     {
         $out = [
             'id' => $this->id,
-            'email' => $this->email,
             'username' => $this->username,
             'status' => $this->status,
             'enabled' => $this->enabled,
@@ -32,7 +31,7 @@ class UserResource extends JsonResource
             'downloaded' => $this->downloaded,
             'downloaded_text' => mksize($this->downloaded),
             'bonus' => number_format($this->seedbonus, 1),
-            'seed_points' => floatval($this->seed_points),
+            'seed_points' => number_format($this->seed_points, 1),
             'seedtime' => $this->seedtime,
             'seedtime_text' => mkprettytime($this->seedtime),
             'leechtime' => $this->leechtime,
@@ -41,6 +40,7 @@ class UserResource extends JsonResource
             'valid_medals' => MedalResource::collection($this->whenLoaded('valid_medals')),
         ];
         if ($request->routeIs('user.me')) {
+            $out['email'] = $this->email;
             $out['downloaded_human'] = mksize($this->downloaded);
             $out['uploaded_human'] = mksize($this->uploaded);
             $out['seed_time'] = mkprettytime($this->seedtime);

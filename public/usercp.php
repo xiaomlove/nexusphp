@@ -786,7 +786,7 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 					else
 						$ssl = false;
 
-					logincookie($CURUSER["id"], $passh ,1,0x7fffffff,$securelogin_indentity_cookie,$ssl);
+					logincookie($CURUSER["id"], $passh ,1,get_setting('system.cookie_valid_days', 365) * 86400,$securelogin_indentity_cookie,$ssl);
 					//sessioncookie($CURUSER["id"], $passh);
 					$passupdated = 1;
 				}

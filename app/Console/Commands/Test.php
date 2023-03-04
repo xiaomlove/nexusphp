@@ -95,8 +95,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = unserialize('{"command":"O:31:\"App\\Jobs\\CalculateUserSeedBonus\":3:{s:41:\"\u0000App\\Jobs\\CalculateUserSeedBonus\u0000beginUid\";i:32000;s:39:\"\u0000App\\Jobs\\CalculateUserSeedBonus\u0000endUid\";i:34000;s:42:\"\u0000App\\Jobs\\CalculateUserSeedBonus\u0000requestId\";s:32:\"2f6563f399f26f57b02882463199a49d\";}');
-        dd($r);
+
     }
 
 }

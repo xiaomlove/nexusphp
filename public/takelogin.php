@@ -104,7 +104,7 @@ if (isset($_POST["logout"]) && $_POST["logout"] == "yes")
 }
 else
 {
-	logincookie($row["id"], $passh,1,0x7fffffff,$securelogin_indentity_cookie, $ssl, $trackerssl);
+	logincookie($row["id"], $passh,1,get_setting('system.cookie_valid_days', 365) * 86400,$securelogin_indentity_cookie, $ssl, $trackerssl);
 	//sessioncookie($row["id"], $passh,false);
 }
 

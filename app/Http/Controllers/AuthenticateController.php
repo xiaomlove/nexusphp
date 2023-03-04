@@ -58,12 +58,22 @@ class AuthenticateController extends Controller
 //                $passhash = md5($user->passhash . $ip);
                 $passhash = md5($user->passhash);
                 do_log(sprintf('passhash: %s, ip: %s, md5: %s', $user->passhash, $ip, $passhash));
-                logincookie($user->id, $passhash,false, 0x7fffffff, true, true, true);
+                logincookie($user->id, $passhash,false, get_setting('system.cookie_valid_days', 365) * 86400, true, true, true);
                 $user->last_login = now();
                 $user->save();
             }
         }
         return redirect('index.php');
+    }
+
+    public function nasToolsApprove(Request $request)
+    {
+        $request->validate([
+            'data' => 'required|string'
+        ]);
+        $user = $this->repository->nasToolsApprove($request->data);
+        $resource = new UserResource($user);
+        return $this->success($resource);
     }
 
 

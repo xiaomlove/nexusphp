@@ -89,6 +89,8 @@ return [
             'change_username_card_allow_characters_outside_the_alphabets' => '改名卡是否允許英文字母外的字符',
             'change_username_min_interval_in_days' => '修改用戶名最小間隔天數',
             'maximum_number_of_medals_can_be_worn' => '勛章最大可佩戴數',
+            'cookie_valid_days' => 'Cookie 有效天數',
+            'maximum_upload_speed_help' => '單種上傳速度超過此值賬號即刻禁用，單位 Mbps。如：100 Mbps = 12.5 MB/s',
         ],
     ],
     'user' => [
