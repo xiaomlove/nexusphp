@@ -42,7 +42,7 @@ if (empty($searchstr))
 	unset($searchstr);
 if (isset($searchstr)){
 	$search_mode = intval($_GET["search_mode"] ?? 0);
-	if (!in_array($search_mode,array(0,1,2)))
+	if (!in_array($search_mode,array(0,2)))
 	{
 		$search_mode = 0;
 	}

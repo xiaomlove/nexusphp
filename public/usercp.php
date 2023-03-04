@@ -5,10 +5,10 @@ require_once(get_langfile_path());
 loggedinorreturn();
 
 function bark($msg) {
-	//stdhead();
+	stdhead();
 	global $lang_usercp;
 	stdmsg($lang_usercp['std_sorry'], $msg);
-	//stdfoot();
+	stdfoot();
 	exit;
 }
 function usercpmenu ($selected = "home") {

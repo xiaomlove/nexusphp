@@ -695,7 +695,11 @@ if (isset($searchstr))
 		$notnewword="notnewword=1&";
 	}
 	$search_mode = intval($_GET["search_mode"] ?? 0);
-	if (!in_array($search_mode,array(0,1,2)))
+    /**
+     * Deprecated search mode: 1(OR)
+     * @since 1.8
+     */
+	if (!in_array($search_mode,array(0,2)))
 	{
 		$search_mode = 0;
 		write_log("User " . $CURUSER["username"] . "," . $CURUSER["ip"] . " is hacking search_mode field in" . $_SERVER['SCRIPT_NAME'], 'mod');
@@ -1189,7 +1193,6 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 
 							<select name="search_mode" style="width: 60px;">
 								<option value="0"><?php echo $lang_torrents['select_and'] ?></option>
-								<option value="1"<?php echo isset($_GET["search_mode"]) && $_GET["search_mode"] == 1 ? " selected=\"selected\"" : "" ?>><?php echo $lang_torrents['select_or'] ?></option>
 								<option value="2"<?php echo isset($_GET["search_mode"]) && $_GET["search_mode"] == 2 ? " selected=\"selected\"" : "" ?>><?php echo $lang_torrents['select_exact'] ?></option>
 							</select>
 

@@ -7,6 +7,14 @@ dbconn_announce();
 // BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 block_browser();
 
+$cacheKey = md5($_SERVER["QUERY_STRING"]);
+$cacheData = \Nexus\Database\NexusDB::cache_get($cacheKey);
+if ($cacheData) {
+    do_log("[SCRAPE_FROM_CACHE]: " . $_SERVER["QUERY_STRING"]);
+    benc_resp($cacheData);
+    exit(0);
+}
+
 preg_match_all('/info_hash=([^&]*)/i', $_SERVER["QUERY_STRING"], $info_hash_array);
 $fields = "info_hash, times_completed, seeders, leechers";
 
@@ -16,14 +24,6 @@ if (count($info_hash_array[1]) < 1) {
 }
 else {
 	$query = "SELECT $fields FROM torrents WHERE " . hash_where_arr('info_hash', $info_hash_array[1]);
-}
-
-$cacheKey = md5($query);
-$cacheData = \Nexus\Database\NexusDB::cache_get($cacheKey);
-if ($cacheData) {
-    do_log("[SCRAPE_FROM_CACHE]: " . json_encode($info_hash_array[1]));
-    benc_resp($cacheData);
-    exit(0);
 }
 
 $res = sql_query($query);
@@ -42,5 +42,5 @@ while ($row = mysql_fetch_assoc($res)) {
 }
 
 $d = ['files' => $torrent_details];
-\Nexus\Database\NexusDB::cache_put($cacheKey, $d, 900);
+\Nexus\Database\NexusDB::cache_put($cacheKey, $d, 1200);
 benc_resp($d);

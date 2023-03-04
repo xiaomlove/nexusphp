@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 		$query[] = "search=".rawurlencode($searchstr);
 		if ($_POST["search_mode"]){
 			$search_mode = intval($_POST["search_mode"] ?? 0);
-			if (!in_array($search_mode,array(0,1,2)))
+			if (!in_array($search_mode,array(0,2)))
 			{
 				$search_mode = 0;
 			}
@@ -367,7 +367,6 @@ if (get_setting('main.spsct') == 'yes') {
 <input type="text" name="search" style="width: 200px;" /> <?php echo $lang_getrss['text_with']?>
 <select name="search_mode" style="width: 60px;">
 <option value="0"><?php echo $lang_getrss['select_and'] ?></option>
-<option value="1" selected="selected"><?php echo $lang_getrss['select_or'] ?></option>
 <option value="2"><?php echo $lang_getrss['select_exact'] ?></option>
 </select>
 <?php echo $lang_getrss['text_mode']?>

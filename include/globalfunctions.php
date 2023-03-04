@@ -97,9 +97,10 @@ function hash_pad($hash) {
 }
 
 function hash_where($name, $hash) {
-	$shhash = preg_replace('/ *$/s', "", $hash);
+//	$shhash = preg_replace('/ *$/s', "", $hash);
 //	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
-	return sprintf("$name in (%s, %s)", sqlesc($hash), sqlesc($shhash));
+//	return sprintf("$name in (%s, %s)", sqlesc($hash), sqlesc($shhash));
+    return "$name = " . sqlesc($hash);
 }
 
 //no need any more...

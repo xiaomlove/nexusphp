@@ -80,8 +80,9 @@ class ViewHitAndRun extends ViewRecord
 
     protected function getActions(): array
     {
-        return [
-            Actions\Action::make('Pardon')
+        $actions = [];
+        if (in_array($this->record->status, HitAndRun::CAN_PARDON_STATUS)) {
+            $actions[] = Actions\Action::make('Pardon')
                 ->requiresConfirmation()
                 ->action(function () {
                     $hitAndRunRep = new HitAndRunRepository();
@@ -93,10 +94,12 @@ class ViewHitAndRun extends ViewRecord
                         $this->notify('danger', $exception->getMessage());
                     }
                 })
-                ->label(__('admin.resources.hit_and_run.action_pardon')),
+                ->label(__('admin.resources.hit_and_run.action_pardon'))
+            ;
+        }
+        $actions[] = Actions\DeleteAction::make();
 
-            Actions\DeleteAction::make(),
-        ];
+        return $actions;
     }
 
 }
