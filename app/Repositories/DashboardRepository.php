@@ -109,7 +109,7 @@ class DashboardRepository extends BaseRepository
             $result[$class] = [
                 'name' => $class,
                 'text' => $value['text'],
-                'value' => $userClasses->has($class) ? $userClasses->get($class) : 0,
+                'value' => $userClasses->has($class) ? number_format($userClasses->get($class)) : 0,
             ];
         }
         return $result;
@@ -124,55 +124,55 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => sprintf('%s / %s', User::query()->count(), Setting::get('main.maxusers')),
+            'value' => sprintf('%s / %s', number_format(User::query()->count()), number_format(Setting::get('main.maxusers'))),
         ];
         $name = 'unconfirmed';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('status', User::STATUS_PENDING)->count(),
+            'value' => number_format(User::query()->where('status', User::STATUS_PENDING)->count()),
         ];
         $name = 'visit_last_one_day';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('last_access', '>', $now->subDays(1))->count(),
+            'value' => number_format(User::query()->where('last_access', '>', $now->subDays(1))->count()),
         ];
         $name = 'visit_last_one_week';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('last_access', '>', $now->subDays(7))->count(),
+            'value' => number_format(User::query()->where('last_access', '>', $now->subDays(7))->count()),
         ];
         $name = 'visit_last_30_days';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('last_access', '>', $now->subDays(30))->count(),
+            'value' => number_format(User::query()->where('last_access', '>', $now->subDays(30))->count()),
         ];
         $name = 'vip';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('class', User::CLASS_VIP)->count(),
+            'value' => number_format(User::query()->where('class', User::CLASS_VIP)->count()),
         ];
         $name = 'donated';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('donor', 'yes')->count(),
+            'value' => number_format(User::query()->where('donor', 'yes')->count()),
         ];
         $name = 'warned';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('warned', 'yes')->count(),
+            'value' => number_format(User::query()->where('warned', 'yes')->count()),
         ];
         $name = 'disabled';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.user.$name"),
-            'value' => User::query()->where('enabled', 'no')->count(),
+            'value' => number_format(User::query()->where('enabled', 'no')->count()),
         ];
 
         $statGender = User::query()->groupBy('gender')->selectRaw('gender, count(*) as counts')->get()->pluck('counts','gender');
@@ -184,7 +184,7 @@ class DashboardRepository extends BaseRepository
             $result[$name] = [
                 'name' => $name,
                 'text' => nexus_trans("dashboard.user.$name"),
-                'value' => $statGender->has($gender) ? $statGender->get($gender) : 0,
+                'value' => $statGender->has($gender) ? number_format($statGender->get($gender)) : 0,
             ];
         }
         return $result;
@@ -197,13 +197,13 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => Torrent::query()->count(),
+            'value' => number_format(Torrent::query()->count()),
         ];
         $name = 'dead';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => Torrent::query()->where('visible', '=', Torrent::VISIBLE_NO)->count(),
+            'value' => number_format(Torrent::query()->where('visible', '=', Torrent::VISIBLE_NO)->count()),
         ];
 
         $seeders = Peer::query()->where('seeder', 'yes')->count();
@@ -211,7 +211,7 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => $seeders,
+            'value' => number_format($seeders),
         ];
 
         $leechers = Peer::query()->where('seeder', 'no')->count();
@@ -219,13 +219,13 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => $leechers,
+            'value' => number_format($leechers),
         ];
         $name = 'seeders_leechers';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => $seeders + $leechers,
+            'value' => number_format($seeders + $leechers),
         ];
         $name = 'seeders_leechers_ratio';
         $result[$name] = [
@@ -237,13 +237,13 @@ class DashboardRepository extends BaseRepository
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => User::query()->where('last_access', '>', $now->subSeconds(900))->count(),
+            'value' => number_format(User::query()->where('last_access', '>', $now->subSeconds(900))->count()),
         ];
         $name = 'active_tracker_users';
         $result[$name] = [
             'name' => $name,
             'text' => nexus_trans("dashboard.torrent.$name"),
-            'value' => Peer::query()->selectRaw('count(distinct(userid)) as counts')->first()->counts,
+            'value' => number_format(Peer::query()->selectRaw('count(distinct(userid)) as counts')->first()->counts),
         ];
 
         $name = 'total_torrent_size';
@@ -281,12 +281,12 @@ class DashboardRepository extends BaseRepository
 
     public function latestUser()
     {
-        return User::query()->orderBy('id', 'desc')->limit(10)->select(User::$commonFields)->get();
+        return User::query()->orderBy('id', 'desc')->limit(10)->get(User::$commonFields);
     }
 
     public function latestTorrent()
     {
-        return Torrent::query()->with(['user'])->orderBy('id', 'desc')->limit(5)->get();
+        return Torrent::query()->with(['user'])->orderBy('id', 'desc')->limit(5)->get(Torrent::$commentFields);
     }
 
 

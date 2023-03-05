@@ -63,6 +63,7 @@ class TorrentBuyLogResource extends Resource
                     ->label(__('label.created_at'))
                 ,
             ])
+            ->defaultSort('id','desc')
             ->filters([
                 Tables\Filters\Filter::make('uid')
                     ->form([
