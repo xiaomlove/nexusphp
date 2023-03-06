@@ -114,8 +114,7 @@ try {
 if($clicheck_res){
 	if ($az['showclienterror'] == 'no')
 	{
-//		sql_query("UPDATE users SET showclienterror = 'yes' WHERE id = ".sqlesc($userid));
-        $USERUPDATESET[] = "showclienterror = 'yes'";
+		sql_query("UPDATE users SET showclienterror = 'yes' WHERE id = ".sqlesc($userid));
 		$Cache->delete_value('user_passkey_'.$passkey.'_content');
 	}
 	err($clicheck_res);
