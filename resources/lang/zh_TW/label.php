@@ -210,7 +210,7 @@ return [
     ],
     'agent_deny' => [
         'label' => '拒絕客戶端',
-        'peer_id' => 'Peer ID',
+        'peer_id' => 'Peer ID 超始',
         'agent' => 'Agent',
     ],
     'claim' => [

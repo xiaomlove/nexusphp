@@ -1063,6 +1063,13 @@ function clear_inbox_count_cache($uid)
     }
 }
 
+function clear_agent_allow_deny_cache()
+{
+    do_log("clear_agent_allow_deny_cache");
+    \Nexus\Database\NexusDB::cache_del("all_agent_allows");
+    \Nexus\Database\NexusDB::cache_del("all_agent_denies");
+}
+
 
 function user_can($permission, $fail = false, $uid = 0): bool
 {

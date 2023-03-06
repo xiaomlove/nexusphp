@@ -213,7 +213,7 @@ return [
     ],
     'agent_deny' => [
         'label' => '拒绝客戶端',
-        'peer_id' => 'Peer ID',
+        'peer_id' => 'Peer ID 起始',
         'agent' => 'Agent',
     ],
     'claim' => [

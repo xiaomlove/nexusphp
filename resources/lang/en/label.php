@@ -211,7 +211,7 @@ return [
     ],
     'agent_deny' => [
         'label' => 'Agent deny',
-        'peer_id' => 'Peer ID',
+        'peer_id' => 'Peer ID starts',
         'agent' => 'Agent',
     ],
     'claim' => [

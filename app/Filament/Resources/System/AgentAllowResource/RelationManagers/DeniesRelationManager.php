@@ -20,10 +20,10 @@ class DeniesRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required()->maxLength(255),
-                Forms\Components\TextInput::make('peer_id')->required()->maxLength(255),
-                Forms\Components\TextInput::make('agent')->required()->maxLength(255),
-                Forms\Components\Textarea::make('comment'),
+                Forms\Components\TextInput::make('name')->required()->maxLength(255)->label(__('label.name')),
+                Forms\Components\TextInput::make('peer_id')->required()->maxLength(255)->label(__('label.agent_deny.peer_id')),
+                Forms\Components\TextInput::make('agent')->required()->maxLength(255)->label(__('label.agent_deny.agent')),
+                Forms\Components\Textarea::make('comment')->label(__('label.comment')),
             ]);
     }
 
@@ -31,9 +31,9 @@ class DeniesRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('peer_id'),
-                Tables\Columns\TextColumn::make('agent'),
+                Tables\Columns\TextColumn::make('name')->label(__('label.name')),
+                Tables\Columns\TextColumn::make('peer_id')->label(__('label.agent_deny.peer_id')),
+                Tables\Columns\TextColumn::make('agent')->label(__('label.agent_deny.agent')),
             ])
             ->filters([
                 //

@@ -16,4 +16,9 @@ class EditAgentAllow extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    public function afterSave()
+    {
+        clear_agent_allow_deny_cache();
+    }
 }

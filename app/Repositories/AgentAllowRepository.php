@@ -4,6 +4,7 @@ namespace App\Repositories;
 use App\Exceptions\ClientNotAllowedException;
 use App\Models\AgentAllow;
 use App\Models\AgentDeny;
+use Illuminate\Support\Collection;
 use Nexus\Database\NexusDB;
 
 class AgentAllowRepository extends BaseRepository
@@ -73,7 +74,7 @@ class AgentAllowRepository extends BaseRepository
     public function checkClient($peerId, $agent, $debug = false)
     {
         //check from high version to low version, if high version allow, stop!
-        $allows = NexusDB::remember("all_agent_allows", 600, function () {
+        $allows = NexusDB::remember("all_agent_allows", 3600, function () {
             return AgentAllow::query()
                 ->orderBy('peer_id_start', 'desc')
                 ->orderBy('agent_start', 'desc')
@@ -189,7 +190,11 @@ class AgentAllowRepository extends BaseRepository
 
     private function checkIsDenied($peerId, $agent, $familyId)
     {
-        $agentDenies = AgentDeny::query()->where('family_id', $familyId)->get();
+        /** @var Collection $allDenies */
+        $allDenies = NexusDB::remember("all_agent_denies", 3600, function () {
+            return AgentDeny::query()->get()->groupBy('family_id');
+        });
+        $agentDenies = $allDenies->get($familyId, []);
         foreach ($agentDenies as $agentDeny) {
             if ($agentDeny->agent == $agent && preg_match("/^" . $agentDeny->peer_id . "/", $peerId)) {
                 return $agentDeny;
