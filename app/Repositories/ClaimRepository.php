@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Exceptions\InsufficientPermissionException;
 use App\Models\Claim;
 use App\Models\Message;
 use App\Models\Peer;
@@ -59,7 +60,7 @@ class ClaimRepository extends BaseRepository
         if ($torrent->added->addDays($claimTorrentTTL)->gte(Carbon::now())) {
             throw new \RuntimeException(nexus_trans("torrent.can_no_be_claimed_yet"));
         }
-        if (!apply_filter('user_has_role_work_seeding', false, $uid)) {
+        if (!has_role_work_seeding($uid)) {
             $max = Claim::getConfigTorrentUpLimit();
             $count = Claim::query()->where('uid', $uid)->count();
             if ($count >= $max) {
@@ -162,7 +163,7 @@ class ClaimRepository extends BaseRepository
 
     public function settleUser($uid, $force = false, $test = false): bool
     {
-        $hasRoleWorkSeeding = apply_filter('user_has_role_work_seeding', false, $uid);
+        $hasRoleWorkSeeding = has_role_work_seeding($uid);
         if ($hasRoleWorkSeeding) {
             do_log("uid: $uid, filter: user_has_role_work_seeding => true, skip");
             return false;
@@ -346,21 +347,24 @@ class ClaimRepository extends BaseRepository
 
     public function claimAllSeeding(int $uid)
     {
+        if (!has_role_work_seeding($uid)) {
+            throw new InsufficientPermissionException();
+        }
         $page = 1;
         $size = 1000;
         $total = 0;
         while (true) {
             $peers = Peer::query()
-                ->where('uid', $uid)
+                ->where('userid', $uid)
                 ->where('seeder', 'yes')
                 ->where('to_go', 0)
-                ->groupBy('torrentid')
+                ->groupBy('torrent')
                 ->forPage($page, $size)
-                ->get(['torrentid']);
+                ->get(['torrent']);
             if ($peers->isEmpty()) {
                 break;
             }
-            $torrentIdArr = $peers->pluck('torrentid')->toArray();
+            $torrentIdArr = $peers->pluck('torrent')->toArray();
             $snatches = Snatch::query()
                 ->whereIn('torrentid', $torrentIdArr)
                 ->where('userid', $uid)
@@ -369,7 +373,7 @@ class ClaimRepository extends BaseRepository
             if ($snatches->isNotEmpty()) {
                 $values = [];
                 $nowStr = now()->toDateTimeString();
-                $sql = "insert into claims (uid, torrent_id, snatched_id, seed_time_begin, uploaded_begin, created_at, uploaded_at)";
+                $sql = "insert into claims (uid, torrent_id, snatched_id, seed_time_begin, uploaded_begin, created_at, updated_at)";
                 foreach ($snatches as $snatch) {
                     $values[] = sprintf(
                         "(%s, %s, %s, %s, %s, '%s', '%s')",

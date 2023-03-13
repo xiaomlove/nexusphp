@@ -576,9 +576,10 @@ function int_check($value,$stdhead = false, $stdfood = true, $die = true, $log =
 	{
 		if (!is_valid_id($value)) {
 			$msg = "Invalid ID Attempt: Username: ".$CURUSER["username"]." - UserID: ".$CURUSER["id"]." - UserIP : ".getip();
-			if ($log)
-				write_log($msg,'mod');
-
+			if ($log) {
+                write_log($msg,'mod');
+            }
+            do_log($msg, 'error');
 			if ($stdhead)
 				stderr($lang_functions['std_error'],$lang_functions['std_invalid_id']);
 			else

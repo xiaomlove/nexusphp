@@ -71,7 +71,9 @@ class CalculateUserSeedBonus implements ShouldQueue
         $autoclean_interval_one = Setting::get('main.autoclean_interval_one');
         $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), implode(',', array_column($results, 'userid')));
         $results = NexusDB::select($sql);
-        do_log("$logPrefix, [GET_UID_REAL], count: " . count($results));
+        $logFile = getLogFile("seed-bonus-points");
+        do_log("$logPrefix, [GET_UID_REAL], count: " . count($results) . ", logFile: $logFile");
+        $fd = fopen($logFile, 'a');
         foreach ($results as $userInfo)
         {
             $uid = $userInfo['id'];
@@ -107,6 +109,17 @@ class CalculateUserSeedBonus implements ShouldQueue
             $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus, seed_points_updated_at = '$updatedAt' where id = $uid limit 1";
             do_log("$bonusLog, query: $sql");
             NexusDB::statement($sql);
+            if ($fd) {
+                $log = sprintf(
+                    '%s|%s|%s|%s|%s|%s|%s|%s',
+                    date('Y-m-d H:i:s'), $uid,
+                    $userInfo['seed_points'], number_format($seed_points, 1, '.', ''),  number_format($userInfo['seed_points'] + $seed_points, 1, '.', ''),
+                    $userInfo['seedbonus'], number_format($all_bonus, 1, '.', ''),  number_format($userInfo['seedbonus'] + $all_bonus, 1, '.', '')
+                );
+                fwrite($fd, $log . PHP_EOL);
+            } else {
+                do_log("logFile: $logFile is not writeable!", 'error');
+            }
         }
         $costTime = time() - $beginTimestamp;
         do_log("$logPrefix, [DONE], cost time: $costTime seconds");

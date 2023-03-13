@@ -627,6 +627,23 @@ JS;
 }
 end_main_frame();
 
+$claimAllSeedingConfirmation = nexus_trans('claim.claim_all_seeding_confirmation');
+$claimJs = '';
+if ($userInfo->id == $CURUSER['id'] && has_role_work_seeding($userInfo->id)) {
+    $claimJs = <<<JS
+jQuery("body").on("click", "#claim-all-seeding", function (e) {
+    layer.confirm("$claimAllSeedingConfirmation", {}, function () {
+        jQuery.post('ajax.php', {"action": "claimAllSeeding"}, function (response) {
+            if (response.ret == 0) {
+                window.location.reload()
+            } else {
+                layer.alert(response.msg)
+            }
+        }, 'json')
+    })
+})
+JS;
+}
 $paginationJs = <<<JS
 jQuery("body").on("click", ".nexus-pagination a", function (e) {
     e.preventDefault()
@@ -637,7 +654,10 @@ jQuery("body").on("click", ".nexus-pagination a", function (e) {
     let result = ajax.gets(url);
     box.html(result)
 })
+$claimJs
 JS;
+
 \Nexus\Nexus::js($paginationJs, 'footer', false);
+
 stdfoot();
 ?>
