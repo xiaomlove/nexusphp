@@ -216,7 +216,7 @@ if (($user["privacy"] != "strong") OR (user_can('prfmanage')) || $CURUSER['id'] 
 if ($where_tweak == "yes") {
 	tr_small($lang_userdetails['row_last_seen_location'], $user['page'], 1);
 }
-if (user_can('userprofile') OR $user["privacy"] == "low") {
+if (user_can('userprofile') OR $user["privacy"] == "low" ||  $user["id"] == $CURUSER["id"]) {
 	tr_small($lang_userdetails['row_email'], "<a href=\"mailto:".$user['email']."\">".$user['email']."</a>", 1);
 }
 if (user_can('userprofile')) {
