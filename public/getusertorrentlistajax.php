@@ -343,11 +343,24 @@ if ($count > 0 && isset($tableWhere, $fields, $order))
     list($torrentlist, $total_size_this_page) = maketable ( $res, $type);
 }
 
+$table = $pagertop . $torrentlist . $pagerbottom;
+$hasData = false;
+$summary = sprintf('<b>%s</b>%s', $count, $lang_getusertorrentlistajax['text_record'] . add_s ( $count ));
 if (isset($total_size) && $total_size){
-    echo "<br /><b>" . $count . "</b>" . $lang_getusertorrentlistajax['text_record'] . add_s ( $count ) . $lang_getusertorrentlistajax['text_total_size'] . mksize($total_size) . $pagertop . $torrentlist . $pagerbottom;
-} elseif ($count){
-    echo "<br /><b>".$count."</b>".$lang_getusertorrentlistajax['text_record'].add_s($count). $pagertop . $torrentlist . $pagerbottom;
+    $hasData = true;
+    $summary .= $lang_getusertorrentlistajax['text_total_size'] . mksize($total_size);
+} elseif ($count) {
+    $hasData = true;
+}
+if ($hasData) {
+    $claimAllBtn = '';
+    if ($id == $CURUSER['id'] && has_role_work_seeding($CURUSER['id'])) {
+        $claimAllBtn = sprintf('<input type="button" value="%s" id="claim-all-seeding">', nexus_trans('claim.claim_all_seeding_btn'));
+    }
+    $header = sprintf('<div style="display: flex;justify-content: space-between"><div>%s</div><div>%s</div></div>', $summary, $claimAllBtn);
+    echo '<br/>' . $header . $table;
 } else {
     echo $lang_getusertorrentlistajax['text_no_record'];
 }
+
 ?>

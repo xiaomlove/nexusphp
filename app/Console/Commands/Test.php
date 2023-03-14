@@ -95,7 +95,8 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $logFile = getLogFile("seed-points");
+        dd($logFile);
     }
 
 }

@@ -161,3 +161,10 @@ function saveUserMedal($params)
     $rep = new \App\Repositories\MedalRepository();
     return $rep->saveUserMedal($CURUSER['id'], $data);
 }
+
+function claimAllSeeding()
+{
+    global $CURUSER;
+    $rep = new \App\Repositories\ClaimRepository();
+    return $rep->claimAllSeeding($CURUSER['id']);
+}

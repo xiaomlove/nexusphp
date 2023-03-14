@@ -232,11 +232,11 @@ function do_log($log, $level = 'info', $echo = false)
     }
 }
 
-function getLogFile()
+function getLogFile($append = '')
 {
-    static $logFile;
-    if (!is_null($logFile)) {
-        return $logFile;
+    static $logFiles = [];
+    if (isset($logFiles[$append])) {
+        return $logFiles[$append];
     }
     $config = nexus_config('nexus');
     $path = getenv('NEXUS_LOG_DIR', true);
@@ -257,8 +257,12 @@ function getLogFile()
         $prefix = $logFile;
         $suffix = '';
     }
-    $logFile = sprintf('%s-%s%s', $prefix, date('Y-m-d'), $suffix);
-    return $logFile;
+    $name = $prefix;
+    if ($append) {
+        $name .= "-$append";
+    }
+    $logFile = sprintf('%s-%s%s', $name, date('Y-m-d'), $suffix);
+    return $logFiles[$append] = $logFile;
 
 }
 
@@ -1170,5 +1174,10 @@ function executeCommand($command, $format = 'string', $artisan = false, $excepti
         throw new \RuntimeException($outputString);
     }
     return $format == 'string' ? $outputString : $output;
+}
+
+function has_role_work_seeding($uid)
+{
+    return apply_filter('user_has_role_work_seeding', false, $uid);
 }
 
