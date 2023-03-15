@@ -67,16 +67,14 @@ function bonusarray($option = 0){
     $results[] = $bonus;
 
     //Invite
-    if ($oneinvite_bonus > 0){
-        $bonus = array();
-        $bonus['points'] = $oneinvite_bonus;
-        $bonus['art'] = 'invite';
-        $bonus['menge'] = 1;
-        $bonus['name'] = $lang_mybonus['text_buy_invite'];
-        $bonus['description'] = $lang_mybonus['text_buy_invite_note'];
-        $results[] = $bonus;
-    }
-	
+    $bonus = array();
+    $bonus['points'] = $oneinvite_bonus;
+    $bonus['art'] = 'invite';
+    $bonus['menge'] = 1;
+    $bonus['name'] = $lang_mybonus['text_buy_invite'];
+    $bonus['description'] = $lang_mybonus['text_buy_invite_note'];
+    $results[] = $bonus;
+
     //Tmp Invite
     $tmpInviteBonus = \App\Models\BonusLogs::getBonusForBuyTemporaryInvite();
     if ($tmpInviteBonus > 0) {
@@ -409,21 +407,8 @@ for ($i=0; $i < count($allBonus); $i++)
 		}
 		elseif($bonusarray['art'] == 'invite')
 		{
-			if (\App\Models\Setting::get('main.invitesystem') != 'yes') 
-				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.invite_system_closed')."\" disabled=\"disabled\" /></td>");
-			elseif(!user_can($permission, false, $uid)){
-			$requireClass = get_setting("authority.$permission");
-				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.no_permission', ['class' => \App\Models\User::getClassText($requireClass)])."\" disabled=\"disabled\" /></td>");}
-			else
-				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
-		}
-		elseif($bonusarray['art'] == 'tmp_invite')
-		{
-			if (\App\Models\Setting::get('main.invitesystem') != 'yes') 
-				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.invite_system_closed')."\" disabled=\"disabled\" /></td>");
-			elseif(!user_can($permission, false, $uid)){
-			$requireClass = get_setting("authority.$permission");
-				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.no_permission', ['class' => \App\Models\User::getClassText($requireClass)])."\" disabled=\"disabled\" /></td>");}
+			if(!user_can('buyinvite'))
+				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']."\" disabled=\"disabled\" /></td>");
 			else
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_exchange']."\" /></td>");
 		}
@@ -639,8 +624,8 @@ if ($action == "exchange") {
 		elseif($art == "invite") {
 			if(!user_can('buyinvite'))
 				die(get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']);
-//			$invites = $CURUSER['invites'];
-//			$inv = $invites+$bonusarray['menge'];
+			$invites = $CURUSER['invites'];
+			$inv = $invites+$bonusarray['menge'];
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
 //			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_INVITE, $points. " Points for invites.", ['invites' => $inv, ]);
@@ -648,8 +633,8 @@ if ($action == "exchange") {
 		}
         //=== temporary invite
         elseif($art == "tmp_invite") {
-            if(!user_can('buyinvite'))
-                die(get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']);
+//            if(!user_can('buyinvite'))
+//                die(get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']);
 //            $invites = $CURUSER['invites'];
 //            $inv = $invites+$bonusarray['menge'];
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
