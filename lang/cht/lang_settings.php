@@ -262,7 +262,7 @@ $lang_settings = array
 	'text_uploaded_amount_above' => "且其上傳量大于",
 	'text_ratio_limit_default' => " GB時，他無法交換更多的上傳量。預設'6'，'50'。將分享率設為'0'來禁止此規則。",
 	'row_buy_an_invite' => "購買邀請名額",
-	'text_buy_an_invite_note' => "個魔力值，如果他選取交換一個邀請名額。預設'1000'。",
+	'text_buy_an_invite_note' => "個魔力值，如果他選取交換一個邀請名額。預設'1000'。將魔力值設為'0'來禁止購買。",
 
 	'row_custom_title' => "自訂頭銜",
 	'text_custom_title_note' => "個魔力值，如果他選取自訂一次頭銜。預設'5000'。",
@@ -800,7 +800,7 @@ $lang_settings = array
 	'text_protected_forum' => '輸入開啟隱私保護的論壇板塊ID，該版塊的回覆僅樓主作者及管理員以上可見，使用逗號分割(如:1,2,3)',
 	'forum_format_error' => '論壇ID格式錯誤，請核查校對!',
     'row_buy_an_tmp_invite' => '購買臨時邀請名額',
-    'text_buy_an_tmp_invite_note' => "個魔力值，如果他選擇交換一個臨時邀請名額。默認'500'。",
+    'text_buy_an_tmp_invite_note' => "個魔力值，如果他選擇交換一個臨時邀請名額。默認'500'。將魔力值設為'0'來禁止購買。",
     'row_buy_rainbow_id' => '購買彩虹 ID',
     'text_buy_rainbow_id_note' => "個魔力值，如果他選擇交換一個彩虹 ID，有效期 30 天。默認'5,000'。",
     'row_buy_change_username_card' => '購買改名卡',
