@@ -391,6 +391,7 @@ for ($i=0; $i < count($allBonus); $i++)
 
 	if($CURUSER['seedbonus'] >= $bonusarray['points'])
 	{
+	    $permission = 'sendinvite';
 		if ($bonusarray['art'] == 'gift_1'){
 			print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_karma_gift']."\" /></td>");
 		}
@@ -411,7 +412,7 @@ for ($i=0; $i < count($allBonus); $i++)
 		{
 			if (\App\Models\Setting::get('main.invitesystem') != 'yes') 
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.invite_system_closed')."\" disabled=\"disabled\" /></td>");
-			elseif(!user_can($permission, false, $uid)){
+			elseif(!user_can($permission, false, 0)){
 			$requireClass = get_setting("authority.$permission");
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.no_permission', ['class' => \App\Models\User::getClassText($requireClass)])."\" disabled=\"disabled\" /></td>");}
 			else
@@ -421,7 +422,7 @@ for ($i=0; $i < count($allBonus); $i++)
 		{
 			if (\App\Models\Setting::get('main.invitesystem') != 'yes') 
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.invite_system_closed')."\" disabled=\"disabled\" /></td>");
-			elseif(!user_can($permission, false, $uid)){
+			elseif(!user_can($permission, false, 0)){
 			$requireClass = get_setting("authority.$permission");
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.no_permission', ['class' => \App\Models\User::getClassText($requireClass)])."\" disabled=\"disabled\" /></td>");}
 			else
@@ -639,8 +640,8 @@ if ($action == "exchange") {
 		elseif($art == "invite") {
 			if(!user_can('buyinvite'))
 				die(get_user_class_name($buyinvite_class,false,false,true).$lang_mybonus['text_plus_only']);
-//			$invites = $CURUSER['invites'];
-//			$inv = $invites+$bonusarray['menge'];
+			$invites = $CURUSER['invites'];
+			$inv = $invites+$bonusarray['menge'];
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
 //			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_INVITE, $points. " Points for invites.", ['invites' => $inv, ]);
