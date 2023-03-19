@@ -5,6 +5,7 @@ namespace App\Filament\Resources\System;
 use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\SeedBoxRecordResource\Pages;
 use App\Filament\Resources\System\SeedBoxRecordResource\RelationManagers;
+use App\Models\NexusModel;
 use App\Models\SeedBoxRecord;
 use App\Repositories\SeedBoxRepository;
 use Filament\Facades\Filament;
@@ -64,7 +65,11 @@ class SeedBoxRecordResource extends Resource
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('typeText')->label(__('label.seed_box_record.type')),
                 Tables\Columns\TextColumn::make('uid')->searchable(),
-                Tables\Columns\TextColumn::make('user.username')->label(__('label.username'))->searchable(),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->label(__('label.username'))
+                    ->searchable()
+                    ->formatStateUsing(fn ($record) => username_for_admin($record->uid))
+                ,
                 Tables\Columns\TextColumn::make('operator')->label(__('label.seed_box_record.operator'))->searchable(),
                 Tables\Columns\TextColumn::make('bandwidth')->label(__('label.seed_box_record.bandwidth')),
                 Tables\Columns\TextColumn::make('ip')
@@ -112,14 +117,24 @@ class SeedBoxRecordResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('audit')
                     ->label(__('admin.resources.seed_box_record.toggle_status'))
+                    ->mountUsing(fn (Forms\ComponentContainer $form, NexusModel $record) => $form->fill([
+                        'status' => $record->status,
+                    ]))
                     ->form([
-                        Forms\Components\Radio::make('status')->options(SeedBoxRecord::listStatus('text'))
-                            ->inline()->label(__('label.seed_box_record.status'))->required()
+                        Forms\Components\Radio::make('status')
+                            ->options(SeedBoxRecord::listStatus('text'))
+                            ->inline()
+                            ->label(__('label.seed_box_record.status'))
+                            ->required()
+                        ,
+                        Forms\Components\TextInput::make('reason')
+                            ->label(__('label.reason'))
+                        ,
                     ])
                     ->action(function (SeedBoxRecord $record, array $data) {
                         $rep = new SeedBoxRepository();
                         try {
-                            $rep->updateStatus($record, $data['status']);
+                            $rep->updateStatus($record, $data['status'], $data['reason']);
                         } catch (\Exception $exception) {
                             Filament::notify('danger', class_basename($exception));
                         }

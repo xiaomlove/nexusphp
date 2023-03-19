@@ -39,6 +39,7 @@ return [
     'country' => '国家',
     'city' => '城市',
     'client' => '客户端',
+    'reason' => '原因',
     'setting' => [
         'nav_text' => '设置',
         'backup' => [

@@ -12,6 +12,6 @@ return [
     ],
     'status_change_message' => [
         'subject' => 'SeedBox 記錄狀態變更',
-        'body' => '你的 ID 為 :id 的 SeedBox 記錄狀態被 :operator 由 :old_status 變更為 :new_status',
+        'body' => '你的 ID 為 :id 的 SeedBox 記錄狀態被 :operator 由 :old_status 變更為 :new_status。原因：:reason',
     ],
 ];

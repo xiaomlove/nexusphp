@@ -62,7 +62,7 @@ if (!$action) {
 			$answered = "<font color=red>".$lang_staffbox['text_no']."</font>";
 
     		$pmid = $arr["id"];
-		print("<tr><td width=100% class=rowfollow align=left><a href=staffbox.php?action=viewpm&pmid=$pmid>".htmlspecialchars($arr['subject'])."</td><td class=rowfollow align=center>" . get_username($arr['sender']) . "</td><td class=rowfollow align=center><nobr>".gettime($arr['added'], true, false)."</nobr></td><td class=rowfollow align=center>$answered</td><td class=rowfollow align=center><input type=\"checkbox\" name=\"setanswered[]\" value=\"" . $arr['id'] . "\" /></td></tr>\n");
+		print("<tr><td width=100% class=rowfollow align=left><a href=staffbox.php?action=viewpm&pmid=$pmid&return=".urlencode($_SERVER['QUERY_STRING']).">".htmlspecialchars($arr['subject'])."</td><td class=rowfollow align=center>" . get_username($arr['sender']) . "</td><td class=rowfollow align=center><nobr>".gettime($arr['added'], true, false)."</nobr></td><td class=rowfollow align=center>$answered</td><td class=rowfollow align=center><input type=\"checkbox\" name=\"setanswered[]\" value=\"" . $arr['id'] . "\" /></td></tr>\n");
 	}
 	print("<tr><td class=rowfollow align=right colspan=5><input type=\"submit\" name=\"setdealt\" value=\"".$lang_staffbox['submit_set_answered']."\" /><input type=\"submit\" name=\"delete\" value=\"".$lang_staffbox['submit_delete']."\" /></td></tr>");
 	print("</table>\n");
@@ -121,7 +121,7 @@ print("<tr><td colspan=\"".$colspan."\" align=\"left\">".format_comment($arr4["a
 print("<tr><td colspan=\"".$colspan."\" align=\"right\">");
 print("<font color=white>");
 if ($arr4["answered"] == 0)
-print("[ <a href=\"staffbox.php?action=answermessage&receiver=" . $arr4['sender'] . "&answeringto=".$arr4['id']."\">".$lang_staffbox['text_reply']."</a> ] [ <a href=\"staffbox.php?action=setanswered&id=".$arr4['id']."\">".$lang_staffbox['text_mark_answered']."</a> ] ");
+print("[ <a href=\"staffbox.php?action=answermessage&receiver=" . $arr4['sender'] . "&answeringto=".$arr4['id']."\">".$lang_staffbox['text_reply']."</a> ] [ <a href=\"staffbox.php?action=setanswered&id=".$arr4['id']."&return=".urlencode($_GET['return'] ?? '')."\">".$lang_staffbox['text_mark_answered']."</a> ] ");
 print("[ <a href=\"staffbox.php?action=deletestaffmessage&id=" . $arr4["id"] . "\">".$lang_staffbox['text_delete']."</a> ]");
 print("</font>");
 print("</td></tr>");
@@ -231,7 +231,7 @@ $id = intval($_GET["id"] ?? 0);
 sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = $id") or sqlerr();
 $Cache->delete_value('staff_new_message_count');
     clear_staff_message_cache();
-header("Refresh: 0; url=staffbox.php?action=viewpm&pmid=$id");
+header("Refresh: 0; url=staffbox.php" . (!empty($_GET['return']) ? "?" . $_GET['return'] : ''));
 }
 
          //////////////////////////

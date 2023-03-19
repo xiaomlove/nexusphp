@@ -39,6 +39,7 @@ return [
     'country' => 'Country',
     'city' => 'City',
     'client' => 'Client',
+    'reason' => 'Reason',
     'setting' => [
         'nav_text' => 'Setting',
         'backup' => [

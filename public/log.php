@@ -211,7 +211,7 @@ else {
 			while ($arr = mysql_fetch_assoc($res))
 			{
 				$date = gettime($arr['added'],true,false);
-				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(user_can('chrmanage') ? "<td align=center nowrap><b><a href=\"".$_SERVER['REQUEST_URI']."?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"".$_SERVER['REQUEST_URI']."?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
+				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(user_can('chrmanage') ? "<td align=center nowrap><b><a href=\"?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
 			}
 			print("</table>");
 			echo $pagerbottom;

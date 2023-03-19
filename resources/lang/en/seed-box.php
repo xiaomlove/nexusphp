@@ -12,6 +12,6 @@ return [
     ],
     'status_change_message' => [
         'subject' => 'SeedBox record status changed',
-        'body' => 'The status of your SeedBox record with ID :id was changed by :operator from :old_status to :new_status',
+        'body' => 'The status of your SeedBox record with ID :id was changed by :operator from :old_status to :new_status. Reason: :reason',
     ],
 ];
