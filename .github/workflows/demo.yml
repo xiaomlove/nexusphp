@@ -34,8 +34,8 @@ jobs:
     # Deploy
     - name: Fetch code and update
       run: | 
-        ssh demo 'cd $DEMO_WEB_ROOT && php artisan nexus:update --tag=dev'
-        ssh demo 'cd $DEMO_WEB_ROOT && php artisan nexus:update'
+        ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update --tag=dev"
+        ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update"
       
         
   
