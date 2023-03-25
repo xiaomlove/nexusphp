@@ -30,12 +30,11 @@ jobs:
           IdentityFile ~/.ssh/demo.key
           StrictHostKeyChecking no
         END
-        echo "user: $SSH_USER, host: $SSH_HOST, path: $DEMO_WEB_ROOT"
     # Deploy
-    - name: Fetch code and update
-      run: | 
-        ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update --tag=dev"
-        ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update"
+    - name: Fetch code
+      run: ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update --tag=dev"
+    - name: Update
+      run: ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update"
       
         
   
