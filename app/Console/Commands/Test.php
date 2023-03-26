@@ -95,7 +95,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $logFile = getLogFile("seed-points");
+        $logFile = format_description('[img=http://www.baidu.com][img]http://www.baidu.com[/img]');
         dd($logFile);
     }
 

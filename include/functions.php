@@ -5631,9 +5631,10 @@ function format_description($description)
     //匹配不同块
     $attachPattern = '\[attach\].*\[\/attach\]';
     $imgPattern = '\[img\].*\[\/img\]';
+    $imgPattern2 = '\[img=.*\]';
     $urlPattern = '\[url=.*\].*\[\/url\]';
     $quotePattern = '\[quote.*\].*\[\/quote\]';
-    $pattern = "/($attachPattern)|($imgPattern)|($urlPattern)|($quotePattern)/isU";
+    $pattern = "/($attachPattern)|($imgPattern)|($imgPattern2)|($urlPattern)|($quotePattern)/isU";
 //    $pattern = "/($attachPattern)|($imgPattern)|($urlPattern)/isU";
     $delimiter = '{{{}}}';
     $description = preg_replace_callback($pattern, function ($matches) use ($delimiter) {
@@ -5653,6 +5654,14 @@ function format_description($description)
                 ]
             ];
         } elseif (preg_match('/\[img\](.*)\[\/img\]/isU', $item, $matches)) {
+            //是否图片
+            $results[] = [
+                'type' => 'image',
+                'data' => [
+                    'url' => $matches[1]
+                ]
+            ];
+        } elseif (preg_match('/\[img=(.*)\]/isU', $item, $matches)) {
             //是否图片
             $results[] = [
                 'type' => 'image',
