@@ -1,0 +1,40 @@
+name: deploy to demo site
+on:
+  push:
+    branches: [ "php8" ]
+    
+# Environment variables available to all jobs and steps in this workflow
+env:
+  SSH_KEY: ${{secrets.DEMO_SSH_KEY}}
+  SSH_USER: ${{secrets.DEMO_SSH_USER}}
+  SSH_HOST: ${{secrets.DEMO_SSH_HOST}}
+  DEMO_WEB_ROOT: ${{secrets.DEMO_WEB_ROOT}}
+permissions:
+  contents: read
+jobs:
+  login-to-demo-and-up:
+    name: Login to demo and Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    # Prepare
+    - name: Prepare user key
+      run: |
+        mkdir -p ~/.ssh/
+        echo "$SSH_KEY" > ~/.ssh/demo.key
+        chmod 600 ~/.ssh/demo.key
+        cat >> ~/.ssh/config <<END
+        Host demo
+          HostName $SSH_HOST
+          User $SSH_USER
+          IdentityFile ~/.ssh/demo.key
+          StrictHostKeyChecking no
+        END
+    # Deploy
+    - name: Fetch code
+      run: ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update --tag=dev"
+    - name: Update
+      run: ssh demo "cd $DEMO_WEB_ROOT && php artisan nexus:update"
+      
+        
+  
