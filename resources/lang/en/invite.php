@@ -11,6 +11,8 @@ return [
         'invitee_register_email' => 'Registered email',
         'invitee_register_username' => 'Registered username',
         'expired_at' => 'hash expired at',
+        'time_invited_begin' => 'Send time gte',
+        'time_invited_end' => 'Send time lte',
     ],
     'send_deny_reasons' => [
         'invite_system_closed' => 'Invite system is closed',

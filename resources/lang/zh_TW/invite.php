@@ -11,6 +11,8 @@ return [
         'invitee_register_email' => '註冊用戶郵箱',
         'invitee_register_username' => '註冊用戶名',
         'expired_at' => 'hash 過期時間',
+        'time_invited_begin' => '發邀時間大於',
+        'time_invited_end' => '發邀時間小於',
     ],
     'send_deny_reasons' => [
         'invite_system_closed' => '邀請系統已關閉',

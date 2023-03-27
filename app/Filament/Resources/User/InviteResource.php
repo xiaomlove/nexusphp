@@ -48,7 +48,7 @@ class InviteResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('inviter')
                     ->label(__('invite.fields.inviter'))
                     ->formatStateUsing(fn ($state) => username_for_admin($state))
@@ -87,22 +87,8 @@ class InviteResource extends Resource
                     ->formatStateUsing(fn ($state) => format_datetime($state))
                 ,
             ])
-            ->filters([
-                Tables\Filters\Filter::make('inviter')
-                    ->form([
-                        Forms\Components\TextInput::make('inviter')
-                            ->label(__('invite.fields.inviter'))
-                            ->placeholder('UID')
-                        ,
-                    ])->query(function (Builder $query, array $data) {
-                        return $query->when($data['inviter'], fn (Builder $query, $value) => $query->where("inviter", $value));
-                    })
-                ,
-                Tables\Filters\SelectFilter::make('valid')
-                    ->options(self::getYesNoOptions())
-                    ->label(__('invite.fields.valid'))
-                ,
-            ])
+            ->defaultSort('id', 'desc')
+            ->filters(self::getFilters())
             ->actions([
 //                Tables\Actions\EditAction::make(),
             ])
@@ -125,5 +111,45 @@ class InviteResource extends Resource
             'create' => Pages\CreateInvite::route('/create'),
             'edit' => Pages\EditInvite::route('/{record}/edit'),
         ];
+    }
+
+    private static function getFilters()
+    {
+        $filters = [];
+        $filters[] = Tables\Filters\Filter::make('inviter')
+            ->form([
+                Forms\Components\TextInput::make('inviter')
+                    ->label(__('invite.fields.inviter'))
+                    ->placeholder('UID')
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['inviter'], fn (Builder $query, $value) => $query->where("inviter", $value));
+            })
+        ;
+        $filters[] = Tables\Filters\SelectFilter::make('valid')
+            ->options(self::getYesNoOptions())
+            ->label(__('invite.fields.valid'))
+        ;
+        $filters[] = Tables\Filters\Filter::make('time_invited_begin')
+            ->form([
+                Forms\Components\DatePicker::make('time_invited_begin')
+                    ->maxDate(now())
+                    ->label(__('invite.fields.time_invited_begin'))
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['time_invited_begin'], fn (Builder $query, $value) => $query->where("time_invited", '>=', $value));
+            })
+        ;
+        $filters[] = Tables\Filters\Filter::make('time_invited_end')
+            ->form([
+                Forms\Components\DatePicker::make('time_invited_end')
+                    ->maxDate(now())
+                    ->label(__('invite.fields.time_invited_end'))
+                ,
+            ])->query(function (Builder $query, array $data) {
+                return $query->when($data['time_invited_end'], fn (Builder $query, $value) => $query->where("time_invited", '<=', $value));
+            })
+        ;
+        return $filters;
     }
 }
