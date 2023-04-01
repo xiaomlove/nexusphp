@@ -48,6 +48,7 @@
         "league/flysystem-ftp": "^3.0",
         "league/flysystem-sftp-v3": "^3.0",
         "masbug/flysystem-google-drive-ext": "^2.0",
+        "meilisearch/meilisearch-php": "^1.0",
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",
         "rhilip/bencode": "^2.0",
@@ -94,7 +95,10 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
-        "secure-http": false
+        "secure-http": false,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true
