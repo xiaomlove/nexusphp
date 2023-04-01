@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -14,11 +14,14 @@ return new class extends Migration
      */
     public function up()
     {
-        $tableName = 'peers';
+        $tableName = 'snatched';
         $result = DB::select('show index from ' . $tableName);
         $indexToDrop = [];
         foreach ($result as $item) {
-            if (in_array($item->Column_name, ['torrent', 'peer_id'])) {
+            if (in_array($item->Column_name, ['torrentid', 'userid'])) {
+                if ($item->Non_unique == 0) {
+                    return;
+                }
                 $indexToDrop[$item->Key_name] = "drop index " . $item->Key_name;
             }
         }
@@ -27,12 +30,11 @@ return new class extends Migration
             DB::statement($sql);
         }
 
-        $sql = "alter table $tableName add index idx_torrent_peer(`torrent`, `peer_id`(20))";
+        $sql = "alter table $tableName add unique unique_torrent_user(`torrentid`, `userid`)";
         DB::statement($sql);
 
-        $sql = "alter table $tableName add index idx_peer(`peer_id`(20))";
+        $sql = "alter table $tableName add index idx_user(`userid`)";
         DB::statement($sql);
-
     }
 
     /**

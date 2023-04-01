@@ -22,6 +22,7 @@ use App\Repositories\ExamRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\ToolRepository;
+use App\Repositories\TorrentRepository;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Model;
@@ -289,6 +290,12 @@ class Update extends Install
             }
         }
 
+        if (!$this->isSnatchedTableTorrentUserUnique()) {
+            $torrentRep = new TorrentRepository();
+            $torrentRep->removeDuplicateSnatch();
+            $this->runMigrate('database/migrations/2023_03_29_021950_handle_snatched_user_torrent_unique.php');
+        }
+
     }
 
     public function runExtraMigrate()
@@ -479,6 +486,18 @@ class Update extends Install
             Tag::query()->firstOrCreate($attributes, $values);
             $priority--;
         }
+    }
+
+    private function isSnatchedTableTorrentUserUnique(): bool
+    {
+        $tableName = 'snatched';
+        $result = NexusDB::select('show index from ' . $tableName);
+        foreach ($result as $item) {
+            if (in_array($item->Column_name, ['torrentid', 'userid']) && $item->Non_unique == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

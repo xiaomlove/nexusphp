@@ -95,8 +95,10 @@ class Test extends Command
      */
     public function handle()
     {
-        $logFile = format_description('[img=http://www.baidu.com][img]http://www.baidu.com[/img]');
-        dd($logFile);
+        $r = log(10);
+        $r2 = exp(10);
+
+        dd($r, $r2);
     }
 
 }
