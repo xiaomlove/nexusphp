@@ -93,6 +93,8 @@ return [
             'cookie_valid_days' => 'Cookie 有效天数',
             'maximum_upload_speed' => '最大上传速度',
             'maximum_upload_speed_help' => '单种上传速度超过此值账号即刻禁用，单位 Mbps。如：100 Mbps = 12.5 MB/s',
+            'meilisearch_enabled' => '是否启用 Meilisearch',
+            'meilisearch_enabled_help' => '请先安装配置好并导入数据再启用，否则种子搜索无数据。',
         ],
     ],
     'user' => [

@@ -294,6 +294,7 @@ class Update extends Install
             $torrentRep = new TorrentRepository();
             $torrentRep->removeDuplicateSnatch();
             $this->runMigrate('database/migrations/2023_03_29_021950_handle_snatched_user_torrent_unique.php');
+            $this->doLog("removeDuplicateSnatch and migrate 2023_03_29_021950_handle_snatched_user_torrent_unique");
         }
 
     }
@@ -493,7 +494,7 @@ class Update extends Install
         $tableName = 'snatched';
         $result = NexusDB::select('show index from ' . $tableName);
         foreach ($result as $item) {
-            if (in_array($item->Column_name, ['torrentid', 'userid']) && $item->Non_unique == 0) {
+            if (in_array($item['Column_name'], ['torrentid', 'userid']) && $item['Non_unique'] == 0) {
                 return true;
             }
         }

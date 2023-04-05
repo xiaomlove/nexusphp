@@ -430,6 +430,9 @@ write_log("Torrent $id ($torrent) was uploaded by $anon");
 $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->addTorrent($id);
 
+$meiliSearch = new \App\Repositories\MeiliSearchRepository();
+$meiliSearch->doImportFromDatabase($id);
+
 //===notify people who voted on offer thanks CoLdFuSiOn :)
 if ($is_offer)
 {

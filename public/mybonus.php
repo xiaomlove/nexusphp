@@ -76,7 +76,7 @@ function bonusarray($option = 0){
         $bonus['description'] = $lang_mybonus['text_buy_invite_note'];
         $results[] = $bonus;
     }
-	
+
     //Tmp Invite
     $tmpInviteBonus = \App\Models\BonusLogs::getBonusForBuyTemporaryInvite();
     if ($tmpInviteBonus > 0) {
@@ -306,7 +306,7 @@ unset($msg);
 if (isset($do)) {
 	if ($do == "upload")
 	$msg = $lang_mybonus['text_success_upload'];
-    if ($do == "download")
+    elseif ($do == "download")
     $msg = $lang_mybonus['text_success_download'];
 	elseif ($do == "invite")
 	$msg = $lang_mybonus['text_success_invites'];
@@ -410,7 +410,7 @@ for ($i=0; $i < count($allBonus); $i++)
 		}
 		elseif($bonusarray['art'] == 'invite')
 		{
-			if (\App\Models\Setting::get('main.invitesystem') != 'yes') 
+			if (\App\Models\Setting::get('main.invitesystem') != 'yes')
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.invite_system_closed')."\" disabled=\"disabled\" /></td>");
 			elseif(!user_can($permission, false, 0)){
 			$requireClass = get_setting("authority.$permission");
@@ -420,7 +420,7 @@ for ($i=0; $i < count($allBonus); $i++)
 		}
 		elseif($bonusarray['art'] == 'tmp_invite')
 		{
-			if (\App\Models\Setting::get('main.invitesystem') != 'yes') 
+			if (\App\Models\Setting::get('main.invitesystem') != 'yes')
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".nexus_trans('invite.send_deny_reasons.invite_system_closed')."\" disabled=\"disabled\" /></td>");
 			elseif(!user_can($permission, false, 0)){
 			$requireClass = get_setting("authority.$permission");

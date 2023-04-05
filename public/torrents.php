@@ -5,6 +5,7 @@ require_once(get_langfile_path('torrents.php'));
 require_once(get_langfile_path('speical.php'));
 loggedinorreturn();
 parked();
+
 //check searchbox
 switch (nexus()->getScript()) {
     case 'torrents':
@@ -27,8 +28,9 @@ switch (nexus()->getScript()) {
  */
 $tagRep = new \App\Repositories\TagRepository();
 $allTags = $tagRep->listAll($sectiontype);
-$elasticsearchEnabled = nexus_env('ELASTICSEARCH_ENABLED');
 $filterInputWidth = 62;
+$searchParams = $_GET;
+$searchParams['mode'] = $sectiontype;
 
 $showsubcat = get_searchbox_value($sectiontype, 'showsubcat');//whether show subcategory (i.e. sources, codecs) or not
 $showsource = get_searchbox_value($sectiontype, 'showsource'); //whether show sources or not
@@ -54,9 +56,13 @@ if ($showsubcat){
 
 $searchstr_ori = htmlspecialchars(trim($_GET["search"] ?? ''));
 $searchstr = mysql_real_escape_string(trim($_GET["search"] ?? ''));
-if (empty($searchstr))
-	unset($searchstr);
+if (empty($searchstr)) {
+    unset($searchstr);
+}
 
+$meilisearchEnabled = get_setting('system.meilisearch_enabled') == 'yes';
+$shouldUseMeili = $meilisearchEnabled && !empty($searchstr);
+do_log("[SHOULD_USE_MEILI]: $shouldUseMeili");
 // sorting by MarkoStamcar
 $column = '';
 $ascdesc = '';
@@ -154,8 +160,11 @@ elseif ($inclbookmarked == 2)		//not bookmarked
 }
 // ----------------- end bookmarked ---------------------//
 
-if (!isset($CURUSER) || !user_can('seebanned'))
-	$wherea[] = "banned = 'no'";
+if (!isset($CURUSER) || !user_can('seebanned')) {
+    $wherea[] = "banned = 'no'";
+    $searchParams["banned"] = 'no';
+}
+
 // ----------------- start include dead ---------------------//
 if (isset($_GET["incldead"]))
 	$include_dead = intval($_GET["incldead"] ?? 0);
@@ -821,9 +830,11 @@ if ($approvalStatusIconEnabled == 'yes' || (user_can('torrent-approval') && $app
 if ($showApprovalStatusFilter && isset($_REQUEST['approval_status']) && is_numeric($_REQUEST['approval_status'])) {
     $approvalStatus = intval($_REQUEST['approval_status']);
     $wherea[] = "torrents.approval_status = $approvalStatus";
+    $searchParams['approval_status'] = $approvalStatus;
     $addparam .= "approval_status=$approvalStatus&";
 } elseif ($approvalStatusNoneVisible == 'no' && !user_can('torrent-approval')) {
     $wherea[] = "torrents.approval_status = " . \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
+    $searchParams['approval_status'] = \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
 
 if (isset($_GET['size_begin']) && ctype_digit($_GET['size_begin'])) {
@@ -903,12 +914,10 @@ else
 	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where . " GROUP BY categories.mode";
 }
 
-if ($elasticsearchEnabled) {
-    $searchRep = new \App\Repositories\SearchRepository();
-    $esParams = $_GET;
-    $esParams['mode'] = $sectiontype;
-    $resultFromElastic = $searchRep->listTorrentFromEs($esParams, $CURUSER['id'], $_SERVER['QUERY_STRING']);
-    $count = $resultFromElastic['total'];
+if ($shouldUseMeili) {
+    $searchRep = new \App\Repositories\MeiliSearchRepository();
+    $resultFromSearchRep = $searchRep->search($searchParams, $CURUSER['id']);
+    $count = $resultFromSearchRep['total'];
 } else {
     $res = sql_query($sql);
     $count = 0;
@@ -957,7 +966,7 @@ if ($count)
         $query = "SELECT $fieldsStr, categories.mode as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
 //    }
     do_log("[TORRENT_LIST_SQL] $query", 'debug');
-    if (!$elasticsearchEnabled) {
+    if (!$shouldUseMeili) {
         $res = sql_query($query);
     }
 } else {
@@ -1258,8 +1267,8 @@ elseif($inclbookmarked == 2)
 
 if ($count) {
     $rows = [];
-    if ($elasticsearchEnabled) {
-        $rows = $resultFromElastic['data'];
+    if ($shouldUseMeili) {
+        $rows = $resultFromSearchRep['list'];
     } else {
         while ($row = mysql_fetch_assoc($res)) {
             $rows[] = $row;

@@ -350,6 +350,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
+
 //Priority Class 3: cleanup every 60 mins
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime3'");
 	$row = mysql_fetch_array($res);
@@ -546,6 +547,18 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		do_log($log);
 		printProgress($log);
 	}
+
+    //sync to Meilisearch
+    $meiliRep = new \App\Repositories\MeiliSearchRepository();
+    if ($meiliRep->isEnabled()) {
+        $meiliRep->import();
+    }
+    $log = "sync to Meilisearch";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
 
 //Priority Class 4: cleanup every 24 hours
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime4'");

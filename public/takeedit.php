@@ -285,7 +285,8 @@ if ($affectedRows == 1) {
             'comment' => '',
         ], true);
     }
-
+    $meiliSearch = new \App\Repositories\MeiliSearchRepository();
+    $meiliSearch->doImportFromDatabase($row['id']);
 }
 
 $returl = "details.php?id=$id&edited=1";

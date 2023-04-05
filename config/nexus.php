@@ -47,6 +47,13 @@ return [
         ],
 
         'ssl_verification' => nexus_env('ELASTICSEARCH_SSL_VERIFICATION', ''),
-    ]
+    ],
+
+    'meilisearch' => [
+        'scheme' => nexus_env('MEILISEARCH_SCHEME', 'http'),
+        'host' => nexus_env('MEILISEARCH_HOST', '127.0.0.1'),
+        'port' => (int)nexus_env('MEILISEARCH_PORT', '7700'),
+        'master_key' => nexus_env('MEILISEARCH_MASTER_KEY', ''),
+    ],
 
 ];

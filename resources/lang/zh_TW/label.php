@@ -92,6 +92,8 @@ return [
             'maximum_number_of_medals_can_be_worn' => '勛章最大可佩戴數',
             'cookie_valid_days' => 'Cookie 有效天數',
             'maximum_upload_speed_help' => '單種上傳速度超過此值賬號即刻禁用，單位 Mbps。如：100 Mbps = 12.5 MB/s',
+            'meilisearch_enabled' => '是否啟用 Meilisearch',
+            'meilisearch_enabled_help' => '請先安裝配置好並導入數據再啟用，否則種子搜索無數據。',
         ],
     ],
     'user' => [

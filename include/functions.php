@@ -3128,6 +3128,8 @@ function deletetorrent($id, $notify = false) {
             'comment' => '',
         ], $notify);
     }
+    $meiliSearchRep = new \App\Repositories\MeiliSearchRepository();
+    $meiliSearchRep->deleteDocuments($idArr);
 }
 
 function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {

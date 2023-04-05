@@ -27,6 +27,7 @@ use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
+use App\Repositories\MeiliSearchRepository;
 use App\Repositories\PluginRepository;
 use App\Repositories\SearchBoxRepository;
 use App\Repositories\SearchRepository;
@@ -95,10 +96,26 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = log(10);
-        $r2 = exp(10);
+        $rep = new MeiliSearchRepository();
+//        $r = $rep->doImportFromDatabase();
+//        dd($r);
+//        $r = $rep->import();
 
-        dd($r, $r2);
+        $r = $rep->search([
+            'search' => '200',
+            'spstate' => 0,
+            'incldead' => 0,
+            'mode' => 4,
+//            'cat401' => 1,
+            'sort' => '4',
+            'type' => 'desc',
+            'search_mode' => 0,
+            'inclbookmarked' => 0,
+            'approval_status' => 1,
+//            'size_end' => 20,
+//            'added_end' => '2023-02-11',
+        ], 1, 'incldead=0&spstate=1&inclbookmarked=0&approval_status=1&size_begin=&size_end=&seeders_begin=&seeders_end=&leechers_begin=&leechers_end=&times_completed_begin=&times_completed_end=&added_begin=&added_end=&search=200&search_area=0&search_mode=0');
+        dd($r);
     }
 
 }
