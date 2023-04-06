@@ -267,13 +267,21 @@ class MeiliSearchRepository extends BaseRepository
             $torrentIdArr = array_column($searchResult->getHits(), 'id');
             $fields = Torrent::getFieldsForList();
             $idStr = implode(',', $torrentIdArr);
-            $results['list'] = Torrent::query()
+            $torrents = Torrent::query()
                 ->select($fields)
+                ->with('basic_category')
                 ->whereIn('id', $torrentIdArr)
                 ->orderByRaw("field(id,$idStr)")
                 ->get()
-                ->toArray()
             ;
+            $list = [];
+            foreach ($torrents as $torrent) {
+                $searchBoxId = $torrent->basic_category->mode;
+                $arr = $torrent->toArray();
+                $arr['search_box_id'] = $searchBoxId;
+                $list[] = $arr;
+            }
+            $results['list'] = $list;
         }
         return $results;
     }

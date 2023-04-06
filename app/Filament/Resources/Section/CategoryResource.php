@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Icon;
 use App\Models\NexusModel;
 use App\Models\SearchBox;
+use App\Models\Torrent;
 use App\Repositories\SearchBoxRepository;
 use Filament\Facades\Filament;
 use Filament\Forms;
@@ -46,7 +47,19 @@ class CategoryResource extends Resource
                 Forms\Components\Select::make('mode')
                     ->options(SearchBox::listModeOptions())
                     ->label(__('label.search_box.label'))
-                    ->required()
+                    ->rules([
+                        'required',
+                        function () {
+                            return function ($attribute, $value, $fail) {
+                                //@todo how to get the editing record ?
+                                $exists = Torrent::query()->where('category', $value)->exists();
+                                do_log("check $attribute: $value torrent if exists: $exists");
+//                                if ($exists) {
+//                                    $fail("There are torrents belonging to this category that cannot be changed!");
+//                                }
+                            };
+                        }
+                    ])
                 ,
                 Forms\Components\TextInput::make('name')->required()->label(__('label.search_box.taxonomy.name'))->required(),
                 Forms\Components\TextInput::make('image')
