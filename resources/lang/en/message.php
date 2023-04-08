@@ -34,8 +34,8 @@ return [
     'login_notify' => [
         'subject' => ':site_name Offsite login alert',
         'body' => <<<BODY
-You logged in at :this_login_time, IP::this_ip, location::this_location.
-Last login time::last_login_time, IP::last_ip, location::last_location.
+You logged in at::this_login_time, IP::this_ip, location::this_location.<br/>
+Last login time::last_login_time, IP::last_ip, location::last_location.<br/>
 If it is not your own operation, the account password may have been leaked, please change it in time!
 BODY,
     ],

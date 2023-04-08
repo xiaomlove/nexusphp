@@ -13,6 +13,7 @@ use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\HitAndRun;
 use App\Models\Invite;
+use App\Models\LoginLog;
 use App\Models\Medal;
 use App\Models\Peer;
 use App\Models\SearchBox;
@@ -96,26 +97,21 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new MeiliSearchRepository();
-//        $r = $rep->doImportFromDatabase();
-//        dd($r);
-//        $r = $rep->import();
-
-        $r = $rep->search([
-            'search' => '200',
-            'spstate' => 0,
-            'incldead' => 0,
-            'mode' => 4,
-//            'cat401' => 1,
-            'sort' => '4',
-            'type' => 'desc',
-            'search_mode' => 0,
-            'inclbookmarked' => 0,
-            'approval_status' => 1,
-//            'size_end' => 20,
-//            'added_end' => '2023-02-11',
-        ], 1, 'incldead=0&spstate=1&inclbookmarked=0&approval_status=1&size_begin=&size_end=&seeders_begin=&seeders_end=&leechers_begin=&leechers_end=&times_completed_begin=&times_completed_end=&added_begin=&added_end=&search=200&search_area=0&search_mode=0');
-        dd($r);
+        $thisLoginLog = LoginLog::query()->findOrFail(10);
+        $lastLoginLog = LoginLog::query()->findOrFail(9);
+        $user = User::query()->findOrFail(1, User::$commonFields);
+        $locale = $user->locale;
+        $toolRep = new ToolRepository();
+        $subject = nexus_trans('message.login_notify.subject', ['site_name' => Setting::get('basic.SITENAME')], $locale);
+        $body = nexus_trans('message.login_notify.body', [
+            'this_login_time' => $thisLoginLog->created_at,
+            'this_ip' => $thisLoginLog->ip,
+            'this_location' => sprintf('%s·%s', $thisLoginLog->city, $thisLoginLog->country),
+            'last_login_time' => $lastLoginLog->created_at,
+            'last_ip' => $lastLoginLog->ip,
+            'last_location' => sprintf('%s·%s', $lastLoginLog->city, $lastLoginLog->country),
+        ], $locale);
+        dd($body);
     }
 
 }

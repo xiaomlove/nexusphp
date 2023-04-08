@@ -34,8 +34,8 @@ return [
     'login_notify' => [
         'subject' => ':site_name 异地登录提醒',
         'body' => <<<BODY
-你于 :this_login_time 进行了登录操作，IP：:this_ip，位置：:this_location。
-上次登录时间：:last_login_time，IP：:last_ip，位置：:last_location。
+你于: :this_login_time 进行了登录操作。IP：:this_ip，位置：:this_location。<br/>
+上次登录时间：:last_login_time，IP：:last_ip，位置：:last_location。<br/>
 若不是你本人操作，账号密码可能已经泄露，请及时修改！
 BODY,
     ],

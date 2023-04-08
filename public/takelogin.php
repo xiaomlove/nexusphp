@@ -53,7 +53,7 @@ if (
 ) {
     $command = sprintf("user:login_notify --this_id=%s --last_id=%s", $thisLoginLog->id, $lastLoginLog->id);
     do_log("[LOGIN_NOTIFY], user: {$row['id']}, $command");
-//    executeCommand($command, "string", true, false);
+    executeCommand($command, "string", true, false);
 }
 if ($row["enabled"] == "no")
 	bark($lang_takelogin['std_account_disabled']);
