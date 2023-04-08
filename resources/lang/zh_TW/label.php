@@ -94,6 +94,8 @@ return [
             'maximum_upload_speed_help' => '單種上傳速度超過此值賬號即刻禁用，單位 Mbps。如：100 Mbps = 12.5 MB/s',
             'meilisearch_enabled' => '是否啟用 Meilisearch',
             'meilisearch_enabled_help' => '請先安裝配置好並導入數據再啟用，否則種子搜索無數據。',
+            'meilisearch_search_description' => 'Meilisearch 是否搜索描述',
+            'meilisearch_search_description_help' => "默認：'否'。若為'是'，描述中包含關鍵字也會返回，命中的結果可能較多。修改後需立即重新導入",
         ],
     ],
     'user' => [

@@ -94,7 +94,9 @@ return [
             'maximum_upload_speed' => '最大上传速度',
             'maximum_upload_speed_help' => '单种上传速度超过此值账号即刻禁用，单位 Mbps。如：100 Mbps = 12.5 MB/s',
             'meilisearch_enabled' => '是否启用 Meilisearch',
-            'meilisearch_enabled_help' => '请先安装配置好并导入数据再启用，否则种子搜索无数据。',
+            'meilisearch_enabled_help' => '请先安装配置好并导入数据再启用，否则种子搜索无数据',
+            'meilisearch_search_description' => 'Meilisearch 是否搜索描述',
+            'meilisearch_search_description_help' => "默认：'否'。若为'是'，描述中包含关键字也会返回，命中的结果可能较多。修改后需立即重新导入",
         ],
     ],
     'user' => [

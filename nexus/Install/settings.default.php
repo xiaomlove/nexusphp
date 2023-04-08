@@ -443,5 +443,7 @@ return array (
         'maximum_number_of_medals_can_be_worn' => 3,
         'cookie_valid_days' => 365,
         'maximum_upload_speed' => 8000,
+        'meilisearch_enabled' => 'no',
+        'meilisearch_search_description' => 'no',
     ],
 );

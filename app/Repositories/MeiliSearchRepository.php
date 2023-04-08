@@ -65,8 +65,6 @@ class MeiliSearchRepository extends BaseRepository
         '9' => 'owner',
     ];
 
-    private static array $searchableAttributes = ["name", "small_descr", "descr", "url"];
-
     private static array $filterableAttributes = [
         "id", "category", "source", "medium", "codec", "standard", "processing", "team", "audiocodec", "owner",
         "sp_state", "visible", "banned", "approval_status", "size", "leechers", "seeders", "times_completed", "added",
@@ -157,7 +155,7 @@ class MeiliSearchRepository extends BaseRepository
         $settings = [
             "distinctAttribute" => "id",
             "displayedAttributes" => $this->getRequiredFields(),
-            "searchableAttributes" => self::$searchableAttributes,
+            "searchableAttributes" => $this->getSearchableAttributes(),
             "filterableAttributes" => self::$filterableAttributes,
             "sortableAttributes" => self::$sortableAttributes,
             "rankingRules" => [
@@ -178,7 +176,7 @@ class MeiliSearchRepository extends BaseRepository
     public function getRequiredFields(): array
     {
         return array_values(array_unique(array_merge(
-            self::$filterableAttributes, self::$searchableAttributes, self::$sortableAttributes
+            self::$filterableAttributes, self::$sortableAttributes, $this->getSearchableAttributes()
         )));
     }
 
@@ -552,6 +550,15 @@ class MeiliSearchRepository extends BaseRepository
             return ['id'];
         }
         return ['*'];
+    }
+
+    private function getSearchableAttributes(): array
+    {
+        $attributes = ["name", "small_descr", "url"];
+        if (Setting::get("system.meilisearch_search_description") == 'yes') {
+            $attributes[] = "descr";
+        }
+        return $attributes;
     }
 
 

@@ -90,6 +90,7 @@ class Update extends Install
 
     public function runExtraQueries()
     {
+        $toolRep = new ToolRepository();
         /**
          * @since 1.7.13
          */
@@ -291,11 +292,17 @@ class Update extends Install
         }
 
         if (!$this->isSnatchedTableTorrentUserUnique()) {
-            $torrentRep = new TorrentRepository();
-            $torrentRep->removeDuplicateSnatch();
+            $toolRep->removeDuplicateSnatch();
             $this->runMigrate('database/migrations/2023_03_29_021950_handle_snatched_user_torrent_unique.php');
             $this->doLog("removeDuplicateSnatch and migrate 2023_03_29_021950_handle_snatched_user_torrent_unique");
         }
+
+        if (!NexusDB::hasIndex("peers", "unique_torrent_peer_user")) {
+            $toolRep->removeDuplicatePeer();
+            $this->runMigrate('database/migrations/2023_04_01_005409_add_unique_torrent_peer_user_to_peers_table.php');
+            $this->doLog("removeDuplicatePeer and migrate 2023_04_01_005409_add_unique_torrent_peer_user_to_peers_table");
+        }
+
 
     }
 

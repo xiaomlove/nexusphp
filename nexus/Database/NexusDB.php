@@ -429,5 +429,16 @@ class NexusDB
 
     }
 
+    public static function hasIndex($table, $indexName): bool
+    {
+        $results = self::select("show index from $table");
+        foreach ($results as $item) {
+            if ($item['Key_name'] == $indexName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

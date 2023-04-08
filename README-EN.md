@@ -17,6 +17,7 @@ Complete PT website building solution. Based on NexusPHP + Laravel + Filament.
 - Medal
 - Props  
 - Custom tags 
+- Third-party full-text search
 - SeedBox rule  
 - Forum
 - Complain  

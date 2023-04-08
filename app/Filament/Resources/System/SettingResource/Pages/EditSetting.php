@@ -146,6 +146,12 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->label(__('label.setting.system.meilisearch_enabled'))
                     ->helperText(__('label.setting.system.meilisearch_enabled_help'))
                 ,
+                Forms\Components\Radio::make('system.meilisearch_search_description')
+                    ->options(self::$yesOrNo)
+                    ->inline(true)
+                    ->label(__('label.setting.system.meilisearch_search_description'))
+                    ->helperText(__('label.setting.system.meilisearch_search_description_help'))
+                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);
