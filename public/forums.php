@@ -772,7 +772,7 @@ if ($action == "viewtopic")
 			$bodyContent = format_comment($arr["body"]);
 		}
 		if ($highlight){
-            $bodyContent = highlight($highlight,$body);
+            $bodyContent = highlight($highlight,$bodyContent);
 		}
 
 		if (is_valid_id($arr['editedby']))
