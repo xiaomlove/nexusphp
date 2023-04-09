@@ -33,6 +33,5 @@ return [
     'fields' => [
         'torrent_id' => '種子 ID',
     ],
-    'claim_all_seeding_btn' => '一鍵認領',
     'claim_all_seeding_confirmation' => '確定要認領當前全部做種中的種子嗎？',
 ];

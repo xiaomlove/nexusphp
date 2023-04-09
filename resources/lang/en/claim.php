@@ -34,6 +34,5 @@ return [
     'fields' => [
         'torrent_id' => 'Torrent ID',
     ],
-    'claim_all_seeding_btn' => 'One click to claim',
     'claim_all_seeding_confirmation' => 'Are you sure you want to claim all the torrents that are currently being seeding?' ,
 ];

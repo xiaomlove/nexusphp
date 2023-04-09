@@ -345,49 +345,5 @@ class ClaimRepository extends BaseRepository
 
     }
 
-    public function claimAllSeeding(int $uid)
-    {
-        if (!has_role_work_seeding($uid)) {
-            throw new InsufficientPermissionException();
-        }
-        $page = 1;
-        $size = 1000;
-        $total = 0;
-        while (true) {
-            $peers = Peer::query()
-                ->where('userid', $uid)
-                ->where('seeder', 'yes')
-                ->where('to_go', 0)
-                ->groupBy('torrent')
-                ->forPage($page, $size)
-                ->get(['torrent']);
-            if ($peers->isEmpty()) {
-                break;
-            }
-            $torrentIdArr = $peers->pluck('torrent')->toArray();
-            $snatches = Snatch::query()
-                ->whereIn('torrentid', $torrentIdArr)
-                ->where('userid', $uid)
-                ->groupBy('torrentid')
-                ->get(['id', 'torrentid', 'seedtime', 'uploaded']);
-            if ($snatches->isNotEmpty()) {
-                $values = [];
-                $nowStr = now()->toDateTimeString();
-                $sql = "insert into claims (uid, torrent_id, snatched_id, seed_time_begin, uploaded_begin, created_at, updated_at)";
-                foreach ($snatches as $snatch) {
-                    $values[] = sprintf(
-                        "(%s, %s, %s, %s, %s, '%s', '%s')",
-                        $uid, $snatch->torrentid, $snatch->id, $snatch->seedtime, $snatch->uploaded, $nowStr, $nowStr
-                    );
-                }
-                $sql .= sprintf(" values %s on duplicate key update updated_at = '%s'", implode(', ', $values), $nowStr);
-                NexusDB::statement($sql);
-            }
-            $count = $snatches->count();
-            $total += $count;
-            do_log("page: $page, insert rows count: " . $count);
-            $page++;
-        }
-        return $total;
-    }
+
 }

@@ -353,11 +353,8 @@ if (isset($total_size) && $total_size){
     $hasData = true;
 }
 if ($hasData) {
-    $claimAllBtn = '';
-    if ($id == $CURUSER['id'] && has_role_work_seeding($CURUSER['id'])) {
-        $claimAllBtn = sprintf('<input type="button" value="%s" id="claim-all-seeding">', nexus_trans('claim.claim_all_seeding_btn'));
-    }
-    $header = sprintf('<div style="display: flex;justify-content: space-between"><div>%s</div><div>%s</div></div>', $summary, $claimAllBtn);
+    $btnArr = apply_filter("user_seeding_top_btn", [], $CURUSER['id']);
+    $header = sprintf('<div style="display: flex;justify-content: space-between"><div>%s</div><div>%s</div></div>', $summary, implode("", $btnArr));
     echo '<br/>' . $header . $table;
 } else {
     echo $lang_getusertorrentlistajax['text_no_record'];

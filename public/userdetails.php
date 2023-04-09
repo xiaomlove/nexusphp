@@ -633,7 +633,7 @@ if ($userInfo->id == $CURUSER['id'] && has_role_work_seeding($userInfo->id)) {
     $claimJs = <<<JS
 jQuery("body").on("click", "#claim-all-seeding", function (e) {
     layer.confirm("$claimAllSeedingConfirmation", {}, function () {
-        jQuery.post('ajax.php', {"action": "claimAllSeeding"}, function (response) {
+        jQuery.post('/plugin/claim_all_seeding', {"action": "claimAllSeeding"}, function (response) {
             if (response.ret == 0) {
                 window.location.reload()
             } else {

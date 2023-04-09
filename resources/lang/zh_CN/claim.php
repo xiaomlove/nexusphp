@@ -36,7 +36,6 @@ return [
         'torrent_id' => '种子 ID',
     ],
 
-    'claim_all_seeding_btn' => '一键认领',
     'claim_all_seeding_confirmation' => '确定要认领当前全部做种中的种子吗？',
 
 ];
