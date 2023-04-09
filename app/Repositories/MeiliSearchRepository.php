@@ -41,7 +41,6 @@ class MeiliSearchRepository extends BaseRepository
         self::SEARCH_AREA_IMDB => ['text' => 'imdb'],
     ];
 
-    //cat401=1&source1=1&medium1=1&codec1=1&audiocodec1=1&standard1=1&processing1=1&team1=1&incldead=1&spstate=2&inclbookmarked=1&search=tr&search_area=1&search_mode=1
     private static array $queryFieldToTorrentFieldMaps = [
         'cat' => 'category',
         'source' => 'source',
@@ -159,12 +158,12 @@ class MeiliSearchRepository extends BaseRepository
             "filterableAttributes" => self::$filterableAttributes,
             "sortableAttributes" => self::$sortableAttributes,
             "rankingRules" => [
-                "sort",
                 "words",
-//                "typo",
-//                "proximity",
-//                "attribute",
-//                "exactness"
+                "sort",
+                "typo",
+                "proximity",
+                "attribute",
+                "exactness"
             ],
         ];
         $index->updateSettings($settings);
@@ -254,9 +253,11 @@ class MeiliSearchRepository extends BaseRepository
             //NP starts from 0, but meilisearch starts from 1
             "page" => $page + 1,
             "filter" => $filters,
-            "sort" => $this->getSort($params),
             "attributesToRetrieve" => $this->getAttributesToRetrieve(),
         ];
+        if (isset($params['sort'], $params['type'])) {
+            $searchParams['sort'] = $this->getSort($params);
+        }
         $searchResult = $index->search($query, $searchParams);
         $total = $searchResult->getTotalHits();
         do_log("search params: " . nexus_json_encode($searchParams) . ", total: $total");
@@ -493,6 +494,10 @@ class MeiliSearchRepository extends BaseRepository
 
     private function getSort(array $params): array
     {
+        if (!isset($params['sort']) || !isset($params['type'])) {
+            //Use default
+            return [];
+        }
         if (isset($params['sort'], self::$sortFieldMaps[$params['sort']]) && isset($params['type']) && in_array($params['type'], ['asc', 'desc'])) {
             $sortField = self::$sortFieldMaps[$params['sort']];
         } else {
@@ -503,12 +508,14 @@ class MeiliSearchRepository extends BaseRepository
         } else {
             $sortType = "desc";
         }
-        if ($sortField == "id") {
-            return ["pos_state:desc", "$sortField:$sortType"];
-        } else {
-            return ["pos_state:desc", "$sortField:$sortType", "id:desc"];
-        }
+        //when searching, ignore promotion
+//        if ($sortField == "id") {
+//            return ["pos_state:desc", "$sortField:$sortType"];
+//        } else {
+//            return ["pos_state:desc", "$sortField:$sortType", "id:desc"];
+//        }
 
+        return ["$sortField:$sortType"];
     }
 
     private function getPerPage(User $user)
