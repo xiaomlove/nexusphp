@@ -942,7 +942,6 @@ elseif ($torrentsperpage_main)
 	$torrentsperpage = $torrentsperpage_main;
 else $torrentsperpage = 100;
 
-$torrentsperpage = 1;
 do_log("[TORRENT_COUNT_SQL] $sql", 'debug');
 
 if ($count)
