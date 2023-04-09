@@ -19,7 +19,7 @@ class MeiliSearchImport extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Import torrents to meilisearch';
 
     /**
      * Execute the console command.
@@ -29,7 +29,7 @@ class MeiliSearchImport extends Command
     public function handle()
     {
         $rep = new MeiliSearchRepository();
-        $this->info("going to  import torrents");
+        $this->info("going to import torrents...");
         $total = $rep->import();
         $this->info("import $total torrents.");
         return Command::SUCCESS;

@@ -82,7 +82,7 @@ $seeder = ($left == 0) ? "yes" : "no";
 
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-	$res = sql_query("SELECT id, username, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
+	$res = sql_query("SELECT id, username, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil, seedbonus FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
 	$az = mysql_fetch_array($res);
 	do_log("[check passkey], currentUser: " . nexus_json_encode($az));
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 3600);
@@ -153,8 +153,12 @@ if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW &&
 }
 if ($seeder == 'no' && isset($torrent['price']) && $torrent['price'] > 0 && $torrent['owner'] != $userid) {
     $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrent['id'])->exists();
-    if (!$hasBuy) {
-        err("You have not purchased this torrent yet");
+    if (!$hasBuy && isset($az['seedbonus'])) {
+        if ($az['seedbonus'] < $torrent['price']) {
+            err("Not enough bonus  to buy this paid torrent");
+        }
+        $bonusRep = new \App\Repositories\BonusRepository();
+        $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
     }
 }
 

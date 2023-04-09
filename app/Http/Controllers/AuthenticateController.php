@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ExamResource;
 use App\Http\Resources\UserResource;
+use App\Models\LoginLog;
 use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\AuthenticateRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -61,6 +63,8 @@ class AuthenticateController extends Controller
                 logincookie($user->id, $passhash,false, get_setting('system.cookie_valid_days', 365) * 86400, true, true, true);
                 $user->last_login = now();
                 $user->save();
+                $userRep = new UserRepository();
+                $userRep->saveLoginLog($user->id, $ip, 'Passkey', false);
             }
         }
         return redirect('index.php');

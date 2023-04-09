@@ -117,16 +117,19 @@ if ((($row['banned'] == 'yes' || ($approvalNotAllowed && !$allowOwnerDownload)) 
     denyDownload();
 }
 
-if ($row['price'] > 0 && $CURUSER['id'] != $row['owner']) {
-    $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $CURUSER['id'])->where('torrent_id', $id)->exists();
-    if (!$hasBuy) {
-        if ($CURUSER['seedbonus'] < $row['price']) {
-            stderr('Error', nexus_trans('bonus.not_enough', ['require_bonus' => number_format($row['price']), 'now_bonus' => number_format($CURUSER['seedbonus'])]));
-        }
-        $bonusRep = new \App\Repositories\BonusRepository();
-        $bonusRep->consumeToBuyTorrent($CURUSER['id'], $id, 'Web');
-    }
-}
+/**
+ * Migrate to announce.php, due to IYUU will download torrent automatically
+ */
+//if ($row['price'] > 0 && $CURUSER['id'] != $row['owner']) {
+//    $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $CURUSER['id'])->where('torrent_id', $id)->exists();
+//    if (!$hasBuy) {
+//        if ($CURUSER['seedbonus'] < $row['price']) {
+//            stderr('Error', nexus_trans('bonus.not_enough', ['require_bonus' => number_format($row['price']), 'now_bonus' => number_format($CURUSER['seedbonus'])]));
+//        }
+//        $bonusRep = new \App\Repositories\BonusRepository();
+//        $bonusRep->consumeToBuyTorrent($CURUSER['id'], $id, 'Web');
+//    }
+//}
 
 sql_query("UPDATE torrents SET hits = hits + 1 WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
 

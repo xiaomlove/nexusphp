@@ -97,21 +97,6 @@ class Test extends Command
      */
     public function handle()
     {
-        $thisLoginLog = LoginLog::query()->findOrFail(10);
-        $lastLoginLog = LoginLog::query()->findOrFail(9);
-        $user = User::query()->findOrFail(1, User::$commonFields);
-        $locale = $user->locale;
-        $toolRep = new ToolRepository();
-        $subject = nexus_trans('message.login_notify.subject', ['site_name' => Setting::get('basic.SITENAME')], $locale);
-        $body = nexus_trans('message.login_notify.body', [
-            'this_login_time' => $thisLoginLog->created_at,
-            'this_ip' => $thisLoginLog->ip,
-            'this_location' => sprintf('%s·%s', $thisLoginLog->city, $thisLoginLog->country),
-            'last_login_time' => $lastLoginLog->created_at,
-            'last_ip' => $lastLoginLog->ip,
-            'last_location' => sprintf('%s·%s', $lastLoginLog->city, $lastLoginLog->country),
-        ], $locale);
-        dd($body);
     }
 
 }

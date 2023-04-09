@@ -7,6 +7,7 @@ use App\Http\Resources\ExamUserResource;
 use App\Http\Resources\UserResource;
 use App\Models\ExamUser;
 use App\Models\Invite;
+use App\Models\LoginLog;
 use App\Models\Message;
 use App\Models\Setting;
 use App\Models\User;
@@ -696,6 +697,24 @@ class UserRepository extends BaseRepository
             throw new NexusException(nexus_trans('invite.send_deny_reasons.invite_not_enough'));
         }
         return nexus_trans('invite.send_allow_text');
+    }
+
+    public function saveLoginLog(int $uid, string $ip,  string $client = '', bool $notify = false)
+    {
+        $locationInfo = get_ip_location_from_geoip($ip);
+        $loginLog = LoginLog::query()->create([
+            'ip' => $ip,
+            'uid' => $uid,
+            'country' => $locationInfo['country_en'] ?? '',
+            'city' => $locationInfo['city_en'] ?? '',
+            'client' => $client,
+        ]);
+        if ($notify) {
+            $command = sprintf("user:login_notify --this_id=%s", $loginLog->id);
+            do_log("[LOGIN_NOTIFY], user: $uid, $command");
+            executeCommand($command, "string", true, false);
+        }
+        return $loginLog;
     }
 
 }

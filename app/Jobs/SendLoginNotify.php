@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\LoginLog;
+use App\Models\NexusModel;
 use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\ToolRepository;
@@ -19,18 +20,14 @@ class SendLoginNotify implements ShouldQueue
 
     private int $thisLoginLogId;
 
-    private int $lastLoginLogId;
-
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $thisLoginLogId, int $lastLoginLogId)
+    public function __construct(int $thisLoginLogId)
     {
         $this->thisLoginLogId = $thisLoginLogId;
-
-        $this->lastLoginLogId = $lastLoginLogId;
     }
 
     /**
@@ -40,8 +37,31 @@ class SendLoginNotify implements ShouldQueue
      */
     public function handle()
     {
+        /** @var NexusModel $thisLoginLog */
         $thisLoginLog = LoginLog::query()->findOrFail($this->thisLoginLogId);
-        $lastLoginLog = LoginLog::query()->findOrFail($this->lastLoginLogId);
+        $log = "handling login log: " . $thisLoginLog->toJson();
+        if (!$thisLoginLog->country || !$thisLoginLog->city) {
+            do_log("$log, this login log no country or city");
+            return;
+        }
+        $lastLoginLog = LoginLog::query()
+            ->where('uid', $thisLoginLog->uid)
+            ->where("id", "<", $thisLoginLog->id)
+            ->orderBy('id', 'desc')
+            ->first();
+        if (!$lastLoginLog) {
+            do_log("$log, no last login log");
+            return;
+        }
+        $log .= sprintf(", last login: ", $lastLoginLog->toJson());
+        if (!$lastLoginLog->country || !$lastLoginLog->city) {
+            do_log("$log, last login log no country or city");
+            return;
+        }
+        if ($thisLoginLog->country == $lastLoginLog->country && $thisLoginLog->city == $lastLoginLog->city) {
+            do_log("$log, country and city are equals");
+            return;
+        }
         $user = User::query()->findOrFail($thisLoginLog->uid, User::$commonFields);
         $locale = $user->locale;
         $toolRep = new ToolRepository();
@@ -55,7 +75,11 @@ class SendLoginNotify implements ShouldQueue
             'last_location' => sprintf('%s·%s', $lastLoginLog->city, $lastLoginLog->country),
         ], $locale);
         $result = $toolRep->sendMail($user->email, $subject, $body);
-        do_log(sprintf('user: %s login notify result: %s', $user->username, var_export($result, true)));
+        do_log(sprintf(
+            '%s, user: %s login notify result: %s',
+            $log, $user->username, var_export($result, true)
+        ));
+
     }
 
     /**

@@ -37,24 +37,10 @@ $log = "user: {$row['id']}, ip: $ip";
 if ($row["passhash"] != md5($row["secret"] . $password . $row["secret"])) {
     login_failedlogins();
 }
-$locationInfo = get_ip_location_from_geoip($ip);
-$thisLoginLog = \App\Models\LoginLog::query()->create([
-    'ip' => $ip,
-    'uid' => $row['id'],
-    'country' => $locationInfo['country_en'] ?? '',
-    'city' => $locationInfo['city_en'] ?? '',
-    'client' => 'Web',
-]);
-$lastLoginLog = \App\Models\LoginLog::query()->where('uid', $row['id'])->orderBy('id', 'desc')->first();
-if (
-    $lastLoginLog && $lastLoginLog->country && $lastLoginLog->city
-    && $locationInfo['country_en'] && $locationInfo['city_en']
-    && ($lastLoginLog->country != $locationInfo['country_en'] || $lastLoginLog->city != $locationInfo['city_en'])
-) {
-    $command = sprintf("user:login_notify --this_id=%s --last_id=%s", $thisLoginLog->id, $lastLoginLog->id);
-    do_log("[LOGIN_NOTIFY], user: {$row['id']}, $command");
-    executeCommand($command, "string", true, false);
-}
+
+$userRep = new \App\Repositories\UserRepository();
+$userRep->saveLoginLog($row['id'], $ip, 'Web', true);
+
 if ($row["enabled"] == "no")
 	bark($lang_takelogin['std_account_disabled']);
 
