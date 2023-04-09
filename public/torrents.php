@@ -839,37 +839,47 @@ if ($showApprovalStatusFilter && isset($_REQUEST['approval_status']) && is_numer
 
 if (isset($_GET['size_begin']) && ctype_digit($_GET['size_begin'])) {
     $wherea[] = "torrents.size >= " . intval($_GET['size_begin']) * 1024 * 1024 * 1024;
+    $addparam .= "size_begin=" . intval($_GET['size_begin']) . "&";
 }
 if (isset($_GET['size_end']) && ctype_digit($_GET['size_end'])) {
     $wherea[] = "torrents.size <= " . intval($_GET['size_end']) * 1024 * 1024 * 1024;
+    $addparam .= "size_end=" . intval($_GET['size_end']) . "&";
 }
 
 if (isset($_GET['seeders_begin']) && ctype_digit($_GET['seeders_begin'])) {
     $wherea[] = "torrents.seeders >= " . (int)$_GET['seeders_begin'];
+    $addparam .= "seeders_begin=" . intval($_GET['seeders_begin']) . "&";
 }
 if (isset($_GET['seeders_end']) && ctype_digit($_GET['seeders_end'])) {
     $wherea[] = "torrents.seeders <= " . (int)$_GET['seeders_end'];
+    $addparam .= "seeders_end=" . intval($_GET['seeders_end']) . "&";
 }
 
 if (isset($_GET['leechers_begin']) && ctype_digit($_GET['leechers_begin'])) {
     $wherea[] = "torrents.leechers >= " . (int)$_GET['leechers_begin'];
+    $addparam .= "leechers_begin=" . intval($_GET['leechers_begin']) . "&";
 }
 if (isset($_GET['leechers_end']) && ctype_digit($_GET['leechers_end'])) {
     $wherea[] = "torrents.leechers <= " . (int)$_GET['leechers_end'];
+    $addparam .= "leechers_end=" . intval($_GET['leechers_end']) . "&";
 }
 
 if (isset($_GET['times_completed_begin']) && ctype_digit($_GET['times_completed_begin'])) {
     $wherea[] = "torrents.times_completed >= " . (int)$_GET['times_completed_begin'];
+    $addparam .= "times_completed_begin=" . intval($_GET['times_completed_begin']) . "&";
 }
 if (isset($_GET['times_completed_end']) && ctype_digit($_GET['times_completed_end'])) {
     $wherea[] = "torrents.times_completed <= " . (int)$_GET['times_completed_end'];
+    $addparam .= "times_completed_end=" . intval($_GET['times_completed_end']) . "&";
 }
 
 if (isset($_GET['added_begin']) && !empty($_GET['added_begin'])) {
     $wherea[] = "torrents.added >= " . sqlesc($_GET['added_begin']);
+    $addparam .= "added_begin=" . $_GET['added_begin'] . "&";
 }
 if (isset($_GET['added_end']) && !empty($_GET['added_end'])) {
     $wherea[] = "torrents.added <= " . sqlesc(\Carbon\Carbon::parse($_GET['added_end'])->endOfDay()->toDateTimeString());
+    $addparam .= "added_end=" . $_GET['added_end'] . "&";
 }
 
 $where = implode(" AND ", $wherea);
@@ -932,6 +942,7 @@ elseif ($torrentsperpage_main)
 	$torrentsperpage = $torrentsperpage_main;
 else $torrentsperpage = 100;
 
+$torrentsperpage = 1;
 do_log("[TORRENT_COUNT_SQL] $sql", 'debug');
 
 if ($count)
