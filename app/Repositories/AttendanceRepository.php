@@ -64,6 +64,8 @@ class AttendanceRepository extends BaseRepository
                 'uid' => $attendance->uid,
                 'points' => $update['points'],
                 'date' => $now->format('Y-m-d'),
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
             AttendanceLog::query()->insert($attendanceLog);
         }

@@ -35,6 +35,7 @@ return [
         'login_log' => '登录记录',
         'bonus_log' => '魔力记录',
         'torrent_buy_log' => '种子购买',
+        'attendance_log' => '签到记录',
     ],
     'resources' => [
         'agent_allow' => [

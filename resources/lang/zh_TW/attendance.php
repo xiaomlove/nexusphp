@@ -6,5 +6,10 @@ return [
     'already_attendance' => '已經簽到',
     'card_not_enough' => '補簽卡不足',
     'ranking' => '今日簽到排名：<b>:ranking</b> / <b>:counts</b>',
+    'fields' => [
+        'date' => '日期',
+        'points' => '獲得魔力',
+        'is_retroactive' => '是否補簽',
+    ],
 ];
 

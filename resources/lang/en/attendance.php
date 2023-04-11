@@ -6,4 +6,9 @@ return [
     'already_attendance' => 'Already attendance',
     'card_not_enough' => 'Attendance card not enough',
     'ranking' => "Today's Ranking: <b>:ranking</b> / <b>:counts</b>",
+    'fields' => [
+        'date' => 'Date',
+        'points' => 'Got bonus',
+        'is_retroactive' => 'Is retroactive',
+    ],
 ];
