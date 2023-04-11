@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::table('agent_allowed_family', function (Blueprint $table) {
             $table->string("comment")->nullable(true)->change();
         });
-        Schema::table('agent_deny_family', function (Blueprint $table) {
+        Schema::table('agent_allowed_exception', function (Blueprint $table) {
             $table->string("comment")->nullable(true)->change();
         });
     }
