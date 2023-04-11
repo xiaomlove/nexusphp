@@ -14,10 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::table('agent_allowed_family', function (Blueprint $table) {
-            $table->string("comment")->nullable(true)->change();
+            $table->string("comment")->nullable(true)->default(null)->change();
         });
         Schema::table('agent_allowed_exception', function (Blueprint $table) {
-            $table->string("comment")->nullable(true)->change();
+            $table->string("comment")->nullable(true)->default(null)->change();
         });
     }
 
