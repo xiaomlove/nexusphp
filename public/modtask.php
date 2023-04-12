@@ -26,8 +26,9 @@ if ($action == "confirmuser")
 if ($action == "edituser")
 {
 	$userid = $_POST["userid"];
-	$userInfo = \App\Models\User::query()->findOrFail($userid, ['id', 'passkey']);
-	$class = intval($_POST["class"] ?? 0);
+	$userInfo = \App\Models\User::query()->findOrFail($userid);
+//	$class = intval($_POST["class"] ?? 0);
+	$class = $userInfo->class;
 	$vip_added = ($_POST["vip_added"] == 'yes' ? 'yes' : 'no');
 	$vip_until = !empty($_POST["vip_until"]) ? $_POST['vip_until'] : null;
 

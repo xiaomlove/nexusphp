@@ -3401,6 +3401,9 @@ function torrenttable($rows, $variant = "torrent", $searchBoxId = 0) {
     }
 	unset($row);
 
+    $enableImdb = get_setting("main.showimdbinfo") == 'yes';
+    $enablePtGen = get_setting('main.enable_pt_gen_systemyes') == 'yes';
+
 	$torrentSeedingLeechingStatus = $torrent->listLeechingSeedingStatus($CURUSER['id'], $torrentIdArr);
     $tagRep = new \App\Repositories\TagRepository();
 	$torrentTagCollection = \App\Models\TorrentTag::query()->whereIn('torrent_id', $torrentIdArr)->get();
@@ -3680,8 +3683,9 @@ foreach ($rows as $row)
     }
 	print("</td>");
 
-    echo $torrent->renderTorrentsPageAverageRating($row);
-
+    if ($enableImdb || $enablePtGen) {
+        echo $torrent->renderTorrentsPageAverageRating($row);
+    }
 		$act = "";
 		if ($CURUSER["dlicon"] != 'no' && $CURUSER["downloadpos"] != "no")
 		$act .= "<a href=\"download.php?id=".$id."\"><img class=\"download\" src=\"pic/trans.gif\" style='padding-bottom: 2px;' alt=\"download\" title=\"".$lang_functions['title_download_torrent']."\" /></a>" ;
