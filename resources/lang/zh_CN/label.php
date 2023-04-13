@@ -205,7 +205,7 @@ return [
         'label' => '允许客户端',
         'family' => '系列',
         'start_name' => '起始名称',
-        'peer_id_start' => 'Peer ID 超始',
+        'peer_id_start' => 'Peer ID 起始',
         'peer_id_pattern' => 'Peer ID 正则',
         'peer_id_matchtype' => 'Peer ID 匹配类型',
         'peer_id_match_num' => 'Peer ID 匹配次数',
