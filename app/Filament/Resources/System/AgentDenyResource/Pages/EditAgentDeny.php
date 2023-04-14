@@ -13,7 +13,11 @@ class EditAgentDeny extends EditRecord
     protected function getActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->using(function ($record) {
+                $record->delete();
+                clear_agent_allow_deny_cache();
+                return redirect(AgentDenyResource::getUrl());
+            })
         ];
     }
 

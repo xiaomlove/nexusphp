@@ -74,6 +74,11 @@ class AgentAllowResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()->using(function ($record) {
+                    $record->delete();
+                    clear_agent_allow_deny_cache();
+                    return redirect(self::getUrl());
+                })
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
