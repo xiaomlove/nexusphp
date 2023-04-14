@@ -202,7 +202,7 @@ return [
         'label' => '允許客戶端',
         'family' => '系列',
         'start_name' => '起始名稱',
-        'peer_id_start' => 'Peer ID 超始',
+        'peer_id_start' => 'Peer ID 起始',
         'peer_id_pattern' => 'Peer ID 正則',
         'peer_id_matchtype' => 'Peer ID 匹配類型',
         'peer_id_match_num' => 'Peer ID 匹配次數',
@@ -215,7 +215,7 @@ return [
     ],
     'agent_deny' => [
         'label' => '拒絕客戶端',
-        'peer_id' => 'Peer ID 超始',
+        'peer_id' => 'Peer ID 起始',
         'agent' => 'Agent',
     ],
     'claim' => [
