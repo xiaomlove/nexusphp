@@ -37,7 +37,7 @@
 - 分区 H&R
 
 ## 系统要求
-- PHP: 8.0，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp, zend opcache
+- PHP: 8.0|8.1|8.2，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp, zend opcache
 - Mysql: 5.7 最新版或以上版本
 - Redis：2.6.12 或以上版本
 
