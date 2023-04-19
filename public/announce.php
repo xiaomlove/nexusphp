@@ -384,7 +384,7 @@ else // continue an existing session
         do_log("notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps, upSpeedMbps: $upSpeedMbps");
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
             (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no', 'upload_over_speed');
-            do_log("user: $userid downloading privileges have been disabled! (over speed), notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps > upSpeedMbps: $upSpeedMbps", 'error');
+            do_log("user: $userid downloading privileges have been disabled! (over speed), upSpeedMbps: $upSpeedMbps > notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps", 'error');
             err("Your downloading privileges have been disabled! (over speed)");
         }
     }

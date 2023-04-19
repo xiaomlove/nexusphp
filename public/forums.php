@@ -270,6 +270,9 @@ if ($action == "quotepost")
 {
 	$postid = intval($_GET["postid"] ?? 0);
 	check_whether_exist($postid, 'post');
+    if (!can_view_post($CURUSER['id'], $postid)) {
+        permissiondenied();
+    }
 	stdhead($lang_forums['head_post_reply']);
 	begin_main_frame();
 	insert_compose_frame($postid, 'quote');
@@ -685,15 +688,15 @@ if ($action == "viewtopic")
 		$forumpostad=$Advertisement->get_ad('forumpost');
 
 	//check if privacy protection enabled in this forum
-	$protected_forums = Nexus\Database\NexusDB::remember("setting_protected_forum", 600, function () {
-		return \App\Models\Setting::getByName('misc.protected_forum');
-	});
-	
-	if ($protected_forums and in_array(strval($forumid),explode(",",$protected_forums))){
-		$protected_enabled=true;
-	}else{
-		$protected_enabled=false;
-	}
+//	$protected_forums = Nexus\Database\NexusDB::remember("setting_protected_forum", 600, function () {
+//		return \App\Models\Setting::getByName('misc.protected_forum');
+//	});
+//
+//	if ($protected_forums and in_array(strval($forumid),explode(",",$protected_forums))){
+//		$protected_enabled=true;
+//	}else{
+//		$protected_enabled=false;
+//	}
 
 	foreach ($allPosts as $arr)
 	{
@@ -761,15 +764,18 @@ if ($action == "viewtopic")
 		print("</table></div>\n");
 
 		print("<table class=\"main\" width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
-				
+
 		$body = "<div id=\"pid".$postid."body\">";
-		//hidden content applied to second or higher floor post (for whose user class below Ad , not poster , not mods ,not reply's author) 
-		if ($protected_enabled && $pn+$offset>1 && get_user_class()<UC_ADMINISTRATOR && $userid != $base_posterid && $posterid!=$userid && !$is_forummod){
+		//hidden content applied to second or higher floor post (for whose user class below Ad , not poster , not mods ,not reply's author)
+//		if ($protected_enabled && $pn+$offset>1 && get_user_class()<UC_ADMINISTRATOR && $userid != $base_posterid && $posterid!=$userid && !$is_forummod){
+		if ($pn+$offset>1 && !can_view_post($userid, $arr)){
 			//enable content protection
 			$bodyContent = format_comment($lang_forums["text_post_protected"]);
+            $canViewProtected = false;
 		}else{
 			//display normal content
 			$bodyContent = format_comment($arr["body"]);
+            $canViewProtected = true;
 		}
 		if ($highlight){
             $bodyContent = highlight($highlight,$bodyContent);
@@ -795,7 +801,7 @@ if ($action == "viewtopic")
 
 		do_action('post_toolbox', $arr, $allPosts, $CURUSER['id']);
 
-		if ($maypost)
+		if ($maypost && $canViewProtected)
 		print("<a href=\"".htmlspecialchars("?action=quotepost&postid=".$postid)."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_forums['title_reply_with_quote']."\" /></a>");
 
 		if (user_can('postmanage') || $is_forummod)

@@ -6423,4 +6423,54 @@ function username_for_admin(int $id)
     return new HtmlString(get_username($id, false, true, true, true));
 }
 
+function can_view_post($uid, $post)
+{
+    static $topics = [];
+    static $protectedForumIdArr;
+    static $forumMods;
+    if (!is_array($post)) {
+        $post = \App\Models\Post::query()->findOrFail(intval($post))->toArray();
+    }
+    $topicId = $post['topicid'];
+    if (!isset($topics[$topicId])) {
+        $topics[$topicId] = \App\Models\Topic::query()->findOrFail($topicId);
+    }
+    /** @var \App\Models\Topic $topicInfo */
+    $topicInfo = $topics[$topicId];
+
+    $forumId = $topicInfo->forumid;
+
+    if (is_null($protectedForumIdArr)) {
+        $protectedForumIdArr = [];
+        $protectedForumIds = \Nexus\Database\NexusDB::remember("setting_protected_forum", 600, function () {
+            return \App\Models\Setting::getByName('misc.protected_forum');
+        });
+        $protectedForumIdArr = $protectedForumIds ? preg_split("/[,\s]+/", $protectedForumIds) : [];
+    }
+    if (is_null($forumMods)) {
+        $forumMods = [];
+        $results = \App\Models\ForumMod::query()->get();
+        foreach ($results as $item) {
+            $forumMods[$item->forumid] = $item->userid;
+        }
+    }
+    $isForumMod = isset($forumMods[$forumId]) && $forumMods[$forumId] == $uid;
+    $log = sprintf(
+        "uid: $uid, class: %s,  post: {$post['id']}, forumId: $forumId, protectedForumIdArr: %s, forumMods: %s, isForumMod: %s",
+        get_user_class(), json_encode($protectedForumIdArr), json_encode($forumMods), $isForumMod
+    );
+    if (
+        in_array($forumId, $protectedForumIdArr)
+        && get_user_class() < \App\Models\User::CLASS_ADMINISTRATOR
+        && $uid != $post['userid']
+        && $uid != $topicInfo->userid
+        && !$isForumMod
+    ) {
+        do_log("$log, FALSE");
+        return false;
+    }
+    do_log("$log, TRUE");
+    return true;
+}
+
 ?>
