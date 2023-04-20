@@ -14,12 +14,12 @@ class RulesTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('rules')->delete();
-        
+
         \DB::table('rules')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 1,
                 'lang_id' => 25,
@@ -37,7 +37,7 @@ class RulesTableSeeder extends Seeder
 [*]不要把本站的种子文件上传到其他Tracker！(具体请看[url=faq.php#38][b]常见问题[/b][/url])
 [*]第一次在论坛或服务器中的捣乱行为会受到警告，第二次您将永远无缘[site] 。',
             ),
-            1 => 
+            1 =>
             array (
                 'id' => 2,
                 'lang_id' => 25,
@@ -57,11 +57,11 @@ class RulesTableSeeder extends Seeder
 [*]促销时限：
 [*]除了“[color=#aaaaaa][b]2x上传[/b][/color]”以外，其余类型的促销限时7天（自种子发布时起）；
 [*]“[color=#aaaaaa][b]2x上传[/b][/color]”无时限。
-[*]所有种子在发布1个月后将自动永久成为“[color=#aaaaaa][b]2x上传[/b][/color]”。            
+[*]所有种子在发布1个月后将自动永久成为“[color=#aaaaaa][b]2x上传[/b][/color]”。
 [*]我们也将不定期开启全站[color=#f0cc00][b]免费[/b][/color]，届时尽情狂欢吧~:mml:  :mml:  :mml:
 [*]你只能使用允许的BT客户端下载本站资源。详见[url=faq.php#29]常见问题[/url]。',
             ),
-            2 => 
+            2 =>
             array (
                 'id' => 4,
                 'lang_id' => 25,
@@ -78,7 +78,7 @@ class RulesTableSeeder extends Seeder
 [*]365天无新回复的主题将被系统自动锁定.
 ',
             ),
-            3 => 
+            3 =>
             array (
                 'id' => 6,
                 'lang_id' => 25,
@@ -87,7 +87,7 @@ class RulesTableSeeder extends Seeder
 [*]图片大小不能超过150KB，为了统一，系统会调整头像宽度到150像素大小（浏览器会把图片调整成合适的大小，小图片将被拉伸，而过大的图片只会浪费带宽和CPU) 。
 [*]请不要使用可能引起别人反感的图片，包括色情、宗教、血腥的动物/人类、宣扬某种意识形态的图片。如果你不确定某张图片是否合适，请站短管理员。',
         ),
-        4 => 
+        4 =>
         array (
             'id' => 3,
             'lang_id' => 25,
@@ -196,7 +196,7 @@ class RulesTableSeeder extends Seeder
 [*]简介
 [*]NFO图请写入NFO文件，而不是粘贴到简介里。
 [*]电影、电视剧、动漫：
-[*]必须包含海报、横幅或BD/HDDVD/DVD封面（如果存在的话）； 
+[*]必须包含海报、横幅或BD/HDDVD/DVD封面（如果存在的话）；
 [*]请尽可能包含画面截图或其缩略图和链接；
 [*]请尽可能包含文件的详细情况，包括格式、时长、编码、码率、分辨率、语言、字幕等；
 [*]请尽可能包含演职员名单以及剧情概要。
@@ -216,7 +216,7 @@ class RulesTableSeeder extends Seeder
 [*]如果资源的原始发布信息基本符合规范，请尽量使用原始发布信息。
 ',
         ),
-        5 => 
+        5 =>
         array (
             'id' => 8,
             'lang_id' => 25,
@@ -234,7 +234,7 @@ class RulesTableSeeder extends Seeder
 [*]不要禁用一个注册尚未满4周的帐户。
 [*]永远记得以理服人。',
         ),
-        6 => 
+        6 =>
         array (
             'id' => 12,
             'lang_id' => 28,
@@ -254,11 +254,11 @@ class RulesTableSeeder extends Seeder
 [*]促銷時限：
 [*]除了“[color=#aaaaaa][b]2x上傳[/b][/color]”以外，其餘類型的促銷限時7天（自種子發佈時起）；
 [*]“[color=#aaaaaa][b]2x上傳[/b][/color]”無時限。
-[*]所有種子在發佈1個月後將自動永久成為“[color=#aaaaaa][b]2x上傳[/b][/color]”。            
+[*]所有種子在發佈1個月後將自動永久成為“[color=#aaaaaa][b]2x上傳[/b][/color]”。
 [*]我們也將不定期開啟全站[color=#f0cc00][b]免費[/b][/color]，屆時盡情狂歡吧~:mml:  :mml:  :mml:
 [*]你只能使用允許的BT客戶端下載本站資源。詳見[url=faq.php#29]常見問題[/url]。',
         ),
-        7 => 
+        7 =>
         array (
             'id' => 14,
             'lang_id' => 28,
@@ -274,7 +274,7 @@ class RulesTableSeeder extends Seeder
 [*]請確保問題發布在相對應的板塊。
 [*]365天無新回復的主題將被系統自動鎖定。',
         ),
-        8 => 
+        8 =>
         array (
             'id' => 5,
             'lang_id' => 25,
@@ -283,7 +283,7 @@ class RulesTableSeeder extends Seeder
 [*]所有论坛发帖的规则同样适用于评论。
 [*]如果你没有下载的意向，请不要随便发表否定性的评论。',
         ),
-        9 => 
+        9 =>
         array (
             'id' => 16,
             'lang_id' => 28,
@@ -293,7 +293,7 @@ class RulesTableSeeder extends Seeder
 [*]請不要使用可能引起別人反感的圖片，包括色情、宗教、血腥的動物/人類、宣揚某種意識形態的圖片。如果你不確定某張圖片是否合適，請站短管理員。
 ',
     ),
-    10 => 
+    10 =>
     array (
         'id' => 7,
         'lang_id' => 25,
@@ -311,7 +311,7 @@ class RulesTableSeeder extends Seeder
 [*]票数超过100，其中认为“有趣”比例超过75%，发布者得到另外的10个魔力值。
 [*]票数超过200，其中认为“有趣”比例超过75%，发布者得到另外的10个魔力值。',
     ),
-    11 => 
+    11 =>
     array (
         'id' => 11,
         'lang_id' => 28,
@@ -329,7 +329,7 @@ class RulesTableSeeder extends Seeder
 [*]不要把本站的種子文件上傳到其他Tracker！(具體請看 [url=faq.php#38][b]常見問題[/b][/url])
 [*]第一次在論壇或服務器中的搗亂行為會受到警告，第二次您將永遠無緣[site] 。',
     ),
-    12 => 
+    12 =>
     array (
         'id' => 13,
         'lang_id' => 28,
@@ -438,7 +438,7 @@ class RulesTableSeeder extends Seeder
 [*]簡介
 [*]NFO圖請寫入NFO檔，而不是粘貼到簡介裡。
 [*]電影、電視劇、動漫：
-[*]必須包含海報、橫幅或BD/HDDVD/DVD封面（如果存在的話）； 
+[*]必須包含海報、橫幅或BD/HDDVD/DVD封面（如果存在的話）；
 [*]請盡可能包含畫面截圖或其縮略圖和連結；
 [*]請盡可能包含檔的詳細情況，包括格式、時長、編碼、碼率、解析度、語言、字幕等；
 [*]請盡可能包含演職員名單以及劇情概要。
@@ -458,7 +458,7 @@ class RulesTableSeeder extends Seeder
 [*]如果資源的原始發佈資訊基本符合規範，請儘量使用原始發佈資訊。
 ',
     ),
-    13 => 
+    13 =>
     array (
         'id' => 18,
         'lang_id' => 28,
@@ -477,7 +477,7 @@ class RulesTableSeeder extends Seeder
 [*]永遠記得以理服人。
 ',
     ),
-    14 => 
+    14 =>
     array (
         'id' => 17,
         'lang_id' => 28,
@@ -495,7 +495,7 @@ class RulesTableSeeder extends Seeder
 [*]票數超過100，其中認為“有趣”比例超過75%，發布者得到另外的10個魔力值。
 [*]票數超過200，其中認為“有趣”比例超過75%，發布者得到另外的10個魔力值。',
     ),
-    15 => 
+    15 =>
     array (
         'id' => 21,
         'lang_id' => 6,
@@ -513,7 +513,7 @@ class RulesTableSeeder extends Seeder
 [*]Do not upload our torrents to other trackers! (See the [url=faq.php#38]FAQ[/url] for details.)
 [*]Disruptive behavior in the forums or on the server will result in a warning. You will only get [b]one[/b] warning! After that it\'s bye bye Kansas!',
     ),
-    16 => 
+    16 =>
     array (
         'id' => 15,
         'lang_id' => 28,
@@ -522,7 +522,7 @@ class RulesTableSeeder extends Seeder
 [*]所有論壇發帖的規則同樣適用于評論。
 [*]如果你沒有下載的意向，請不要隨便發表否定性的評論。',
     ),
-    17 => 
+    17 =>
     array (
         'id' => 25,
         'lang_id' => 6,
@@ -531,7 +531,7 @@ class RulesTableSeeder extends Seeder
 [*]All rules of forum posting apply to commenting, too.
 [*]Do not post negative comments about torrents that you don\'t plan to download.',
     ),
-    18 => 
+    18 =>
     array (
         'id' => 27,
         'lang_id' => 6,
@@ -549,7 +549,7 @@ class RulesTableSeeder extends Seeder
 [*]More than 100 votes, among which votes for [i]funny[/i] exceed 75%. User gets another 10 bonus.
 [*]More than 200 votes, among which votes for [i]funny[/i] exceed 75%. User gets another 10 bonus.',
     ),
-    19 => 
+    19 =>
     array (
         'id' => 22,
         'lang_id' => 6,
@@ -573,7 +573,7 @@ class RulesTableSeeder extends Seeder
 [*]On special occasions, we would set the whole site [color=#f0cc00][b]Free Leech[/b][/color]. Grab as much as you can. :mml:  :mml:  :mml:
 [*]You may [b]only[/b] use allowed bittorrent clients at [site]. See [url=faq.php#29]FAQ[/url].',
     ),
-    20 => 
+    20 =>
     array (
         'id' => 24,
         'lang_id' => 6,
@@ -585,20 +585,20 @@ class RulesTableSeeder extends Seeder
 [*]Do not discuss topics that are taboo, political sensitive or forbidden by local laws.
 [*]No language of discrimination based on race, national or ethnic origin, color, religion, gender, age, sexual preference or mental or physical disability. Violating this rule would result in permanent ban.
 [*]No bumping... (All bumped threads will be deleted.)
-[*]No double posting. 
+[*]No double posting.
 [*]Please ensure all questions are posted in the correct section!
 [*]Topics without new reply in 365 days would be locked automatically by system.',
     ),
-    21 => 
+    21 =>
     array (
         'id' => 26,
         'lang_id' => 6,
         'title' => 'Avatar Guidelines - <font class=striking>Please try to follow these guidelines</font>',
-        'text' => '[*]The allowed formats are .gif, .jpg and .png. 
+        'text' => '[*]The allowed formats are .gif, .jpg and .png.
 [*]Be considerate. Resize your images to a width of 150 px and a size of no more than 150 KB. (Browsers will rescale them anyway: smaller images will be expanded and will not look good; larger images will just waste bandwidth and CPU cycles.)
 [*]Do not use potentially offensive material involving porn, religious material, animal / human cruelty or ideologically charged images. Staff members have wide discretion on what is acceptable. If in doubt PM one. ',
     ),
-    22 => 
+    22 =>
     array (
         'id' => 23,
         'lang_id' => 6,
@@ -651,7 +651,7 @@ class RulesTableSeeder extends Seeder
 [*]Video releases are prioritized according to their source media, and mainly: Blu-ray/HD DVD > HDTV > DVD > TV. High prioritized versions will dupe other versions with low priorities of the same video.
 [*]HD releases will dupe SD releases of the same video.
 [*]For animes, HDTV versions are equal in priority to DVD versions. This is an exception.
-[*]Encodes from the same type of media and in the same resolution 
+[*]Encodes from the same type of media and in the same resolution
 [*]They are prioritized based on "[url=forums.php?action=viewtopic&forumid=6&topicid=1520]Scene & Internal, from Group to Quality-Degree. ONLY FOR HD-resources[/url]".
 [*]Releases from preferred groups will dupe releases from groups with the same or lower priority.
 [*]However, one DVD5 sized (i.e. approx. 4.38 GB) release from the best available source will always be allowed.
@@ -727,7 +727,7 @@ e.g. [i]Command And Conquer Red Alert 3 Uprising-RELOADED[/i]
 [*]The original torrent information can be used if it basically meets the standard.
 ',
     ),
-    23 => 
+    23 =>
     array (
         'id' => 28,
         'lang_id' => 6,
@@ -745,14 +745,14 @@ e.g. [i]Command And Conquer Red Alert 3 Uprising-RELOADED[/i]
 [*]Don\'t disable a user account until he or she has been a member for at least 4 weeks.
 [*]Convince people by reasoning rather than authority.',
     ),
-    24 => 
+    24 =>
     array (
         'id' => 54,
         'lang_id' => 25,
         'title' => '管理组成员退休待遇',
-        'text' => '满足以下条件可获得的退休待遇: 
+        'text' => '满足以下条件可获得的退休待遇:
 
-[code]
+
 [b]对于 [color=#DC143C]上传员 (Uploaders)[/color]: [/b]
 
 成为 [color=#1cc6d5][b]养老族 (Retiree) [/b]: [/color]
@@ -763,9 +763,9 @@ e.g. [i]Command And Conquer Red Alert 3 Uprising-RELOADED[/i]
 
 其他:
 成为 [color=#F88C00][b]Extreme User[/b][/color] (如果你的条件满足 [color=#F88C00][b]Extreme User[/b][/color] 及以上, 则成为 [color=#38ACEC][b]Nexus Master[/b][/color]) .
-[/code]
 
-[code]
+
+
 [b]对于 [color=#6495ED]管理员 (Moderators)[/color]: [/b]
 
 成为 [color=#1cc6d5][b]养老族 (Retiree)[/b]: [/color]
@@ -773,21 +773,21 @@ e.g. [i]Command And Conquer Red Alert 3 Uprising-RELOADED[/i]
 
 成为 [color=#009F00][b]VIP[/b]: [/color]
 若不满足成为 [color=#1cc6d5][b]养老族 (Retiree)[/b][/color] 的条件, 你可以[b]无条件[/b]成为 [color=#009F00][b]VIP[/b][/color] .
-[/code]
 
-[code]
+
+
 [b]对于 [color=#4b0082]总管理员 (Administrators)[/color] 及 以上等级: [/b]
 
 可以[b]直接[/b]成为 [color=#1cc6d5][b]养老族 (Retiree)[/b][/color] .
-[/code]',
+',
     ),
-    25 => 
+    25 =>
     array (
         'id' => 55,
         'lang_id' => 28,
         'title' => '管理組成員退休待遇',
-        'text' => '滿足以下條件可獲得的退休待遇: 
-[code]
+        'text' => '滿足以下條件可獲得的退休待遇:
+
 [b]對於 [color=#DC143C]上傳員 (Uploaders)[/color]: [/b]
 成為 [color=#1cc6d5][b]養老族 (Retiree) [/b]: [/color]
 升職一年以上; 上傳過200個以上的種子資源 (特殊情況如原碟發佈, 0day更新等可以由管理組投票表決; 須被認定為作出過重大及持久的貢獻).
@@ -795,20 +795,20 @@ e.g. [i]Command And Conquer Red Alert 3 Uprising-RELOADED[/i]
 升職6個月以上; 上傳過100個以上的種子資源 (特殊情況如原碟發佈, 0day更新等可以由管理組投票表決).
 其他:
 成為 [color=#F88C00][b]Extreme User[/b][/color] (如果你的條件滿足 [color=#F88C00][b]Extreme User[/b][/color] 及以上, 則成為 [color=#38ACEC][b]Nexus Master[/b][/color]) .
-[/code]
-[code]
+
+
 [b]對於 [color=#6495ED]管理員 (Moderators)[/color]: [/b]
 成為 [color=#1cc6d5][b]養老族 (Retiree)[/b]: [/color]
 升職一年以上; 參加過至少2次站務組正式會議; 參與過 規則/答疑 的修訂工作.
 成為 [color=#009F00][b]VIP[/b]: [/color]
 若不滿足成為 [color=#1cc6d5][b]養老族 (Retiree)[/b][/color] 的條件, 你可以[b]無條件[/b]成為 [color=#009F00][b]VIP[/b][/color] .
-[/code]
-[code]
+
+
 [b]對於 [color=#4b0082]總管理員 (Administrators)[/color] 及 以上等級: [/b]
 可以[b]直接[/b]成為 [color=#1cc6d5][b]養老族 (Retiree)[/b][/color] .
-[/code]',
+',
     ),
-    26 => 
+    26 =>
     array (
         'id' => 50,
         'lang_id' => 6,
@@ -844,7 +844,7 @@ Please refer to [url=http://www.nexushd.org/forums.php?action=viewtopic&forumid=
 [*]Users who recklessly uploading improper subtitles for karma points or other purposes, or users who maliciously report, will be fined karma points or warned depending on the seriousness of the case.
 ',
     ),
-    27 => 
+    27 =>
     array (
         'id' => 49,
         'lang_id' => 25,
@@ -878,14 +878,14 @@ Please refer to [url=http://www.nexushd.org/forums.php?action=viewtopic&forumid=
 [*]对为赚取积分等目的恶意上传不合格字幕的用户，或是恶意举报的用户，将视情节轻重扣除额外的魔力值甚至给予警告。
 ',
     ),
-    28 => 
+    28 =>
     array (
         'id' => 53,
         'lang_id' => 6,
         'title' => 'Staff\'s retirement benefits',
     'text' => 'You can get retirement benefits when meeting these condition(s) below:
 
-[code]
+
 [b]for [color=#DC143C]Uploaders[/color]: [/b]
 
 To join [color=#1cc6d5][b]Retiree[/b]: [/color]
@@ -896,9 +896,9 @@ Been promoted for more than 6 months; have posted 100 or more torrents (special 
 
 Others:
 Demoted to [color=#F88C00][b]Extreme User[/b][/color] (if your profile meets the corresponding condition of classes [color=#F88C00][b]Extreme User[/b][/color] and above, then promoted to [color=#38ACEC][b]Nexus Master[/b][/color]).
-[/code]
 
-[code]
+
+
 [b]for [color=#6495ED]Moderators[/color]: [/b]
 
 To join [color=#1cc6d5][b]Retiree[/b]: [/color]
@@ -906,15 +906,15 @@ Been promoted for more than 1 year; Have participated at least 2 Staff [b]Offici
 
 To join [color=#009F00][b]VIP[/b]: [/color]
 If you don\'t meet the condition of joining [color=#1cc6d5][b]Retiree[/b][/color], you can join [color=#009F00][b]VIP[/b][/color] [b]unconditionally[/b].
-[/code]
 
-[code]
+
+
 [b]for [color=#4b0082]Administrators[/color] and above: [/b]
 
 You can join [color=#1cc6d5][b]Retiree[/b][/color] [b]unconditionally[/b].
-[/code]',
+',
     ),
-    29 => 
+    29 =>
     array (
         'id' => 51,
         'lang_id' => 28,
@@ -949,7 +949,7 @@ You can join [color=#1cc6d5][b]Retiree[/b][/color] [b]unconditionally[/b].
 ',
     ),
 ));
-        
-        
+
+
     }
 }

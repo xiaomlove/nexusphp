@@ -78,8 +78,8 @@ class CategoryResource extends Resource
                 ,
                 Forms\Components\TextInput::make('sort_index')
                     ->default(0)
-                    ->label(__('label.search_box.taxonomy.sort_index'))
-                    ->helperText(__('label.search_box.taxonomy.sort_index_help'))
+                    ->label(__('label.priority'))
+                    ->helperText(__('label.priority_help'))
                 ,
 
             ]);
@@ -97,7 +97,7 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('class_name')->label(__('label.search_box.taxonomy.class_name')),
                 Tables\Columns\TextColumn::make('sort_index')->label(__('label.search_box.taxonomy.sort_index'))->sortable(),
             ])
-            ->defaultSort('sort_index', 'asc')
+            ->defaultSort('sort_index', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('mode')
                     ->options(SearchBox::query()->pluck('name', 'id')->toArray())

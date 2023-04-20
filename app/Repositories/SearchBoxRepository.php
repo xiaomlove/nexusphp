@@ -176,7 +176,7 @@ class SearchBoxRepository extends BaseRepository
             $select .= sprintf('<option value="%s">%s</option>', 0, nexus_trans('nexus.select_one_please'));
             $list = NexusDB::table($table)->where(function (Builder $query) use ($searchBox) {
                 return $query->where('mode', $searchBox->id)->orWhere('mode', 0);
-            })->get();
+            })->orderBy('sort_index', 'desc')->get();
             foreach ($list as $item) {
                 $selected = '';
                 if (isset($torrentInfo[$torrentField]) && $torrentInfo[$torrentField] == $item->id) {

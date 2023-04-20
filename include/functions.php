@@ -3282,10 +3282,10 @@ function genrelist($catmode = 1) {
 	global $Cache;
 	if (!$ret = $Cache->get_value('category_list_mode_'.$catmode)){
 		$ret = array();
-		$res = sql_query("SELECT id, mode, name, image FROM categories WHERE mode = ".sqlesc($catmode)." ORDER BY sort_index, id");
+		$res = sql_query("SELECT id, mode, name, image FROM categories WHERE mode = ".sqlesc($catmode)." ORDER BY sort_index desc");
 		while ($row = mysql_fetch_array($res))
 			$ret[] = $row;
-		$Cache->cache_value('category_list_mode_'.$catmode, $ret, 152800);
+		$Cache->cache_value('category_list_mode_'.$catmode, $ret, 3600);
 	}
 	return $ret;
 }
@@ -6124,7 +6124,7 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
     //Category
     $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', nexus_trans('label.search_box.category'));
     /** @var \Illuminate\DataBase\Eloquent\Collection $categoryCollection */
-    $categoryCollection = $searchBox->categories;
+    $categoryCollection = $searchBox->categories()->orderBy('sort_index', 'desc')->get();
     if (!empty($options['select_unselect'])) {
         $categoryCollection->push(new \App\Models\Category(['mode' => -1]));
     }
@@ -6189,8 +6189,7 @@ TD;
             ->where(function (\Illuminate\Database\Query\Builder $query) use ($mode) {
                 return $query->where('mode', $mode)->orWhere('mode', 0);
             })
-            ->orderBy('sort_index', 'asc')
-            ->orderBy('id', 'asc')
+            ->orderBy('sort_index', 'desc')
             ->get()
         ;
         $modelName = \App\Models\SearchBox::$taxonomies[$torrentField]['model'];
