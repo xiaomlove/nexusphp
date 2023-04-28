@@ -12,7 +12,7 @@ class Exam extends NexusModel
     public $timestamps = true;
 
     protected $casts = [
-        'filters' => 'object',
+        'filters' => 'array',
         'indexes' => 'array',
     ];
 
@@ -116,25 +116,27 @@ class Exam extends NexusModel
         $currentFilters = $this->filters;
         $arr = [];
         $filter = self::FILTER_USER_CLASS;
-        if (!empty($currentFilters->{$filter})) {
-            $classes = collect(User::$classes)->only($currentFilters->{$filter});
+        if (!empty($currentFilters[$filter])) {
+            $classes = collect(User::$classes)->only($currentFilters[$filter]);
             $arr[] = sprintf('%s: %s', nexus_trans("exam.filters.$filter"), $classes->pluck('text')->implode(', '));
         }
 
         $filter = self::FILTER_USER_REGISTER_TIME_RANGE;
-        if (!empty($currentFilters->{$filter})) {
-            $range = $currentFilters->{$filter};
-            $arr[] = sprintf(
-                "%s: <br/>%s ~ %s",
-                nexus_trans("exam.filters.$filter"),
-                $range[0] ? Carbon::parse($range[0])->toDateTimeString() : '--',
-                $range[1] ? Carbon::parse($range[1])->toDateTimeString() : '--'
-            );
+        if (!empty($currentFilters[$filter])) {
+            $range = $currentFilters[$filter];
+            if (!empty($range[0]) || !empty($range[1])) {
+                $arr[] = sprintf(
+                    "%s: <br/>%s ~ %s",
+                    nexus_trans("exam.filters.$filter"),
+                    $range[0] ? Carbon::parse($range[0])->toDateTimeString() : '--',
+                    $range[1] ? Carbon::parse($range[1])->toDateTimeString() : '--'
+                );
+            }
         }
 
         $filter = self::FILTER_USER_DONATE;
-        if (!empty($currentFilters->{$filter})) {
-            $donateStatus = $classes = collect(User::$donateStatus)->only($currentFilters->{$filter});
+        if (!empty($currentFilters[$filter])) {
+            $donateStatus = collect(User::$donateStatus)->only($currentFilters[$filter]);
             $arr[] = sprintf('%s: %s', nexus_trans("exam.filters.$filter"), $donateStatus->pluck('text')->implode(', '));
         }
 

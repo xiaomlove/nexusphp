@@ -97,8 +97,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new MeiliSearchRepository();
-        $rep->import();
+        $rep = new ExamRepository();
+        $r = $rep->listMatchExam(1);
+        dd($r);
     }
 
 }

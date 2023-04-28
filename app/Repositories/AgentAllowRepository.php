@@ -74,7 +74,8 @@ class AgentAllowRepository extends BaseRepository
     public function checkClient($peerId, $agent, $debug = false)
     {
         //check from high version to low version, if high version allow, stop!
-        $allows = NexusDB::remember("all_agent_allows", 3600, function () {
+        $cacheKey = nexus_env("CACHE_KEY_AGENT_ALLOW", "all_agent_allows") . ":php";
+        $allows = NexusDB::remember($cacheKey, 3600, function () {
             return AgentAllow::query()
                 ->orderBy('peer_id_start', 'desc')
                 ->orderBy('agent_start', 'desc')
@@ -190,8 +191,9 @@ class AgentAllowRepository extends BaseRepository
 
     private function checkIsDenied($peerId, $agent, $familyId)
     {
+        $cacheKey = nexus_env("CACHE_KEY_AGENT_DENY", "all_agent_denies") . ":php";
         /** @var Collection $allDenies */
-        $allDenies = NexusDB::remember("all_agent_denies", 3600, function () {
+        $allDenies = NexusDB::remember($cacheKey, 3600, function () {
             return AgentDeny::query()->get()->groupBy('family_id');
         });
         $agentDenies = $allDenies->get($familyId, []);
@@ -261,6 +263,73 @@ class AgentAllowRepository extends BaseRepository
 
         //NOTE: at last, after all position checked, not [NOT_MATCH] or lower, it is passed!
         return 1;
+
+    }
+
+    public function checkClientSimple($peerId, $agent, $debug = false)
+    {
+        //check from high version to low version, if high version allow, stop!
+        $cacheKey = nexus_env("CACHE_KEY_AGENT_ALLOW", "all_agent_allows") . ":php";
+        $allows = NexusDB::remember($cacheKey, 3600, function () {
+            return AgentAllow::query()
+                ->orderBy('peer_id_start', 'desc')
+                ->orderBy('agent_start', 'desc')
+                ->get();
+        });
+        $agentAllowPassed = null;
+        foreach ($allows as $agentAllow) {
+            $agentAllowId = $agentAllow->id;
+            $agentAllowLogPrefix = "[ID: $agentAllowId], peerId: $peerId";
+            $pattern = $agentAllow->peer_id_pattern;
+            //check peer_id, when handle scrape request, no peer_id, so let it pass
+            $isPeerIdAllowed = empty($pattern) || preg_match($pattern, $peerId);
+            $agentAllowLogPrefix .= ", peer_id pattern: $pattern, isPeerIdAllowed: $isPeerIdAllowed";
+
+            //check agent, agent must have both announce + scrape
+            $pattern = $agentAllow->agent_pattern;
+            $isAgentAllowed = !empty($pattern) && preg_match($pattern, $agent);
+            $agentAllowLogPrefix .= ", agent pattern: $pattern, isAgentAllowed: $isAgentAllowed";
+
+            //both OK, passed, client is allowed
+            if ($isPeerIdAllowed && $isAgentAllowed) {
+                $agentAllowPassed = $agentAllow;
+                do_log("$agentAllowLogPrefix, PASSED", 'debug');
+                break;
+            }
+            if ($debug) {
+                do_log("$agentAllowLogPrefix, NOT PASSED", 'debug');
+            }
+        }
+
+        if (!$agentAllowPassed) {
+            throw new ClientNotAllowedException("Banned Client, Please goto " . getSchemeAndHttpHost() . "/faq.php#id29 for a list of acceptable clients");
+        }
+
+        if ($debug) {
+            do_log("agentAllowPassed: " . $agentAllowPassed->toJson(), 'debug');
+        }
+
+        // check if exclude
+        if ($agentAllowPassed->exception == 'yes') {
+            $agentDeny = $this->checkIsDenied($peerId, $agent, $agentAllowPassed->id);
+            if ($agentDeny) {
+                if ($debug) {
+                    do_log("agentDeny: " . $agentDeny->toJson());
+                }
+                throw new ClientNotAllowedException(sprintf(
+                    "[%s-%s]Client: %s is banned due to: %s",
+                    $agentAllowPassed->id, $agentDeny->id, $agentDeny->name, $agentDeny->comment
+                ));
+            }
+        }
+        if (isHttps() && $agentAllowPassed->allowhttps != 'yes') {
+            throw new ClientNotAllowedException(sprintf(
+                "[%s]This client does not support https well, Please goto %s/faq.php#id29 for a list of proper clients",
+                $agentAllowPassed->id, getSchemeAndHttpHost()
+            ));
+        }
+
+        return $agentAllowPassed;
 
     }
 
