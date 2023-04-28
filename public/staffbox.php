@@ -50,7 +50,7 @@ if (!$action) {
 			<td class=colhead align=center><nobr>".$lang_staffbox['col_action']."</nobr></td>
 		</tr>");
 
-	$res = $query->forPage($pageNum, $perpage)->orderBy('id', 'desc')->get()->toArray();
+	$res = $query->forPage($pageNum + 1, $perpage)->orderBy('id', 'desc')->get()->toArray();
 	do_log(last_query());
 	foreach ($res as $arr)
 	{
