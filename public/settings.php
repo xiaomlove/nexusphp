@@ -158,7 +158,7 @@ elseif($action == 'savesettings_torrent') 	// save account
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
         'download_support_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
         'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded', 'approval_status_icon_enabled', 'approval_status_none_visible',
-        'nfo_view_style_default', 'tax_factor',
+        'nfo_view_style_default', 'tax_factor', 'max_price', 'paid_torrent_enabled'
     );
 	$validConfig = apply_filter('setting_valid_config', $validConfig);
 	GetVar($validConfig);
@@ -741,7 +741,9 @@ elseif ($action == 'torrentsettings')
     }
     tr($lang_settings['row_' . $name], $nfoViewStyleRadio, 1);
 
-    tr($lang_settings['row_tax_factor'],"<input type='text' name=tax_factor style=\"width: 100px\" value={$TORRENT['tax_factor']}> ".$lang_settings['text_tax_factor_note'], 1);
+    yesorno($lang_settings['row_paid_torrent_enabled'], 'paid_torrent_enabled', $TORRENT["paid_torrent_enabled"], $lang_settings['text_paid_torrent_enabled_note']);
+    tr($lang_settings['row_tax_factor'],"<input type='number' name=tax_factor style=\"width: 100px\" value={$TORRENT['tax_factor']}> ".$lang_settings['text_tax_factor_note'], 1);
+    tr($lang_settings['row_max_price'],"<input type='number' name=max_price style=\"width: 100px\" value={$TORRENT['max_price']}> ".$lang_settings['text_max_price_note'], 1);
 
     yesorno($lang_settings['row_promotion_rules'], 'prorules', $TORRENT["prorules"], $lang_settings['text_promotion_rules_note']);
 	tr($lang_settings['row_random_promotion'], $lang_settings['text_random_promotion_note_one']."<ul><li><input type='text' style=\"width: 50px\" name=randomhalfleech value='".(isset($TORRENT["randomhalfleech"]) ? $TORRENT["randomhalfleech"] : 5 )."'>".$lang_settings['text_halfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomfree value='".(isset($TORRENT["randomfree"]) ? $TORRENT["randomfree"] : 2 )."'>".$lang_settings['text_free_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoup value='".(isset($TORRENT["randomtwoup"]) ? $TORRENT["randomtwoup"] : 2 )."'>".$lang_settings['text_twoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoupfree value='".(isset($TORRENT["randomtwoupfree"]) ? $TORRENT["randomtwoupfree"] : 1 )."'>".$lang_settings['text_freetwoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwouphalfdown value='".(isset($TORRENT["randomtwouphalfdown"]) ? $TORRENT["randomtwouphalfdown"] : 0 )."'>".$lang_settings['text_twouphalfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomthirtypercentdown value='".(isset($TORRENT["randomthirtypercentdown"]) ? $TORRENT["randomthirtypercentdown"] : 0 )."'>".$lang_settings['text_thirtypercentleech_chance_becoming']."</li></ul>".$lang_settings['text_random_promotion_note_two'], 1);

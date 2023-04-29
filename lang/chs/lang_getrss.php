@@ -41,9 +41,10 @@ $lang_getrss = array
 	'text_mode' => "",
 	'text_keyword_note' => "只订阅标题中包含此关键字的项目",
     'row_sticky' => '置顶',
-    'row_paid' => '收费',
-    'paid_no' => '免费',
-    'paid_yes' => '收费',
+    'row_paid' => '下载需扣除魔力',
+    'row_paid_help' => '注意：此并非 Free/50% 之类的促销类型，当发种人设置种子收费时，下载是需要扣除相应魔力的',
+    'paid_no' => '不需要',
+    'paid_yes' => '需要',
     'paid_all' => '全部',
 );
 

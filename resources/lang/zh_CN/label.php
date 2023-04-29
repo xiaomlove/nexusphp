@@ -186,6 +186,7 @@ return [
         'size_end' => '体积小于',
         'price' => '价格',
         'price_help' => '用户下载种子时，发布者将获得收入，但要扣除相应税率，当前税率：:tax_factor',
+        'max_price_help' => '允许最大值：:max_price',
     ],
     'hit_and_run' => [
         'label' => '用户 H&R',

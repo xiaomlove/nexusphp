@@ -809,6 +809,10 @@ $lang_settings = array
     'text_initial_tmp_invites_note' => "新注册用户的初始临时邀请名额，有效期 7 天。默认'0'。",
     'row_tax_factor' => '收费种子收税系数',
     'text_tax_factor_note' => '假如价格100, 此系数为 0.1，发布者实际收入为 100 - 100 x 0.1 = 90，注意不要大于 1 或小于 0。',
+    'row_max_price' => '收费种子最高收费',
+    'text_max_price_note' => '默认：1,000,000，设置为 0 无限制',
+    'row_paid_torrent_enabled' => '是否启用收费种子',
+    'text_paid_torrent_enabled_note' => '启用后，有权限的用户可以在发种时设置向下载种子的用户收取一定的魔力，默认：否',
 );
 
 ?>
