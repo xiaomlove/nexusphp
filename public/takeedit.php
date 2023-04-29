@@ -13,6 +13,12 @@ if (!mkglobal("id:name:descr:type")){
 	global $lang_takeedit;
 	bark($lang_takeedit['std_missing_form_data']);
 }
+//check max price
+$maxPrice = get_setting("torrent.max_price");
+$paidTorrentEnabled = get_setting("torrent.paid_torrent_enabled") == "yes";
+if ($maxPrice > 0 && $_POST['price'] > $maxPrice && $paidTorrentEnabled) {
+    bark('price too much');
+}
 
 $id = intval($id ?? 0);
 if (!$id)
@@ -219,7 +225,7 @@ if (isset($_POST['hr'][$newcatmode]) && isset(\App\Models\Torrent::$hrStatus[$_P
  * price
  * @since 1.8.0
  */
-if (user_can('torrent-set-price')) {
+if (user_can('torrent-set-price') && $paidTorrentEnabled) {
     $updateset[] = "price = " . sqlesc($_POST['price'] ?? 0);
 }
 

@@ -809,6 +809,10 @@ $lang_settings = array
     'text_initial_tmp_invites_note' => "How many temporary invites should each user be given upon registration? Default '0'.",
     'row_tax_factor' => 'Tax factor for paid torrents',
     'text_tax_factor_note' => 'If the price is 100, this factor is 0.1 and the actual revenue of the uploader is 100 - 100 x 0.1 = 90, note that it should not be greater than 1 or less than 0.',
+    'row_max_price' => 'Maximum fee for paid torrents',
+    'text_max_price_note' => 'default: 1,000,000, set to 0 no limit',
+    'row_paid_torrent_enabled' => 'Whether to enable paid torrents',
+    'text_paid_torrent_enabled_note' => 'When enabled, users with permission can set a certain amount of bonus to be charged to users who download the torrents when they are sent, default: no',
 );
 
 ?>

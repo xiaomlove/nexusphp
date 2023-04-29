@@ -1070,8 +1070,12 @@ function clear_inbox_count_cache($uid)
 function clear_agent_allow_deny_cache()
 {
     do_log("clear_agent_allow_deny_cache");
-    \Nexus\Database\NexusDB::cache_del("all_agent_allows");
-    \Nexus\Database\NexusDB::cache_del("all_agent_denies");
+    $allowCacheKey = nexus_env("CACHE_KEY_AGENT_ALLOW", "all_agent_allows");
+    $denyCacheKey = nexus_env("CACHE_KEY_AGENT_DENY", "all_agent_denies");
+    foreach (["", ":php", ":go"] as $suffix) {
+        \Nexus\Database\NexusDB::cache_del($allowCacheKey . $suffix);
+        \Nexus\Database\NexusDB::cache_del($denyCacheKey . $suffix);
+    }
 }
 
 

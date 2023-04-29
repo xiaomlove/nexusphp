@@ -75,8 +75,13 @@ else {
 	"<input id=\"nfoupdate\" type=\"radio\" name=\"nfoaction\" value=\"update\" />".$lang_edit['radio_update']."</font><br /><input type=\"file\" name=\"nfo\" onchange=\"document.getElementById('nfoupdate').checked=true\" />", 1);
 
     //price
-    if (user_can('torrent-set-price')) {
-        tr(nexus_trans('label.torrent.price'), '<input type="number" min="0" name="price" value="'.$row['price'].'" />&nbsp;&nbsp;' . nexus_trans('label.torrent.price_help', ['tax_factor' => (floatval(get_setting('torrent.tax_factor', 0)) * 100) . '%']), 1);
+    if (user_can('torrent-set-price') && get_setting("torrent.paid_torrent_enabled") == "yes") {
+        $maxPrice = get_setting("torrent.max_price");
+        $pricePlaceholder = "";
+        if ($maxPrice > 0) {
+            $pricePlaceholder = nexus_trans("label.torrent.max_price_help", ["max_price" => $maxPrice]);
+        }
+        tr(nexus_trans('label.torrent.price'), '<input type="number" min="0" name="price" value="'.$row['price'].'" placeholder="'.$pricePlaceholder.'" />&nbsp;&nbsp;' . nexus_trans('label.torrent.price_help', ['tax_factor' => (floatval(get_setting('torrent.tax_factor', 0)) * 100) . '%']), 1);
     }
 
     print("<tr><td class=\"rowhead\">".$lang_edit['row_description']."<font color=\"red\">*</font></td><td class=\"rowfollow\">");

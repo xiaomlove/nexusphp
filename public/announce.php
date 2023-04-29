@@ -151,9 +151,16 @@ if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW &&
         err("torrent review not approved");
     }
 }
-if ($seeder == 'no' && isset($torrent['price']) && $torrent['price'] > 0 && $torrent['owner'] != $userid) {
+if (
+    $seeder == 'no'
+    && isset($az['seedbonus'])
+    && isset($torrent['price'])
+    && $torrent['price'] > 0
+    && $torrent['owner'] != $userid
+    && get_setting("torrent.paid_torrent_enabled") == "yes")
+{
     $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrent['id'])->exists();
-    if (!$hasBuy && isset($az['seedbonus'])) {
+    if (!$hasBuy) {
         if ($az['seedbonus'] < $torrent['price']) {
             err("Not enough bonus  to buy this paid torrent");
         }

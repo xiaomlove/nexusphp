@@ -183,6 +183,7 @@ return [
         'size_end' => '體積小於',
         'price' => '價格',
         'price_help' => '用戶下載種子時，發布者將獲得收入，但要扣除相應稅率，當前稅率：:tax_factor',
+        'max_price_help' => '允許最大值：:max_price',
     ],
     'hit_and_run' => [
         'label' => '用戶 H&R',

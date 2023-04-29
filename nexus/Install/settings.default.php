@@ -358,6 +358,8 @@ return array (
       'approval_status_none_visible' => 'yes',
       'nfo_view_style_default' => \App\Models\Torrent::NFO_VIEW_STYLE_DOS,
       'tax_factor' => '0.3',
+      'paid_torrent_enabled' => 'yes',
+      'max_price' => 1000000,
   ),
   'attachment' =>
   array (

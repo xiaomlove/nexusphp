@@ -98,6 +98,13 @@ bark("eek");
 if (!filesize($tmpname))
 bark($lang_takeupload['std_empty_file']);
 
+//check max price
+$maxPrice = get_setting("torrent.max_price");
+$paidTorrentEnabled = get_setting("torrent.paid_torrent_enabled") == "yes";
+if ($maxPrice > 0 && $_POST['price'] > $maxPrice && $paidTorrentEnabled) {
+    bark('price too much');
+}
+
 try {
     $dict = \Rhilip\Bencode\Bencode::load($tmpname);
 } catch (\Rhilip\Bencode\ParseErrorException $e) {
@@ -373,7 +380,7 @@ if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class()
 if (user_can('torrent-approval-allow-automatic')) {
     $insert['approval_status'] = \App\Models\Torrent::APPROVAL_STATUS_ALLOW;
 }
-if (user_can('torrent-set-price')) {
+if (user_can('torrent-set-price') && $paidTorrentEnabled) {
     $insert['price'] = $_POST['price'] ?? 0;
 }
 do_log("[INSERT_TORRENT]: " . nexus_json_encode($insert));
