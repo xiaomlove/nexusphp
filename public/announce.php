@@ -157,8 +157,8 @@ if (
     && isset($torrent['price'])
     && $torrent['price'] > 0
     && $torrent['owner'] != $userid
-    && get_setting("torrent.paid_torrent_enabled") == "yes")
-{
+    && get_setting("torrent.paid_torrent_enabled") == "yes"
+) {
     $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrent['id'])->exists();
     if (!$hasBuy) {
         if ($az['seedbonus'] < $torrent['price']) {
@@ -222,7 +222,7 @@ foreach(['info_hash', 'passkey', 'peer_id'] as $lockField) {
     $lockParams[$lockField] = $_GET[$lockField];
 }
 $lockString = http_build_query($lockParams);
-$lockKey = md5($lockString);
+$lockKey = "isReAnnounce:" . md5($lockString);
 $log .= ", [CHECK_RE_ANNOUNCE], lockString: $lockString, lockKey: $lockKey";
 $redis = $Cache->getRedis();
 if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
