@@ -45,7 +45,9 @@ function block_browser()
 
 function benc_resp($d)
 {
-    do_log(nexus_json_encode($d));
+    $logData = $d;
+    unset($logData['peers'], $logData['peers6']);
+    do_log(nexus_json_encode($logData));
     benc_resp_raw(\Rhilip\Bencode\Bencode::encode($d));
 }
 function benc_resp_raw($x) {
