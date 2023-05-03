@@ -641,13 +641,14 @@ class Install
 
     public function executeCommand($command)
     {
-        $this->doLog("command: $command");
-        $result = exec($command, $output, $result_code);
-        $this->doLog(sprintf('result_code: %s, result: %s', $result_code, $result));
-        $this->doLog("output: " . json_encode($output));
-        if ($result_code != 0) {
-            throw new \RuntimeException(json_encode($output));
-        }
+        executeCommand($command);
+//        $this->doLog("command: $command");
+//        $result = exec($command, $output, $result_code);
+//        $this->doLog(sprintf('result_code: %s, result: %s', $result_code, $result));
+//        $this->doLog("output: " . json_encode($output));
+//        if ($result_code != 0) {
+//            throw new \RuntimeException(json_encode($output));
+//        }
     }
 
     public function runDatabaseSeeder()
