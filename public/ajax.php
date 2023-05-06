@@ -36,7 +36,6 @@ function noAction()
 
 
 try {
-    if(!isset($CURUSER))throw new \RuntimeException('Permission Denied');
     $result = call_user_func($action, $params);
     exit(json_encode(success($result)));
 } catch (\Throwable $exception) {
