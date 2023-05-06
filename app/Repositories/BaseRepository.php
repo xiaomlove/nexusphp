@@ -20,8 +20,11 @@ class BaseRepository
         return [$field, $type];
     }
 
-    protected function handleAnonymous($username, User $user, User $authenticator, Torrent $torrent = null)
+    protected function handleAnonymous($username, $user, User $authenticator, Torrent $torrent = null)
     {
+        if (!$user) {
+            return "";
+        }
         if($user->privacy == "strong" || ($torrent && $torrent->anonymous == 'yes' && $user->id == $torrent->owner)) {
             //用户强私密，或者种子作者匿名而当前项作者刚好为种子作者
             $anonymousText = nexus_trans('label.anonymous');

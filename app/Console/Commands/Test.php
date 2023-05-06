@@ -97,8 +97,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $rep = new ExamRepository();
-        $r = $rep->listMatchExam(1);
+        $r = number_format(12356);
         dd($r);
     }
 

@@ -300,22 +300,27 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //	}
 
 	//chunk async
+    $asyncTaskCount = 3;
+    $baseDuration = floor($autoclean_interval_one / ($asyncTaskCount + 1));
+    $delayBase = 0;
     $requestId = nexus()->getRequestId();
     $maxUidRes = mysql_fetch_assoc(sql_query("select max(id) as max_uid from users limit 1"));
 	$maxUid = $maxUidRes['max_uid'];
-	$phpPath = nexus_env('PHP_PATH') ?: 'php';
-	$webRoot = rtrim(ROOT_PATH, '/');
 	$chunk = 1000;
 	$beginUid = 0;
-    do_log("maxUid: $maxUid, chunk: $chunk");
+    $chunkCounts = ceil($maxUid / $chunk);
+    $delay = ceil($baseDuration/$chunkCounts);
+    $i = 0;
+    do_log("autoclean_interval_one: $autoclean_interval_one, baseDuration: $baseDuration, maxUid: $maxUid, chunk: $chunk, chunkCounts: $chunkCounts, delayBase: $delayBase, delay: $delay");
 	do {
 	    $command = sprintf(
-	        '%s %s/artisan cleanup --action=seed_bonus --begin_id=%s --end_id=%s --request_id=%s',
-            $phpPath, $webRoot, $beginUid, $beginUid + $chunk, $requestId
+	        'cleanup --action=seed_bonus --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
+            $beginUid, $beginUid + $chunk, $requestId, $delayBase + $i * $delay
         );
-        $result = exec("$command 2>&1", $output, $result_code);
-        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+        $output = executeCommand($command, 'string', true);
+        do_log(sprintf('command: %s, output: %s', $command, $output));
 	    $beginUid += $chunk;
+        $i++;
     } while ($beginUid < $maxUid);
 
 	$log = 'calculate seeding bonus';
@@ -403,19 +408,24 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE torrents SET " . implode(",", $update) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 //	}
 
+    $delayBase = $baseDuration;
     $maxTorrentIdRes = mysql_fetch_assoc(sql_query("select max(id) as max_torrent_id from torrents limit 1"));
     $maxTorrentId = $maxTorrentIdRes['max_torrent_id'];
     $chunk = 1000;
     $beginTorrentId = 0;
-    do_log("maxTorrentId: $maxTorrentId, chunk: $chunk");
+    $chunkCounts = ceil($maxTorrentId / $chunk);
+    $delay = ceil($baseDuration/$chunkCounts);
+    $i = 0;
+    do_log("maxTorrentId: $maxTorrentId, chunk: $chunk, chunkCounts: $chunkCounts, delayBase: $delayBase, delay: $delay");
     do {
         $command = sprintf(
-            '%s %s/artisan cleanup --action=seeders_etc --begin_id=%s --end_id=%s --request_id=%s',
-            $phpPath, $webRoot, $beginTorrentId, $beginTorrentId + $chunk, $requestId
+            'cleanup --action=seeders_etc --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
+            $beginTorrentId, $beginTorrentId + $chunk, $requestId, $delayBase + $i * $delay
         );
-        $result = exec("$command 2>&1", $output, $result_code);
-        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+        $output = executeCommand($command, 'string', true);
+        do_log(sprintf('command: %s, output: %s', $command, $output));
         $beginTorrentId += $chunk;
+        $i++;
     } while ($beginTorrentId < $maxTorrentId);
 	$log = "update count of seeders, leechers, comments for torrents";
 	do_log($log);
@@ -906,15 +916,20 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
     $chunk = 1000;
     $beginUid = 0;
-    do_log("maxUid: $maxUid, chunk: $chunk");
+    $delayBase = $baseDuration * 2;
+    $chunkCounts = ceil($maxUid / $chunk);
+    $delay = ceil($baseDuration/$chunkCounts);
+    $i = 0;
+    do_log("maxUid: $maxUid, chunk: $chunk, chunkCounts: $chunkCounts, delayBase: $delayBase, delay: $delay");
     do {
         $command = sprintf(
-            '%s %s/artisan cleanup --action=seeding_leeching_time --begin_id=%s --end_id=%s --request_id=%s',
-            $phpPath, $webRoot, $beginUid, $beginUid + $chunk, $requestId
+            'cleanup --action=seeding_leeching_time --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
+            $beginUid, $beginUid + $chunk, $requestId, $delayBase + $delay * $i
         );
-        $result = exec("$command 2>&1", $output, $result_code);
-        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+        $output = executeCommand($command, 'string', true);
+        do_log(sprintf('command: %s, output: %s', $command, $output));
         $beginUid += $chunk;
+        $i++;
     } while ($beginUid < $maxUid);
 
 	$log = "update total seeding and leeching time of users";
