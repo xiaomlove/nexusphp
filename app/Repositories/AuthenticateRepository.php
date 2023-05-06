@@ -60,4 +60,16 @@ class AuthenticateRepository extends BaseRepository
         $user->checkIsNormal();
         return $user;
     }
+
+    public function iyuuVerify($data){
+        $user = User::find($data['id']);
+        if(!$user)throw new \InvalidArgumentException("Invalid uid or passkey.");
+        if($user->enabled==User::ENABLED_NO)throw new \InvalidArgumentException("User has been banned.");
+        if($user->status==User::STATUS_PENDING)throw new \InvalidArgumentException("User not confirmed.");
+        if($user->parked == 'yes')throw new \InvalidArgumentException("User has been parked.");
+        $secret = env('IYUU_SECRET');
+        $verity =md5($data['token'].$data['id'].sha1($user->passkey).$secret);
+        if($data['verity'] !== $verity)throw new \InvalidArgumentException("Invalid uid or passkey.");
+        return true;
+    }
 }

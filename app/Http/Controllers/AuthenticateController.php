@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class AuthenticateController extends Controller
 {
@@ -80,5 +82,23 @@ class AuthenticateController extends Controller
         return $this->success($resource);
     }
 
+    public function iyuuVerify(Request $request){
+        try {
+            $validated = $request->validate([
+                'token' => 'required|string',
+                'id' => 'required|int|min:1',
+                'verity' => 'required|string',
+                'provider' => ['required',Rule::in(['iyuu'])],
+            ]);
+        }catch(ValidationException $e){
+            return ['success'=>false,'msg'=>'Invalid data format.'];
+        }
+        try {
+            $this->repository->iyuuVerify($validated);
+        }catch(\InvalidArgumentException $e){
+            return ['success'=>false,'msg'=>$e->getMessage()];
+        }
+        return ['success'=>true];
+    }
 
 }

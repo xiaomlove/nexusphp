@@ -26,7 +26,7 @@ class AlterTableTorrentsDescrOriDescrColumnsTypeFromTextToMediumtext extends Mig
      */
     public function down()
     {
-        Schema::table('text_to_mediumtext', function (Blueprint $table) {
+        Schema::table('torrents', function (Blueprint $table) {
             $table->text('descr')->change();
             $table->text('ori_descr')->change();
         });
