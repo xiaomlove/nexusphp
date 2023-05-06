@@ -6,6 +6,29 @@ loggedinorreturn();
 $action = $_POST['action'] ?? 'noAction';
 $params = $_POST['params'] ?? [];
 
+const ALLOWED_ACTION = [
+    'toggleUserMedalStatus',
+    'attendanceRetroactive',
+    'getPtGen',
+    'addClaim',
+    'removeClaim',
+    'removeUserLeechWarn',
+    'getOffer',
+    'approvalModal',
+    'approval',
+    'addSeedBoxRecord',
+    'removeSeedBoxRecord',
+    'removeHitAndRun',
+    'consumeBenefit',
+    'clearShoutBox',
+    'buyMedal',
+    'giftMedal',
+    'saveUserMedal',
+];
+if(!in_array($action,ALLOWED_ACTION)){
+    do_log('hack attempt '.print_r($CURUSRE,true),'error');
+    $action = 'noAction';
+}
 function noAction()
 {
     throw new \RuntimeException("no Action");
