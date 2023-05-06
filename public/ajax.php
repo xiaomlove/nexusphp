@@ -26,7 +26,7 @@ const ALLOWED_ACTION = [
     'saveUserMedal',
 ];
 if(!in_array($action,ALLOWED_ACTION)){
-    do_log('hack attempt '.print_r($CURUSRE,true),'error');
+    do_log('hack attempt '.print_r($CURUSER,true),'error');
     $action = 'noAction';
 }
 function noAction()
