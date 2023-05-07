@@ -1088,7 +1088,10 @@ function user_can($permission, $fail = false, $uid = 0): bool
         $uid = get_user_id();
         $log .= ", set current uid: $uid";
     }
-    if (!$fail && $uid <= 0) {
+    if ($uid <= 0) {
+        if ($fail) {
+            goto FAIL;
+        }
         do_log("$log, unauthenticated, false");
         return false;
     }
@@ -1115,6 +1118,7 @@ function user_can($permission, $fail = false, $uid = 0): bool
         $userCanCached[$permission][$uid] = $result;
         return $result;
     }
+    FAIL:
     do_log("$log, [FAIL]");
     if (IN_NEXUS && !IN_TRACKER) {
         global $lang_functions;
@@ -1127,6 +1131,8 @@ function user_can($permission, $fail = false, $uid = 0): bool
     }
     throw new \App\Exceptions\InsufficientPermissionException();
 }
+
+
 
 function is_donor(array $userInfo): bool
 {
