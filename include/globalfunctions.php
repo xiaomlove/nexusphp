@@ -1088,7 +1088,7 @@ function user_can($permission, $fail = false, $uid = 0): bool
         $uid = get_user_id();
         $log .= ", set current uid: $uid";
     }
-    if ($uid <= 0) {
+    if (!$fail && $uid <= 0) {
         do_log("$log, unauthenticated, false");
         return false;
     }
