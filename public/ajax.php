@@ -160,7 +160,7 @@ try {
         $result = $class::$action($params);
         exit(json_encode(success($result)));
     } else {
-        do_log('hack attempt '.print_r($CURUSER, true), 'error');
+        do_log("hacking attempt made by {$CURUSER['username']},uid {$CURUSER['id']}", 'error');
         throw new \RuntimeException("no Action");
     }
 }catch(\Throwable $exception){
