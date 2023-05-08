@@ -1005,6 +1005,9 @@ function user_can($permission, $fail = false, $uid = 0): bool
         $log .= ", set current uid: $uid";
     }
     if ($uid <= 0) {
+        if ($fail) {
+            goto FAIL;
+        }
         do_log("$log, unauthenticated, false");
         return false;
     }
@@ -1031,6 +1034,7 @@ function user_can($permission, $fail = false, $uid = 0): bool
         $userCanCached[$permission][$uid] = $result;
         return $result;
     }
+    FAIL:
     do_log("$log, [FAIL]");
     if (IN_NEXUS && !IN_TRACKER) {
         global $lang_functions;

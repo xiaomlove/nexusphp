@@ -1,4 +1,5 @@
 <?php
+exit(0);
 require "../include/bittorrent.php";
 dbconn();
 $id = intval($_GET["id"] ?? 0);
@@ -20,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	if ($from_email == "") $from_email = "".$SITEEMAIL."";
 	$from_email =  safe_email($from_email);
 	if (!$from_email)
-    	stderr("Error","You must enter an email address!");	
+    	stderr("Error","You must enter an email address!");
 	if (!check_email($from_email))
   	stderr("Error","Invalid email address!");
 	$from = "$from <$from_email>";
@@ -28,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	$subject = substr(htmlspecialchars(trim($_POST["subject"])), 0, 80);
 	if ($subject == "") $subject = "(No subject)";
 	$subject = "Fw: $subject";
-	
+
 	$message = htmlspecialchars(trim($_POST["message"]));
 	if ($message == "") stderr("Error", "No message text!");
 
@@ -38,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		$message . "\n\n" .
 		"---------------------------------------------------------------------\n$SITENAME E-Mail Gateway\n";
 
-	$success = sent_mail($to,$from,$from_email,$subject,$message,"E-Mail Gateway",false);	
+	$success = sent_mail($to,$from,$from_email,$subject,$message,"E-Mail Gateway",false);
 
 	if ($success)
 		stderr("Success", "E-mail successfully queued for delivery.");
