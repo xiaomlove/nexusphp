@@ -251,21 +251,21 @@ class ExamRepository extends BaseRepository
         $filters = $exam->filters;
 
         $filter = Exam::FILTER_USER_CLASS;
-        $filterValues = $filters[$filter];
+        $filterValues = $filters[$filter] ?? [];
         if (!empty($filterValues) && !in_array($user->class, $filterValues)) {
             do_log("$logPrefix, user class: {$user->class} not in: " . json_encode($filterValues));
             return false;
         }
 
         $filter = Exam::FILTER_USER_DONATE;
-        $filterValues = $filters[$filter];
+        $filterValues = $filters[$filter] ?? [];
         if (!empty($filterValues) && !in_array($user->donate_status, $filterValues)) {
             do_log("$logPrefix, user donate status: {$user->donate_status} not in: " . json_encode($filterValues));
             return false;
         }
 
         $filter = Exam::FILTER_USER_REGISTER_TIME_RANGE;
-        $filterValues = $filters[$filter];
+        $filterValues = $filters[$filter] ?? [];
         $added = $user->added->toDateTimeString();
         $registerTimeBegin = isset($filterValues[0]) ? Carbon::parse($filterValues[0])->toDateTimeString() : '';
         $registerTimeEnd = isset($filterValues[1]) ? Carbon::parse($filterValues[1])->toDateTimeString() : '';
@@ -868,7 +868,7 @@ class ExamRepository extends BaseRepository
         }
 
         $filter = Exam::FILTER_USER_REGISTER_TIME_RANGE;
-        $range = $filters[$filter];
+        $range = $filters[$filter] ?? [];
         if (!empty($range)) {
             if (!empty($range[0])) {
                 $baseQuery->where("$userTable.added", ">=", Carbon::parse($range[0])->toDateTimeString());
