@@ -31,6 +31,14 @@ class SearchBox extends NexusModel
         'section_name' => 'json',
     ];
 
+    const SEARCH_MODE_AND = '0';
+    const SEARCH_MODE_EXACT = '2';
+
+    public static array $searchModes = [
+        self::SEARCH_MODE_AND => ['text' => 'and'],
+        self::SEARCH_MODE_EXACT => ['text' => 'exact'],
+    ];
+
     const EXTRA_TAXONOMY_LABELS = 'taxonomy_labels';
     const SECTION_BROWSE = 'browse';
     const SECTION_SPECIAL = 'special';
@@ -174,6 +182,15 @@ class SearchBox extends NexusModel
         }
     }
 
+    public static function listSearchModes(): array
+    {
+        $result = [];
+        foreach (self::$searchModes as $key => $value) {
+            $result[$key] = nexus_trans("search.search_modes.{$value['text']}");
+        }
+        return $result;
+    }
+
     public static function isSpecialEnabled(): bool
     {
         return Setting::get('main.spsct') == 'yes';
@@ -228,6 +245,33 @@ class SearchBox extends NexusModel
     public function taxonomy_processing(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Processing::class, 'mode');
+    }
+
+    public static function getDefaultSearchMode()
+    {
+        $meiliConf = get_setting("meilisearch");
+        if ($meiliConf['enabled'] == 'yes') {
+            return $meiliConf['default_search_mode'];
+        } else {
+            return self::SEARCH_MODE_AND;
+        }
+    }
+
+    public static function listSelectModeOptions($selectedValue): string
+    {
+        $options = [];
+        if (!is_numeric($selectedValue)) {
+            //set default
+            $selectedValue = self::getDefaultSearchMode();
+        }
+        foreach (self::listSearchModes() as $key => $text) {
+            $selected = "";
+            if ((string)$key === (string)$selectedValue) {
+                $selected = " selected";
+            }
+            $options[] = sprintf('<option value="%s"%s>%s</option>', $key, $selected, $text);
+        }
+        return implode('', $options);
     }
 
 

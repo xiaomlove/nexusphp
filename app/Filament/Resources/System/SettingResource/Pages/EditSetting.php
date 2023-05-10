@@ -5,8 +5,10 @@ namespace App\Filament\Resources\System\SettingResource\Pages;
 use App\Filament\OptionsTrait;
 use App\Filament\Resources\System\SettingResource;
 use App\Models\HitAndRun;
+use App\Models\SearchBox;
 use App\Models\Setting;
 use App\Models\Tag;
+use App\Repositories\MeiliSearchRepository;
 use Filament\Facades\Filament;
 use Filament\Forms\ComponentContainer;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -115,6 +117,13 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                 Forms\Components\TextInput::make('seed_box.max_uploaded_duration')->label(__('label.setting.seed_box.max_uploaded_duration'))->helperText(__('label.setting.seed_box.max_uploaded_duration_help'))->integer(),
             ])->columns(2);
 
+        $id = "meilisearch";
+        $tabs[] = Forms\Components\Tabs\Tab::make(__("label.setting.$id.tab_header"))
+            ->id($id)
+            ->schema($this->getTabMeilisearchSchema($id))
+            ->columns(2)
+        ;
+
         $tabs[] = Forms\Components\Tabs\Tab::make(__('label.setting.system.tab_header'))
             ->id('system')
             ->schema([
@@ -140,18 +149,6 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->label(__('label.setting.system.maximum_upload_speed'))
                     ->helperText(__('label.setting.system.maximum_upload_speed_help'))
                 ,
-                Forms\Components\Radio::make('system.meilisearch_enabled')
-                    ->options(self::$yesOrNo)
-                    ->inline(true)
-                    ->label(__('label.setting.system.meilisearch_enabled'))
-                    ->helperText(__('label.setting.system.meilisearch_enabled_help'))
-                ,
-                Forms\Components\Radio::make('system.meilisearch_search_description')
-                    ->options(self::$yesOrNo)
-                    ->inline(true)
-                    ->label(__('label.setting.system.meilisearch_search_description'))
-                    ->helperText(__('label.setting.system.meilisearch_search_description_help'))
-                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);
@@ -168,6 +165,37 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
             Forms\Components\TextInput::make('hr.ban_user_when_counts_reach')->helperText(__('label.setting.hr.ban_user_when_counts_reach_help'))->label(__('label.setting.hr.ban_user_when_counts_reach'))->integer(),
         ];
         return apply_filter("hit_and_run_setting_schema", $default);
+    }
+
+    private function getTabMeilisearchSchema($id)
+    {
+        $schema = [];
+
+        $name = "$id.enabled";
+        $schema[] = Forms\Components\Radio::make($name)
+            ->options(self::$yesOrNo)
+            ->inline(true)
+            ->label(__('label.enabled'))
+            ->helperText(__("label.setting.{$name}_help"))
+        ;
+
+        $name = "$id.search_description";
+        $schema[] = Forms\Components\Radio::make($name)
+            ->options(self::$yesOrNo)
+            ->inline(true)
+            ->label(__("label.setting.$name"))
+            ->helperText(__("label.setting.{$name}_help"))
+        ;
+
+        $name = "$id.default_search_mode";
+        $schema[] = Forms\Components\Radio::make($name)
+            ->options(SearchBox::listSearchModes())
+            ->inline(true)
+            ->label(__("label.setting.$name"))
+            ->helperText(__("label.setting.{$name}_help"))
+        ;
+
+        return $schema;
     }
 
 }

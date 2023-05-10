@@ -21,14 +21,6 @@ class MeiliSearchRepository extends BaseRepository
 
     const INDEX_NAME = 'torrents';
 
-    const SEARCH_MODE_AND = '0';
-    const SEARCH_MODE_EXACT = '2';
-
-    private static array $searchModes = [
-        self::SEARCH_MODE_AND => ['text' => 'and'],
-        self::SEARCH_MODE_EXACT => ['text' => 'exact'],
-    ];
-
     const SEARCH_AREA_TITLE = '0';
     const SEARCH_AREA_DESC = '1';
     const SEARCH_AREA_OWNER = '3';
@@ -63,6 +55,7 @@ class MeiliSearchRepository extends BaseRepository
         '8' => 'leechers',
         '9' => 'owner',
     ];
+
 
     private static array $filterableAttributes = [
         "id", "category", "source", "medium", "codec", "standard", "processing", "team", "audiocodec", "owner",
@@ -120,7 +113,7 @@ class MeiliSearchRepository extends BaseRepository
                 $swapResult = $client->swapIndexes([[self::INDEX_NAME, $indexName]]);
                 $times = 0;
                 while (true) {
-                    if ($times == 60) {
+                    if ($times == 600) {
                         $msg = "total: $total, swap too long, times: $times, return false";
                         do_log($msg);
                         throw new NexusException($msg);
@@ -468,12 +461,12 @@ class MeiliSearchRepository extends BaseRepository
     private function getQuery(array $params): string
     {
         $q = trim($params['search']);
-        $searchMode = self::SEARCH_MODE_AND;
-        if (isset($params['search_mode'], self::$searchModes[$params['search_mode']])) {
+        $searchMode = SearchBox::getDefaultSearchMode();
+        if (isset($params['search_mode'], SearchBox::$searchModes[$params['search_mode']])) {
             $searchMode = $params['search_mode'];
         }
         do_log("search mode: " . self::$searchModes[$searchMode]['text']);
-        if ($searchMode == self::SEARCH_MODE_AND) {
+        if ($searchMode == SearchBox::SEARCH_MODE_AND) {
             return $q;
         }
         return sprintf('"%s"', $q);

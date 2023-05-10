@@ -85,6 +85,15 @@ return [
             'max_uploaded_duration' => '最大上傳量倍數有效時間範圍',
             'max_uploaded_duration_help' => '單位：小時。種子發布後的這個時間範圍內，最大上傳量倍數生效，超過此範圍不生效。設置為 0 一直生效',
         ],
+        'meilisearch' => [
+            'tab_header' => 'Meilisearch',
+            'enabled' => '是否啟用 Meilisearch',
+            'enabled_help' => '請先安裝配置好並導入數據再啟用，否則種子搜索無數據',
+            'search_description' => '是否搜索描述',
+            'search_description_help' => "默認：'否'。若為'是'，描述中包含關鍵字也會返回，命中的結果可能較多。修改後需立即重新導入",
+            'default_search_mode' => '默認搜索模式',
+            'default_search_mode_help' => "默認：'準確'。'與'將進行分詞，'準確'不分詞",
+        ],
         'system' => [
             'tab_header' => '系統',
             'change_username_card_allow_characters_outside_the_alphabets' => '改名卡是否允許英文字母外的字符',
@@ -92,10 +101,6 @@ return [
             'maximum_number_of_medals_can_be_worn' => '勛章最大可佩戴數',
             'cookie_valid_days' => 'Cookie 有效天數',
             'maximum_upload_speed_help' => '單種上傳速度超過此值賬號即刻禁用，單位 Mbps。如：100 Mbps = 12.5 MB/s',
-            'meilisearch_enabled' => '是否啟用 Meilisearch',
-            'meilisearch_enabled_help' => '請先安裝配置好並導入數據再啟用，否則種子搜索無數據。',
-            'meilisearch_search_description' => 'Meilisearch 是否搜索描述',
-            'meilisearch_search_description_help' => "默認：'否'。若為'是'，描述中包含關鍵字也會返回，命中的結果可能較多。修改後需立即重新導入",
         ],
     ],
     'user' => [

@@ -85,6 +85,15 @@ return [
             'max_uploaded_duration' => 'Maximum upload volume multiplier effective time range',
             'max_uploaded_duration_help' => 'Unit: hours. The maximum upload volume multiplier takes effect within this time range after the torrent is published, and does not take effect beyond this range. A setting of 0 is always in effect',
         ],
+        'meilisearch' => [
+            'tab_header' => 'Meilisearch',
+            'enabled' => 'Whether to enable Meilisearch',
+            'enabled_help' => 'Please install and configure it and import the data before enabling it, otherwise there is no data for torrent search.',
+            'search_description' => 'Meilisearch whether to search for descriptions',
+            'search_description_help' => "Default: 'No'. If 'Yes', description containing keywords will also be returned, and the number of hits may be higher. Need to re-import immediately after change",
+            'default_search_mode' => 'Default search mode',
+            'default_search_mode_help' => "Default: 'Exact'. 'And' will be split, 'Exact' is not split",
+        ],
         'system' => [
             'tab_header' => 'System',
             'change_username_card_allow_characters_outside_the_alphabets' => 'Does the name change card allow characters other than English letters',
@@ -93,10 +102,6 @@ return [
             'cookie_valid_days' => 'Cookie Valid days',
             'maximum_upload_speed' => 'Maximum upload speed',
             'maximum_upload_speed_help' => 'A single torrent upload speed exceeding this value is instantly disabled for the account, in Mbps. For example: 100 Mbps = 12.5 MB/s',
-            'meilisearch_enabled' => 'Whether to enable Meilisearch',
-            'meilisearch_enabled_help' => 'Please install and configure it and import the data before enabling it, otherwise there is no data for torrent search.',
-            'meilisearch_search_description' => 'Meilisearch whether to search for descriptions',
-            'meilisearch_search_description_help' => "Default: 'No'. If 'Yes', description containing keywords will also be returned, and the number of hits may be higher. Need to re-import immediately after change",
         ],
     ],
     'user' => [

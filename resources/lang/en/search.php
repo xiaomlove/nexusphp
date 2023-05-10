@@ -10,4 +10,8 @@ return [
         '3' => 'Uploader',
         '4' => 'IMDB URL'
     ],
+    'search_modes' => [
+        'and' => 'And',
+        'exact' => 'Exact',
+    ],
 ];

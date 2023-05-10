@@ -85,6 +85,15 @@ return [
             'max_uploaded_duration' => '最大上传量倍数有效时间范围',
             'max_uploaded_duration_help' => '单位：小时。种子发布后的这个时间范围内，最大上传量倍数生效，超过此范围不生效。设置为 0 一直生效',
         ],
+        'meilisearch' => [
+            'tab_header' => 'Meilisearch',
+            'enabled' => '是否启用 Meilisearch',
+            'enabled_help' => '请先安装配置好并导入数据再启用，否则种子搜索无数据',
+            'search_description' => '是否搜索描述',
+            'search_description_help' => "默认：'否'。若为'是'，描述中包含关键字也会返回，命中的结果可能较多。修改后需立即重新导入",
+            'default_search_mode' => '默认搜索模式',
+            'default_search_mode_help' => "默认：'准确'。'与'将进行分词，'准确'不分词",
+        ],
         'system' => [
             'tab_header' => '系统',
             'change_username_card_allow_characters_outside_the_alphabets' => '改名卡是否允许英文字母外的字符',
@@ -93,10 +102,6 @@ return [
             'cookie_valid_days' => 'Cookie 有效天数',
             'maximum_upload_speed' => '最大上传速度',
             'maximum_upload_speed_help' => '单种上传速度超过此值账号即刻禁用，单位 Mbps。如：100 Mbps = 12.5 MB/s',
-            'meilisearch_enabled' => '是否启用 Meilisearch',
-            'meilisearch_enabled_help' => '请先安装配置好并导入数据再启用，否则种子搜索无数据',
-            'meilisearch_search_description' => 'Meilisearch 是否搜索描述',
-            'meilisearch_search_description_help' => "默认：'否'。若为'是'，描述中包含关键字也会返回，命中的结果可能较多。修改后需立即重新导入",
         ],
     ],
     'user' => [

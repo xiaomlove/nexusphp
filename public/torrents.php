@@ -1211,8 +1211,7 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 							<?php echo $lang_torrents['text_with'] ?>
 
 							<select name="search_mode" style="width: 60px;">
-								<option value="0"><?php echo $lang_torrents['select_and'] ?></option>
-								<option value="2"<?php echo isset($_GET["search_mode"]) && $_GET["search_mode"] == 2 ? " selected=\"selected\"" : "" ?>><?php echo $lang_torrents['select_exact'] ?></option>
+                                <?php echo \App\Models\SearchBox::listSelectModeOptions($_GET["search_mode"] ?? "")?>
 							</select>
 
 							<?php echo $lang_torrents['text_mode'] ?>
