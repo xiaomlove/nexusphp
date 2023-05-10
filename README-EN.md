@@ -2,6 +2,8 @@ English | [中文](/)
 
 Complete PT website building solution. Based on NexusPHP + Laravel + Filament.
 
+Welcome to participate in internationalization work, click [here](https://github.com/xiaomlove/nexusphp/discussions/193) for more information
+
 ## Functional Features
 
 - Upload torrent
