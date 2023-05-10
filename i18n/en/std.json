@@ -47,5 +47,16 @@
     "increment": "increment",
     "decrement": "decrement",
     "no_limit": "No limit",
-    "sum": "Sum"
+    "sum": "Sum",
+    "access_denied": "Access Denied!",
+    "permission_denied": "Permission denied!",
+    "target_not_exists": "Target not exists",
+    "error": "Error",
+    "success": "Success",
+    "failed": "Failed",
+    "oops": "Oops!",
+    "sorry": "Sorry",
+    "desc": "Description",
+    "file": "File",
+    "confirm_remove": "Are you sure you want to delete it?"
 }
