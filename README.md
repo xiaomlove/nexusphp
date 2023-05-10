@@ -2,6 +2,8 @@
 
 完整的 PT 建站解决方案。基于 NexusPHP + Laravel + Filament。
 
+欢迎参与国际化工作，点击 [这里](https://github.com/xiaomlove/nexusphp/discussions/193) 了解详情
+
 ## 功能特性
 - 发种
 - 特别区  
@@ -51,6 +53,7 @@ docker pull xiaomlove/nexusphp:latest
 docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:latest
 ```
 **生产环境建议参考文档实机安装。**
+
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
 文档：[https://doc.nexusphp.org](http://doc.nexusphp.org/)  
