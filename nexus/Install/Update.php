@@ -303,6 +303,21 @@ class Update extends Install
             $this->doLog("removeDuplicatePeer and migrate 2023_04_01_005409_add_unique_torrent_peer_user_to_peers_table");
         }
 
+        /**
+         * @since 1.8.3
+         */
+        if (NexusDB::hasTable('settings')) {
+            $updateSettings = [];
+            if (get_setting("system.meilisearch_enabled") == 'yes') {
+                $updateSettings["enabled"] = "yes";
+            }
+            if (get_setting("system.meilisearch_search_description") == 'yes') {
+                $updateSettings["search_description"] = "yes";
+            }
+            if (!empty($updateSettings)) {
+                $this->saveSettings(['meilisearch' => $updateSettings]);
+            }
+        }
 
     }
 
