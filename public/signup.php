@@ -23,7 +23,10 @@ if ($type == 'invite')
 {
 	registration_check();
 	failedloginscheck ("Invite signup");
-	$code = $_GET["invitenumber"];
+	$code = $_GET["invitenumber"] ?? '';
+    if (empty($code)) {
+        stderr($lang_signup['std_error'], "Require invitenumber");
+    }
 
 	$nuIP = getip();
 	$dom = @gethostbyaddr($nuIP);

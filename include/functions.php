@@ -1610,7 +1610,7 @@ function failedloginscheck ($type = 'Login') {
 	list($total) = mysql_fetch_array($Query);
 	if ($total >= $maxloginattempts) {
 		sql_query("UPDATE loginattempts SET banned = 'yes' WHERE ip=$ip") or sqlerr(__FILE__, __LINE__);
-		stderr($type.$lang_functions['std_locked'].$type.$lang_functions['std_attempts_reached'], $lang_functions['std_your_ip_banned']);
+		stderr($type.$lang_functions['std_locked'].$type.$lang_functions['std_attempts_reached'], $lang_functions['std_your_ip_banned'], true, true);
 	}
 }
 function failedlogins ($type = 'login', $recover = false, $head = true)
@@ -1678,13 +1678,13 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 	global $invitesystem, $registration, $maxusers, $SITENAME, $maxip;
 	if ($type == "invitesystem") {
 		if ($invitesystem == "no") {
-			stderr($lang_functions['std_oops'], $lang_functions['std_invite_system_disabled'], 0, false);
+			stderr($lang_functions['std_oops'], $lang_functions['std_invite_system_disabled'], 0, true);
 		}
 	}
 
 	if ($type == "normal") {
 		if ($registration == "no") {
-			stderr($lang_functions['std_sorry'], $lang_functions['std_open_registration_disabled'], 0, false);
+			stderr($lang_functions['std_sorry'], $lang_functions['std_open_registration_disabled'], 0, true);
 		}
 	}
 
@@ -1692,14 +1692,14 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 		$res = sql_query("SELECT COUNT(*) FROM users") or sqlerr(__FILE__, __LINE__);
 		$arr = mysql_fetch_row($res);
 		if ($arr[0] >= $maxusers)
-		stderr($lang_functions['std_sorry'], $lang_functions['std_account_limit_reached'], 0, false);
+		stderr($lang_functions['std_sorry'], $lang_functions['std_account_limit_reached'], 0, true);
 	}
 
 	if ($ipcheck) {
 		$ip = getip () ;
 		$a = (@mysql_fetch_row(@sql_query("select count(*) from users where ip='" . mysql_real_escape_string($ip) . "'"))) or sqlerr(__FILE__, __LINE__);
 		if ($a[0] > $maxip)
-		stderr($lang_functions['std_sorry'], $lang_functions['std_the_ip']."<b>" . htmlspecialchars($ip) ."</b>". $lang_functions['std_used_many_times'],false, false);
+		stderr($lang_functions['std_sorry'], $lang_functions['std_the_ip']."<b>" . htmlspecialchars($ip) ."</b>". $lang_functions['std_used_many_times'],false, true);
 	}
 	return true;
 }
@@ -2912,7 +2912,7 @@ function stdfoot() {
 	global $hook;
 	print("</td></tr></table>");
 	print("<div id=\"footer\">");
-	if ($Advertisement->enable_ad()){
+	if ($Advertisement && $Advertisement->enable_ad()){
 			$footerad=$Advertisement->get_ad('footer');
 			if ($footerad)
 			echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"\">".$footerad[0]."</div>";
