@@ -27,6 +27,7 @@ if ($type == 'uploaded') {
 }
 $isTypeTmpInvite = $type == 'tmp_invites';
 $subject = trim($_POST['subject']);
+$duration = 0;
 $size = 2000;
 $page = 1;
 set_time_limit(300);
@@ -38,12 +39,13 @@ $conditions = apply_filter("role_query_conditions", $conditions, $_POST);
 if (empty($conditions)) {
     stderr("Error","No valid filter");
 }
-if ($isTypeTmpInvite && (empty($_POST['duration']) || $_POST['duration'] < 1)) {
-    stderr("Error","Invalid duration");
+if ($isTypeTmpInvite) {
+    $duration = intval($_POST['duration'] ?? 0);
+    if ($duration <= 0) {
+        stderr("Sorry", "Invalid duration: $duration");
+    }
 }
 $whereStr = implode(' OR ', $conditions);
-$phpPath = nexus_env('PHP_PATH') ?: 'php';
-$webRoot = rtrim(ROOT_PATH, '/');
 while (true) {
     $msgValues = $idArr = [];
     $offset = ($page - 1) * $size;
@@ -59,11 +61,11 @@ while (true) {
     $idStr = implode(',', $idArr);
     if ($isTypeTmpInvite) {
         $command = sprintf(
-            '%s %s/artisan invite:tmp %s %s %s',
-            $phpPath, $webRoot, $idStr, $_POST['duration'], $amount
+            'invite:tmp %s %s %s',
+            $idStr, $duration, $amount
         );
-        $result = exec("$command 2>&1", $output, $result_code);
-        do_log(sprintf('command: %s, result_code: %s, result: %s, output: %s', $command, $result_code, $result, json_encode($output)));
+        $output = executeCommand($command, 'string', true);
+        do_log(sprintf('command: %s, output: %s', $command, $output));
     } else {
         sql_query("UPDATE users SET $type = $type + $amount WHERE id in ($idStr)");
     }
