@@ -91,7 +91,7 @@ class MeiliSearchRepository extends BaseRepository
 
     public function isEnabled(): bool
     {
-        return Setting::get('system.meilisearch_enabled') == 'yes';
+        return Setting::get('meilisearch.enabled') == 'yes';
     }
 
     public function import()
@@ -555,7 +555,7 @@ class MeiliSearchRepository extends BaseRepository
     private function getSearchableAttributes(): array
     {
         $attributes = ["name", "small_descr", "url"];
-        if (Setting::get("system.meilisearch_search_description") == 'yes') {
+        if (Setting::get("meilisearch.search_description") == 'yes') {
             $attributes[] = "descr";
         }
         return $attributes;

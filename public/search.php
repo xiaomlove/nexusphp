@@ -28,7 +28,7 @@ if (!isset($CURUSER) || !user_can('seebanned')) {
     $banned = "no";
 }
 
-$meilisearchEnabled = get_setting('system.meilisearch_enabled') == 'yes';
+$meilisearchEnabled = get_setting('meilisearch.enabled') == 'yes';
 $shouldUseMeili = $meilisearchEnabled && !empty($search);
 
 $count = 0;

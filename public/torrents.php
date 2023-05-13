@@ -60,7 +60,7 @@ if (empty($searchstr)) {
     unset($searchstr);
 }
 
-$meilisearchEnabled = get_setting('system.meilisearch_enabled') == 'yes';
+$meilisearchEnabled = get_setting('meilisearch.enabled') == 'yes';
 $shouldUseMeili = $meilisearchEnabled && !empty($searchstr);
 do_log("[SHOULD_USE_MEILI]: $shouldUseMeili");
 // sorting by MarkoStamcar
