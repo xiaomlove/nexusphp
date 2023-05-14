@@ -331,6 +331,9 @@ function voteaccept(yourvote)
 // in upload.php
 function getname()
 {
+if (!(document.getElementById('autofill').checked)) {
+  return;
+}
 var filename = document.getElementById("torrent").value;
 var filename = filename.toString();
 var lowcase = filename.toLowerCase();

@@ -41,6 +41,8 @@ $lang_upload = array
 	'text_english_title' => "English Name:",
 	'text_titles_note' => "(If no English Name exists, use pinyin or leave it blank)",
     'fill_quality' => 'Fill quality',
+	'autofilloffer_not' => 'Autocomplete the title and description entered when the offers is entered',
+    'torrent_name_fill' => 'Populate the title with the torrent name',
 );
 
 ?>

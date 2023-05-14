@@ -41,6 +41,8 @@ $lang_upload = array
 	'text_english_title' => "英文名:",
 	'text_titles_note' => "(如果英文名不存在，請使用拼音或不填寫)",
     'fill_quality' => '填寫質量',
+	'autofilloffer_not' => '自动填充候选时输入的标题与简介',
+    'torrent_name_fill' => '使用种子名填充标题',
 );
 
 ?>

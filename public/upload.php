@@ -53,12 +53,12 @@ stdhead($lang_upload['head_upload']);
 					</td>
 				</tr>
 				<?php
-				tr($lang_upload['row_torrent_file']."<font color=\"red\">*</font>", "<input type=\"file\" class=\"file\" id=\"torrent\" name=\"file\" onchange=\"getname()\" />\n", 1);
+				tr($lang_upload['row_torrent_file']."<font color=\"red\">*</font>", "<input type=\"file\" class=\"file\" id=\"torrent\" name=\"file\" onchange=\"getname()\" /><div style=\"display: inline;\"><input type=\"checkbox\" id=\"autofill\" checked=\"checked\"><label for=\"autofill\">" . $lang_upload['torrent_name_fill'] ."</label></div>\n", 1);
 				if ($altname_main == 'yes'){
 					tr($lang_upload['row_torrent_name'], "<b>".$lang_upload['text_english_title']."</b>&nbsp;<input type=\"text\" style=\"width: 250px;\" name=\"name\" />&nbsp;&nbsp;&nbsp;
 <b>".$lang_upload['text_chinese_title']."</b>&nbsp;<input type=\"text\" style=\"width: 250px\" name=\"cnname\"><br /><font class=\"medium\">".$lang_upload['text_titles_note']."</font>", 1);
 				} else {
-				    $autoFillText = $lang_upload['fill_quality'];
+				    $autoFillText = '';//$lang_upload['fill_quality']
 				    $nameInput = $torrentRep->buildUploadFieldInput("name", "", $lang_upload['text_torrent_name_note'], $autoFillText);
                     tr($lang_upload['row_torrent_name'], $nameInput, 1);
                 }
@@ -179,9 +179,12 @@ stdhead($lang_upload['head_upload']);
 					while($offerrow = mysql_fetch_array($offerres))
 						$offer .= "<option value=\"" . $offerrow["id"] . "\">" . htmlspecialchars($offerrow["name"]) . "</option>";
 					$offer .= "</select>";
-					tr($lang_upload['row_your_offer']. (!$uploadfreely && !$allowspecial ? "<font color=red>*</font>" : ""), $offer.$lang_upload['text_please_select_offer'] , 1);
+					tr($lang_upload['row_your_offer']. (!$uploadfreely && !$allowspecial ? "<font color=red>*</font>" : ""), $offer.$lang_upload['text_please_select_offer']. "<div style=\"display: inline;\"><input type=\"checkbox\" id=\"autofilloffer\" checked=\"checked\"><label for=\"autofilloffer\">" . $lang_upload['autofilloffer_not'] ."</label></div>" , 1);
 					$getOfferJs = <<<JS
 jQuery('select[name="offer"]').on("change", function () {
+    if (!(document.getElementById('autofilloffer').checked)) {
+        return;
+    }
     let id = this.value
     if (id == 0) {
         return
@@ -232,7 +235,7 @@ JS;
 
 				if(user_can('beanonymous'))
 				{
-					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" />".$lang_upload['checkbox_hide_uploader_note'], 1);
+					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" checked />".$lang_upload['checkbox_hide_uploader_note'], 1);
 				}
 				?>
 				<tr><td class="toolbox" align="center" colspan="2"><b><?php echo $lang_upload['text_read_rules']?></b> <input id="qr" type="submit" class="btn" value="<?php echo $lang_upload['submit_upload']?>" /></td></tr>
