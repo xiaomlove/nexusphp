@@ -73,9 +73,10 @@ if ($action == 'delete')
 	if (!is_valid_id($targetid))
 	stderr($lang_friends['std_error'], $lang_friends['std_invalid_id']."$userid.");
 
-	if (!$sure)
-	stderr($lang_friends['std_delete'].$type, $lang_friends['std_delete_note'].$typename.$lang_friends['std_click'].
-	"<a href=?id=$userid&action=delete&type=$type&targetid=$targetid&sure=1>".$lang_friends['std_here_if_sure'],false);
+	if (!$sure) {
+        stderr($lang_friends['std_delete'].$type, $lang_friends['std_delete_note'].$typename.$lang_friends['std_click'].
+            "<a href=?id=$userid&action=delete&type=$type&targetid=$targetid&sure=1>".$lang_friends['std_here_if_sure'],false);
+    }
 
 	if ($type == 'friend')
 	{
@@ -90,10 +91,9 @@ if ($action == 'delete')
 		if (mysql_affected_rows() == 0)
 		stderr($lang_friends['std_error'], $lang_friends['std_no_block_found']."$targetid");
 		$frag = "blocks";
-	}
-	else
-	stderr($lang_friends['std_error'], $lang_friends['std_unknown_type']."$type");
-
+	} else {
+        stderr($lang_friends['std_error'], $lang_friends['std_unknown_type']."$type");
+    }
 
 	purge_neighbors_cache();
 

@@ -69,7 +69,10 @@ function stdmsg($heading, $text, $htmlstrip = false)
 	if ($htmlstrip) {
 		$heading = htmlspecialchars(trim($heading));
 		$text = htmlspecialchars(trim($text));
-	}
+	} else {
+        $heading = strip_tags($heading, '<a>');
+        $text = strip_tags($text, '<a>');
+    }
 	print("<table align=\"center\" class=\"main\" width=\"500\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td class=\"embedded\">\n");
 	if ($heading)
 	print("<h2>".$heading."</h2>\n");
@@ -3002,22 +3005,22 @@ function logincookie($id, $passhash, $updatedb = 1, $expires = 0x7fffffff, $secu
 	if ($expires != 0x7fffffff)
 	$expires = time()+$expires;
 
-	setcookie("c_secure_uid", base64($id), $expires, "/");
-	setcookie("c_secure_pass", $passhash, $expires, "/");
+	setcookie("c_secure_uid", base64($id), $expires, "/", "", false, true);
+	setcookie("c_secure_pass", $passhash, $expires, "/", "", false, true);
 	if($ssl)
-	setcookie("c_secure_ssl", base64("yeah"), $expires, "/");
+	setcookie("c_secure_ssl", base64("yeah"), $expires, "/", "", false, true);
 	else
-	setcookie("c_secure_ssl", base64("nope"), $expires, "/");
+	setcookie("c_secure_ssl", base64("nope"), $expires, "/", "", false, true);
 
 	if($trackerssl)
-	setcookie("c_secure_tracker_ssl", base64("yeah"), $expires, "/");
+	setcookie("c_secure_tracker_ssl", base64("yeah"), $expires, "/", "", false, true);
 	else
-	setcookie("c_secure_tracker_ssl", base64("nope"), $expires, "/");
+	setcookie("c_secure_tracker_ssl", base64("nope"), $expires, "/", "", false, true);
 
 	if ($securelogin)
-	setcookie("c_secure_login", base64("yeah"), $expires, "/");
+	setcookie("c_secure_login", base64("yeah"), $expires, "/", "", false, true);
 	else
-	setcookie("c_secure_login", base64("nope"), $expires, "/");
+	setcookie("c_secure_login", base64("nope"), $expires, "/", "", false, true);
 
 
 	if ($updatedb)
@@ -3029,7 +3032,7 @@ function set_langfolder_cookie($folder, $expires = 0x7fffffff)
 	if ($expires != 0x7fffffff)
 	$expires = time()+$expires;
 
-	setcookie("c_lang_folder", $folder, $expires, "/");
+	setcookie("c_lang_folder", $folder, $expires, "/", "", false, true);
 }
 
 function get_protocol_prefix()
@@ -3073,12 +3076,12 @@ function make_folder($pre, $folder_name)
 }
 
 function logoutcookie() {
-	setcookie("c_secure_uid", "", 0x7fffffff, "/");
-	setcookie("c_secure_pass", "", 0x7fffffff, "/");
-// setcookie("c_secure_ssl", "", 0x7fffffff, "/");
-	setcookie("c_secure_tracker_ssl", "", 0x7fffffff, "/");
-	setcookie("c_secure_login", "", 0x7fffffff, "/");
-//	setcookie("c_lang_folder", "", 0x7fffffff, "/");
+	setcookie("c_secure_uid", "", 0x7fffffff, "/", "", false, true);
+	setcookie("c_secure_pass", "", 0x7fffffff, "/", "", false, true);
+// setcookie("c_secure_ssl", "", 0x7fffffff, "/", "", false, true);
+	setcookie("c_secure_tracker_ssl", "", 0x7fffffff, "/", "", false, true);
+	setcookie("c_secure_login", "", 0x7fffffff, "/", "", false, true);
+//	setcookie("c_lang_folder", "", 0x7fffffff, "/", "", false, true);
 }
 
 function base64 ($string, $encode=true) {
