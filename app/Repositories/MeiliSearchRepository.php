@@ -465,7 +465,7 @@ class MeiliSearchRepository extends BaseRepository
         if (isset($params['search_mode'], SearchBox::$searchModes[$params['search_mode']])) {
             $searchMode = $params['search_mode'];
         }
-        do_log("search mode: " . self::$searchModes[$searchMode]['text']);
+        do_log("search mode: " . SearchBox::$searchModes[$searchMode]['text']);
         if ($searchMode == SearchBox::SEARCH_MODE_AND) {
             return $q;
         }
