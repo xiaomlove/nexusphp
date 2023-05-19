@@ -8,7 +8,7 @@ if (!user_can('userprofile'))
 	permissiondenied();
 else
 {
-	$ip = trim($_GET['ip']);
+	$ip = htmlspecialchars(trim($_GET['ip']));
 	if ($ip)
 	{
 		$regex = "/^(((1?\d{1,2})|(2[0-4]\d)|(25[0-5]))(\.\b|$)){4}$/";

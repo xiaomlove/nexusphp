@@ -65,7 +65,7 @@ if ($action == 'delete')
 {
 	$targetid = $_GET['targetid'];
 	$sure = $_GET['sure'];
-	$type = $_GET['type'];
+	$type = htmlspecialchars($_GET['type']);
 
 	if ($type == 'friend')
 	$typename = $lang_friends['text_friend'];

@@ -230,7 +230,7 @@ if ($Attach->enable_attachment())
 				$dlkey = md5($db_file_location.".".$ext);
 				sql_query("INSERT INTO attachments (userid, width, added, filename, filetype, filesize, location, dlkey, isimage, thumb) VALUES (".$CURUSER['id'].", ".$width.", ".sqlesc(date("Y-m-d H:i:s")).", ".sqlesc($origfilename).", ".sqlesc($filetype).", ".$filesize.", ".sqlesc($db_file_location.".".$ext).", ".sqlesc($dlkey).", ".($isimage ? 1 : 0).", ".($hasthumb ? 1 : 0).")") or sqlerr(__FILE__, __LINE__);
 				$count_left--;
-				if (!empty($_REQUEST['callback_func'])) {
+				if (!empty($_REQUEST['callback_func']) && preg_match('/^preview_custom_field_image_\d+$/', $_REQUEST['callback_func'])) {
 				    $url = $httpdirectory_attachment."/".$db_file_location . ".$ext";
                     if ($hasthumb) {
                         $url .= ".thumb.jpg";

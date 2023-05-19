@@ -95,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["a
 	//start process torrent ID
 	if(!$_POST["torrent_id"])
 	{
-		echo($lang_subtitles['std_missing_torrent_id']."$file[name]</b></font> !");
+		echo($lang_subtitles['std_missing_torrent_id'].htmlspecialchars($file['name'])."</b></font> !");
 		exit;
 	}
 	else

@@ -5,7 +5,7 @@ require_once(get_langfile_path());
 loggedinorreturn();
 
 parked();
-$userid = $_GET["id"];
+$userid = intval($_GET["id"] ?? 0);
 int_check($userid,true);
 
 if ($CURUSER["id"] != $userid && !user_can('viewhistory'))

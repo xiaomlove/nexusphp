@@ -7,7 +7,7 @@ loggedinorreturn();
 parked();
 
 if (isset($_GET['id'])) {
-    $_GET['id'] = htmlspecialchars($_GET['id']);
+    $_GET['id'] = intval($_GET['id'] ?? 0);
 }
 $action = isset($_POST['action']) ? htmlspecialchars($_POST['action']) : (isset($_GET['action']) ? htmlspecialchars($_GET['action']) : '');
 $allowed_actions = array("list", "new", "newmessage", "view", "edit", "takeedit", "takeadded", "res", "takeres", "addamount", "delete", "confirm", "message", "search");
@@ -200,7 +200,7 @@ else {
                 print(
                     "<form id=edit method=post name=edit action=viewrequests.php >\n
 		<input type=hidden name=action  value=takeedit >
-		<input type=hidden name=reqid  value=" . $_GET["id"] . " >
+		<input type=hidden name=reqid  value=" . intval($_GET["id"] ?? 0) . " >
 		");
                 print("<table width=100% cellspacing=0 cellpadding=3><tr><td class=colhead align=center colspan=2>{$lang_functions['title_edit']}{$lang_viewrequests['request']}</td></tr>");
                 tr("{$lang_functions['col_name']}：", "<input name=request value=\"" . $arr["request"] . "\" size=134 ><br/>", 1);
@@ -247,7 +247,7 @@ else {
 
 
                 print(
-                    "<form id=reply name=reply method=post action=viewrequests.php >\n<input type=hidden name=action value=message ><input type=hidden name=id value=" . $_GET["id"] . " >\n");
+                    "<form id=reply name=reply method=post action=viewrequests.php >\n<input type=hidden name=action value=message ><input type=hidden name=id value=" . intval($_GET["id"] ?? 0) . " >\n");
                 print("<table width=100% cellspacing=0 cellpadding=3>\n");
 
                 print("<tr><td class=rowfollow align=left>");

@@ -4,7 +4,7 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 parked();
-$id = $_GET["id"];
+$id = intval($_GET["id"] ?? 0);
 if (!user_can('viewnfo') || !is_valid_id($id) || $enablenfo_main != 'yes')
 permissiondenied();
 

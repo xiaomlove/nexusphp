@@ -133,7 +133,7 @@ stdfoot();
        //////////////////////////
 
 if ($action == "answermessage") {
-        $answeringto = $_GET["answeringto"];
+        $answeringto = intval($_GET["answeringto"] ?? 0);
         $receiver = intval($_GET["receiver"] ?? 0);
 
         int_check($receiver,true);

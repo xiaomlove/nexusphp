@@ -36,7 +36,7 @@ function clear_faq_cache()
 
 // ACTION: reorder - reorder sections and items
 if (isset($_GET['action']) && $_GET['action'] == "reorder") {
-	foreach($_POST[order] as $id => $position) sql_query("UPDATE `faq` SET `order`=".sqlesc($position)." WHERE id=".sqlesc($id)) or sqlerr();
+	foreach($_POST['order'] as $id => $position) sql_query("UPDATE `faq` SET `order`=".sqlesc($position)." WHERE id=".sqlesc($id)) or sqlerr();
 	header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 	die;
 }
@@ -113,7 +113,7 @@ elseif (isset($_GET['action']) && $_GET['action'] == "editsect" && $_POST['id'] 
 
 // ACTION: delete - delete a section or item
 elseif (isset($_GET['action']) && $_GET['action'] == "delete" && isset($_GET['id'])) {
-	if ($_GET[confirm] == "yes") {
+	if ($_GET['confirm'] == "yes") {
 		sql_query("DELETE FROM `faq` WHERE `id`=".sqlesc(intval($_GET['id'] ?? 0))." LIMIT 1") or sqlerr();
 		header("Location: " . get_protocol_prefix() . "$BASEURL/faqmanage.php");
 		die;
@@ -122,7 +122,8 @@ elseif (isset($_GET['action']) && $_GET['action'] == "delete" && isset($_GET['id
 		stdhead("FAQ Management");
 		begin_main_frame();
 		print("<h1 align=\"center\">Confirmation required</h1>");
-		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" align=\"center\" width=\"95%\">\n<tr><td align=\"center\">Please click <a href=\"faqactions.php?action=delete&id={$_GET['id']}&confirm=yes\">here</a> to confirm.</td></tr>\n</table>\n");
+        $id = intval($_GET['id'] ?? 0);
+		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" align=\"center\" width=\"95%\">\n<tr><td align=\"center\">Please click <a href=\"faqactions.php?action=delete&id={$id}&confirm=yes\">here</a> to confirm.</td></tr>\n</table>\n");
 		end_main_frame();
 		stdfoot();
 	}
