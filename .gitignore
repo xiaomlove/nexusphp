@@ -27,3 +27,5 @@ yarn-error.log
 .DS_Store
 /plugins
 auth.json
+/.vscode
+/.history
