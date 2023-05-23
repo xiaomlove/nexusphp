@@ -460,7 +460,7 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 		}
 		$j++;
 	}
-	return $s;
+    return str_replace('', '', $s);
 }
 
 function highlight($search,$subject,$hlstart='<b><font class="striking">',$hlend="</font></b>")
