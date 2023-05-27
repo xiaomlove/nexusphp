@@ -69,10 +69,7 @@ function stdmsg($heading, $text, $htmlstrip = false)
 	if ($htmlstrip) {
 		$heading = htmlspecialchars(trim($heading));
 		$text = htmlspecialchars(trim($text));
-	} else {
-        $heading = strip_tags($heading, '<a>');
-        $text = strip_tags($text, '<a>');
-    }
+	}
 	print("<table align=\"center\" class=\"main\" width=\"500\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td class=\"embedded\">\n");
 	if ($heading)
 	print("<h2>".$heading."</h2>\n");

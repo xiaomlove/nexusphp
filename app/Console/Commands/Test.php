@@ -97,7 +97,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = number_format(12356);
+        $r = NexusDB::cache_get("user_all_permissions:10001");
         dd($r);
     }
 
