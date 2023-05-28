@@ -1,0 +1,12 @@
+<ifModule mod_rewrite.c>
+RewriteEngine on
+RewriteRule \.svn/ - [F]
+RewriteCond %{QUERY_STRING}  ^(.+)$
+RewriteRule ^(.*)forums/$ $1forums.php?action=viewtopic&%1 [L]
+
+RewriteRule ^(.*)forums/$ $1forums.php?action=viewtopic
+</ifModule>
+Options FollowSymLinks
+Order allow,deny
+Allow from all
+

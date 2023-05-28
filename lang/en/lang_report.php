@@ -1,0 +1,42 @@
+<?php
+
+$lang_report = array
+(
+	'std_error' => "Error",
+	'std_missing_reason' => "Missing Reason!",
+	'std_message' => "Message",
+	'std_successfully_reported' => "Successfully reported!",
+	'std_already_reported_this' => "You have already reported this!",
+	'std_sorry' => "Sorry",
+	'std_cannot_report_oneself' => "You can not report yourself!",
+	'std_invalid_user_id' => "Invalid User Id!",
+	'std_cannot_report' => "You can not report ",
+	'std_are_you_sure' => "Are you sure?",
+	'text_are_you_sure_user' => "Are you sure you would like to report this user ",
+	'text_to_staff' => " to the Staff for violation of the rules?",
+	'text_not_for_leechers' => "Please note, this is <b>not</b> to be used to report leechers, we have scripts in place to deal with them!",
+	'text_reason_is' => "Reason <font class=striking>(required)</font>: ",
+	'submit_confirm' => "Confirm",
+	'text_reason_note' => "<b><font class=striking> PLEASE Note! </font></b>&nbsp;If no reason is given you will get a warning yourself.",
+	'std_invalid_torrent_id' => "Invalid Torrent Id!",
+	'text_are_you_sure_torrent' => "Are you sure you would like to report this torrent ",
+	'std_invalid_post_id' => "Invalid Post Id!",
+	'text_are_you_sure_post' => "Are you sure you would like to report the forum post (ID ",
+	'text_of_topic' => " of topic ",
+	'text_of_torrent' => " of torrent ",
+	'text_of_offer' => " of offer ",
+	'text_of_request' => " of request ",
+	'text_by' => ") by ",
+	'std_invalid_comment_id' => "Invalid Comment Id!",
+	'std_orphaned_comment' => "Orphaned comment. Please report this to admin.",
+	'text_are_you_sure_comment' => "Are you sure you would like to report the comment (ID ",
+	'std_invalid_offer_id' => "Invalid offer Id!",
+	'text_are_you_sure_offer' => "Are you sure you would like to report the following offer ",
+	'std_invalid_request_id' => "Invalid Request Id!",
+	'std_are_you_sure_request' => "Are you sure you would like to report the following request ",
+	'std_invalid_action' => "Invalid action.",
+	'std_invalid_subtitle_id' => "Invalid Subtitle Id!",
+	'text_are_you_sure_subtitle' => "Are you sure you would like to report the subtitle ",
+);
+
+?>

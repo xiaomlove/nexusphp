@@ -1,0 +1,31 @@
+<?php
+
+$lang_fields = [
+    'field_management' => 'Custom field management',
+    'text_manage' => 'Manage',
+    'text_add' => 'Add',
+    'text_field' => 'Field',
+    'text_delete' => 'Delete',
+    'text_edit' => 'Edit',
+    'col_id' => 'ID',
+    'col_name' => 'Name',
+    'col_name_help' => 'Only allow digit, alphabet, underline',
+    'col_label' => 'Display label',
+    'col_type' => 'Type',
+    'col_required' => 'Required',
+    'col_help' => 'Help text',
+    'col_options' => 'Options',
+    'col_options_help' => 'Required when type is radio, checkbox, select. One line, one option, format: value|display text',
+    'col_action' => 'Action',
+    'col_is_single_row' => 'Display on a single row',
+    'js_sure_to_delete_this' => 'Sure to delete?',
+    'submit_submit' => 'Submit',
+    'field_type_text' => 'Short text',
+    'field_type_textarea' => 'Long text',
+    'field_type_radio' => 'Horizontal single select',
+    'field_type_checkbox' => 'Horizontal multiple select',
+    'field_type_select' => 'Vertical single select',
+    'field_type_image' => 'Image',
+    'col_display' => 'Custom display',
+
+];

@@ -1,0 +1,105 @@
+{
+    "name": "xiaomlove/nexusphp",
+    "description": "A private tracker application base on NexusPHP.",
+    "type": "project",
+    "license": "GPL-2.0-only",
+    "authors": [
+        {
+            "name": "xiaomlove",
+            "email": "1939737565@qq.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Nexus\\": "nexus/",
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+
+        ]
+    },
+    "require": {
+        "php": "^8.0",
+        "ext-bcmath": "*",
+        "ext-curl": "*",
+        "ext-gd": "*",
+        "ext-gmp": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-mysqli": "*",
+        "ext-pcntl": "*",
+        "ext-redis": "*",
+        "ext-xml": "*",
+        "ext-zend-opcache": "*",
+        "doctrine/dbal": "^3.1",
+        "elasticsearch/elasticsearch": "^7.16",
+        "filament/filament": "2.17.14",
+        "flowframe/laravel-trend": "^0.1.1",
+        "fruitcake/laravel-cors": "^2.0",
+        "geoip2/geoip2": "~2.0",
+        "hashids/hashids": "^4.1",
+        "imdbphp/imdbphp": "^7.0",
+        "laravel/framework": "9.52.4",
+        "laravel/octane": "^1.2",
+        "laravel/sanctum": "^2.10",
+        "laravel/tinker": "^2.5",
+        "league/flysystem-ftp": "^3.0",
+        "league/flysystem-sftp-v3": "^3.0",
+        "masbug/flysystem-google-drive-ext": "^2.0",
+        "meilisearch/meilisearch-php": "^1.0",
+        "orangehill/iseed": "^3.0",
+        "phpgangsta/googleauthenticator": "dev-master",
+        "rhilip/bencode": "^2.0",
+        "rlanvin/php-ip": "^3.0",
+        "spiral/roadrunner": "^2.8"
+    },
+    "require-dev": {
+        "spatie/laravel-ignition": "^1.0",
+        "fakerphp/faker": "^1.9.1",
+        "kitloong/laravel-migrations-generator": "^5.0",
+        "laravel/sail": "^1.0.1",
+        "laravel-lang/lang": "^10.2",
+        "laravel-lang/publisher": "^12.0",
+        "mockery/mockery": "^1.4.2",
+        "nunomaduro/collision": "^6.1",
+        "phpunit/phpunit": "^9.3.3"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan filament:upgrade"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "secure-http": false,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

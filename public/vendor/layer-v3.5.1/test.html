@@ -1,0 +1,76 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>layer-更懂你的 Web 弹窗解决方案</title>
+
+  <style>
+  html{background-color:#E3E3E3; font-size:14px; color:#000; font-family:Helvetica Neue,Helvetica,PingFang SC,Tahoma,Arial,sans-serif}
+  a,a:hover{ text-decoration:none;}
+  pre{font-family:Helvetica Neue,Helvetica,PingFang SC,Tahoma,Arial,sans-serif}
+  .box{padding:20px; background-color:#fff; margin:50px 100px; border-radius:5px;}
+  .box a{padding-right:15px;}
+  #about_hide{display:none}
+  .layer_text{background-color:#fff; padding:20px;}
+  .layer_text p{margin-bottom: 10px; text-indent: 2em; line-height: 23px;}
+  .button{display:inline-block; *display:inline; *zoom:1; line-height:30px; padding:0 20px; background-color:#56B4DC; color:#fff; font-size:14px; border-radius:3px; cursor:pointer; font-weight:normal;}
+  .photos-demo img{width:200px;}
+  </style>
+  
+  <script src="http://cdn.bootcss.com/jquery/1.12.3/jquery.min.js"></script>
+  <script src="layer/layer.js"></script>
+</head>
+<body>
+<div class="box">
+<pre>
+ @Name：layer
+ @Version：v<script>document.write(layer.v)</script>
+ @Description：通用 Web 弹层组件
+
+
+<strong>【注意事项】</strong>
+一、使用时，请把文件夹 layer 整个放置在您站点的任何一个目录，只需引入 layer.js 即可，除 jQuery 外，其它文件无需再引入。
+二、如果您的 js 引入是通过合并处理或者您不想采用layer自动获取的绝对路径，您可以通过 layer.config() 来配置（详见官网 API 页）
+三、jQuery 需 1.8+
+四、更多使用说明与演示，请参见 layer 官网。
+五、使用时请务必保留来源，请勿用于违反我国法律法规的 Web 平台。
+六、layer 是一款无偿的公益性项目，遵循 MIT 开源协议。
+</pre>
+</div>
+
+<div class="box" style="text-align:center">
+  <a href="http://layer.layui.com/" target="_blank">更多示例</a>
+  <a href="http://www.layui.com/doc/modules/layer.html" target="_blank">使用文档</a>
+  <a href="javascript:;" id="about">关于</a>
+</div>
+
+<script>
+;!function(){
+
+
+//页面一打开就执行，放入ready是为了layer所需配件（css、扩展模块）加载完毕
+layer.ready(function(){ 
+  layer.open({
+    type: 2,
+    title: '欢迎页',
+    maxmin: true,
+    area: ['800px', '500px'],
+    content: 'http://layer.layui.com/test/welcome.html',
+    end: function(){
+      layer.tips('Hi', '#about', {tips: 1})
+    }
+  });
+});
+
+//关于
+$('#about').on('click', function(){
+  layer.alert('layui 出品');
+});
+
+}();
+</script>
+</body>
+</html>
