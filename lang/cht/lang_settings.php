@@ -715,6 +715,7 @@ $lang_settings = array
     'row_sticky_second_level_background_color' => '二級置頂背景顏色',
     'text_sticky_second_level_background_color_note' => '二級置頂背景顏色，不設置則無背景色。',
     'row_download_support_passkey' => '支持 passkey 下載種子',
+    'row_download_authkey_passkey' => '汇报方式',
     'text_download_support_passkey_note' => '是否支持通過 passkey 下載種子（同時也需要種子 ID）。',
     'row_torrent_hr' => '設定種子 H&R',
     'text_torrent_hr_note' => '。將種子設置為參與 H&R 考察',

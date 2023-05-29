@@ -156,7 +156,7 @@ elseif($action == 'savesettings_torrent') 	// save account
         'expirefree','expiretwoup','expiretwoupfree','expiretwouphalfleech', 'expirenormal','hotdays','hotseeder','halfleechbecome','freebecome',
         'twoupbecome','twoupfreebecome', 'twouphalfleechbecome','normalbecome','uploaderdouble','deldeadtorrent', 'randomthirtypercentdown',
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
-        'download_support_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
+        'download_support_passkey','download_authkey_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
         'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded', 'approval_status_icon_enabled', 'approval_status_none_visible',
         'nfo_view_style_default', 'tax_factor', 'max_price', 'paid_torrent_enabled'
     );
@@ -412,7 +412,7 @@ elseif ($action == 'securitysettings')	//security settings
 		$loginSecret .= sprintf('<br/>%s: %s/login.php?secret=%s', $lang_settings['text_login_url_with_secret'], getSchemeAndHttpHost(), $SECURITY['login_secret']);
 		$loginSecret .= sprintf('<br/>%s: %s/%s/{passkey}', $lang_settings['text_login_url_with_passkey'], getSchemeAndHttpHost(), $SECURITY['login_secret']);
 	}
-	$loginSecret .= sprintf('<br/><label><input type="radio" name="login_secret_regenerate" value="no"%s />%s</label>', !empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_no']);
+	$loginSecret .= sprintf('<label><input type="radio" name="login_secret_regenerate" value="no"%s />%s</label>', !empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_no']);
 	$loginSecret .= sprintf('<br/><label><input type="radio" name="login_secret_regenerate" value="yes"%s />%s</label>', empty($SECURITY['login_secret']) ? ' checked' : '', $lang_settings['text_login_secret_regenerate_yes']);
 	tr($lang_settings['row_login_secret'], $loginSecret, 1);
 
@@ -728,6 +728,10 @@ elseif ($action == 'torrentsettings')
     tr($lang_settings['row_sticky_first_level_background_color'],"<input type='text' name=sticky_first_level_background_color style=\"width: 100px\" value={$TORRENT['sticky_first_level_background_color']}> ".$lang_settings['text_sticky_first_level_background_color_note'], 1);
     tr($lang_settings['row_sticky_second_level_background_color'],"<input type='text' name=sticky_second_level_background_color style=\"width: 100px\" value={$TORRENT['sticky_second_level_background_color']}> ".$lang_settings['text_sticky_second_level_background_color_note'], 1);
     yesorno($lang_settings['row_download_support_passkey'], 'download_support_passkey', $TORRENT["download_support_passkey"], $lang_settings['text_download_support_passkey_note']);
+	$DownloadsAuthkeyorPasskey .= sprintf('<label><input type="radio" name="download_authkey_passkey" value="yes"%s />%s</label>', empty($TORRENT["download_authkey_passkey"]) ? ' checked' : '', 'authkey');
+	$DownloadsAuthkeyorPasskey .= sprintf('<label><input type="radio" name="download_authkey_passkey" value="no"%s />%s</label>', !empty($TORRENT["download_authkey_passkey"]) ? ' checked' : '', 'passkey');
+	$DownloadsAuthkeyorPasskey .= sprintf('<br/><label>%s</label>',$lang_settings['text_download_authkey_passkey_note']);
+	tr($lang_settings['row_download_authkey_passkey'], $DownloadsAuthkeyorPasskey, 1);
     yesorno($lang_settings['row_approval_status_icon_enabled'], 'approval_status_icon_enabled', $TORRENT["approval_status_icon_enabled"], $lang_settings['text_approval_status_icon_enabled_note']);
     yesorno($lang_settings['row_approval_status_none_visible'], 'approval_status_none_visible', $TORRENT["approval_status_none_visible"], $lang_settings['text_approval_status_none_visible_note']);
 

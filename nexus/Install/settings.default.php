@@ -345,6 +345,7 @@ return array (
     'sticky_first_level_background_color' => '#89c9e6',
     'sticky_second_level_background_color' => '#aadbf3',
       'download_support_passkey' => 'yes',
+      'download_authkey_passkey' => 'yes',
       'claim_enabled' => 'no',
       'claim_torrent_ttl' => \App\Models\Claim::TORRENT_TTL,
       'claim_torrent_user_counts_up_limit' => \App\Models\Claim::USER_UP_LIMIT,
