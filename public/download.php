@@ -141,7 +141,7 @@ if (strlen($CURUSER['passkey']) != 32) {
 }
 $trackerReportAuthKey = $torrentRep->getTrackerReportAuthKey($id, $CURUSER['id'], true);
 $dict = \Rhilip\Bencode\Bencode::load($fn);
-if (\App\Models\Setting::get('download_authkey_passkey') != 'yes'){
+if (\App\Models\Setting::get('torrent.download_authkey_passkey') != 'yes'){
     $dict['announce'] = $ssl_torrent . $base_announce_url . "?authkey=$trackerReportAuthKey";
 }else{
     $dict['announce'] = $ssl_torrent . $base_announce_url . "?passkey=".$CURUSER['passkey'];
