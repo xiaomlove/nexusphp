@@ -830,7 +830,7 @@ function do_action($name, ...$args)
     return $hook->doAction(...func_get_args());
 }
 
-function isIPSeedBox($ip, $uid = null, $withoutCache = false): bool
+function isIPSeedBox($ip, $uid, $withoutCache = false): bool
 {
     $key = "nexus_is_ip_seed_box:ip:$ip:uid:$uid";
     $cacheData = \Nexus\Database\NexusDB::cache_get($key);
@@ -995,6 +995,8 @@ function clear_user_cache($uid, $passkey = '')
     \Nexus\Database\NexusDB::cache_del("user_{$uid}_roles");
     \Nexus\Database\NexusDB::cache_del("announce_user_passkey_$uid");//announce.php
     \Nexus\Database\NexusDB::cache_del(\App\Models\Setting::DIRECT_PERMISSION_CACHE_KEY_PREFIX . $uid);
+    \Nexus\Database\NexusDB::cache_del("user_role_ids:$uid");
+    \Nexus\Database\NexusDB::cache_del("direct_permissions:$uid");
     if ($passkey) {
         \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');//announce.php
     }

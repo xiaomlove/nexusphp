@@ -97,7 +97,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = NexusDB::cache_get("user_all_permissions:10001");
+        $authkey = "12|52|abc";
+        $subAuthkey = substr($authkey, 0, strrpos($authkey, "|"));
+        $r = $subAuthkey;
         dd($r);
     }
 

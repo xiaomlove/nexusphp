@@ -1,6 +1,47 @@
 <?php
 require '../include/bittorrent_announce.php';
 require ROOT_PATH . 'include/core.php';
+$redis = $Cache->getRedis();
+$torrentNotExistsKey = "torrent_not_exists";
+$authKeyInvalidKey = "authkey_invalid";
+$passkeyInvalidKey = "passkey_invalid";
+if (!empty($_GET['authkey'])) {
+    $authkey = $_GET['authkey'];
+    $parts = explode("|", $authkey);
+    if (count($parts) != 3) {
+        err("authkey format error");
+    }
+    $tid = $parts[0];
+    $uid = $parts[1];
+    $subAuthkey = sprintf("%s|%s", $tid, $uid);
+    if (!$redis->set($subAuthkey, TIMENOW, ['nx', 'ex' => 60])) {
+        $msg = "Request too frequent(a)";
+        do_log("[ANNOUNCE] $msg");
+        err($msg);
+    }
+    if ($redis->get("$authKeyInvalidKey:$authkey")) {
+        $msg = "Invalid authkey";
+        do_log("[ANNOUNCE] $msg");
+        err($msg);
+    }
+}
+if (!empty($_GET['passkey'])) {
+    $passkey = $_GET['passkey'];
+    if ($redis->get("$passkeyInvalidKey:$passkey")) {
+        $msg = "Passkey invalid";
+        do_log("[ANNOUNCE] $msg");
+        err($msg);
+    }
+}
+if (!empty($_GET['info_hash'])) {
+    $info_hash = $_GET['info_hash'];
+    if ($redis->get("$torrentNotExistsKey:$info_hash")) {
+        $msg = "Torrent not exists";
+        do_log("[ANNOUNCE] $msg");
+        err($msg);
+    }
+}
+
 //do_log(nexus_json_encode($_SERVER));
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"] ?? '';
@@ -11,6 +52,7 @@ if (!empty($_REQUEST['authkey'])) {
     try {
         $_GET['passkey'] = get_passkey_by_authkey($_REQUEST['authkey']);
     } catch (\Exception $exception) {
+        $redis->set("$authKeyInvalidKey:".$_REQUEST['authkey'], TIMENOW, ['ex' => 3600*24]);
         err($exception->getMessage());
     }
 }
@@ -87,7 +129,10 @@ if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 	do_log("[check passkey], currentUser: " . nexus_json_encode($az));
 	$Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 3600);
 }
-if (!$az) err("Invalid passkey! Re-download the .torrent from $BASEURL");
+if (!$az) {
+    $redis->set("$passkeyInvalidKey:$passkey", TIMENOW, ['ex' => 24*3600]);
+    err("Invalid passkey! Re-download the .torrent from $BASEURL");
+}
 $userid = intval($az['id'] ?? 0);
 unset($GLOBALS['CURUSER']);
 $CURUSER = $GLOBALS["CURUSER"] = $az;
@@ -138,7 +183,7 @@ if (!$torrent) {
     $end = strpos($queryString, "&", $start);
     $infoHashUrlEncode = substr($queryString, $start, $end - $start);
     do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString, infoHashUrlEncode: $infoHashUrlEncode");
-
+    $redis->set("$torrentNotExistsKey:$info_hash", TIMENOW, ['ex' => 24*3600]);
     err("torrent not registered with this tracker");
 }
 if ($torrent['banned'] == 'yes') {
@@ -224,7 +269,7 @@ foreach(['info_hash', 'passkey', 'peer_id'] as $lockField) {
 $lockString = http_build_query($lockParams);
 $lockKey = "isReAnnounce:" . md5($lockString);
 $log .= ", [CHECK_RE_ANNOUNCE], lockString: $lockString, lockKey: $lockKey";
-$redis = $Cache->getRedis();
+
 if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
     do_log("$log, [YES_RE_ANNOUNCE]");
     benc_resp($rep_dict);
