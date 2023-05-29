@@ -717,6 +717,7 @@ $lang_settings = array
     'row_download_support_passkey' => '支持 passkey 下载种子',
     'row_download_authkey_passkey' => '汇报方式',
     'text_download_support_passkey_note' => '是否支持通过 passkey 下载种子（同时也需要种子 ID）。',
+    'text_download_authkey_passkey_note' => 'Tracker服务器的URL汇报方式通过authkey或者passkey。',
     'row_torrent_hr' => '设定种子 H&R',
     'text_torrent_hr_note' => '。将种子设置为参与 H&R 考察',
     'row_cancel_hr' => '消除 H&R',
