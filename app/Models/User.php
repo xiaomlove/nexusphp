@@ -188,7 +188,7 @@ class User extends Authenticatable implements FilamentUser, HasName
      * @var array
      */
     protected $hidden = [
-        'secret', 'passhash',
+        'secret', 'passhash', 'passkey'
     ];
 
     /**
@@ -219,7 +219,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     ];
 
     public static $commonFields = [
-        'id', 'username', 'email', 'class', 'status', 'added', 'avatar',
+        'id', 'username', 'email', 'class', 'status', 'added', 'avatar', 'passkey',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
         'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos', 'donoruntil', 'donor',

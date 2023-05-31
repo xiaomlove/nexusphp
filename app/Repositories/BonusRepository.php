@@ -349,6 +349,7 @@ class BonusRepository extends BaseRepository
             ];
             BonusLogs::query()->insert($bonusLog);
             do_log("bonusLog: " . nexus_json_encode($bonusLog));
+            clear_user_cache($user->id, $user->passkey);
         });
     }
 

@@ -11,9 +11,9 @@ if (!empty($_GET['authkey'])) {
     if (count($parts) != 3) {
         err("authkey format error");
     }
-    $tid = $parts[0];
-    $uid = $parts[1];
-    $subAuthkey = sprintf("%s|%s", $tid, $uid);
+    $authKeyTid = $parts[0];
+    $authKeyUid = $parts[1];
+    $subAuthkey = sprintf("%s|%s", $authKeyTid, $authKeyUid);
     if (!$redis->set($subAuthkey, TIMENOW, ['nx', 'ex' => 60])) {
         $msg = "Request too frequent(a)";
         do_log("[ANNOUNCE] $msg");
@@ -186,6 +186,13 @@ if (!$torrent) {
     $redis->set("$torrentNotExistsKey:$info_hash", TIMENOW, ['ex' => 24*3600]);
     err("torrent not registered with this tracker");
 }
+$torrentid = $torrent["id"];
+if (isset($authKeyTid) && $authKeyTid != $torrentid) {
+    $redis->set("$authKeyInvalidKey:$authkey", TIMENOW, ['ex' => 3600*24]);
+    $msg = "Invalid authkey: $authkey 2";
+    do_log("[ANNOUNCE] $msg");
+    err($msg);
+}
 if ($torrent['banned'] == 'yes') {
     if (!user_can('seebanned', false, $az['id'])) {
         err("torrent banned");
@@ -196,6 +203,12 @@ if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW &&
         err("torrent review not approved");
     }
 }
+if (!$redis->set(sprintf('%s:%s', $userid, $info_hash), TIMENOW, ['nx', 'ex' => 60])) {
+    $msg = "Request too frequent(h)";
+    do_log("[ANNOUNCE] $msg");
+    err($msg);
+}
+
 if (
     $seeder == 'no'
     && isset($az['seedbonus'])
@@ -204,18 +217,35 @@ if (
     && $torrent['owner'] != $userid
     && get_setting("torrent.paid_torrent_enabled") == "yes"
 ) {
-    $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrent['id'])->exists();
+    $hasBuyCacheKey = sprintf("user_has_buy_torrent:%s:%s", $userid, $torrentid);
+    $hasBuyCacheTime = 86400*10;
+    $hasBuy = \Nexus\Database\NexusDB::remember($hasBuyCacheKey, $hasBuyCacheTime, function () use($userid, $torrentid) {
+        $exists = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrentid)->exists();
+        return intval($exists);
+    });
     if (!$hasBuy) {
-        if ($az['seedbonus'] < $torrent['price']) {
-            err("Not enough bonus  to buy this paid torrent");
+        $lock = new \Nexus\Database\NexusLock("buying_torrent:$userid", 10);
+        if (!$lock->get()) {
+            $msg = "buying torrent, wait!";
+            do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg", 'error');
+            err($msg);
         }
         $bonusRep = new \App\Repositories\BonusRepository();
-        $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
+        try {
+            $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
+            $lock->release();
+            $redis->set($hasBuyCacheKey, 1, $hasBuyCacheTime);
+        } catch (\Exception $exception) {
+            $lock->release();
+            $msg = $exception->getMessage();
+            do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
+            err($msg);
+        }
     }
 }
 
 // select peers info from peers table for this torrent
-$torrentid = $torrent["id"];
+
 $numpeers = $torrent["seeders"]+$torrent["leechers"];
 
 $promotionInfo = apply_filter('torrent_promotion', $torrent);
