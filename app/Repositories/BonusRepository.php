@@ -254,10 +254,14 @@ class BonusRepository extends BaseRepository
 
     public function consumeToBuyTorrent($uid, $torrentId, $channel = 'Web'): bool
     {
-        $user = User::query()->findOrFail($uid);
         $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
         $requireBonus = $torrent->price;
-        NexusDB::transaction(function () use ($user, $requireBonus, $torrent, $channel) {
+        NexusDB::transaction(function () use ($requireBonus, $torrent, $channel, $uid) {
+            $userQuery = User::query();
+            if ($requireBonus > 0) {
+                $userQuery = $userQuery->lockForUpdate();
+            }
+            $user = $userQuery->findOrFail($uid);
             $comment = nexus_trans('bonus.comment_buy_torrent', [
                 'bonus' => $requireBonus,
                 'torrent_id' => $torrent->id,

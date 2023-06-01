@@ -32,13 +32,11 @@ class Install
         'UID_STARTS',
     ];
 
-    protected array $requiredExtensions = ['ctype', 'curl', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', 'gmp', 'Zend OPcache'];
+    protected array $requiredExtensions = ['ctype', 'curl', 'fileinfo', 'json', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'mysqli', 'bcmath', 'redis', 'gd', 'gmp', 'Zend OPcache', 'pcntl', 'posix', 'sockets'];
     protected array $optionalExtensions = [
-        ['name' => 'pcntl', 'desc' => "If use Octane and 'Current' showing 0, make sure it's on php -m"],
-        ['name' => 'posix', 'desc' => "If use Octane and 'Current' showing 0, make sure it's on php -m"],
-        ['name' => 'sockets', 'desc' => "If use roadrunner for Octane, make sure 'current' shows 1"],
-        ['name' => 'swoole', 'desc' => "If use swoole for Octane, make sure 'current' shows 1"],
+//        ['name' => 'swoole', 'desc' => "If use swoole for Octane, make sure 'current' shows 1"],
     ];
+    protected array $requiredFunctions = ['symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec', 'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'];
 
     protected string $lockFile = 'install.lock';
 
@@ -165,9 +163,8 @@ class Install
             'result' => $this->yesOrNo(version_compare(PHP_VERSION, $this->minimumPhpVersion, '>=')),
         ];
 
-        $requiredFunctions = ['symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec'];
         $disabledFunctions = [];
-        foreach ($requiredFunctions as $fn) {
+        foreach ($this->requiredFunctions as $fn) {
             if (!function_exists($fn)) {
                 $disabledFunctions[] = $fn;
             }

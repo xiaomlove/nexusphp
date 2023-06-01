@@ -224,19 +224,11 @@ if (
         return intval($exists);
     });
     if (!$hasBuy) {
-        $lock = new \Nexus\Database\NexusLock("buying_torrent:$userid", 10);
-        if (!$lock->get()) {
-            $msg = "buying torrent, wait!";
-            do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg", 'error');
-            err($msg);
-        }
         $bonusRep = new \App\Repositories\BonusRepository();
         try {
             $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
-            $lock->release();
             $redis->set($hasBuyCacheKey, 1, $hasBuyCacheTime);
         } catch (\Exception $exception) {
-            $lock->release();
             $msg = $exception->getMessage();
             do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
             err($msg);
