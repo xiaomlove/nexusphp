@@ -85,7 +85,7 @@ if ($redis->get("$torrentNotExistsKey:$info_hash")) {
     do_log("[ANNOUNCE] $msg");
     err($msg);
 }
-$torrentReAnnounceKey = sprintf('reAnnounceCheckByPasskey:%s:%s', $userAuthenticateKey, $info_hash);
+$torrentReAnnounceKey = sprintf('reAnnounceCheckByInfoHash:%s:%s', $userAuthenticateKey, $info_hash);
 if (!$isReAnnounce && !$redis->set($torrentReAnnounceKey, TIMENOW, ['nx', 'ex' => 60])) {
     $msg = "Request too frequent(h)";
     do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $torrentReAnnounceKey, TIMENOW));
@@ -447,14 +447,22 @@ if (!isset($self))
             return intval($exists);
         });
         if (!$hasBuy) {
+            $lock = new \Nexus\Database\NexusLock("buying_torrent:$userid", 5);
+            if (!$lock->get()) {
+                $msg = "buying torrent, wait!";
+                do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg", 'error');
+                warn($msg);
+            }
             $bonusRep = new \App\Repositories\BonusRepository();
             try {
                 $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
                 $redis->set($hasBuyCacheKey, 1, $hasBuyCacheTime);
+                $lock->release();
             } catch (\Exception $exception) {
                 $msg = $exception->getMessage();
                 do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
-                err($msg);
+                warn($msg);
+                $lock->release();
             }
         }
     }
