@@ -5,7 +5,6 @@ require ROOT_PATH . 'include/core.php';
 //1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
 $agent = $_SERVER["HTTP_USER_AGENT"] ?? '';
 block_browser();
-
 //2. GET ANNOUNCE VARIABLES
 // get string type passkey, info_hash, peer_id, event, ip from client
 foreach (array("passkey","info_hash","peer_id","event") as $x)
@@ -30,6 +29,7 @@ $torrentNotExistsKey = "torrent_not_exists";
 $authKeyInvalidKey = "authkey_invalid";
 $passkeyInvalidKey = "passkey_invalid";
 $isReAnnounce = false;
+$userAuthenticateKey = "";
 if (!empty($_GET['authkey'])) {
     $authkey = $_GET['authkey'];
     $parts = explode("|", $authkey);
@@ -37,7 +37,7 @@ if (!empty($_GET['authkey'])) {
         err("authkey format error");
     }
     $authKeyTid = $parts[0];
-    $authKeyUid = $parts[1];
+    $authKeyUid = $userAuthenticateKey = $parts[1];
     $subAuthkey = sprintf("%s|%s", $authKeyTid, $authKeyUid);
     //check ReAnnounce
     $lockParams = ['torrent_user' => $subAuthkey];
@@ -49,10 +49,11 @@ if (!empty($_GET['authkey'])) {
     if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 20])) {
         $isReAnnounce = true;
     }
-    if (!$isReAnnounce && !$redis->set($subAuthkey, TIMENOW, ['nx', 'ex' => 60])) {
+    $reAnnounceCheckByAuthKey = "reAnnounceCheckByAuthKey:$subAuthkey";
+    if (!$isReAnnounce && !$redis->set($reAnnounceCheckByAuthKey, TIMENOW, ['nx', 'ex' => 60])) {
         $msg = "Request too frequent(a)";
-        do_log("[ANNOUNCE] $msg");
-        err($msg);
+        do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $reAnnounceCheckByAuthKey, TIMENOW));
+        warn($msg);
     }
     if ($redis->get("$authKeyInvalidKey:$authkey")) {
         $msg = "Invalid authkey";
@@ -60,7 +61,7 @@ if (!empty($_GET['authkey'])) {
         err($msg);
     }
 } elseif (!empty($_GET['passkey'])) {
-    $passkey = $_GET['passkey'];
+    $passkey = $userAuthenticateKey = $_GET['passkey'];
     if ($redis->get("$passkeyInvalidKey:$passkey")) {
         $msg = "Passkey invalid";
         do_log("[ANNOUNCE] $msg");
@@ -84,10 +85,11 @@ if ($redis->get("$torrentNotExistsKey:$info_hash")) {
     do_log("[ANNOUNCE] $msg");
     err($msg);
 }
-if (!$isReAnnounce && !$redis->set(sprintf('%s:%s', $userid, $info_hash), TIMENOW, ['nx', 'ex' => 60])) {
+$torrentReAnnounceKey = sprintf('reAnnounceCheckByPasskey:%s:%s', $userAuthenticateKey, $info_hash);
+if (!$isReAnnounce && !$redis->set($torrentReAnnounceKey, TIMENOW, ['nx', 'ex' => 60])) {
     $msg = "Request too frequent(h)";
-    do_log("[ANNOUNCE] $msg");
-    err($msg);
+    do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $torrentReAnnounceKey, TIMENOW));
+    warn($msg);
 }
 
 

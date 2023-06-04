@@ -66,6 +66,12 @@ function err($msg, $userid = 0, $torrentid = 0)
     benc_resp(['failure reason' => $msg]);
 	exit();
 }
+
+function warn($msg)
+{
+    benc_resp(['warning message' => $msg]);
+    exit();
+}
 function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $seeders=0, $leechers=0){
 	global $cheaterdet_security,$nodetect_security, $CURUSER;
 
