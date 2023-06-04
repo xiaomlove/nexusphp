@@ -461,8 +461,8 @@ if (!isset($self))
             } catch (\Exception $exception) {
                 $msg = $exception->getMessage();
                 do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
-                warn($msg);
                 $lock->release();
+                warn($msg);
             }
         }
     }
