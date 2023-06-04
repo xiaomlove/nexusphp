@@ -1,10 +1,35 @@
 <?php
 require '../include/bittorrent_announce.php';
 require ROOT_PATH . 'include/core.php';
+//do_log(nexus_json_encode($_SERVER));
+//1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
+$agent = $_SERVER["HTTP_USER_AGENT"] ?? '';
+block_browser();
+
+//2. GET ANNOUNCE VARIABLES
+// get string type passkey, info_hash, peer_id, event, ip from client
+foreach (array("passkey","info_hash","peer_id","event") as $x)
+{
+    if(isset($_GET[$x]))
+        $GLOBALS[$x] = $_GET[$x];
+}
+// get integer type port, downloaded, uploaded, left from client
+foreach (array("port","downloaded","uploaded","left","compact","no_peer_id") as $x)
+{
+    $GLOBALS[$x] = intval($_GET[$x] ?? 0);
+}
+//check info_hash, peer_id and passkey
+foreach (array("info_hash","peer_id","port","downloaded","uploaded","left") as $x)
+    if (!isset($x)) err("Missing key: $x");
+foreach (array("info_hash","peer_id") as $x)
+    if (strlen($GLOBALS[$x]) != 20) err("Invalid $x (" . strlen($GLOBALS[$x]) . " - " . rawurlencode($GLOBALS[$x]) . ")");
+if (isset($passkey) && strlen($passkey) != 32) err("Invalid passkey (" . strlen($passkey) . " - $passkey)");
+
 $redis = $Cache->getRedis();
 $torrentNotExistsKey = "torrent_not_exists";
 $authKeyInvalidKey = "authkey_invalid";
 $passkeyInvalidKey = "passkey_invalid";
+$isReAnnounce = false;
 if (!empty($_GET['authkey'])) {
     $authkey = $_GET['authkey'];
     $parts = explode("|", $authkey);
@@ -14,7 +39,17 @@ if (!empty($_GET['authkey'])) {
     $authKeyTid = $parts[0];
     $authKeyUid = $parts[1];
     $subAuthkey = sprintf("%s|%s", $authKeyTid, $authKeyUid);
-    if (!$redis->set($subAuthkey, TIMENOW, ['nx', 'ex' => 60])) {
+    //check ReAnnounce
+    $lockParams = ['torrent_user' => $subAuthkey];
+    foreach(['info_hash', 'peer_id'] as $lockField) {
+        $lockParams[$lockField] = $_GET[$lockField];
+    }
+    $lockString = http_build_query($lockParams);
+    $lockKey = "isReAnnounce:" . md5($lockString);
+    if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 20])) {
+        $isReAnnounce = true;
+    }
+    if (!$isReAnnounce && !$redis->set($subAuthkey, TIMENOW, ['nx', 'ex' => 60])) {
         $msg = "Request too frequent(a)";
         do_log("[ANNOUNCE] $msg");
         err($msg);
@@ -24,57 +59,50 @@ if (!empty($_GET['authkey'])) {
         do_log("[ANNOUNCE] $msg");
         err($msg);
     }
-}
-if (!empty($_GET['passkey'])) {
+} elseif (!empty($_GET['passkey'])) {
     $passkey = $_GET['passkey'];
     if ($redis->get("$passkeyInvalidKey:$passkey")) {
         $msg = "Passkey invalid";
         do_log("[ANNOUNCE] $msg");
         err($msg);
     }
-}
-if (!empty($_GET['info_hash'])) {
-    $info_hash = $_GET['info_hash'];
-    if ($redis->get("$torrentNotExistsKey:$info_hash")) {
-        $msg = "Torrent not exists";
-        do_log("[ANNOUNCE] $msg");
-        err($msg);
+    $lockParams = [];
+    foreach(['info_hash', 'passkey', 'peer_id'] as $lockField) {
+        $lockParams[$lockField] = $_GET[$lockField];
     }
+    $lockString = http_build_query($lockParams);
+    $lockKey = "isReAnnounce:" . md5($lockString);
+    if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 20])) {
+        $isReAnnounce = true;
+    }
+} else {
+    err("Require passkey or authkey");
 }
 
-//do_log(nexus_json_encode($_SERVER));
-//1. BLOCK ACCESS WITH WEB BROWSERS AND CHEATS!
-$agent = $_SERVER["HTTP_USER_AGENT"] ?? '';
-block_browser();
+if ($redis->get("$torrentNotExistsKey:$info_hash")) {
+    $msg = "Torrent not exists";
+    do_log("[ANNOUNCE] $msg");
+    err($msg);
+}
+if (!$isReAnnounce && !$redis->set(sprintf('%s:%s', $userid, $info_hash), TIMENOW, ['nx', 'ex' => 60])) {
+    $msg = "Request too frequent(h)";
+    do_log("[ANNOUNCE] $msg");
+    err($msg);
+}
+
+
 dbconn_announce();
 //check authkey
 if (!empty($_REQUEST['authkey'])) {
     try {
-        $_GET['passkey'] = get_passkey_by_authkey($_REQUEST['authkey']);
+        $GLOBALS['passkey'] = $_GET['passkey'] = get_passkey_by_authkey($_REQUEST['authkey']);
     } catch (\Exception $exception) {
         $redis->set("$authKeyInvalidKey:".$_REQUEST['authkey'], TIMENOW, ['ex' => 3600*24]);
         err($exception->getMessage());
     }
 }
 
-//2. GET ANNOUNCE VARIABLES
-// get string type passkey, info_hash, peer_id, event, ip from client
-foreach (array("passkey","info_hash","peer_id","event") as $x)
-{
-	if(isset($_GET[$x]))
-	$GLOBALS[$x] = $_GET[$x];
-}
-// get integer type port, downloaded, uploaded, left from client
-foreach (array("port","downloaded","uploaded","left","compact","no_peer_id") as $x)
-{
-	$GLOBALS[$x] = intval($_GET[$x] ?? 0);
-}
-//check info_hash, peer_id and passkey
-foreach (array("passkey","info_hash","peer_id","port","downloaded","uploaded","left") as $x)
-	if (!isset($x)) err("Missing key: $x");
-foreach (array("info_hash","peer_id") as $x)
-	if (strlen($GLOBALS[$x]) != 20) err("Invalid $x (" . strlen($GLOBALS[$x]) . " - " . rawurlencode($GLOBALS[$x]) . ")");
-if (isset($passkey) && strlen($passkey) != 32) err("Invalid passkey (" . strlen($passkey) . " - $passkey)");
+
 
 //4. GET IP AND CHECK PORT
 $ip = getip();	// avoid to get the spoof ip from some agent
@@ -203,44 +231,11 @@ if ($torrent['approval_status'] != \App\Models\Torrent::APPROVAL_STATUS_ALLOW &&
         err("torrent review not approved");
     }
 }
-if (!$redis->set(sprintf('%s:%s', $userid, $info_hash), TIMENOW, ['nx', 'ex' => 60])) {
-    $msg = "Request too frequent(h)";
-    do_log("[ANNOUNCE] $msg");
-    err($msg);
-}
-
-if (
-    $seeder == 'no'
-    && isset($az['seedbonus'])
-    && isset($torrent['price'])
-    && $torrent['price'] > 0
-    && $torrent['owner'] != $userid
-    && get_setting("torrent.paid_torrent_enabled") == "yes"
-) {
-    $hasBuyCacheKey = sprintf("user_has_buy_torrent:%s:%s", $userid, $torrentid);
-    $hasBuyCacheTime = 86400*10;
-    $hasBuy = \Nexus\Database\NexusDB::remember($hasBuyCacheKey, $hasBuyCacheTime, function () use($userid, $torrentid) {
-        $exists = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrentid)->exists();
-        return intval($exists);
-    });
-    if (!$hasBuy) {
-        $bonusRep = new \App\Repositories\BonusRepository();
-        try {
-            $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
-            $redis->set($hasBuyCacheKey, 1, $hasBuyCacheTime);
-        } catch (\Exception $exception) {
-            $msg = $exception->getMessage();
-            do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
-            err($msg);
-        }
-    }
-}
 
 // select peers info from peers table for this torrent
 
 $numpeers = $torrent["seeders"]+$torrent["leechers"];
 
-$promotionInfo = apply_filter('torrent_promotion', $torrent);
 $log .= ", torrent: $torrentid";
 if ($seeder == 'yes'){ //Don't report seeds to other seeders
 	$only_leech_query = " AND seeder = 'no' ";
@@ -283,16 +278,7 @@ if ($compact == 1) {
     $rep_dict['peers6'] = '';   // If peer use IPv6 address , we should add packed string in `peers6`
 }
 
-//check ReAnnounce
-$lockParams = [];
-foreach(['info_hash', 'passkey', 'peer_id'] as $lockField) {
-    $lockParams[$lockField] = $_GET[$lockField];
-}
-$lockString = http_build_query($lockParams);
-$lockKey = "isReAnnounce:" . md5($lockString);
-$log .= ", [CHECK_RE_ANNOUNCE], lockString: $lockString, lockKey: $lockKey";
-
-if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 5])) {
+if ($isReAnnounce) {
     do_log("$log, [YES_RE_ANNOUNCE]");
     benc_resp($rep_dict);
     exit();
@@ -444,6 +430,32 @@ if (!isset($self))
 			}
 		}
 	}
+    if (
+        $seeder == 'no'
+        && isset($az['seedbonus'])
+        && isset($torrent['price'])
+        && $torrent['price'] > 0
+        && $torrent['owner'] != $userid
+        && get_setting("torrent.paid_torrent_enabled") == "yes"
+    ) {
+        $hasBuyCacheKey = sprintf("user_has_buy_torrent:%s:%s", $userid, $torrentid);
+        $hasBuyCacheTime = 86400*10;
+        $hasBuy = \Nexus\Database\NexusDB::remember($hasBuyCacheKey, $hasBuyCacheTime, function () use($userid, $torrentid) {
+            $exists = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrentid)->exists();
+            return intval($exists);
+        });
+        if (!$hasBuy) {
+            $bonusRep = new \App\Repositories\BonusRepository();
+            try {
+                $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
+                $redis->set($hasBuyCacheKey, 1, $hasBuyCacheTime);
+            } catch (\Exception $exception) {
+                $msg = $exception->getMessage();
+                do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
+                err($msg);
+            }
+        }
+    }
 }
 else // continue an existing session
 {
@@ -474,7 +486,7 @@ else // continue an existing session
 
 	if (!$is_cheater && ($trueupthis > 0 || $truedownthis > 0))
 	{
-        $dataTraffic = getDataTraffic($torrent, $_GET, $az, $self, $snatchInfo, $promotionInfo);
+        $dataTraffic = getDataTraffic($torrent, $_GET, $az, $self, $snatchInfo, apply_filter('torrent_promotion', $torrent));
         $USERUPDATESET[] = "uploaded = uploaded + " . $dataTraffic['uploaded_increment_for_user'];
         $USERUPDATESET[] = "downloaded = downloaded + " . $dataTraffic['downloaded_increment_for_user'];
 
