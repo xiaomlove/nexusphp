@@ -97,9 +97,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $authkey = "12|52|abc";
-        $subAuthkey = substr($authkey, 0, strrpos($authkey, "|"));
-        $r = $subAuthkey;
+        $r = TorrentUpdated::dispatch(5);
         dd($r);
     }
 

@@ -61,17 +61,35 @@ function benc_resp_raw($x) {
 	else
 		echo $x;
 }
-function err($msg, $userid = 0, $torrentid = 0)
+function err($msg)
 {
-    benc_resp(['failure reason' => $msg]);
+    if (isset($GLOBALS['rep_dict'])) {
+        $d = $GLOBALS['rep_dict'];
+    } else {
+        $torrent = $GLOBALS['torrent'] ?? [];
+        $d = [
+            "interval" => (int)\App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND,
+            "min interval" => (int)\App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND,
+            "complete" => intval($torrent['seeders'] ?? 0),
+            "incomplete" => intval($torrent['leechers'] ?? 0),
+            "peers" => [],
+        ];
+        if (!empty($_REQUEST['compact'])) {
+            $d['peers'] = '';  // Change `peers` from array to string
+            $d['peers6'] = '';   // If peer use IPv6 address , we should add packed string in `peers6`
+        }
+    }
+    if (!empty($_REQUEST['event'])) {
+        //keep fail response, next request keep event param
+        $d['failure reason'] = $msg;
+    } else {
+        //avoid retry frequent
+        $d['warning message'] = $msg;
+    }
+    benc_resp($d);
 	exit();
 }
 
-function warn($msg)
-{
-    benc_resp(['warning message' => $msg]);
-    exit();
-}
 function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $seeders=0, $leechers=0){
 	global $cheaterdet_security,$nodetect_security, $CURUSER;
 

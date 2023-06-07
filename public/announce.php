@@ -53,7 +53,7 @@ if (!empty($_GET['authkey'])) {
     if (!$isReAnnounce && !$redis->set($reAnnounceCheckByAuthKey, TIMENOW, ['nx', 'ex' => 60])) {
         $msg = "Request too frequent(a)";
         do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $reAnnounceCheckByAuthKey, TIMENOW));
-        warn($msg);
+        err($msg);
     }
     if ($redis->get("$authKeyInvalidKey:$authkey")) {
         $msg = "Invalid authkey";
@@ -89,7 +89,7 @@ $torrentReAnnounceKey = sprintf('reAnnounceCheckByInfoHash:%s:%s', $userAuthenti
 if (!$isReAnnounce && !$redis->set($torrentReAnnounceKey, TIMENOW, ['nx', 'ex' => 60])) {
     $msg = "Request too frequent(h)";
     do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $torrentReAnnounceKey, TIMENOW));
-    warn($msg);
+    err($msg);
 }
 
 
@@ -216,6 +216,7 @@ if (!$torrent) {
     $redis->set("$torrentNotExistsKey:$info_hash", TIMENOW, ['ex' => 24*3600]);
     err("torrent not registered with this tracker");
 }
+$GLOBALS['torrent'] = $torrent;
 $torrentid = $torrent["id"];
 if (isset($authKeyTid) && $authKeyTid != $torrentid) {
     $redis->set("$authKeyInvalidKey:$authkey", TIMENOW, ['ex' => 3600*24]);
@@ -250,8 +251,8 @@ else{
 if ($newnumpeers > $rsize)
 	$limit = " ORDER BY RAND() LIMIT $rsize";
 else $limit = "";
-$announce_wait = \App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND;
 
+$announce_wait = \App\Repositories\TrackerRepository::MIN_ANNOUNCE_WAIT_SECOND;
 $fields = "id, seeder, peer_id, ip, ipv4, ipv6, port, uploaded, downloaded, userid, last_action, UNIX_TIMESTAMP(last_action) as last_action_unix_timestamp, prev_action, (".TIMENOW." - UNIX_TIMESTAMP(last_action)) AS announcetime, UNIX_TIMESTAMP(prev_action) AS prevts";
 //$peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = ".$torrentid." AND connectable = 'yes' ".$only_leech_query.$limit;
 /**
@@ -279,7 +280,7 @@ if ($compact == 1) {
     $rep_dict['peers'] = '';  // Change `peers` from array to string
     $rep_dict['peers6'] = '';   // If peer use IPv6 address , we should add packed string in `peers6`
 }
-
+$GLOBALS['rep_dict'] = $rep_dict;
 if ($isReAnnounce) {
     do_log("$log, [YES_RE_ANNOUNCE]");
     benc_resp($rep_dict);
@@ -440,29 +441,41 @@ if (!isset($self))
         && $torrent['owner'] != $userid
         && get_setting("torrent.paid_torrent_enabled") == "yes"
     ) {
-        $hasBuyCacheKey = sprintf("user_has_buy_torrent:%s:%s", $userid, $torrentid);
-        $hasBuyCacheTime = 86400*10;
-        $hasBuy = \Nexus\Database\NexusDB::remember($hasBuyCacheKey, $hasBuyCacheTime, function () use($userid, $torrentid) {
-            $exists = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrentid)->exists();
-            return intval($exists);
-        });
+        $hasBuyCacheKey = \App\Repositories\TorrentRepository::BOUGHT_USER_CACHE_KEY_PREFIX . $torrentid;
+        $hasBuy = $redis->hGet($hasBuyCacheKey, $userid);
+        if ($hasBuy === false) {
+            //no cache
+            $lockName = "load_torrent_bought_user:$torrentid";
+            $loadBoughtLock = new \Nexus\Database\NexusLock($lockName, 300);
+            if ($loadBoughtLock->get()) {
+                //get lock, do load
+                executeCommand("torrent:load_bought_user $torrentid", "string", true, false);
+            } else {
+                do_log("can not get loadBoughtLock: $lockName", 'debug');
+            }
+            //simple cache the hasBuy result
+            $hasBuy = \Nexus\Database\NexusDB::remember(sprintf("user_has_buy_torrent:%s:%s", $userid, $torrentid), 86400*10, function () use($userid, $torrentid) {
+                $exists = \App\Models\TorrentBuyLog::query()->where('uid', $userid)->where('torrent_id', $torrentid)->exists();
+                return intval($exists);
+            });
+        }
         if (!$hasBuy) {
             $lock = new \Nexus\Database\NexusLock("buying_torrent:$userid", 5);
             if (!$lock->get()) {
                 $msg = "buying torrent, wait!";
                 do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg", 'error');
-                warn($msg);
+                err($msg);
             }
             $bonusRep = new \App\Repositories\BonusRepository();
             try {
                 $bonusRep->consumeToBuyTorrent($az['id'], $torrent['id'], 'Web');
-                $redis->set($hasBuyCacheKey, 1, $hasBuyCacheTime);
+                $redis->hSet($hasBuyCacheKey, $userid, 1);
                 $lock->release();
             } catch (\Exception $exception) {
                 $msg = $exception->getMessage();
                 do_log("[ANNOUNCE] user: $userid, torrent: $torrentid, $msg " . $exception->getTraceAsString(), 'error');
                 $lock->release();
-                warn($msg);
+                err($msg);
             }
         }
     }

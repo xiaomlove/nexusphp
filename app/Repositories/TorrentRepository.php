@@ -21,6 +21,7 @@ use App\Models\StaffMessage;
 use App\Models\Standard;
 use App\Models\Team;
 use App\Models\Torrent;
+use App\Models\TorrentBuyLog;
 use App\Models\TorrentOperationLog;
 use App\Models\TorrentSecret;
 use App\Models\TorrentTag;
@@ -36,6 +37,8 @@ use Nexus\Database\NexusDB;
 
 class TorrentRepository extends BaseRepository
 {
+    const BOUGHT_USER_CACHE_KEY_PREFIX = "torrent_purchasers:";
+
     /**
      *  fetch torrent list
      *
@@ -713,6 +716,43 @@ HTML;
             return '';
         }
         return sprintf('<span title="%s" style="vertical-align: %s"><svg t="1676058062789" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3406" width="%s" height="%s"><path d="M554.666667 810.666667v42.666666h-85.333334v-42.666666c-93.866667 0-170.666667-76.8-170.666666-170.666667h85.333333c0 46.933333 38.4 85.333333 85.333333 85.333333v-170.666666c-93.866667 0-170.666667-76.8-170.666666-170.666667s76.8-170.666667 170.666666-170.666667V170.666667h85.333334v42.666666c93.866667 0 170.666667 76.8 170.666666 170.666667h-85.333333c0-46.933333-38.4-85.333333-85.333333-85.333333v170.666666h17.066666c29.866667 0 68.266667 17.066667 98.133334 42.666667 34.133333 29.866667 59.733333 76.8 59.733333 128-4.266667 93.866667-81.066667 170.666667-174.933333 170.666667z m0-85.333334c46.933333 0 85.333333-38.4 85.333333-85.333333s-38.4-85.333333-85.333333-85.333333v170.666666zM469.333333 298.666667c-46.933333 0-85.333333 38.4-85.333333 85.333333s38.4 85.333333 85.333333 85.333333V298.666667z" fill="#CD7F32" p-id="3407"></path></svg></span>', nexus_trans('torrent.paid_torrent'), $verticalAlign, $size, $size);
+    }
+
+    public function loadBoughtUser($torrentId): int
+    {
+        $size = 500;
+        $page = 1;
+        $key = $this->getBoughtUserCacheKey($torrentId);
+        $redis = NexusDB::redis();
+        $total = 0;
+        while (true) {
+            $list = TorrentBuyLog::query()->where("torrent_id", $torrentId)->forPage($page, $size)->get(['torrent_id', 'uid']);
+            if ($list->isEmpty()) {
+                break;
+            }
+            foreach ($list as $item) {
+                $redis->hSet($key, $item->uid, 1);
+                $total += 1;
+                do_log(sprintf("hset %s %s 1", $key, $item->uid));
+            }
+            $page++;
+        }
+        do_log("torrent_purchasers:$torrentId LOAD DONE, total: $total");
+        if ($total > 0) {
+            $redis->expire($key, 86400*30);
+        }
+        return $total;
+    }
+
+    public function addBoughtUserToCache($torrentId, $uid)
+    {
+        NexusDB::redis()->hSet($this->getBoughtUserCacheKey($torrentId), $uid, 1);
+    }
+
+
+    private function getBoughtUserCacheKey($torrentId): string
+    {
+        return  self::BOUGHT_USER_CACHE_KEY_PREFIX . $torrentId;
     }
 
 }
