@@ -341,7 +341,7 @@ class ToolRepository extends BaseRepository
 
         // Create a message
         $message = (new Email())
-            ->from(new Address($smtp['accountname'], Setting::get('basic.SITENAME')))
+            ->from(new Address(Setting::get('main.SITEEMAIL'), Setting::get('basic.SITENAME')))
             ->to($to)
             ->subject($subject)
             ->html($body)
