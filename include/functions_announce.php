@@ -61,8 +61,37 @@ function benc_resp_raw($x) {
 	else
 		echo $x;
 }
+
+/**
+ * client will retry, keep the event param
+ * @param $msg
+ * @return void
+ */
 function err($msg)
 {
+    benc_resp(['failure reason' => $msg]);
+    exit();
+}
+
+/**
+ * client will not retry, think about success with warning message
+ * @param $msg
+ * @param int $interval
+ * @return void|null
+ */
+function warn($msg, int $interval = 7200)
+{
+    $d = get_resp_dict_from_global();
+    $d['warning message'] = $msg;
+    if ($interval > 0) {
+        $d['interval'] = intval($interval);
+        $d['min interval'] = intval($interval);
+    }
+    benc_resp($d);
+    exit();
+}
+
+function get_resp_dict_from_global() {
     if (isset($GLOBALS['rep_dict'])) {
         $d = $GLOBALS['rep_dict'];
     } else {
@@ -79,15 +108,7 @@ function err($msg)
             $d['peers6'] = '';   // If peer use IPv6 address , we should add packed string in `peers6`
         }
     }
-    if (!empty($_REQUEST['event'])) {
-        //keep fail response, next request keep event param
-        $d['failure reason'] = $msg;
-    } else {
-        //avoid retry frequent
-        $d['warning message'] = $msg;
-    }
-    benc_resp($d);
-	exit();
+    return $d;
 }
 
 function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $seeders=0, $leechers=0){

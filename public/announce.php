@@ -19,10 +19,10 @@ foreach (array("port","downloaded","uploaded","left","compact","no_peer_id") as 
 }
 //check info_hash, peer_id and passkey
 foreach (array("info_hash","peer_id","port","downloaded","uploaded","left") as $x)
-    if (!isset($x)) err("Missing key: $x");
+    if (!isset($x)) warn("Missing key: $x");
 foreach (array("info_hash","peer_id") as $x)
-    if (strlen($GLOBALS[$x]) != 20) err("Invalid $x (" . strlen($GLOBALS[$x]) . " - " . rawurlencode($GLOBALS[$x]) . ")");
-if (isset($passkey) && strlen($passkey) != 32) err("Invalid passkey (" . strlen($passkey) . " - $passkey)");
+    if (strlen($GLOBALS[$x]) != 20) warn("Invalid $x (" . strlen($GLOBALS[$x]) . " - " . rawurlencode($GLOBALS[$x]) . ")");
+if (isset($passkey) && strlen($passkey) != 32) warn("Invalid passkey (" . strlen($passkey) . " - $passkey)");
 
 $redis = $Cache->getRedis();
 $torrentNotExistsKey = "torrent_not_exists";
@@ -34,16 +34,17 @@ if (!empty($_GET['authkey'])) {
     $authkey = $_GET['authkey'];
     $parts = explode("|", $authkey);
     if (count($parts) != 3) {
-        err("authkey format error");
+        warn("authkey format error");
     }
     $authKeyTid = $parts[0];
     $authKeyUid = $userAuthenticateKey = $parts[1];
     $subAuthkey = sprintf("%s|%s", $authKeyTid, $authKeyUid);
     //check ReAnnounce
-    $lockParams = ['torrent_user' => $subAuthkey];
-    foreach(['info_hash', 'peer_id'] as $lockField) {
-        $lockParams[$lockField] = $_GET[$lockField];
-    }
+    $lockParams = [
+        'user' => $authKeyUid,
+        'info_hash' => $info_hash
+    ];
+
     $lockString = http_build_query($lockParams);
     $lockKey = "isReAnnounce:" . md5($lockString);
     if (!$redis->set($lockKey, TIMENOW, ['nx', 'ex' => 20])) {
@@ -53,22 +54,22 @@ if (!empty($_GET['authkey'])) {
     if (!$isReAnnounce && !$redis->set($reAnnounceCheckByAuthKey, TIMENOW, ['nx', 'ex' => 60])) {
         $msg = "Request too frequent(a)";
         do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $reAnnounceCheckByAuthKey, TIMENOW));
-        err($msg);
+        warn($msg, 300);
     }
     if ($redis->get("$authKeyInvalidKey:$authkey")) {
         $msg = "Invalid authkey";
         do_log("[ANNOUNCE] $msg");
-        err($msg);
+        warn($msg);
     }
 } elseif (!empty($_GET['passkey'])) {
     $passkey = $userAuthenticateKey = $_GET['passkey'];
     if ($redis->get("$passkeyInvalidKey:$passkey")) {
         $msg = "Passkey invalid";
         do_log("[ANNOUNCE] $msg");
-        err($msg);
+        warn($msg);
     }
     $lockParams = [];
-    foreach(['info_hash', 'passkey', 'peer_id'] as $lockField) {
+    foreach(['info_hash', 'passkey'] as $lockField) {
         $lockParams[$lockField] = $_GET[$lockField];
     }
     $lockString = http_build_query($lockParams);
@@ -77,19 +78,19 @@ if (!empty($_GET['authkey'])) {
         $isReAnnounce = true;
     }
 } else {
-    err("Require passkey or authkey");
+    warn("Require passkey or authkey");
 }
 
 if ($redis->get("$torrentNotExistsKey:$info_hash")) {
     $msg = "Torrent not exists";
     do_log("[ANNOUNCE] $msg");
-    err($msg);
+    warn($msg);
 }
 $torrentReAnnounceKey = sprintf('reAnnounceCheckByInfoHash:%s:%s', $userAuthenticateKey, $info_hash);
 if (!$isReAnnounce && !$redis->set($torrentReAnnounceKey, TIMENOW, ['nx', 'ex' => 60])) {
     $msg = "Request too frequent(h)";
     do_log(sprintf("[ANNOUNCE] %s key: %s already exists, value: %s", $msg, $torrentReAnnounceKey, TIMENOW));
-    err($msg);
+    warn($msg, 300);
 }
 
 
@@ -100,7 +101,7 @@ if (!empty($_REQUEST['authkey'])) {
         $GLOBALS['passkey'] = $_GET['passkey'] = get_passkey_by_authkey($_REQUEST['authkey']);
     } catch (\Exception $exception) {
         $redis->set("$authKeyInvalidKey:".$_REQUEST['authkey'], TIMENOW, ['ex' => 3600*24]);
-        err($exception->getMessage());
+        warn($exception->getMessage());
     }
 }
 
@@ -110,7 +111,7 @@ if (!empty($_REQUEST['authkey'])) {
 $ip = getip();	// avoid to get the spoof ip from some agent
 $_GET['ip'] = $ip;
 if (!$port || $port > 0xffff)
-	err("invalid port");
+	warn("invalid port");
 if (!ip2long($ip)) //Disable compact announce with IPv6
 	$compact = 0;
 
@@ -135,7 +136,7 @@ if ($ipv6) {
 
 // check port and connectable
 if (portblacklisted($port))
-	err("Port $port is blacklisted.");
+	warn("Port $port is blacklisted.");
 
 //5. GET PEER LIST
 // Number of peers that the client would like to receive from the tracker.This value is permitted to be zero. If omitted, typically defaults to 50 peers.
@@ -161,7 +162,7 @@ if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
 }
 if (!$az) {
     $redis->set("$passkeyInvalidKey:$passkey", TIMENOW, ['ex' => 24*3600]);
-    err("Invalid passkey! Re-download the .torrent from $BASEURL");
+    warn("Invalid passkey! Re-download the .torrent from $BASEURL");
 }
 $userid = intval($az['id'] ?? 0);
 unset($GLOBALS['CURUSER']);
@@ -214,7 +215,7 @@ if (!$torrent) {
     $infoHashUrlEncode = substr($queryString, $start, $end - $start);
     do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString, infoHashUrlEncode: $infoHashUrlEncode");
     $redis->set("$torrentNotExistsKey:$info_hash", TIMENOW, ['ex' => 24*3600]);
-    err("torrent not registered with this tracker");
+    warn("torrent not registered with this tracker");
 }
 $GLOBALS['torrent'] = $torrent;
 $torrentid = $torrent["id"];
@@ -222,7 +223,7 @@ if (isset($authKeyTid) && $authKeyTid != $torrentid) {
     $redis->set("$authKeyInvalidKey:$authkey", TIMENOW, ['ex' => 3600*24]);
     $msg = "Invalid authkey: $authkey 2";
     do_log("[ANNOUNCE] $msg");
-    err($msg);
+    warn($msg);
 }
 if ($torrent['banned'] == 'yes') {
     if (!user_can('seebanned', false, $az['id'])) {
@@ -367,7 +368,7 @@ if(isset($self) && empty($_GET['event']) && $self['prevts'] > (TIMENOW - $announ
         'timezone: %s, self prevts(%s -> %s, %s) > now(%s, %s) - announce_wait(%s)',
         ini_get('date.timezone'), $self['prev_action'], $self['prevts'], date('Y-m-d H:i:s', $self['prevts']), TIMENOW, date('Y-m-d H:i:s', TIMENOW), $announce_wait
     ));
-    err('There is a minimum announce time of ' . $announce_wait . ' seconds');
+    warn('There is a minimum announce time of ' . $announce_wait . ' seconds', $announce_wait);
 }
 
 $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
@@ -387,16 +388,20 @@ do_log($log);
 // current peer_id, or you could say session with tracker not found in table peers
 if (!isset($self))
 {
+    $sameIPRecord = mysql_fetch_assoc(sql_query("select id from peers where torrent = $torrentid and userid = $userid and ip = '$ip' limit 1"));
+    if (!empty($sameIPRecord) && $seeder == 'yes') {
+        warn("You cannot seed the same torrent in the same location from more than 1 client.", 300);
+    }
 	$valid = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM peers WHERE torrent=$torrentid AND userid=" . sqlesc($userid)));
-	if ($valid[0] >= 1 && $seeder == 'no') err("You already are downloading the same torrent. You may only leech from one location at a time.");
-	if ($valid[0] >= 3 && $seeder == 'yes') err("You cannot seed the same torrent from more than 3 locations.");
+	if ($valid[0] >= 1 && $seeder == 'no') warn("You already are downloading the same torrent. You may only leech from one location at a time.", 300);
+	if ($valid[0] >= 3 && $seeder == 'yes') warn("You cannot seed the same torrent from more than 3 locations.", 300);
 
 	if ($az["enabled"] == "no")
-	err("Your account is disabled!");
+        warn("Your account is disabled!", 300);
 	elseif ($az["parked"] == "yes")
-	err("Your account is parked! (Read the FAQ)");
+        warn("Your account is parked! (Read the FAQ)", 300);
 	elseif ($az["downloadpos"] == "no")
-	err("Your downloading privileges have been disabled! (Read the rules)");
+        warn("Your downloading privileges have been disabled! (Read the rules)", 300);
 
 	if ($az["class"] < UC_VIP)
 	{
@@ -414,7 +419,7 @@ if (!isset($self))
 				else $wait = 0;
 
 				if ($elapsed < $wait)
-				err("Your ratio is too low! You need to wait " . mkprettytime($wait * 3600 - $elapsed) . " to start, please read $BASEURL/faq.php#id46 for details");
+				warn("Your ratio is too low! You need to wait " . mkprettytime($wait * 3600 - $elapsed) . " to start, please read $BASEURL/faq.php#id46 for details", $elapsed);
 			}
 		}
 		if ($maxdlsystem == "yes")
@@ -427,7 +432,7 @@ if (!isset($self))
 			else $max = 0;
 			if ($max > 0)
 			{
-				$res = sql_query("SELECT COUNT(*) AS num FROM peers WHERE userid='$userid' AND seeder='no'") or err("Tracker error 5");
+				$res = sql_query("SELECT COUNT(*) AS num FROM peers WHERE userid='$userid' AND seeder='no'") or warn("Tracker error 5", 300);
 				$row = mysql_fetch_assoc($res);
 				if ($row['num'] >= $max) err("Your slot limit is reached! You may at most download $max torrents at the same time, please read $BASEURL/faq.php#id66 for details");
 			}
@@ -494,7 +499,7 @@ else // continue an existing session
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
             (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $userid, 'no', 'upload_over_speed');
             do_log("user: $userid downloading privileges have been disabled! (over speed), upSpeedMbps: $upSpeedMbps > notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps", 'error');
-            err("Your downloading privileges have been disabled! (over speed)");
+            warn("Your downloading privileges have been disabled! (over speed)", 300);
         }
     }
 
@@ -621,7 +626,7 @@ if (isset($self) && $event == "stopped")
 elseif(isset($self))
 {
 	$finished = $finished_snatched = '';
-	if ($event == "completed")
+	if ($event == "completed" || (!empty($snatchInfo) && $left == 0 && $snatchInfo['finished'] != 'yes'))
 	{
 		//sql_query("UPDATE snatched SET  finished  = 'yes', completedat = $dt WHERE torrentid = $torrentid AND userid = $userid");
 		$finished .= ", finishedat = ".TIMENOW;
