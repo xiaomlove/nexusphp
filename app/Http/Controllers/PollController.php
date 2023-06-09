@@ -14,9 +14,9 @@ class PollController extends Controller
 {
     private $repository;
 
-    public function __construct()
+    public function __construct(PollRepository $repository)
     {
-
+        $this->repository = $repository;
     }
 
     private function getRules(): array

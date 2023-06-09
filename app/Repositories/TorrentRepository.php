@@ -343,13 +343,15 @@ class TorrentRepository extends BaseRepository
     private function getEncryptDownHashKey($user)
     {
         if ($user instanceof User) {
-            $user = $user->toArray();
-        }
-        if (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
-            $user = User::query()->findOrFail(intval($user), ['id', 'passkey'])->toArray();
+            $passkey = $user->passkey;
+        } elseif (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
+            $user = User::query()->findOrFail(intval($user), ['id', 'passkey']);
+            $passkey = $user->passkey;
+        } else {
+            $passkey = $user['passkey'];
         }
         //down hash is relative to user passkey
-        return md5($user['passkey'] . date('Ymd') . $user['id']);
+        return md5($passkey . date('Ymd') . $user['id']);
     }
 
     public function getTrackerReportAuthKey($id, $uid, $initializeIfNotExists = false): string

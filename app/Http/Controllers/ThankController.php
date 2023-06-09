@@ -27,9 +27,9 @@ class ThankController extends Controller
             ->with(['user'])
             ->paginate();
         $resource = ThankResource::collection($thanks);
-        $resource->additional([
-            'page_title' => nexus_trans('thank.index.page_title'),
-        ]);
+//        $resource->additional([
+//            'page_title' => nexus_trans('thank.index.page_title'),
+//        ]);
 
         return $this->success($resource);
     }

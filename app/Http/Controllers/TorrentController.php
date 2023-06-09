@@ -30,9 +30,9 @@ class TorrentController extends Controller
         $params['category_mode'] = Setting::get('main.browsecat');
         $result = $this->repository->getList($params, Auth::user());
         $resource = TorrentResource::collection($result);
-        $resource->additional([
-            'page_title' => nexus_trans('torrent.index.page_title'),
-        ]);
+//        $resource->additional([
+//            'page_title' => nexus_trans('torrent.index.page_title'),
+//        ]);
 
         return $this->success($resource);
     }
@@ -65,8 +65,8 @@ class TorrentController extends Controller
 
         $resource = new TorrentResource($result);
         $resource->additional([
-            'page_title' => nexus_trans('torrent.show.page_title'),
-            'field_labels' => Torrent::getFieldLabels(),
+//            'page_title' => nexus_trans('torrent.show.page_title'),
+//            'field_labels' => Torrent::getFieldLabels(),
             'is_bookmarked' => (int)$isBookmarked,
             'bonus_reward_values' => Torrent::BONUS_REWARD_VALUES,
         ]);

@@ -53,9 +53,9 @@ class MessageController extends Controller
         $message = Message::query()->with(['send_user'])->findOrFail($id);
         $message->update(['unread' => 'no']);
         $resource = new MessageResource($message);
-        $resource->additional([
-            'page_title' => nexus_trans('message.show.page_title'),
-        ]);
+//        $resource->additional([
+//            'page_title' => nexus_trans('message.show.page_title'),
+//        ]);
 
         return $this->success($resource);
     }
@@ -93,9 +93,9 @@ class MessageController extends Controller
 
         $messages = $query->paginate();
         $resource = MessageResource::collection($messages);
-        $resource->additional([
-            'site_info' => site_info(),
-        ]);
+//        $resource->additional([
+//            'site_info' => site_info(),
+//        ]);
         return $this->success($resource);
     }
 

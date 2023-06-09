@@ -37,7 +37,6 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::get('search-box', [\App\Http\Controllers\TorrentController::class, 'searchBox']);
         Route::resource('news', \App\Http\Controllers\NewsController::class);
         Route::get('attend', [\App\Http\Controllers\AttendanceController::class, 'attend']);
-        Route::resource('news', \App\Http\Controllers\NewsController::class);
         Route::get('news-latest', [\App\Http\Controllers\NewsController::class, 'latest']);
         Route::resource('polls', \App\Http\Controllers\PollController::class);
         Route::get('polls-latest', [\App\Http\Controllers\PollController::class, 'latest']);
