@@ -96,9 +96,8 @@ class TorrentRepository extends BaseRepository
 
         $with = ['user', 'tags'];
         $torrents = $query->with($with)->paginate();
-        $userArr = $user->toArray();
         foreach ($torrents as &$item) {
-            $item->download_url = $this->getDownloadUrl($item->id, $userArr);
+            $item->download_url = $this->getDownloadUrl($item->id, $user);
         }
         return $torrents;
     }
@@ -119,11 +118,11 @@ class TorrentRepository extends BaseRepository
         return $result;
     }
 
-    private function getDownloadUrl($id, array $user): string
+    private function getDownloadUrl($id, array|User $user): string
     {
         return sprintf(
             '%s/download.php?downhash=%s|%s',
-            getSchemeAndHttpHost(), $user['id'], $this->encryptDownHash($id, $user)
+            getSchemeAndHttpHost(), is_array($user) ? $user['id'] : $user->id, $this->encryptDownHash($id, $user)
         );
     }
 
@@ -342,13 +341,15 @@ class TorrentRepository extends BaseRepository
 
     private function getEncryptDownHashKey($user)
     {
-        if ($user instanceof User) {
+        if ($user instanceof User && $user->passkey) {
             $passkey = $user->passkey;
-        } elseif (!is_array($user) || empty($user['passkey']) || empty($user['id'])) {
+        } elseif (is_array($user) && !empty($user['passkey'])) {
+            $passkey = $user['passkey'];
+        } elseif (is_scalar($user)) {
             $user = User::query()->findOrFail(intval($user), ['id', 'passkey']);
             $passkey = $user->passkey;
         } else {
-            $passkey = $user['passkey'];
+            throw new \InvalidArgumentException("Invalid user: " . json_encode($user));
         }
         //down hash is relative to user passkey
         return md5($passkey . date('Ymd') . $user['id']);
