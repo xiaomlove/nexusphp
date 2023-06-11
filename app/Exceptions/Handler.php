@@ -71,7 +71,8 @@ class Handler extends ExceptionHandler
         $this->renderable(function (NotFoundHttpException $e) {
             if ($e->getPrevious() && $e->getPrevious() instanceof ModelNotFoundException) {
                 $exception = $e->getPrevious();
-                return response()->json(fail($exception->getMessage(), request()->all()), 404);
+                do_log(sprintf("NotFoundHttpException: %s, trace: %s", $exception->getMessage(), $exception->getTraceAsString()), 'error');
+                return response()->json(fail($exception->getMessage(), request()->all()));
             }
         });
     }
