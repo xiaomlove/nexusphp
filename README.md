@@ -57,9 +57,7 @@ docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:late
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
 文档：[https://doc.nexusphp.org](http://doc.nexusphp.org/)  
-QQ群: [764452568](https://jq.qq.com/?_wv=1027&k=IbltZcIx)  
 Telegram: [https://t.me/nexusphp](https://t.me/nexusphp)  
-B站: [xiaomlove](https://space.bilibili.com/1319303059)  
 
 ## Project supported by JetBrains
 Many thanks to Jetbrains for kindly providing a license for me to work on this and other open-source projects.  
