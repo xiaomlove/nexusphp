@@ -114,7 +114,7 @@ class TorrentRepository extends BaseRepository
             },
         ];
         $result = Torrent::query()->with($with)->withCount(['peers', 'thank_users', 'reward_logs'])->visible()->findOrFail($id);
-        $result->download_url = $this->getDownloadUrl($id, $user->toArray());
+        $result->download_url = $this->getDownloadUrl($id, $user);
         return $result;
     }
 
