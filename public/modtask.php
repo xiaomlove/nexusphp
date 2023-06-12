@@ -115,7 +115,7 @@ if ($action == "edituser")
 		}
 		if ($arr['username'] != $username){
 			$updateset[] = "username = " . sqlesc($username);
-			$modcomment = date("Y-m-d") . " - Username changed from $arr[username] to $username by {$CURUSER['username']}.\n". $modcomment;
+			$modcomment = date("Y-m-d") . " - Username changed from {$arr['username']} to $username by {$CURUSER['username']}.\n". $modcomment;
 			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_username_change']);
 			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_username_changed_from'].$arr['username'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $username .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
 			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);

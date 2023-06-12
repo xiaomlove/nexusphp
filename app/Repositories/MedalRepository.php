@@ -84,6 +84,12 @@ class MedalRepository extends BaseRepository
         }
         $current = $userMedal->status;
         if ($current == UserMedal::STATUS_NOT_WEARING) {
+            $maxWearAllow = Setting::get('system.maximum_number_of_medals_can_be_worn');
+            $user = User::query()->findOrFail($userId, User::$commonFields);
+            $wearCount = $user->wearing_medals()->count();
+            if ($maxWearAllow && $wearCount >= $maxWearAllow) {
+                throw new NexusException(nexus_trans('medal.max_allow_wearing', ['count' => $maxWearAllow]));
+            }
             $userMedal->status = UserMedal::STATUS_WEARING;
         } elseif ($current == UserMedal::STATUS_WEARING) {
             $userMedal->status = UserMedal::STATUS_NOT_WEARING;

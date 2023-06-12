@@ -97,8 +97,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = TorrentUpdated::dispatch(5);
-        dd($r);
+
     }
 
 }
