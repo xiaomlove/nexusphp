@@ -444,7 +444,11 @@ class ToolRepository extends BaseRepository
     {
         $size = 2000;
         $stickyPromotionParticipatorsTable = 'sticky_promotion_participators';
+        $claimTable = "claims";
+        $hitAndRunTable = "hit_and_runs";
         $stickyPromotionExists = NexusDB::hasTable($stickyPromotionParticipatorsTable);
+        $claimTableExists = NexusDB::hasTable($claimTable);
+        $hitAndRunTableExists = NexusDB::hasTable($hitAndRunTable);
         while (true) {
             $snatchRes = NexusDB::select("select userid, torrentid, group_concat(id) as ids from snatched group by userid, torrentid having(count(*)) > 1 limit $size");
             if (empty($snatchRes)) {
@@ -460,8 +464,12 @@ class ToolRepository extends BaseRepository
                 $delIdStr = implode(',', $idArr);
                 do_log("[DELETE_DUPLICATED_SNATCH], torrent: $torrentId, user: $userId, snatchIdStr: $delIdStr");
                 NexusDB::statement("delete from snatched where id in ($delIdStr)");
-                NexusDB::statement("update claims set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
-                NexusDB::statement("update hit_and_runs set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
+                if ($claimTableExists) {
+                    NexusDB::statement("update $claimTable set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
+                }
+                if ($hitAndRunTableExists) {
+                    NexusDB::statement("update $hitAndRunTable set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
+                }
                 if ($stickyPromotionExists) {
                     NexusDB::statement("update $stickyPromotionParticipatorsTable set snatched_id = $remainId where torrent_id = $torrentId and uid = $userId");
                 }
