@@ -38,6 +38,8 @@ if ($row["passhash"] != md5($row["secret"] . $password . $row["secret"])) {
     login_failedlogins();
 }
 
+sql_query("DELETE FROM loginattempts WHERE ip = " . sqlesc($ip)); // delete failed login attempts for successfully logged in IP
+
 $userRep = new \App\Repositories\UserRepository();
 $userRep->saveLoginLog($row['id'], $ip, 'Web', true);
 
