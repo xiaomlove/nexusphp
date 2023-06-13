@@ -1487,7 +1487,7 @@ function check_email ($email) {
         return false;
     }
     $bannedEmails = \Nexus\Database\NexusDB::select('select * from bannedemails');
-    $bannedEmailsArr = preg_split('/[\s]+/', $bannedEmails[0]['value'] ?? '');
+    $bannedEmailsArr = array_filter(preg_split('/[\s]+/', $bannedEmails[0]['value'] ?? ''));
     if (empty($bannedEmailsArr)) {
         return true;
     }
