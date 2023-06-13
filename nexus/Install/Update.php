@@ -275,6 +275,7 @@ class Update extends Install
         }
         $this->doLog("$searchBoxLog, shouldMigrateSearchBox: $shouldMigrateSearchBox");
         if ($shouldMigrateSearchBox) {
+            $this->runMigrate('database/migrations/2022_09_02_031539_add_extra_to_searchbox_table.php');
             $this->runMigrate('database/migrations/2022_09_05_230532_add_mode_to_section_related.php');
             $this->runMigrate('database/migrations/2022_09_06_004318_add_section_name_to_searchbox_table.php');
             $this->runMigrate('database/migrations/2022_09_06_030324_change_searchbox_field_extra_to_json.php');
