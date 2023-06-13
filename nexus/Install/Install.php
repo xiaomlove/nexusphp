@@ -36,7 +36,10 @@ class Install
     protected array $optionalExtensions = [
 //        ['name' => 'swoole', 'desc' => "If use swoole for Octane, make sure 'current' shows 1"],
     ];
-    protected array $requiredFunctions = ['symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec', 'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'];
+    protected array $requiredFunctions = [
+        'symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec',
+//        'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'
+    ];
 
     protected string $lockFile = 'install.lock';
 
@@ -178,11 +181,18 @@ class Install
         ];
 
         foreach ($this->requiredExtensions as $extension) {
+            if ($extension == 'pcntl' && function_exists('exec')) {
+                $loadedStr = executeCommand("php -m");
+                $loadedArr = preg_split("/[\r\n]+/", $loadedStr);
+                $loaded = in_array($extension, $loadedArr);
+            } else {
+                $loaded = extension_loaded($extension);
+            }
             $tableRows[] = [
                 'label' => "PHP extension $extension",
                 'required' => 'enabled',
-                'current' => (int)extension_loaded($extension),
-                'result' => $this->yesOrNo(extension_loaded($extension)),
+                'current' => (int)$loaded,
+                'result' => $this->yesOrNo($loaded),
             ];
         }
 

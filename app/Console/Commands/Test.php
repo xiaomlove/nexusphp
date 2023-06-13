@@ -97,7 +97,9 @@ class Test extends Command
      */
     public function handle()
     {
-
+        $r = executeCommand("php -m");
+        $r = preg_split("/[\r\n]+/", $r);
+        dd($r);
     }
 
 }
