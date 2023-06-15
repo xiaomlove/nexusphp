@@ -958,16 +958,17 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
+    //cost too many time, migrate to schedule run command
     //sync to Meilisearch
-    $meiliRep = new \App\Repositories\MeiliSearchRepository();
-    if ($meiliRep->isEnabled()) {
-        $meiliRep->import();
-    }
-    $log = "sync to Meilisearch";
-    do_log($log);
-    if ($printProgress) {
-        printProgress($log);
-    }
+//    $meiliRep = new \App\Repositories\MeiliSearchRepository();
+//    if ($meiliRep->isEnabled()) {
+//        $meiliRep->import();
+//    }
+//    $log = "sync to Meilisearch";
+//    do_log($log);
+//    if ($printProgress) {
+//        printProgress($log);
+//    }
 
 //Priority Class 5: cleanup every 15 days
 	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime5'");

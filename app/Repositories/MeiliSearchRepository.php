@@ -113,7 +113,7 @@ class MeiliSearchRepository extends BaseRepository
                 $swapResult = $client->swapIndexes([[self::INDEX_NAME, $indexName]]);
                 $times = 0;
                 while (true) {
-                    if ($times == 600) {
+                    if ($times == 3600) {
                         $msg = "total: $total, swap too long, times: $times, return false";
                         do_log($msg);
                         throw new NexusException($msg);
