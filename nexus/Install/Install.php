@@ -169,8 +169,10 @@ class Install
         $disabledFunctions = [];
         foreach ($this->requiredFunctions as $fn) {
             if (str_starts_with($fn, "pcntl_") && function_exists('exec')) {
-                $phpPath = nexus_env('PHP_PATH') ?: 'php';
-                $exists = executeCommand("$phpPath -r 'var_export(function_exists(\"$fn\"));'") == 'true';
+                $command = "php -r 'var_export(function_exists(\"$fn\"));'";
+                $result = exec($command, $output, $result_code);
+                $outputString = implode("\n", $output);
+                $exists = $outputString == 'true';
                 if (!$exists) {
                     $disabledFunctions[] = $fn;
                 }
