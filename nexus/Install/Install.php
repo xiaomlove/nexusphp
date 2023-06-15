@@ -190,7 +190,10 @@ class Install
 
         foreach ($this->requiredExtensions as $extension) {
             if ($extension == 'pcntl' && function_exists('exec')) {
-                $loadedStr = executeCommand("php -m");
+//                $loadedStr = executeCommand("php -m");
+                $result = exec("php -m", $output, $result_code);
+                $outputString = implode("\n", $output);
+                $loadedStr = $outputString;
                 $loadedArr = preg_split("/[\r\n]+/", $loadedStr);
                 $loaded = in_array($extension, $loadedArr);
             } else {
