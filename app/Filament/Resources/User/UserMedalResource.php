@@ -5,6 +5,7 @@ namespace App\Filament\Resources\User;
 use App\Filament\Resources\User\UserMedalResource\Pages;
 use App\Filament\Resources\User\UserMedalResource\RelationManagers;
 use App\Models\Medal;
+use App\Models\NexusModel;
 use App\Models\UserMedal;
 use Filament\Forms;
 use Filament\Resources\Form;
@@ -57,6 +58,7 @@ class UserMedalResource extends Resource
                 Tables\Columns\TextColumn::make('medal.name')->label(__('label.medal.label'))->searchable(),
                 Tables\Columns\ImageColumn::make('medal.image_large')->label(__('label.image')),
                 Tables\Columns\TextColumn::make('expire_at')->label(__('label.expire_at'))->dateTime(),
+                Tables\Columns\TextColumn::make('wearingStatusText')->label(__('label.status')),
             ])
             ->defaultSort('id', 'desc')
             ->filters([
@@ -76,10 +78,13 @@ class UserMedalResource extends Resource
                 ,
             ])
             ->actions([
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()->using(function (NexusModel $record) {
+                    $record->delete();
+                    clear_user_cache($record->uid);
+                })
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+
             ]);
     }
 

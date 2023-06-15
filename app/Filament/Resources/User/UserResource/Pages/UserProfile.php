@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\User\UserResource\Pages;
 
+use App\Filament\OptionsTrait;
 use App\Filament\Resources\User\UserResource;
 use App\Models\Invite;
 use App\Models\Medal;
@@ -24,6 +25,7 @@ class UserProfile extends ViewRecord
 {
     use InteractsWithRecord;
     use HasRelationManagers;
+    use OptionsTrait;
 
     private static $rep;
 
@@ -369,6 +371,20 @@ class UserProfile extends ViewRecord
                     ->default($this->record->class)
                     ->label(__('user.labels.class'))
                     ->required()
+                    ->reactive()
+                ,
+                Forms\Components\Radio::make('vip_added')
+                    ->options(self::getYesNoOptions('yes', 'no'))
+                    ->default($this->record->vip_added)
+                    ->label(__('user.labels.vip_added'))
+                    ->helperText(__('user.labels.vip_added_help'))
+                    ->hidden(fn (\Closure $get) => $get('class') != User::CLASS_VIP)
+                ,
+                Forms\Components\DateTimePicker::make('vip_until')
+                    ->default($this->record->vip_until)
+                    ->label(__('user.labels.vip_until'))
+                    ->helperText(__('user.labels.vip_until_help'))
+                    ->hidden(fn (\Closure $get) => $get('class') != User::CLASS_VIP)
                 ,
                 Forms\Components\TextInput::make('reason')
                     ->label(__('admin.resources.user.actions.enable_disable_reason'))
@@ -378,7 +394,7 @@ class UserProfile extends ViewRecord
             ->action(function ($data) {
                 $userRep = $this->getRep();
                 try {
-                    $userRep->changeClass(Auth::user(), $this->record, $data['class'], $data['reason']);
+                    $userRep->changeClass(Auth::user(), $this->record, $data['class'], $data['reason'], $data);
                     $this->notify('success', 'Success!');
                     $this->emitSelf(self::EVENT_RECORD_UPDATED, $this->record->id);
                 } catch (\Exception $exception) {

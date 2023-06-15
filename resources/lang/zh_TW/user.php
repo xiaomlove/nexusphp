@@ -17,6 +17,10 @@ return [
         'attendance_card' => '補簽卡',
         'props' => '道具',
         'class' => '等級',
+        'vip_added' => '貴賓資格為通過魔力值獲得',
+        'vip_added_help' => '該貴賓資格是否為通過魔力值換取。',
+        'vip_until' => '貴賓資格結束時間',
+        'vip_until_help' => "時間格式為'年年年年-月月-日日 時時:分分:秒秒'。貴賓資格結束的時間。'貴賓資格為通過魔力值獲得'必須設為'是'此規則才能生效。",
     ],
     'class_names' => [
         \App\Models\User::CLASS_VIP => '貴賓',

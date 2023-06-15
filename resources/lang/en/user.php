@@ -17,6 +17,10 @@ return [
         'attendance_card' => 'Attend card',
         'props' => 'Props',
         'class' => 'Class',
+        'vip_added' => 'VIP status is obtained by bonus',
+        'vip_added_help' => 'Is the VIP status redeemed by bonus.',
+        'vip_until' => 'VIP status end time',
+        'vip_until_help' => "The time format is 'Year-Year-Month-Day Hour:Minute:Second The time when the VIP status ends.' VIP status is obtained by bonus' must be set to 'Yes' for this rule to take effect.",
     ],
     'class_names' => [
         \App\Models\User::CLASS_VIP => 'Vip',

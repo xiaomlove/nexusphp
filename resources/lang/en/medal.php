@@ -44,4 +44,8 @@ return [
     'gift_btn' => 'Gift',
     'confirm_to_gift' => 'Confirm to gift to user ',
     'max_allow_wearing' => 'A maximum of :count medals can be worn at the same time',
+    'wearing_status_text' => [
+        0 => 'Wearing',
+        1 => 'Not wearing'
+    ],
 ];

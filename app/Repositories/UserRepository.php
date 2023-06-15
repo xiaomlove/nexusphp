@@ -468,7 +468,7 @@ class UserRepository extends BaseRepository
         return true;
     }
 
-    public function changeClass($operator, $targetUser, $newClass, $reason = ''): bool
+    public function changeClass($operator, $targetUser, $newClass, $reason = '', array $extra = []): bool
     {
         user_can('user-change-class', true);
         $operator = $this->getUser($operator);
@@ -477,7 +477,7 @@ class UserRepository extends BaseRepository
             if ($operator->class <= $targetUser->class || $operator->class <= $newClass)
             throw new InsufficientPermissionException();
         }
-        if ($targetUser->class == $newClass) {
+        if ($targetUser->class == $newClass && $newClass != User::CLASS_VIP) {
             return  true;
         }
         $locale = $targetUser->locale;
@@ -495,11 +495,34 @@ class UserRepository extends BaseRepository
             'msg' => $body,
             'added' => Carbon::now(),
         ];
-
-        NexusDB::transaction(function () use ($targetUser, $newClass, $message) {
+        $userUpdates = [
+            'class' => $newClass,
+        ];
+        if ($newClass == User::CLASS_VIP) {
+            if (!empty($extra['vip_added']) && in_array($extra['vip_added'], ['yes', 'no'])) {
+                $userUpdates['vip_added'] = $extra['vip_added'];
+            } else {
+                $userUpdates['vip_added'] = 'no';
+            }
+            if (!empty($extra['vip_until'])) {
+                $until = Carbon::parse($extra['vip_until']);
+                $userUpdates['vip_until'] = $until;
+            } else {
+                $userUpdates['vip_until'] = null;
+            }
+        } else {
+            $userUpdates['vip_added'] = 'no';
+            $userUpdates['vip_until'] = null;
+        }
+        do_log("userUpdates: " . json_encode($userUpdates));
+        NexusDB::transaction(function () use ($targetUser, $userUpdates, $message) {
             $modComment = date('Y-m-d') . " - " . $message['msg'];
-            $targetUser->updateWithModComment(['class' => $newClass], $modComment);
-            Message::add($message);
+            if ($targetUser->class != $userUpdates['class']) {
+                $targetUser->updateWithModComment($userUpdates, $modComment);
+                Message::add($message);
+            } else {
+                $targetUser->update($userUpdates);
+            }
             $this->clearCache($targetUser);
         });
 
