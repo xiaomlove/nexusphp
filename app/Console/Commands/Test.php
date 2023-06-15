@@ -97,9 +97,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $r = executeCommand("php -m");
-        $r = preg_split("/[\r\n]+/", $r);
-        dd($r);
+        $r = executeCommand("php -r 'var_export(function_exists(\"pcntl_alarm\"));'");
+        dd($r == 'true');
     }
 
 }
