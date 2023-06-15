@@ -38,7 +38,7 @@ class Install
     ];
     protected array $requiredFunctions = [
         'symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec',
-        'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'
+//        'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'
     ];
 
     protected string $lockFile = 'install.lock';
