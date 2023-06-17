@@ -481,8 +481,9 @@ class ToolRepository extends BaseRepository
     {
         $size = 2000;
         while (true) {
-            $results = NexusDB::select("select torrent, peer_id, userid, group_concat(id) as ids from peers group by torrent, peer_id, userid having(count(*)) > 1 limit $size");
+            $results = NexusDB::select("select torrent, userid, group_concat(id) as ids from peers group by torrent, peer_id, userid having(count(*)) > 1 limit $size");
             if (empty($results)) {
+                do_log("[DELETE_DUPLICATED_PEERS], no data: ". last_query());
                 break;
             }
             do_log("[DELETE_DUPLICATED_PEERS], count: " . count($results));
