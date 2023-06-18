@@ -37,6 +37,7 @@ return [
         'login_log' => '登錄記錄',
         'bonus_log' => '魔力記錄',
         'torrent_buy_log' => '種子購買',
+        'attendance_log' => '簽到記錄',
     ],
     'resources' => [
         'agent_allow' => [

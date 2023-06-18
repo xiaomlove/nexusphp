@@ -38,7 +38,7 @@ class Install
     ];
     protected array $requiredFunctions = [
         'symlink', 'putenv', 'proc_open', 'proc_get_status', 'exec',
-//        'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'
+        'pcntl_signal', 'pcntl_alarm', 'pcntl_async_signals'
     ];
 
     protected string $lockFile = 'install.lock';
@@ -169,10 +169,10 @@ class Install
         $disabledFunctions = [];
         foreach ($this->requiredFunctions as $fn) {
             if (str_starts_with($fn, "pcntl_") && function_exists('exec')) {
+                $output = [];
                 $command = "php -r 'var_export(function_exists(\"$fn\"));'";
                 $result = exec($command, $output, $result_code);
-                $outputString = implode("\n", $output);
-                $exists = $outputString == 'true';
+                $exists = $output[0] == 'true';
                 if (!$exists) {
                     $disabledFunctions[] = $fn;
                 }
@@ -190,7 +190,7 @@ class Install
 
         foreach ($this->requiredExtensions as $extension) {
             if ($extension == 'pcntl' && function_exists('exec')) {
-//                $loadedStr = executeCommand("php -m");
+                $output = [];
                 $result = exec("php -m", $output, $result_code);
                 $outputString = implode("\n", $output);
                 $loadedStr = $outputString;

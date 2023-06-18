@@ -277,7 +277,7 @@ function formatSpoiler($content, $title = '', $defaultCollapsed = true): string
     if (!$title) {
         $title = $lang_functions['spoiler_default_title'];
     }
-    $content = str_replace(['<br>', '<br />'], '', $content);
+//    $content = str_replace(['<br>', '<br />'], '', $content);
     $contentClass = "spoiler-content";
     if ($defaultCollapsed) {
         $contentClass .= " collapse";

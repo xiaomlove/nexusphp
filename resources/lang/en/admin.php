@@ -37,6 +37,7 @@ return [
         'login_log' => 'Login logs',
         'bonus_log' => 'Bonus logs',
         'torrent_buy_log' => 'Torrent buy logs',
+        'attendance_log' => 'Attendance logs',
     ],
     'resources' => [
         'agent_allow' => [
