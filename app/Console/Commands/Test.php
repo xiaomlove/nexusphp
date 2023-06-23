@@ -97,10 +97,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $results = NexusDB::select("select torrent, peer_id, userid, group_concat(id) as ids from peers group by torrent, peer_id, userid having(count(*)) > 1 limit 20");
-        dump($results);
-        $rep = new ToolRepository();
-        $rep->removeDuplicatePeer();
+        $arr = ['aa' => ['bb' => []]];
+        dd(array_filter($arr));
     }
 
 }

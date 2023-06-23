@@ -225,6 +225,8 @@ if (
                 echo $update->renderTable($header, $tableRows);
                 echo '<div class="text-blue-500 pt-10">';
                 echo sprintf('This step will merge <code>%s</code> to <code>%s</code>, then insert into database.', $tableRows[1]['label'], $tableRows[0]['label']);
+                echo sprintf('<div style="margin-top: 10px;">网页升级容易超时，强烈建议通过执行命令完成最后一步（如果是从1.5版本升级，务必这样做）<br/>进入：%s，执行：<code>php artisan nexus:update</code></div>', $rootpath);
+                echo sprintf('<div style="margin-top: 10px;">Web page upgrades tend to time out, it is highly recommended to complete the last step by executing the command (if upgrading from version 1.5, be sure to do so)<br/>cd %s, and execute: <code>php artisan nexus:update</code></div>', $rootpath);
                 echo '</div>';
                 if (!$mysqlInfo['match']) {
                     echo sprintf('<div class="text-red-700 pt-10">MySQL version: %s is too low, please use the newest version of 5.7 or above.</div>', $mysqlInfo['version']);
