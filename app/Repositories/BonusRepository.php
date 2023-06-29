@@ -262,10 +262,11 @@ class BonusRepository extends BaseRepository
                 $userQuery = $userQuery->lockForUpdate();
             }
             $user = $userQuery->findOrFail($uid);
+            $buyerLocale = $user->locale;
             $comment = nexus_trans('bonus.comment_buy_torrent', [
                 'bonus' => $requireBonus,
                 'torrent_id' => $torrent->id,
-            ], $user->locale);
+            ], $buyerLocale);
             do_log("comment: $comment");
             $this->consumeUserBonus($user, $requireBonus, BonusLogs::BUSINESS_TYPE_BUY_TORRENT, $comment);
             TorrentBuyLog::query()->create([
@@ -301,6 +302,18 @@ class BonusRepository extends BaseRepository
                 ];
                 BonusLogs::query()->insert($bonusLog);
             }
+            $buyTorrentSuccessMessage = [
+                'sender' => 0,
+                'receiver' => $user->id,
+                'added' => now(),
+                'subject' => nexus_trans("message.buy_torrent_success.subject", [], $buyerLocale),
+                'msg' => nexus_trans("message.buy_torrent_success.body", [
+                    'torrent_name' => $torrent->name,
+                    'bonus' => $requireBonus,
+                    'url' => sprintf('details.php?id=%s&hit=1', $torrent->id)
+                ], $buyerLocale),
+            ];
+            Message::add($buyTorrentSuccessMessage);
         });
 
         return true;

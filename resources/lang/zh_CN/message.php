@@ -39,4 +39,8 @@ return [
 若不是你本人操作，账号密码可能已经泄露，请及时修改！
 BODY,
     ],
+    'buy_torrent_success' => [
+        'subject' => '成功购买种子提醒',
+        'body' => '你花费 :bonus 魔力成功购买了种子：[url=:url]:torrent_name[/url]',
+    ],
 ];

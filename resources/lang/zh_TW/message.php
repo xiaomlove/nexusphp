@@ -37,5 +37,9 @@ return [
 上次登錄時間：:last_login_time，IP：:last_ip，位置：:last_location。<br/>
 若不是你本人操作，賬號密碼可能已經泄露，請及時修改！
 BODY,
-    ]
+    ],
+    'buy_torrent_success' => [
+        'subject' => '成功購買種子提醒',
+        'body' => '你花費 :bonus 魔力成功購買了種子：[url=:url]:torrent_name[/url]',
+    ],
 ];

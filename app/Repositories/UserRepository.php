@@ -623,6 +623,11 @@ class UserRepository extends BaseRepository
             'claims' => 'uid',
             'exam_users' => 'uid',
             'exam_progress' => 'uid',
+            'user_metas' => 'uid',
+            'user_medals' => 'uid',
+            'attendance' => 'uid',
+            'attendance_logs' => 'uid',
+            'login_logs' => 'uid',
         ];
         foreach ($tables as $table => $key) {
             \Nexus\Database\NexusDB::table($table)->whereIn($key, $uidArr)->delete();

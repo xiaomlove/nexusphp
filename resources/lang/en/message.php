@@ -39,4 +39,8 @@ Last login time::last_login_time, IP::last_ip, location::last_location.<br/>
 If it is not your own operation, the account password may have been leaked, please change it in time!
 BODY,
     ],
+    'buy_torrent_success' => [
+        'subject' => 'Successful torrent purchase reminder',
+        'body' => 'You spent :bonus bonus to successfully buy the torrent:[url=:url]:torrent_name[/url]',
+    ],
 ];
