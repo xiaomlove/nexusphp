@@ -63,6 +63,7 @@ img.hitandrun {
 }
 .nexus-media-info-raw pre {
     white-space: break-spaces;
+    overflow-wrap: anywhere;
 }
 .text-muted {
     color: #7d7b7b
