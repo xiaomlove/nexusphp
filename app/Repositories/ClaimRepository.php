@@ -168,10 +168,15 @@ class ClaimRepository extends BaseRepository
             do_log("uid: $uid, filter: user_has_role_work_seeding => true, skip");
             return false;
         }
-        $user = User::query()->with('language')->findOrFail($uid);
-        $list = Claim::query()->where('uid', $uid)->with(['snatch', 'torrent' => fn ($query) => $query->select(Torrent::$commentFields)])->get();
         $now = Carbon::now();
         $startOfThisMonth = $now->clone()->startOfMonth();
+        $user = User::query()->with('language')->findOrFail($uid);
+        $list = Claim::query()
+            ->where('uid', $uid)
+            ->where("created_at", "<", $startOfThisMonth)
+            ->with(['snatch', 'torrent' => fn ($query) => $query->select(Torrent::$commentFields)])
+            ->get()
+        ;
         $seedTimeRequiredHours = Claim::getConfigStandardSeedTimeHours();
         $uploadedRequiredTimes = Claim::getConfigStandardUploadedTimes();
         $bonusMultiplier = Claim::getConfigBonusMultiplier();

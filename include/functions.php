@@ -5371,7 +5371,7 @@ function checkGuestVisit()
 
 }
 
-function render($view, $data, $return = false)
+function render($view, $data = [], $return = false)
 {
     extract($data);
     if (!file_exists($view)) {

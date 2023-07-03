@@ -5,6 +5,8 @@ class Plugin
 {
     private static mixed $providers = null;
 
+    private static array $plugins = [];
+
     public function __construct()
     {
         $this->loadProviders();
@@ -14,6 +16,11 @@ class Plugin
     public static function enabled($name): bool
     {
         return !empty(self::$providers[$name]['providers']);
+    }
+
+    public static function getById($id) :BasePlugin|null
+    {
+        return self::$plugins[$id] ?? null;
     }
 
     public function getMainClass($name)
@@ -39,7 +46,12 @@ class Plugin
                     if (defined($constantName) && version_compare(VERSION_NUMBER, constant($constantName), '<')) {
                         continue;
                     }
-                    call_user_func([new $className, 'boot']);
+                    $plugin = new $className;
+                    call_user_func([$plugin, 'boot']);
+                    $pluginIdName = "$className::ID";
+                    if (defined($pluginIdName)) {
+                        self::$plugins[constant($pluginIdName)] = $plugin;
+                    }
                 }
             }
         }
@@ -56,6 +68,8 @@ class Plugin
             }
         }
     }
+
+
 
 
 }

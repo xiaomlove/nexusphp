@@ -37,4 +37,11 @@ abstract class BasePlugin extends BaseRepository
             ));
         }
     }
+
+    public function getNexusView($name): string
+    {
+        $reflection = new \ReflectionClass(get_called_class());
+        $pluginRoot = dirname($reflection->getFileName(), 2);
+        return $pluginRoot . "/resources/views/" . trim($name, "/");
+    }
 }
