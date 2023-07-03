@@ -184,6 +184,7 @@ class ClaimRepository extends BaseRepository
         $reachedTorrentIdArr = $unReachedTorrentIdArr = $remainTorrentIdArr = $unReachedIdArr = $toUpdateIdArr = [];
         $totalSeedTime = 0;
         $seedTimeCaseWhen = $uploadedCaseWhen = [];
+        $toDelClaimId = [];
         do_log(
             "uid: $uid, claim torrent count: " . $list->count()
             . ", seedTimeRequiredHours: $seedTimeRequiredHours"
@@ -198,6 +199,16 @@ class ClaimRepository extends BaseRepository
                     do_log("No force, return", 'alert');
                     return false;
                 }
+            }
+            if (!$row->snatch) {
+                $toDelClaimId[$row->id] = $row->id;
+                do_log("No snatch, continue", 'alert');
+                continue;
+            }
+            if (!$row->torrent) {
+                $toDelClaimId[$row->id] = $row->id;
+                do_log("No torrent, continue", 'alert');
+                continue;
             }
             if (
                 bcsub($row->snatch->seedtime, $row->seed_time_begin) >= $seedTimeRequiredHours * 3600
@@ -276,6 +287,10 @@ class ClaimRepository extends BaseRepository
             //Send message
             Message::add($message);
         });
+        if (!empty($toDelClaimId)) {
+            do_log("del claim: %s", json_encode($toDelClaimId));
+            Claim::query()->whereIn("id", array_keys($toDelClaimId))->delete();
+        }
         do_log("[DONE], cost time: " . (time() - $now->timestamp) . " seconds");
         return true;
     }
