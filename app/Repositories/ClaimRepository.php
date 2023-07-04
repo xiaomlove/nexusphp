@@ -131,11 +131,12 @@ class ClaimRepository extends BaseRepository
             })
             ->groupBy('uid')
         ;
-        $size = 10000;
+        $size = 1000;
+        $page = 1;
         $successCount = $failCount = 0;
         while (true) {
-            $logPrefix = "size: $size";
-            $result = (clone $query)->take($size)->get();
+            $logPrefix = "size: $size, page: $page";
+            $result = (clone $query)->forPage($page, $size)->get();
             if ($result->isEmpty()) {
                 do_log("$logPrefix, no more data...");
                 break;
@@ -157,6 +158,7 @@ class ClaimRepository extends BaseRepository
                     $failCount++;
                 }
             }
+            $page++;
         }
         return ['success_count' => $successCount, 'fail_count' => $failCount];
     }
