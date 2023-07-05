@@ -126,6 +126,7 @@ class ClaimRepository extends BaseRepository
         $startOfThisMonth = Carbon::now()->startOfMonth();
         $query = Claim::query()
             ->select(['uid'])
+            ->where("created_at", "<", $startOfThisMonth)
             ->where(function (Builder $query) use ($startOfThisMonth) {
                 $query->where('last_settle_at', '<', $startOfThisMonth)->orWhereNull('last_settle_at');
             })

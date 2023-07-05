@@ -274,5 +274,21 @@ class SearchBox extends NexusModel
         return implode('', $options);
     }
 
+    public static function listCategoryId($searchBoxId, $glue = null): array|string|null
+    {
+        static $results = null;
+        if (is_null($results)) {
+            $results = [];
+            $res = genrelist($searchBoxId);
+            foreach ($res as $item) {
+                $results[] = $item['id'];
+            }
+        }
+        if (!is_null($glue)) {
+            $results = implode($glue, $results);
+        }
+        return $results;
+    }
+
 
 }

@@ -9,4 +9,3 @@ require_once $rootpath . 'include/functions.php';
 require_once $rootpath . 'vendor/autoload.php';
 \Nexus\Nexus::boot();
 
-

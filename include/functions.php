@@ -3652,7 +3652,6 @@ foreach ($rows as $row)
 	$titleSuffix = $banned_torrent.$paidIcon.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $seedBoxIcon . $approvalStatusIcon;
 	$titleSuffix = apply_filter('torrent_title_suffix', $titleSuffix, $row);
 	print($titleSuffix);
-	//$tags = torrentTags($row['tags'], 'span');
     /**
      * render tags
      */

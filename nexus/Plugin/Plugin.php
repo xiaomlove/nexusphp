@@ -47,11 +47,11 @@ class Plugin
                         continue;
                     }
                     $plugin = new $className;
-                    call_user_func([$plugin, 'boot']);
                     $pluginIdName = "$className::ID";
                     if (defined($pluginIdName)) {
                         self::$plugins[constant($pluginIdName)] = $plugin;
                     }
+                    call_user_func([$plugin, 'boot']);
                 }
             }
         }

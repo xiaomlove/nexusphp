@@ -105,6 +105,7 @@ if (isset($_GET['sort']) && $_GET['sort'] && isset($_GET['type']) && $_GET['type
 
 }
 
+$allCategoryId = \App\Models\SearchBox::listCategoryId($sectiontype);
 $addparam = "";
 $wherea = array();
 $wherecatina = array();
@@ -644,6 +645,9 @@ if ($all)
 }
 //stderr("", count($wherecatina)."-". count($wheresourceina));
 $wherecatin = $wheresourcein = $wheremediumin = $wherecodecin = $wherestandardin = $whereprocessingin = $whereteamin = $whereaudiocodecin = '';
+if (empty($wherecatina)) {
+    $wherecatina = $allCategoryId;
+}
 if (count($wherecatina) > 1)
 $wherecatin = implode(",",$wherecatina);
 elseif (count($wherecatina) == 1)
@@ -918,10 +922,15 @@ if ($allsec == 1 || $enablespecial != 'yes')
 }
 else
 {
-	if ($where != "")
-		$where = "WHERE $where AND categories.mode = '$sectiontype'";
-	else $where = "WHERE categories.mode = '$sectiontype'";
-	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where . " GROUP BY categories.mode";
+//	if ($where != "")
+//		$where = "WHERE $where AND categories.mode = '$sectiontype'";
+//	else $where = "WHERE categories.mode = '$sectiontype'";
+
+    if ($where != "")
+        $where = "WHERE $where";
+    else $where = "";
+//	$sql = "SELECT COUNT(*), categories.mode FROM torrents LEFT JOIN categories ON category = categories.id " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where . " GROUP BY categories.mode";
+	$sql = "SELECT COUNT(*) FROM torrents " . ($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "") . $tagFilter . $where;
 }
 
 if ($shouldUseMeili) {
@@ -973,7 +982,8 @@ if ($count)
 //    if ($allsec == 1 || $enablespecial != 'yes') {
 //        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
 //    } else {
-        $query = "SELECT $fieldsStr, categories.mode as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
+//        $query = "SELECT $fieldsStr, categories.mode as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
+        $query = "SELECT $fieldsStr, $sectiontype as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")."$tagFilter $where $orderby $limit";
 //    }
     do_log("[TORRENT_LIST_SQL] $query", 'debug');
     if (!$shouldUseMeili) {

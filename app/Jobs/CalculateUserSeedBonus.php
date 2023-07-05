@@ -46,7 +46,7 @@ class CalculateUserSeedBonus implements ShouldQueue
 
     public $tries = 1;
 
-    public $timeout = 600;
+    public $timeout = 3600;
 
     /**
      * Execute the job.
