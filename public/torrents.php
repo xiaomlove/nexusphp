@@ -702,7 +702,6 @@ $search_area = 0;
 if (isset($searchstr))
 {
 	if (!isset($_GET['notnewword']) || !$_GET['notnewword']){
-		insert_suggest($searchstr, $CURUSER['id']);
 		$notnewword="";
 	}
 	else{
@@ -956,6 +955,9 @@ do_log("[TORRENT_COUNT_SQL] $sql", 'debug');
 
 if ($count)
 {
+    if (isset($searchstr) && (!isset($_GET['notnewword']) || !$_GET['notnewword'])){
+        insert_suggest($searchstr, $CURUSER['id']);
+    }
 	if ($addparam != "")
 	{
 		if ($pagerlink != "")
