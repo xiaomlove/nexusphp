@@ -738,6 +738,7 @@ if(count($USERUPDATESET) && $userid)
     sql_query($sql);
     do_log("[ANNOUNCE_UPDATE_USER], $sql");
 }
+\App\Repositories\CleanupRepository::recordBatch($redis, $userid, $torrentid);
 do_action('announced', $torrent, $az, $_REQUEST);
 benc_resp($rep_dict);
 ?>
