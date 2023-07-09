@@ -36,7 +36,7 @@ class CleanupRepository extends BaseRepository
             return;
         }
         //update the batch key
-        $redis->set($batchKey, $batchKey . self::getHashKeySuffix());
+        $redis->set($batchKey, $batchKey . ":" . self::getHashKeySuffix());
         $count = match ($batchKey) {
             self::USER_SEEDING_LEECHING_TIME_BATCH_KEY => self::updateUserLeechingSeedingTime($redis, $batch, $logPrefix),
             self::TORRENT_SEEDERS_ETC_BATCH_KEY => self::updateTorrentSeedersEtc($redis, $batch, $logPrefix),
@@ -150,7 +150,7 @@ for k, v in pairs(batchList) do
     local batchKey = redis.call("GET", v)
     local isBatchKeyNew = false
     if batchKey == false then
-        batchKey = v .. ARGV[3]
+        batchKey = v .. ":" .. ARGV[3]
         redis.call("SET", v, batchKey, "EX", 2592000)
         isBatchKeyNew = true
     end
@@ -170,7 +170,7 @@ LUA;
 
     private static function getHashKeySuffix(): string
     {
-        return ":" . date('Ymd_His');
+        return date('Ymd_His');
     }
 
 }
