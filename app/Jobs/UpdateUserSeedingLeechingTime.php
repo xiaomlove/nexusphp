@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Setting;
+use App\Repositories\CleanupRepository;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -55,42 +56,7 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
      */
     public function handle()
     {
-        $beginTimestamp = time();
-        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
-//        $sql = sprintf(
-//            "update users set seedtime = (select sum(seedtime) from snatched where userid = users.id), leechtime=(select sum(leechtime) from snatched where userid = users.id), seed_time_updated_at = '%s' where id > %s and id <= %s and status = 'confirmed' and enabled = 'yes'",
-//            now()->toDateTimeString(), $this->beginUid, $this->endUid
-//        );
-//        $results = NexusDB::statement($sql);
-
-        $users = NexusDB::table('users')
-            ->where('id', '>', $this->beginUid)
-            ->where('id', '<=', $this->endUid)
-            ->where('status', 'confirmed')
-            ->where('enabled', 'yes')
-            ->get(['id'])
-        ;
-        $count = 0;
-        foreach ($users as $user) {
-            $sumInfo = NexusDB::table('snatched')
-                ->selectRaw('sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum')
-                ->where('userid', $user->id)
-                ->first();
-            if ($sumInfo && $sumInfo->seedtime_sum !== null) {
-                $update = [
-                    'seedtime' => $sumInfo->seedtime_sum ?? 0,
-                    'leechtime' => $sumInfo->leechtime_sum ?? 0,
-                    'seed_time_updated_at' => Carbon::now()->toDateTimeString(),
-                ];
-                NexusDB::table('users')
-                    ->where('id', $user->id)
-                    ->update($update);
-                do_log("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_USER], [SUCCESS]: $user->id => " . json_encode($update));
-                $count++;
-            }
-        }
-        $costTime = time() - $beginTimestamp;
-        do_log("$logPrefix, [DONE], user total count: " . count($users) . ", success update count: $count, cost time: $costTime seconds");
+        CleanupRepository::runBatchJob(CleanupRepository::USER_SEEDING_LEECHING_TIME_BATCH_KEY, $this->requestId);
     }
 
     /**

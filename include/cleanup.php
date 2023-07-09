@@ -408,25 +408,13 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE torrents SET " . implode(",", $update) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 //	}
 
-    $delayBase = $baseDuration;
-    $maxTorrentIdRes = mysql_fetch_assoc(sql_query("select max(id) as max_torrent_id from torrents limit 1"));
-    $maxTorrentId = $maxTorrentIdRes['max_torrent_id'];
-    $chunk = 1000;
-    $beginTorrentId = 0;
-    $chunkCounts = ceil($maxTorrentId / $chunk);
-    $delay = ceil($baseDuration/$chunkCounts);
-    $i = 0;
-    do_log("maxTorrentId: $maxTorrentId, chunk: $chunk, chunkCounts: $chunkCounts, delayBase: $delayBase, delay: $delay");
-    do {
-        $command = sprintf(
-            'cleanup --action=seeders_etc --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
-            $beginTorrentId, $beginTorrentId + $chunk, $requestId, $delayBase + $i * $delay
-        );
-        $output = executeCommand($command, 'string', true);
-        do_log(sprintf('command: %s, output: %s', $command, $output));
-        $beginTorrentId += $chunk;
-        $i++;
-    } while ($beginTorrentId < $maxTorrentId);
+    $command = sprintf(
+        'cleanup --action=seeders_etc --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
+        0, 0, $requestId, 0
+    );
+    $output = executeCommand($command, 'string', true);
+    do_log(sprintf('command: %s, output: %s', $command, $output));
+
 	$log = "update count of seeders, leechers, comments for torrents";
 	do_log($log);
 	if ($printProgress) {
@@ -903,23 +891,12 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
 //	}
 
-    $chunk = 1000;
-    $beginUid = 0;
-    $delayBase = $baseDuration * 2;
-    $chunkCounts = ceil($maxUid / $chunk);
-    $delay = ceil($baseDuration/$chunkCounts);
-    $i = 0;
-    do_log("maxUid: $maxUid, chunk: $chunk, chunkCounts: $chunkCounts, delayBase: $delayBase, delay: $delay");
-    do {
-        $command = sprintf(
-            'cleanup --action=seeding_leeching_time --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
-            $beginUid, $beginUid + $chunk, $requestId, $delayBase + $delay * $i
-        );
-        $output = executeCommand($command, 'string', true);
-        do_log(sprintf('command: %s, output: %s', $command, $output));
-        $beginUid += $chunk;
-        $i++;
-    } while ($beginUid < $maxUid);
+    $command = sprintf(
+        'cleanup --action=seeding_leeching_time --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
+        0, 0, $requestId, 0
+    );
+    $output = executeCommand($command, 'string', true);
+    do_log(sprintf('command: %s, output: %s', $command, $output));
 
 	$log = "update total seeding and leeching time of users";
 	do_log($log);

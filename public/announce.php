@@ -738,7 +738,10 @@ if(count($USERUPDATESET) && $userid)
     sql_query($sql);
     do_log("[ANNOUNCE_UPDATE_USER], $sql");
 }
-\App\Repositories\CleanupRepository::recordBatch($redis, $userid, $torrentid);
+$lockKey = sprintf("record_batch_lock:%s:%s", $userid, $torrentid);
+if ($redis->set($lockKey, TIMENOW, ['nx', 'ex' => $autoclean_interval_one])) {
+    \App\Repositories\CleanupRepository::recordBatch($redis, $userid, $torrentid);
+}
 do_action('announced', $torrent, $az, $_REQUEST);
 benc_resp($rep_dict);
 ?>

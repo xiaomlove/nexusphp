@@ -26,6 +26,7 @@ use App\Models\User;
 use App\Models\UserBanLog;
 use App\Repositories\AgentAllowRepository;
 use App\Repositories\AttendanceRepository;
+use App\Repositories\CleanupRepository;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
 use App\Repositories\MeiliSearchRepository;
@@ -97,8 +98,9 @@ class Test extends Command
      */
     public function handle()
     {
-        $arr = ['aa' => ['bb' => []]];
-        dd(array_filter($arr));
+        $redis = NexusDB::redis();
+        $r = CleanupRepository::recordBatch($redis, 99, 100);
+        dd($r);
     }
 
 }
