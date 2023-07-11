@@ -300,28 +300,12 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //	}
 
 	//chunk async
-    $asyncTaskCount = 3;
-    $baseDuration = floor($autoclean_interval_one / ($asyncTaskCount + 1));
-    $delayBase = 0;
-    $requestId = nexus()->getRequestId();
-    $maxUidRes = mysql_fetch_assoc(sql_query("select max(id) as max_uid from users limit 1"));
-	$maxUid = $maxUidRes['max_uid'];
-	$chunk = 1000;
-	$beginUid = 0;
-    $chunkCounts = ceil($maxUid / $chunk);
-    $delay = ceil($baseDuration/$chunkCounts);
-    $i = 0;
-    do_log("autoclean_interval_one: $autoclean_interval_one, baseDuration: $baseDuration, maxUid: $maxUid, chunk: $chunk, chunkCounts: $chunkCounts, delayBase: $delayBase, delay: $delay");
-	do {
-	    $command = sprintf(
-	        'cleanup --action=seed_bonus --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
-            $beginUid, $beginUid + $chunk, $requestId, $delayBase + $i * $delay
-        );
-        $output = executeCommand($command, 'string', true);
-        do_log(sprintf('command: %s, output: %s', $command, $output));
-	    $beginUid += $chunk;
-        $i++;
-    } while ($beginUid < $maxUid);
+    $command = sprintf(
+        'cleanup --action=seed_bonus --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
+        0, 0,  nexus()->getRequestId(), 0
+    );
+    $output = executeCommand($command, 'string', true);
+    do_log(sprintf('command: %s, output: %s', $command, $output));
 
 	$log = 'calculate seeding bonus';
 	do_log($log);
