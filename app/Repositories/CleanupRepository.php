@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Models\Setting;
+use App\Models\User;
 use Carbon\Carbon;
 use Nexus\Database\NexusDB;
 
@@ -196,10 +197,12 @@ LUA;
         /* Don't ever return an empty array until we're done iterating */
         $redis->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
         while($arr_keys = $redis->hScan($batch, $it, "*", $size)) {
-            foreach($arr_keys as $uid => $timestamp) {
-                do_log("$logPrefix $uid => $timestamp"); /* Print the hash member and value */
-
-                $userInfo = get_user_row($uid);
+            $uidArr = array_keys($arr_keys);
+            $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), implode(',', $uidArr));
+            $results = NexusDB::select($sql);
+            foreach ($results as $userInfo)
+            {
+                $uid = $userInfo['id'];
                 $isDonor = is_donor($userInfo);
                 $seedBonusResult = calculate_seed_bonus($uid);
                 $bonusLog = "[CLEANUP_CLI_CALCULATE_SEED_BONUS], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
@@ -229,7 +232,7 @@ LUA;
                 $all_bonus = $all_bonus / $dividend;
                 $seed_points = $seedBonusResult['seed_points'] / $dividend;
                 $updatedAt = now()->toDateTimeString();
-                $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus, seed_points_per_hour = {$seedBonusResult['seed_points']} ,seed_points_updated_at = '$updatedAt' where id = $uid limit 1";
+                $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seed_points_per_hour = {$seedBonusResult['seed_points']}, seedbonus = seedbonus + $all_bonus, seed_points_updated_at = '$updatedAt' where id = $uid limit 1";
                 do_log("$bonusLog, query: $sql");
                 NexusDB::statement($sql);
                 if ($fd) {
@@ -243,7 +246,6 @@ LUA;
                 } else {
                     do_log("logFile: $logFile is not writeable!", 'error');
                 }
-                $count++;
             }
             sleep(rand(1, 10));
         }
