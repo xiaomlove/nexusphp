@@ -23,15 +23,18 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
 
     private string $requestId;
 
+    private string $idStr;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginTorrentId, int $endTorrentId, string $requestId = '')
+    public function __construct(int $beginTorrentId, int $endTorrentId, string $idStr, string $requestId = '')
     {
         $this->beginTorrentId = $beginTorrentId;
         $this->endTorrentId = $endTorrentId;
+        $this->idStr = $idStr;
         $this->requestId = $requestId;
     }
 

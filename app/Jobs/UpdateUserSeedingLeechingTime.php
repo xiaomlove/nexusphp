@@ -23,15 +23,18 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
 
     private string $requestId;
 
+    private string $idStr;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginUid, int $endUid, string $requestId = '')
+    public function __construct(int $beginUid, int $endUid, string $idStr, string $requestId = '')
     {
         $this->beginUid = $beginUid;
         $this->endUid = $endUid;
+        $this->idStr = $idStr;
         $this->requestId = $requestId;
     }
 

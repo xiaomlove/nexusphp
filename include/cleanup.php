@@ -242,6 +242,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	global $enablenoad_advertisement, $noad_advertisement;
 	global $Cache;
 	global $rootpath;
+    $requestId = nexus()->getRequestId();
 
 	require_once($rootpath . '/lang/_target/lang_cleanup.php');
 
@@ -299,13 +300,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		}
 //	}
 
-	//chunk async
-    $command = sprintf(
-        'cleanup --action=seed_bonus --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
-        0, 0,  nexus()->getRequestId(), 0
-    );
-    $output = executeCommand($command, 'string', true);
-    do_log(sprintf('command: %s, output: %s', $command, $output));
+	\App\Repositories\CleanupRepository::runBatchJobCalculateUserSeedBonus($requestId);
 
 	$log = 'calculate seeding bonus';
 	do_log($log);

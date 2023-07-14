@@ -98,9 +98,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $redis = NexusDB::redis();
-        $r = CleanupRepository::recordBatch($redis, 99, 100);
-        dd($r);
+        CleanupRepository::recordBatch(NexusDB::redis(), "1", "5");
+        CleanupRepository::runBatchJobCalculateUserSeedBonus("bbbbb");
     }
 
 }

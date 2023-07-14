@@ -12,6 +12,12 @@ class CleanupRepository extends BaseRepository
     const USER_SEEDING_LEECHING_TIME_BATCH_KEY = "batch_key:user_seeding_leeching_time";
     const TORRENT_SEEDERS_ETC_BATCH_KEY = "batch_key:torrent_seeders_etc";
 
+    private static int $totalTask = 3;
+
+    private static int $oneTaskSeconds = 0;
+
+    private static int $scanSize = 1000;
+
     public static function recordBatch(\Redis $redis, $uid, $torrentId)
     {
         $args = [
@@ -24,6 +30,11 @@ class CleanupRepository extends BaseRepository
             do_log("[REDIS_LUA_ERROR]: $err", "error");
         }
         return $result;
+    }
+
+    public static function runBatchJobCalculateUserSeedBonus(string $requestId)
+    {
+        self::runBatchJob(self::USER_SEED_BONUS_BATCH_KEY, $requestId);
     }
 
     public static function runBatchJob($batchKey, $requestId)
@@ -40,9 +51,9 @@ class CleanupRepository extends BaseRepository
         //update the batch key
         $redis->set($batchKey, $batchKey . ":" . self::getHashKeySuffix());
         $count = match ($batchKey) {
-            self::USER_SEEDING_LEECHING_TIME_BATCH_KEY => self::updateUserLeechingSeedingTime($redis, $batch, $logPrefix),
-            self::TORRENT_SEEDERS_ETC_BATCH_KEY => self::updateTorrentSeedersEtc($redis, $batch, $logPrefix),
-            self::USER_SEED_BONUS_BATCH_KEY => self::calculateUserSeedBonus($redis, $batch, $logPrefix),
+            self::USER_SEEDING_LEECHING_TIME_BATCH_KEY => self::updateUserLeechingSeedingTime($redis, $batch, $requestId),
+            self::TORRENT_SEEDERS_ETC_BATCH_KEY => self::updateTorrentSeedersEtc($redis, $batch, $requestId),
+            self::USER_SEED_BONUS_BATCH_KEY => self::calculateUserSeedBonus($redis, $batch, $requestId),
             default => throw new \InvalidArgumentException("Invalid batchKey: $batchKey")
         };
         //remove this batch
@@ -180,76 +191,59 @@ LUA;
         return date('Ymd_His');
     }
 
-    private static function calculateUserSeedBonus(\Redis $redis, $batch, $logPrefix)
+    private static function calculateUserSeedBonus(\Redis $redis, $batch, $requestId): int
     {
-        $haremAdditionFactor = Setting::get('bonus.harem_addition');
-        $officialAdditionFactor = Setting::get('bonus.official_addition');
-        $donortimes_bonus = Setting::get('bonus.donortimes');
-        $autoclean_interval_one = Setting::get('main.autoclean_interval_one');
-
-        $logFile = getLogFile("seed-bonus-points");
-        do_log("$logPrefix, logFile: $logFile");
-        $fd = fopen($logFile, 'a');
-
         $count = 0;
-        $size = 1000;
         $it = NULL;
+        $length = $redis->hLen($batch);
+        $page = 0;
         /* Don't ever return an empty array until we're done iterating */
         $redis->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
-        while($arr_keys = $redis->hScan($batch, $it, "*", $size)) {
-            $uidArr = array_keys($arr_keys);
-            $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), implode(',', $uidArr));
-            $results = NexusDB::select($sql);
-            foreach ($results as $userInfo)
-            {
-                $uid = $userInfo['id'];
-                $isDonor = is_donor($userInfo);
-                $seedBonusResult = calculate_seed_bonus($uid);
-                $bonusLog = "[CLEANUP_CLI_CALCULATE_SEED_BONUS], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
-                $all_bonus = $seedBonusResult['seed_bonus'];
-                $bonusLog .= ", all_bonus: $all_bonus";
-                if ($isDonor) {
-                    $all_bonus = $all_bonus * $donortimes_bonus;
-                    $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
-                }
-                if ($officialAdditionFactor > 0) {
-                    $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
-                    $all_bonus += $officialAddition;
-                    $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
-                }
-                if ($haremAdditionFactor > 0) {
-                    $haremBonus = calculate_harem_addition($uid);
-                    $haremAddition =  $haremBonus * $haremAdditionFactor;
-                    $all_bonus += $haremAddition;
-                    $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
-                }
-                if ($seedBonusResult['medal_additional_factor'] > 0) {
-                    $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'];
-                    $all_bonus += $medalAddition;
-                    $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
-                }
-                $dividend = 3600 / $autoclean_interval_one;
-                $all_bonus = $all_bonus / $dividend;
-                $seed_points = $seedBonusResult['seed_points'] / $dividend;
-                $updatedAt = now()->toDateTimeString();
-                $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seed_points_per_hour = {$seedBonusResult['seed_points']}, seedbonus = seedbonus + $all_bonus, seed_points_updated_at = '$updatedAt' where id = $uid limit 1";
-                do_log("$bonusLog, query: $sql");
-                NexusDB::statement($sql);
-                if ($fd) {
-                    $log = sprintf(
-                        '%s|%s|%s|%s|%s|%s|%s|%s',
-                        date('Y-m-d H:i:s'), $uid,
-                        $userInfo['seed_points'], number_format($seed_points, 1, '.', ''),  number_format($userInfo['seed_points'] + $seed_points, 1, '.', ''),
-                        $userInfo['seedbonus'], number_format($all_bonus, 1, '.', ''),  number_format($userInfo['seedbonus'] + $all_bonus, 1, '.', '')
-                    );
-                    fwrite($fd, $log . PHP_EOL);
-                } else {
-                    do_log("logFile: $logFile is not writeable!", 'error');
-                }
-            }
-            sleep(rand(1, 10));
+        while($arr_keys = $redis->hScan($batch, $it, "*", self::$scanSize)) {
+            $delay = self::getDelay(0, $length, $page);
+            $idStr = implode(",", array_keys($arr_keys));
+            $command = sprintf(
+                'cleanup --action=seed_bonus --begin_id=%s --end_id=%s --id_str=%s --request_id=%s --delay=%s',
+                0, 0,  $idStr, $requestId, $delay
+            );
+            $output = executeCommand($command, 'string', true);
+            do_log(sprintf('command: %s, output: %s', $command, $output));
+            $page++;
+            $count += count($arr_keys);
         }
         return $count;
+    }
+
+    private static function getOneTaskSeconds(): float|int
+    {
+        if (self::$oneTaskSeconds == 0) {
+            //最低间隔，要在这个时间内执行掉全部任务
+            $totalSeconds = get_setting("main.autoclean_interval_one");
+            //每个任务能分到的秒数，不能到顶，任务数+1计算
+            self::$oneTaskSeconds = floor($totalSeconds / (self::$totalTask + 1));
+        }
+        return self::$oneTaskSeconds;
+    }
+
+    private static function getDelayBase($taskIndex): float|int
+    {
+        return self::getOneTaskSeconds() * $taskIndex;
+    }
+
+    private static function getDelay(int $taskIndex, int $length, int $page): float
+    {
+        //超始基数
+        $base = self::getDelayBase($taskIndex);
+        //一共有这么多时间可以使用
+        $totalSeconds = self::getOneTaskSeconds();
+        //分几份
+        $totalPage = ceil($length / self::$scanSize);
+        //每份多长
+        $perPage = floor($totalSeconds / $totalPage);
+        //page 从 0 开始
+        $offset = $page * $perPage;
+
+        return floor($base + $offset);
     }
 
 }
