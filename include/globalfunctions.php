@@ -213,7 +213,7 @@ function do_log($log, $level = 'info', $echo = false)
         sprintf('%.3f', microtime(true) - (nexus() ? nexus()->getStartTimestamp() : 0)),
         $uid,
         $passkey,
-        $env, $level,
+        $env, strtoupper($level),
         $backtrace[0]['file'] ?? '',
         $backtrace[0]['line'] ?? '',
         $backtrace[1]['class'] ?? '',
