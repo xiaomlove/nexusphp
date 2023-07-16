@@ -33,7 +33,7 @@ class Cleanup extends Command
         $action = $this->option('action');
         $beginId = $this->option('begin_id');
         $endId = $this->option('end_id');
-        $idStr = $this->option('id_str');
+        $idStr = $this->option('id_str') ?: "";
         $commentRequestId = $this->option('request_id');
         $delay = $this->option('delay') ?: 0;
         $this->info("beginId: $beginId, endId: $endId, idStr: $idStr, commentRequestId: $commentRequestId, delay: $delay, action: $action");
