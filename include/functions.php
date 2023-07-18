@@ -229,6 +229,12 @@ function formatCode($text) {
 }
 
 function formatImg($src, $enableImageResizer, $image_max_width, $image_max_height, $imgId = "") {
+    if (is_danger_url($src)) {
+        $msg = "[DANGER_URL]: $src";
+        do_log($msg, "alert");
+        write_log($msg, "mod");
+        return "";
+    }
 	return addTempCode("<img style=\"max-width: 100%\" id=\"$imgId\" alt=\"image\" src=\"$src\"" .($enableImageResizer ?  " onload=\"Scale(this,$image_max_width,$image_max_height);\" onclick=\"Preview(this);\"" : "") .  " />");
 }
 

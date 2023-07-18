@@ -1195,3 +1195,13 @@ function has_role_work_seeding($uid)
     return $result;
 }
 
+function is_danger_url($url): bool
+{
+    $dangerScriptsPattern = "/(logout|login|ajax|announce|scrape|adduser|modtask|take.*)\.php/i";
+    $match = preg_match($dangerScriptsPattern, $url);
+    if ($match > 0) {
+        return true;
+    }
+    return false;
+}
+
