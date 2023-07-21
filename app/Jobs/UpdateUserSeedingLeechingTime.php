@@ -59,7 +59,31 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
      */
     public function handle()
     {
-        CleanupRepository::runBatchJob(CleanupRepository::USER_SEEDING_LEECHING_TIME_BATCH_KEY, $this->requestId);
+        $beginTimestamp = time();
+        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
+
+        $count = 0;
+        $uidArr = explode(",", $this->idStr);
+        foreach ($uidArr as $uid) {
+            $sumInfo = NexusDB::table('snatched')
+                ->selectRaw('sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum')
+                ->where('userid', $uid)
+                ->first();
+            if ($sumInfo && $sumInfo->seedtime_sum !== null) {
+                $update = [
+                    'seedtime' => $sumInfo->seedtime_sum ?? 0,
+                    'leechtime' => $sumInfo->leechtime_sum ?? 0,
+                    'seed_time_updated_at' => Carbon::now()->toDateTimeString(),
+                ];
+                NexusDB::table('users')
+                    ->where('id', $uid)
+                    ->update($update);
+                do_log("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_USER], [SUCCESS]: $uid => " . json_encode($update));
+                $count++;
+            }
+        }
+        $costTime = time() - $beginTimestamp;
+        do_log("$logPrefix, [DONE], user total count: " . count($uidArr) . ", success update count: $count, cost time: $costTime seconds");
     }
 
     /**

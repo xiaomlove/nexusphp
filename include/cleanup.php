@@ -387,12 +387,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE torrents SET " . implode(",", $update) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
 //	}
 
-    $command = sprintf(
-        'cleanup --action=seeders_etc --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
-        0, 0, $requestId, 0
-    );
-    $output = executeCommand($command, 'string', true);
-    do_log(sprintf('command: %s, output: %s', $command, $output));
+    \App\Repositories\CleanupRepository::runBatchJobUpdateTorrentSeedersEtc($requestId);
 
 	$log = "update count of seeders, leechers, comments for torrents";
 	do_log($log);
@@ -870,12 +865,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
 //	}
 
-    $command = sprintf(
-        'cleanup --action=seeding_leeching_time --begin_id=%s --end_id=%s --request_id=%s --delay=%s',
-        0, 0, $requestId, 0
-    );
-    $output = executeCommand($command, 'string', true);
-    do_log(sprintf('command: %s, output: %s', $command, $output));
+    \App\Repositories\CleanupRepository::runBatchJobUpdateUserSeedingLeechingTime($requestId);
 
 	$log = "update total seeding and leeching time of users";
 	do_log($log);

@@ -59,7 +59,42 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
      */
     public function handle()
     {
-        CleanupRepository::runBatchJob(CleanupRepository::TORRENT_SEEDERS_ETC_BATCH_KEY, $this->requestId);
+        $beginTimestamp = time();
+        $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_JOB], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s", $this->requestId, $this->beginTorrentId, $this->endTorrentId);
+
+        $torrentIdArr = explode(",", $this->idStr);
+        foreach ($torrentIdArr as $torrentId) {
+            $peerResult = NexusDB::table('peers')
+                ->where('torrent', $torrentId)
+                ->selectRaw("count(*) as count, seeder")
+                ->groupBy('seeder')
+                ->get()
+            ;
+            $commentResult = NexusDB::table('comments')
+                ->where('torrent',$torrentId)
+                ->selectRaw("count(*) as count")
+                ->first()
+            ;
+            $update = [
+                'comments' => $commentResult && $commentResult->count !== null ? $commentResult->count : 0,
+                'seeders' => 0,
+                'leechers' => 0,
+            ];
+            foreach ($peerResult as $item) {
+                if ($item->seeder == 'yes') {
+                    $update['seeders'] = $item->count;
+                } elseif ($item->seeder == 'no') {
+                    $update['leechers'] = $item->count;
+                }
+            }
+            NexusDB::table('torrents')->where('id', $torrentId)->update($update);
+            do_log("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_TORRENT], [SUCCESS]: $torrentId => " . json_encode($update));
+        }
+        $costTime = time() - $beginTimestamp;
+        do_log(sprintf(
+            "$logPrefix, [DONE], update torrent count: %s, cost time: %s seconds",
+            count($torrentIdArr), $costTime
+        ));
     }
 
     /**
