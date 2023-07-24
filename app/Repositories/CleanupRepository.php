@@ -88,18 +88,16 @@ class CleanupRepository extends BaseRepository
         /* Don't ever return an empty array until we're done iterating */
         $redis->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
         while($arr_keys = $redis->hScan($batch, $it, "*", self::$scanSize)) {
-            foreach($arr_keys as $k => $v) {
-                $delay = self::getDelay($batchKeyInfo['task_index'], $length, $page);
-                $idStr = implode(",", array_keys($arr_keys));
-                $command = sprintf(
-                    'cleanup --action=%s --begin_id=%s --end_id=%s --id_str=%s --request_id=%s --delay=%s',
-                    $batchKeyInfo['action'], 0, 0,  $idStr, $requestId, $delay
-                );
-                $output = executeCommand($command, 'string', true);
-                do_log(sprintf('command: %s, output: %s', $command, $output));
-                $page++;
-                $count += count($arr_keys);
-            }
+            $delay = self::getDelay($batchKeyInfo['task_index'], $length, $page);
+            $idStr = implode(",", array_keys($arr_keys));
+            $command = sprintf(
+                'cleanup --action=%s --begin_id=%s --end_id=%s --id_str=%s --request_id=%s --delay=%s',
+                $batchKeyInfo['action'], 0, 0,  $idStr, $requestId, $delay
+            );
+            $output = executeCommand($command, 'string', true);
+            do_log(sprintf('command: %s, output: %s', $command, $output));
+            $count += count($arr_keys);
+            $page++;
         }
 
         //remove this batch
