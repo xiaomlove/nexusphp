@@ -138,7 +138,7 @@ for k, v in pairs(batchList) do
     local isBatchKeyNew = false
     if batchKey == false then
         batchKey = v .. ":" .. ARGV[4]
-        redis.call("SET", v, batchKey, "EX", 2592000)
+        redis.call("SET", v, batchKey, "EX", 3600*3)
         isBatchKeyNew = true
     end
     local hashKey
@@ -151,9 +151,9 @@ for k, v in pairs(batchList) do
     else
         hashKey = ARGV[3]
     end
-    redis.call("HSETNX", batchKey, hashKey, ARGV[4])
+    redis.call("HSETNX", batchKey, hashKey, 1)
     if isBatchKeyNew then
-        redis.call("EXPIRE", batchKey, 2592000)
+        redis.call("EXPIRE", batchKey, 3600*3)
     end
 end
 LUA;
