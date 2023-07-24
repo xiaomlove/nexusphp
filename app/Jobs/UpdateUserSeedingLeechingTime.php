@@ -65,6 +65,9 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
         $count = 0;
         $uidArr = explode(",", $this->idStr);
         foreach ($uidArr as $uid) {
+            if ($uid <= 0) {
+                continue;
+            }
             $sumInfo = NexusDB::table('snatched')
                 ->selectRaw('sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum')
                 ->where('userid', $uid)

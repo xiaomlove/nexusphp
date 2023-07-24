@@ -12,6 +12,8 @@ class CleanupRepository extends BaseRepository
     const USER_SEEDING_LEECHING_TIME_BATCH_KEY = "batch_key:user_seeding_leeching_time";
     const TORRENT_SEEDERS_ETC_BATCH_KEY = "batch_key:torrent_seeders_etc";
 
+    const KEY_LIFETIME = 3600*3;
+
     private static array $batchKeyActionsMap = [
         self::USER_SEED_BONUS_BATCH_KEY => [
             'action' => 'seed_bonus',
@@ -79,7 +81,11 @@ class CleanupRepository extends BaseRepository
             return;
         }
         //update the batch key
-        $redis->set($batchKey, $batchKey . ":" . self::getHashKeySuffix());
+        $newBatch = $batchKey . ":" . self::getHashKeySuffix();
+        $redis->set($batchKey, $newBatch, ['ex' => self::KEY_LIFETIME]);
+        $redis->hSetNx($newBatch, -1, 1);
+        $redis->expire($newBatch, self::KEY_LIFETIME);
+
 
         $count = 0;
         $it = NULL;
@@ -95,7 +101,7 @@ class CleanupRepository extends BaseRepository
                 $batchKeyInfo['action'], 0, 0,  $idStr, $requestId, $delay
             );
             $output = executeCommand($command, 'string', true);
-            do_log(sprintf('command: %s, output: %s', $command, $output));
+            do_log(sprintf('output: %s', $output));
             $count += count($arr_keys);
             $page++;
         }

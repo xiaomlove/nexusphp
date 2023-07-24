@@ -64,6 +64,9 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
 
         $torrentIdArr = explode(",", $this->idStr);
         foreach ($torrentIdArr as $torrentId) {
+            if ($torrentId <= 0) {
+                continue;
+            }
             $peerResult = NexusDB::table('peers')
                 ->where('torrent', $torrentId)
                 ->selectRaw("count(*) as count, seeder")
