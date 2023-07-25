@@ -148,4 +148,13 @@ class TorrentController extends Controller
         return $this->success($params);
     }
 
+    public function queryByPiecesHash(Request $request)
+    {
+        $request->validate([
+            'pieces_hash' => 'required|array',
+        ]);
+        $result = $this->repository->getPiecesHashCache($request->pieces_hash);
+        return $this->success($result);
+    }
+
 }

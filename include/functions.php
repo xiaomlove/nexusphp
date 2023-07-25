@@ -3113,7 +3113,13 @@ function loggedinorreturn($mainpage = false) {
 }
 
 function deletetorrent($id, $notify = false) {
-    $idArr = \Illuminate\Support\Arr::wrap($id);
+    $idArr = is_array($id) ? $id : [$id];
+    $torrentInfo = \Nexus\Database\NexusDB::table("torrents")
+        ->whereIn("id", $idArr)
+        ->get(['id', 'pieces_hash'])
+        ->KeyBy("id")
+    ;
+    $torrentRep = new \App\Repositories\TorrentRepository();
 	$idStr = implode(', ', $idArr ?: [0]);
 	$torrent_dir = get_setting('main.torrent_dir');
     \Nexus\Database\NexusDB::statement("DELETE FROM torrents WHERE id in ($idStr)");
@@ -3123,7 +3129,10 @@ function deletetorrent($id, $notify = false) {
 	}
     \Nexus\Database\NexusDB::statement("DELETE FROM hit_and_runs WHERE torrent_id in ($idStr)");
     \Nexus\Database\NexusDB::statement("DELETE FROM claims WHERE torrent_id in ($idStr)");
-    foreach ($idArr as $_id) {
+    foreach ($torrentInfo as $_id => $info) {
+        if ($torrentInfo->has($_id)) {
+            $torrentRep->delPiecesHashCache($torrentInfo->get($_id)->pieces_hash);
+        }
         do_action("torrent_delete", $_id);
         do_log("delete torrent: $_id", "error");
         unlink(getFullDirectory("$torrent_dir/$_id.torrent"));

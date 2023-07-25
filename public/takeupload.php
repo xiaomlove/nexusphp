@@ -348,6 +348,7 @@ $insert = [
     'pt_gen' => $_POST['pt_gen'] ?? '',
     'technical_info' => $_POST['technical_info'] ?? '',
     'cover' => $cover,
+    'pieces_hash' => sha1($info['pieces']),
 ];
 if (isset($_POST['hr'][$catmod]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$catmod]]) && user_can('torrent_hr')) {
     $insert['hr'] = $_POST['hr'][$catmod];
@@ -431,6 +432,8 @@ foreach ($filelist as $file) {
 KPS("+",$uploadtorrent_bonus,$CURUSER["id"]);
 //===end
 
+$torrentRep = new \App\Repositories\TorrentRepository();
+$torrentRep->addPiecesHashCache($id, $insert['pieces_hash']);
 
 write_log("Torrent $id ($torrent) was uploaded by $anon");
 

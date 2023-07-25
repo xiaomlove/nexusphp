@@ -34,10 +34,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
+use Rhilip\Bencode\Bencode;
 
 class TorrentRepository extends BaseRepository
 {
     const BOUGHT_USER_CACHE_KEY_PREFIX = "torrent_purchasers:";
+
+    const PIECES_HASH_CACHE_KEY = "torrent_pieces_hash";
 
     /**
      *  fetch torrent list
@@ -756,6 +759,100 @@ HTML;
     private function getBoughtUserCacheKey($torrentId): string
     {
         return  self::BOUGHT_USER_CACHE_KEY_PREFIX . $torrentId;
+    }
+
+    public function addPiecesHashCache(int $torrentId, string $piecesHash): bool|int|\Redis
+    {
+        $value = $this->buildPiecesHashCacheValue($torrentId, $piecesHash);
+        return NexusDB::redis()->hSet(self::PIECES_HASH_CACHE_KEY, $piecesHash, $value);
+    }
+
+    private  function buildPiecesHashCacheValue(int $torrentId, string $piecesHash): bool|string
+    {
+        return  json_encode(['torrent_id' => $torrentId, 'pieces_hash' => $piecesHash]);
+    }
+
+    public function delPiecesHashCache(string $piecesHash): bool|int|\Redis
+    {
+        return NexusDB::redis()->hDel(self::PIECES_HASH_CACHE_KEY, $piecesHash);
+    }
+
+    public function getPiecesHashCache($piecesHash): array
+    {
+        if (!is_array($piecesHash)) {
+            $piecesHash = [$piecesHash];
+        }
+        $maxCount = 100;
+        if (count($piecesHash) > $maxCount) {
+            throw new \InvalidArgumentException("too many pieces hash, must less then $maxCount");
+        }
+        $pipe = NexusDB::redis()->multi(\Redis::PIPELINE);
+        foreach ($piecesHash as $hash) {
+            $pipe->hGet(self::PIECES_HASH_CACHE_KEY, $hash);
+        }
+        $results = $pipe->exec();
+        $out = [];
+        foreach ($results as $item) {
+            $arr = json_decode($item, true);
+            if (is_array($arr) && isset($arr['torrent_id'], $arr['pieces_hash'])) {
+                $out[$arr['pieces_hash']] = $arr['torrent_id'];
+            } else {
+                do_log("invalid item: $item", 'error');
+            }
+        }
+        return $out;
+    }
+
+    public function loadPiecesHashCache($id = 0): int
+    {
+        $page = 1;
+        $size = 1000;
+        $query = Torrent::query();
+        if ($id) {
+            $query = $query->whereIn("id", Arr::wrap($id));
+        }
+        $total = 0;
+        $torrentDir = sprintf(
+            "%s/%s/",
+            rtrim(ROOT_PATH, '/'),
+            rtrim(get_setting("main.torrent_dir"), '/')
+        );
+        while (true) {
+            $list = (clone $query)->forPage($page, $size)->get(['id', 'pieces_hash']);
+            if ($list->isEmpty()) {
+                do_log("page: $page, size: $size, no more data...");
+                break;
+            }
+            $pipe = NexusDB::redis()->multi(\Redis::PIPELINE);
+            $piecesHashCaseWhen = $updateIdArr = [];
+            foreach ($list as $item) {
+                $piecesHash = $item->pieces_hash;
+                if (!$piecesHash) {
+                    $torrentFile = $torrentDir . $item->id . ".torrent";
+                    $loadResult = Bencode::load($torrentFile);
+                    $piecesHash = sha1($loadResult['info']['pieces']);
+                    $piecesHashCaseWhen[] = sprintf("when %s then '%s'", $item->id, $piecesHash);
+                    $updateIdArr[] = $item->id;
+                    do_log(sprintf("torrent: %s no pieces hash, load from torrent file: %s, pieces hash: %s", $item->id, $torrentFile, $piecesHash));
+                }
+                $pipe->hSet(self::PIECES_HASH_CACHE_KEY, $piecesHash, $this->buildPiecesHashCacheValue($item->id, $piecesHash));
+            }
+            $pipe->exec();
+            if (!empty($piecesHashCaseWhen)) {
+                $sql = sprintf(
+                    "update torrents set pieces_hash = case id %s end where id in (%s)",
+                    implode(' ', $piecesHashCaseWhen),
+                    implode(", ", $updateIdArr)
+                );
+                NexusDB::statement($sql);
+            }
+            $count = $list->count();
+            $total += $count;
+            do_log("success load page: $page, size: $size, count: $count");
+            $page++;
+        }
+        do_log("[DONE], total: $total");
+        return $total;
     }
 
 }
