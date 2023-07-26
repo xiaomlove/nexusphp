@@ -31,7 +31,7 @@ class TorrentLoadPiecesHash extends Command
         $begin = time();
         $id = $this->option('id');
         $rep = new TorrentRepository();
-        $this->info("id: $id");
+        $this->info("id: $id, going to load pieces hash...");
         $total = $rep->loadPiecesHashCache($id);
         $this->info(sprintf("total: %s, cost time: %s seconds.", $total, time() - $begin));
         return Command::SUCCESS;

@@ -39,7 +39,7 @@ class CleanupRepository extends BaseRepository
     {
         $args = [
             self::USER_SEED_BONUS_BATCH_KEY, self::USER_SEEDING_LEECHING_TIME_BATCH_KEY, self::TORRENT_SEEDERS_ETC_BATCH_KEY,
-            $uid, $uid, $torrentId, self::getHashKeySuffix()
+            $uid, $uid, $torrentId, self::getHashKeySuffix(), self::getCacheKeyLeftTime()
         ];
         $result  = $redis->eval(self::getAddRecordLuaScript(), $args, 3);
         $err = $redis->getLastError();
@@ -82,9 +82,10 @@ class CleanupRepository extends BaseRepository
         }
         //update the batch key
         $newBatch = $batchKey . ":" . self::getHashKeySuffix();
-        $redis->set($batchKey, $newBatch, ['ex' => self::KEY_LIFETIME]);
+        $leftTime = self::getCacheKeyLeftTime();
+        $redis->set($batchKey, $newBatch, ['ex' => $leftTime]);
         $redis->hSetNx($newBatch, -1, 1);
-        $redis->expire($newBatch, self::KEY_LIFETIME);
+        $redis->expire($newBatch, $leftTime);
 
 
         $count = 0;
@@ -129,7 +130,7 @@ class CleanupRepository extends BaseRepository
     }
 
     /**
-     * USER_SEED_BONUS, USER_SEEDING_LEECHING_TIME, TORRENT_SEEDERS_ETC, uid, uid, torrentId, timeStr
+     * USER_SEED_BONUS, USER_SEEDING_LEECHING_TIME, TORRENT_SEEDERS_ETC, uid, uid, torrentId, timeStr, cacheLifeTime
      *
      * @return string
      */
@@ -142,7 +143,7 @@ for k, v in pairs(batchList) do
     local isBatchKeyNew = false
     if batchKey == false then
         batchKey = v .. ":" .. ARGV[4]
-        redis.call("SET", v, batchKey, "EX", 3600*3)
+        redis.call("SET", v, batchKey, "EX", ARGV[5])
         isBatchKeyNew = true
     end
     local hashKey
@@ -157,7 +158,7 @@ for k, v in pairs(batchList) do
     end
     redis.call("HSETNX", batchKey, hashKey, 1)
     if isBatchKeyNew then
-        redis.call("EXPIRE", batchKey, 3600*3)
+        redis.call("EXPIRE", batchKey, ARGV[5])
     end
 end
 LUA;
@@ -198,6 +199,12 @@ LUA;
         $offset = $page * $perPage;
 
         return floor($base + $offset);
+    }
+
+    private static function getCacheKeyLeftTime(): int
+    {
+        $value = get_setting("main.autoclean_interval_three");
+        return intval($value) + 600;
     }
 
 }

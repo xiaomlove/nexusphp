@@ -28,7 +28,6 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
         Route::resource('messages', \App\Http\Controllers\MessageController::class);
         Route::get('messages-unread', [\App\Http\Controllers\MessageController::class, 'listUnread']);
         Route::resource('torrents', \App\Http\Controllers\TorrentController::class);
-        Route::get("pieces-hash", [\App\Http\Controllers\TorrentController::class, "queryByPiecesHash"])->name("torrent.pieces_hash.query");
         Route::resource('comments', \App\Http\Controllers\CommentController::class);
         Route::resource('peers', \App\Http\Controllers\PeerController::class);
         Route::resource('files', \App\Http\Controllers\FileController::class);
@@ -93,3 +92,8 @@ Route::group(['middleware' => ['auth:sanctum', 'locale']], function () {
 });
 
 Route::post('login', [\App\Http\Controllers\AuthenticateController::class, 'login']);
+
+
+Route::group(['middleware' => ['auth.nexus:passkey', 'locale']], function () {
+    Route::get("pieces-hash", [\App\Http\Controllers\TorrentController::class, "queryByPiecesHash"])->name("torrent.pieces_hash.query");
+});

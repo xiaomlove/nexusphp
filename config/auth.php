@@ -52,6 +52,9 @@ return [
         'nexus-web' => [
             'driver' => 'nexus-web',
         ],
+        'passkey' => [
+            'driver' => 'passkey',
+        ],
     ],
 
     /*

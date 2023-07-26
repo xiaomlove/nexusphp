@@ -64,6 +64,10 @@ class AuthServiceProvider extends ServiceProvider
             return new NexusWebGuard($app['request'], new NexusWebUserProvider());
         });
 
+        Auth::viaRequest('passkey', function (Request $request) {
+            return User::query()->where('passkey', $request->passkey)->first();
+        });
+
     }
 
     private function getUserByCookie($cookie)
