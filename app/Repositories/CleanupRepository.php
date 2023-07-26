@@ -39,7 +39,7 @@ class CleanupRepository extends BaseRepository
     {
         $args = [
             self::USER_SEED_BONUS_BATCH_KEY, self::USER_SEEDING_LEECHING_TIME_BATCH_KEY, self::TORRENT_SEEDERS_ETC_BATCH_KEY,
-            $uid, $uid, $torrentId, self::getHashKeySuffix(), self::getCacheKeyLeftTime()
+            $uid, $uid, $torrentId, self::getHashKeySuffix(), self::getCacheKeyLifeTime()
         ];
         $result  = $redis->eval(self::getAddRecordLuaScript(), $args, 3);
         $err = $redis->getLastError();
@@ -82,10 +82,10 @@ class CleanupRepository extends BaseRepository
         }
         //update the batch key
         $newBatch = $batchKey . ":" . self::getHashKeySuffix();
-        $leftTime = self::getCacheKeyLeftTime();
-        $redis->set($batchKey, $newBatch, ['ex' => $leftTime]);
+        $lifeTime = self::getCacheKeyLifeTime();
+        $redis->set($batchKey, $newBatch, ['ex' => $lifeTime]);
         $redis->hSetNx($newBatch, -1, 1);
-        $redis->expire($newBatch, $leftTime);
+        $redis->expire($newBatch, $lifeTime);
 
 
         $count = 0;
@@ -201,7 +201,7 @@ LUA;
         return floor($base + $offset);
     }
 
-    private static function getCacheKeyLeftTime(): int
+    private static function getCacheKeyLifeTime(): int
     {
         $value = get_setting("main.autoclean_interval_three");
         return intval($value) + 600;
