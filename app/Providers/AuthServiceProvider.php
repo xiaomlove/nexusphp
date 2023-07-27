@@ -66,7 +66,7 @@ class AuthServiceProvider extends ServiceProvider
 
         Auth::viaRequest('passkey', function (Request $request) {
             $passkey = $request->passkey;
-            if (empty($passkey)) {
+            if (strlen($passkey) != 32) {
                 return null;
             }
             return User::query()->where('passkey', $passkey)->first();
