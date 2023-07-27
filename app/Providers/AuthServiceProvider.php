@@ -65,7 +65,11 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Auth::viaRequest('passkey', function (Request $request) {
-            return User::query()->where('passkey', $request->passkey)->first();
+            $passkey = $request->passkey;
+            if (empty($passkey)) {
+                return null;
+            }
+            return User::query()->where('passkey', $passkey)->first();
         });
 
     }
