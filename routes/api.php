@@ -95,5 +95,5 @@ Route::post('login', [\App\Http\Controllers\AuthenticateController::class, 'logi
 
 
 Route::group(['middleware' => ['auth.nexus:passkey', 'locale']], function () {
-    Route::get("pieces-hash", [\App\Http\Controllers\TorrentController::class, "queryByPiecesHash"])->name("torrent.pieces_hash.query");
+    Route::post("pieces-hash", [\App\Http\Controllers\TorrentController::class, "queryByPiecesHash"])->name("torrent.pieces_hash.query");
 });
