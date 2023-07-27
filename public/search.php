@@ -154,7 +154,7 @@ if ($search && $count > 0) {
     torrenttable(json_decode(json_encode($rows), true));
     print($pagerbottom);
 } else {
-    stdmsg($lang_torrents['std_search_results_for'] . $search . "\"",$lang_torrents['std_try_again']);
+    stdmsg($lang_torrents['std_search_results_for'] . htmlspecialchars($search) . "\"",$lang_torrents['std_try_again']);
 }
 print("</td></tr></table>");
 stdfoot();

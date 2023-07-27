@@ -12,8 +12,6 @@ class CleanupRepository extends BaseRepository
     const USER_SEEDING_LEECHING_TIME_BATCH_KEY = "batch_key:user_seeding_leeching_time";
     const TORRENT_SEEDERS_ETC_BATCH_KEY = "batch_key:torrent_seeders_etc";
 
-    const KEY_LIFETIME = 3600*3;
-
     private static array $batchKeyActionsMap = [
         self::USER_SEED_BONUS_BATCH_KEY => [
             'action' => 'seed_bonus',
@@ -203,7 +201,7 @@ LUA;
 
     private static function getCacheKeyLifeTime(): int
     {
-        $value = get_setting("main.autoclean_interval_three");
+        $value = get_setting("main.autoclean_interval_four");
         return intval($value) + 600;
     }
 
