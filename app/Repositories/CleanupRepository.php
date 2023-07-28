@@ -201,8 +201,9 @@ LUA;
 
     private static function getCacheKeyLifeTime(): int
     {
-        $value = get_setting("main.autoclean_interval_four");
-        return intval($value) + 600;
+        $four = get_setting("main.autoclean_interval_four");
+        $one = get_setting("main.autoclean_interval_one");
+        return intval($four) + intval($one) * 2;
     }
 
 }
