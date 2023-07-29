@@ -3100,12 +3100,12 @@ function loggedinorreturn($mainpage = false) {
 	    if (nexus()->getScript() == 'ajax') {
 	        exit(fail('Not login!', $_POST));
         }
-		if ($mainpage)
-		header("Location: " . get_protocol_prefix() . "$BASEURL/login.php");
-		else {
+		if ($mainpage) {
+            nexus_redirect("login.php");
+        } else {
 			$to = $_SERVER["REQUEST_URI"];
 			$to = basename($to);
-			header("Location: " . get_protocol_prefix() . "$BASEURL/login.php?returnto=" . rawurlencode($to));
+            nexus_redirect("login.php?returnto=" . rawurlencode($to));
 		}
 		exit();
 	}
