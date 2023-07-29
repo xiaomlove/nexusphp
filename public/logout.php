@@ -4,5 +4,5 @@ dbconn();
 logoutcookie();
 //logoutsession();
 //header("Refresh: 0; url=./");
-Header("Location: " . get_protocol_prefix() . "$BASEURL/");
+nexus_redirect("/");
 ?>

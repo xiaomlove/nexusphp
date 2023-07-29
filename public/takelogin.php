@@ -95,7 +95,7 @@ else
 }
 
 if (!empty($_POST["returnto"]))
-	header("Location: " . $pprefix . "$BASEURL/{$_POST['returnto']}");
+	nexus_redirect($_POST['returnto']);
 else
-	header("Location: " . $pprefix . "$BASEURL/index.php");
+	nexus_redirect("index.php");
 ?>
