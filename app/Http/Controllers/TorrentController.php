@@ -154,7 +154,7 @@ class TorrentController extends Controller
             'pieces_hash' => 'required|array',
         ]);
         $result = $this->repository->getPiecesHashCache($request->pieces_hash);
-        return $this->success($result);
+        return $this->success($result ?: (object)[]);
     }
 
 }

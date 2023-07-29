@@ -55,7 +55,7 @@ class Handler extends ExceptionHandler
         }
 
         $this->renderable(function (AuthenticationException $e) {
-            return response()->json(fail($e->getMessage(), $e->guards()), 401);
+            return response()->json(fail($e->getMessage(), ['guards' => $e->guards()]), 401);
         });
 
         $this->renderable(function (UnauthorizedException $e) {
