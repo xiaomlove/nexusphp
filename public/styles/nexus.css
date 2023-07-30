@@ -68,3 +68,6 @@ img.hitandrun {
 .text-muted {
     color: #7d7b7b
 }
+.codemain>pre {
+    margin: 0;
+}

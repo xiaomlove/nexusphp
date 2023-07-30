@@ -225,7 +225,7 @@ function formatUrl($url, $newWindow = false, $text = '', $linkClass = '') {
 }
 function formatCode($text) {
 	global $lang_functions;
-	return addTempCode("<br /><div class=\"codetop\">".$lang_functions['text_code']."</div><div class=\"codemain\">$text</div><br />");
+	return addTempCode("<br /><div class=\"codetop\">".$lang_functions['text_code']."</div><div class=\"codemain\"><pre><code>$text</code></pre></div><br />");
 }
 
 function formatImg($src, $enableImageResizer, $image_max_width, $image_max_height, $imgId = "") {
