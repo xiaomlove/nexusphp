@@ -825,17 +825,24 @@ HTML;
             }
             $pipe = NexusDB::redis()->multi(\Redis::PIPELINE);
             $piecesHashCaseWhen = $updateIdArr = [];
+            $count = 0;
             foreach ($list as $item) {
-                $piecesHash = $item->pieces_hash;
-                if (!$piecesHash) {
-                    $torrentFile = $torrentDir . $item->id . ".torrent";
-                    $loadResult = Bencode::load($torrentFile);
-                    $piecesHash = sha1($loadResult['info']['pieces']);
-                    $piecesHashCaseWhen[] = sprintf("when %s then '%s'", $item->id, $piecesHash);
-                    $updateIdArr[] = $item->id;
-                    do_log(sprintf("torrent: %s no pieces hash, load from torrent file: %s, pieces hash: %s", $item->id, $torrentFile, $piecesHash));
+                try {
+                    $piecesHash = $item->pieces_hash;
+                    if (!$piecesHash) {
+                        $torrentFile = $torrentDir . $item->id . ".torrent";
+                        $loadResult = Bencode::load($torrentFile);
+                        $piecesHash = sha1($loadResult['info']['pieces']);
+                        $piecesHashCaseWhen[] = sprintf("when %s then '%s'", $item->id, $piecesHash);
+                        $updateIdArr[] = $item->id;
+                        do_log(sprintf("torrent: %s no pieces hash, load from torrent file: %s, pieces hash: %s", $item->id, $torrentFile, $piecesHash));
+                    }
+                    $pipe->hSet(self::PIECES_HASH_CACHE_KEY, $piecesHash, $this->buildPiecesHashCacheValue($item->id, $piecesHash));
+                    $total++;
+                    $count++;
+                } catch (\Exception $exception) {
+                    do_log(sprintf("load pieces hash of torrent: %s error: %s", $item->id, $exception->getMessage()), 'error');
                 }
-                $pipe->hSet(self::PIECES_HASH_CACHE_KEY, $piecesHash, $this->buildPiecesHashCacheValue($item->id, $piecesHash));
             }
             $pipe->exec();
             if (!empty($piecesHashCaseWhen)) {
@@ -846,8 +853,6 @@ HTML;
                 );
                 NexusDB::statement($sql);
             }
-            $count = $list->count();
-            $total += $count;
             do_log("success load page: $page, size: $size, count: $count");
             $page++;
         }
