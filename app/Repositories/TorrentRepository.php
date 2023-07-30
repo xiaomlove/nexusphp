@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 use Rhilip\Bencode\Bencode;
+use function Sodium\compare;
 
 class TorrentRepository extends BaseRepository
 {
@@ -803,7 +804,7 @@ HTML;
         return $out;
     }
 
-    public function loadPiecesHashCache($id = 0): int
+    public function loadPiecesHashCache($id = 0): array
     {
         $page = 1;
         $size = 1000;
@@ -811,7 +812,7 @@ HTML;
         if ($id) {
             $query = $query->whereIn("id", Arr::wrap($id));
         }
-        $total = 0;
+        $total = $success = 0;
         $torrentDir = sprintf(
             "%s/%s/",
             rtrim(ROOT_PATH, '/'),
@@ -825,8 +826,9 @@ HTML;
             }
             $pipe = NexusDB::redis()->multi(\Redis::PIPELINE);
             $piecesHashCaseWhen = $updateIdArr = [];
-            $count = 0;
+            $currentCount = 0;
             foreach ($list as $item) {
+                $total++;
                 try {
                     $piecesHash = $item->pieces_hash;
                     if (!$piecesHash) {
@@ -838,8 +840,8 @@ HTML;
                         do_log(sprintf("torrent: %s no pieces hash, load from torrent file: %s, pieces hash: %s", $item->id, $torrentFile, $piecesHash));
                     }
                     $pipe->hSet(self::PIECES_HASH_CACHE_KEY, $piecesHash, $this->buildPiecesHashCacheValue($item->id, $piecesHash));
-                    $total++;
-                    $count++;
+                    $success++;
+                    $currentCount++;
                 } catch (\Exception $exception) {
                     do_log(sprintf("load pieces hash of torrent: %s error: %s", $item->id, $exception->getMessage()), 'error');
                 }
@@ -853,11 +855,11 @@ HTML;
                 );
                 NexusDB::statement($sql);
             }
-            do_log("success load page: $page, size: $size, count: $count");
+            do_log("success load page: $page, size: $size, count: $currentCount");
             $page++;
         }
-        do_log("[DONE], total: $total");
-        return $total;
+        do_log("[DONE], total: $total, success: $success");
+        return compact('total', 'success');
     }
 
 }
