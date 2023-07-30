@@ -829,11 +829,18 @@ HTML;
                 $piecesHash = $item->pieces_hash;
                 if (!$piecesHash) {
                     $torrentFile = $torrentDir . $item->id . ".torrent";
-                    $loadResult = Bencode::load($torrentFile);
-                    $piecesHash = sha1($loadResult['info']['pieces']);
-                    $piecesHashCaseWhen[] = sprintf("when %s then '%s'", $item->id, $piecesHash);
-                    $updateIdArr[] = $item->id;
-                    do_log(sprintf("torrent: %s no pieces hash, load from torrent file: %s, pieces hash: %s", $item->id, $torrentFile, $piecesHash));
+                    try {
+                        $loadResult = Bencode::load($torrentFile);
+                        $piecesHash = sha1($loadResult['info']['pieces']);
+                        $piecesHashCaseWhen[] = sprintf("when %s then '%s'", $item->id, $piecesHash);
+                        $updateIdArr[] = $item->id;
+                        do_log(sprintf("torrent: %s no pieces hash, load from torrent file: %s, pieces hash: %s", $item->id, $torrentFile, $piecesHash));
+                    } catch (\Exception $e) {
+                        // 处理文件打开错误，记录日志或其他适当操作
+                        do_log("Error occurred while loading torrent file $torrentFile: " . $e->getMessage(),"Error");
+                        echo "Error occurred while loading torrent file $torrentFile: " . $e->getMessage() . PHP_EOL;
+                        continue; // 继续处理下一个种子
+                    }
                 }
                 $pipe->hSet(self::PIECES_HASH_CACHE_KEY, $piecesHash, $this->buildPiecesHashCacheValue($item->id, $piecesHash));
             }
