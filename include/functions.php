@@ -5333,6 +5333,9 @@ function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
 
 function getFullDirectory($dir)
 {
+    if (is_file($dir) && file_exists($dir)) {
+        return $dir;
+    }
     if (!is_dir($dir)) {
         $dir = ROOT_PATH . $dir;
     }
