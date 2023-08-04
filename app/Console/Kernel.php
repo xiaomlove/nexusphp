@@ -31,12 +31,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:cronjob')->everyMinute()->withoutOverlapping();
         $schedule->command('hr:update_status')->everyTenMinutes()->withoutOverlapping();
         $schedule->command('hr:update_status --ignore_time=1')->hourly()->withoutOverlapping();
-        $schedule->command('user:delete_expired_token')->dailyAt('04:00');
+        $schedule->command('user:delete_expired_token')->dailyAt('04:00')->withoutOverlapping();
         $schedule->command('claim:settle')->hourly()->when(function () {
             return Carbon::now()->format('d') == '01';
         })->withoutOverlapping();
         $schedule->command('meilisearch:import')->weeklyOn(1, "03:00")->withoutOverlapping();
-
+        $schedule->command('torrent:load_pieces_hash')->dailyAt("01:00")->withoutOverlapping();
     }
 
     /**
