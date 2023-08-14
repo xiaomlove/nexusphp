@@ -304,8 +304,9 @@ class ClaimRepository extends BaseRepository
     ) {
         $now = Carbon::now();
         $allTorrentIdArr = array_merge($reachedTorrentIdArr, $unReachedTorrentIdArr, $remainTorrentIdArr);
+        //这里不使用占位符，在 $allTorrentIdArr 过大（超过3000）时容易结果为空且不报异常
         $torrentInfo = Torrent::query()
-            ->whereIn('id', $allTorrentIdArr)
+            ->whereRaw(sprintf("id in (%s)", implode(',', $allTorrentIdArr)))
             ->get(Torrent::$commentFields)
             ->keyBy('id')
         ;

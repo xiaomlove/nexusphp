@@ -645,7 +645,8 @@ if ($all)
 }
 //stderr("", count($wherecatina)."-". count($wheresourceina));
 $wherecatin = $wheresourcein = $wheremediumin = $wherecodecin = $wherestandardin = $whereprocessingin = $whereteamin = $whereaudiocodecin = '';
-if (empty($wherecatina)) {
+if (empty($wherecatina) && !(in_array($inclbookmarked, [1, 2]) && $allsec == 1)) {
+    //require limit in some category
     $wherecatina = $allCategoryId;
 }
 if (count($wherecatina) > 1)
