@@ -403,6 +403,9 @@ if ($saveResult === false) {
     sql_query("delete from torrents where id = $id limit 1");
     bark("save torrent to $torrentFilePath fail.");
 }
+//remove announce info_hash not exists cache
+//@see announce.php
+\Nexus\Database\NexusDB::cache_del("torrent_not_exists:$infohash");
 
 /**
  * add custom fields
