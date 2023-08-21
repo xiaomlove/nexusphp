@@ -51,7 +51,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('password')->password()->required()->visibleOn(Pages\CreateUser::class),
                 Forms\Components\TextInput::make('password_confirmation')->password()->required()->same('password')->visibleOn(Pages\CreateUser::class),
                 Forms\Components\TextInput::make('id')->integer(),
-                Forms\Components\Select::make('class')->options(array_column(User::$classes, 'text')),
+                Forms\Components\Select::make('class')->options(User::listClass(User::CLASS_PEASANT, Auth::user()->class - 1)),
             ]);
     }
 
