@@ -100,7 +100,10 @@ return [
             'change_username_min_interval_in_days' => '修改用戶名最小間隔天數',
             'maximum_number_of_medals_can_be_worn' => '勛章最大可佩戴數',
             'cookie_valid_days' => 'Cookie 有效天數',
+            'maximum_upload_speed' => '最大上傳速度',
             'maximum_upload_speed_help' => '單種上傳速度超過此值賬號即刻禁用，單位 Mbps。如：100 Mbps = 12.5 MB/s',
+            'is_invite_pre_email_and_username' => '邀請是否預定郵箱和用戶名',
+            'is_invite_pre_email_and_username_help' => "默認: 'No'。若預定，用戶註冊時不可修改郵箱和用戶名",
         ],
     ],
     'user' => [

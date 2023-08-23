@@ -102,6 +102,8 @@ return [
             'cookie_valid_days' => 'Cookie Valid days',
             'maximum_upload_speed' => 'Maximum upload speed',
             'maximum_upload_speed_help' => 'A single torrent upload speed exceeding this value is instantly disabled for the account, in Mbps. For example: 100 Mbps = 12.5 MB/s',
+            'is_invite_pre_email_and_username' => 'Invite whether to pre-book an email and username',
+            'is_invite_pre_email_and_username_help' => "Default: 'No'. If pre-booked, email and username may not be changed when the user registers.",
         ],
     ],
     'user' => [

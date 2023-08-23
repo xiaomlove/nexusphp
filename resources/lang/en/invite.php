@@ -20,4 +20,7 @@ return [
         'invite_not_enough' => 'Invites not enough',
     ],
     'send_allow_text' => 'Invite someone',
+    'pre_register_username' => 'Pre-register username',
+    'pre_register_username_help' => 'Username and email will not be changed when user registers with this invitation code',
+    'require_pre_register_username' => "Pre-register username can't be empty",
 ];

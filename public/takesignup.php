@@ -6,6 +6,8 @@ cur_user_check ();
 require_once(get_langfile_path("",true));
 require_once(get_langfile_path("", false, get_langfolder_cookie()));
 
+$isPreRegisterEmailAndUsername = get_setting("system.is_invite_pre_email_and_username") == "yes";
+
 function bark($msg) {
 	global $lang_takesignup;
 	stdhead();
@@ -27,7 +29,6 @@ failedloginscheck ("Signup");
 if ($iv == "yes")
 	check_code ($_POST['imagehash'], $_POST['imagestring']);
 }
-
 function isportopen($port)
 {
 	$sd = @fsockopen($_SERVER["REMOTE_ADDR"], $port, $errno, $errstr, 1);
@@ -54,7 +55,7 @@ $inviter =  $_POST["inviter"];
 $code = unesc($_POST["hash"]);
 
 //check invite code
-	$sq = sprintf("SELECT id, inviter FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
+	$sq = sprintf("SELECT * FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
 	$res = sql_query($sq) or sqlerr(__FILE__, __LINE__);
 	$inv = mysql_fetch_assoc($res);
 	if (!$inv)
@@ -72,10 +73,13 @@ $res = sql_query("SELECT username FROM users WHERE id = $inviter") or sqlerr(__F
 $arr = mysql_fetch_assoc($res);
 $invusername = $arr['username'];
 }
-
-if (!mkglobal("wantusername:wantpassword:passagain:email"))
-	die();
-
+if (!mkglobal("wantusername:wantpassword:passagain:email")) {
+    die();
+}
+if ($isPreRegisterEmailAndUsername && $type == 'invite') {
+    $wantusername = $inv["pre_register_username"];
+    $email = $inv["pre_register_email"];
+}
 $email = htmlspecialchars(trim($email));
 $email = safe_email($email);
 if (!check_email($email))

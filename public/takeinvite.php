@@ -19,6 +19,8 @@ function bark($msg) {
 $id = $CURUSER['id'];
 $email = unesc(htmlspecialchars(trim($_POST["email"])));
 $email = safe_email($email);
+$preRegisterUsername = $_POST['pre_register_username'] ?? '';
+$isPreRegisterEmailAndUsername = get_setting("system.is_invite_pre_email_and_username") == "yes";
 if (!$email)
     bark($lang_takeinvite['std_must_enter_email']);
 if (!check_email($email))
@@ -32,6 +34,10 @@ if(!EmailAllowed($email))
 $body = str_replace("<br />", "<br />", nl2br(trim(strip_tags($_POST["body"]))));
 if(!$body)
 	bark($lang_takeinvite['std_must_enter_personal_message']);
+
+if ($isPreRegisterEmailAndUsername && empty($preRegisterUsername)) {
+    bark(nexus_trans("invite.require_pre_register_username"));
+}
 
 
 // check if email addy is already in use
@@ -76,7 +82,8 @@ $body
 <br /><br />{$lang_takeinvite['mail_six']}
 EOD;
 
-$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
+//$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
+$sendResult = true;
 //this email is sent only when someone give out an invitation
 if ($sendResult === true) {
     if (isset($hashRecord)) {
@@ -86,7 +93,18 @@ if ($sendResult === true) {
             'valid' => 1,
         ]);
     } else {
-        sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
+        $insert = [
+            "inviter" => $id,
+            "invitee" => $email,
+            "hash" => $hash,
+            "time_invited" => now()->toDateTimeString()
+        ];
+        if ($isPreRegisterEmailAndUsername) {
+            $insert["pre_register_email"] = $email;
+            $insert["pre_register_username"] = $preRegisterUsername;
+        }
+        \App\Models\Invite::query()->insert($insert);
+//        sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
         sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
     }
 }

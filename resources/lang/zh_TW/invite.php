@@ -20,4 +20,7 @@ return [
         'invite_not_enough' => '邀請數量不足',
     ],
     'send_allow_text' => '邀請其他人',
+    'pre_register_username' => '預註冊用戶名',
+    'pre_register_username_help' => '用戶使用此邀請碼註冊時用戶名和郵箱將不能更改',
+    'require_pre_register_username' => '預註冊用戶名不能為空',
 ];

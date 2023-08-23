@@ -19,6 +19,7 @@ if ($langid)
 require_once(get_langfile_path("", false, $CURLANGDIR));
 cur_user_check ();
 $type = $_GET['type'] ?? '';
+$isPreRegisterEmailAndUsername = get_setting("system.is_invite_pre_email_and_username") == "yes";
 if ($type == 'invite')
 {
 	registration_check();
@@ -39,7 +40,7 @@ if ($type == 'invite')
 	$dom = $tldm[2];
 	}
 
-	$sq = sprintf("SELECT inviter FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
+	$sq = sprintf("SELECT * FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
 	$res = sql_query($sq) or sqlerr(__FILE__, __LINE__);
 	$inv = mysql_fetch_assoc($res);
 	$inviter = htmlspecialchars($inv["inviter"]);
@@ -77,8 +78,20 @@ print("<div align=right valign=top>".$lang_signup['text_select_lang']. $s . "</d
 <table border="1" cellspacing="0" cellpadding="10">
 <?php
 print("<tr><td class=text align=center colspan=2>".$lang_signup['text_cookies_note']."</td></tr>");
+if ($isPreRegisterEmailAndUsername && !empty($inv["pre_register_username"])) {
+    $usernameInput = sprintf('<input type="text" style="width: 200px" name="wantusername" value="%s" readonly />', $inv["pre_register_username"]);
+} else {
+    $usernameInput = '<input type="text" style="width: 200px" name="wantusername" />';
+}
+
+if ($isPreRegisterEmailAndUsername && !empty($inv["pre_register_email"])) {
+    $emailInput = sprintf('<input type="text" style="width: 200px" name="email" value="%s" readonly />', $inv["pre_register_email"]);
+} else {
+    $emailInput = '<input type="text" style="width: 200px" name="email" />';
+}
+
 ?>
-<tr><td class=rowhead><?php echo $lang_signup['row_desired_username'] ?></td><td class=rowfollow align=left><input type="text" style="width: 200px" name="wantusername" /><br />
+<tr><td class=rowhead><?php echo $lang_signup['row_desired_username'] ?></td><td class=rowfollow align=left><?php echo $usernameInput?><br />
 <font class=small><?php echo $lang_signup['text_allowed_characters'] ?></font></td></tr>
 <tr><td class=rowhead><?php echo $lang_signup['row_pick_a_password'] ?></td><td class=rowfollow align=left><input type="password" style="width: 200px" name="wantpassword" /><br />
 	<font class=small><?php echo $lang_signup['text_minimum_six_characters'] ?></font></td></tr>
@@ -86,7 +99,7 @@ print("<tr><td class=text align=center colspan=2>".$lang_signup['text_cookies_no
 <?php
 show_image_code ();
 ?>
-<tr><td class=rowhead><?php echo $lang_signup['row_email_address'] ?></td><td class=rowfollow align=left><input type="text" style="width: 200px" name="email" />
+<tr><td class=rowhead><?php echo $lang_signup['row_email_address'] ?></td><td class=rowfollow align=left><?php echo $emailInput?>
 <table width=250 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded><font class=small><?php echo ($restrictemaildomain == 'yes' ? $lang_signup['text_email_note'].allowedemails() : "") ?></td></tr>
 </font></td></tr></table>
 </td></tr>

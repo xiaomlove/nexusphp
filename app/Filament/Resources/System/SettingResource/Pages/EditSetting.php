@@ -149,6 +149,12 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->label(__('label.setting.system.maximum_upload_speed'))
                     ->helperText(__('label.setting.system.maximum_upload_speed_help'))
                 ,
+                Forms\Components\Radio::make('system.is_invite_pre_email_and_username')
+                    ->options(self::$yesOrNo)
+                    ->inline(true)
+                    ->label(__('label.setting.system.is_invite_pre_email_and_username'))
+                    ->helperText(__('label.setting.system.is_invite_pre_email_and_username_help'))
+                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);

@@ -84,10 +84,14 @@ if ($type == 'new'){
     foreach ($temporaryInvites as $tmp) {
         $inviteSelectOptions .= sprintf('<option value="%s">%s (%s: %s)</option>', $tmp->hash, $tmp->hash, $lang_invite['text_expired_at'], $tmp->expired_at);
     }
+    $preUsernameTr = "";
+    if (get_setting("system.is_invite_pre_email_and_username") == "yes") {
+        $preUsernameTr = "<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".nexus_trans("invite.pre_register_username")."</td><td align=left><input type=text size=40 name=pre_register_username><br /><font align=left class=small>".nexus_trans("invite.pre_register_username_help")."</font></td></tr>";
+    }
 	print("<form method=post action=takeinvite.php?id=".htmlspecialchars($id).">".
 	"<table border=1 width=100% cellspacing=0 cellpadding=5>".
 	"<tr align=center><td colspan=2><b>".$lang_invite['text_invite_someone']."$SITENAME ({$inv['invites']}".$lang_invite['text_invitation'].$_s.$lang_invite['text_left'] .' + '.sprintf($lang_invite['text_temporary_left'], $temporaryInvites->count()).")</b></td></tr>".
-	"<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$lang_invite['text_email_address']."</td><td align=left><input type=text size=40 name=email><br /><font align=left class=small>".$lang_invite['text_email_address_note']."</font>".($restrictemaildomain == 'yes' ? "<br />".$lang_invite['text_email_restriction_note'].allowedemails() : "")."</td></tr>".
+	"<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$lang_invite['text_email_address']."</td><td align=left><input type=text size=40 name=email><br /><font align=left class=small>".$lang_invite['text_email_address_note']."</font>".($restrictemaildomain == 'yes' ? "<br />".$lang_invite['text_email_restriction_note'].allowedemails() : "")."</td></tr>".$preUsernameTr.
 	"<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$lang_invite['text_consume_invite']."</td><td align=left><select name='hash'>".$inviteSelectOptions."</select></td></tr>".
 	"<tr><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$lang_invite['text_message']."</td><td align=left><textarea name=body rows=10 style='width: 100%'>" .$invitation_body. "</textarea></td></tr>".
 	"<tr><td align=center colspan=2><input type=submit value='".$lang_invite['submit_invite']."'></td></tr>".
