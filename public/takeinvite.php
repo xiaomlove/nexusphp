@@ -35,8 +35,14 @@ $body = str_replace("<br />", "<br />", nl2br(trim(strip_tags($_POST["body"]))))
 if(!$body)
 	bark($lang_takeinvite['std_must_enter_personal_message']);
 
-if ($isPreRegisterEmailAndUsername && empty($preRegisterUsername)) {
-    bark(nexus_trans("invite.require_pre_register_username"));
+if ($isPreRegisterEmailAndUsername) {
+    if (empty($preRegisterUsername)) {
+        bark(nexus_trans("invite.require_pre_register_username"));
+    }
+    $exists = \App\Models\User::query()->where('username', $preRegisterUsername)->exists();
+    if ($exists) {
+        bark(nexus_trans("user.username_already_exists", ["username" => $preRegisterUsername]));
+    }
 }
 
 

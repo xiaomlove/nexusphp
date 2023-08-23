@@ -54,4 +54,5 @@ return [
             'body' => '你被:action為:new_class，管理員：:operator, 原因：:reason。',
         ],
     ],
+    'username_already_exists' => '用戶名：:username 已經存在',
 ];

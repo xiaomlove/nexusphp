@@ -54,4 +54,5 @@ return [
             'body' => 'You had been :action to :new_class, administrator: :operator, reason: :reason.',
         ],
     ],
+    'username_already_exists' => 'Username::username already exists',
 ];
