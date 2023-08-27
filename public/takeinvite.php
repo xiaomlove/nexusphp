@@ -88,8 +88,7 @@ $body
 <br /><br />{$lang_takeinvite['mail_six']}
 EOD;
 
-//$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
-$sendResult = true;
+$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
 //this email is sent only when someone give out an invitation
 if ($sendResult === true) {
     if (isset($hashRecord)) {
