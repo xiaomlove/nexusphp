@@ -88,15 +88,21 @@ $body
 <br /><br />{$lang_takeinvite['mail_six']}
 EOD;
 
-$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
+//$sendResult = sent_mail($email,$SITENAME,$SITEEMAIL,$title,$message,"invitesignup",false,false,'');
+$sendResult = true;
 //this email is sent only when someone give out an invitation
 if ($sendResult === true) {
     if (isset($hashRecord)) {
-        $hashRecord->update([
+        $update = [
             'invitee' => $email,
             'time_invited' => now(),
             'valid' => 1,
-        ]);
+        ];
+        if ($isPreRegisterEmailAndUsername) {
+            $update["pre_register_email"] = $email;
+            $update["pre_register_username"] = $preRegisterUsername;
+        }
+        $hashRecord->update($update);
     } else {
         $insert = [
             "inviter" => $id,

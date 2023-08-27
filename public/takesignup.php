@@ -76,7 +76,7 @@ $invusername = $arr['username'];
 if (!mkglobal("wantusername:wantpassword:passagain:email")) {
     die();
 }
-if ($isPreRegisterEmailAndUsername && $type == 'invite') {
+if ($isPreRegisterEmailAndUsername && $type == 'invite' && !empty($inv["pre_register_username"]) && !empty($inv["pre_register_email"])) {
     $wantusername = $inv["pre_register_username"];
     $email = $inv["pre_register_email"];
 }
