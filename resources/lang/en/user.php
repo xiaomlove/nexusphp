@@ -55,4 +55,5 @@ return [
         ],
     ],
     'username_already_exists' => 'Username::username already exists',
+    'username_invalid' => 'Username::username invalid',
 ];

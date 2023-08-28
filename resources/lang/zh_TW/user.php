@@ -55,4 +55,5 @@ return [
         ],
     ],
     'username_already_exists' => '用戶名：:username 已經存在',
+    'username_invalid' => '用戶名：:username 無效',
 ];
