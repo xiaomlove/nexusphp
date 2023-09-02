@@ -60,4 +60,16 @@ class AuthenticateRepository extends BaseRepository
         $user->checkIsNormal();
         return $user;
     }
+
+    public function iyuuApprove($token, $id, $verity)
+    {
+        $secret = env('IYUU_SECRET');
+        $user = User::query()->findOrFail($id, User::$commonFields);
+        $user->checkIsNormal();
+        $encryptedResult = md5($token . $id . sha1($user->passkey) . $secret);
+        if ($encryptedResult != $verity) {
+            throw new \InvalidArgumentException("Invalid uid or passkey");
+        }
+        return true;
+    }
 }
