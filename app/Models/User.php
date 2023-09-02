@@ -547,12 +547,17 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessAdmin(): bool
     {
-        $targetClass = self::CLASS_ADMINISTRATOR;
+        $targetClass = self::getAccessAdminClassMin();
         if (!$this->class || $this->class < $targetClass) {
             do_log(sprintf('user: %s, no class or class < %s, can not access admin.', $this->id, $targetClass));
             return false;
         }
         return true;
+    }
+
+    public static function getAccessAdminClassMin()
+    {
+        return Setting::get("system.access_admin_class_min") ?: User::CLASS_ADMINISTRATOR;
     }
 
     public function isDonating(): bool

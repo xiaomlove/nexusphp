@@ -104,6 +104,8 @@ return [
             'maximum_upload_speed_help' => '单种上传速度超过此值账号即刻禁用，单位 Mbps。如：100 Mbps = 12.5 MB/s',
             'is_invite_pre_email_and_username' => '邀请是否预定邮箱和用户名',
             'is_invite_pre_email_and_username_help' => "默认: 'No'。若预定，用户注册时不可修改邮箱和用户名",
+            'access_admin_class_min' => '登录管理后台最小等级',
+            'access_admin_class_min_help' => '默认：管理员，用户等级大于等于设定值的用户可以登录管理后台',
         ],
     ],
     'user' => [

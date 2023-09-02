@@ -104,6 +104,8 @@ return [
             'maximum_upload_speed_help' => 'A single torrent upload speed exceeding this value is instantly disabled for the account, in Mbps. For example: 100 Mbps = 12.5 MB/s',
             'is_invite_pre_email_and_username' => 'Invite whether to pre-book an email and username',
             'is_invite_pre_email_and_username_help' => "Default: 'No'. If pre-booked, email and username may not be changed when the user registers.",
+            'access_admin_class_min' => 'Minimum class for logging into admin backend',
+            'access_admin_class_min_help' => 'Default: administrator, users with a user class greater than or equal to the set value can log into the admin backend',
         ],
     ],
     'user' => [

@@ -8,6 +8,7 @@ use App\Models\HitAndRun;
 use App\Models\SearchBox;
 use App\Models\Setting;
 use App\Models\Tag;
+use App\Models\User;
 use App\Repositories\MeiliSearchRepository;
 use Filament\Facades\Filament;
 use Filament\Forms\ComponentContainer;
@@ -154,6 +155,11 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->inline(true)
                     ->label(__('label.setting.system.is_invite_pre_email_and_username'))
                     ->helperText(__('label.setting.system.is_invite_pre_email_and_username_help'))
+                ,
+                Forms\Components\Select::make('system.access_admin_class_min')
+                    ->options(User::listClass(User::CLASS_VIP))
+                    ->label(__('label.setting.system.access_admin_class_min'))
+                    ->helperText(__('label.setting.system.access_admin_class_min_help'))
                 ,
             ])->columns(2);
 
