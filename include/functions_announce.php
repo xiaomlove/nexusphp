@@ -126,13 +126,13 @@ function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $s
 		$comment = "User account was automatically disabled by system";
 		mysql_query("INSERT INTO cheaters (added, userid, torrentid, uploaded, downloaded, anctime, seeders, leechers, comment) VALUES (".sqlesc($time).", $userid, $torrentid, $uploaded, $downloaded, $anctime, $seeders, $leechers, ".sqlesc($comment).")") or err("Tracker error 51");
 		mysql_query("UPDATE users SET enabled = 'no' WHERE id=$userid") or err("Tracker error 50"); //automatically disable user account;
-		err("We believe you're trying to cheat. And your account is disabled.");
         $userBanLog = [
             'uid' => $userid,
             'username' => $CURUSER['username'],
             'reason' => "$comment(Upload speed:" . mksize($upspeed) . "/s)"
         ];
         \App\Models\UserBanLog::query()->insert($userBanLog);
+        err("We believe you're trying to cheat. And your account is disabled.");
 		return true;
 	}
 	if ($uploaded > 1073741824 && $upspeed > ($mayBeCheaterSpeed/$cheaterdet_security)) //Uploaded more than 1 GB with uploading rate higher than 25 MByte/S (For Consertive level). This is likely cheating.
