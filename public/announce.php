@@ -84,7 +84,7 @@ if (!empty($_GET['authkey'])) {
 if ($redis->get("$torrentNotExistsKey:$info_hash")) {
     $msg = "Torrent not exists";
     do_log("[ANNOUNCE] $msg");
-    warn($msg);
+    err($msg);
 }
 $torrentReAnnounceKey = sprintf('reAnnounceCheckByInfoHash:%s:%s', $userAuthenticateKey, $info_hash);
 if (!$isReAnnounce && !$redis->set($torrentReAnnounceKey, TIMENOW, ['nx', 'ex' => 60])) {
@@ -215,7 +215,7 @@ if (!$torrent) {
     $infoHashUrlEncode = substr($queryString, $start, $end - $start);
     do_log("[TORRENT NOT EXISTS] $checkTorrentSql, params: $queryString, infoHashUrlEncode: $infoHashUrlEncode");
     $redis->set("$torrentNotExistsKey:$info_hash", TIMENOW, ['ex' => 24*3600]);
-    warn("torrent not registered with this tracker");
+    err("torrent not registered with this tracker");
 }
 $GLOBALS['torrent'] = $torrent;
 $torrentid = $torrent["id"];
@@ -393,8 +393,8 @@ if (!isset($self))
         warn("You cannot seed the same torrent in the same location from more than 1 client.", 300);
     }
 	$valid = @mysql_fetch_row(@sql_query("SELECT COUNT(*) FROM peers WHERE torrent=$torrentid AND userid=" . sqlesc($userid)));
-	if ($valid[0] >= 1 && $seeder == 'no') warn("You already are downloading the same torrent. You may only leech from one location at a time.", 300);
-	if ($valid[0] >= 3 && $seeder == 'yes') warn("You cannot seed the same torrent from more than 3 locations.", 300);
+	if ($valid[0] >= 1 && $seeder == 'no') err("You already are downloading the same torrent. You may only leech from one location at a time.", 300);
+	if ($valid[0] >= 3 && $seeder == 'yes') err("You cannot seed the same torrent from more than 3 locations.", 300);
 
 	if ($az["enabled"] == "no")
         warn("Your account is disabled!", 300);
@@ -626,7 +626,7 @@ if (isset($self) && $event == "stopped")
 elseif(isset($self))
 {
 	$finished = $finished_snatched = '';
-	if ($event == "completed" || (!empty($snatchInfo) && $left == 0 && $snatchInfo['finished'] != 'yes'))
+	if ($event == "completed")
 	{
 		//sql_query("UPDATE snatched SET  finished  = 'yes', completedat = $dt WHERE torrentid = $torrentid AND userid = $userid");
 		$finished .= ", finishedat = ".TIMENOW;

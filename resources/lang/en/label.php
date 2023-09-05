@@ -101,7 +101,7 @@ return [
             'maximum_number_of_medals_can_be_worn' => 'Maximum number of medals that can be worn',
             'cookie_valid_days' => 'Cookie Valid days',
             'maximum_upload_speed' => 'Maximum upload speed',
-            'maximum_upload_speed_help' => 'A single torrent upload speed exceeding this value is instantly disabled for the account, in Mbps. For example: 100 Mbps = 12.5 MB/s',
+            'maximum_upload_speed_help' => 'This value affects cheater detection and is the speed limit for a conservative detection level. Actual Speed Limit = Maximum Upload Speed / Detection Level, from Conservative to Suspicious Levels 1 to 4. Therefore, if the Maximum Speed Limit is 1000, the detection level is Conservative with a Speed Limit of 1000/1 = 1000, and the detection level is Suspicious with a Speed Limit of 1000/4 = 250. A single upload speed that exceeds the actual limit will disable the account immediately, in Mbps. e.g.: 100 Mbps = 12.5 MB/s. Mbps. e.g. 100 Mbps = 12.5 MB/s.',
             'is_invite_pre_email_and_username' => 'Invite whether to pre-book an email and username',
             'is_invite_pre_email_and_username_help' => "Default: 'No'. If pre-booked, email and username may not be changed when the user registers.",
             'access_admin_class_min' => 'Minimum class for logging into admin backend',
