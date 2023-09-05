@@ -101,7 +101,7 @@ return [
             'maximum_number_of_medals_can_be_worn' => '勋章最大可佩戴数',
             'cookie_valid_days' => 'Cookie 有效天数',
             'maximum_upload_speed' => '最大上传速度',
-            'maximum_upload_speed_help' => '此值影响作弊者检测，是检测级别保守的限速。实际限速 = 最大上传速度/检测级别，从保守~多疑级别为1~4。因此，假如最大限速为 1000，检测级别为保守时是限速 1000/1 = 1000，检测级别为多疑时是 1000/4=250。单种上传速度超过实际限速账号即刻禁用，单位 Mbps。如：100 Mbps = 12.5 MB/s。',
+            'maximum_upload_speed_help' => '此值影响作弊者检测，是检测级别保守的最大上传速度。实际限速 = 最大上传速度/检测级别，从保守~多疑为1~4。假如最大限速为 1000，检测级别为保守，实际限速为 1000/1 = 1000，检测级别为多疑，实际限速为 1000/4=250。单种上传速度超过实际限速即刻禁用账号。这里的单位是 Mbps，如：100 Mbps = 12.5 MB/s。',
             'is_invite_pre_email_and_username' => '邀请是否预定邮箱和用户名',
             'is_invite_pre_email_and_username_help' => "默认: 'No'。若预定，用户注册时不可修改邮箱和用户名",
             'access_admin_class_min' => '登录管理后台最小等级',
