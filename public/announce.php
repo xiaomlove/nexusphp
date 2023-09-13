@@ -645,14 +645,25 @@ elseif(isset($self))
 		if (!empty($snatchInfo)) {
             sql_query("UPDATE snatched SET uploaded = uploaded + $trueupthis, downloaded = downloaded + $truedownthis, to_go = $left, $announcetime, last_action = ".$dt." $finished_snatched WHERE id = {$snatchInfo['id']}") or err("SL Err 2");
             do_action('snatched_saved', $torrent, $snatchInfo);
-            if ($event == 'completed' && $az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS && !$isDonor && isset($torrent['mode'])) {
-                //think about H&R
-//                $hrMode = get_setting('hr.mode');
-                $hrMode = \App\Models\HitAndRun::getConfig('mode', $torrent['mode']);
-                if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
-                    $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
-                    $affectedRows = sql_query($sql);
-                    do_log("[INSERT_H&R], $sql, affectedRows: $affectedRows");
+            if ($az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS && !$isDonor && isset($torrent['mode'])) {
+                $includeRate = \App\Models\HitAndRun::getConfig('include_rate', $torrent['mode']);
+                if ($includeRate === "" || $includeRate === null) {
+                    //not set yet
+                    $includeRate = 1;
+                }
+                $includeHr = false;
+                if ($includeRate >= 1 && $event == "completed") {
+                    $includeHr = true;
+                } elseif ($includeRate < 1 && $includeRate >= 0 && $seeder == "no" && ($left <= $torrent['size'] * (1 - $includeRate))) {
+                    $includeHr = true;
+                }
+                if ($includeHr) {
+                    $hrMode = \App\Models\HitAndRun::getConfig('mode', $torrent['mode']);
+                    if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
+                        $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
+                        $affectedRows = sql_query($sql);
+                        do_log("[INSERT_H&R], $sql, affectedRows: $affectedRows");
+                    }
                 }
             }
         }

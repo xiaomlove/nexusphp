@@ -72,6 +72,8 @@ return [
             'ignore_when_ratio_reach_help' => 'The minimum sharing rate to meet the standard',
             'ban_user_when_counts_reach' => 'H&R counts limit',
             'ban_user_when_counts_reach_help' => 'The number of H&R reaches this value and the account will be disabled',
+            'include_rate' => 'Require completion rate',
+            'include_rate_help' => 'Count H&R only when the download completion rate (decimal between 0 ~ 1) reaches this value. Default: 1'
         ],
         'seed_box' => [
             'tab_header' => 'SeedBox',

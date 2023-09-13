@@ -72,6 +72,8 @@ return [
             'ignore_when_ratio_reach_help' => '達標的最小分享率',
             'ban_user_when_counts_reach' => 'H&R 數量上限',
             'ban_user_when_counts_reach_help' => 'H&R 數量達到此值，賬號會被禁用',
+            'include_rate' => '計入完成率',
+            'include_rate_help' => '當下載完成率（0 ~ 1 之間的小數）達到此值時才計入 H&R。默認：1'
         ],
         'seed_box' => [
             'tab_header' => 'SeedBox',

@@ -431,6 +431,7 @@ return array (
          'seed_time_minimum' => '',
          'ignore_when_ratio_reach' => '',
          'ban_user_when_counts_reach' => '',
+         'include_rate' => 1,
      ],
     'seed_box' => [
         'enabled' => 'no',
