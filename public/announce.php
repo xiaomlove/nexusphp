@@ -651,11 +651,14 @@ elseif(isset($self))
                     //not set yet
                     $includeRate = 1;
                 }
+                $hrLog = sprintf("user: %d, torrent: %d, includeRate: %s", $userid, $torrentid, $includeRate);
                 $includeHr = false;
                 if ($includeRate >= 1 && $event == "completed") {
                     $includeHr = true;
+                    $hrLog .= "includeRate >= 1 and event = completed, includeHr = true";
                 } elseif ($includeRate < 1 && $includeRate >= 0 && $seeder == "no" && ($left <= $torrent['size'] * (1 - $includeRate))) {
                     $includeHr = true;
+                    $hrLog .= "seeder = no and left lte enough, includeHr = true";
                 }
                 if ($includeHr) {
                     $hrMode = \App\Models\HitAndRun::getConfig('mode', $torrent['mode']);
