@@ -81,7 +81,7 @@ function err($msg)
  */
 function warn($msg, int $interval = 7200)
 {
-    if (!empty($GLOBALS['event'])) {
+    if (!empty($GLOBALS['event']) && in_array($GLOBALS['event'], ["completed", "stopped"])) {
         //force return err, otherwise event will be lost in the next announce request
         return err($msg);
     }
