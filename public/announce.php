@@ -660,9 +660,15 @@ elseif(isset($self))
                 if ($includeHr) {
                     $hrMode = \App\Models\HitAndRun::getConfig('mode', $torrent['mode']);
                     if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
-                        $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
-                        $affectedRows = sql_query($sql);
-                        do_log("[INSERT_H&R], $sql, affectedRows: $affectedRows");
+                        $hrCacheKey = sprintf("hit_and_run:%d:%d", $userid, $torrentid);
+                        $hrExists = \Nexus\Database\NexusDB::remember($hrCacheKey, 24*3600, function () use ($snatchInfo) {
+                            return \App\Models\HitAndRun::query()->where("snatched_id", $snatchInfo['id'])->exists();
+                        });
+                        if (!$hrExists) {
+                            $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
+                            $affectedRows = sql_query($sql);
+                            do_log("[INSERT_H&R], $sql, affectedRows: $affectedRows");
+                        }
                     }
                 }
             }
