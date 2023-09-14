@@ -651,28 +651,39 @@ elseif(isset($self))
                     //not set yet
                     $includeRate = 1;
                 }
-                $hrLog = sprintf("user: %d, torrent: %d, includeRate: %s", $userid, $torrentid, $includeRate);
+                $hrLog = sprintf("[HR_LOG] user: %d, torrent: %d, includeRate: %s", $userid, $torrentid, $includeRate);
                 $includeHr = false;
-                if ($includeRate >= 1 && $event == "completed") {
+                if ($event == "completed") {
+                    //event completed, download finished, ignore rate
                     $includeHr = true;
-                    $hrLog .= "includeRate >= 1 and event = completed, includeHr = true";
-                } elseif ($includeRate < 1 && $includeRate >= 0 && $seeder == "no" && ($left <= $torrent['size'] * (1 - $includeRate))) {
+                    $hrLog .= "event = completed";
+                } elseif ($seeder == "no" && ($left <= $torrent['size'] * (1 - $includeRate))) {
+                    //no event, download not finished
                     $includeHr = true;
-                    $hrLog .= "seeder = no and left lte enough, includeHr = true";
+                    $hrLog .= "seeder = no and left lte enough";
                 }
+                $hrLog .= ", includeHr: $includeHr";
                 if ($includeHr) {
                     $hrMode = \App\Models\HitAndRun::getConfig('mode', $torrent['mode']);
+                    $hrLog .= ", hrMode: $hrMode";
                     if ($hrMode == \App\Models\HitAndRun::MODE_GLOBAL || ($hrMode == \App\Models\HitAndRun::MODE_MANUAL && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
                         $hrCacheKey = sprintf("hit_and_run:%d:%d", $userid, $torrentid);
                         $hrExists = \Nexus\Database\NexusDB::remember($hrCacheKey, 24*3600, function () use ($snatchInfo) {
                             return \App\Models\HitAndRun::query()->where("snatched_id", $snatchInfo['id'])->exists();
                         });
+                        $hrLog .= ", hrExists: $hrExists";
                         if (!$hrExists) {
                             $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
                             $affectedRows = sql_query($sql);
-                            do_log("[INSERT_H&R], $sql, affectedRows: $affectedRows");
+                            do_log("$hrLog, [INSERT_H&R], sql: $sql, affectedRows: $affectedRows");
+                        } else {
+                            do_log("$hrLog, already exists", "debug");
                         }
+                    } else {
+                        do_log("$hrLog, not match", "debug");
                     }
+                } else {
+                    do_log($hrLog, "debug");
                 }
             }
         }
