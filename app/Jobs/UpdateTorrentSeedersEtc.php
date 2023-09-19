@@ -23,7 +23,7 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
 
     private string $requestId;
 
-    private string $idStr;
+    private ?string $idStr = null;
 
     /**
      * Create a new job instance.
