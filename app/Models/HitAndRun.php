@@ -62,6 +62,10 @@ class HitAndRun extends NexusModel
         if ($this->status != self::STATUS_INSPECTING) {
             return '---';
         }
+        if (!$this->snatch->completedat) {
+            //not download completed
+            return '---';
+        }
         $searchBoxId = $this->torrent->basic_category->mode ?? 0;
         if ($searchBoxId == 0) {
             do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $this->torrent_id), 'error');

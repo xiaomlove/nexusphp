@@ -630,9 +630,9 @@ if ($az['class'] < \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS && !$isDonor
             if ($snatchInfo['downloaded'] >= $requiredDownloaded) {
                 $sql = "insert into hit_and_runs (uid, torrent_id, snatched_id) values ($userid, $torrentid, {$snatchInfo['id']}) on duplicate key update updated_at = " . sqlesc(date('Y-m-d H:i:s'));
                 $affectedRows = sql_query($sql);
-                do_log("$hrLog, total downloaded: {$snatchInfo['downloaded']} > required: $requiredDownloaded, [INSERT_H&R], sql: $sql, affectedRows: $affectedRows");
+                do_log("$hrLog, total downloaded: {$snatchInfo['downloaded']} >= required: $requiredDownloaded, [INSERT_H&R], sql: $sql, affectedRows: $affectedRows");
             } else {
-                do_log("$hrLog, total downloaded: {$snatchInfo['downloaded']} <= required: $requiredDownloaded", "debug");
+                do_log("$hrLog, total downloaded: {$snatchInfo['downloaded']} < required: $requiredDownloaded", "debug");
             }
         } else {
             do_log("$hrLog, already exists", "debug");
