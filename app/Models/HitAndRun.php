@@ -62,17 +62,18 @@ class HitAndRun extends NexusModel
         if ($this->status != self::STATUS_INSPECTING) {
             return '---';
         }
-        if (!$this->snatch->completedat) {
-            //not download completed
-            return '---';
-        }
+        //change to use create time
+//        if (!$this->snatch->completedat) {
+//            //not download completed
+//            return '---';
+//        }
         $searchBoxId = $this->torrent->basic_category->mode ?? 0;
         if ($searchBoxId == 0) {
             do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $this->torrent_id), 'error');
             return '---';
         }
         $inspectTime = HitAndRun::getConfig('inspect_time', $searchBoxId);
-        $diffInSeconds = Carbon::now()->diffInSeconds($this->snatch->completedat->addHours($inspectTime));
+        $diffInSeconds = Carbon::now()->diffInSeconds($this->created_at->addHours($inspectTime));
         return mkprettytime($diffInSeconds);
     }
 
