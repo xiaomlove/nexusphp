@@ -302,6 +302,9 @@ if ($_POST['markread'])
 	}
 	else
 	{
+        if (empty($pm_messages)) {
+            stderr('Error', $lang_functions['select_at_least_one_record']);
+        }
 // Mark multiple messages as read
 	@sql_query("UPDATE messages SET unread='no' WHERE id IN (" . implode(", ", array_map("sqlesc",$pm_messages)) . ") AND receiver=" .$CURUSER['id']);
 	}
