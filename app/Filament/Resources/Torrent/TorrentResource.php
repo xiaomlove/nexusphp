@@ -79,7 +79,9 @@ class TorrentResource extends Resource
                 Tables\Columns\TextColumn::make('basic_category.name')->label(__('label.torrent.category')),
                 Tables\Columns\TextColumn::make('name')->formatStateUsing(fn ($record) => torrent_name_for_admin($record, true))
                     ->label(__('label.name'))
-                    ->searchable(),
+                    ->searchable(query: function (Builder $query, string $search) {
+                        return $query->where("name", "like", "%{$search}%")->orWhere("small_descr", "like", "%{$search}%");
+                    }),
                 Tables\Columns\TextColumn::make('posStateText')->label(__('label.torrent.pos_state')),
                 Tables\Columns\TextColumn::make('spStateText')->label(__('label.torrent.sp_state')),
                 Tables\Columns\TextColumn::make('pickInfoText')

@@ -231,9 +231,13 @@ foreach ($list as $row)
 {
     $ownerInfo = get_user_row($row['owner']);
 	$title = "";
-	if ($row['anonymous'] == 'yes')
-		$author = 'anonymous';
-	else $author = $ownerInfo['username'];
+	if ($row['anonymous'] == 'yes') {
+        $author = 'anonymous';
+    } elseif (!empty($ownerInfo)) {
+        $author = $ownerInfo['username'];
+    } else {
+        $author = nexus_trans("nexus.user_not_exists");
+    }
 	$itemurl = $url."/details.php?id=".$row['id'];
 	if ($dllink)
 		$itemdlurl = $url."/download.php?id=".$row['id']."&amp;downhash=" . rawurlencode( $user['id'] . '|'. $torrentRep->encryptDownHash($row['id'], $user));
