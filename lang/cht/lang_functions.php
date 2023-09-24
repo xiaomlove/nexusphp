@@ -176,7 +176,7 @@ $lang_functions = array
 	'title_no_new_comment' => "無新評論",
 	'row_external_info' => "外部信息",
 	'row_imdb_url' => "IMDb鏈接",
-	'text_imdb_url_note' => "(來自<strong><a href=\"http://www.imdb.com\">IMDb</a></strong>的鏈接。如電影<b>The Dark Knight</b>的鏈接是<b>http://www.imdb.com/title/tt0468569/</b>)",
+	'text_imdb_url_note' => "(來自<strong><a href=\"https://www.imdb.com\">IMDb</a></strong>的鏈接。如電影<b>The Dark Knight</b>的鏈接是<b>https://www.imdb.com/title/tt0468569/</b>)",
 	'text_artist' => "藝術家：",
 	'text_album' => "專輯名：",
 	'title_get_rss' => "獲取RSS",
