@@ -1199,10 +1199,10 @@ function get_external_tr($imdb_url = "")
     }
 	$ptGen = new Nexus\PTGen\PTGen();
 	$imdbNumber = parse_imdb_id($imdb_url);
-    $y = $ptGen->buildInput("url", $imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "", $lang_functions['text_imdb_url_note'], nexus_trans('ptgen.btn_get_desc'));
+    $y = $ptGen->buildInput("url", $imdbNumber ? "https://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "", $lang_functions['text_imdb_url_note'], nexus_trans('ptgen.btn_get_desc'));
     return tr($lang_functions['row_imdb_url'], $y, 1);
 
-//	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 99%;\" name=\"url\" value=\"".($imdbNumber ? "http://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
+//	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 99%;\" name=\"url\" value=\"".($imdbNumber ? "https://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
 }
 
 function get_torrent_extinfo_identifier($torrentid)
@@ -1239,7 +1239,7 @@ function parse_imdb_id($url)
 
 function build_imdb_url($imdb_id)
 {
-	return $imdb_id == "" ? "" : "http://www.imdb.com/title/tt" . $imdb_id . "/";
+	return $imdb_id == "" ? "" : "https://www.imdb.com/title/tt" . $imdb_id . "/";
 }
 
 // it's a stub implemetation here, we need more acurate regression analysis to complete our algorithm

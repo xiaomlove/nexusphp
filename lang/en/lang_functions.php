@@ -176,7 +176,7 @@ $lang_functions = array
 	'title_no_new_comment' => "No&nbsp;new&nbsp;comment",
 	'row_external_info' => "External&nbsp;Info",
 	'row_imdb_url' => "IMDb&nbsp;URL",
-	'text_imdb_url_note' => "(URL taken from <strong><a href=\"http://www.imdb.com\">IMDb</a></strong>. e.g.&nbsp;for movie <b>The Dark Knight</b> the URL is <b>http://www.imdb.com/title/tt0468569/</b>)",
+	'text_imdb_url_note' => "(URL taken from <strong><a href=\"https://www.imdb.com\">IMDb</a></strong>. e.g.&nbsp;for movie <b>The Dark Knight</b> the URL is <b>https://www.imdb.com/title/tt0468569/</b>)",
 	'text_artist' => "&nbsp;Artist:&nbsp;",
 	'text_album' => "Album:&nbsp;",
 	'title_get_rss' => "Get&nbsp;RSS",
