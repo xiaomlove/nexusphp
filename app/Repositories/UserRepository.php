@@ -105,9 +105,11 @@ class UserRepository extends BaseRepository
         }
         if (!empty($params['class'])) {
             $class =intval($params['class']);
-            $authUser = Auth::user();
-            if ($authUser && $class >= $authUser->class) {
-                throw new InsufficientPermissionException('No permission');
+            if (!IN_NEXUS) {
+                $authUser = Auth::user();
+                if ($authUser && $class >= $authUser->class) {
+                    throw new InsufficientPermissionException('No permission');
+                }
             }
         } else {
             $class = User::CLASS_USER;
