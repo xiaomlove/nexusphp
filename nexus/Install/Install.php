@@ -596,7 +596,11 @@ class Install
     {
         foreach ($symbolicLinks as $path) {
             $linkName = ROOT_PATH . 'public/' . basename($path);
-            if (is_link($linkName)) {
+            if (is_link($linkName) || is_file($linkName)) {
+                $delResult = unlink($linkName);
+                $this->doLog("path: $linkName already exits, try to delete it, delResult: " . var_export($delResult, true));
+            }
+            if (is_dir($linkName)) {
                 $this->doLog("path: $linkName already exits, skip create symbolic link $linkName -> $path");
                 continue;
             }
