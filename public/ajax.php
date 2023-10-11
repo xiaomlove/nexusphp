@@ -20,7 +20,7 @@ class AjaxInterface{
     {
         global $CURUSER;
         $rep = new \App\Repositories\AttendanceRepository();
-        return $rep->retroactive($CURUSER['id'], $params['timestamp']);
+        return $rep->retroactive($CURUSER['id'], $params['date']);
     }
 
     public static function getPtGen($params)

@@ -89,23 +89,19 @@ document.addEventListener('DOMContentLoaded', function() {
       eventClick: function(info) {
         console.log(info.event);
         if (info.event.groupId == 'to_do') {
-            retroactive(info.event.start)
+            retroactive(info.event.startStr)
         }
       }
     });
     calendar.render();
 });
 
-function retroactive(start) {
-    let year = start.getFullYear()
-    let month = start.getMonth() + 1
-    let day = start.getDate()
-    let date = year + '-' + month + '-' + day
-    if (!window.confirm(confirmText + date + ' ?')) {
+function retroactive(dateStr) {
+    if (!window.confirm(confirmText + dateStr + ' ?')) {
         console.log("cancel")
         return
     }
-    jQuery.post('ajax.php', {params: {timestamp: start.getTime()}, action: 'attendanceRetroactive'}, function (response) {
+    jQuery.post('ajax.php', {params: {date: dateStr}, action: 'attendanceRetroactive'}, function (response) {
         console.log(response);
         if (response.ret != 0) {
             alert(response.msg)
