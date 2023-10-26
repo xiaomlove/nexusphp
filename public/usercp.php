@@ -912,7 +912,7 @@ EOD;
                 $twoStepY = '<div style="display: flex;align-items:center">';
                 $twoStepY .= sprintf('<div><img src="%s" /></div>', $twoStepQrCodeUrl);
                 $twoStepY .= sprintf(
-                    '<div style="padding-left: 20px">%s<a href="%s" target="_blank">Link</a><br /><br />%s%s<br/><br/>%s<input type=hidden name=two_step_secret value="%s" /><input type=text name=two_step_code /></div>',
+                    '<div style="padding-left: 20px">%s<a href="%s" target="_blank">Link</a><br /><br />%s%s<br/><br/>%s<input type=hidden name=two_step_secret value="%s" /><input type=text name=two_step_code readonly onfocus="this.removeAttribute(\'readonly\')"/></div>',
                     $lang_usercp['text_two_step_secret_bind_by_qrdoe_note'],
                     $twoStepQrCodeUrl,
                     $lang_usercp['text_two_step_secret_bind_manually_note'],
