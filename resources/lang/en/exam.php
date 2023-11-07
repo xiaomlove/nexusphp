@@ -9,6 +9,8 @@ return [
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => 'Seed time average',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => 'Download increment',
     'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => 'Bonus increment',
+    'index_text_' . \App\Models\Exam::INDEX_SEED_POINTS => 'Seed points increment',
+    'index_text_' . \App\Models\Exam::INDEX_UPLOAD_TORRENT_COUNT => 'Upload torrent increment',
     'filters' => [
         \App\Models\Exam::FILTER_USER_CLASS => 'User class',
         \App\Models\Exam::FILTER_USER_REGISTER_TIME_RANGE => 'Register time range',

@@ -223,7 +223,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
         'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos', 'donoruntil', 'donor',
-        'seedbonus', 'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
+        'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
         'seed_points_per_hour'
     ];
 

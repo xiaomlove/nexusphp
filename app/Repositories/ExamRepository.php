@@ -455,9 +455,9 @@ class ExamRepository extends BaseRepository
      *
      * @param $examUser
      * @param null $user
-     * @return bool
+     * @return ExamUser|bool
      */
-    public function updateProgress($examUser, $user = null)
+    public function updateProgress($examUser, $user = null): ExamUser|bool
     {
         $beginTimestamp = microtime(true);
         if (!$examUser instanceof ExamUser) {
@@ -490,7 +490,7 @@ class ExamRepository extends BaseRepository
         }
         $exam = $examUser->exam;
         if (!$user instanceof User) {
-            $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus'])->first();
+            $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus', 'seed_points'])->first();
         }
         $attributes = [
             'exam_user_id' => $examUser->id,
@@ -522,7 +522,7 @@ class ExamRepository extends BaseRepository
             $attributes['index'] = $index['index'];
             $attributes['created_at'] = $now;
             $attributes['updated_at'] = $now;
-            $attributes['value'] = $user->{Exam::$indexes[$index['index']]['source_user_field']} ?? 0;
+            $attributes['value'] = $this->getProgressValue($user, $index['index']);
             do_log("[GET_TOTAL_VALUE]: " . $attributes['value']);
             $newVersionProgress = ExamProgress::query()
                 ->where('exam_user_id', $examUser->id)
@@ -541,12 +541,8 @@ class ExamRepository extends BaseRepository
                 }
                 $attributes['init_value'] = $newVersionProgress->init_value;
             } else {
-                //do insert. check the init value
-                $progressData = $this->calculateProgress($examUser, true);
-                $increment = $progressData[$index['index']] ?? 0;
-                $initValue = $attributes['value'] - $increment;
-                $attributes['init_value'] = max($initValue, 0);
-                do_log("total: {$attributes['value']}, increment: $increment, init_value: $initValue, final init_value: {$attributes['init_value']}");
+                //do insert.
+                $attributes['init_value'] = $attributes['value'];
                 $attributes['torrent_id'] = -1;
                 ExamProgress::query()->insert($attributes);
                 do_log("newVersionProgress [NOT EXISTS], doInsert with: " . json_encode($attributes));
@@ -600,6 +596,29 @@ class ExamRepository extends BaseRepository
         return $examUser;
     }
 
+    private function getProgressValue(User $user, int $index)
+    {
+        if ($index == Exam::INDEX_UPLOADED) {
+            return $user->uploaded;
+        }
+        if ($index == Exam::INDEX_DOWNLOADED) {
+            return $user->downloaded;
+        }
+        if ($index == Exam::INDEX_SEED_BONUS) {
+            return $user->seedbonus;
+        }
+        if ($index == Exam::INDEX_SEED_TIME_AVERAGE) {
+            return $user->seedtime;
+        }
+        if ($index == Exam::INDEX_SEED_POINTS) {
+            return $user->seed_points;
+        }
+        if ($index == Exam::INDEX_UPLOAD_TORRENT_COUNT) {
+            return Torrent::query()->where("owner", $user->id)->normal()->count();
+        }
+        throw new \InvalidArgumentException("Invalid index: $index");
+    }
+
 
     /**
      * get user exam status
@@ -645,11 +664,12 @@ class ExamRepository extends BaseRepository
     }
 
     /**
+     * @deprecated
      * @param ExamUser $examUser
-     * @param false $allSum
+     * @param bool $allSum
      * @return array|null
      */
-    public function calculateProgress(ExamUser $examUser, $allSum = false)
+    public function calculateProgress(ExamUser $examUser, bool $allSum = false)
     {
         $logPrefix = "examUser: " . $examUser->id;
         $begin = $examUser->begin;
@@ -685,7 +705,7 @@ class ExamRepository extends BaseRepository
                 ->first()
                 ->torrent_count;
             $progressSum[$index] = intval($progressSum[$index] / $torrentCount);
-            $logPrefix .= ", get torrent count: $torrentCount, from query: " . last_query();
+            $logPrefix .= ", index: INDEX_SEED_TIME_AVERAGE, get torrent count: $torrentCount, from query: " . last_query();
         }
 
         do_log("$logPrefix, final progressSum: " . json_encode($progressSum));
@@ -1050,7 +1070,7 @@ class ExamRepository extends BaseRepository
             foreach ($rows as $row) {
                 $result = $this->updateProgress($row);
                 do_log("$logPrefix, examUser: " . $row->toJson() . ", result type: " . gettype($result));
-                if ($result != false) {
+                if ($result) {
                     $success += 1;
                 }
             }

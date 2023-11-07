@@ -36,12 +36,16 @@ class Exam extends NexusModel
     const INDEX_SEED_TIME_AVERAGE = 2;
     const INDEX_DOWNLOADED = 3;
     const INDEX_SEED_BONUS = 4;
+    const INDEX_SEED_POINTS = 5;
+    const INDEX_UPLOAD_TORRENT_COUNT = 6;
 
-    public static $indexes = [
+    public static array $indexes = [
         self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB', 'source_user_field' => 'uploaded'],
         self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB', 'source_user_field' => 'downloaded'],
         self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour', 'source_user_field' => 'seedtime'],
         self::INDEX_SEED_BONUS => ['name' => 'Bonus', 'unit' => '', 'source_user_field' => 'seedbonus'],
+        self::INDEX_SEED_POINTS => ['name' => 'Seed points', 'unit' => '', 'source_user_field' => ''],
+        self::INDEX_UPLOAD_TORRENT_COUNT => ['name' => 'Upload torrent', 'unit' => '', 'source_user_field' => ''],
     ];
 
     const FILTER_USER_CLASS = 'classes';

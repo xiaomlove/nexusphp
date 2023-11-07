@@ -9,6 +9,8 @@ return [
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => '平均做种时间',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => '下载增量',
     'index_text_' . \App\Models\Exam::INDEX_SEED_BONUS => '魔力增量',
+    'index_text_' . \App\Models\Exam::INDEX_SEED_POINTS => '做种积分增量',
+    'index_text_' . \App\Models\Exam::INDEX_UPLOAD_TORRENT_COUNT => '发种增量',
     'filters' => [
         \App\Models\Exam::FILTER_USER_CLASS => '用户等级',
         \App\Models\Exam::FILTER_USER_REGISTER_TIME_RANGE => '注册时间范围',
