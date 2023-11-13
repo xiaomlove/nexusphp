@@ -124,7 +124,7 @@ class ExamUser extends NexusModel
         return $this->belongsTo(User::class, 'uid');
     }
 
-    public function progresses()
+    public function progresses(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ExamProgress::class, 'exam_user_id');
     }

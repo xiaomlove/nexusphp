@@ -779,6 +779,15 @@ function get_user_id()
     return auth()->user()->id ?? 0;
 }
 
+function get_pure_username()
+{
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["username"] ?? "";
+    }
+    return auth()->user()->username ?? "";
+}
+
 function nexus()
 {
     return \Nexus\Nexus::instance();

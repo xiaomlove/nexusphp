@@ -42,4 +42,8 @@ BODY,
         'subject' => '成功購買種子提醒',
         'body' => '你花費 :bonus 魔力成功購買了種子：[url=:url]:torrent_name[/url]',
     ],
+    'exam_user_end_time_updated' => [
+        'subject' => '考核 :exam_name 結束時間變更',
+        'body' => '你進行中的考核：:exam_name 的結束時間由 :old_end_time 變更為 :new_end_time。管理員：:operator，原因：:reason。',
+    ],
 ];

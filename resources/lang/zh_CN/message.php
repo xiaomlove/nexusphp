@@ -43,4 +43,8 @@ BODY,
         'subject' => '成功购买种子提醒',
         'body' => '你花费 :bonus 魔力成功购买了种子：[url=:url]:torrent_name[/url]',
     ],
+    'exam_user_end_time_updated' => [
+        'subject' => '考核 :exam_name 结束时间变更',
+        'body' => '你进行中的考核：:exam_name 的结束时间由 :old_end_time 变更为 :new_end_time。管理员：:operator，原因：:reason。',
+    ],
 ];

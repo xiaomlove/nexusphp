@@ -6,16 +6,14 @@ use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\Message;
-use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -312,11 +310,33 @@ class ExamRepository extends BaseRepository
         $data = [
             'exam_id' => $exam->id,
         ];
-        if ($begin && $end) {
-            $logPrefix .= ", specific begin and end";
-            $data['begin'] = $begin;
-            $data['end'] = $end;
+        if (empty($begin)) {
+            if (!empty($exam->begin)) {
+                $begin = $exam->begin;
+                $logPrefix .= ", begin from exam->begin: $begin";
+            } else {
+                $begin = now();
+                $logPrefix .= ", begin from now: $begin";
+            }
+        } else {
+            $begin = Carbon::parse($begin);
         }
+        if (empty($end)) {
+            if (!empty($exam->end)) {
+                $end = $exam->end;
+                $logPrefix .= ", end from exam->end: $end";
+            } elseif ($exam->duration > 0) {
+                $duration = $exam->duration;
+                $end = $begin->clone()->addDays($duration)->toDateTimeString();
+                $logPrefix .= ", end from begin + duration($duration): $end";
+            } else {
+                throw new \RuntimeException("No specific end or duration");
+            }
+        } else {
+            $end = Carbon::parse($end);
+        }
+        $data['begin'] = $begin;
+        $data['end'] = $end;
         do_log("$logPrefix, data: " . nexus_json_encode($data));
         $examUser = $user->exams()->create($data);
         $this->updateProgress($examUser, $user);
@@ -506,10 +526,17 @@ class ExamRepository extends BaseRepository
         if (empty($end)) {
             throw new \InvalidArgumentException("$logPrefix, exam: {$examUser->id} no end.");
         }
+        /**
+         * @var $progressGrouped Collection
+         */
+        $progressGrouped = $examUser->progresses->keyBy("index");
         $examUserProgressFieldData = [];
         $now = now();
         foreach ($exam->indexes as $index) {
             if (!isset($index['checked']) || !$index['checked']) {
+                continue;
+            }
+            if ($progressGrouped->isNotEmpty() && !$progressGrouped->has($index['index'])) {
                 continue;
             }
             if (!isset(Exam::$indexes[$index['index']])) {
@@ -721,6 +748,9 @@ class ExamRepository extends BaseRepository
             if (!isset($index['checked']) || !$index['checked']) {
                 continue;
             }
+            if (!isset($progress[$index['index']])) {
+                continue;
+            }
             $currentValue = $progress[$index['index']] ?? 0;
             $requireValue = $index['require_value'];
             $unit = Exam::$indexes[$index['index']]['unit'] ?? '';
@@ -767,6 +797,32 @@ class ExamRepository extends BaseRepository
         $examUser = ExamUser::query()->where('status',ExamUser::STATUS_NORMAL)->findOrFail($examUserId);
         $result = $examUser->update(['status' => ExamUser::STATUS_AVOIDED]);
         return $result;
+    }
+
+    public function updateExamUserEnd(ExamUser $examUser, Carbon $end, string $reason = "")
+    {
+        if ($end->isBefore($examUser->begin)) {
+            throw new \InvalidArgumentException(nexus_trans("exam-user.end_can_not_before_begin", ['begin' => $examUser->begin, 'end' => $end]));
+        }
+        $oldEndTime = $examUser->end;
+        $locale = $examUser->user->locale;
+        $examName = $examUser->exam->name;
+        Message::add([
+            'sender' => 0,
+            'receiver' => $examUser->uid,
+            'added' => now(),
+            'subject' => nexus_trans('message.exam_user_end_time_updated.subject', [
+                'exam_name' => $examName
+            ], $locale),
+            'msg' => nexus_trans('message.exam_user_end_time_updated.body', [
+                'exam_name' => $examName,
+                'old_end_time' => $oldEndTime,
+                'new_end_time' => $end,
+                'operator' => get_pure_username(),
+                'reason' => $reason,
+            ], $locale),
+        ]);
+        $examUser->update(['end' => $end]);
     }
 
     public function removeExamUserBulk(array $params, User $user)
@@ -983,6 +1039,8 @@ class ExamRepository extends BaseRepository
                     $examUser->delete();
                     continue;
                 }
+                //update to the newest progress
+                $examUser = $this->updateProgress($examUser, $examUser->user);
                 $locale = $examUser->user->locale;
                 if ($examUser->is_done) {
                     do_log("$currentLogPrefix, [is_done]");

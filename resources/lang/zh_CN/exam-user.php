@@ -11,4 +11,5 @@ return [
         \App\Models\ExamUser::STATUS_AVOIDED => '已免除',
         \App\Models\ExamUser::STATUS_NORMAL => '考核中',
     ],
+    'end_can_not_before_begin' => '结束时间：:end 不能在开始时间：:begin 之前',
 ];

@@ -8,6 +8,7 @@ use App\Models\Exam;
 use App\Models\ExamUser;
 use App\Repositories\ExamRepository;
 use App\Repositories\HitAndRunRepository;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
@@ -94,8 +95,34 @@ class ExamUserResource extends Resource
                     $rep->avoidExamUserBulk(['id' => $idArr], Auth::user());
                 })
                 ->deselectRecordsAfterCompletion()
+                ->requiresConfirmation()
                 ->label(__('admin.resources.exam_user.bulk_action_avoid_label'))
-                ->icon('heroicon-o-x')
+                ->icon('heroicon-o-x'),
+
+                Tables\Actions\BulkAction::make('UpdateEnd')
+                    ->form([
+                        Forms\Components\DateTimePicker::make('end')
+                            ->required()
+                            ->label(__('label.end'))
+                        ,
+                        Forms\Components\Textarea::make('reason')
+                            ->label(__('label.reason'))
+                        ,
+                    ])
+                    ->action(function (Collection $records, array $data) {
+                        $end = Carbon::parse($data['end']);
+                        $rep = new ExamRepository();
+                        foreach ($records as $record) {
+                            if ($end->isAfter($record->begin)) {
+                                $rep->updateExamUserEnd($record, $end, $data['reason'] ?? '');
+                            } else {
+                                do_log(sprintf("examUser: %d end: %s is before begin: %s, skip", $record->id, $end, $record->begin));
+                            }
+                        }
+                    })
+                    ->deselectRecordsAfterCompletion()
+                    ->label(__('admin.resources.exam_user.bulk_action_update_end_label'))
+                    ->icon('heroicon-o-pencil'),
             ]);
     }
 

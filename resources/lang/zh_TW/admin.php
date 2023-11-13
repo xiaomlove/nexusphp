@@ -89,7 +89,9 @@ return [
         ],
         'exam_user' => [
             'bulk_action_avoid_label' => '批量免除',
+            'bulk_action_update_end_label' => '批量修改結束時間',
             'action_avoid' => '免除',
+            'action_update_end' => '修改結束時間',
             'result_passed' => '通過！',
             'result_not_passed' => '未通過！',
         ],

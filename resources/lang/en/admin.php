@@ -89,7 +89,9 @@ return [
         ],
         'exam_user' => [
             'bulk_action_avoid_label' => 'Bulk avoid',
+            'bulk_action_update_end_label' => 'Bulk modify end time',
             'action_avoid' => 'Avoid',
+            'action_update_end' => 'Modify end time',
             'result_passed' => 'Passed!',
             'result_not_passed' => 'Not passed!',
         ],
