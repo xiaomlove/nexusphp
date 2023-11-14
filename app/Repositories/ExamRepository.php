@@ -151,6 +151,30 @@ class ExamRepository extends BaseRepository
                 throw new \InvalidArgumentException("Invalid user register time end: $end");
             }
         }
+        if ($begin && $end && $begin > $end) {
+            throw new \InvalidArgumentException("user register time begin must less than end");
+        }
+
+        $filter = Exam::FILTER_USER_REGISTER_DAYS_RANGE;
+        $begin = $filters[$filter][0] ?? null;
+        $end = $filters[$filter][1] ?? null;
+        if ($begin) {
+            if (is_numeric($begin) && $begin >= 0) {
+                $hasValid = true;
+            } else {
+                throw new \InvalidArgumentException("Invalid user register days begin: $begin" );
+            }
+        }
+        if ($end) {
+            if (is_numeric($end) && $end >= 0) {
+                $hasValid = true;
+            } else {
+                throw new \InvalidArgumentException("Invalid user register days end: $end");
+            }
+        }
+        if ($begin && $end && $begin > $end) {
+            throw new \InvalidArgumentException("user register days begin must less than end");
+        }
 
         if (!$hasValid) {
             throw new \InvalidArgumentException("No valid filters");
@@ -273,6 +297,20 @@ class ExamRepository extends BaseRepository
         }
         if (!empty($registerTimeEnd) && $added > $registerTimeEnd) {
             do_log("$logPrefix, user added: $added not less than end: " . $registerTimeEnd);
+            return false;
+        }
+
+        $filter = Exam::FILTER_USER_REGISTER_DAYS_RANGE;
+        $filterValues = $filters[$filter] ?? [];
+        $value = $user->added->diffInDays(now());
+        $begin = $filterValues[0] ?? null;
+        $end = $filterValues[1] ?? null;
+        if ($begin !== null && $value < $begin) {
+            do_log("$logPrefix, user registerDays: $value not bigger than begin: " . $begin);
+            return false;
+        }
+        if ($end !== null && $value > $end) {
+            do_log("$logPrefix, user registerDays: $value not less than end: " . $end);
             return false;
         }
 
@@ -953,6 +991,18 @@ class ExamRepository extends BaseRepository
                 $baseQuery->where("$userTable.added", '<=', Carbon::parse($range[1])->toDateTimeString());
             }
         }
+
+        $filter = Exam::FILTER_USER_REGISTER_DAYS_RANGE;
+        $range = $filters[$filter] ?? [];
+        if (!empty($range)) {
+            if (!empty($range[0])) {
+                $baseQuery->where("$userTable.added", "<=", now()->subDays($range[0])->toDateTimeString());
+            }
+            if (!empty($range[1])) {
+                $baseQuery->where("$userTable.added", '>=', now()->subDays($range[1])->toDateTimeString());
+            }
+        }
+
         //Does not has this exam
         $baseQuery->whereDoesntHave('exams', function (Builder $query) use ($exam) {
             $query->where('exam_id', $exam->id);

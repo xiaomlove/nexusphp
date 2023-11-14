@@ -98,8 +98,9 @@ class Test extends Command
      */
     public function handle()
     {
-        CleanupRepository::recordBatch(NexusDB::redis(), "1", "5");
-        CleanupRepository::runBatchJobCalculateUserSeedBonus("bbbbb");
+        $str = "2023-11-14 02:59:00";
+        $diff = Carbon::parse($str)->diffInDays(now());
+        dd($diff);
     }
 
 }

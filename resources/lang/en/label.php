@@ -148,6 +148,10 @@ return [
             'begin' => 'Register time begin',
             'end' => 'Register time end',
         ],
+        'register_days_range' => [
+            'begin' => 'Minimum days registered',
+            'end' => 'Maximum days registered',
+        ],
         'donated' => 'Donated',
         'index_formatted' => 'Exam indexes',
         'filter_formatted' => 'Target users',

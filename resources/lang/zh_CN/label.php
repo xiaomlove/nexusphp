@@ -150,6 +150,10 @@ return [
             'begin' => '注册时间开始',
             'end' => '注册时间结束',
         ],
+        'register_days_range' => [
+            'begin' => '注册天数最少',
+            'end' => '注册天数最多',
+        ],
         'donated' => '是否捐赠',
         'index_formatted' => '考核指标',
         'filter_formatted' => '目标用户',

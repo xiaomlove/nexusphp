@@ -15,6 +15,7 @@ return [
         \App\Models\Exam::FILTER_USER_CLASS => 'User class',
         \App\Models\Exam::FILTER_USER_REGISTER_TIME_RANGE => 'Register time range',
         \App\Models\Exam::FILTER_USER_DONATE => 'Donated',
+        \App\Models\Exam::FILTER_USER_REGISTER_DAYS_RANGE => 'Range of days of registration',
     ],
     'require_value' => 'Require',
     'current_value' => 'Current',

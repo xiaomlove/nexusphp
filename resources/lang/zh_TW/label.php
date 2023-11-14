@@ -148,6 +148,10 @@ return [
             'begin' => '註冊時間開始',
             'end' => '註冊時間結束',
         ],
+        'register_days_range' => [
+            'begin' => '註冊天數最少',
+            'end' => '註冊天數最多',
+        ],
         'donated' => '是否捐贈',
         'index_formatted' => '考核指標',
         'filter_formatted' => '目標用戶',

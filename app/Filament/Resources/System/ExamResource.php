@@ -100,6 +100,8 @@ class ExamResource extends Resource
                         ->label(__('label.user.class')),
                     Forms\Components\DateTimePicker::make('filters.register_time_range.0')->label(__("label.exam.register_time_range.begin")),
                     Forms\Components\DateTimePicker::make('filters.register_time_range.1')->label(__("label.exam.register_time_range.end")),
+                    Forms\Components\TextInput::make('filters.register_days_range.0')->numeric()->label(__("label.exam.register_days_range.begin")),
+                    Forms\Components\TextInput::make('filters.register_days_range.1')->numeric()->label(__("label.exam.register_days_range.end")),
                     Forms\Components\CheckboxList::make('filters.donate_status')
                         ->options(self::$yesOrNo)
                         ->label(__('label.exam.donated')),

@@ -15,6 +15,7 @@ return [
         \App\Models\Exam::FILTER_USER_CLASS => '用户等级',
         \App\Models\Exam::FILTER_USER_REGISTER_TIME_RANGE => '注册时间范围',
         \App\Models\Exam::FILTER_USER_DONATE => '是否捐赠',
+        \App\Models\Exam::FILTER_USER_REGISTER_DAYS_RANGE => '注册天数范围',
     ],
     'require_value' => '要求',
     'current_value' => '当前',

@@ -51,11 +51,13 @@ class Exam extends NexusModel
     const FILTER_USER_CLASS = 'classes';
     const FILTER_USER_REGISTER_TIME_RANGE = 'register_time_range';
     const FILTER_USER_DONATE = 'donate_status';
+    const FILTER_USER_REGISTER_DAYS_RANGE = 'register_days_range';
 
     public static $filters = [
         self::FILTER_USER_CLASS => ['name' => 'User class'],
         self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User register time range'],
         self::FILTER_USER_DONATE => ['name' => 'User donated'],
+        self::FILTER_USER_REGISTER_DAYS_RANGE => ['name' => 'User register days range'],
     ];
 
     protected static function booted()
@@ -134,6 +136,19 @@ class Exam extends NexusModel
                     nexus_trans("exam.filters.$filter"),
                     $range[0] ? Carbon::parse($range[0])->toDateTimeString() : '--',
                     $range[1] ? Carbon::parse($range[1])->toDateTimeString() : '--'
+                );
+            }
+        }
+
+        $filter = self::FILTER_USER_REGISTER_DAYS_RANGE;
+        if (!empty($currentFilters[$filter])) {
+            $range = $currentFilters[$filter];
+            if (!empty($range[0]) || !empty($range[1])) {
+                $arr[] = sprintf(
+                    "%s: %s ~ %s",
+                    nexus_trans("exam.filters.$filter"),
+                    $range[0] ?? "--",
+                    $range[1] ?? '--'
                 );
             }
         }
