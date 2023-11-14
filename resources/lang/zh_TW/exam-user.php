@@ -12,4 +12,5 @@ return [
         \App\Models\ExamUser::STATUS_NORMAL => '考核中',
     ],
     'end_can_not_before_begin' => '結束時間：:end 不能在開始時間：:begin 之前',
+    'status_not_allow_update_end' => '當前狀態不為：:status_text，無法變更結束時間',
 ];

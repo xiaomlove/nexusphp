@@ -842,6 +842,9 @@ class ExamRepository extends BaseRepository
         if ($end->isBefore($examUser->begin)) {
             throw new \InvalidArgumentException(nexus_trans("exam-user.end_can_not_before_begin", ['begin' => $examUser->begin, 'end' => $end]));
         }
+        if ($examUser->status != ExamUser::STATUS_NORMAL) {
+            throw new \LogicException(nexus_trans("exam-user.status_not_allow_update_end", ['status_text' => nexus_trans('exam-user.status.' . ExamUser::STATUS_NORMAL)]));
+        }
         $oldEndTime = $examUser->end;
         $locale = $examUser->user->locale;
         $examName = $examUser->exam->name;
