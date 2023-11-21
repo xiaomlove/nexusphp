@@ -62,6 +62,9 @@ Best Regards,
     'text_enabled' => 'Enabled',
     'text_tmp_status' => 'Temporary invite status',
     'text_expired_at' => 'Expired at',
+    'text_permanent' => 'Using permanent invite',
+    'text_consume_invite' => 'Using invite',
+    'text_temporary_left' => '%s temporary invite',
 );
 
 ?>
