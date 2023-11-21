@@ -60,6 +60,7 @@ $lang_invite = array
     'text_tmp_status' => '臨時邀請狀態',
     'text_permanent' => '永久有效邀请',
     'text_consume_invite' => '使用邀请',
+    'text_temporary_left' => '%s個臨時邀請',
     'text_expired_at' => '過期時間',
 );
 
