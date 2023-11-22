@@ -58,6 +58,9 @@ $lang_invite = array
     'text_seed_torrent_last_announce_at' => '最後做種匯報時間',
     'text_enabled' => '啟用',
     'text_tmp_status' => '臨時邀請狀態',
+    'text_permanent' => '永久有效邀请',
+    'text_consume_invite' => '使用邀请',
+    'text_temporary_left' => '%s個臨時邀請',
     'text_expired_at' => '過期時間',
 );
 
