@@ -49,7 +49,7 @@ function validip($ip)
 	else return false;
 }
 
-function getip($true = true) {
+function getip($real = true) {
 	if (isset($_SERVER)) {
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && validip($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
@@ -67,7 +67,7 @@ function getip($true = true) {
 			$ip = getenv('REMOTE_ADDR') ?? '';
 		}
 	}
-    if ($true) {
+    if ($real) {
         return strstr($ip, ",", true);
     }
 	return $ip;
