@@ -25,16 +25,19 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
 
     private ?string $idStr = null;
 
+    private string $idRedisKey;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginUid, int $endUid, string $idStr, string $requestId = '')
+    public function __construct(int $beginUid, int $endUid, string $idStr, string $idRedisKey, string $requestId = '')
     {
         $this->beginUid = $beginUid;
         $this->endUid = $endUid;
         $this->idStr = $idStr;
+        $this->idRedisKey = $idRedisKey;
         $this->requestId = $requestId;
     }
 
@@ -63,7 +66,17 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
         $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
 
         $count = 0;
-        $uidArr = explode(",", $this->idStr);
+        $idStr = $this->idStr;
+        $delIdRedisKey = false;
+        if (empty($idStr) && !empty($this->idRedisKey)) {
+            $delIdRedisKey = true;
+            $idStr = NexusDB::cache_get($this->idRedisKey);
+        }
+        if (empty($idStr)) {
+            do_log("$logPrefix, no idStr or idRedisKey", "error");
+            return;
+        }
+        $uidArr = explode(",", $idStr);
         foreach ($uidArr as $uid) {
             if ($uid <= 0) {
                 continue;
@@ -84,6 +97,9 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
                 do_log("[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_USER], [SUCCESS]: $uid => " . json_encode($update));
                 $count++;
             }
+        }
+        if ($delIdRedisKey) {
+            NexusDB::cache_del($this->idRedisKey);
         }
         $costTime = time() - $beginTimestamp;
         do_log("$logPrefix, [DONE], user total count: " . count($uidArr) . ", success update count: $count, cost time: $costTime seconds");

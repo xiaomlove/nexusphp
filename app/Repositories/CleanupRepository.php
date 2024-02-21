@@ -4,6 +4,7 @@ namespace App\Repositories;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
 class CleanupRepository extends BaseRepository
@@ -95,9 +96,11 @@ class CleanupRepository extends BaseRepository
         while($arr_keys = $redis->hScan($batch, $it, "*", self::$scanSize)) {
             $delay = self::getDelay($batchKeyInfo['task_index'], $length, $page);
             $idStr = implode(",", array_keys($arr_keys));
+            $idRedisKey = Str::random();
+            NexusDB::cache_put($idRedisKey, $idStr);
             $command = sprintf(
-                'cleanup --action=%s --begin_id=%s --end_id=%s --id_str=%s --request_id=%s --delay=%s',
-                $batchKeyInfo['action'], 0, 0,  $idStr, $requestId, $delay
+                'cleanup --action=%s --begin_id=%s --end_id=%s --id_redis_key=%s --request_id=%s --delay=%s',
+                $batchKeyInfo['action'], 0, 0,  $idRedisKey, $requestId, $delay
             );
             $output = executeCommand($command, 'string', true);
             do_log(sprintf('output: %s', $output));

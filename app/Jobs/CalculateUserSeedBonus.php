@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Nexus\Database\NexusDB;
+use Nexus\Nexus;
 
 class CalculateUserSeedBonus implements ShouldQueue
 {
@@ -20,20 +21,23 @@ class CalculateUserSeedBonus implements ShouldQueue
 
     private int $endUid;
 
-    private string $uidArrStr;
+    private string $idStr;
 
     private string $requestId;
+
+    private string $idRedisKey;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginUid, int $endUid, string $uidArrStr, string $requestId = '')
+    public function __construct(int $beginUid, int $endUid, string $idStr, string $idRedisKey, string $requestId = '')
     {
         $this->beginUid = $beginUid;
         $this->endUid = $endUid;
-        $this->uidArrStr = $uidArrStr;
+        $this->idStr = $idStr;
+        $this->idRedisKey = $idRedisKey;
         $this->requestId = $requestId;
     }
 
@@ -60,19 +64,22 @@ class CalculateUserSeedBonus implements ShouldQueue
     {
         $beginTimestamp = time();
         $logPrefix = sprintf("[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
-//        $sql = sprintf("select userid from peers where userid > %s and userid <= %s and seeder = 'yes' group by userid", $this->beginUid, $this->endUid);
-//        $results = NexusDB::select($sql);
-//        $count = count($results);
-//        do_log("$logPrefix, [GET_UID], sql: $sql, count: " . count($results));
-//        if ($count == 0) {
-//            do_log("$logPrefix, no user...");
-//            return;
-//        }
         $haremAdditionFactor = Setting::get('bonus.harem_addition');
         $officialAdditionFactor = Setting::get('bonus.official_addition');
         $donortimes_bonus = Setting::get('bonus.donortimes');
         $autoclean_interval_one = Setting::get('main.autoclean_interval_one');
-        $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), $this->uidArrStr);
+
+        $idStr = $this->idStr;
+        $delIdRedisKey = false;
+        if (empty($idStr) && !empty($this->idRedisKey)) {
+            $delIdRedisKey = true;
+            $idStr = NexusDB::cache_get($this->idRedisKey);
+        }
+        if (empty($idStr)) {
+            do_log("$logPrefix, no idStr or idRedisKey", "error");
+            return;
+        }
+        $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), $idStr);
         $results = NexusDB::select($sql);
         $logFile = getLogFile("seed-bonus-points");
         do_log("$logPrefix, [GET_UID_REAL], count: " . count($results) . ", logFile: $logFile");
@@ -123,6 +130,9 @@ class CalculateUserSeedBonus implements ShouldQueue
             } else {
                 do_log("logFile: $logFile is not writeable!", 'error');
             }
+        }
+        if ($delIdRedisKey) {
+            NexusDB::cache_del($this->idRedisKey);
         }
         $costTime = time() - $beginTimestamp;
         do_log("$logPrefix, [DONE], cost time: $costTime seconds");
