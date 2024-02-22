@@ -13,6 +13,8 @@ class CleanupRepository extends BaseRepository
     const USER_SEEDING_LEECHING_TIME_BATCH_KEY = "batch_key:user_seeding_leeching_time";
     const TORRENT_SEEDERS_ETC_BATCH_KEY = "batch_key:torrent_seeders_etc";
 
+    const IDS_KEY_PREFIX = "cleanup_batch_job_ids:";
+
     private static array $batchKeyActionsMap = [
         self::USER_SEED_BONUS_BATCH_KEY => [
             'action' => 'seed_bonus',
@@ -96,7 +98,7 @@ class CleanupRepository extends BaseRepository
         while($arr_keys = $redis->hScan($batch, $it, "*", self::$scanSize)) {
             $delay = self::getDelay($batchKeyInfo['task_index'], $length, $page);
             $idStr = implode(",", array_keys($arr_keys));
-            $idRedisKey = Str::random();
+            $idRedisKey = self::IDS_KEY_PREFIX + Str::random();
             NexusDB::cache_put($idRedisKey, $idStr);
             $command = sprintf(
                 'cleanup --action=%s --begin_id=%s --end_id=%s --id_redis_key=%s --request_id=%s --delay=%s',
