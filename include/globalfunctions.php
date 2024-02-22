@@ -1192,9 +1192,14 @@ function executeCommand($command, $format = 'string', $artisan = false, $excepti
     do_log("command: $command");
     $result = exec($command, $output, $result_code);
     $outputString = implode("\n", $output);
-    do_log(sprintf('result_code: %s, result: %s, output: %s', $result_code, $result, $outputString));
-    if ($exception && $result_code != 0) {
-        throw new \RuntimeException($outputString);
+    $log = sprintf('result_code: %s, result: %s, output: %s', $result_code, $result, $outputString);
+    if ($result_code != 0) {
+        do_log($log, "error");
+        if ($exception) {
+            throw new \RuntimeException($outputString);
+        }
+    } else {
+        do_log($log);
     }
     return $format == 'string' ? $outputString : $output;
 }

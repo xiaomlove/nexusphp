@@ -327,7 +327,6 @@ JS;
 	if ($imdb_id && $showextinfo['imdb'] == 'yes' && $CURUSER['showimdb'] != 'no')
 	{
 		$thenumbers = $imdb_id;
-
 		$Cache->new_page('imdb_id_'.$thenumbers.'_large', 3600*24, true);
 		if (!$Cache->get_page()){
 			switch ($imdb->getCacheStatus($imdb_id))
@@ -337,7 +336,7 @@ JS;
 					if($row['cache_stamp']==0 || ($row['cache_stamp'] != 0 && (time()-$row['cache_stamp']) > 120))	//not exist or timed out
 						tr($lang_details['text_imdb'] . $lang_details['row_info'] , $lang_details['text_imdb'] . $lang_details['text_not_ready']."<a href=\"retriver.php?id=". $id ."&amp;type=1&amp;siteid=1\">".$lang_details['text_here_to_retrieve'] . $lang_details['text_imdb'],1);
 					else
-						tr($lang_details['text_imdb'] . $lang_details['row_info'] , "<img src=\"pic/progressbar.gif\" alt=\"\" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . $lang_details['text_someone_has_requested'] . $lang_details['text_imdb'] . " ".min(max(time()-$row['cache_stamp'],0),120) . $lang_details['text_please_be_patient'],1);
+						tr($lang_details['text_imdb'] . $lang_details['row_info'] , "<img src=\"pic/progressbar.gif\" alt=\"\" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . $lang_details['text_someone_has_requested'].min(max(time()-$row['cache_stamp'],0),120) . $lang_details['text_please_be_patient'],1);
 					break;
 				}
 				case "1" :

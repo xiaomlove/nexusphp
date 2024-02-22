@@ -23,22 +23,24 @@ switch ($siteid)
 		$imdb_id = parse_imdb_id($row["url"]);
 		if ($imdb_id)
 		{
-			$thenumbers = $imdb_id;
-			$imdb = new \Nexus\Imdb\Imdb();
-			set_cachetimestamp($id,"cache_stamp");
-
-			$imdb->purgeSingle($imdb_id);
-
-			try {
-				$imdb->updateCache($imdb_id);
-				$Cache->delete_value('imdb_id_'.$thenumbers.'_movie_name');
-				$Cache->delete_value('imdb_id_'.$thenumbers.'_large', true);
-				$Cache->delete_value('imdb_id_'.$thenumbers.'_median', true);
-				$Cache->delete_value('imdb_id_'.$thenumbers.'_minor', true);
-			} catch (\Exception $e) {
-				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
-				do_log($log, 'error');
-			}
+//			$thenumbers = $imdb_id;
+//			$imdb = new \Nexus\Imdb\Imdb();
+//			set_cachetimestamp($id,"cache_stamp");
+//
+//			$imdb->purgeSingle($imdb_id);
+//
+//			try {
+//				$imdb->updateCache($imdb_id);
+//				$Cache->delete_value('imdb_id_'.$thenumbers.'_movie_name');
+//				$Cache->delete_value('imdb_id_'.$thenumbers.'_large', true);
+//				$Cache->delete_value('imdb_id_'.$thenumbers.'_median', true);
+//				$Cache->delete_value('imdb_id_'.$thenumbers.'_minor', true);
+//			} catch (\Exception $e) {
+//				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
+//				do_log($log, 'error');
+//			}
+            $torrentRep = new \App\Repositories\TorrentRepository();
+            $torrentRep->fetchImdb($id);
             nexus_redirect(getSchemeAndHttpHost() . "/details.php?id=$id");
 		}
 		break;

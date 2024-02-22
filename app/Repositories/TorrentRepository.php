@@ -34,8 +34,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
+use Nexus\Imdb\Imdb;
 use Rhilip\Bencode\Bencode;
-use function Sodium\compare;
 
 class TorrentRepository extends BaseRepository
 {
@@ -860,6 +860,35 @@ HTML;
         }
         do_log("[DONE], total: $total, success: $success");
         return compact('total', 'success');
+    }
+
+    public function fetchImdb(int $torrentId): void
+    {
+        $torrent = Torrent::query()->findOrFail($torrentId, ["id", "url", "cache_stamp"]);
+        $imdb_id = parse_imdb_id($torrent->url);
+        $log = sprintf("fetchImdb torrentId: %s", $torrentId);
+        if (!$imdb_id) {
+            do_log("$log, no imdb_id");
+            return;
+        }
+        $thenumbers = $imdb_id;
+        $imdb = new Imdb();
+        $torrent->cache_stamp = time();
+        $torrent->save();
+
+        $imdb->purgeSingle($imdb_id);
+
+        try {
+            $imdb->updateCache($imdb_id);
+            NexusDB::cache_del('imdb_id_'.$thenumbers.'_movie_name');
+            NexusDB::cache_del('imdb_id_'.$thenumbers.'_large', true);
+            NexusDB::cache_del('imdb_id_'.$thenumbers.'_median', true);
+            NexusDB::cache_del('imdb_id_'.$thenumbers.'_minor', true);
+            do_log("$log, done");
+        } catch (\Exception $e) {
+            $log .= ", error: " . $e->getMessage() . ", trace: " . $e->getTraceAsString();
+            do_log($log, 'error');
+        }
     }
 
 }
