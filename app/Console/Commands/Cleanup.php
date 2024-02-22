@@ -14,7 +14,7 @@ class Cleanup extends Command
      *
      * @var string
      */
-    protected $signature = 'cleanup {--action=} {--begin_id=} {--id_str=} {--end_id=} {--request_id=} {--delay=} {--id_redis_key}';
+    protected $signature = 'cleanup {--action=} {--begin_id=} {--id_str=} {--end_id=} {--request_id=} {--delay=} {--id_redis_key=}';
 
     /**
      * The console command description.
