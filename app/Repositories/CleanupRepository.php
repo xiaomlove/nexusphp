@@ -98,7 +98,7 @@ class CleanupRepository extends BaseRepository
         while($arr_keys = $redis->hScan($batch, $it, "*", self::$scanSize)) {
             $delay = self::getDelay($batchKeyInfo['task_index'], $length, $page);
             $idStr = implode(",", array_keys($arr_keys));
-            $idRedisKey = self::IDS_KEY_PREFIX + Str::random();
+            $idRedisKey = self::IDS_KEY_PREFIX . Str::random();
             NexusDB::cache_put($idRedisKey, $idStr);
             $command = sprintf(
                 'cleanup --action=%s --begin_id=%s --end_id=%s --id_redis_key=%s --request_id=%s --delay=%s',
