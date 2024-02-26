@@ -12,14 +12,14 @@ class InviteAddTemporary extends Command
      *
      * @var string
      */
-    protected $signature = 'invite:tmp {uid} {days} {count}';
+    protected $signature = 'invite:tmp {idRedisKey} {days} {count}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Add temporary invite to user, argument: uid(Multiple comma separated), days, count';
+    protected $description = 'Add temporary invite to user, argument: idRedisKey, days, count';
 
     /**
      * Execute the console command.
@@ -28,14 +28,13 @@ class InviteAddTemporary extends Command
      */
     public function handle()
     {
-        $uid = $this->argument('uid');
+        $idRedisKey = $this->argument('idRedisKey');
         $days = $this->argument('days');
         $count = $this->argument('count');
-        $log = "uid: $uid, days: $days, count: $count";
+        $log = "idRedisKey: $idRedisKey, days: $days, count: $count";
         $this->info($log);
         do_log($log);
-        $uidArr = preg_split('/[\s,]+/', $uid);
-        GenerateTemporaryInvite::dispatch($uidArr, $days, $count);
+        GenerateTemporaryInvite::dispatch($idRedisKey, $days, $count);
         return Command::SUCCESS;
     }
 }

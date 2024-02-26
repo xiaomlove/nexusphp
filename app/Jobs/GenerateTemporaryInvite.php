@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Str;
+use Nexus\Database\NexusDB;
 
 class GenerateTemporaryInvite implements ShouldQueue
 {
@@ -19,7 +20,7 @@ class GenerateTemporaryInvite implements ShouldQueue
 
     private int $count;
 
-    private array $uidArr;
+    private string $idRedisKey;
 
     private int $days;
 
@@ -28,9 +29,9 @@ class GenerateTemporaryInvite implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(array $uidArr, int $days, int $count)
+    public function __construct(string $idRedisKey, int $days, int $count)
     {
-        $this->uidArr = $uidArr;
+        $this->idRedisKey = $idRedisKey;
         $this->days = $days;
         $this->count = $count;
     }
@@ -57,7 +58,13 @@ class GenerateTemporaryInvite implements ShouldQueue
     public function handle()
     {
         $toolRep = new ToolRepository();
-        foreach ($this->uidArr as $uid) {
+        $idStr = NexusDB::cache_get($this->idRedisKey);
+        if (empty($idStr)) {
+            do_log("no idStr of idRedisKey: {$this->idRedisKey}...");
+            return;
+        }
+        $idArr = explode(",", $idStr);
+        foreach ($idArr as $uid) {
             try {
                 $hashArr = $toolRep->generateUniqueInviteHash([], $this->count, $this->count);
                 $data = [];
