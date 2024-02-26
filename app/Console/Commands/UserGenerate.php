@@ -33,6 +33,7 @@ class UserGenerate extends Command
         $log = "num: $num";
         if (!$num) {
             $this->error("$log, no num!");
+            return Command::SUCCESS;
         }
         $size = 1000;
         $total = 0;

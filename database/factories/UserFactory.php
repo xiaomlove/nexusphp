@@ -9,13 +9,8 @@ use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
-    private string $defaultStyleSheet;
+    private static string $defaultStyleSheet = "";
 
-    public function __construct()
-    {
-        do_log("UserFactory __construct");
-        $this->defaultStyleSheet = get_setting("main.defstylesheet");
-    }
 
     /**
      * The name of the factory's corresponding model.
@@ -34,13 +29,16 @@ class UserFactory extends Factory
         $password = "123456";
         $secret = mksecret();
         $passhash = md5($secret . $password . $secret);
+        if (self::$defaultStyleSheet == "") {
+            self::$defaultStyleSheet = get_setting("main.defstylesheet");
+        }
         return [
             'username' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
             'secret' => mksecret(),
             'editsecret' => "",
             'passhash' => $passhash,
-            'stylesheet' => $this->defaultStyleSheet,
+            'stylesheet' => self::$defaultStyleSheet,
             'added' => now()->toDateTimeString(),
             'status' => User::STATUS_CONFIRMED,
             'class' => random_int(intval(User::CLASS_USER), intval(User::CLASS_SYSOP))
