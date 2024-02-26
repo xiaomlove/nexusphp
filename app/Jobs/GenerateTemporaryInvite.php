@@ -65,6 +65,8 @@ class GenerateTemporaryInvite implements ShouldQueue
         }
         $idArr = explode(",", $idStr);
         do_log(sprintf("going to handle %d uid...", count($idArr)));
+        $now = Carbon::now();
+        $expiredAt = Carbon::now()->addDays($this->days);
         foreach ($idArr as $uid) {
             try {
                 $hashArr = $toolRep->generateUniqueInviteHash([], $this->count, $this->count);
@@ -75,8 +77,8 @@ class GenerateTemporaryInvite implements ShouldQueue
                         'invitee' => '',
                         'hash' => $hash,
                         'valid' => 0,
-                        'expired_at' => Carbon::now()->addDays($this->days),
-                        'created_at' => Carbon::now(),
+                        'expired_at' => $expiredAt,
+                        'created_at' => $now,
                     ];
                 }
                 if (!empty($data)) {
