@@ -64,6 +64,7 @@ class GenerateTemporaryInvite implements ShouldQueue
             return;
         }
         $idArr = explode(",", $idStr);
+        do_log(sprintf("going to handle %d uid...", count($idArr)));
         foreach ($idArr as $uid) {
             try {
                 $hashArr = $toolRep->generateUniqueInviteHash([], $this->count, $this->count);
