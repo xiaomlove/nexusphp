@@ -59,7 +59,7 @@ while (true) {
         break;
     }
     $idStr = implode(',', $idArr);
-    $idRedisKey = sprintf("temporary_invite:%d", microtime(true));
+    $idRedisKey = sprintf("temporary_invite:%s", microtime(true));
     \Nexus\Database\NexusDB::cache_put($idRedisKey, $idStr);
     if ($isTypeTmpInvite) {
         $command = sprintf(
