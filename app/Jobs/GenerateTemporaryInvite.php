@@ -57,14 +57,18 @@ class GenerateTemporaryInvite implements ShouldQueue
      */
     public function handle()
     {
+        $beginTimestamp = microtime(true);
         $toolRep = new ToolRepository();
         $idStr = NexusDB::cache_get($this->idRedisKey);
+        $logPrefix = "idRedisKey: " . $this->idRedisKey;
         if (empty($idStr)) {
-            do_log("no idStr of idRedisKey: {$this->idRedisKey}...");
+            do_log("$logPrefix, no idStr...");
             return;
         }
         $idArr = explode(",", $idStr);
-        do_log(sprintf("going to handle %d uid...", count($idArr)));
+        $count = count($idArr);
+        $logPrefix .= ", count: $count";
+        do_log("$logPrefix, going to handle...");
         $now = Carbon::now();
         $expiredAt = Carbon::now()->addDays($this->days);
         foreach ($idArr as $uid) {
@@ -84,12 +88,13 @@ class GenerateTemporaryInvite implements ShouldQueue
                 if (!empty($data)) {
                     Invite::query()->insert($data);
                 }
-                do_log("success add $this->count temporary invite ($this->days days) to $uid");
+                do_log("$logPrefix, success add $this->count temporary invite ($this->days days) to $uid");
             } catch (\Exception $exception) {
-                do_log("fail add $this->count temporary invite ($this->days days) to $uid: " . $exception->getMessage(), 'error');
+                do_log("$logPrefix, fail add $this->count temporary invite ($this->days days) to $uid: " . $exception->getMessage(), 'error');
             }
         }
-
+        NexusDB::cache_del($this->idRedisKey);
+        do_log("$logPrefix, handle done, cost time: " . (microtime(true) - $beginTimestamp) . " seconds.");
     }
 
     /**
