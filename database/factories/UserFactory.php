@@ -4,10 +4,19 @@ namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
+    private string $defaultStyleSheet;
+
+    public function __construct()
+    {
+        do_log("UserFactory __construct");
+        $this->defaultStyleSheet = get_setting("main.defstylesheet");
+    }
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -22,12 +31,19 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $password = "123456";
+        $secret = mksecret();
+        $passhash = md5($secret . $password . $secret);
         return [
-            'name' => $this->faker->name,
+            'username' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
-            'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-            'remember_token' => Str::random(10),
+            'secret' => mksecret(),
+            'editsecret' => "",
+            'passhash' => $passhash,
+            'stylesheet' => $this->defaultStyleSheet,
+            'added' => now()->toDateTimeString(),
+            'status' => User::STATUS_CONFIRMED,
+            'class' => random_int(intval(User::CLASS_USER), intval(User::CLASS_SYSOP))
         ];
     }
 
@@ -36,12 +52,12 @@ class UserFactory extends Factory
      *
      * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
-    public function unverified()
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'email_verified_at' => null,
-            ];
-        });
-    }
+//    public function unverified()
+//    {
+//        return $this->state(function (array $attributes) {
+//            return [
+//                'email_verified_at' => null,
+//            ];
+//        });
+//    }
 }
