@@ -11,6 +11,8 @@ class UserFactory extends Factory
 {
     private static string $defaultStyleSheet = "";
 
+    private static int $sequence = 1;
+
 
     /**
      * The name of the factory's corresponding model.
@@ -32,9 +34,12 @@ class UserFactory extends Factory
         if (self::$defaultStyleSheet == "") {
             self::$defaultStyleSheet = get_setting("main.defstylesheet");
         }
+        $username = sprintf("%s_%s", microtime(true), self::$sequence);
+        $email = sprintf("%s@example.net", $username);
+        self::$sequence++;
         return [
-            'username' => $this->faker->name,
-            'email' => $this->faker->unique()->safeEmail,
+            'username' => $username,
+            'email' => $email,
             'secret' => mksecret(),
             'editsecret' => "",
             'passhash' => $passhash,
