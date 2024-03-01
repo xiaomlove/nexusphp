@@ -98,8 +98,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $str = "2023-11-14 02:59:00";
-        $diff = Carbon::parse($str)->diffInDays(now());
+        $str = "abc";
+        $diff = strstr($str, ",", true);
         dd($diff);
     }
 

@@ -67,7 +67,8 @@ function getip($real = true) {
 			$ip = getenv('REMOTE_ADDR') ?? '';
 		}
 	}
-    if ($real) {
+    $ip = trim(trim($ip), ",");
+    if ($real && str_contains($ip, ",")) {
         return strstr($ip, ",", true);
     }
 	return $ip;
