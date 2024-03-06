@@ -35,6 +35,8 @@ switch ($siteid)
 				$Cache->delete_value('imdb_id_'.$thenumbers.'_large', true);
 				$Cache->delete_value('imdb_id_'.$thenumbers.'_median', true);
 				$Cache->delete_value('imdb_id_'.$thenumbers.'_minor', true);
+                $ptGen = new \Nexus\PTGen\PTGen();
+                $ptGen->updateTorrentPtGen($row, true);
 			} catch (\Exception $e) {
 				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
 				do_log($log, 'error');
@@ -49,7 +51,7 @@ switch ($siteid)
 		{
 			$ptGen = new \Nexus\PTGen\PTGen();
 			try {
-				$ptGen->updateTorrentPtGen($row, $siteid);
+				$ptGen->updateTorrentPtGen($row, true);
 			} catch (\Exception $e) {
 				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
 				do_log($log, 'error');

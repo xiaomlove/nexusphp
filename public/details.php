@@ -335,8 +335,24 @@ JS;
 				case "0" : //cache is not ready, try to
 				{
 					if($row['cache_stamp']==0 || ($row['cache_stamp'] != 0 && (time()-$row['cache_stamp']) > 120))	//not exist or timed out
-						tr($lang_details['text_imdb'] . $lang_details['row_info'] , $lang_details['text_imdb'] . $lang_details['text_not_ready']."<a href=\"retriver.php?id=". $id ."&amp;type=1&amp;siteid=1\">".$lang_details['text_here_to_retrieve'] . $lang_details['text_imdb'],1);
-					else
+                    {
+                        $params = array(
+                            'id' => $id,
+                            'type' => 1,
+                            'siteid' => 1
+                        );
+                        $query_string = http_build_query($params);
+                        $host = nexus()->getRequestHost();
+                        print("<script>
+                                function callRetriver() {
+                                    const xhr = new XMLHttpRequest();
+                                    xhr.open('GET', 'https://$host/retriver.php?$query_string', true);
+                                    xhr.send();
+                                }
+                                window.onload = callRetriver;
+                            </script>");
+//						tr($lang_details['text_imdb'] . $lang_details['row_info'] , $lang_details['text_imdb'] . $lang_details['text_not_ready']."<a href=\"retriver.php?id=". $id ."&amp;type=1&amp;siteid=1\">".$lang_details['text_here_to_retrieve'] . $lang_details['text_imdb'],1);
+                    } else
 						tr($lang_details['text_imdb'] . $lang_details['row_info'] , "<img src=\"pic/progressbar.gif\" alt=\"\" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . $lang_details['text_someone_has_requested'] . $lang_details['text_imdb'] . " ".min(max(time()-$row['cache_stamp'],0),120) . $lang_details['text_please_be_patient'],1);
 					break;
 				}
@@ -398,7 +414,7 @@ JS;
 
 	if (get_setting('main.enable_pt_gen_system') == 'yes' && !empty($row['pt_gen'])) {
 	    $ptGen = new \Nexus\PTGen\PTGen();
-	    $ptGen->updateTorrentPtGen($row);
+	    $ptGen->updateTorrentPtGen($row,false);
     }
 		if (!empty($otherCopiesIdArr))
 		{

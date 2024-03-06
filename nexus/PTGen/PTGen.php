@@ -413,7 +413,7 @@ HTML;
         return $results;
     }
 
-    public function updateTorrentPtGen(array $torrentInfo): bool|array
+    public function updateTorrentPtGen(array $torrentInfo,bool $isForce=false): bool|array
     {
         $now = Carbon::now();
         $log = "torrent: " . $torrentInfo['id'];
@@ -424,7 +424,7 @@ HTML;
                 $updatedAt = Carbon::parse($arr['__updated_at']);
                 $diffInDays = $now->diffInDays($updatedAt);
                 $log .= ", diffInDays: $diffInDays";
-                if ($diffInDays < 30) {
+                if ($diffInDays < 30 && !$isForce) {
                     do_log("$log, less 30 days, don't update");
                     return false;
                 }
