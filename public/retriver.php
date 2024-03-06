@@ -41,7 +41,7 @@ switch ($siteid)
 				$log = $e->getMessage() . ", trace: " . $e->getTraceAsString();
 				do_log($log, 'error');
 			}
-            nexus_redirect(getSchemeAndHttpHost() . "/details.php?id=$id");
+      nexus_redirect(getSchemeAndHttpHost() . "/details.php?id=$id");
 		}
 		break;
 	}

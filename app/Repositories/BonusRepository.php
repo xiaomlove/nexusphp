@@ -350,7 +350,7 @@ class BonusRepository extends BaseRepository
                 ->where('seedbonus', $oldUserBonus)
                 ->update($userUpdates);
             if ($affectedRows != 1) {
-                do_log("update user seedbonus affected rows != 1, query: " . last_query(), 'error');
+                do_log("update user seedbonus affected rows: ".$affectedRows." != 1, query: " . last_query(), 'error');
                 throw new \RuntimeException("Update user seedbonus fail.");
             }
             $nowStr = now()->toDateTimeString();

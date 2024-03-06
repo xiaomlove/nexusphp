@@ -327,7 +327,6 @@ JS;
 	if ($imdb_id && $showextinfo['imdb'] == 'yes' && $CURUSER['showimdb'] != 'no')
 	{
 		$thenumbers = $imdb_id;
-
 		$Cache->new_page('imdb_id_'.$thenumbers.'_large', 3600*24, true);
 		if (!$Cache->get_page()){
 			switch ($imdb->getCacheStatus($imdb_id))

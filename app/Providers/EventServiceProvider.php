@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Events\SeedBoxRecordUpdated;
+use App\Events\TorrentCreated;
 use App\Events\TorrentUpdated;
+use App\Listeners\FetchTorrentImdb;
 use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SyncTorrentToEs;
 use Illuminate\Auth\Events\Registered;
@@ -27,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         SeedBoxRecordUpdated::class => [
             RemoveSeedBoxRecordCache::class,
+        ],
+        TorrentCreated::class => [
+            FetchTorrentImdb::class,
         ],
     ];
 

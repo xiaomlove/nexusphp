@@ -25,16 +25,19 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
 
     private ?string $idStr = null;
 
+    private string $idRedisKey;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginTorrentId, int $endTorrentId, string $idStr, string $requestId = '')
+    public function __construct(int $beginTorrentId, int $endTorrentId, string $idStr, string $idRedisKey, string $requestId = '')
     {
         $this->beginTorrentId = $beginTorrentId;
         $this->endTorrentId = $endTorrentId;
         $this->idStr = $idStr;
+        $this->idRedisKey = $idRedisKey;
         $this->requestId = $requestId;
     }
 
@@ -62,7 +65,17 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
         $beginTimestamp = time();
         $logPrefix = sprintf("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_JOB], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s", $this->requestId, $this->beginTorrentId, $this->endTorrentId);
 
-        $torrentIdArr = explode(",", $this->idStr);
+        $idStr = $this->idStr;
+        $delIdRedisKey = false;
+        if (empty($idStr) && !empty($this->idRedisKey)) {
+            $delIdRedisKey = true;
+            $idStr = NexusDB::cache_get($this->idRedisKey);
+        }
+        if (empty($idStr)) {
+            do_log("$logPrefix, no idStr or idRedisKey", "error");
+            return;
+        }
+        $torrentIdArr = explode(",", $idStr);
         foreach ($torrentIdArr as $torrentId) {
             if ($torrentId <= 0) {
                 continue;
@@ -92,6 +105,9 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
             }
             NexusDB::table('torrents')->where('id', $torrentId)->update($update);
             do_log("[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_TORRENT], [SUCCESS]: $torrentId => " . json_encode($update));
+        }
+        if ($delIdRedisKey) {
+            NexusDB::cache_del($this->idRedisKey);
         }
         $costTime = time() - $beginTimestamp;
         do_log(sprintf(
