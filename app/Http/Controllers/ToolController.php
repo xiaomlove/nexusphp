@@ -22,4 +22,9 @@ class ToolController extends Controller
         return $this->success($result);
     }
 
+    public function test(Request $request)
+    {
+        dd($request->all());
+    }
+
 }
