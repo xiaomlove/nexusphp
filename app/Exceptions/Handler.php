@@ -50,7 +50,8 @@ class Handler extends ExceptionHandler
             }
         });
         $this->renderable(function (PassportAuthenticationException $e) {
-            return response()->redirectTo(getSchemeAndHttpHost() . "/login.php");
+            $request = request();
+            return response()->redirectTo(sprintf("%s/login.php?returnto=%s", $request->getSchemeAndHttpHost(), urlencode($request->fullUrl())));
         });
 
         //Other Only handle in json request
