@@ -74,11 +74,17 @@ class NexusWebGuard implements StatefulGuard
             return false;
         }
         $user = $this->provider->retrieveById($id);
-        if ($user) {
+        if (!$user) {
+            return false;
+        }
+        try {
+            $user->checkIsNormal();
             $this->user = $user;
             return true;
+        } catch (\Throwable $e) {
+            do_log($e->getMessage());
+            return false;
         }
-        return false;
     }
 
     public function logout()

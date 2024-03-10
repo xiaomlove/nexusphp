@@ -1106,6 +1106,27 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //        printProgress($log);
 //    }
 
+    sql_query("delete from oauth_auth_codes where expires_at <= '$nowStr'");
+    $log = "delete oauth auth code expired";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
+    sql_query("delete from oauth_access_tokens where expires_at <= '$nowStr'");
+    $log = "delete oauth access token expired";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
+    sql_query("delete from oauth_refresh_tokens where expires_at <= '$nowStr'");
+    $log = "delete oauth refresh token expired";
+    do_log($log);
+    if ($printProgress) {
+        printProgress($log);
+    }
+
 	$log = 'Full cleanup is done';
 	do_log($log);
     if ($printProgress) {
