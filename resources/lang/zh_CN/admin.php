@@ -36,6 +36,10 @@ return [
         'bonus_log' => '魔力记录',
         'torrent_buy_log' => '种子购买',
         'attendance_log' => '签到记录',
+        'oauth_client' => '客户端',
+        'oauth_access_token' => '访问令牌',
+        'oauth_auth_code' => '授权码',
+        'oauth_refresh_token' => '刷新令牌',
     ],
     'resources' => [
         'agent_allow' => [

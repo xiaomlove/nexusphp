@@ -38,6 +38,10 @@ return [
         'bonus_log' => '魔力記錄',
         'torrent_buy_log' => '種子購買',
         'attendance_log' => '簽到記錄',
+        'oauth_client' => '客戶端',
+        'oauth_access_token' => '訪問令牌',
+        'oauth_auth_code' => '授權碼',
+        'oauth_refresh_token' => '刷新令牌',
     ],
     'resources' => [
         'agent_allow' => [

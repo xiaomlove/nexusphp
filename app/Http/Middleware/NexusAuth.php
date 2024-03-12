@@ -15,7 +15,7 @@ class NexusAuth extends Middleware
     protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
-            return getBaseUrl() . '/login.php';
+            return sprintf("%s/login.php?returnto=%s", $request->getSchemeAndHttpHost(), urlencode($request->fullUrl()));
         }
     }
 }

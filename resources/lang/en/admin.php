@@ -38,6 +38,10 @@ return [
         'bonus_log' => 'Bonus logs',
         'torrent_buy_log' => 'Torrent buy logs',
         'attendance_log' => 'Attendance logs',
+        'oauth_client' => 'Client',
+        'oauth_access_token' => 'Access tokens',
+        'oauth_auth_code' => 'Auth codes',
+        'oauth_refresh_token' => 'Refresh tokens',
     ],
     'resources' => [
         'agent_allow' => [
