@@ -16,16 +16,18 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            background-image: url("/pic/oauth2-authorize-bg.jpg");
         }
 
         .passport-authorize .card {
-            /*padding: 40px;*/
+            padding: 40px;
+            background-color: #ffffff;
         }
 
         .passport-authorize .card-header {
-            font-size: 24px;
+            font-size: 36px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .passport-authorize .scopes {
@@ -61,11 +63,11 @@
 <body class="passport-authorize">
     <div class="card card-default">
         <div class="card-header">
-            Authorization Request
+            {{ __('oauth.authorization_request_title') }}
         </div>
         <div class="card-body">
             <!-- Introduction -->
-            <p><strong>{{ $client->name }}</strong> is requesting permission to access your account.</p>
+            <p><strong>{{ $client->name }}</strong> {{ __('oauth.authorization_request_desc') }}.</p>
 
             <!-- Scope List -->
             @if (count($scopes) > 0)
@@ -88,7 +90,7 @@
                     <input type="hidden" name="state" value="{{ $request->state }}">
                     <input type="hidden" name="client_id" value="{{ $client->getKey() }}">
                     <input type="hidden" name="auth_token" value="{{ $authToken }}">
-                    <button type="submit" class="btn btn-success btn-approve">Authorize</button>
+                    <button type="submit" class="btn btn-success btn-approve">{{ __('oauth.btn_approve') }}</button>
                 </form>
 
                 <!-- Cancel Button -->
@@ -99,7 +101,7 @@
                     <input type="hidden" name="state" value="{{ $request->state }}">
                     <input type="hidden" name="client_id" value="{{ $client->getKey() }}">
                     <input type="hidden" name="auth_token" value="{{ $authToken }}">
-                    <button class="btn btn-danger">Cancel</button>
+                    <button class="btn btn-danger">{{ __('oauth.btn_deny') }}</button>
                 </form>
             </div>
         </div>
