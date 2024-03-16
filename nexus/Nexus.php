@@ -95,7 +95,7 @@ final class Nexus
         return $this->script == 'announce';
     }
 
-    public function incrementLogSequence()
+    public function incrementLogSequence(): void
     {
         $this->logSequence++;
     }
@@ -108,7 +108,7 @@ final class Nexus
         return $result;
     }
 
-    public function getRequestSchema()
+    public function getRequestSchema(): string
     {
         $schema = $this->retrieveFromServer(['HTTP_X_FORWARDED_PROTO', 'REQUEST_SCHEME', 'HTTP_SCHEME']);
         if (empty($schema)) {
@@ -122,7 +122,7 @@ final class Nexus
 
     public function getRequestHost(): string
     {
-        $host = $this->retrieveFromServer(['HTTP_HOST', 'host', 'HTTP_X_FORWARDED_HOST'], true);
+        $host = $this->retrieveFromServer(['HTTP_X_FORWARDED_HOST', 'HTTP_HOST', 'host'], true);
         return $this->getFirst(strval($host));
     }
 
