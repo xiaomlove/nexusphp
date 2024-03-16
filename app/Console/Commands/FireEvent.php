@@ -3,6 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Events\TorrentCreated;
+use App\Events\UserDestroyed;
+use App\Events\UserDisabled;
+use App\Events\UserEnabled;
 use Illuminate\Console\Command;
 
 class FireEvent extends Command
@@ -22,7 +25,10 @@ class FireEvent extends Command
     protected $description = 'Fire a event, options: --name, --id';
 
     protected array $eventMaps = [
-        "torrent_created" => TorrentCreated::class
+        "torrent_created" => TorrentCreated::class,
+        "user_destroyed" => UserDestroyed::class,
+        "user_disabled" => UserDisabled::class,
+        "user_enabled" => UserEnabled::class,
     ];
 
     /**
