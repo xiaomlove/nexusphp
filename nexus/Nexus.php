@@ -100,6 +100,14 @@ final class Nexus
         $this->logSequence++;
     }
 
+    private function getFirst(string $result): string
+    {
+        if (str_contains($result, ",")) {
+            return strstr($result, ",", true);
+        }
+        return $result;
+    }
+
     public function getRequestSchema()
     {
         $schema = $this->retrieveFromServer(['HTTP_X_FORWARDED_PROTO', 'REQUEST_SCHEME', 'HTTP_SCHEME']);
@@ -109,18 +117,19 @@ final class Nexus
                 $schema = 'https';
             }
         }
-        return $schema;
+        return $this->getFirst($schema);
     }
 
     public function getRequestHost(): string
     {
-        $host = $this->retrieveFromServer(['HTTP_HOST', 'host', ], true);
-        return (string)$host;
+        $host = $this->retrieveFromServer(['HTTP_HOST', 'host', 'HTTP_X_FORWARDED_HOST'], true);
+        return $this->getFirst(strval($host));
     }
 
-    public function getRequestIp()
+    public function getRequestIp(): string
     {
-        return $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'x-forwarded-for', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR'], true);
+        $ip = $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'x-forwarded-for', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR'], true);
+        return $this->getFirst($ip);
     }
 
     private function retrieveFromServer(array $fields, bool $includeHeader = false)
@@ -134,12 +143,6 @@ final class Nexus
         }
         foreach ($fields as $field) {
             $result = $servers[$field] ?? null;
-            if ($result && in_array($field, ['HTTP_X_FORWARDED_FOR', 'x-forwarded-for'])) {
-                $result = preg_split('/[,\s]+/', $result);
-            }
-            if (is_array($result)) {
-                $result = Arr::first($result);
-            }
             if ($result !== null && $result !== '') {
                 return $result;
             }
