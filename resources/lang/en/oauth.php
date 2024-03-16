@@ -10,4 +10,5 @@ return [
     'authorization_request_desc' => 'is requesting permission to access your account',
     'btn_approve' => 'Authorize',
     'btn_deny' => 'Cancel',
+    'skips_authorization' => 'Skips authorization',
 ];

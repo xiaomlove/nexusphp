@@ -10,4 +10,5 @@ return [
     'authorization_request_desc' => '正在请求获取您账号的访问权限',
     'btn_approve' => '授权',
     'btn_deny' => '取消',
+    'skips_authorization' => '跳过授权',
 ];

@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Codec;
 use App\Models\Icon;
 use App\Models\Media;
+use App\Models\OauthClient;
 use App\Models\Plugin;
 use App\Models\Processing;
 use App\Models\SearchBox;
@@ -21,6 +22,7 @@ use App\Policies\CodecPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -54,6 +56,7 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+        Passport::useClientModel(OauthClient::class);
 
         Auth::viaRequest('nexus-cookie', function (Request $request) {
             return $this->getUserByCookie($request->cookie());

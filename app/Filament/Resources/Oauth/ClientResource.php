@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Oauth;
 
+use App\Filament\OptionsTrait;
 use App\Filament\PageListSingle;
 use App\Filament\Resources\Oauth\ClientResource\Pages;
 use App\Filament\Resources\Oauth\ClientResource\RelationManagers;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ClientResource extends Resource
 {
+    use OptionsTrait;
+
     protected static ?string $model = Client::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
@@ -40,6 +43,11 @@ class ClientResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')->label(__('label.name')),
                 Forms\Components\TextInput::make('redirect')->label(__('oauth.redirect')),
+                Forms\Components\Radio::make('skips_authorization')
+                    ->options(self::getYesNoOptions())
+                    ->inline()
+                    ->default(0)
+                    ->label(__('oauth.skips_authorization')),
 
             ]);
     }
@@ -52,6 +60,10 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label(__('label.name')),
                 Tables\Columns\TextColumn::make('secret')->label(__('oauth.secret')),
                 Tables\Columns\TextColumn::make('redirect')->label(__('oauth.redirect')),
+                Tables\Columns\IconColumn::make('skips_authorization')
+                    ->boolean()
+                    ->label(__('oauth.skips_authorization'))
+                ,
 
             ])
             ->filters([
