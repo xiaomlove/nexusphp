@@ -6,7 +6,7 @@ use App\Filament\OptionsTrait;
 use App\Filament\PageListSingle;
 use App\Filament\Resources\Oauth\ClientResource\Pages;
 use App\Filament\Resources\Oauth\ClientResource\RelationManagers;
-use Laravel\Passport\Client;
+use App\Models\OauthClient;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
@@ -19,7 +19,7 @@ class ClientResource extends Resource
 {
     use OptionsTrait;
 
-    protected static ?string $model = Client::class;
+    protected static ?string $model = OauthClient::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
 
