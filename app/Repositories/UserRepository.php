@@ -198,6 +198,7 @@ class UserRepository extends BaseRepository
         });
         do_log("user: $uid, $modCommentText");
         $this->clearCache($targetUser);
+        fire_event("user_disabled", $uid);
         return true;
     }
 
@@ -224,6 +225,7 @@ class UserRepository extends BaseRepository
         $targetUser->updateWithModComment($update, $modCommentText);
         do_log("user: $uid, $modCommentText, update: " . nexus_json_encode($update));
         $this->clearCache($targetUser);
+        fire_event("user_enabled", $uid);
         return true;
     }
 
@@ -654,6 +656,7 @@ class UserRepository extends BaseRepository
         }
         UserBanLog::query()->insert($userBanLogs);
         do_action("user_delete", $id);
+        fire_event("user_destroyed", $id);
         return true;
     }
 

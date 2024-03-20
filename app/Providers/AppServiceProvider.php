@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Laravel\Passport\Passport;
 use Nexus\Nexus;
 use Filament\Facades\Filament;
 use NexusPlugin\Menu\Filament\MenuItemResource;
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        Passport::ignoreMigrations();
         do_action('nexus_register');
     }
 
