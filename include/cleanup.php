@@ -670,18 +670,19 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//destroy disabled accounts
+    $userRep = new \App\Repositories\UserRepository();
     $destroyDisabledDays = get_setting('account.destroy_disabled');
     if ($destroyDisabledDays > 0) {
         $secs = $destroyDisabledDays*24*60*60;
         $dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
-        $users = \App\Models\User::query()
+        \App\Models\User::query()
             ->where('enabled', 'no')
             ->where("last_access","<", $dt)
-            ->get(['id']);
-        if ($users->isNotEmpty()) {
-            $userRep = new \App\Repositories\UserRepository();
-            $userRep->destroy($users->pluck('id')->toArray(), 'cleanup.destroy_disabled_account');
-        }
+            ->select(['id', 'username', 'lang'])
+            ->orderBy("id", "asc")
+            ->chunk(2000, function (\Illuminate\Support\Collection $users) use ($userRep) {
+                $userRep->destroy($users, 'cleanup.destroy_disabled_account');
+            });
     }
     $log = "destroy disabled accounts";
     do_log($log);
