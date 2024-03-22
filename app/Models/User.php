@@ -218,7 +218,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'leechwarnuntil' => 'datetime',
     ];
 
-    public static $commonFields = [
+    public static array $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar', 'passkey',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',

@@ -108,6 +108,8 @@ return [
             'is_invite_pre_email_and_username_help' => "默认: 'No'。若预定，用户注册时不可修改邮箱和用户名",
             'access_admin_class_min' => '登录管理后台最小等级',
             'access_admin_class_min_help' => '默认：管理员，用户等级大于等于设定值的用户可以登录管理后台',
+            'alarm_email_receiver' => '告警邮件接收者',
+            'alarm_email_receiver_help' => '填写用户 UID，多个空格隔开，系统异常告警邮件将会发到对应用户的邮箱。如果不填会写到运行日志中，日志级别为 error',
         ],
     ],
     'user' => [

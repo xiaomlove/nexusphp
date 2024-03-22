@@ -1,6 +1,9 @@
 <?php
 namespace App\Repositories;
 
+use App\Http\Middleware\Locale;
+use App\Models\Avp;
+use App\Models\NexusModel;
 use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
@@ -206,10 +209,80 @@ LUA;
 
     private static function getCacheKeyLifeTime(): int
     {
-        $four = get_setting("main.autoclean_interval_four");
-        $three = get_setting("main.autoclean_interval_three");
-        $one = get_setting("main.autoclean_interval_one");
+        $four = self::getInterval("four");
+        $three = self::getInterval("three");
+        $one = self::getInterval("one");
         return intval($four) + intval($three) + intval($one);
     }
 
+    private static function getInterval($level): int
+    {
+        $name = sprintf("main.autoclean_interval_%s", $level);
+        return intval(get_setting($name));
+    }
+
+    public static function checkCleanup(): void
+    {
+        $now = Carbon::now();
+        $timestamp = $now->getTimestamp();
+        $toolRep = new ToolRepository();
+        $arvToLevel = [
+            "lastcleantime" => "one",
+            "lastcleantime2" => "two",
+            "lastcleantime3" => "three",
+            "lastcleantime4" => "four",
+            "lastcleantime5" => "five",
+        ];
+        $avps = Avp::query()->get()->keyBy("arg");
+        foreach ($arvToLevel as $arg => $level) {
+            /** @var NexusModel $value */
+            $value = $avps->get($arg);
+            $interval = self::getInterval($level);
+            if ($interval <= 0) {
+                do_log(sprintf("level: %s not set cleanup interval", $level), "error");
+                continue;
+            }
+            $lastTime = 0;
+            if ($value && $value->value_u) {
+                $lastTime = $value->value_u;
+            }
+            if ($timestamp < $lastTime + $interval * 2) {
+                continue;
+            }
+            $receiverUid = get_setting("system.alarm_email_receiver");
+            if (empty($receiverUid)) {
+                $locale = Locale::getDefault();
+                $subject = self::getAlarmEmailSubject($locale);
+                $msg = self::getAlarmEmailBody($now, $level, $lastTime, $interval, $locale);
+                do_log(sprintf("%s - %s", $subject, $msg), "error");
+            } else {
+                $receiverUidArr = preg_split("/\s+/", $receiverUid);
+                $users = User::query()->whereIn("id", $receiverUidArr)->get(User::$commonFields);
+                foreach ($users as $user) {
+                    $locale = $user->locale;
+                    $subject = self::getAlarmEmailSubject($locale);
+                    $msg = self::getAlarmEmailBody($now, $level, $lastTime, $interval, $locale);
+                    $result = $toolRep->sendMail($user->email, $subject, $msg);
+                    do_log(sprintf("send msg: %s result: %s", $msg, var_export($result, true)), $result ? "info" : "error");
+                }
+            }
+            return;
+        }
+    }
+
+    private static function getAlarmEmailSubject(string|null $locale = null)
+    {
+        return nexus_trans("cleanup.alarm_email_subject", ["site_name" => get_setting("basic.SITENAME")], $locale);
+    }
+
+    private static function getAlarmEmailBody(Carbon $now, string $level, int $lastTime, int $interval, string|null $locale = null)
+    {
+        return  nexus_trans("cleanup.alarm_email_body", [
+            "now_time" => $now->toDateTimeString(),
+            "level" => $level,
+            "last_time" => $lastTime > 0 ? Carbon::createFromTimestamp($lastTime)->toDateTimeString() : "",
+            "elapsed_seconds" => $lastTime > 0 ? $now->getTimestamp() - $lastTime : "",
+            "interval" => $interval,
+        ], $locale);
+    }
 }

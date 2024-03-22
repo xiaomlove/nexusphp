@@ -108,6 +108,8 @@ return [
             'is_invite_pre_email_and_username_help' => "Default: 'No'. If pre-booked, email and username may not be changed when the user registers.",
             'access_admin_class_min' => 'Minimum class for logging into admin backend',
             'access_admin_class_min_help' => 'Default: administrator, users with a user class greater than or equal to the set value can log into the admin backend',
+            'alarm_email_receiver' => 'Alarm email receiver',
+            'alarm_email_receiver_help' => "Fill in the UID of the user, separated by space, and the alarm email will be sent to the corresponding user's email address. If you don't fill it in, it will be written to the runtime log, and the log level will be error",
         ],
     ],
     'user' => [

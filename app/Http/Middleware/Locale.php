@@ -59,4 +59,10 @@ class Locale
         return self::$languageMaps[$lang] ?? null;
     }
 
+    public static function getDefault()
+    {
+        $defaultLang = get_setting("main.defaultlang");
+        return self::$languageMaps[$defaultLang] ?? null;
+    }
+
 }

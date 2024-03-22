@@ -8,4 +8,6 @@ return [
     'disable_user_not_parked' => '定時封禁未掛起的非活躍賬號.',
     'disable_user_parked' => '定時封禁已掛起的非活躍賬號.',
     'destroy_disabled_account' => '定時物理刪除已封禁賬號',
+    'alarm_email_subject' => '[:site_name]後臺清理任務異常',
+    'alarm_email_body' => '當前時間：:now_time, 級別 :level 上次運行時間是：:last_time，已經超過：:elapsed_seconds 秒沒有運行，設置的運行間隔是：:interval 秒，請檢查！',
 ];

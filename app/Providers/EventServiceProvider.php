@@ -36,9 +36,6 @@ class EventServiceProvider extends ServiceProvider
         TorrentCreated::class => [
             FetchTorrentImdb::class,
         ],
-        UserDestroyed::class => [
-            RemoveOauthTokens::class,
-        ],
         UserDisabled::class => [
             RemoveOauthTokens::class,
         ],

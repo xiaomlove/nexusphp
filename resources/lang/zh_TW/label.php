@@ -108,6 +108,8 @@ return [
             'is_invite_pre_email_and_username_help' => "默認: 'No'。若預定，用戶註冊時不可修改郵箱和用戶名",
             'access_admin_class_min' => '登錄管理後臺最小等級',
             'access_admin_class_min_help' => '默認：管理員，用戶等級大於等於設定值的用戶可以登錄管理後臺',
+            'alarm_email_receiver' => '告警郵件接收者',
+            'alarm_email_receiver_help' => '填寫用戶 UID，多個空格隔開，系統異常告警郵件將會發到對應用戶的郵箱。如果不填會寫到運行日誌中，日誌級別為 error',
         ],
     ],
     'user' => [
