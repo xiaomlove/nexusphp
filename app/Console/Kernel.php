@@ -61,7 +61,7 @@ class Kernel extends ConsoleKernel
             $interval = 7200;
         }
         $schedule->job(new CheckCleanup())
-            ->cron(sprintf("*/%d * * * *", intval($interval/60)))
+            ->cron(sprintf("*/%d * * * *", ceil($interval/60)))
             ->withoutOverlapping();
     }
 }

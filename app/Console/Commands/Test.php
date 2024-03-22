@@ -98,8 +98,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $str = "abc";
-        $diff = strstr($str, ",", true);
+        $interval = 100;
+        $diff = sprintf("*/%d * * * *", ceil($interval/60));
         dd($diff);
     }
 
