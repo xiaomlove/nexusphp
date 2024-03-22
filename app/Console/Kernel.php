@@ -60,7 +60,6 @@ class Kernel extends ConsoleKernel
         if (!$interval || $interval < 60) {
             $interval = 7200;
         }
-        $interval = 60;
         $schedule->job(new CheckCleanup())
             ->cron(sprintf("*/%d * * * *", intval($interval/60)))
             ->withoutOverlapping();
