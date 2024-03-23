@@ -9,5 +9,5 @@ return [
     'disable_user_parked' => 'Disable inactive user accounts, parked.',
     'destroy_disabled_account' => 'Timed physical deletion of disabled accounts',
     'alarm_email_subject' => '[:site_name] background cleanup task exception',
-    'alarm_email_body' => 'Current time: :now_time, level :level, Last run time was: :last_time, it has been more than: :elapsed_seconds seconds since it was run, the set run interval is: :interval seconds, please check!',
+    'alarm_email_body' => 'Current time: :now_time, level :level, Last run time was: :last_time, it has been more than: :elapsed_seconds seconds(:elapsed_seconds_human) since it was run, the set run interval is: :interval seconds(:interval_human), please check!',
 ];

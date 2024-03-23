@@ -250,6 +250,7 @@ LUA;
                 continue;
             }
             $receiverUid = get_setting("system.alarm_email_receiver");
+            do_log("receiverUid: $receiverUid");
             if (empty($receiverUid)) {
                 $locale = Locale::getDefault();
                 $subject = self::getAlarmEmailSubject($locale);
@@ -282,7 +283,9 @@ LUA;
             "level" => $level,
             "last_time" => $lastTime > 0 ? Carbon::createFromTimestamp($lastTime)->toDateTimeString() : "",
             "elapsed_seconds" => $lastTime > 0 ? $now->getTimestamp() - $lastTime : "",
+            "elapsed_seconds_human" => $lastTime > 0 ? mkprettytime($now->getTimestamp() - $lastTime) : "",
             "interval" => $interval,
+            "interval_human" => mkprettytime($interval),
         ], $locale);
     }
 }

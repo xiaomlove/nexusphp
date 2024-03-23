@@ -9,5 +9,5 @@ return [
     'disable_user_parked' => '定时封禁已挂起的非活跃账号.',
     'destroy_disabled_account' => '定时物理删除已封禁账号',
     'alarm_email_subject' => '[:site_name]后台清理任务异常',
-    'alarm_email_body' => '当前时间：:now_time, 级别 :level 上次运行时间是：:last_time，已经超过：:elapsed_seconds 秒没有运行，设置的运行间隔是：:interval 秒，请检查！',
+    'alarm_email_body' => '当前时间：:now_time, 级别 :level 上次运行时间是：:last_time，已经超过：:elapsed_seconds 秒（:elapsed_seconds_human）没有运行，设置的运行间隔是：:interval 秒（:interval_human），请检查！',
 ];

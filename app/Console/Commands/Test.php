@@ -98,8 +98,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $interval = 100;
-        $diff = sprintf("*/%d * * * *", ceil($interval/60));
+        $diff = get_setting("system.alarm_email_receiver");
         dd($diff);
     }
 
