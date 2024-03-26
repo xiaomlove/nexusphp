@@ -183,7 +183,7 @@ for k, v in pairs(batchList) do
         hashKey = ARGV[3]
     end
     redis.call("HSET", batchKey, hashKey, ARGV[6])
-    if isBatchKeyNew then
+    if (isBatchKeyNew and k > 1) then
         redis.call("EXPIRE", batchKey, ARGV[5])
     end
 end
