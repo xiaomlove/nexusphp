@@ -43,7 +43,7 @@ class CleanupRepository extends BaseRepository
     {
         $args = [
             self::USER_SEED_BONUS_BATCH_KEY, self::USER_SEEDING_LEECHING_TIME_BATCH_KEY, self::TORRENT_SEEDERS_ETC_BATCH_KEY,
-            $uid, $uid, $torrentId, self::getHashKeySuffix(), self::getCacheKeyLifeTime()
+            $uid, $uid, $torrentId, self::getHashKeySuffix(), self::getCacheKeyLifeTime(), time(),
         ];
         $result  = $redis->eval(self::getAddRecordLuaScript(), $args, 3);
         $err = $redis->getLastError();
@@ -85,13 +85,16 @@ class CleanupRepository extends BaseRepository
             return;
         }
         //update the batch key
-        $newBatch = $batchKey . ":" . self::getHashKeySuffix();
-        $lifeTime = self::getCacheKeyLifeTime();
-        $redis->set($batchKey, $newBatch, ['ex' => $lifeTime]);
-        $redis->hSetNx($newBatch, -1, 1);
-        $redis->expire($newBatch, $lifeTime);
+        //用户魔力部分不更新，避免用户保旧种汇报时间过长影响魔力增加
+        if ($batchKey != self::USER_SEED_BONUS_BATCH_KEY) {
+            $newBatch = $batchKey . ":" . self::getHashKeySuffix();
+            $lifeTime = self::getCacheKeyLifeTime();
+            $redis->set($batchKey, $newBatch, ['ex' => $lifeTime]);
+            $redis->hSetNx($newBatch, -1, 1);
+            $redis->expire($newBatch, $lifeTime);
+        }
 
-
+        $userSeedBonusDeadline = deadtime();
         $count = 0;
         $it = NULL;
         $length = $redis->hLen($batch);
@@ -100,21 +103,37 @@ class CleanupRepository extends BaseRepository
         $redis->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
         while($arr_keys = $redis->hScan($batch, $it, "*", self::$scanSize)) {
             $delay = self::getDelay($batchKeyInfo['task_index'], $length, $page);
-            $idStr = implode(",", array_keys($arr_keys));
-            $idRedisKey = self::IDS_KEY_PREFIX . Str::random();
-            NexusDB::cache_put($idRedisKey, $idStr);
-            $command = sprintf(
-                'cleanup --action=%s --begin_id=%s --end_id=%s --id_redis_key=%s --request_id=%s --delay=%s',
-                $batchKeyInfo['action'], 0, 0,  $idRedisKey, $requestId, $delay
-            );
-            $output = executeCommand($command, 'string', true);
-            do_log(sprintf('output: %s', $output));
-            $count += count($arr_keys);
+            $toRemoveFields = $validFields = [];
+            foreach ($arr_keys as $field => $value) {
+                if ($batchKey == self::USER_SEED_BONUS_BATCH_KEY && $value < $userSeedBonusDeadline) {
+                    //dead, should remove
+                    $toRemoveFields[] = $field;
+                } else {
+                    $validFields[] = $field;
+                }
+            }
+            if (!empty($validFields)) {
+                $idStr = implode(",", $validFields);
+                $idRedisKey = self::IDS_KEY_PREFIX . Str::random();
+                NexusDB::cache_put($idRedisKey, $idStr);
+                $command = sprintf(
+                    'cleanup --action=%s --begin_id=%s --end_id=%s --id_redis_key=%s --request_id=%s --delay=%s',
+                    $batchKeyInfo['action'], 0, 0,  $idRedisKey, $requestId, $delay
+                );
+                $output = executeCommand($command, 'string', true);
+                do_log(sprintf('output: %s', $output));
+                $count += count($validFields);
+            }
+            if (!empty($toRemoveFields)) {
+                $redis->hDel($batch, ...$toRemoveFields);
+            }
             $page++;
         }
 
         //remove this batch
-        $redis->del($batch);
+        if ($batchKey != self::USER_SEED_BONUS_BATCH_KEY) {
+            $redis->del($batch);
+        }
         $endTimestamp = time();
         do_log(sprintf("$logPrefix, [DONE], batch: $batch, count: $count, cost time: %d seconds", $endTimestamp - $beginTimestamp));
     }
@@ -136,7 +155,8 @@ class CleanupRepository extends BaseRepository
     }
 
     /**
-     * USER_SEED_BONUS, USER_SEEDING_LEECHING_TIME, TORRENT_SEEDERS_ETC, uid, uid, torrentId, timeStr, cacheLifeTime
+     * USER_SEED_BONUS, USER_SEEDING_LEECHING_TIME, TORRENT_SEEDERS_ETC,
+     * uid, uid, torrentId, timeStr, cacheLifeTime, nowTimestamp
      *
      * @return string
      */
@@ -162,7 +182,7 @@ for k, v in pairs(batchList) do
     else
         hashKey = ARGV[3]
     end
-    redis.call("HSETNX", batchKey, hashKey, 1)
+    redis.call("HSET", batchKey, hashKey, ARGV[6])
     if isBatchKeyNew then
         redis.call("EXPIRE", batchKey, ARGV[5])
     end

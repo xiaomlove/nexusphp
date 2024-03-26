@@ -2163,7 +2163,7 @@ function mksizeint($bytes)
 }
 
 function deadtime() {
-	global $anninterthree;
+    $anninterthree = (int)get_setting("main.anninterthree");
 	return time() - floor($anninterthree * 1.3);
 }
 
