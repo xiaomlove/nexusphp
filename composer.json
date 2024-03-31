@@ -41,6 +41,7 @@
         "geoip2/geoip2": "~2.0",
         "hashids/hashids": "^4.1",
         "imdbphp/imdbphp": "^7.0",
+        "irazasyed/telegram-bot-sdk": "^3.11",
         "laravel/framework": "9.52.4",
         "laravel/octane": "^1.2",
         "laravel/passport": "^11.10",
