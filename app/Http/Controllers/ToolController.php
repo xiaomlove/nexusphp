@@ -24,42 +24,10 @@ class ToolController extends Controller
         return $this->success($result);
     }
 
-    public function tgBot(): string
-    {
-        $token = "xxxxxx";
-        $telegram = new Api($token);
-        $commandHelp = new HelpCommand();
-        $commandBind = new TgCommandBind();
-        $telegram->addCommand($commandHelp);
-        $telegram->addCommand($commandBind);
-        $update = $telegram->commandsHandler(true);
-        return 'OK';
-    }
 
     public function test(Request $request)
     {
-        $token = "xxxxxx";
-        $telegram = new Api($token);
-//        $response = $telegram->getMe();
-//        $response = $telegram->sendMessage([
-//            "chat_id" => "-4170177008",
-//            "text" => "Comes from xiaomlove!",
-//        ]);
 
-        $commandHelp = new HelpCommand();
-        $commandBind = new TgCommandBind();
-
-        $commands = [
-            ['command' => $commandHelp->getName(), 'description' => $commandHelp->getDescription()],
-            ['command' => $commandBind->getName(), 'description' => $commandBind->getDescription()],
-        ];
-        $response = $telegram->setMyCommands([
-            "commands" => json_encode($commands)
-        ]);
-//        $response = $telegram->setWebhook(['url' => 'https://dev.nexusphp.org/nexusphp-tgbot/webhook']);
-
-//        $response = $telegram->getWebhookUpdate();
-        dd($response);
     }
 
 }
