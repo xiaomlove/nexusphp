@@ -799,7 +799,7 @@ HTML;
             if (is_array($arr) && isset($arr['torrent_id'], $arr['pieces_hash'])) {
                 $out[$arr['pieces_hash']] = $arr['torrent_id'];
             } else {
-                do_log(sprintf("%s, invalid item: %s(%s)", $logPrefix, var_export($item, true), gettype($item)), 'error');
+                do_log(sprintf("%s, invalid item: %s(%s)", $logPrefix, var_export($item, true), gettype($item)));
             }
         }
         return $out;

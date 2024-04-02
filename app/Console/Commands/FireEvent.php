@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\NewsCreated;
 use App\Events\TorrentCreated;
 use App\Events\UserDestroyed;
 use App\Events\UserDisabled;
@@ -29,6 +30,7 @@ class FireEvent extends Command
         "user_destroyed" => UserDestroyed::class,
         "user_disabled" => UserDisabled::class,
         "user_enabled" => UserEnabled::class,
+        "news_created" => NewsCreated::class,
     ];
 
     /**
