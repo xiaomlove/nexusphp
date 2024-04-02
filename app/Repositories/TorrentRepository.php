@@ -792,13 +792,14 @@ HTML;
             $pipe->hGet(self::PIECES_HASH_CACHE_KEY, $hash);
         }
         $results = $pipe->exec();
+        $logPrefix = sprintf("piecesHashCount: %s, resultCount: %s", count($piecesHash), count($results));
         $out = [];
         foreach ($results as $item) {
             $arr = json_decode($item, true);
             if (is_array($arr) && isset($arr['torrent_id'], $arr['pieces_hash'])) {
                 $out[$arr['pieces_hash']] = $arr['torrent_id'];
             } else {
-                do_log("invalid item: $item", 'error');
+                do_log(sprintf("%s, invalid item: %s(%s)", $logPrefix, var_export($item, true), gettype($item)), 'error');
             }
         }
         return $out;
