@@ -37,6 +37,7 @@
 - 幸运大转盘
 - 自定义角色权限
 - 分区 H&R
+- TGBot
 
 ## 系统要求
 - PHP: 8.0|8.1|8.2，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp, zend opcache
