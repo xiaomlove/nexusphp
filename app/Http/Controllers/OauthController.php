@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\OauthClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -10,31 +11,35 @@ use Laravel\Passport\Client;
 
 class OauthController extends Controller
 {
-    private int $clientId = 3;
+    private int $clientId = 8;
     private string $baseUri;
 
-    public function __construct()
+    private ?OauthClient $client = null;
+
+//    public function __construct()
+//    {
+//        $this->baseUri = getSchemeAndHttpHost();
+//
+//        $this->client = OauthClient::query()->find($this->clientId);
+//    }
+    public function redirect(Request $request)
     {
-        $this->baseUri = getSchemeAndHttpHost();
-    }
-    public function Redirect(Request $request)
-    {
-        $request->session()->put('state', $state = Str::random(40));
+//        $request->session()->put('state', $state = Str::random(40));
 
         $query = http_build_query([
-            'client_id' => $this->clientId,
-            'redirect_uri' => $this->baseUri."/oauth/callback",
+            'client_id' => $this->client->id,
+            'redirect_uri' => $this->client->redirect,
             'response_type' => 'code',
             'scope' => '',
-            'state' => $state,
-            'prompt' => 'none', // "none", "consent", or "login"
+//            'state' => $state,
+//            'prompt' => 'none', // "none", "consent", or "login"
         ]);
 
         return redirect($this->baseUri.'/oauth/authorize?'.$query);
 
     }
 
-    public function Callback(Request $request)
+    public function callback(Request $request)
     {
 //        $state = $request->session()->pull('state');
 //
@@ -43,16 +48,20 @@ class OauthController extends Controller
 //            \InvalidArgumentException::class
 //        );
 
-        $clientInfo = Client::query()->findOrFail($this->clientId);
         $response = Http::asForm()->post($this->baseUri.'/oauth/token', [
             'grant_type' => 'authorization_code',
-            'client_id' => $this->clientId,
-            'client_secret' => $clientInfo->secret,
-            'redirect_uri' => $this->baseUri.'/oauth/callback',
+            'client_id' => $this->client->id,
+            'client_secret' => $this->client->secret,
+            'redirect_uri' => $this->client->redirect,
             'code' => $request->code,
         ]);
 
         return $response->json();
+    }
+
+    public function debug(Request $request)
+    {
+        dd($request->all());
     }
 
 
@@ -60,6 +69,6 @@ class OauthController extends Controller
     {
         $user = Auth::user();
         $resource = new UserResource($user);
-        return $resource->response()->getData(true);
+        return $resource->response()->getData(true)['data'];
     }
 }
