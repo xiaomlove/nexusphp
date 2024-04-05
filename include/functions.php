@@ -5774,7 +5774,7 @@ function get_share_ratio($uploaded, $downloaded)
         $ratio = floor(($uploaded / $downloaded) * 1000) / 1000;
     } elseif ($uploaded) {
         //@todo 读语言文件
-        $ratio = '无限';
+        $ratio = 'Infinity';
     } else {
         $ratio = '---';
     }

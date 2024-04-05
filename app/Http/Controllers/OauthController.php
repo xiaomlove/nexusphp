@@ -60,6 +60,6 @@ class OauthController extends Controller
     {
         $user = Auth::user();
         $resource = new UserResource($user);
-        return $this->success($resource);
+        return $resource->response()->getData(true);
     }
 }
