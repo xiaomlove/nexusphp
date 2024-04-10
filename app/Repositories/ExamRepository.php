@@ -1018,6 +1018,8 @@ class ExamRepository extends BaseRepository
         $size = 1000;
         $minId = 0;
         $result = 0;
+        $begin = $exam->begin;
+        $end = $exam->end;
         while (true) {
             $logPrefix = sprintf('[%s], exam: %s, size: %s', __FUNCTION__, $exam->id , $size);
             $users = (clone $baseQuery)->where("$userTable.id", ">", $minId)->limit($size)->get();
@@ -1033,6 +1035,8 @@ class ExamRepository extends BaseRepository
                 $insert = [
                     'uid' => $user->id,
                     'exam_id' => $exam->id,
+                    'begin' => $begin,
+                    'end' => $end,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];

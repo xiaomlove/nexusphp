@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Google\Service\Dataproc\RegexValidation;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Exam extends NexusModel
@@ -160,6 +162,30 @@ class Exam extends NexusModel
         }
 
         return implode("<br/>", $arr);
+    }
+
+    public function begin(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => $value ? Carbon::parse($value) : Carbon::now()
+        );
+    }
+
+    public function end(): Attribute
+    {
+        return new Attribute(
+            get: function ($value, $attributes) {
+                if ($value) {
+                    return Carbon::parse($value);
+                }
+                if (!empty($attributes['duration'])) {
+                    /** @var Carbon $begin */
+                    $begin = $this->begin;
+                    return $begin->addDays($attributes['duration']);
+                }
+                throw new \RuntimeException("No specific end or duration");
+            }
+        );
     }
 
 }

@@ -67,16 +67,14 @@ class ExamUser extends NexusModel
     public function getBeginAttribute()
     {
         $begin = $this->getRawOriginal('begin');
-        $end = $this->getRawOriginal('end');
-        if ($begin && $end) {
+        if ($begin) {
             do_log(sprintf('examUser: %s, begin from self: %s', $this->id, $begin));
             return $begin;
         }
 
         $exam = $this->exam;
         $begin = $exam->getRawOriginal('begin');
-        $end = $exam->getRawOriginal('end');
-        if ($begin && $end) {
+        if ($begin) {
             do_log(sprintf('examUser: %s, begin from exam(%s): %s', $this->id, $exam->id, $begin));
             return $begin;
         }
@@ -90,17 +88,15 @@ class ExamUser extends NexusModel
 
     public function getEndAttribute()
     {
-        $begin = $this->getRawOriginal('begin');
         $end = $this->getRawOriginal('end');
-        if ($begin && $end) {
+        if ($end) {
             do_log(sprintf('examUser: %s, end from self: %s', $this->id, $end));
             return $end;
         }
 
         $exam = $this->exam;
-        $begin = $exam->getRawOriginal('begin');
         $end = $exam->getRawOriginal('end');
-        if ($begin && $end) {
+        if ($end) {
             do_log(sprintf('examUser: %s, end from exam(%s): %s', $this->id, $exam->id, $end));
             return $end;
         }
