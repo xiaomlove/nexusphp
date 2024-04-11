@@ -49,7 +49,7 @@ function validip($ip)
 	else return false;
 }
 
-function getip() {
+function getip($real = true) {
 	if (isset($_SERVER)) {
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && validip($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
@@ -67,7 +67,10 @@ function getip() {
 			$ip = getenv('REMOTE_ADDR') ?? '';
 		}
 	}
-
+    $ip = trim(trim($ip), ",");
+    if ($real && str_contains($ip, ",")) {
+        return strstr($ip, ",", true);
+    }
 	return $ip;
 }
 
@@ -779,6 +782,15 @@ function get_user_id()
     return auth()->user()->id ?? 0;
 }
 
+function get_pure_username()
+{
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["username"] ?? "";
+    }
+    return auth()->user()->username ?? "";
+}
+
 function nexus()
 {
     return \Nexus\Nexus::instance();
@@ -1181,9 +1193,14 @@ function executeCommand($command, $format = 'string', $artisan = false, $excepti
     do_log("command: $command");
     $result = exec($command, $output, $result_code);
     $outputString = implode("\n", $output);
-    do_log(sprintf('result_code: %s, result: %s, output: %s', $result_code, $result, $outputString));
-    if ($exception && $result_code != 0) {
-        throw new \RuntimeException($outputString);
+    $log = sprintf('result_code: %s, result: %s, output: %s', $result_code, $result, $outputString);
+    if ($result_code != 0) {
+        do_log($log, "error");
+        if ($exception) {
+            throw new \RuntimeException($outputString);
+        }
+    } else {
+        do_log($log);
     }
     return $format == 'string' ? $outputString : $output;
 }

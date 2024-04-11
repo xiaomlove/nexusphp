@@ -238,18 +238,51 @@ if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"])
 	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo.$seedBoxIcon, 1);
 }
 $clientselect = '';
-$res = sql_query("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = {$user['id']} GROUP BY agent") or sqlerr();
-if (mysql_num_rows($res) > 0)
+$res = array();
+$res_seeding = sql_query("SELECT peer_id, agent, ipv4, ipv6, port, MAX(UNIX_TIMESTAMP(last_action)) as la, COUNT(*) as seeding FROM peers WHERE userid = {$user['id']} AND seeder='yes' GROUP BY agent") or sqlerr();
+if (mysql_num_rows($res_seeding) > 0)
 {
-    $clientselect .= "<table border='1' cellspacing='0' cellpadding='5'><tr><td class='colhead'>Agent</td><td class='colhead'>IPV4</td><td class='colhead'>IPV6</td><td class='colhead'>Port</td></tr>";
-	while($arr = mysql_fetch_assoc($res))
+    while($arr = mysql_fetch_assoc($res_seeding))
+    {
+        $agent = $arr['agent'];
+        $res[$agent] = $arr;
+        $res[$agent]['downloads'] = '0';
+    }
+}
+$res_downloads = sql_query("SELECT peer_id, agent, ipv4, ipv6, port, MAX(UNIX_TIMESTAMP(last_action)) as la, COUNT(*) as downloads FROM peers WHERE userid = {$user['id']} AND seeder='no' GROUP BY agent") or sqlerr();
+if (mysql_num_rows($res_downloads) > 0)
+{
+    while($arr = mysql_fetch_assoc($res_downloads))
+    {
+        $agent = $arr['agent'];
+        if (!$res[$agent]) {
+            $res[$agent] = $arr;
+            $res[$agent]['seeding'] = '0';
+        } else {
+            $res[$agent]['downloads'] = $arr['downloads'];
+            if ($arr['la'] > $res[$agent]['la']) $res[$agent]['la'] = $arr['la'];
+        }
+    }
+}
+if (count($res) > 0)
+{
+    $clientselect .= "<table border='1' cellspacing='0' cellpadding='5'><tr><td class='colhead'>".$lang_userdetails['col_agent']."</td><td class='colhead'>IPv4</td><td class='colhead'>".$lang_userdetails['col_location']."</td><td class='colhead'>IPv6</td><td class='colhead'>".$lang_userdetails['col_port']."</td><td class='colhead'>".$lang_userdetails['col_seeding']."</td><td class='colhead'>".$lang_userdetails['col_downloads']."</td><td class='colhead'>".$lang_userdetails['col_last_time']."</td></tr>";
+	foreach ($res as $key => $arr)
 	{
 	    $clientselect .= "<tr>";
 		$clientselect .= sprintf('<td>%s</td>', get_agent($arr['peer_id'], $arr['agent']));
-		if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"]) {
-            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', $arr['ipv4'].$seedBoxRep->renderIcon($arr['ipv4'], $user['id']), $arr['ipv6'].$seedBoxRep->renderIcon($arr['ipv6'], $user['id']), $arr['port']);
+        if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"]) {
+            $loc_v4 = '';
+            if ($arr["ipv4"]) {
+                list($loc_v4) = get_ip_location($arr["ipv4"]);
+                if (strpos($loc_v4, '[v4]')) $loc_v4 = substr($loc_v4, 0,-4);
+            }
+            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
+                $arr['ipv4'].$seedBoxRep->renderIcon($arr['ipv4'], $user['id']), $loc_v4,
+                $arr['ipv6'].$seedBoxRep->renderIcon($arr['ipv6'], $user['id']),
+                $arr['port'], $arr["seeding"], $arr["downloads"], get_elapsed_time($arr["la"],true).$lang_userdetails['col_last_time_before']);
         } else {
-            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td>', '---', '---', '---');
+            $clientselect .= sprintf('<td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>', '---', '---', '---', '---', '---', '---', '---');
         }
         $clientselect .= "</tr>";
 	}

@@ -66,6 +66,14 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('class')->label('Class')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->classText)
                     ->sortable()->label(__("label.user.class")),
+                Tables\Columns\TextColumn::make('role')->label('Role')
+                    ->formatStateUsing(fn ($record) => get_user_roles_name($record->id))->label(__("label.user.role"))
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $user_roles = \Nexus\Database\NexusDB::table("user_roles")->select("uid")
+                            ->join("roles", "user_roles.role_id", "=", "roles.id")
+                            ->where("roles.name", "like", "%{$search}%")->get();
+                        return $query->whereIn("id", array_column($user_roles->toArray(), "uid"));
+                    }),
                 Tables\Columns\TextColumn::make('uploaded')->label('Uploaded')
                     ->formatStateUsing(fn(Tables\Columns\Column $column) => $column->getRecord()->uploadedText)
                     ->sortable()->label(__("label.uploaded")),
@@ -91,6 +99,26 @@ class UserResource extends Resource
                     })
                 ,
                 Tables\Filters\SelectFilter::make('class')->options(array_column(User::$classes, 'text'))->label(__('label.user.class')),
+                Tables\Filters\SelectFilter::make('role')
+                    ->options(function () {
+                        $roles = \Nexus\Database\NexusDB::table("roles")->select(["id", "name"])->get();
+                        $opts = array();
+                        foreach ($roles as $role) {
+                            $opts[$role->id] = $role->name;
+                        }
+                        return $opts;
+                    })
+                    ->query(function (Builder $query, array $data) {
+                        return $query->when($data['value'], function (Builder $query, $value) {
+                            $user_roles = \Nexus\Database\NexusDB::table("user_roles")->select("uid")
+                                ->join("roles", "user_roles.role_id", "=", "roles.id")
+                                ->where("roles.id", "=", $value)->get();
+                            return $query->when($user_roles, function (Builder $query, $value) {
+                                return $query->whereIn("id", array_column($value->toArray(), "uid"));
+                            });
+                        });
+                    })
+                    ->label(__('label.user.role')),
                 Tables\Filters\SelectFilter::make('status')->options(['confirmed' => 'confirmed', 'pending' => 'pending'])->label(__('label.user.status')),
                 Tables\Filters\SelectFilter::make('enabled')->options(self::$yesOrNo)->label(__('label.user.enabled')),
                 Tables\Filters\SelectFilter::make('downloadpos')->options(self::$yesOrNo)->label(__('label.user.downloadpos')),

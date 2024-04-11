@@ -59,19 +59,22 @@ if (!$action) {
 			<td class=colhead align=center><nobr>".$lang_staffbox['col_action']."</nobr></td>
 		</tr>");
 
-	$res = $query->forPage($pageNum + 1, $perpage)->orderBy('id', 'desc')->get()->toArray();
+	$res = $query->forPage($pageNum + 1, $perpage)->orderByRaw('answered ASC, id DESC')->get()->toArray();
 	do_log(last_query());
 	foreach ($res as $arr)
 	{
-    		if ($arr['answered'])
-    		{
-       			$answered = "<nobr><font color=green>".$lang_staffbox['text_yes']."</font> - " . get_username($arr['answeredby']) . "</nobr>";
-    		}
-   		else
-			$answered = "<font color=red>".$lang_staffbox['text_no']."</font>";
+    	if ($arr['answered']) {
+       		$answered = "<nobr><font color=green>".$lang_staffbox['text_yes']."</font> - " . get_username($arr['answeredby']) . "</nobr>";
+    	} else {
+            $answered = "<font color=red>" . $lang_staffbox['text_no'] . "</font>";
+        }
+    	$pmid = $arr["id"];
+        if ($arr['answered'])
+            print('<tr>');
+        else
+            print('<tr style="background-color: #89c9e6">');
 
-    		$pmid = $arr["id"];
-		print("<tr><td width=100% class=rowfollow align=left><a href=staffbox.php?action=viewpm&pmid=$pmid&return=".urlencode($_SERVER['QUERY_STRING']).">".htmlspecialchars($arr['subject'])."</td><td class=rowfollow align=center>" . get_username($arr['sender']) . "</td><td class=rowfollow align=center><nobr>".gettime($arr['added'], true, false)."</nobr></td><td class=rowfollow align=center>$answered</td><td class=rowfollow align=center><input type=\"checkbox\" name=\"setanswered[]\" value=\"" . $arr['id'] . "\" /></td></tr>\n");
+        print("<td width=100% class=rowfollow align=left><a href=staffbox.php?action=viewpm&pmid=$pmid&return=".urlencode($_SERVER['QUERY_STRING']).">".htmlspecialchars($arr['subject'])."</td><td class=rowfollow align=center>" . get_username($arr['sender']) . "</td><td class=rowfollow align=center><nobr>".gettime($arr['added'], true, false)."</nobr></td><td class=rowfollow align=center>$answered</td><td class=rowfollow align=center><input type=\"checkbox\" name=\"setanswered[]\" value=\"" . $arr['id'] . "\" /></td></tr>\n");
 	}
 	print("<tr><td class=rowfollow align=right colspan=5><input type=\"submit\" name=\"setdealt\" value=\"".$lang_staffbox['submit_set_answered']."\" /><input type=\"submit\" name=\"delete\" value=\"".$lang_staffbox['submit_delete']."\" /></td></tr>");
 	print("</table>\n");

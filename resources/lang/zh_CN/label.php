@@ -118,6 +118,7 @@ return [
         'seedbonus' => '蝌蚪',
         'attendance_card' => '补签卡',
         'class' => '等级',
+        'role' => '角色',
         'status' => '状态',
         'enabled' => '启用',
         'username' => '用户名',

@@ -2570,7 +2570,7 @@ if ($logo_main == "")
 			<div class="slogan"><?php echo htmlspecialchars($SLOGAN)?></div>
 <?php
 }
-else
+else if ($CURUSER)
 {
 ?>
 			<!--<div class="logo_img"><img src="<?php //echo $logo_main?>" alt="<?php //echo htmlspecialchars($SITENAME)?>" title="<?php //echo htmlspecialchars($SITENAME)?> - <?php //echo htmlspecialchars($SLOGAN)?>" /></div>-->
@@ -2591,7 +2591,7 @@ if ($enabledonation == 'yes'){
 ?>
             <style>
                 #donate{
-                    margin-left: 5px; 
+                    margin-left: 5px;
                     margin-top: 20px;
                     height:60px;
                     transition:all .3s;
@@ -2602,7 +2602,7 @@ if ($enabledonation == 'yes'){
 		            opacity: 1;
                 }
             </style>
-			<a href="donate.php"><img id='donate' src="<?php 
+			<a href="donate.php"><img id='donate' src="<?php
 			    //echo get_forum_pic_folder()."/donate.gif"
 			    echo "pic/donate.png";
 			?>" alt="Make a donation" /></a>
@@ -3930,6 +3930,18 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 	return $username;
 }
 
+function get_user_roles($uid)
+{
+    return \Nexus\Database\NexusDB::table("user_roles")->select("*")
+        ->join("roles", "user_roles.role_id", "=", "roles.id")
+        ->where("user_roles.uid", "=", $uid)->get();
+}
+
+function get_user_roles_name($uid)
+{
+    return join(" | ", array_column(get_user_roles($uid)->toArray(), "name"));
+}
+
 function get_percent_completed_image($p) {
 	$maxpx = "45"; // Maximum amount of pixels for the progress bar
 
@@ -4009,6 +4021,15 @@ function validusername($username)
 	    return false;
     }
 	
+	$user_lower = strtolower($username);
+	$banned_string = array("qingwa","leader","upload","moderator","sysop","admin","wiqhuo","frog","staff");
+    $length = count($banned_string);
+	for ($i = 0; $i < $length; ++$i)
+		if (strpos($user_lower, $banned_string[$i]) !== false)
+			return false;
+	if (strpos($user_lower,"mod") === 0)
+		return false;
+
 	$user_lower = strtolower($username);
 	$banned_string = array("qingwa","leader","upload","moderator","sysop","admin","wiqhuo","frog","staff");
     $length = count($banned_string);

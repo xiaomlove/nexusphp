@@ -118,6 +118,7 @@ return [
         'seedbonus' => 'Bonus',
         'attendance_card' => 'Attendance ard',
         'class' => 'Class',
+        'role' => 'Role',
         'status' => 'Status',
         'enabled' => 'Enabled',
         'username' => 'Username',
