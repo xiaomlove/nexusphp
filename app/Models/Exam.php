@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Google\Service\Dataproc\RegexValidation;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Exam extends NexusModel
@@ -38,28 +36,22 @@ class Exam extends NexusModel
     const INDEX_SEED_TIME_AVERAGE = 2;
     const INDEX_DOWNLOADED = 3;
     const INDEX_SEED_BONUS = 4;
-    const INDEX_SEED_POINTS = 5;
-    const INDEX_UPLOAD_TORRENT_COUNT = 6;
 
-    public static array $indexes = [
+    public static $indexes = [
         self::INDEX_UPLOADED => ['name' => 'Uploaded', 'unit' => 'GB', 'source_user_field' => 'uploaded'],
         self::INDEX_DOWNLOADED => ['name' => 'Downloaded', 'unit' => 'GB', 'source_user_field' => 'downloaded'],
         self::INDEX_SEED_TIME_AVERAGE => ['name' => 'Seed time average', 'unit' => 'Hour', 'source_user_field' => 'seedtime'],
         self::INDEX_SEED_BONUS => ['name' => 'Bonus', 'unit' => '', 'source_user_field' => 'seedbonus'],
-        self::INDEX_SEED_POINTS => ['name' => 'Seed points', 'unit' => '', 'source_user_field' => ''],
-        self::INDEX_UPLOAD_TORRENT_COUNT => ['name' => 'Upload torrent', 'unit' => '', 'source_user_field' => ''],
     ];
 
     const FILTER_USER_CLASS = 'classes';
     const FILTER_USER_REGISTER_TIME_RANGE = 'register_time_range';
     const FILTER_USER_DONATE = 'donate_status';
-    const FILTER_USER_REGISTER_DAYS_RANGE = 'register_days_range';
 
     public static $filters = [
         self::FILTER_USER_CLASS => ['name' => 'User class'],
         self::FILTER_USER_REGISTER_TIME_RANGE => ['name' => 'User register time range'],
         self::FILTER_USER_DONATE => ['name' => 'User donated'],
-        self::FILTER_USER_REGISTER_DAYS_RANGE => ['name' => 'User register days range'],
     ];
 
     protected static function booted()
@@ -142,19 +134,6 @@ class Exam extends NexusModel
             }
         }
 
-        $filter = self::FILTER_USER_REGISTER_DAYS_RANGE;
-        if (!empty($currentFilters[$filter])) {
-            $range = $currentFilters[$filter];
-            if (!empty($range[0]) || !empty($range[1])) {
-                $arr[] = sprintf(
-                    "%s: %s ~ %s",
-                    nexus_trans("exam.filters.$filter"),
-                    $range[0] ?? "--",
-                    $range[1] ?? '--'
-                );
-            }
-        }
-
         $filter = self::FILTER_USER_DONATE;
         if (!empty($currentFilters[$filter])) {
             $donateStatus = collect(User::$donateStatus)->only($currentFilters[$filter]);
@@ -162,30 +141,6 @@ class Exam extends NexusModel
         }
 
         return implode("<br/>", $arr);
-    }
-
-    public function begin(): Attribute
-    {
-        return new Attribute(
-            get: fn ($value) => $value ? Carbon::parse($value) : Carbon::now()
-        );
-    }
-
-    public function end(): Attribute
-    {
-        return new Attribute(
-            get: function ($value, $attributes) {
-                if ($value) {
-                    return Carbon::parse($value);
-                }
-                if (!empty($attributes['duration'])) {
-                    /** @var Carbon $begin */
-                    $begin = $this->begin;
-                    return $begin->addDays($attributes['duration']);
-                }
-                throw new \RuntimeException("No specific end or duration");
-            }
-        );
     }
 
 }

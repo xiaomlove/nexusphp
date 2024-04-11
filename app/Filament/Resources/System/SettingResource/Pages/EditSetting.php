@@ -161,10 +161,6 @@ class EditSetting extends Page implements Forms\Contracts\HasForms
                     ->label(__('label.setting.system.access_admin_class_min'))
                     ->helperText(__('label.setting.system.access_admin_class_min_help'))
                 ,
-                Forms\Components\TextInput::make('system.alarm_email_receiver')
-                    ->label(__('label.setting.system.alarm_email_receiver'))
-                    ->helperText(__('label.setting.system.alarm_email_receiver_help'))
-                ,
             ])->columns(2);
 
         $tabs = apply_filter('nexus_setting_tabs', $tabs);

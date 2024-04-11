@@ -29,3 +29,6 @@ yarn-error.log
 auth.json
 /.vscode
 /.history
+torrents/*
+public/attachments/*
+public/bitbucket/*

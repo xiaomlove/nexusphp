@@ -2163,7 +2163,7 @@ function mksizeint($bytes)
 }
 
 function deadtime() {
-    $anninterthree = (int)get_setting("main.anninterthree");
+	global $anninterthree;
 	return time() - floor($anninterthree * 1.3);
 }
 
@@ -2357,6 +2357,8 @@ function menu ($selected = "home") {
             print ("<li" . ($selected == "staff" ? " class=\"selected\"" : "") . "><a href=\"staff.php\">".$lang_functions['text_staff']."</a></li>");
         }
         print ("<li" . ($selected == "contactstaff" ? " class=\"selected\"" : "") . "><a href=\"contactstaff.php\">".$lang_functions['text_contactstaff']."</a></li>");
+        /*print ("<li><a href=\"dazhuanpan\">大转盘</a></li>");
+        print ("<li><a href=\"bank\">银行</a></li>");*/
         print ("</ul>");
     }
 	print ("</div>");
@@ -2568,10 +2570,11 @@ if ($logo_main == "")
 			<div class="slogan"><?php echo htmlspecialchars($SLOGAN)?></div>
 <?php
 }
-else
+else if ($CURUSER)
 {
 ?>
-			<div class="logo_img"><img src="<?php echo $logo_main?>" alt="<?php echo htmlspecialchars($SITENAME)?>" title="<?php echo htmlspecialchars($SITENAME)?> - <?php echo htmlspecialchars($SLOGAN)?>" /></div>
+			<!--<div class="logo_img"><img src="<?php //echo $logo_main?>" alt="<?php //echo htmlspecialchars($SITENAME)?>" title="<?php //echo htmlspecialchars($SITENAME)?> - <?php //echo htmlspecialchars($SLOGAN)?>" /></div>-->
+			<iframe scrolling='no' style='position:relative;left:50%;transform:translateX(-40%);overflow: hidden;width:100%;height:240px;border:0;' src='./banner/index.html'></iframe>
 <?php
 }
 ?>
@@ -2583,8 +2586,26 @@ else
 			echo "<span>".$headerad[0]."</span>";
 		}
 }
-if ($enabledonation == 'yes'){?>
-			<a href="donate.php"><img src="<?php echo get_forum_pic_folder()?>/donate.gif" alt="Make a donation" style="margin-left: 5px; margin-top: 50px;" /></a>
+if ($enabledonation == 'yes'){
+///////捐赠入口////////
+?>
+            <style>
+                #donate{
+                    margin-left: 5px;
+                    margin-top: 20px;
+                    height:60px;
+                    transition:all .3s;
+                    opacity: .9;
+                }
+                #donate:hover{
+                    transform: scale(1.05);
+		            opacity: 1;
+                }
+            </style>
+			<a href="donate.php"><img id='donate' src="<?php
+			    //echo get_forum_pic_folder()."/donate.gif"
+			    echo "pic/donate.png";
+			?>" alt="Make a donation" /></a>
 <?php
 }
 ?>
@@ -2835,7 +2856,7 @@ if ($msgalert)
     }
     if ($nummessages > 0) {
         $text = $lang_functions['text_there_is'].is_or_are($nummessages).$nummessages.$lang_functions['text_new_staff_message'] . add_s($nummessages);
-        msgalert("staffbox.php",$text, "blue");
+        msgalert("staffbox.php?answered=0",$text, "blue");
     }
 
     //torrent approval
@@ -3808,9 +3829,7 @@ foreach ($rows as $row)
 
 	if (user_can('torrentmanage'))
 	{
-        if (user_can('torrent-delete')) {
-            print("<td class=\"rowfollow\"><a href=\"".htmlspecialchars("fastdelete.php?id=".$row['id'])."\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_functions['text_delete']."\" /></a>");
-        }
+		print("<td class=\"rowfollow\"><a href=\"".htmlspecialchars("fastdelete.php?id=".$row['id'])."\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_functions['text_delete']."\" /></a>");
 		print("<br /><a href=\"edit.php?returnto=" . rawurlencode($_SERVER["REQUEST_URI"]) . "&amp;id=" . $row["id"] . "\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_functions['text_edit']."\" /></a></td>\n");
 	}
 	print("</tr>\n");
@@ -3911,6 +3930,18 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 	return $username;
 }
 
+function get_user_roles($uid)
+{
+    return \Nexus\Database\NexusDB::table("user_roles")->select("*")
+        ->join("roles", "user_roles.role_id", "=", "roles.id")
+        ->where("user_roles.uid", "=", $uid)->get();
+}
+
+function get_user_roles_name($uid)
+{
+    return join(" | ", array_column(get_user_roles($uid)->toArray(), "name"));
+}
+
 function get_percent_completed_image($p) {
 	$maxpx = "45"; // Maximum amount of pixels for the progress bar
 
@@ -3989,6 +4020,15 @@ function validusername($username)
 	if ($length < 3 || $length > 20) {
 	    return false;
     }
+
+	$user_lower = strtolower($username);
+	$banned_string = array("qingwa","leader","upload","moderator","sysop","admin","wiqhuo","frog","staff");
+    $length = count($banned_string);
+	for ($i = 0; $i < $length; ++$i)
+		if (strpos($user_lower, $banned_string[$i]) !== false)
+			return false;
+	if (strpos($user_lower,"mod") === 0)
+		return false;
 
 	return true;
 }
@@ -4970,7 +5010,7 @@ function get_user_class_image($class){
 		"Uploader" => "pic/uploader.gif",
 		"Retiree" => "pic/retiree.gif",
 		"VIP" => "pic/vip.gif",
-		"Nexus Master" => "pic/nexus.gif",
+		"SVIP" => "pic/nexus.gif",
 		"Ultimate User" => "pic/ultimate.gif",
 		"Extreme User" => "pic/extreme.gif",
 		"Veteran User" => "pic/veteran.gif",
@@ -5774,7 +5814,7 @@ function get_share_ratio($uploaded, $downloaded)
         $ratio = floor(($uploaded / $downloaded) * 1000) / 1000;
     } elseif ($uploaded) {
         //@todo 读语言文件
-        $ratio = 'Infinity';
+        $ratio = '无限';
     } else {
         $ratio = '---';
     }
@@ -5999,38 +6039,68 @@ function get_filament_class_alias($class): string
  * @return array
  * @throws \Nexus\Database\DatabaseException
  */
-function calculate_seed_bonus($uid, $torrentIdArr = null): array
+/*
+做种每小时将得到如下的基础魔力值（低保与B值）：
+
+太长不看版：
+基本上你保多少G的种，就会得到大约0.1倍的魔力值（只会多不会少）。
+自购种有50%加成，音声种有25%加成，捐钱有100%加成，自己的种子有25%加成，孤种按人数有加成
+
+详细版：
+每个种子都能得到以下的魔力值：
+[img]https://p.kamept.com/4582c505efda43f55f8b4685988e6aa0-Full.webp?w=744&h=94[/img]
+K1是常数，为0.1
+G：种子大小，单位为G
+T：此种子已发布的时长。2天以下为0，此后会开始匀速递增，直到一周后达到最大值1.0。
+N：种子体积在512M以下则为0.2，512M以上则开始匀速递减，直到种子体积达到2G，此值会降为0。
+
+BUFF：由以下部分组成。
+如果种子在音声区，增加25%。
+如果种子保种人数小于10人，则每少1人就增加5%。如果为孤种（1个人做种）则额外再增加50%。
+如果该种有自购tag，增加50%。
+如果发布者是你自己，增加25%。
+如果你有黄星（捐赠者），增加100%。
+（以上所有BUFF均为相加叠加关系）
+
+A值是各个种子的X值总和，即A=(X1+X2+X3...)
+但每个X值最多为20，超出的部分不计。
+B值的计算公式为[img]https://p.kamept.com/f80ea6e6ccbc064e48c009ee233d4f1c-Full.webp?w=393&h=150[/img]
+你能获得的魔力值即为：A*B
+B值最高是250%，超过部分会被舍去。
+简单来说，保种体积越小，加成越高——这是给少量保种的人一定程度的低保。
+随着保种增多，B值会开始递减，最低不会低于75%。简略对应关系如图所示
+（左边是A值，中间是对应的B值，右边是你最终获得的魔力值）
+[img]https://p.kamept.com/58ae60a612e076eb9d61308ae9d330ff-Full.webp?w=1026&h=1061[/img]
+
+*/
+function calculate_seed_bonus($uid, $torrentIdArr = null, $no_buff = false ,$invite = 0): array
 {
     $settingBonus = \App\Models\Setting::get('bonus');
     $donortimes_bonus = $settingBonus['donortimes'];
-    $perseeding_bonus = $settingBonus['perseeding'];
-    $maxseeding_bonus = $settingBonus['maxseeding'];
-    $tzero_bonus = $settingBonus['tzero'];
-    $nzero_bonus = $settingBonus['nzero'];
-    $bzero_bonus = $settingBonus['bzero'];
-    $l_bonus = $settingBonus['l'];
 
-    $sqrtof2 = sqrt(2);
-    $logofpointone = log(0.1);
-    $valueone = $logofpointone / $tzero_bonus;
-    $pi = 3.141592653589793;
-    $valuetwo = $bzero_bonus * ( 2 / $pi);
-    $valuethree = $logofpointone / ($nzero_bonus - 1);
     $timenow = time();
-    $nowStr = date('Y-m-d H:i:s');
+	$nowStr = \Carbon\Carbon::now()->toDateTimeString();
+    $secto2day= 2*24*60*60;
+    $secto5day= 5*24*60*60;
     $sectoweek = 7*24*60*60;
+	//TODO：或许可以抄一下NexusPHP原版，让这些值可以在后台直接改
+	//而不是在这里hard code
+	//最多有80个种子享受低保
+    $dibao_max_num = 80;
+	//每个种子可以增加0.5魔力值
+	$dibao_per_torrent = 0.5;
 
-    $A = $official_a = $size = $official_size = 0;
-    $count = $torrent_peer_count = $official_torrent_peer_count = 0;
+    $A = $A_without_buff = $valid_g = $B = $official_a = $size = $official_size = 0;
+    $count = 0;
     $logPrefix = "[CALCULATE_SEED_BONUS], uid: $uid, torrentIdArr: " . json_encode($torrentIdArr);
     if ($torrentIdArr !== null) {
         if (empty($torrentIdArr)) {
             $torrentIdArr = [-1];
         }
         $idStr = implode(',', \Illuminate\Support\Arr::wrap($torrentIdArr));
-        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID, '' as last_action from torrents  WHERE id in ($idStr)";
+        $sql = "select torrents.id, torrents.added, torrents.category, torrents.owner, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID, '' as last_action from torrents  WHERE id in ($idStr)";
     } else {
-        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID, peers.last_action from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
+        $sql = "select torrents.id, torrents.added, torrents.category, torrents.owner, torrents.size, torrents.seeders, peers.id as peerID, peers.last_action from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' group by peers.torrent, peers.peer_id";
     }
     $tagGrouped = [];
     $torrentResult = \Nexus\Database\NexusDB::select($sql);
@@ -6049,46 +6119,150 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $medalAdditionalFactor = floatval($userMedalResult[0]['factor'] ?? 0);
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor, medalAdditionalFactor: $medalAdditionalFactor");
     $last_action = "";
+    $size = $buff_bonus = 0;
+	$torrent_k1=0.03;
     foreach ($torrentResult as $torrent)
     {
+		$count++;
+        //刷新全局统计
+        $size += $torrent['size'];
         if ($torrent['last_action'] > $last_action) {
             $last_action = $torrent['last_action'];
         }
-        $size = bcadd($size, $torrent['size']);
-        $weeks_alive = ($timenow - strtotime($torrent['added'])) / $sectoweek;
-        $gb_size = $gb_size_raw = $torrent['size'] / 1073741824;
-        if ($zeroBonusTag && isset($tagGrouped[$torrent['id']][$zeroBonusTag]) && is_numeric($zeroBonusFactor)) {
-            $gb_size = $gb_size * $zeroBonusFactor;
+        //种子体积，按G算
+        $torrent_g = $torrent['size'] / 1073741824.0;
+		//种子存活时间，按秒算
+        $torrent_t = ($timenow - strtotime($torrent['added'])) / 1;
+		//刚发布2天内的种子不计算魔力
+        if ($torrent_t < $secto2day) {
+            $torrent_t = 0.0;
         }
-        $temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
-        $A += $temp;
-        $count++;
-        $torrent_peer_count++;
-        $officialAIncrease = 0;
-        if ($officialTag && isset($tagGrouped[$torrent['id']][$officialTag])) {
-            $officialAIncrease = $temp;
-            $official_torrent_peer_count++;
-            $official_size = bcadd($official_size, $torrent['size']);
+		//7天后达到最高值1.0
+        elseif ($torrent_t > $sectoweek) {
+            $torrent_t = 1.0;
         }
-        $official_a += $officialAIncrease;
-        do_log(sprintf(
-            "$logPrefix, torrent: %s, peer ID: %s, weeks: %s, size_raw: %s GB, size: %s GB, increase A: %s, increase official A: %s",
-            $torrent['id'], $torrent['peerID'], $weeks_alive, $gb_size_raw, $gb_size, $temp, $officialAIncrease
-        ));
+		//2~7天为线性增加
+        else {
+            $torrent_t = 1.0 - ($sectoweek - $torrent_t) / $secto5day;
+        }
+
+		//低保加成部分
+        $torrent_n=0.0;
+		if (!$no_buff) {
+			//2GB以下的小种的低保能无限叠加
+			if ($torrent_g < 2.0) {
+				$torrent_g2=$torrent_g;
+				//512MB以下的种子按512MB计算这个加成值
+				if ($torrent_g2 < 0.5) {
+					$torrent_g2 = 0.5;
+				}
+				//最大加成是0.1
+				//512~2G线性减少到0
+				$torrent_n = (2.0 - $torrent_g2) / 1.5 * 0.1;
+			}
+			//512MB以上的种子有低保
+			//最多计多少个，由$dibao_max_num决定
+			//每个种子给多少，由 $dibao_per_torrent决定
+			if ($torrent_g > 0.5) {
+				$dibao_max_num--;
+				if ($dibao_max_num >= 0) {
+					$torrent_n = $dibao_per_torrent;
+				}
+			}
+		}
+
+		//Buff部分
+        $torrent_buff = 0.0;
+		if (!$no_buff) {
+			//小于10人做种，每少1人多5%
+			if ($torrent['seeders'] < 10) {
+				$seeder_buff=(10 - $torrent['seeders']) * 0.05;
+				$torrent_buff += $seeder_buff;
+			}
+			//孤种+50%
+			if ($torrent['seeders'] < 2) {
+				$torrent_buff += 0.5;
+			}
+			//VCB-Studio +25%
+			if (isset($tagGrouped[$torrent['id']][2])) {
+				$torrent_buff += 0.25;
+			}
+			//官种 +25%
+			if (isset($tagGrouped[$torrent['id']][3])) {
+				$torrent_buff += 0.25;
+			}
+			//自己发布的种子+25%
+			if ($torrent['owner'] == $uid) {
+				$torrent_buff += 0.25;
+			}
+			//勋章加成
+			if ($medalAdditionalFactor > 0) {
+				$torrent_buff += $medalAdditionalFactor;
+			}
+		}
+
+		//计算种子的真·体积，此值考虑发布时间和种子大小，但不计Buff。算是纯粹的基值。
+        $g_for_calculate = $torrent_k1 * $torrent_g * $torrent_t;
+
+		//超出不计（200G）
+		if ($g_for_calculate > 20.0) {
+			$g_for_calculate = 20.0;
+		}
+
+		//记录有效保种体积
+        $valid_g += $g_for_calculate;
+
+		//单独记录各种Buff给予的魔力
+        $buff_bonus += $g_for_calculate * $torrent_buff;
+
+		//计算A值
+        $A += $g_for_calculate * (1 + $torrent_buff) + $torrent_n;
+		$A_without_buff += $g_for_calculate + $torrent_n;
+
     }
-    if ($count > $maxseeding_bonus)
-        $count = $maxseeding_bonus;
-    $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
-    //Official addition don't think about the minimum value
-    $official_bonus =  $valuetwo * atan($official_a / $l_bonus);
-    $medal_bonus = $valuetwo * atan($A / $l_bonus);
+
+	//k2越大，加成下降越慢
+    $torrent_k2=100.0;
+	//max_B为加成限值（目前为+150%，共250%），超过此数则不计。
+	$max_B=2.5;
+
+    $Bi = log(($A / $torrent_k1 + $torrent_k2) / $torrent_k2);
+    if ($Bi > 0) {
+        $B = 1.0 / $Bi;
+    }
+	//B值下限。目前大约在3T左右收敛到1.0，10T左右收敛到91%。
+	$B += 0.75;
+	if ($B > $max_B) {
+		$B = $max_B;
+	}
+
+	//按体积给予总加成。保种越低，总加成越高——鼓励多少保点种。
+	//最高有250%的加成。保种到A值100=10魔力*2.24=22.4魔力，无伤大雅。
+	//给了0.75的下限，意味着如果无限保种最多会把总魔力降到75%
+	//没几个人会保超过10T的种子吧，如果有，应该也不会在意这点损失了。
+
+	$base_bonus = $valid_g; //基础魔力
+    $seed_points = $valid_g * $B; //每小时做种积分
+	$valid_g = $valid_g / $torrent_k1; //有效保种体积
+    $seed_bonus = $A * $B; //时魔
+
+	//计算后宫加成 calculate_harem_addition计算后宫加成
+	/*if($invite == 0){
+		$userInvitedResult = \Nexus\Database\NexusDB::select("SELECT id FROM users WHERE invited_by=".$uid);
+		foreach ($userInvitedResult as $userInvited){
+			$invitedBonus=calculate_seed_bonus($userInvited['id'],null,false,1);
+			$seed_bonus+=$invitedBonus['seed_points'];
+		}
+	}*/
+    $donortimes_bonus = get_setting('bonus.donortimes');
+	$donor_bonus = $seed_bonus * $donortimes_bonus;
     $result = compact(
-        'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'size', 'last_action',
-        'official_bonus', 'official_a', 'official_torrent_peer_count', 'official_size', 'medal_bonus'
+        'base_bonus', 'seed_points','seed_bonus', 'A', 'A_without_buff', 'B', 'count', 'size', 'last_action',
+		'buff_bonus', 'valid_g', 'donor_bonus'
     );
     $result['donor_times'] = $donortimes_bonus;
-    $result['official_additional_factor'] = $officialAdditionalFactor;
-    $result['medal_additional_factor'] = $medalAdditionalFactor;
+    //$result['official_additional_factor'] = $officialAdditionalFactor;
+    //$result['medal_additional_factor'] = $medalAdditionalFactor;
     do_log("$logPrefix, result: " . json_encode($result));
     return $result;
 }
@@ -6107,13 +6281,11 @@ function calculate_harem_addition($uid)
 //        $addition += $result['seed_points'];
 //    }
 //    do_log("[HAREM_ADDITION], user: $uid, haremsCount: $haremsCount ,addition: $addition");
-
     $addition = \Nexus\Database\NexusDB::table("users")
         ->where("invited_by", $uid)
         ->where('status', \App\Models\User::STATUS_CONFIRMED)
         ->where('enabled', \App\Models\User::ENABLED_YES)
-        ->sum("seed_points_per_hour")
-    ;
+        ->sum("seed_points_per_hour");
     do_log("[HAREM_ADDITION], user: $uid, addition: $addition");
     return $addition;
 }
@@ -6304,6 +6476,7 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
     if (empty($bonusResult)) {
         $bonusResult = calculate_seed_bonus($user['id']);
     }
+	/*
     $officialTag = get_setting('bonus.official_tag');
     $officialAdditionalFactor = get_setting('bonus.official_addition', 0);
     $haremFactor = get_setting('bonus.harem_addition');
@@ -6336,19 +6509,86 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
     if ($bonusResult['medal_additional_factor'] > 0) {
         $rowSpan++;
         $hasMedalAddition = true;
-    }
+    }*/
+
+	//奖励类型 数量 体积 实际体积
 
     $table = sprintf('<table cellpadding="5" style="%s">', $options['table_style'] ?? '');
     $table .= '<tr>';
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.reward_type'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.count'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.size'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.a_value'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.bonus_base'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.factor'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.got_bonus'));
-    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.total'));
-    $table .= '</tr>';
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.reward_type')); //奖励类型
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.count')); //数量
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.size')); //体积
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.valid_g')); //有效保种体积
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.a_value')); //A值
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.b_value')); //B值
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.got_bonus')); //获得魔力
+    $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.total')); //总魔力值
+	/*
+	$valid_g = $valid_g / $torrent_k1; //有效保种体积
+	$seed_points = $valid_g * $B; //做种积分
+	$seed_bonus = $A * $B; //获得魔力值
+	$result = compact(
+		'base_bonus', 'seed_points','seed_bonus', 'A', 'B', 'count', 'size', 'last_action',
+		'buff_bonus', 'valid_g', 'all_g'
+	$result['donor_times'] = $donortimes_bonus;
+	); */
+	$all_bonus = $bonusResult['seed_bonus'];
+	$haremAdditionFactor = get_setting('bonus.harem_addition');
+	$haremAddition = 0;
+	if ($haremAdditionFactor > 0) {
+		$haremBonus = calculate_harem_addition($user['id']);
+		$haremAddition =  $haremBonus * $haremAdditionFactor;
+	}
+	if (!is_donor($user)) {
+		$bonusResult['donor_bonus'] = 0;
+	}
+	$all_bonus += $bonusResult['donor_bonus'] + $haremAddition;
+    $table .= sprintf(
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="3">%s</td></tr>',
+        nexus_trans('bonus.reward_types.basic'),
+        $bonusResult['count'],
+        mksize($bonusResult['size']),
+        mksize($bonusResult['valid_g'] * 1024 * 1024 * 1024),
+        number_format($bonusResult['A_without_buff'], 3),
+        number_format($bonusResult['B'], 3),
+        number_format($bonusResult['seed_bonus'] - $bonusResult['buff_bonus'], 3),
+        number_format($all_bonus, 3),
+    );
+    $table .= sprintf(
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+        nexus_trans('bonus.reward_types.buff_addition'),
+        '-',
+        '-',
+        '-',
+        '-',
+        '-',
+        number_format($bonusResult['buff_bonus'], 3),
+    );
+    $table .= sprintf(
+        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+        nexus_trans('bonus.reward_types.donor_addition'),
+        '-',
+        '-',
+        '-',
+        '-',
+        '-',
+        number_format($bonusResult['donor_bonus'], 3),
+    );
+	$table .= sprintf(
+		'<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+		nexus_trans('bonus.reward_types.harem_addition'),
+		'-',
+		'-',
+		'-',
+		'-',
+		'-',
+		number_format($haremAddition, 3),
+	);
+
+    $table .= '</tr></table>';
+
+
+	/*
 
     $table .= sprintf(
         '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td rowspan="%s">%s</td></tr>',
@@ -6387,7 +6627,7 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
             number_format($bonusResult['official_bonus'] * $officialAdditionalFactor, 3)
         );
     }
-
+    /*
     if ($hasHaremAddition) {
         $table .= sprintf(
             '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
@@ -6401,16 +6641,17 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         );
     }
 
-    $table .= '</table>';
+	*/
 
     return [
         'table' => $table,
+		/*
         'has_harem_addition' => $hasHaremAddition,
         'harem_addition_factor' => $haremFactor,
         'has_official_addition' => $hasOfficialAddition,
         'official_addition_factor' => $officialAdditionalFactor,
         'has_medal_addition' => $hasMedalAddition,
-        'medal_addition_factor' => $bonusResult['medal_additional_factor'],
+        'medal_addition_factor' => $bonusResult['medal_additional_factor'], */
     ];
 
 }

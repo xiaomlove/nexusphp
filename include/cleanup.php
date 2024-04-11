@@ -99,7 +99,7 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 		if ($minSeedPoints === false) {
 		    throw new \RuntimeException("class: $class can't get min seed points.");
         }
-		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND seed_points >= $minSeedPoints AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt);
+		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND seed_points >= $minSeedPoints AND uploaded / downloaded >= $minratio AND uploaded / downloaded < 1.5 AND added < ".sqlesc($maxdt);
 		$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
 		$matchUserCount = mysql_num_rows($res);
         do_log("sql: $sql, match user count: $matchUserCount");
@@ -670,19 +670,18 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 
 	//destroy disabled accounts
-    $userRep = new \App\Repositories\UserRepository();
     $destroyDisabledDays = get_setting('account.destroy_disabled');
     if ($destroyDisabledDays > 0) {
         $secs = $destroyDisabledDays*24*60*60;
         $dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
-        \App\Models\User::query()
+        $users = \App\Models\User::query()
             ->where('enabled', 'no')
             ->where("last_access","<", $dt)
-            ->select(['id', 'username', 'lang'])
-            ->orderBy("id", "asc")
-            ->chunk(2000, function (\Illuminate\Support\Collection $users) use ($userRep) {
-                $userRep->destroy($users, 'cleanup.destroy_disabled_account');
-            });
+            ->get(['id']);
+        if ($users->isNotEmpty()) {
+            $userRep = new \App\Repositories\UserRepository();
+            $userRep->destroy($users->pluck('id')->toArray(), 'cleanup.destroy_disabled_account');
+        }
     }
     $log = "destroy disabled accounts";
     do_log($log);
@@ -769,7 +768,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	promotion(UC_VETERAN_USER, $vudl_account, $vuprratio_account, $vutime_account, $getInvitesByPromotion_class[UC_VETERAN_USER]);
 	promotion(UC_EXTREME_USER, $exudl_account, $exuprratio_account, $exutime_account, $getInvitesByPromotion_class[UC_EXTREME_USER]);
 	promotion(UC_ULTIMATE_USER, $uudl_account, $uuprratio_account, $uutime_account, $getInvitesByPromotion_class[UC_ULTIMATE_USER]);
-	promotion(UC_NEXUS_MASTER, $nmdl_account, $nmprratio_account, $nmtime_account, $getInvitesByPromotion_class[UC_NEXUS_MASTER]);
+	//promotion(UC_NEXUS_MASTER, $nmdl_account, $nmprratio_account, $nmtime_account, $getInvitesByPromotion_class[UC_NEXUS_MASTER]);
 	// end promotion
 	$log = "promote users to other classes";
 	do_log($log);
@@ -780,7 +779,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	// start demotion
 
 		//do not change the descending order
-	demotion(UC_NEXUS_MASTER,$nmderatio_account);
+	//demotion(UC_NEXUS_MASTER,$nmderatio_account);
 	demotion(UC_ULTIMATE_USER,$uuderatio_account);
 	demotion(UC_EXTREME_USER,$exuderatio_account);
 	demotion(UC_VETERAN_USER,$vuderatio_account);
@@ -1106,27 +1105,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 //    if ($printProgress) {
 //        printProgress($log);
 //    }
-
-    sql_query("delete from oauth_auth_codes where expires_at <= '$nowStr'");
-    $log = "delete oauth auth code expired";
-    do_log($log);
-    if ($printProgress) {
-        printProgress($log);
-    }
-
-    sql_query("delete from oauth_access_tokens where expires_at <= '$nowStr'");
-    $log = "delete oauth access token expired";
-    do_log($log);
-    if ($printProgress) {
-        printProgress($log);
-    }
-
-    sql_query("delete from oauth_refresh_tokens where expires_at <= '$nowStr'");
-    $log = "delete oauth refresh token expired";
-    do_log($log);
-    if ($printProgress) {
-        printProgress($log);
-    }
 
 	$log = 'Full cleanup is done';
 	do_log($log);

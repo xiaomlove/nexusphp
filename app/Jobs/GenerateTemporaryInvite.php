@@ -12,7 +12,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Str;
-use Nexus\Database\NexusDB;
 
 class GenerateTemporaryInvite implements ShouldQueue
 {
@@ -20,7 +19,7 @@ class GenerateTemporaryInvite implements ShouldQueue
 
     private int $count;
 
-    private string $idRedisKey;
+    private array $uidArr;
 
     private int $days;
 
@@ -29,9 +28,9 @@ class GenerateTemporaryInvite implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(string $idRedisKey, int $days, int $count)
+    public function __construct(array $uidArr, int $days, int $count)
     {
-        $this->idRedisKey = $idRedisKey;
+        $this->uidArr = $uidArr;
         $this->days = $days;
         $this->count = $count;
     }
@@ -57,21 +56,8 @@ class GenerateTemporaryInvite implements ShouldQueue
      */
     public function handle()
     {
-        $beginTimestamp = microtime(true);
         $toolRep = new ToolRepository();
-        $idStr = NexusDB::cache_get($this->idRedisKey);
-        $logPrefix = "idRedisKey: " . $this->idRedisKey;
-        if (empty($idStr)) {
-            do_log("$logPrefix, no idStr...");
-            return;
-        }
-        $idArr = explode(",", $idStr);
-        $count = count($idArr);
-        $logPrefix .= ", count: $count";
-        do_log("$logPrefix, going to handle...");
-        $now = Carbon::now();
-        $expiredAt = Carbon::now()->addDays($this->days);
-        foreach ($idArr as $uid) {
+        foreach ($this->uidArr as $uid) {
             try {
                 $hashArr = $toolRep->generateUniqueInviteHash([], $this->count, $this->count);
                 $data = [];
@@ -81,20 +67,19 @@ class GenerateTemporaryInvite implements ShouldQueue
                         'invitee' => '',
                         'hash' => $hash,
                         'valid' => 0,
-                        'expired_at' => $expiredAt,
-                        'created_at' => $now,
+                        'expired_at' => Carbon::now()->addDays($this->days),
+                        'created_at' => Carbon::now(),
                     ];
                 }
                 if (!empty($data)) {
                     Invite::query()->insert($data);
                 }
-                do_log("$logPrefix, success add $this->count temporary invite ($this->days days) to $uid");
+                do_log("success add $this->count temporary invite ($this->days days) to $uid");
             } catch (\Exception $exception) {
-                do_log("$logPrefix, fail add $this->count temporary invite ($this->days days) to $uid: " . $exception->getMessage(), 'error');
+                do_log("fail add $this->count temporary invite ($this->days days) to $uid: " . $exception->getMessage(), 'error');
             }
         }
-        NexusDB::cache_del($this->idRedisKey);
-        do_log("$logPrefix, handle done, cost time: " . (microtime(true) - $beginTimestamp) . " seconds.");
+
     }
 
     /**

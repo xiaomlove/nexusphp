@@ -22,6 +22,7 @@ $columnBuyLabel = nexus_trans('medal.buy_btn');
 $columnSaleBeginEndTimeLabel = nexus_trans('medal.fields.sale_begin_end_time');
 $columnInventoryLabel = nexus_trans('medal.fields.inventory');
 $columnBonusAdditionLabel = nexus_trans('medal.fields.bonus_addition');
+$columnBonusAdditionLabel = "蝌蚪加成";
 $columnGiftLabel = nexus_trans('medal.gift_btn');
 $columnGiftFeeLabel = nexus_trans('medal.fields.gift_fee');
 $header = '<h1 style="text-align: center">'.$title.'</h1>';

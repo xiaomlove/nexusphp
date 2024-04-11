@@ -28,7 +28,7 @@ return [
     ],
     'receive_medal' => [
         'subject' => '收到贈送勛章',
-        'body' => '用戶 :username 花費魔力 :cost_bonus 購買了勛章[:medal_name]並贈送與你。此勛章價值 :price，手續費 :gift_fee_total(系數：:gift_fee_factor)，你將擁有此勛章有效期至: :expire_at，勛章的魔力加成系數為: :bonus_addition_factor。',
+        'body' => '用戶 :username 花費蝌蚪 :cost_bonus 購買了勛章[:medal_name]並贈送與你。此勛章價值 :price，手續費 :gift_fee_total(系數：:gift_fee_factor)，你將擁有此勛章有效期至: :expire_at，勛章的蝌蚪加成系數為: :bonus_addition_factor。',
     ],
     'login_notify' => [
         'subject' => ':site_name 異地登錄提醒',
@@ -40,10 +40,6 @@ BODY,
     ],
     'buy_torrent_success' => [
         'subject' => '成功購買種子提醒',
-        'body' => '你花費 :bonus 魔力成功購買了種子：[url=:url]:torrent_name[/url]',
-    ],
-    'exam_user_end_time_updated' => [
-        'subject' => '考核 :exam_name 結束時間變更',
-        'body' => '你進行中的考核：:exam_name 的結束時間由 :old_end_time 變更為 :new_end_time。管理員：:operator，原因：:reason。',
+        'body' => '你花費 :bonus 蝌蚪成功購買了種子：[url=:url]:torrent_name[/url]',
     ],
 ];

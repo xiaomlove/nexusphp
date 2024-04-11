@@ -1,7 +1,7 @@
 <?php
 //require_once("../include/benc.php");
 require_once("../include/bittorrent.php");
-
+$max_torrent_size = 16 * 1024 * 1024;
 ini_set("upload_max_filesize",$max_torrent_size);
 dbconn();
 require_once(get_langfile_path());
@@ -349,7 +349,6 @@ $insert = [
     'technical_info' => $_POST['technical_info'] ?? '',
     'cover' => $cover,
     'pieces_hash' => sha1($info['pieces']),
-    'cache_stamp' => time(),
 ];
 if (isset($_POST['hr'][$catmod]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$catmod]]) && user_can('torrent_hr')) {
     $insert['hr'] = $_POST['hr'][$catmod];
@@ -446,9 +445,6 @@ $searchRep->addTorrent($id);
 
 $meiliSearch = new \App\Repositories\MeiliSearchRepository();
 $meiliSearch->doImportFromDatabase($id);
-
-//trigger event
-executeCommand("event:fire --name=torrent_created --id=$id", "string", true, false);
 
 //===notify people who voted on offer thanks CoLdFuSiOn :)
 if ($is_offer)

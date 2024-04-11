@@ -488,11 +488,6 @@ class Torrent extends NexusModel
         $query->where('visible', $visible);
     }
 
-    public function scopeNormal($query)
-    {
-        $query->where('visible', self::VISIBLE_YES)->where('banned', self::BANNED_NO);
-    }
-
     public function torrent_tags(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TorrentTag::class, 'torrent_id');

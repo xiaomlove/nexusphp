@@ -98,8 +98,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $diff = get_setting("system.alarm_email_receiver");
-        dd($diff);
+        CleanupRepository::recordBatch(NexusDB::redis(), "1", "5");
+        CleanupRepository::runBatchJobCalculateUserSeedBonus("bbbbb");
     }
 
 }

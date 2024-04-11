@@ -9,7 +9,7 @@ return [
         ]
     ],
     'labels' => [
-        'seedbonus' => '魔力',
+        'seedbonus' => '蝌蚪',
         'seed_points' => '做种积分',
         'uploaded' => '上传量',
         'downloaded' => '下载量',
@@ -17,10 +17,10 @@ return [
         'attendance_card' => '补签卡',
         'props' => '道具',
         'class' => '等级',
-        'vip_added' => '贵宾资格为通过魔力值获得',
-        'vip_added_help' => '该贵宾资格是否为通过魔力值换取。',
+        'vip_added' => '贵宾资格为通过蝌蚪获得',
+        'vip_added_help' => '该贵宾资格是否为通过蝌蚪换取。',
         'vip_until' => '贵宾资格结束时间',
-        'vip_until_help' => "时间格式为'年年年年-月月-日日 时时:分分:秒秒'。贵宾资格结束的时间。'贵宾资格为通过魔力值获得'必须设为'是'此规则才能生效。",
+        'vip_until_help' => "时间格式为'年年年年-月月-日日 时时:分分:秒秒'。贵宾资格结束的时间。'贵宾资格为通过蝌蚪获得'必须设为'是'此规则才能生效。",
     ],
     'class_names' => [
         \App\Models\User::CLASS_VIP => '贵宾',

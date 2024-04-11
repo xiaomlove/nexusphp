@@ -30,10 +30,5 @@ if (!isRunningInConsole()) {
     }
 }
 
-Route::get('test', [\App\Http\Controllers\ToolController::class, 'test'])->middleware(['web']);
 
-Route::group(['prefix' => 'oauth'], function () {
-    Route::get("user-info", [\App\Http\Controllers\OauthController::class, 'userInfo'])->name("oauth.user_info")->middleware('auth:api');
-//    Route::get('redirect', [\App\Http\Controllers\OauthController::class, 'redirect']);
-//    Route::get('callback', [\App\Http\Controllers\OauthController::class, 'callback']);
-});
+

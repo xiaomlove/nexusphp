@@ -20,6 +20,7 @@ function usercpmenu ($selected = "home") {
 	print ("<li" . ($selected == "tracker" ? " class=selected" : "") . "><a href=\"?action=tracker\">".$lang_usercp['text_tracker_settings']."</a></li>");
 	print ("<li" . ($selected == "forum" ? " class=selected" : "") . "><a href=\"?action=forum\">".$lang_usercp['text_forum_settings']."</a></li>");
 	print ("<li" . ($selected == "security" ? " class=selected" : "") . "><a href=\"?action=security\">".$lang_usercp['text_security_settings']."</a></li>");
+	print ("<li" . ($selected == "security" ? " class=selected" : "") . "><a href=\"?action=telegram\">".'Telegram'."</a></li>");
 	print ("</ul></div>");
 	end_main_frame();
 }
@@ -912,7 +913,7 @@ EOD;
                 $twoStepY = '<div style="display: flex;align-items:center">';
                 $twoStepY .= sprintf('<div><img src="%s" /></div>', $twoStepQrCodeUrl);
                 $twoStepY .= sprintf(
-                    '<div style="padding-left: 20px">%s<a href="%s" target="_blank">Link</a><br /><br />%s%s<br/><br/>%s<input type=hidden name=two_step_secret value="%s" /><input type=text name=two_step_code readonly onfocus="this.removeAttribute(\'readonly\')"/></div>',
+                    '<div style="padding-left: 20px">%s<a href="%s" target="_blank">Link</a><br /><br />%s%s<br/><br/>%s<input type=hidden name=two_step_secret value="%s" /><input type=text name=two_step_code /></div>',
                     $lang_usercp['text_two_step_secret_bind_by_qrdoe_note'],
                     $twoStepQrCodeUrl,
                     $lang_usercp['text_two_step_secret_bind_manually_note'],

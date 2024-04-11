@@ -38,7 +38,6 @@ Welcome to participate in internationalization work, click [here](https://github
 - Lucky draw
 - Custom role permission
 - Section H&R
-- TGBot
 ## System Requirements
 - PHP: 8.0|8.1|8.2, must have extensions: bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp, zend opcache
 - Mysql: 5.7 latest version or above

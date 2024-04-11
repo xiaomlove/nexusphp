@@ -4,11 +4,9 @@ namespace App\Filament\Resources\User\ExamUserResource\Pages;
 
 use App\Filament\Resources\User\ExamUserResource;
 use App\Repositories\ExamRepository;
-use Carbon\Carbon;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Tables\Table;
-use Filament\Forms;
 
 class ViewExamUser extends ViewRecord
 {
@@ -18,7 +16,7 @@ class ViewExamUser extends ViewRecord
 
     private function getDetailCardData(): array
     {
-//        dd($this->record);
+//        dd($this->record->progressFormatted);
         $data = [];
         $record = $this->record;
         $data[] = [
@@ -83,31 +81,6 @@ class ViewExamUser extends ViewRecord
                     }
                 })
                 ->label(__('admin.resources.exam_user.action_avoid')),
-
-            Actions\Action::make('UpdateEnd')
-                ->mountUsing(fn (Forms\ComponentContainer $form) => $form->fill([
-                    'end' => $this->record->end,
-                ]))
-                ->form([
-                    Forms\Components\DateTimePicker::make('end')
-                        ->required()
-                        ->label(__('label.end'))
-                    ,
-                    Forms\Components\Textarea::make('reason')
-                        ->label(__('label.reason'))
-                    ,
-                ])
-                ->action(function (array $data) {
-                    $examRep = new ExamRepository();
-                    try {
-                        $examRep->updateExamUserEnd($this->record, Carbon::parse($data['end']), $data['reason'] ?? "");
-                        $this->notify('success', 'Success !');
-                        $this->record = $this->resolveRecord($this->record->id);
-                    } catch (\Exception $exception) {
-                        $this->notify('danger', $exception->getMessage());
-                    }
-                })
-                ->label(__('admin.resources.exam_user.action_update_end')),
 
             Actions\DeleteAction::make(),
         ];

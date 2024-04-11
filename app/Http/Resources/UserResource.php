@@ -17,7 +17,6 @@ class UserResource extends JsonResource
         $out = [
             'id' => $this->id,
             'username' => $this->username,
-            'email' => $this->email,
             'status' => $this->status,
             'enabled' => $this->enabled,
             'added' => format_datetime($this->added),
@@ -41,6 +40,7 @@ class UserResource extends JsonResource
             'valid_medals' => MedalResource::collection($this->whenLoaded('valid_medals')),
         ];
         if ($request->routeIs('user.me')) {
+            $out['email'] = $this->email;
             $out['downloaded_human'] = mksize($this->downloaded);
             $out['uploaded_human'] = mksize($this->uploaded);
             $out['seed_time'] = mkprettytime($this->seedtime);
@@ -53,9 +53,6 @@ class UserResource extends JsonResource
             $out['leeching_torrents_count'] = $this->leeching_torrents_count;
             $out['completed_torrents_count'] = $this->completed_torrents_count;
             $out['incomplete_torrents_count'] = $this->incomplete_torrents_count;
-        }
-        if ($request->routeIs("oauth.user_info")) {
-            $out['name'] = $this->username;
         }
 
         if (nexus()->isPlatformAdmin() && $request->routeIs('users.show')) {

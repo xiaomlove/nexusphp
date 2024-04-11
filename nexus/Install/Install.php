@@ -172,8 +172,7 @@ class Install
                 $output = [];
                 $command = "php -r 'var_export(function_exists(\"$fn\"));'";
                 $result = exec($command, $output, $result_code);
-                $lastFourChars = substr(trim($output[0]), -4);
-                $exists = $lastFourChars == 'true';
+                $exists = $output[0] == 'true';
                 if (!$exists) {
                     $disabledFunctions[] = $fn;
                 }
@@ -597,11 +596,7 @@ class Install
     {
         foreach ($symbolicLinks as $path) {
             $linkName = ROOT_PATH . 'public/' . basename($path);
-            if (is_link($linkName) || is_file($linkName)) {
-                $delResult = unlink($linkName);
-                $this->doLog("path: $linkName already exits, try to delete it, delResult: " . var_export($delResult, true));
-            }
-            if (is_dir($linkName)) {
+            if (is_link($linkName)) {
                 $this->doLog("path: $linkName already exits, skip create symbolic link $linkName -> $path");
                 continue;
             }

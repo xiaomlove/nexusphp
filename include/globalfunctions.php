@@ -470,26 +470,20 @@ function arr_set(&$array, $key, $value)
 
 function isHttps(): bool
 {
-    if (isRunningInConsole()) {
-        $securityLogin = get_setting("security.securelogin");
-        if ($securityLogin != "no") {
-            return true;
-        }
-        return false;
-    }
-    return nexus()->getRequestSchema() == 'https';
+    $schema = nexus()->getRequestSchema();
+    return $schema == 'https';
 }
 
 
-function getSchemeAndHttpHost(bool $fromConfig = false)
+function getSchemeAndHttpHost()
 {
-    if (isRunningInConsole() || $fromConfig) {
-        $host = get_setting("basic.BASEURL");
-    } else {
-        $host = nexus()->getRequestHost();
+    global $BASEURL;
+    if (isRunningInConsole()) {
+        return $BASEURL;
     }
     $isHttps = isHttps();
     $protocol = $isHttps ? 'https' : 'http';
+    $host = nexus()->getRequestHost();
     return "$protocol://" . $host;
 }
 
@@ -1025,10 +1019,6 @@ function clear_setting_cache()
     do_log("clear_setting_cache");
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
-    $channel = nexus_env("CHANNEL_NAME_SETTING");
-    if (!empty($channel)) {
-        \Nexus\Database\NexusDB::redis()->publish($channel, "update");
-    }
 }
 
 /**
@@ -1235,9 +1225,4 @@ function is_danger_url($url): bool
 function get_snatch_info($torrentId, $userId)
 {
     return mysql_fetch_assoc(sql_query(sprintf('select * from snatched where torrentid = %s and userid = %s order by id desc limit 1', $torrentId, $userId)));
-}
-
-function fire_event(string $name, int $id): void
-{
-    executeCommand("event:fire --name=$name --id=$id", "string", true, false);
 }

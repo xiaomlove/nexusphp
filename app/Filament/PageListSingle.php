@@ -16,8 +16,10 @@ class PageListSingle extends ManageRecords
         return Layout::AboveContent;
     }
 
-    protected function getTableRecordActionUsing(): ?Closure
+    protected function getTableRecordUrlUsing(): ?Closure
     {
-        return null;
+        return function (Model $record): ?string {
+            return null;
+        };
     }
 }

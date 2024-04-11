@@ -18,10 +18,10 @@ return [
     'msg_subject' => ':month 認領結算',
     'claim_total' => '認領種子數：<b>:total</b>',
     'claim_reached_counts' => '達標數：<b>:counts</b>',
-    'claim_reached_summary' => '達標種子數每小時魔力：<b>:bonus_per_hour</b>, 平均做種小時數：<b>:hours</b>, 獲得魔力：<b>:bonus_total</b>',
+    'claim_reached_summary' => '達標種子數每小時蝌蚪：<b>:bonus_per_hour</b>, 平均做種小時數：<b>:hours</b>, 獲得蝌蚪：<b>:bonus_total</b>',
     'claim_unreached_remain_counts' => '未達標保留數：<b>:counts</b>',
     'claim_unreached_remove_counts' => '未達標刪除數：<b>:counts</b>',
-    'claim_unreached_summary' => '未達標每個種子扣除魔力：<b>:deduct_per_torrent</b>，總扣除魔力：<b>:deduct_total</b>',
+    'claim_unreached_summary' => '未達標每個種子扣除蝌蚪：<b>:deduct_per_torrent</b>，總扣除蝌蚪：<b>:deduct_total</b>',
 
     'confirm_give_up' => '確定要放棄認領此種子嗎？',
     'add_claim' => '認領',

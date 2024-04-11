@@ -16,14 +16,4 @@ class Topic extends NexusModel
     {
         return $this->belongsTo(Forum::class. 'forumid');
     }
-
-    public function firstPost()
-    {
-        return $this->belongsTo(Post::class, "firstpost");
-    }
-
-    public function lastPost()
-    {
-        return $this->belongsTo(Post::class, "lastpost");
-    }
 }

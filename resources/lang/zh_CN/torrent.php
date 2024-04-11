@@ -71,7 +71,7 @@ return [
             'notify_msg' => '你的种子：:torrent_name 被 :operator 删除',
         ]
     ],
-    'owner_update_torrent_subject' => '审核拒绝种子已更新',
+    'owner_update_torrent_subject' => '审核拒绝种子【:torrent_name】已更新',
     'owner_update_torrent_msg' => '种子：[url=:detail_url]:torrent_name[/url] 已被作者更新，可以检查是否符合要求并审核通过',
     'approval' => [
         'modal_title' => '种子审核',

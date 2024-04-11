@@ -19,10 +19,10 @@ return [
     'msg_subject' => ':month 认领结算',
     'claim_total' => '认领种子数：<b>:total</b>',
     'claim_reached_counts' => '达标数：<b>:counts</b>',
-    'claim_reached_summary' => '达标种子数每小时魔力：<b>:bonus_per_hour</b>, 平均做种小时数：<b>:hours</b>, 获得魔力：<b>:bonus_total</b>',
+    'claim_reached_summary' => '达标种子数每小时蝌蚪：<b>:bonus_per_hour</b>, 平均做种小时数：<b>:hours</b>, 获得蝌蚪：<b>:bonus_total</b>',
     'claim_unreached_remain_counts' => '未达标保留数：<b>:counts</b>',
     'claim_unreached_remove_counts' => '未达标删除数：<b>:counts</b>',
-    'claim_unreached_summary' => '未达标每个种子扣除魔力：<b>:deduct_per_torrent</b>，总扣除魔力：<b>:deduct_total</b>',
+    'claim_unreached_summary' => '未达标每个种子扣除蝌蚪：<b>:deduct_per_torrent</b>，总扣除蝌蚪：<b>:deduct_total</b>',
 
     'confirm_give_up' => '确定要放弃认领此种子吗？',
     'add_claim' => '认领',

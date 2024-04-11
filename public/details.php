@@ -88,7 +88,11 @@ if (!$row) {
             if ($torrentOperationLog) {
                 $dangerIcon = '<svg t="1655242121471" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="46590" width="16" height="16"><path d="M963.555556 856.888889a55.978667 55.978667 0 0 1-55.978667 56.007111c-0.284444 0-0.540444-0.085333-0.824889-0.085333l-0.056889 0.085333H110.734222l-0.654222-1.137778A55.409778 55.409778 0 0 1 56.888889 856.462222c0-9.756444 2.730667-18.773333 7.139555-26.737778l-3.726222-6.599111L453.461333 156.302222A59.335111 59.335111 0 0 1 510.236444 113.777778c26.936889 0 49.436444 18.005333 56.803556 42.552889l389.973333 661.447111-3.669333 6.997333c6.4 9.102222 10.211556 20.138667 10.211556 32.113778z m-497.777778-541.326222l16.014222 312.888889h56.888889l16.014222-312.888889h-88.917333z m44.458666 398.222222a56.888889 56.888889 0 1 0-0.028444 113.749333 56.888889 56.888889 0 0 0 0.028444-113.749333z" p-id="46591" fill="#d81e06" data-spm-anchor-id="a313x.7781069.0.i61" class="selected"></path></svg>';
                 printf(
-                    '<div style="display: flex; justify-content: center;margin-bottom: 10px"><div style="display: flex;background-color: black; color: white;font-weight: bold; padding: 10px 100px">%s&nbsp;%s</div></div>',
+                    '<div style="display: flex; justify-content: center; margin-bottom: 10px">
+                        <div style="display: flex; flex-direction: column; align-items: center; background-color: black; color: white; font-weight: bold; padding: 10px 100px">
+                            <span>%s&nbsp;%s</span>
+                        </div>
+                    </div>',
                     $dangerIcon, nexus_trans('torrent.approval.deny_comment_show', ['reason' => $torrentOperationLog->comment])
                 );
             }
@@ -134,7 +138,26 @@ if (!$row) {
             $tagRep = new \App\Repositories\TagRepository();
             tr($lang_details['row_tags'], $tagRep->renderSpan($row['search_box_id'], $torrentTags->pluck('tag_id')->toArray()),true);
         }
+        /////////////////////////////////////
+        /*$tags=$torrentTags->pluck('tag_id')->toArray();
 
+        for($i=0;$i<count($tags);$i++){
+            if($tags[$i]==2){
+                echo "<script type='text/javascript' src='jquery.min.js'></script>";
+                echo "<script type='text/javascript'>";
+                echo "$(document).ready(()=>{
+                        document.body.style.backgroundImage='url(vcbstudio.png)';
+                        Array.from(document.getElementsByTagName('table')).forEach((e)=>{
+                            e.style.backgroundColor='rgba(255,255,255,0)';
+                            e.style.color='rgba(255,255,255,1)';
+                        });
+                    });";
+                echo "</script>";
+                break;
+            }
+        }
+        */
+        /////////////////////////////////////
 		$size_info =  "<b>".$lang_details['text_size']."</b>" . mksize($row["size"]);
 		$type_info = "&nbsp;&nbsp;&nbsp;<b>".$lang_details['row_type'].":</b>&nbsp;".$row["cat_name"];
 //        $source_info = $medium_info = $codec_info = $audiocodec_info = $standard_info = $processing_info = $team_info = '';
@@ -200,10 +223,13 @@ jQuery('#approval').on("click", function () {
 })
 JS;
             \Nexus\Nexus::js($js, 'footer', false);
+            $actions[] = "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>";
+            $actions[] = sprintf('<p></p><iframe style= \'background-color:#FFF;overflow: hidden;width:800px;height:600px;border:0;\'src=\'/web/torrent-approval-page?torrent_id=%s\'></iframe>',$row['id']);
+        } else {
+            $actions[] = "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>";
         }
         $actions = apply_filter('torrent_detail_actions', $actions, $row);
-        $actions[] = "<a title=\"".$lang_details['title_report_torrent']."\" href=\"report.php?torrent=$id\"><img class=\"dt_report\" src=\"pic/trans.gif\" alt=\"report\" />&nbsp;<b><font class=\"small\">".$lang_details['text_report_torrent']."</font></b></a>";
-		tr($lang_details['row_action'], implode('&nbsp;|&nbsp;', $actions), 1);
+        tr($lang_details['row_action'], implode('&nbsp;|&nbsp;', $actions), 1);
 
         // ------------- start claim block ------------------//
         $claimTorrentTTL = \App\Models\Claim::getConfigTorrentTTL();
@@ -313,7 +339,12 @@ JS;
             $torrentdetailad=$Advertisement->get_ad('torrentdetail');
             $desc = format_comment($row['descr']);
             $desc = apply_filter('torrent_detail_description', $desc, $row['id'], $CURUSER['id']);
-            tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"\">".$torrentdetailad[0]."</div>" : "").$desc."</div>", 1);
+            $copyright=format_comment('[quote][size=3][color=Red][b]郑重声明：[/b]
+本站提供的所有作品均是用户自行搜集并且上传，禁止任何涉及商业盈利目的使用，否则产生的一切后果将由您自己承担！
+本站不对任何内容负任何法律责任！该下载内容仅做宽带测试及学习使用，请测试完成及时删除。如喜欢资源请购买正版！
+本站列出的所有文件均没在本站服务器保存，本站仅负责连接，本站对被传播文件的内容一无所知。
+本站的链接均由用户自发提供，管理员无法对用户的提交内容或其他行为负责。[/size][/color][/quote]');
+            tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"\">".$torrentdetailad[0]."</div>" : "").$copyright.'<div style=\'height:2em\'></div>'.$desc."</div>", 1);
 		}
 
 		if (user_can('viewnfo') && $CURUSER['shownfo'] != 'no' && $row["nfosz"] > 0){
@@ -327,6 +358,7 @@ JS;
 	if ($imdb_id && $showextinfo['imdb'] == 'yes' && $CURUSER['showimdb'] != 'no')
 	{
 		$thenumbers = $imdb_id;
+
 		$Cache->new_page('imdb_id_'.$thenumbers.'_large', 3600*24, true);
 		if (!$Cache->get_page()){
 			switch ($imdb->getCacheStatus($imdb_id))
@@ -334,9 +366,19 @@ JS;
 				case "0" : //cache is not ready, try to
 				{
 					if($row['cache_stamp']==0 || ($row['cache_stamp'] != 0 && (time()-$row['cache_stamp']) > 120))	//not exist or timed out
-						tr($lang_details['text_imdb'] . $lang_details['row_info'] , $lang_details['text_imdb'] . $lang_details['text_not_ready']."<a href=\"retriver.php?id=". $id ."&amp;type=1&amp;siteid=1\">".$lang_details['text_here_to_retrieve'] . $lang_details['text_imdb'],1);
+						{tr($lang_details['text_imdb'] . $lang_details['row_info'] , $lang_details['text_imdb'] . $lang_details['text_not_ready']."<a id='auto_click' href=\"retriver.php?id=". $id ."&amp;type=1&amp;siteid=1\">".$lang_details['text_here_to_retrieve'] . $lang_details['text_imdb'],1);
+
+
+						echo "<script type='text/javascript'>
+						    jQuery.ready.promise=()=>{
+						        document.getElementById('auto_click').click();
+						    };
+						</script>";
+
+						}
+
 					else
-						tr($lang_details['text_imdb'] . $lang_details['row_info'] , "<img src=\"pic/progressbar.gif\" alt=\"\" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . $lang_details['text_someone_has_requested'].min(max(time()-$row['cache_stamp'],0),120) . $lang_details['text_please_be_patient'],1);
+						{tr($lang_details['text_imdb'] . $lang_details['row_info'] , "<img src=\"pic/progressbar.gif\" alt=\"\" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . $lang_details['text_someone_has_requested'] . $lang_details['text_imdb'] . " ".min(max(time()-$row['cache_stamp'],0),120) . $lang_details['text_please_be_patient'],1);}
 					break;
 				}
 				case "1" :
@@ -544,7 +586,7 @@ echo $scronload;
 echo "</script>";
 		}
 
-        //Add 魔力值奖励功能
+        //Add 蝌蚪奖励功能
         if(isset($magic_value_bonus)){
             $bonus_array = $magic_value_bonus;
         }else{
@@ -668,7 +710,7 @@ echo "</script>";
         $firstLine = '<div style="height:25px">'.$magic_value_button.$span.$haveGotBonus.$show_all.'</div>';
         $otherLine = '<div>'.$current_user_magic.$show_list.$other_user_span.$show_list_description.'</div>';
         tr($lang_details['magic_value_award'],$firstLine.$otherLine,1);
-        //End 魔力值奖励功能
+        //End 蝌蚪奖励功能
 
 		// ------------- start thanked-by block--------------//
 

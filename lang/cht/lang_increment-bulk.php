@@ -2,10 +2,10 @@
 
 $lang_increment_bulk = array
 (
-    'page_title' => '批量添加魔力/補簽卡/邀請/上傳量/臨時邀請',
+    'page_title' => '批量添加蝌蚪/補簽卡/邀請/上傳量/臨時邀請',
     'sent_success' => ' 已經成功增加並發送了私信',
     'types' => [
-        'seedbonus' => '魔力',
+        'seedbonus' => '蝌蚪',
         'attendance_card' => '補簽卡',
         'invites' => '邀請',
         'uploaded' => '上傳量',

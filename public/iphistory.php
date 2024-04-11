@@ -44,7 +44,7 @@ print("<table width=500 border=1 cellspacing=0 cellpadding=5 align=center>\n");
 print("<tr>\n
 <td class=colhead>".$lang_iphistory['col_last_access']."</td>\n
 <td class=colhead>".$lang_iphistory['col_ip']."</td>\n
-<td class=colhead>".$lang_iphistory['col_hostname']."</td>\n
+<td class=colhead>".$lang_iphistory['col_location']."</td>\n
 </tr>\n");
 while ($arr = mysql_fetch_array($res))
 {
@@ -53,11 +53,7 @@ $ipshow = "";
 if ($arr["ip"])
 {
 $ip = $arr["ip"];
-$dom = @gethostbyaddr($arr["ip"]);
-if ($dom == $arr["ip"] || @gethostbyname($dom) != $arr["ip"])
-$addr = $lang_iphistory['text_not_available'];
-else
-$addr = $dom;
+list($loc_pub, $loc_mod) = get_ip_location($ip);
 
 $queryc = "SELECT COUNT(*) FROM
 (
@@ -77,7 +73,7 @@ $ipshow = "<a href=\"ipsearch.php?ip=". $arr['ip'] ."\">" . $arr['ip'] ."</a>";
 $date = gettime($arr["access"]);
 print("<tr><td>".$date."</td>\n");
 print("<td>".$ipshow."</td>\n");
-print("<td>".$addr."</td></tr>\n");
+print("<td>".($loc_pub=="[v]"?$lang_iphistory['text_not_available']:$loc_pub)."</td></tr>\n");
 }
 
 print("</table>");

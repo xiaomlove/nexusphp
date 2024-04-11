@@ -281,7 +281,7 @@ class AttendanceRepository extends BaseRepository
 
     }
 
-    public function retroactive($user, $dateStr)
+    public function retroactive($user, $timestampMs)
     {
         if (!$user instanceof User) {
             $user = User::query()->findOrFail((int)$user);
@@ -290,7 +290,7 @@ class AttendanceRepository extends BaseRepository
         if (!$attendance) {
             throw new \LogicException(nexus_trans('attendance.have_not_attendance_yet'));
         }
-        $date = Carbon::parse($dateStr);
+        $date = Carbon::createFromTimestampMs($timestampMs);
         $now = Carbon::now();
         if ($date->gte($now) || $now->diffInDays($date) > Attendance::MAX_RETROACTIVE_DAYS) {
             throw new \LogicException(nexus_trans('attendance.target_date_can_no_be_retroactive', ['date' => $date->format('Y-m-d')]));

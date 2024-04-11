@@ -48,10 +48,8 @@ if ($action == 'add')
 		$notify = 'no';
 	sql_query("INSERT INTO news (userid, added, body, title, notify) VALUES (".sqlesc($CURUSER['id']) . ", $added, " . sqlesc($body) . ", " . sqlesc($title) . ", " . sqlesc($notify).")") or sqlerr(__FILE__, __LINE__);
 	$Cache->delete_value('recent_news',true);
-	if (mysql_affected_rows() != 1) {
-        stderr($lang_news['std_error'], $lang_news['std_something_weird_happened']);
-    }
-	fire_event("news_created", mysql_insert_id());
+	if (mysql_affected_rows() != 1)
+	stderr($lang_news['std_error'], $lang_news['std_something_weird_happened']);
 	header("Location: " . get_protocol_prefix() . "$BASEURL/index.php");
 }
 

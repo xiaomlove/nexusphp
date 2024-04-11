@@ -480,7 +480,58 @@ print("</table><br />");
 <table width="97%" cellpadding="3">
 <tr><td class="colhead" align="center"><font class="big"><?php echo $lang_mybonus['text_what_is_karma'] ?></font></td></tr>
 <tr><td class="text" align="left">
+    <h1>做种每小时将得到如下的蝌蚪</h1>
+每小时获得的蝌蚪点数由下面的公式给出
+<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;
+<img src=pic/bonusformulaa.png ><br />&nbsp;&nbsp;&nbsp;&nbsp;
+<img src=pic/bonusformulab.png ><br />
+式中
+<ul>
+    <li>
+        <b>K1</b>为常数0.03
+    </li>
+    <li>
+        <b>K2</b>为常数100
+    </li>
+    <li>
+        <b>G</b>为该种子的大小，单位为GiB
+    </li>
+    <li>
+        <b>T</b>为系数，由该种子已发布的时间决定。新种发布2天内该系数恒为0，之后会在5天内匀速增加到最大值1.0。
+    </li>
+    <li>
+        <b>N</b>为低保。如果T为0，此值也为0；否则512MB以下的种子恒为0.1，512~2048MB的种子会匀速降为0。另外，前80个大于512MB的种子会额外给予0.5的加成。
+    </li>
+    每个种子获得蝌蚪最高为20.0点，超出部分不计。
+    你最终能得到的魔力值为A*B，但B值最高为250%。
+</ul>
+<h1>BUFF的计算方式（注：此处可能随站点保种情况有所调整）</h1>
+<ul>
+    <li>
+        种子有官方或VCB-Studio标签，增加25%。
+    </li>
+    <li>
+        种子做种人数小于10人，每少1人增加5%。做种人数只有1人且为自己，额外增加50%。
+    </li>
+    <li>
+        发布者，增加25%。
+    </li>
+    <li>
+        勋章加成、黄星加成、后宫加成。
+    </li>
+    以上均为相加叠加关系。
+</ul>
+<h1>关于做种积分</h1>
+<ul>
+    <li>
+        做种积分为去除了Buff的原值。
+    </li>
+    <li>
+        从公式上来说，为（有效保种体积*B值）。
+    </li>
+</ul>
 <?php
+/*
 print("<h1>".$lang_mybonus['text_get_by_seeding']."</h1>");
 print("<ul>");
 if ($perseeding_bonus > 0)
@@ -527,9 +578,12 @@ if ($bonusTableResult['has_harem_addition']) {
     print("<li>".$lang_mybonus['harem_additional_factor'].$bonusTableResult['harem_addition_factor']."</li>");
     print("<li>".$lang_mybonus['harem_additional_note']."</li>");
     print("</ul>");
-}
+}*/
 
-print("<h1>".$lang_mybonus['text_bonus_summary']."</h1>");
+//print("<h1>".$lang_mybonus['text_bonus_summary']."</h1>");
+$seedBonusResult = calculate_seed_bonus($CURUSER['id']);
+$bonusTableResult = build_bonus_table($CURUSER, $seedBonusResult, ['table_style' => 'width: 50%']);
+print("<h1>每小时获得的合计蝌蚪</h1>");
 print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$bonusTableResult['table'].'</div>';
 
 print("<h1>".$lang_mybonus['text_other_things_get_bonus']."</h1>");

@@ -97,7 +97,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'downloaded_human' => '下载量',
         'share_ratio' => '分享率',
 //        'seed_time' => '做种时间',
-        'bonus' => '魔力值',
+        'bonus' => '蝌蚪',
         'seed_points' => '做种积分',
         'invites' => '邀请',
     ];
@@ -218,12 +218,12 @@ class User extends Authenticatable implements FilamentUser, HasName
         'leechwarnuntil' => 'datetime',
     ];
 
-    public static array $commonFields = [
+    public static $commonFields = [
         'id', 'username', 'email', 'class', 'status', 'added', 'avatar', 'passkey',
         'uploaded', 'downloaded', 'seedbonus', 'seedtime', 'leechtime',
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
         'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos', 'donoruntil', 'donor',
-        'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
+        'seedbonus', 'bonuscomment', 'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
         'seed_points_per_hour'
     ];
 

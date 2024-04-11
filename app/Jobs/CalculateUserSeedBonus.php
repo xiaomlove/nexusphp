@@ -11,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Nexus\Database\NexusDB;
-use Nexus\Nexus;
 
 class CalculateUserSeedBonus implements ShouldQueue
 {
@@ -21,23 +20,20 @@ class CalculateUserSeedBonus implements ShouldQueue
 
     private int $endUid;
 
-    private string $idStr;
+    private string $uidArrStr;
 
     private string $requestId;
-
-    private string $idRedisKey;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(int $beginUid, int $endUid, string $idStr, string $idRedisKey, string $requestId = '')
+    public function __construct(int $beginUid, int $endUid, string $uidArrStr, string $requestId = '')
     {
         $this->beginUid = $beginUid;
         $this->endUid = $endUid;
-        $this->idStr = $idStr;
-        $this->idRedisKey = $idRedisKey;
+        $this->uidArrStr = $uidArrStr;
         $this->requestId = $requestId;
     }
 
@@ -64,22 +60,19 @@ class CalculateUserSeedBonus implements ShouldQueue
     {
         $beginTimestamp = time();
         $logPrefix = sprintf("[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s", $this->requestId, $this->beginUid, $this->endUid);
+//        $sql = sprintf("select userid from peers where userid > %s and userid <= %s and seeder = 'yes' group by userid", $this->beginUid, $this->endUid);
+//        $results = NexusDB::select($sql);
+//        $count = count($results);
+//        do_log("$logPrefix, [GET_UID], sql: $sql, count: " . count($results));
+//        if ($count == 0) {
+//            do_log("$logPrefix, no user...");
+//            return;
+//        }
         $haremAdditionFactor = Setting::get('bonus.harem_addition');
         $officialAdditionFactor = Setting::get('bonus.official_addition');
         $donortimes_bonus = Setting::get('bonus.donortimes');
         $autoclean_interval_one = Setting::get('main.autoclean_interval_one');
-
-        $idStr = $this->idStr;
-        $delIdRedisKey = false;
-        if (empty($idStr) && !empty($this->idRedisKey)) {
-            $delIdRedisKey = true;
-            $idStr = NexusDB::cache_get($this->idRedisKey);
-        }
-        if (empty($idStr)) {
-            do_log("$logPrefix, no idStr or idRedisKey", "error");
-            return;
-        }
-        $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), $idStr);
+        $sql = sprintf("select %s from users where id in (%s)", implode(',', User::$commonFields), $this->uidArrStr);
         $results = NexusDB::select($sql);
         $logFile = getLogFile("seed-bonus-points");
         do_log("$logPrefix, [GET_UID_REAL], count: " . count($results) . ", logFile: $logFile");
@@ -89,28 +82,40 @@ class CalculateUserSeedBonus implements ShouldQueue
             $uid = $userInfo['id'];
             $isDonor = is_donor($userInfo);
             $seedBonusResult = calculate_seed_bonus($uid);
+            /*
+            $base_bonus = $valid_g; //基础魔力
+            $valid_g = $valid_g / $torrent_k1; //有效保种体积
+            $seed_points = $valid_g * $B; //做种积分
+            $seed_bonus = $A * $B; //获得魔力值
+            $result = compact(
+                'base_bonus', 'seed_points','seed_bonus', 'A', 'B', 'count', 'size', 'last_action',
+                'buff_bonus', 'valid_g', 'all_g'
+            $result['donor_times'] = $donortimes_bonus;
+            ); */
             $bonusLog = "[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_USER], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
             $all_bonus = $seedBonusResult['seed_bonus'];
-            $bonusLog .= ", all_bonus: $all_bonus";
+            
+            $bonusLog .= ", calculation:".json_encode($seedBonusResult);
             if ($isDonor) {
-                $all_bonus = $all_bonus * $donortimes_bonus;
+                $all_bonus += $seedBonusResult['donor_bonus'];
                 $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
             }
+            /*
             if ($officialAdditionFactor > 0) {
                 $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
                 $all_bonus += $officialAddition;
                 $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
             }
+            if ($seedBonusResult['medal_additional_factor'] > 0) {
+                $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'];
+                $all_bonus += $medalAddition;
+                $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
+            }*/
             if ($haremAdditionFactor > 0) {
                 $haremBonus = calculate_harem_addition($uid);
                 $haremAddition =  $haremBonus * $haremAdditionFactor;
                 $all_bonus += $haremAddition;
                 $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
-            }
-            if ($seedBonusResult['medal_additional_factor'] > 0) {
-                $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'];
-                $all_bonus += $medalAddition;
-                $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
             }
             $dividend = 3600 / $autoclean_interval_one;
             $all_bonus = $all_bonus / $dividend;
@@ -130,9 +135,6 @@ class CalculateUserSeedBonus implements ShouldQueue
             } else {
                 do_log("logFile: $logFile is not writeable!", 'error');
             }
-        }
-        if ($delIdRedisKey) {
-            NexusDB::cache_del($this->idRedisKey);
         }
         $costTime = time() - $beginTimestamp;
         do_log("$logPrefix, [DONE], cost time: $costTime seconds");

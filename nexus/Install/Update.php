@@ -309,8 +309,7 @@ class Update extends Install
         /**
          * @since 1.8.3
          */
-        $hasTableSetting = NexusDB::hasTable('settings');
-        if ($hasTableSetting) {
+        if (NexusDB::hasTable('settings')) {
             $updateSettings = [];
             if (get_setting("system.meilisearch_enabled") == 'yes') {
                 $updateSettings["enabled"] = "yes";
@@ -321,16 +320,6 @@ class Update extends Install
             if (!empty($updateSettings)) {
                 $this->saveSettings(['meilisearch' => $updateSettings]);
             }
-        }
-
-        /**
-         * @since 1.8.10
-         */
-        if ($hasTableSetting) {
-            Setting::query()->firstOrCreate(
-                ["name" => "system.alarm_email_receiver"],
-                ["value" => User::query()->where("class", User::CLASS_STAFF_LEADER)->first(["id"])->id]
-            );
         }
 
     }

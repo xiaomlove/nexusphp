@@ -35,13 +35,9 @@ return [
         'invite' => '用戶邀請',
         'user_props' => '用戶道具',
         'login_log' => '登錄記錄',
-        'bonus_log' => '魔力記錄',
+        'bonus_log' => '蝌蚪記錄',
         'torrent_buy_log' => '種子購買',
         'attendance_log' => '簽到記錄',
-        'oauth_client' => '客戶端',
-        'oauth_access_token' => '訪問令牌',
-        'oauth_auth_code' => '授權碼',
-        'oauth_refresh_token' => '刷新令牌',
     ],
     'resources' => [
         'agent_allow' => [
@@ -93,9 +89,7 @@ return [
         ],
         'exam_user' => [
             'bulk_action_avoid_label' => '批量免除',
-            'bulk_action_update_end_label' => '批量修改結束時間',
             'action_avoid' => '免除',
-            'action_update_end' => '修改結束時間',
             'result_passed' => '通過！',
             'result_not_passed' => '未通過！',
         ],

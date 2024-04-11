@@ -59,12 +59,10 @@ while (true) {
         break;
     }
     $idStr = implode(',', $idArr);
-    $idRedisKey = sprintf("temporary_invite:%s", microtime(true));
-    \Nexus\Database\NexusDB::cache_put($idRedisKey, $idStr);
     if ($isTypeTmpInvite) {
         $command = sprintf(
             'invite:tmp %s %s %s',
-            $idRedisKey, $duration, $amount
+            $idStr, $duration, $amount
         );
         $output = executeCommand($command, 'string', true);
         do_log(sprintf('command: %s, output: %s', $command, $output));

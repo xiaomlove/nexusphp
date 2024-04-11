@@ -2,7 +2,6 @@
 
 namespace App\Console;
 
-use App\Jobs\CheckCleanup;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -38,8 +37,6 @@ class Kernel extends ConsoleKernel
         })->withoutOverlapping();
         $schedule->command('meilisearch:import')->weeklyOn(1, "03:00")->withoutOverlapping();
         $schedule->command('torrent:load_pieces_hash')->dailyAt("01:00")->withoutOverlapping();
-
-        $this->registerScheduleCleanup($schedule);
     }
 
     /**
@@ -52,16 +49,5 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
-    }
-
-    private function registerScheduleCleanup(Schedule $schedule): void
-    {
-        $interval = get_setting("main.autoclean_interval_one");
-        if (!$interval || $interval < 60) {
-            $interval = 7200;
-        }
-        $schedule->job(new CheckCleanup())
-            ->cron(sprintf("*/%d * * * *", ceil($interval/60)))
-            ->withoutOverlapping();
     }
 }

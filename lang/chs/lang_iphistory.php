@@ -10,6 +10,7 @@ $lang_iphistory = array
 	'col_last_access' => "最近访问",
 	'col_ip' => "IP",
 	'col_hostname' => "主机名",
+    'col_location' => "地点",
 	'text_not_available' => "无",
 	'text_duplicate' => "重复",
 );

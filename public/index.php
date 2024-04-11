@@ -36,6 +36,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 stdhead($lang_index['head_home']);
 begin_main_frame();
 
+//-------------
+?>
+<div style="text-align:center;">
+    <table style="background-color:rgba(255,255,255,.5); border-radius:6px; display:inline-block;">
+        <tr style="">
+            <td style='padding:20px;'><a href='forums.php?action=viewtopic&topicid=193' style='font-size:19px;'><b class='rainbow'>【新站建立】人才招募中！</b></a></td>
+            <td style='padding:20px;'><a href='forums.php?action=viewforum&forumid=14' style='font-size:19px;'><b class='rainbow'>意见BUG征集</a></b></td>
+            <td style='padding:20px;'><a href='forums.php?action=viewtopic&topicid=275' style='font-size:19px;'><b class='rainbow'>青蛙辅种助手—MoviePilot插件</a></b></td>
+        </tr>
+        <tr style="">
+            <td style='padding:20px;'><a href='forums.php?action=viewtopic&topicid=164' style='font-size:19px;'><b class='rainbow'>整理VCB-Studio作品—MoviePilot插件</b></a></td>
+            <td style='padding:20px;'><a href='forums.php?action=viewtopic&topicid=21' style='font-size:19px;'><b class='rainbow'>使用Reseed-Puppy辅种——添加站点教程</b></a></td>
+            <td style='padding:20px;'><a href='forums.php?action=viewtopic&topicid=276' style='font-size:19px;'><b class='rainbow'>使用auto_feed快速转种</b></a></td>
+        </tr>
+    </table>
+</div>
+<?php
 // ------------- start: recent news ------------------//
 print("<h2>".$lang_index['text_recent_news'].(user_can('newsmanage') ? " - <font class=\"small\">[<a class=\"altlink\" href=\"news.php\"><b>".$lang_index['text_news_page']."</b></a>]</font>" : "")."</h2>");
 
@@ -163,7 +180,7 @@ JS;
     </h2>
 <?php
 	print("<table width=\"100%\"><tr><td class=\"text\">\n");
-	print("<iframe id='iframe-shout-box' src='shoutbox.php?type=shoutbox' width='100%' height='180' frameborder='0' name='sbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n");
+	print("<iframe id='iframe-shout-box' src='shoutbox.php?type=shoutbox' width='100%' height='480' frameborder='0' name='sbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n");
 	print("<form action='shoutbox.php' method='get' target='sbox' name='shbox'>\n");
     print('<div style="display: flex">');
 	print("<label for='shbox_text'>".$lang_index['text_message']."</label><input type='text' name='shbox_text' id='shbox_text' size='100' style='flex-grow: 1; border: 1px solid gray;' />  <input type='submit' id='hbsubmit' class='btn' name='shout' value=\"".$lang_index['sumbit_shout']."\" />");

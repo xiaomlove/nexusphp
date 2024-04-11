@@ -1,0 +1,49 @@
+<style>
+    #imgs{
+        overflow: hidden;
+        width: 100%;
+        display: block;
+    }
+    img{
+        width: calc(100% - 50px);
+        display: inline-block;
+        position: absolute;
+        left:50%;
+        transform: translateX(-50%);
+        transition: all .5s;
+        border-radius: 12px;
+        box-shadow: 0 0 4px #AAA;
+    }
+</style>
+
+<a id="imgs" target="_parent">
+    <img class="img" style="opacity: 1;"/>
+    <img class="img" style="opacity: 0;"/>
+</a>
+
+<script type="text/javascript">
+    let refrashimg=(i)=>{
+        imgs=["3.png","1.png","2.png"];
+        links=['../forums.php?action=viewtopic&topicid=193','https://qingwa.pro','https://t.me/+So3rZHdawEoxNGE9']
+        document.getElementById('imgs').setAttribute("href",links[i%imgs.length]);
+        Array.from(document.getElementsByClassName("img")).forEach((e,index)=>{
+            if(i%2==0){
+                e.style.opacity=index%2==0?1:0;
+                setTimeout(()=>{
+                    e.setAttribute("src",index==0?imgs[i%imgs.length]:imgs[(i+1)%imgs.length]);
+                },500);
+            }else{
+                e.style.opacity=index%2==0?0:1;
+                setTimeout(()=>{
+                   e.setAttribute("src",index==0?imgs[(i+1)%imgs.length]:imgs[i%imgs.length]); 
+                },500);
+            }
+        });
+        setTimeout(()=>{
+            refrashimg(i+1);
+        },5000);
+    };
+    window.onload=()=>{
+        refrashimg(0)
+    };
+</script>

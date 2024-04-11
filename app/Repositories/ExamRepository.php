@@ -6,14 +6,16 @@ use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
 use App\Models\Message;
+use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -151,30 +153,6 @@ class ExamRepository extends BaseRepository
                 throw new \InvalidArgumentException("Invalid user register time end: $end");
             }
         }
-        if ($begin && $end && $begin > $end) {
-            throw new \InvalidArgumentException("user register time begin must less than end");
-        }
-
-        $filter = Exam::FILTER_USER_REGISTER_DAYS_RANGE;
-        $begin = $filters[$filter][0] ?? null;
-        $end = $filters[$filter][1] ?? null;
-        if ($begin) {
-            if (is_numeric($begin) && $begin >= 0) {
-                $hasValid = true;
-            } else {
-                throw new \InvalidArgumentException("Invalid user register days begin: $begin" );
-            }
-        }
-        if ($end) {
-            if (is_numeric($end) && $end >= 0) {
-                $hasValid = true;
-            } else {
-                throw new \InvalidArgumentException("Invalid user register days end: $end");
-            }
-        }
-        if ($begin && $end && $begin > $end) {
-            throw new \InvalidArgumentException("user register days begin must less than end");
-        }
 
         if (!$hasValid) {
             throw new \InvalidArgumentException("No valid filters");
@@ -300,20 +278,6 @@ class ExamRepository extends BaseRepository
             return false;
         }
 
-        $filter = Exam::FILTER_USER_REGISTER_DAYS_RANGE;
-        $filterValues = $filters[$filter] ?? [];
-        $value = $user->added->diffInDays(now());
-        $begin = $filterValues[0] ?? null;
-        $end = $filterValues[1] ?? null;
-        if ($begin !== null && $value < $begin) {
-            do_log("$logPrefix, user registerDays: $value not bigger than begin: " . $begin);
-            return false;
-        }
-        if ($end !== null && $value > $end) {
-            do_log("$logPrefix, user registerDays: $value not less than end: " . $end);
-            return false;
-        }
-
         return true;
     }
 
@@ -348,33 +312,11 @@ class ExamRepository extends BaseRepository
         $data = [
             'exam_id' => $exam->id,
         ];
-        if (empty($begin)) {
-            if (!empty($exam->begin)) {
-                $begin = $exam->begin;
-                $logPrefix .= ", begin from exam->begin: $begin";
-            } else {
-                $begin = now();
-                $logPrefix .= ", begin from now: $begin";
-            }
-        } else {
-            $begin = Carbon::parse($begin);
+        if ($begin && $end) {
+            $logPrefix .= ", specific begin and end";
+            $data['begin'] = $begin;
+            $data['end'] = $end;
         }
-        if (empty($end)) {
-            if (!empty($exam->end)) {
-                $end = $exam->end;
-                $logPrefix .= ", end from exam->end: $end";
-            } elseif ($exam->duration > 0) {
-                $duration = $exam->duration;
-                $end = $begin->clone()->addDays($duration)->toDateTimeString();
-                $logPrefix .= ", end from begin + duration($duration): $end";
-            } else {
-                throw new \RuntimeException("No specific end or duration");
-            }
-        } else {
-            $end = Carbon::parse($end);
-        }
-        $data['begin'] = $begin;
-        $data['end'] = $end;
         do_log("$logPrefix, data: " . nexus_json_encode($data));
         $examUser = $user->exams()->create($data);
         $this->updateProgress($examUser, $user);
@@ -513,9 +455,9 @@ class ExamRepository extends BaseRepository
      *
      * @param $examUser
      * @param null $user
-     * @return ExamUser|bool
+     * @return bool
      */
-    public function updateProgress($examUser, $user = null): ExamUser|bool
+    public function updateProgress($examUser, $user = null)
     {
         $beginTimestamp = microtime(true);
         if (!$examUser instanceof ExamUser) {
@@ -548,7 +490,7 @@ class ExamRepository extends BaseRepository
         }
         $exam = $examUser->exam;
         if (!$user instanceof User) {
-            $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus', 'seed_points'])->first();
+            $user = $examUser->user()->select(['id', 'uploaded', 'downloaded', 'seedtime', 'leechtime', 'seedbonus'])->first();
         }
         $attributes = [
             'exam_user_id' => $examUser->id,
@@ -564,17 +506,10 @@ class ExamRepository extends BaseRepository
         if (empty($end)) {
             throw new \InvalidArgumentException("$logPrefix, exam: {$examUser->id} no end.");
         }
-        /**
-         * @var $progressGrouped Collection
-         */
-        $progressGrouped = $examUser->progresses->keyBy("index");
         $examUserProgressFieldData = [];
         $now = now();
         foreach ($exam->indexes as $index) {
             if (!isset($index['checked']) || !$index['checked']) {
-                continue;
-            }
-            if ($progressGrouped->isNotEmpty() && !$progressGrouped->has($index['index'])) {
                 continue;
             }
             if (!isset(Exam::$indexes[$index['index']])) {
@@ -587,7 +522,7 @@ class ExamRepository extends BaseRepository
             $attributes['index'] = $index['index'];
             $attributes['created_at'] = $now;
             $attributes['updated_at'] = $now;
-            $attributes['value'] = $this->getProgressValue($user, $index['index']);
+            $attributes['value'] = $user->{Exam::$indexes[$index['index']]['source_user_field']} ?? 0;
             do_log("[GET_TOTAL_VALUE]: " . $attributes['value']);
             $newVersionProgress = ExamProgress::query()
                 ->where('exam_user_id', $examUser->id)
@@ -606,8 +541,12 @@ class ExamRepository extends BaseRepository
                 }
                 $attributes['init_value'] = $newVersionProgress->init_value;
             } else {
-                //do insert.
-                $attributes['init_value'] = $attributes['value'];
+                //do insert. check the init value
+                $progressData = $this->calculateProgress($examUser, true);
+                $increment = $progressData[$index['index']] ?? 0;
+                $initValue = $attributes['value'] - $increment;
+                $attributes['init_value'] = max($initValue, 0);
+                do_log("total: {$attributes['value']}, increment: $increment, init_value: $initValue, final init_value: {$attributes['init_value']}");
                 $attributes['torrent_id'] = -1;
                 ExamProgress::query()->insert($attributes);
                 do_log("newVersionProgress [NOT EXISTS], doInsert with: " . json_encode($attributes));
@@ -661,29 +600,6 @@ class ExamRepository extends BaseRepository
         return $examUser;
     }
 
-    private function getProgressValue(User $user, int $index)
-    {
-        if ($index == Exam::INDEX_UPLOADED) {
-            return $user->uploaded;
-        }
-        if ($index == Exam::INDEX_DOWNLOADED) {
-            return $user->downloaded;
-        }
-        if ($index == Exam::INDEX_SEED_BONUS) {
-            return $user->seedbonus;
-        }
-        if ($index == Exam::INDEX_SEED_TIME_AVERAGE) {
-            return $user->seedtime;
-        }
-        if ($index == Exam::INDEX_SEED_POINTS) {
-            return $user->seed_points;
-        }
-        if ($index == Exam::INDEX_UPLOAD_TORRENT_COUNT) {
-            return Torrent::query()->where("owner", $user->id)->normal()->count();
-        }
-        throw new \InvalidArgumentException("Invalid index: $index");
-    }
-
 
     /**
      * get user exam status
@@ -729,12 +645,11 @@ class ExamRepository extends BaseRepository
     }
 
     /**
-     * @deprecated
      * @param ExamUser $examUser
-     * @param bool $allSum
+     * @param false $allSum
      * @return array|null
      */
-    public function calculateProgress(ExamUser $examUser, bool $allSum = false)
+    public function calculateProgress(ExamUser $examUser, $allSum = false)
     {
         $logPrefix = "examUser: " . $examUser->id;
         $begin = $examUser->begin;
@@ -770,7 +685,7 @@ class ExamRepository extends BaseRepository
                 ->first()
                 ->torrent_count;
             $progressSum[$index] = intval($progressSum[$index] / $torrentCount);
-            $logPrefix .= ", index: INDEX_SEED_TIME_AVERAGE, get torrent count: $torrentCount, from query: " . last_query();
+            $logPrefix .= ", get torrent count: $torrentCount, from query: " . last_query();
         }
 
         do_log("$logPrefix, final progressSum: " . json_encode($progressSum));
@@ -784,9 +699,6 @@ class ExamRepository extends BaseRepository
         $result = [];
         foreach ($exam->indexes as $key => $index) {
             if (!isset($index['checked']) || !$index['checked']) {
-                continue;
-            }
-            if (!isset($progress[$index['index']])) {
                 continue;
             }
             $currentValue = $progress[$index['index']] ?? 0;
@@ -835,35 +747,6 @@ class ExamRepository extends BaseRepository
         $examUser = ExamUser::query()->where('status',ExamUser::STATUS_NORMAL)->findOrFail($examUserId);
         $result = $examUser->update(['status' => ExamUser::STATUS_AVOIDED]);
         return $result;
-    }
-
-    public function updateExamUserEnd(ExamUser $examUser, Carbon $end, string $reason = "")
-    {
-        if ($end->isBefore($examUser->begin)) {
-            throw new \InvalidArgumentException(nexus_trans("exam-user.end_can_not_before_begin", ['begin' => $examUser->begin, 'end' => $end]));
-        }
-        if ($examUser->status != ExamUser::STATUS_NORMAL) {
-            throw new \LogicException(nexus_trans("exam-user.status_not_allow_update_end", ['status_text' => nexus_trans('exam-user.status.' . ExamUser::STATUS_NORMAL)]));
-        }
-        $oldEndTime = $examUser->end;
-        $locale = $examUser->user->locale;
-        $examName = $examUser->exam->name;
-        Message::add([
-            'sender' => 0,
-            'receiver' => $examUser->uid,
-            'added' => now(),
-            'subject' => nexus_trans('message.exam_user_end_time_updated.subject', [
-                'exam_name' => $examName
-            ], $locale),
-            'msg' => nexus_trans('message.exam_user_end_time_updated.body', [
-                'exam_name' => $examName,
-                'old_end_time' => $oldEndTime,
-                'new_end_time' => $end,
-                'operator' => get_pure_username(),
-                'reason' => $reason,
-            ], $locale),
-        ]);
-        $examUser->update(['end' => $end]);
     }
 
     public function removeExamUserBulk(array $params, User $user)
@@ -994,18 +877,6 @@ class ExamRepository extends BaseRepository
                 $baseQuery->where("$userTable.added", '<=', Carbon::parse($range[1])->toDateTimeString());
             }
         }
-
-        $filter = Exam::FILTER_USER_REGISTER_DAYS_RANGE;
-        $range = $filters[$filter] ?? [];
-        if (!empty($range)) {
-            if (!empty($range[0])) {
-                $baseQuery->where("$userTable.added", "<=", now()->subDays($range[0])->toDateTimeString());
-            }
-            if (!empty($range[1])) {
-                $baseQuery->where("$userTable.added", '>=', now()->subDays($range[1])->toDateTimeString());
-            }
-        }
-
         //Does not has this exam
         $baseQuery->whereDoesntHave('exams', function (Builder $query) use ($exam) {
             $query->where('exam_id', $exam->id);
@@ -1018,8 +889,6 @@ class ExamRepository extends BaseRepository
         $size = 1000;
         $minId = 0;
         $result = 0;
-        $begin = $exam->begin;
-        $end = $exam->end;
         while (true) {
             $logPrefix = sprintf('[%s], exam: %s, size: %s', __FUNCTION__, $exam->id , $size);
             $users = (clone $baseQuery)->where("$userTable.id", ">", $minId)->limit($size)->get();
@@ -1035,8 +904,6 @@ class ExamRepository extends BaseRepository
                 $insert = [
                     'uid' => $user->id,
                     'exam_id' => $exam->id,
-                    'begin' => $begin,
-                    'end' => $end,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -1096,8 +963,6 @@ class ExamRepository extends BaseRepository
                     $examUser->delete();
                     continue;
                 }
-                //update to the newest progress
-                $examUser = $this->updateProgress($examUser, $examUser->user);
                 $locale = $examUser->user->locale;
                 if ($examUser->is_done) {
                     do_log("$currentLogPrefix, [is_done]");
@@ -1185,7 +1050,7 @@ class ExamRepository extends BaseRepository
             foreach ($rows as $row) {
                 $result = $this->updateProgress($row);
                 do_log("$logPrefix, examUser: " . $row->toJson() . ", result type: " . gettype($result));
-                if ($result) {
+                if ($result != false) {
                     $success += 1;
                 }
             }

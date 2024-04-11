@@ -13,6 +13,7 @@ return [
         'reward_type' => 'Reward type',
         'count' => 'Count',
         'size' => 'Size',
+        'valid_g' => 'Valid Size',
         'a_value' => 'A Value',
         'bonus_base' => 'Basic bonus',
         'factor' => 'Factor',
@@ -24,6 +25,8 @@ return [
         'harem_addition' => 'Harem addition',
         'official_addition' => 'Official addition',
         'medal_addition' => 'Medal addition',
+        'buff_addition' => 'Buff addition',
+        'donor_addition' => 'Donor addition',
     ],
     'not_enough' => 'No enough bonus! Requires :require_bonus, you currently only have: :now_bonus',
 ];

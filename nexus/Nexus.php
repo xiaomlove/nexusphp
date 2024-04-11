@@ -95,20 +95,12 @@ final class Nexus
         return $this->script == 'announce';
     }
 
-    public function incrementLogSequence(): void
+    public function incrementLogSequence()
     {
         $this->logSequence++;
     }
 
-    private function getFirst(string $result): string
-    {
-        if (str_contains($result, ",")) {
-            return strstr($result, ",", true);
-        }
-        return $result;
-    }
-
-    public function getRequestSchema(): string
+    public function getRequestSchema()
     {
         $schema = $this->retrieveFromServer(['HTTP_X_FORWARDED_PROTO', 'REQUEST_SCHEME', 'HTTP_SCHEME']);
         if (empty($schema)) {
@@ -117,19 +109,18 @@ final class Nexus
                 $schema = 'https';
             }
         }
-        return $this->getFirst($schema);
+        return $schema;
     }
 
     public function getRequestHost(): string
     {
-        $host = $this->retrieveFromServer(['HTTP_X_FORWARDED_HOST', 'HTTP_HOST', 'host'], true);
-        return $this->getFirst(strval($host));
+        $host = $this->retrieveFromServer(['HTTP_HOST', 'host', ], true);
+        return (string)$host;
     }
 
-    public function getRequestIp(): string
+    public function getRequestIp()
     {
-        $ip = $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'x-forwarded-for', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR'], true);
-        return $this->getFirst($ip);
+        return $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'x-forwarded-for', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR'], true);
     }
 
     private function retrieveFromServer(array $fields, bool $includeHeader = false)
@@ -143,6 +134,12 @@ final class Nexus
         }
         foreach ($fields as $field) {
             $result = $servers[$field] ?? null;
+            if ($result && in_array($field, ['HTTP_X_FORWARDED_FOR', 'x-forwarded-for'])) {
+                $result = preg_split('/[,\s]+/', $result);
+            }
+            if (is_array($result)) {
+                $result = Arr::first($result);
+            }
             if ($result !== null && $result !== '') {
                 return $result;
             }
