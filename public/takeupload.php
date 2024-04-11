@@ -1,7 +1,7 @@
 <?php
 //require_once("../include/benc.php");
 require_once("../include/bittorrent.php");
-
+$max_torrent_size = 16 * 1024 * 1024;
 ini_set("upload_max_filesize",$max_torrent_size);
 dbconn();
 require_once(get_langfile_path());

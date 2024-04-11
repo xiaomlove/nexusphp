@@ -23,6 +23,6 @@ return [
     'unreached_disable_comment' => 'H&R 數量達上限被系統禁用。',
     'unreached_disable_message_content' => '由於累計 H&R 數量已達系統上限：:ban_user_when_counts_reach，你的賬號已被禁用。',
 
-    'bonus_cancel_comment' => '花費 :bonus 魔力進行了消除',
-    'remove_confirm_msg' => '消除一個 H&R 需要扣除 :bonus 魔力，確定嗎？',
+    'bonus_cancel_comment' => '花費 :bonus 蝌蚪進行了消除',
+    'remove_confirm_msg' => '消除一個 H&R 需要扣除 :bonus 蝌蚪，確定嗎？',
 ];

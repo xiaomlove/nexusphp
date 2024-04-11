@@ -27,7 +27,16 @@ function can_access_staff_message($msg)
 if (!$action) {
 	stdhead($lang_staffbox['head_staff_pm']);
 	$url = $_SERVER['PHP_SELF']."?";
-    $query = \App\Repositories\MessageRepository::buildStaffMessageQuery($CURUSER['id']);
+    $answered = null;
+    if (isset($_GET['answered'])) {
+        if ($_GET['answered']) {
+            $answered = 1;
+        }
+        else {
+            $answered = 0;
+        }
+    }
+    $query = \App\Repositories\MessageRepository::buildStaffMessageQuery($CURUSER['id'], $answered);
     $count = $query->count();
 	$perpage = 20;
 	list($pagertop, $pagerbottom, $limit, $offset, $pageSize, $pageNum) = pager($perpage, $count, $url);

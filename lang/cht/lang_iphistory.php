@@ -9,7 +9,8 @@ $lang_iphistory = array
 	'text_historical_ip_by' => "用戶IP位址曆史 - ",
 	'col_last_access' => "最近存取",
 	'col_ip' => "IP",
-	'col_hostname' => "主機名",
+    'col_hostname' => "主機名",
+    'col_location' => "地點",
 	'text_not_available' => "無",
 	'text_duplicate' => "重複",
 );

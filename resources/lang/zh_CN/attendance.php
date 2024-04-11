@@ -8,7 +8,7 @@ return [
     'ranking' => '今日签到排名：<b>:ranking</b> / <b>:counts</b>',
     'fields' => [
         'date' => '日期',
-        'points' => '获得魔力',
+        'points' => '获得蝌蚪',
         'is_retroactive' => '是否补签',
     ],
 ];

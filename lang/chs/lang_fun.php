@@ -38,7 +38,7 @@ $lang_fun = array
 	'std_success' => "成功",
 	'std_fun_item_banned' => "该趣味内容被成功禁止。",
 	'std_already_vote' => "你已经投过票了！",
-	'std_cannot_give_bonus' => "系统无法给趣味内容发布者奖励魔力值。请将该问题报告给管理员。",
+	'std_cannot_give_bonus' => "系统无法给趣味内容发布者奖励蝌蚪。请将该问题报告给管理员。",
 );
 
 ?>

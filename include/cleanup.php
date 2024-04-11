@@ -99,7 +99,7 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 		if ($minSeedPoints === false) {
 		    throw new \RuntimeException("class: $class can't get min seed points.");
         }
-		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND seed_points >= $minSeedPoints AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt);
+		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND seed_points >= $minSeedPoints AND uploaded / downloaded >= $minratio AND uploaded / downloaded < 1.5 AND added < ".sqlesc($maxdt);
 		$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
 		$matchUserCount = mysql_num_rows($res);
         do_log("sql: $sql, match user count: $matchUserCount");
@@ -768,7 +768,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	promotion(UC_VETERAN_USER, $vudl_account, $vuprratio_account, $vutime_account, $getInvitesByPromotion_class[UC_VETERAN_USER]);
 	promotion(UC_EXTREME_USER, $exudl_account, $exuprratio_account, $exutime_account, $getInvitesByPromotion_class[UC_EXTREME_USER]);
 	promotion(UC_ULTIMATE_USER, $uudl_account, $uuprratio_account, $uutime_account, $getInvitesByPromotion_class[UC_ULTIMATE_USER]);
-	promotion(UC_NEXUS_MASTER, $nmdl_account, $nmprratio_account, $nmtime_account, $getInvitesByPromotion_class[UC_NEXUS_MASTER]);
+	//promotion(UC_NEXUS_MASTER, $nmdl_account, $nmprratio_account, $nmtime_account, $getInvitesByPromotion_class[UC_NEXUS_MASTER]);
 	// end promotion
 	$log = "promote users to other classes";
 	do_log($log);
@@ -779,7 +779,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	// start demotion
 
 		//do not change the descending order
-	demotion(UC_NEXUS_MASTER,$nmderatio_account);
+	//demotion(UC_NEXUS_MASTER,$nmderatio_account);
 	demotion(UC_ULTIMATE_USER,$uuderatio_account);
 	demotion(UC_EXTREME_USER,$exuderatio_account);
 	demotion(UC_VETERAN_USER,$vuderatio_account);

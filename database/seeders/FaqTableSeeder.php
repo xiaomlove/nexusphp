@@ -462,7 +462,7 @@ NexusPHP的代码是根据TBSource的源码改写的。TBDev网站，Tracker源�
 <tr>
 <td class="embedded" valign="top">&nbsp; <b class="User_Name">其它</b></td>
 <td class="embedded">&nbsp;</td>
-<td class="embedded">用户使用魔力值兑换，或由管理员仔细斟酌后授权。</td>
+<td class="embedded">用户使用蝌蚪兑换，或由管理员仔细斟酌后授权。</td>
 </tr>
 <tr>
 <td class="embedded" valign="top">&nbsp; <b class="Retiree_Name">养老族(Retiree)</b></td>
@@ -1958,7 +1958,7 @@ NexusPHP的程式碼是根據TBSource的源碼改寫的。TBDev網站，Tracker�
 <tr>
 <td class="embedded" valign="top">&nbsp; <b class="User_Name">其他</b></td>
 <td class="embedded">&nbsp;</td>
-<td class="embedded">用戶使用魔力值兌換，或由管理員仔細斟酌后授權。</td>
+<td class="embedded">用戶使用蝌蚪兌換，或由管理員仔細斟酌后授權。</td>
 </tr>
 <tr>
 <td class="embedded" valign="top">&nbsp; <b class="Retiree_Name">養老族(Retiree)</b></td>

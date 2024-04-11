@@ -242,17 +242,17 @@ JS;
 \Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
 \Nexus\Nexus::js('js/ptgen.js', 'footer', true);
 $customFieldJs = <<<JS
-jQuery("#compose").on("change", "select[name=type]", function () {
-    let _this = jQuery(this);
-    let mode = _this.attr("data-mode");
-    let value = _this.val();
-    console.log(mode)
-    jQuery("tr[relation]").hide();
-    if (value > 0) {
-        jQuery("tr[relation=mode_" + mode +"]").show();
-    }
-})
-jQuery("tr[relation]").hide();
+//jQuery("#compose").on("change", "select[name=type]", function () {
+    //let _this = jQuery(this);
+    //let mode = _this.attr("data-mode");
+    //let value = _this.val();
+    //console.log(mode)
+    //jQuery("tr[relation]").hide();
+    //if (value > 0) {
+    //    jQuery("tr[relation=mode_" + mode +"]").show();
+    //}
+//})
+//jQuery("tr[relation]").hide();
 JS;
 \Nexus\Nexus::js($customFieldJs, 'footer', false);
 stdfoot();

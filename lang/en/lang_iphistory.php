@@ -10,6 +10,7 @@ $lang_iphistory = array
 	'col_last_access' => "Last access",
 	'col_ip' => "IP",
 	'col_hostname' => "Hostname",
+    'col_location' => "Location",
 	'text_not_available' => "N/A",
 	'text_duplicate' => "Dupe",
 );

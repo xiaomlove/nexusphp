@@ -1,54 +1,80 @@
 img.c_movies
 {
-width:45px;
-height:46px;
+background-image: url(icons/电影.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
 background-position: 0 0;
 }
 img.c_doc
 {
-width:45px;
-height:46px;
-background-position: -45px 0;
+background-image: url(icons/纪录片.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: -50px 0;
 }
 img.c_anime
 {
-width:45px;
-height:46px;
-background-position: 0 -46px;
+background-image: url(icons/动漫.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: 0 -50px;
 }
 img.c_tvseries
 {
-width:45px;
-height:46px;
-background-position: -45px -46px;
+background-image: url(icons/电视剧.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: -50px -50px;
 }
 img.c_tvshows
 {
-width:45px;
-height:46px;
-background-position: 0 -92px;
+background-image: url(icons/综艺.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: 0 -100px;
 }
 img.c_mv
 {
-width:45px;
-height:46px;
-background-position: -45px -92px;
+background-image: url(icons/MV.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: -50px -100px;
 }
 img.c_sports
 {
-width:45px;
-height:46px;
-background-position: 0 -138px;
+background-image: url(icons/体育.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: 0 -150px;
 }
 img.c_misc
 {
-width:45px;
-height:46px;
-background-position: -45px -138px;
+background-image: url(icons/其他.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: -50px -150px;
 }
 img.c_hqaudio
 {
-width:45px;
-height:46px;
-background-position: 0 -184px;
+background-image: url(icons/音乐.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: 0 -200px;
+}
+img.c_playlet
+{
+background-image: url(icons/短剧.png) !important;
+background-size: cover;
+width:50px;
+height:50px;
+background-position: -50px -200px;
 }

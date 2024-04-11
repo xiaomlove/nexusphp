@@ -82,28 +82,40 @@ class CalculateUserSeedBonus implements ShouldQueue
             $uid = $userInfo['id'];
             $isDonor = is_donor($userInfo);
             $seedBonusResult = calculate_seed_bonus($uid);
+            /*
+            $base_bonus = $valid_g; //基础魔力
+            $valid_g = $valid_g / $torrent_k1; //有效保种体积
+            $seed_points = $valid_g * $B; //做种积分
+            $seed_bonus = $A * $B; //获得魔力值
+            $result = compact(
+                'base_bonus', 'seed_points','seed_bonus', 'A', 'B', 'count', 'size', 'last_action',
+                'buff_bonus', 'valid_g', 'all_g'
+            $result['donor_times'] = $donortimes_bonus;
+            ); */
             $bonusLog = "[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_USER], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
             $all_bonus = $seedBonusResult['seed_bonus'];
-            $bonusLog .= ", all_bonus: $all_bonus";
+            
+            $bonusLog .= ", calculation:".json_encode($seedBonusResult);
             if ($isDonor) {
-                $all_bonus = $all_bonus * $donortimes_bonus;
+                $all_bonus += $seedBonusResult['donor_bonus'];
                 $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
             }
+            /*
             if ($officialAdditionFactor > 0) {
                 $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
                 $all_bonus += $officialAddition;
                 $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
             }
+            if ($seedBonusResult['medal_additional_factor'] > 0) {
+                $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'];
+                $all_bonus += $medalAddition;
+                $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
+            }*/
             if ($haremAdditionFactor > 0) {
                 $haremBonus = calculate_harem_addition($uid);
                 $haremAddition =  $haremBonus * $haremAdditionFactor;
                 $all_bonus += $haremAddition;
                 $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
-            }
-            if ($seedBonusResult['medal_additional_factor'] > 0) {
-                $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'];
-                $all_bonus += $medalAddition;
-                $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
             }
             $dividend = 3600 / $autoclean_interval_one;
             $all_bonus = $all_bonus / $dividend;

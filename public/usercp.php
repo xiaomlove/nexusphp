@@ -20,6 +20,7 @@ function usercpmenu ($selected = "home") {
 	print ("<li" . ($selected == "tracker" ? " class=selected" : "") . "><a href=\"?action=tracker\">".$lang_usercp['text_tracker_settings']."</a></li>");
 	print ("<li" . ($selected == "forum" ? " class=selected" : "") . "><a href=\"?action=forum\">".$lang_usercp['text_forum_settings']."</a></li>");
 	print ("<li" . ($selected == "security" ? " class=selected" : "") . "><a href=\"?action=security\">".$lang_usercp['text_security_settings']."</a></li>");
+	print ("<li" . ($selected == "security" ? " class=selected" : "") . "><a href=\"?action=telegram\">".'Telegram'."</a></li>");
 	print ("</ul></div>");
 	end_main_frame();
 }

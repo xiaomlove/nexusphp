@@ -97,7 +97,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'downloaded_human' => '下载量',
         'share_ratio' => '分享率',
 //        'seed_time' => '做种时间',
-        'bonus' => '魔力值',
+        'bonus' => '蝌蚪',
         'seed_points' => '做种积分',
         'invites' => '邀请',
     ];

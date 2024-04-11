@@ -914,6 +914,11 @@ if ($tagId > 0) {
     $tagFilter = " inner join torrent_tags on torrents.id = torrent_tags.torrent_id and torrent_tags.tag_id = $tagId ";
     $addparam .= "tag_id={$tagId}&";
 }
+/*
+$approval_status=isset($_GET['approval_status'])?0:1;
+if ($approval_status==0){
+	$where .= ($where ? " AND " : "") . "approval_status=0";
+}*/
 if ($allsec == 1 || $enablespecial != 'yes')
 {
 	if ($where != "")

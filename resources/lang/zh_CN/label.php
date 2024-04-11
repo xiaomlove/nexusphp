@@ -115,7 +115,7 @@ return [
         'uploaded' => '上传量',
         'downloaded' => '下载量',
         'invites' => '邀请',
-        'seedbonus' => '魔力',
+        'seedbonus' => '蝌蚪',
         'attendance_card' => '补签卡',
         'class' => '等级',
         'status' => '状态',

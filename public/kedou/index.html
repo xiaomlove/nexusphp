@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <meta charset="utf-8" />
+        <title>青蛙 - 蝌蚪兑换</title>
+        <link type="text/css" rel="stylesheet" href="./styles/fontawesome.css" />
+        <style>
+            body{
+                margin:0;
+                padding: 0;
+                background-color: #7cd8e4;
+                width:100%;
+                height: 100%;
+            }
+            .nav{
+                position: absolute;
+                top:0;
+                left:0;
+                right: 0;
+                height: 60px;
+                padding-left: 20px;
+                padding-top: 30px;
+                background-color: rgba(255,255,255,0);
+            }
+            .nav>a{
+                border-radius: 6px 0 0 6px;
+                border:1px solid #f45d61;
+                color:#f45d61;
+                font-size: 20px;
+                text-decoration: none;
+                outline: none;
+                padding:10px 20px;
+                user-select: none;
+            }
+            .nav>span{
+                background-color: #f45d61;
+                border:1px solid #f45d61;
+                color:#fff;
+                padding:10px 20px;
+                font-size: 20px;
+                border-radius: 0 6px 6px 0;
+                user-select: none;
+            }
+            #bonus{
+                position: absolute;
+                right: 100px;
+                top:10px;
+                height: 50px;
+                line-height: 50px;
+                font-size: 20px;
+                color: #fdda00;
+                border-radius: 30px;
+                user-select: none;
+                z-index: 999999;
+            }
+            #body{
+                width: calc(100% - 100px);
+                box-shadow: 0 0 10px #CCC;
+                padding: 0px 20px 20px 20px;
+                border-radius: 20px;
+                min-height: 100px;
+                margin: 20px auto;
+                position: absolute;
+                top:80px;
+                background-color: #FFF;
+                left:0;
+                text-align: center;
+                right: 0;
+            }
+            button{
+                outline: 0;
+                border: 2px solid #7cd8e4;
+                border-radius: 30px;
+                height: 50px;
+                padding: 0 20px;
+                font-size: 14px;
+                font-weight: 600;
+                color:#444;
+                background-color: #FFF;
+                transition: all .3s;
+            }
+            button:hover{
+                background-color: #7cd8e4;
+                color: #FFF;
+            }
+        </style>
+    <body>
+        <div class="nav">
+            <a href="https://qingwa.pro">青蛙</a><span>蝌蚪兑换</span>
+            <div id='bonus' class="fas fa-coins">&nbsp;&nbsp;100</div>
+        </div>
+        <div id="body">
+            <h2>魔力兑换蝌蚪系统将在4.25正式关闭</h2>
+            <h2>魔力兑换蝌蚪系统将在4.25正式关闭</h2>
+            <h2>魔力兑换蝌蚪系统将在4.25正式关闭</h2>
+            <h2>请尽快将魔力值兑换为蝌蚪</h2>
+            <p>兑换公式10000魔力值=1蝌蚪</p>
+            <p>您现有<span id="a"></span>魔力值，可以兑换<span id="b"></span>蝌蚪。</p>
+            <button id="kedou">全部兑换</button>
+        </div>
+        <script text="text/javascript" src="./scripts/ajax.js"></script>
+        <script text="text/javascript" src="./scripts/new_alert.js"></script>
+        <script text="text/javascript">            
+            window.onload=()=>{
+                let a=get("bouns.php");
+                let b=(parseFloat(a)/10000).toFixed(1).toString();
+                document.getElementById("bonus").innerHTML=a;
+                document.getElementById("a").innerHTML=a;
+                document.getElementById("b").innerHTML=b;
+            }
+            document.getElementById('kedou').onclick=()=>{
+                newAlert(0,get("kedou.php"));
+            }
+        </script>
+    </body>
+</html>
