@@ -349,27 +349,12 @@ class ExamRepository extends BaseRepository
             'exam_id' => $exam->id,
         ];
         if (empty($begin)) {
-            if (!empty($exam->begin)) {
-                $begin = $exam->begin;
-                $logPrefix .= ", begin from exam->begin: $begin";
-            } else {
-                $begin = now();
-                $logPrefix .= ", begin from now: $begin";
-            }
+            $begin = $exam->begin_for_user;
         } else {
             $begin = Carbon::parse($begin);
         }
         if (empty($end)) {
-            if (!empty($exam->end)) {
-                $end = $exam->end;
-                $logPrefix .= ", end from exam->end: $end";
-            } elseif ($exam->duration > 0) {
-                $duration = $exam->duration;
-                $end = $begin->clone()->addDays($duration)->toDateTimeString();
-                $logPrefix .= ", end from begin + duration($duration): $end";
-            } else {
-                throw new \RuntimeException("No specific end or duration");
-            }
+            $end = $exam->end_for_user;
         } else {
             $end = Carbon::parse($end);
         }
@@ -1018,8 +1003,8 @@ class ExamRepository extends BaseRepository
         $size = 1000;
         $minId = 0;
         $result = 0;
-        $begin = $exam->begin;
-        $end = $exam->end;
+        $begin = $exam->begin_for_user;
+        $end = $exam->end_for_user;
         while (true) {
             $logPrefix = sprintf('[%s], exam: %s, size: %s', __FUNCTION__, $exam->id , $size);
             $users = (clone $baseQuery)->where("$userTable.id", ">", $minId)->limit($size)->get();

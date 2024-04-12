@@ -164,14 +164,14 @@ class Exam extends NexusModel
         return implode("<br/>", $arr);
     }
 
-    public function begin(): Attribute
+    protected function beginForUser(): Attribute
     {
         return new Attribute(
             get: fn ($value) => $value ? Carbon::parse($value) : Carbon::now()
         );
     }
 
-    public function end(): Attribute
+    protected function endForUser(): Attribute
     {
         return new Attribute(
             get: function ($value, $attributes) {
@@ -180,8 +180,8 @@ class Exam extends NexusModel
                 }
                 if (!empty($attributes['duration'])) {
                     /** @var Carbon $begin */
-                    $begin = $this->begin;
-                    return $begin->addDays($attributes['duration']);
+                    $begin = $this->begin_for_user;
+                    return $begin->clone()->addDays($attributes['duration']);
                 }
                 throw new \RuntimeException("No specific end or duration");
             }
