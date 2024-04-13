@@ -9,7 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Exam extends NexusModel
 {
-    protected $fillable = ['name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes', 'priority'];
+    protected $fillable = [
+        'name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes', 'priority',
+        'recurring',
+    ];
 
     public $timestamps = true;
 
@@ -62,6 +65,9 @@ class Exam extends NexusModel
         self::FILTER_USER_REGISTER_DAYS_RANGE => ['name' => 'User register days range'],
     ];
 
+    const RECURRING_WEEKLY = "Weekly";
+    const RECURRING_MONTHLY = "Monthly";
+
     protected static function booted()
     {
         static::saving(function (Model $model) {
@@ -82,6 +88,19 @@ class Exam extends NexusModel
             return $keyValues;
         }
         return $result;
+    }
+
+    public static function listRecurringOptions(): array
+    {
+        return [
+            self::RECURRING_WEEKLY => nexus_trans("exam.recurring_weekly"),
+            self::RECURRING_MONTHLY => nexus_trans("exam.recurring_monthly"),
+        ];
+    }
+    protected function getRecurringTextAttribute(): string
+    {
+        $options = self::listRecurringOptions();
+        return $options[$this->recurring] ?? '';
     }
 
     public function getStatusTextAttribute(): string
@@ -164,28 +183,51 @@ class Exam extends NexusModel
         return implode("<br/>", $arr);
     }
 
-    protected function beginForUser(): Attribute
+    public function getBeginForUser(): Carbon
     {
-        return new Attribute(
-            get: fn ($value) => $value ? Carbon::parse($value) : Carbon::now()
-        );
+        if (!empty($this->begin)) {
+            return Carbon::parse($this->begin);
+        }
+        if (!empty($this->recurring)) {
+            return $this->getRecurringBegin(Carbon::now());
+        }
+        return Carbon::now();
     }
 
-    protected function endForUser(): Attribute
+    public function getEndForUser(): Carbon
     {
-        return new Attribute(
-            get: function ($value, $attributes) {
-                if ($value) {
-                    return Carbon::parse($value);
-                }
-                if (!empty($attributes['duration'])) {
-                    /** @var Carbon $begin */
-                    $begin = $this->begin_for_user;
-                    return $begin->clone()->addDays($attributes['duration']);
-                }
-                throw new \RuntimeException("No specific end or duration");
-            }
-        );
+        if (!empty($this->end)) {
+            return Carbon::parse($this->end);
+        }
+        if (!empty($this->duration)) {
+            return $this->getBeginForUser()->clone()->addDays($this->duration);
+        }
+        if (!empty($this->recurring)) {
+            return $this->getRecurringEnd(Carbon::now());
+        }
+        throw new \RuntimeException(nexus_trans("exam.time_condition_invalid"));
+    }
+
+    public function getRecurringBegin(Carbon $time): Carbon
+    {
+        $recurring = $this->recurring;
+        if ($recurring == self::RECURRING_WEEKLY) {
+            return $time->startOfWeek();
+        } elseif ($recurring == self::RECURRING_MONTHLY) {
+            return $time->startOfMonth();
+        }
+        throw new \RuntimeException("Invalid recurring: $recurring");
+    }
+
+    public function getRecurringEnd(Carbon $time): Carbon
+    {
+        $recurring = $this->recurring;
+        if ($recurring == self::RECURRING_WEEKLY) {
+            return $time->endOfWeek();
+        } elseif ($recurring == self::RECURRING_MONTHLY) {
+            return $time->endOfMonth();
+        }
+        throw new \RuntimeException("Invalid recurring: $recurring");
     }
 
 }

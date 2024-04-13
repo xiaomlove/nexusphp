@@ -91,6 +91,12 @@ class ExamResource extends Resource
                         ->columnSpan(['sm' => 2])
                         ->label(__('label.duration'))
                         ->helperText(__('label.exam.duration_help')),
+                    Forms\Components\Select::make('recurring')
+                        ->options(Exam::listRecurringOptions())
+                        ->label(__('exam.recurring'))
+                        ->helperText(__('exam.recurring_help'))
+                        ->columnSpan(['sm' => 2])
+                    ,
                 ])->columns(2),
 
                 Forms\Components\Section::make(__('label.exam.section_target_user'))->schema([
@@ -122,6 +128,7 @@ class ExamResource extends Resource
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin')),
                 Tables\Columns\TextColumn::make('end')->label(__('label.end')),
                 Tables\Columns\TextColumn::make('durationText')->label(__('label.duration')),
+                Tables\Columns\TextColumn::make('recurringText')->label(__('exam.recurring')),
                 Tables\Columns\TextColumn::make('filterFormatted')->label(__('label.exam.filter_formatted'))->html(),
                 Tables\Columns\BooleanColumn::make('is_discovered')->label(__('label.exam.is_discovered')),
                 Tables\Columns\TextColumn::make('priority')->label(__('label.priority')),
