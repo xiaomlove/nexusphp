@@ -28,4 +28,15 @@ return [
     'checkout_not_pass_message_content' => 'You did not complete the exam: :exam_name in time(:begin ~ :end), and your account has be banned!',
     'ban_log_reason' => 'Not complete exam: :exam_name in time(:begin ~ :end)',
     'ban_user_modcomment' => 'Due to not complete exam: :exam_name(:begin ~ :end), ban by system.',
+    'admin' => [
+        'list' => [
+            'page_title' => 'Exam List'
+        ]
+    ],
+    'recurring' => 'recurring',
+    'recurring_weekly' => 'once a week',
+    'recurring_monthly' => 'once a month',
+    'recurring_help' => 'If specified as periodic, the appraisal start time is the start time of the current cycle, and the end time is the end time of the current cycle, which is said to be the natural week/month. At the end of each cycle, if the user still meets the screening criteria, the user will be automatically assigned to the next cycle.' ,
+
+    'time_condition_invalid' => 'The time parameter does not make sense, there are and only one of three items: start time + end time / duration / recurring',
 ];
