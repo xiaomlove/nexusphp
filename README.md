@@ -59,7 +59,7 @@ docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:late
 ## AD-服务器推荐
 |服务商| 推广地址 |优惠码|
 |---|---|---|
-|![七七云](https://www.vps77.com/templates/logo.png)   |https://www.vps77.com/aff.php?aff=167&gid=1|xiaomlove|
+|[七七云](https://www.vps77.com/aff.php?aff=167&gid=1)   |https://www.vps77.com/aff.php?aff=167&gid=1|xiaomlove|
 
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
