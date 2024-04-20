@@ -43,6 +43,7 @@
 - PHP: 8.0|8.1|8.2，必须扩展：bcmath, ctype, curl, fileinfo, json, mbstring, openssl, pdo_mysql, tokenizer, xml, mysqli, gd, redis, pcntl, sockets, posix, gmp, zend opcache
 - Mysql: 5.7 最新版或以上版本
 - Redis：2.6.12 或以上版本
+- 其他：supervisor, rsync
 
 ## 快速开始
 安装 docker。  
@@ -54,6 +55,11 @@ docker pull xiaomlove/nexusphp:latest
 docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:latest
 ```
 **生产环境建议参考文档实机安装。**
+
+## AD-服务器推荐
+|服务商| 推广地址 |优惠码|
+|---|---|---|
+|![七七云](https://www.vps77.com/templates/logo.png)   |https://www.vps77.com/aff.php?aff=167&gid=1|xiaomlove|
 
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
