@@ -1108,6 +1108,7 @@ class ExamRepository extends BaseRepository
                     $msgTransKey = 'exam.checkout_pass_message_content';
                 } else {
                     do_log("$currentLogPrefix, [will be banned]");
+                    clear_user_cache($examUser->user->id, $examUser->user->passkey);
                     $subjectTransKey = 'exam.checkout_not_pass_message_subject';
                     $msgTransKey = 'exam.checkout_not_pass_message_content';
                     //ban user
