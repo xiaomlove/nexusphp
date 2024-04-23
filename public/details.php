@@ -161,6 +161,7 @@ if (!$row) {
             $taxonomyRendered .= sprintf('&nbsp;&nbsp;&nbsp;<b>%s: </b>%s', $item['label'], $item['value']);
         }
         tr($lang_details['row_basic_info'], $size_info.$type_info.$taxonomyRendered, 1);
+        do_action('IyuuPushTorren_torrent', $id);
 		$actions = [];
         if ($CURUSER["downloadpos"] != "no") {
             $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $CURUSER['id'])->where('torrent_id', $id)->exists();

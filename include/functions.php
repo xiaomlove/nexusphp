@@ -3119,6 +3119,7 @@ function deletetorrent($id, $notify = false) {
         ->get(['id', 'pieces_hash'])
         ->KeyBy("id")
     ;
+    do_action('IyuuPushTorren_Deletehhash', $id);
     $torrentRep = new \App\Repositories\TorrentRepository();
 	$idStr = implode(', ', $idArr ?: [0]);
 	$torrent_dir = get_setting('main.torrent_dir');

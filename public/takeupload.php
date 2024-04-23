@@ -423,6 +423,7 @@ if (!empty($_POST['custom_fields'][$catmod])) {
  * @since v1.6
  */
 $tagIdArr = array_filter($_POST['tags'][$catmod] ?? []);
+do_action('IyuuPushTorren_addhash',$tagIdArr,$id);
 if (!empty($tagIdArr)) {
     insert_torrent_tags($id, $tagIdArr);
 }
