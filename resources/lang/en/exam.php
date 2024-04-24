@@ -34,6 +34,7 @@ return [
         ]
     ],
     'recurring' => 'recurring',
+    'recurring_daily' => 'once a day',
     'recurring_weekly' => 'once a week',
     'recurring_monthly' => 'once a month',
     'recurring_help' => 'If specified as periodic, the appraisal start time is the start time of the current cycle, and the end time is the end time of the current cycle, which is said to be the natural week/month. At the end of each cycle, if the user still meets the screening criteria, the user will be automatically assigned to the next cycle.' ,

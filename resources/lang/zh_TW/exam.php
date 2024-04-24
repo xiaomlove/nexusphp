@@ -34,6 +34,7 @@ return [
         ]
     ],
     'recurring' => '周期性',
+    'recurring_daily' => '每天一次',
     'recurring_weekly' => '每周一次',
     'recurring_monthly' => '每月一次',
     'recurring_help' => '如果指定為周期性，考核開始時間為當前周期的開始時間，結束時間為當前周期的結束時間，這裏說的都是自然周/月。每個周期結束後，如果用戶仍然滿足篩選條件，會自動為用戶分配下個周期的任務。',

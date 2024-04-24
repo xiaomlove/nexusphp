@@ -65,6 +65,7 @@ class Exam extends NexusModel
         self::FILTER_USER_REGISTER_DAYS_RANGE => ['name' => 'User register days range'],
     ];
 
+    const RECURRING_DAILY = "Daily";
     const RECURRING_WEEKLY = "Weekly";
     const RECURRING_MONTHLY = "Monthly";
 
@@ -93,6 +94,7 @@ class Exam extends NexusModel
     public static function listRecurringOptions(): array
     {
         return [
+            self::RECURRING_DAILY => nexus_trans("exam.recurring_daily"),
             self::RECURRING_WEEKLY => nexus_trans("exam.recurring_weekly"),
             self::RECURRING_MONTHLY => nexus_trans("exam.recurring_monthly"),
         ];
@@ -215,6 +217,8 @@ class Exam extends NexusModel
             return $time->startOfWeek();
         } elseif ($recurring == self::RECURRING_MONTHLY) {
             return $time->startOfMonth();
+        } elseif ($recurring == self::RECURRING_DAILY) {
+            return $time->startOfDay();
         }
         throw new \RuntimeException("Invalid recurring: $recurring");
     }
@@ -226,6 +230,8 @@ class Exam extends NexusModel
             return $time->endOfWeek();
         } elseif ($recurring == self::RECURRING_MONTHLY) {
             return $time->endOfMonth();
+        } elseif ($recurring == self::RECURRING_DAILY) {
+            return $time->endOfDay();
         }
         throw new \RuntimeException("Invalid recurring: $recurring");
     }
