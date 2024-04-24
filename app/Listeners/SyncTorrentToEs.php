@@ -31,10 +31,10 @@ class SyncTorrentToEs implements ShouldQueue
      */
     public function handle($event)
     {
-        $id = $event->torrentId;
+        $id = $event->model?->id ?? 0;
         $searchRep = new SearchRepository();
         $result = $searchRep->updateTorrent($id);
-        do_log("result: " . var_export($result, true));
+        do_log(sprintf("updateTorrent: %s result: %s", $id, var_export($result, true)));
 
     }
 

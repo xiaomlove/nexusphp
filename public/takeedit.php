@@ -232,7 +232,7 @@ if (user_can('torrent-set-price') && $paidTorrentEnabled) {
 $sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
 do_log("[UPDATE_TORRENT]: $sql");
 $affectedRows = sql_query($sql) or sqlerr(__FILE__, __LINE__);
-
+fire_event("torrent_updated", $id);
 $dateTimeStringNow = date("Y-m-d H:i:s");
 
 /**

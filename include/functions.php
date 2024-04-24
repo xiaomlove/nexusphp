@@ -3133,7 +3133,6 @@ function deletetorrent($id, $notify = false) {
         if ($torrentInfo->has($_id)) {
             $torrentRep->delPiecesHashCache($torrentInfo->get($_id)->pieces_hash);
         }
-        do_action("torrent_delete", $_id);
         do_log("delete torrent: $_id", "error");
         unlink(getFullDirectory("$torrent_dir/$_id.torrent"));
         \App\Models\TorrentOperationLog::add([
@@ -3145,6 +3144,10 @@ function deletetorrent($id, $notify = false) {
     }
     $meiliSearchRep = new \App\Repositories\MeiliSearchRepository();
     $meiliSearchRep->deleteDocuments($idArr);
+    if (is_int($id)) {
+        do_action("torrent_delete", $id);
+        fire_event("torrent_deleted", $id);
+    }
 }
 
 function pager($rpp, $count, $href, $opts = array(), $pagename = "page") {

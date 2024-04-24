@@ -27,7 +27,7 @@ class FetchTorrentImdb implements ShouldQueue
      */
     public function handle($event)
     {
-        $torrentId = $event->torrentId;
+        $torrentId = $event->model?->id ?? 0;
         $torrentRep = new TorrentRepository();
         $torrentRep->fetchImdb($torrentId);
         do_log("fetchImdb for torrent: $torrentId done!");

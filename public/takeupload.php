@@ -448,7 +448,7 @@ $meiliSearch = new \App\Repositories\MeiliSearchRepository();
 $meiliSearch->doImportFromDatabase($id);
 
 //trigger event
-executeCommand("event:fire --name=torrent_created --id=$id", "string", true, false);
+fire_event("torrent_created", $id);
 
 //===notify people who voted on offer thanks CoLdFuSiOn :)
 if ($is_offer)

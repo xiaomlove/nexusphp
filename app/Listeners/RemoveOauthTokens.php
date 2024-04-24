@@ -27,7 +27,7 @@ class RemoveOauthTokens implements ShouldQueue
      */
     public function handle($event)
     {
-        $uid = $event->id;
+        $uid = $event->model?->id ?? 0;
         $modelNames = [
             Passport::$authCodeModel,
             Passport::$tokenModel,

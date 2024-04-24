@@ -7,6 +7,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -14,16 +15,16 @@ class NewsCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public int $id;
+    public ?Model $model = null;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(int $id)
+    public function __construct(Model $model)
     {
-        $this->id = $id;
+        $this->model = $model;
     }
 
     /**
