@@ -1237,7 +1237,14 @@ function get_snatch_info($torrentId, $userId)
     return mysql_fetch_assoc(sql_query(sprintf('select * from snatched where torrentid = %s and userid = %s order by id desc limit 1', $torrentId, $userId)));
 }
 
-function fire_event(string $name, int $id): void
+function fire_event(string $name, \Illuminate\Database\Eloquent\Model $model, \Illuminate\Database\Eloquent\Model $oldModel = null): void
 {
-    executeCommand("event:fire --name=$name --id=$id", "string", true, false);
+    $idKey = \Illuminate\Support\Str::random();
+    $idKeyOld = "";
+    \Nexus\Database\NexusDB::cache_put($idKey, serialize($model));
+    if ($oldModel) {
+        $idKeyOld = \Illuminate\Support\Str::random();
+        \Nexus\Database\NexusDB::cache_put($idKeyOld, serialize($oldModel));
+    }
+    executeCommand("event:fire --name=$name --idKey=$idKey --idKeyOld=$idKeyOld", "string", true, false);
 }

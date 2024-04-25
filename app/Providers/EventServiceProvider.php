@@ -4,13 +4,16 @@ namespace App\Providers;
 
 use App\Events\SeedBoxRecordUpdated;
 use App\Events\TorrentCreated;
+use App\Events\TorrentDeleted;
 use App\Events\TorrentUpdated;
 use App\Events\UserDestroyed;
 use App\Events\UserDisabled;
+use App\Listeners\DeductUserBonusWhenTorrentDeleted;
 use App\Listeners\FetchTorrentImdb;
 use App\Listeners\RemoveOauthTokens;
 use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SyncTorrentToEs;
+use App\Listeners\TestTorrentUpdated;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -27,14 +30,18 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        TorrentUpdated::class => [
-            SyncTorrentToEs::class,
-        ],
         SeedBoxRecordUpdated::class => [
             RemoveSeedBoxRecordCache::class,
         ],
+        TorrentUpdated::class => [
+            SyncTorrentToEs::class,
+            TestTorrentUpdated::class,
+        ],
         TorrentCreated::class => [
             FetchTorrentImdb::class,
+        ],
+        TorrentDeleted::class => [
+            DeductUserBonusWhenTorrentDeleted::class,
         ],
         UserDisabled::class => [
             RemoveOauthTokens::class,

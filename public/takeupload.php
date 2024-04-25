@@ -448,7 +448,7 @@ $meiliSearch = new \App\Repositories\MeiliSearchRepository();
 $meiliSearch->doImportFromDatabase($id);
 
 //trigger event
-fire_event("torrent_created", $id);
+fire_event("torrent_created", \App\Models\Torrent::query()->find($id));
 
 //===notify people who voted on offer thanks CoLdFuSiOn :)
 if ($is_offer)

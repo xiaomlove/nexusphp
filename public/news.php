@@ -51,7 +51,7 @@ if ($action == 'add')
 	if (mysql_affected_rows() != 1) {
         stderr($lang_news['std_error'], $lang_news['std_something_weird_happened']);
     }
-	fire_event("news_created", mysql_insert_id());
+	fire_event("news_created", \App\Models\News::query()->find(mysql_insert_id()));
 	header("Location: " . get_protocol_prefix() . "$BASEURL/index.php");
 }
 

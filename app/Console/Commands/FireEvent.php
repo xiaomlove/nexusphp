@@ -14,6 +14,8 @@ use App\Models\Torrent;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
+use Nexus\Database\NexusDB;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class FireEvent extends Command
 {
@@ -22,14 +24,14 @@ class FireEvent extends Command
      *
      * @var string
      */
-    protected $signature = 'event:fire {--name=} {--id=}';
+    protected $signature = 'event:fire {--name=} {--idKey=} {--idKeyOld=""}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Fire a event, options: --name, --id';
+    protected $description = 'Fire a event, options: --name, --idKey --idKeyOld';
 
     protected array $eventMaps = [
         "torrent_created" => ['event' => TorrentCreated::class, 'model' => Torrent::class],
@@ -49,18 +51,32 @@ class FireEvent extends Command
     public function handle()
     {
         $name = $this->option('name');
-        $id = $this->option('id');
-        $log = "FireEvent, name: $name, id: $id";
+        $idKey = $this->option('idKey');
+        $idKeyOld = $this->option('idKeyOld');
+        $log = "FireEvent, name: $name, idKey: $idKey, idKeyOld: $idKeyOld";
         if (isset($this->eventMaps[$name])) {
             $eventName = $this->eventMaps[$name]['event'];
-            $modelName = $this->eventMaps[$name]['model'];
-            /** @var Model $model */
-            $model = new $modelName();
-            $result = call_user_func([$eventName, "dispatch"], $model::query()->find($id));
-            $this->info("$log, success call dispatch, result: " . var_export($result, true));
+            $model = unserialize(NexusDB::cache_get($idKey));
+            if ($model instanceof Model) {
+                $params = [$model];
+                if ($idKeyOld) {
+                    $modelOld = unserialize(NexusDB::cache_get($idKeyOld));
+                    if ($modelOld instanceof Model) {
+                        $params[] = $modelOld;
+                    } else {
+                        $log .= ", invalid idKeyOld";
+                    }
+                }
+                $result = call_user_func_array([$eventName, "dispatch"], $params);
+                $log .= ", success call dispatch, result: " . var_export($result, true);
+            } else {
+                $log .= ", invalid argument to call, it should be instance of: " . Model::class;
+            }
         } else {
-            $this->error("$log, no event match this name");
+            $log .= ", no event match this name";
         }
-        return Command::SUCCESS;
+        $this->info($log);
+        do_log($log);
+        return CommandAlias::SUCCESS;
     }
 }

@@ -30,7 +30,7 @@ $row = mysql_fetch_array($res);
 $torrentAddedTimeString = $row['added'];
 if (!$row)
 	die();
-
+$torrentOld = \App\Models\Torrent::query()->find($id);
 if ($CURUSER["id"] != $row["owner"] && !user_can('torrentmanage'))
 	bark($lang_takeedit['std_not_owner']);
 $oldcatmode = get_single_value("categories","mode","WHERE id=".sqlesc($row['category']));
@@ -232,7 +232,7 @@ if (user_can('torrent-set-price') && $paidTorrentEnabled) {
 $sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
 do_log("[UPDATE_TORRENT]: $sql");
 $affectedRows = sql_query($sql) or sqlerr(__FILE__, __LINE__);
-fire_event("torrent_updated", $id);
+fire_event("torrent_updated", \App\Models\Torrent::query()->find($id), $torrentOld);
 $dateTimeStringNow = date("Y-m-d H:i:s");
 
 /**

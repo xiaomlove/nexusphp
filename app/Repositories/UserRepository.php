@@ -20,6 +20,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 
 class UserRepository extends BaseRepository
@@ -199,7 +200,7 @@ class UserRepository extends BaseRepository
         });
         do_log("user: $uid, $modCommentText");
         $this->clearCache($targetUser);
-        fire_event("user_disabled", $uid);
+        fire_event("user_disabled", $targetUser);
         return true;
     }
 
@@ -226,7 +227,7 @@ class UserRepository extends BaseRepository
         $targetUser->updateWithModComment($update, $modCommentText);
         do_log("user: $uid, $modCommentText, update: " . nexus_json_encode($update));
         $this->clearCache($targetUser);
-        fire_event("user_enabled", $uid);
+        fire_event("user_enabled", $targetUser);
         return true;
     }
 
@@ -631,11 +632,10 @@ class UserRepository extends BaseRepository
         }
         if (is_int($id)) {
             $uidArr = Arr::wrap($id);
-            $users = User::query()->with('language')->whereIn('id', $uidArr)->get(['id', 'username', 'lang']);
         } else {
-            $users = $id;
-            $uidArr = $users->pluck('id')->toArray();
+            $uidArr = $id->pluck('id')->toArray();
         }
+        $users = User::query()->with('language')->whereIn('id', $uidArr)->get();
         if (empty($uidArr)) {
             return;
         }
@@ -668,7 +668,7 @@ class UserRepository extends BaseRepository
         UserBanLog::query()->insert($userBanLogs);
         if (is_int($id)) {
             do_action("user_delete", $id);
-            fire_event("user_destroyed", $id);
+            fire_event("user_destroyed", $users->first());
         }
         return true;
     }

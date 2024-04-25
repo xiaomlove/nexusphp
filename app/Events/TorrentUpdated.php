@@ -17,14 +17,17 @@ class TorrentUpdated
 
     public ?Model $model = null;
 
+    public ?Model $modelOld = null;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Model $model)
+    public function __construct(Model $model, Model $modelOld)
     {
         $this->model = $model;
+        $this->modelOld = $modelOld;
     }
 
     /**

@@ -3114,9 +3114,9 @@ function loggedinorreturn($mainpage = false) {
 
 function deletetorrent($id, $notify = false) {
     $idArr = is_array($id) ? $id : [$id];
-    $torrentInfo = \Nexus\Database\NexusDB::table("torrents")
+    $torrentInfo = \App\Models\Torrent::query()
         ->whereIn("id", $idArr)
-        ->get(['id', 'pieces_hash'])
+        ->get()
         ->KeyBy("id")
     ;
     $torrentRep = new \App\Repositories\TorrentRepository();
@@ -3146,7 +3146,7 @@ function deletetorrent($id, $notify = false) {
     $meiliSearchRep->deleteDocuments($idArr);
     if (is_int($id)) {
         do_action("torrent_delete", $id);
-        fire_event("torrent_deleted", $id);
+        fire_event("torrent_deleted", $torrentInfo->get($id));
     }
 }
 
