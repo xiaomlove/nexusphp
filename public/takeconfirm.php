@@ -2,6 +2,7 @@
 require_once("../include/bittorrent.php");
 dbconn();
 require_once(get_langfile_path());
+loggedinorreturn();
 $id =  isset($_POST['id']) ? intval($_POST['id']) : (isset($_GET['id']) ? intval($_GET['id']) : die());
 int_check($id,true);
 $email = unesc(htmlspecialchars(trim($_POST["email"])));
