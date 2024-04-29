@@ -21,6 +21,8 @@ $email = unesc(htmlspecialchars(trim($_POST["email"])));
 $email = safe_email($email);
 $preRegisterUsername = $_POST['pre_register_username'] ?? '';
 $isPreRegisterEmailAndUsername = get_setting("system.is_invite_pre_email_and_username") == "yes";
+if (strlen($preRegisterUsername) > 12)
+	bark($lang_takeinvite['std_username_too_long']);
 if (!$email)
     bark($lang_takeinvite['std_must_enter_email']);
 if (!check_email($email))

@@ -3,6 +3,7 @@
 $lang_takeinvite = array
 (
 	'head_invitation_failed' => "邀請失敗！",
+	'std_username_too_long' => "對不起，用戶名過長（至多12個字元）",
 	'std_must_enter_email' => "你必須輸入郵箱位址！",
 	'std_invalid_email_address' => "無效的郵箱地址！",
 	'std_must_enter_personal_message' => "請添加信件中的私人內容。",
