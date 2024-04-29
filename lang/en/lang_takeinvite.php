@@ -3,6 +3,7 @@
 $lang_takeinvite = array
 (
 	'head_invitation_failed' => "Invitation failed!",
+	'std_username_too_long' => "Sorry, the username is too long (up to 12 characters)",
 	'std_must_enter_email' => "You must enter an email address!",
 	'std_invalid_email_address' => "Invalid email address!",
 	'std_must_enter_personal_message' => "Please add a personal message.",
