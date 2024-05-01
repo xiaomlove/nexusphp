@@ -106,7 +106,7 @@ if ($showclientnotice)
 <table width="100%">
 <tr>
 <td class="embedded" style="text-align: center; padding: 5px;" width="50%">
-<a href="https://www.qbittorrent.org/download" target="_blank" title="<?php echo $lang_downloadnotice['title_download']?>qBittorrent"><img src="pic/qbittorrent.png" alt="qBittorrent"  width="128" height="128" /></a>
+<a href="https://www.fosshub.com/qBittorrent.html" target="_blank" title="<?php echo $lang_downloadnotice['title_download']?>qBittorrent"><img src="pic/qbittorrent.png" alt="qBittorrent"  width="128" height="128" /></a>
 </td>
 <td class="embedded" style="text-align: center; padding: 5px;" width="50%">
 <a href="https://transmissionbt.com/download/" target="_blank" title="<?php echo $lang_downloadnotice['title_download']?>Transmission"><img src="pic/transmission.png" alt="Transmission"  width="128" height="128" /></a>
@@ -114,7 +114,7 @@ if ($showclientnotice)
 </tr>
 <tr>
 <td class="embedded" style="text-align: center; padding: 5px;">
-<div class="big"><a href="https://www.qbittorrent.org/download" target="_blank" title="<?php echo $lang_downloadnotice['title_download']?>qBittorrent"><b>qBittorrent</b></a></div>
+<div class="big"><a href="https://www.fosshub.com/qBittorrent.html" target="_blank" title="<?php echo $lang_downloadnotice['title_download']?>qBittorrent"><b>qBittorrent</b></a></div>
 <div><?php echo $lang_downloadnotice['text_for']?>Windows, Linux, Mac OS</div>
 </td>
 <td class="embedded" style="text-align: center; padding: 5px;">
