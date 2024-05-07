@@ -1239,11 +1239,12 @@ function get_snatch_info($torrentId, $userId)
 
 function fire_event(string $name, \Illuminate\Database\Eloquent\Model $model, \Illuminate\Database\Eloquent\Model $oldModel = null): void
 {
-    $idKey = "fire_event:" . \Illuminate\Support\Str::random();
+    $prefix = "fire_event:";
+    $idKey = $prefix . \Illuminate\Support\Str::random();
     $idKeyOld = "";
     \Nexus\Database\NexusDB::cache_put($idKey, serialize($model), 3600*24*30);
     if ($oldModel) {
-        $idKeyOld = "fire_event:" . \Illuminate\Support\Str::random();
+        $idKeyOld = $prefix . \Illuminate\Support\Str::random();
         \Nexus\Database\NexusDB::cache_put($idKeyOld, serialize($oldModel), 3600*24*30);
     }
     executeCommand("event:fire --name=$name --idKey=$idKey --idKeyOld=$idKeyOld", "string", true, false);
