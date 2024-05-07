@@ -52,6 +52,7 @@ class SettingRepository extends BaseRepository
         do_log("sql: $sql, result: $result");
         NexusDB::cache_del("nexus_settings_in_laravel");
         NexusDB::cache_del("nexus_settings_in_nexus");
+        NexusDB::cache_del('setting_protected_forum');
         return $result;
     }
 

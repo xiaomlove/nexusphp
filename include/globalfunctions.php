@@ -1025,6 +1025,7 @@ function clear_setting_cache()
     do_log("clear_setting_cache");
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
     \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
+    \Nexus\Database\NexusDB::cache_del('setting_protected_forum');
     $channel = nexus_env("CHANNEL_NAME_SETTING");
     if (!empty($channel)) {
         \Nexus\Database\NexusDB::redis()->publish($channel, "update");
