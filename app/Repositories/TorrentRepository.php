@@ -668,6 +668,7 @@ class TorrentRepository extends BaseRepository
             'hr' => $hrStatus,
         ];
         $idArr = Arr::wrap($id);
+        do_log(sprintf("set torrent: %s hr: %s", implode(",", $idArr), $hrStatus));
         return Torrent::query()->whereIn('id', $idArr)->update($update);
     }
 

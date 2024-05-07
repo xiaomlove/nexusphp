@@ -285,7 +285,7 @@ class TorrentResource extends Resource
                 ])
                 ->icon('heroicon-o-sparkles')
                 ->action(function (Collection $records, array $data) {
-                    if (empty($data['hr'])) {
+                    if (!isset($data['hr'])) {
                         return;
                     }
                     $idArr = $records->pluck('id')->toArray();
