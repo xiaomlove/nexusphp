@@ -329,7 +329,13 @@ class ExamRepository extends BaseRepository
             return false;
         }
 
-        return true;
+        try {
+            $user->checkIsNormal();
+            return true;
+        } catch (\Throwable $throwable) {
+            do_log("$logPrefix, user is not normal: " . $throwable->getMessage());
+            return false;
+        }
     }
 
 
