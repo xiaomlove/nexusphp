@@ -1112,6 +1112,16 @@ class ExamRepository extends BaseRepository
                     do_log("$currentLogPrefix, [is_done]");
                     $subjectTransKey = 'exam.checkout_pass_message_subject';
                     $msgTransKey = 'exam.checkout_pass_message_content';
+                    if (!empty($exam->recurring) && $this->isExamMatchUser($exam, $examUser->user)) {
+                        $examUserToInsert[] = [
+                            'uid' => $examUser->user->id,
+                            'exam_id' => $exam->id,
+                            'begin' => $exam->getBeginForUser(),
+                            'end' => $exam->getEndForUser(),
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
+                    }
                 } else {
                     do_log("$currentLogPrefix, [will be banned]");
                     clear_user_cache($examUser->user->id, $examUser->user->passkey);
@@ -1149,16 +1159,6 @@ class ExamRepository extends BaseRepository
                     'subject' => $subject,
                     'msg' => $msg
                 ];
-                if (!empty($exam->recurring) && $this->isExamMatchUser($exam, $examUser->user)) {
-                    $examUserToInsert[] = [
-                        'uid' => $examUser->user->id,
-                        'exam_id' => $exam->id,
-                        'begin' => $exam->getBeginForUser(),
-                        'end' => $exam->getEndForUser(),
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
             }
             DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr, $examUserToInsert, $userBanLog, $userModcommentUpdate, $userTable, $logPrefix) {
                 ExamUser::query()->whereIn('id', $examUserIdArr)->update(['status' => ExamUser::STATUS_FINISHED]);
