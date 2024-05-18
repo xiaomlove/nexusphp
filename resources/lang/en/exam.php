@@ -37,7 +37,15 @@ return [
     'recurring_daily' => 'once a day',
     'recurring_weekly' => 'once a week',
     'recurring_monthly' => 'once a month',
-    'recurring_help' => 'If specified as periodic, the appraisal start time is the start time of the current cycle, and the end time is the end time of the current cycle, which is said to be the natural week/month. At the end of each cycle, if the user still meets the screening criteria, the user will be automatically assigned to the next cycle.' ,
+    'recurring_help' => 'If specified as periodic, the start time of the exam is the start time of the current cycle, and the end time is the end time of the current cycle, which are all natural days/weeks/months as stated here. If type is exam, at the end of each cycle, if the user still meets the screening criteria, the user will be automatically assigned an exam for the next cycle.' ,
 
     'time_condition_invalid' => 'The time parameter does not make sense, there are and only one of three items: start time + end time / duration / recurring',
+
+    'type_exam' => 'Exam',
+    'type_task' => 'Task',
+    'type' => 'Type',
+    'type_help' => 'Exam are regular exam and failing them will result in account banning. Tasks can be set to reward bonus or deduct bonus depending on whether they are completed or not',
+
+    'fail_deduct_bonus' => 'Deduct bonus for task failure',
+    'success_reward_bonus' => 'Reward bonus for task completion',
 ];

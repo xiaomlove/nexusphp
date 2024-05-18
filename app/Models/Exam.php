@@ -11,7 +11,7 @@ class Exam extends NexusModel
 {
     protected $fillable = [
         'name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes', 'priority',
-        'recurring',
+        'recurring', 'type', 'success_reward_bonus', 'fail_deduct_bonus'
     ];
 
     public $timestamps = true;
@@ -69,6 +69,9 @@ class Exam extends NexusModel
     const RECURRING_WEEKLY = "Weekly";
     const RECURRING_MONTHLY = "Monthly";
 
+    const TYPE_EXAM = 1;
+    const TYPE_TASK = 2;
+
     protected static function booted()
     {
         static::saving(function (Model $model) {
@@ -99,6 +102,21 @@ class Exam extends NexusModel
             self::RECURRING_MONTHLY => nexus_trans("exam.recurring_monthly"),
         ];
     }
+
+    public static function listTypeOptions(): array
+    {
+        return [
+            self::TYPE_EXAM => nexus_trans("exam.type_exam"),
+            self::TYPE_TASK => nexus_trans("exam.type_task"),
+        ];
+    }
+
+    public function getTypeTextAttribute()
+    {
+        return self::listTypeOptions()[$this->type] ?? "";
+    }
+
+
     protected function getRecurringTextAttribute(): string
     {
         $options = self::listRecurringOptions();

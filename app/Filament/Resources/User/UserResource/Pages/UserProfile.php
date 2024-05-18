@@ -4,6 +4,7 @@ namespace App\Filament\Resources\User\UserResource\Pages;
 
 use App\Filament\OptionsTrait;
 use App\Filament\Resources\User\UserResource;
+use App\Models\Exam;
 use App\Models\Invite;
 use App\Models\Medal;
 use App\Models\User;

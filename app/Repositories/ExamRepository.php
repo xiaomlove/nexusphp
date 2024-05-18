@@ -241,7 +241,7 @@ class ExamRepository extends BaseRepository
      * @param null $excludeId
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function listValid($excludeId = null, $isDiscovered = null)
+    public function listValid($excludeId = null, $isDiscovered = null, $type = null)
     {
         $now = Carbon::now();
         $query = Exam::query()
@@ -255,6 +255,9 @@ class ExamRepository extends BaseRepository
         if (!is_null($isDiscovered)) {
             $query->where('is_discovered', $isDiscovered);
         }
+        if (!is_null($type)) {
+            $query->where("type", $type);
+        }
         return $query->orderBy('priority', 'desc')->orderBy('id', 'asc')->get();
     }
 
@@ -266,18 +269,24 @@ class ExamRepository extends BaseRepository
      */
     public function listMatchExam($uid)
     {
-        $logPrefix = "uid: $uid";
-        $exams = $this->listValid();
-        if ($exams->isEmpty()) {
-            do_log("$logPrefix, no valid exam.");
-            return $exams;
-        }
-        $matched = $exams->filter(function (Exam $exam) use ($uid, $logPrefix) {
-            return $this->isExamMatchUser($exam, $uid);
-        });
-
-        return $matched;
+        $exams = $this->listValid(null, null, Exam::TYPE_EXAM);
+        return $this->filterForUser($exams, $uid);
     }
+
+    public function listMatchTask($uid)
+    {
+        $exams = $this->listValid(null, null, Exam::TYPE_TASK);
+        return $this->filterForUser($exams, $uid);
+    }
+
+    private function filterForUser(Collection $exams, $uid): Collection
+    {
+        $userInfo = User::query()->findOrFail($uid, User::$commonFields);
+        return $exams->filter(function (Exam $exam) use ($userInfo) {
+            return $this->isExamMatchUser($exam, $userInfo);
+        });
+    }
+
 
     private function isExamMatchUser(Exam $exam, $user): bool
     {
@@ -917,7 +926,7 @@ class ExamRepository extends BaseRepository
 
     public function cronjonAssign()
     {
-        $exams = $this->listValid(null, Exam::DISCOVERED_YES);
+        $exams = $this->listValid(null, Exam::DISCOVERED_YES, Exam::TYPE_EXAM);
         if ($exams->isEmpty()) {
             do_log("No valid and discovered exam.");
             return false;

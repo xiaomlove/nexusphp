@@ -8,7 +8,7 @@ return [
         'tags_list' => 'Tags',
         'agent_allows' => 'Agent Allows',
         'agent_denies' => 'Agent Denies',
-        'exams_list' => 'Exams',
+        'exams_list' => 'Exams & Tasks',
         'medals_list' => 'Medals',
         'settings' => 'Settings',
         'users_medals' => 'User medals',

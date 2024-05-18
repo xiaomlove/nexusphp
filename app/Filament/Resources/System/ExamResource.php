@@ -48,6 +48,22 @@ class ExamResource extends Resource
             ->schema([
                 Forms\Components\Section::make(__('label.exam.section_base_info'))->schema([
                     Forms\Components\TextInput::make('name')->required()->columnSpan(['sm' => 2])->label(__('label.name')),
+                    Forms\Components\Select::make('type')
+                        ->required()->columnSpan(['sm' => 2])
+                        ->label(__('exam.type'))
+                        ->options(Exam::listTypeOptions())
+                        ->helperText(__('exam.type_help'))
+                        ->reactive()
+                    ,
+                    Forms\Components\TextInput::make('success_reward_bonus')
+                        ->label(__('exam.success_reward_bonus'))
+                        ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
+                    ,
+                    Forms\Components\TextInput::make('fail_deduct_bonus')
+                        ->label(__('exam.fail_deduct_bonus'))
+                        ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
+                    ,
+
                     Forms\Components\Repeater::make('indexes')->schema([
                         Forms\Components\Select::make('index')
                             ->options(Exam::listIndex(true))
@@ -124,6 +140,7 @@ class ExamResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('name')->searchable()->label(__('label.name')),
+                Tables\Columns\TextColumn::make('typeText')->label(__('exam.type')),
                 Tables\Columns\TextColumn::make('indexFormatted')->label(__('label.exam.index_formatted'))->html(),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin')),
                 Tables\Columns\TextColumn::make('end')->label(__('label.end')),
@@ -136,6 +153,7 @@ class ExamResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('type')->options(Exam::listTypeOptions())->label(__("exam.type")),
                 Tables\Filters\SelectFilter::make('is_discovered')->options(self::IS_DISCOVERED_OPTIONS)->label(__("label.exam.is_discovered")),
                 Tables\Filters\SelectFilter::make('status')->options(self::getEnableDisableOptions())->label(__("label.status")),
             ])

@@ -8,7 +8,7 @@ return [
         'tags_list' => '標簽',
         'agent_allows' => '允許客戶端',
         'agent_denies' => '拒絕客戶端',
-        'exams_list' => '考核',
+        'exams_list' => '考核 & 任務',
         'medals_list' => '勛章',
         'settings' => '設置',
         'users_medals' => '用戶勛章',
