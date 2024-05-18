@@ -1,6 +1,6 @@
 <?php
 defined('VERSION_NUMBER') || define('VERSION_NUMBER', '1.8.12');
-defined('RELEASE_DATE') || define('RELEASE_DATE', '2024-05-08');
+defined('RELEASE_DATE') || define('RELEASE_DATE', '2024-05-10');
 defined('IN_TRACKER') || define('IN_TRACKER', false);
 defined('PROJECTNAME') || define("PROJECTNAME","NexusPHP");
 defined('NEXUSPHPURL') || define("NEXUSPHPURL","https://nexusphp.org");
