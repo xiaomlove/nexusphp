@@ -2,6 +2,14 @@
 require_once("../include/bittorrent.php");
 dbconn();
 require_once(get_langfile_path());
+loggedinorreturn();
+$id = $CURUSER['id'];
+$lockName = sprintf("takeinvite:%s", $id);
+$lock = new \Nexus\Database\NexusLock($lockName, 10);
+if (!$lock->get()) {
+    $errMsg = nexus_trans("nexus.do_not_repeat");
+    stderr($errMsg, $errMsg);
+}
 registration_check('invitesystem', true, false);
 $userRep = new \App\Repositories\UserRepository();
 try {
@@ -15,8 +23,6 @@ function bark($msg) {
   stdfoot();
   exit;
 }
-
-$id = $CURUSER['id'];
 $email = unesc(htmlspecialchars(trim($_POST["email"])));
 $email = safe_email($email);
 $preRegisterUsername = $_POST['pre_register_username'] ?? '';
@@ -123,7 +129,7 @@ if ($sendResult === true) {
         sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
     }
 }
-
+$lock->release();
 header("Refresh: 0; url=invite.php?id=".htmlspecialchars($id)."&sent=1");
 ?>
 
