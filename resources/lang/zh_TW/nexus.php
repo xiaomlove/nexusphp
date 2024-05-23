@@ -15,4 +15,5 @@ return [
     'action' => '操作',
     'no_limit' => '不限',
     'sum' => '累計',
+    'do_not_repeat' => '請不要重復操作！',
 ];
