@@ -514,6 +514,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(UserPermission::class, 'uid');
     }
 
+    public function examAndTasks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Exam::class, "exam_users", "uid", "exam_id");
+    }
+
     public function getAvatarAttribute($value)
     {
         if ($value) {

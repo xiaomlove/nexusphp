@@ -21,6 +21,8 @@ return [
         \App\Models\BonusLogs::BUSINESS_TYPE_BUY_CHANGE_USERNAME_CARD => '购买改名卡',
         \App\Models\BonusLogs::BUSINESS_TYPE_GIFT_MEDAL => '赠送勋章',
         \App\Models\BonusLogs::BUSINESS_TYPE_BUY_TORRENT => '购买种子',
+        \App\Models\BonusLogs::BUSINESS_TYPE_TASK_PASS_REWARD => '任务完成奖励',
+        \App\Models\BonusLogs::BUSINESS_TYPE_TASK_NOT_PASS_DEDUCT => '任务未完成扣除',
 
         \App\Models\BonusLogs::BUSINESS_TYPE_ROLE_WORK_SALARY => '工作组工资',
         \App\Models\BonusLogs::BUSINESS_TYPE_TORRENT_BE_DOWNLOADED => '种子被下载',

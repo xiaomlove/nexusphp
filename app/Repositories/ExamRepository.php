@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Exceptions\NexusException;
+use App\Models\BonusLogs;
 use App\Models\Exam;
 use App\Models\ExamProgress;
 use App\Models\ExamUser;
@@ -1100,11 +1101,13 @@ class ExamRepository extends BaseRepository
             $result += $examUsers->count();
             $now = Carbon::now()->toDateTimeString();
             $examUserIdArr = $uidToDisable = $messageToSend = $userBanLog = $userModcommentUpdate = [];
+            $bonusLog = $userBonusCommentUpdate = $userBonusUpdate = $uidToUpdateBonus = [];
             $examUserToInsert = [];
             foreach ($examUsers as $examUser) {
                 $minId = $examUser->id;
                 $examUserIdArr[] = $examUser->id;
                 $uid = $examUser->uid;
+                clear_inbox_count_cache($uid);
                 /** @var Exam $exam */
                 $exam = $examUser->exam;
                 $currentLogPrefix = sprintf("$logPrefix, user: %s, exam: %s, examUser: %s", $uid, $examUser->exam_id, $examUser->id);
@@ -1119,48 +1122,95 @@ class ExamRepository extends BaseRepository
                 $locale = $examUser->user->locale;
                 if ($examUser->is_done) {
                     do_log("$currentLogPrefix, [is_done]");
-                    $subjectTransKey = 'exam.checkout_pass_message_subject';
-                    $msgTransKey = 'exam.checkout_pass_message_content';
-                    if (!empty($exam->recurring) && $this->isExamMatchUser($exam, $examUser->user)) {
-                        $examUserToInsert[] = [
-                            'uid' => $examUser->user->id,
-                            'exam_id' => $exam->id,
-                            'begin' => $exam->getBeginForUser(),
-                            'end' => $exam->getEndForUser(),
-                            'created_at' => $now,
-                            'updated_at' => $now,
-                        ];
+                    $subjectTransKey = $exam->getMessageSubjectTransKey("pass");
+                    $msgTransKey = $exam->getMessageContentTransKey("pass");
+                    if ($exam->isTypeExam()) {
+                        if (!empty($exam->recurring) && $this->isExamMatchUser($exam, $examUser->user)) {
+                            $examUserToInsert[] = [
+                                'uid' => $examUser->user->id,
+                                'exam_id' => $exam->id,
+                                'begin' => $exam->getBeginForUser(),
+                                'end' => $exam->getEndForUser(),
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                        }
+                    } elseif ($exam->isTypeTask()) {
+                        //reward bonus
+                        if ($exam->success_reward_bonus > 0) {
+                            $uidToUpdateBonus[] = $uid;
+                            $bonusLog[] = [
+                                "uid" => $uid,
+                                "old_total_value" => $examUser->user->seedbonus,
+                                "value" => $exam->success_reward_bonus,
+                                "new_total_value" => $examUser->user->seedbonus + $exam->success_reward_bonus,
+                                "business_type" => BonusLogs::BUSINESS_TYPE_TASK_PASS_REWARD,
+                            ];
+                            $userBonusComment = nexus_trans("exam.reward_bonus_comment", [
+                                'exam_name' => $exam->name,
+                                'begin' => $examUser->begin,
+                                'end' => $examUser->end,
+                                'success_reward_bonus' => $exam->success_reward_bonus,
+                            ], $locale);
+                            $userBonusCommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', bonuscomment)", $uid, $userBonusComment);
+                            $userBonusUpdate[] = sprintf("when `id` = %s then seedbonus + %d", $uid, $exam->success_reward_bonus);
+                        }
                     }
                 } else {
-                    do_log("$currentLogPrefix, [will be banned]");
-                    clear_user_cache($examUser->user->id, $examUser->user->passkey);
-                    $subjectTransKey = 'exam.checkout_not_pass_message_subject';
-                    $msgTransKey = 'exam.checkout_not_pass_message_content';
-                    //ban user
-                    $uidToDisable[] = $uid;
-                    $userModcomment = nexus_trans('exam.ban_user_modcomment', [
-                        'exam_name' => $exam->name,
-                        'begin' => $examUser->begin,
-                        'end' => $examUser->end
-                    ], $locale);
-                    $userModcomment = sprintf('%s - %s', date('Y-m-d'), $userModcomment);
-                    $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', modcomment)", $uid, $userModcomment);
-                    $banLogReason = nexus_trans('exam.ban_log_reason', [
-                        'exam_name' => $exam->name,
-                        'begin' => $examUser->begin,
-                        'end' => $examUser->end,
-                    ], $locale);
-                    $userBanLog[] = [
-                        'uid' => $uid,
-                        'username' => $examUser->user->username,
-                        'reason' => $banLogReason,
-                    ];
+                    do_log("$currentLogPrefix, [not_done]");
+                    $subjectTransKey = $exam->getMessageSubjectTransKey("not_pass");
+                    $msgTransKey = $exam->getMessageContentTransKey("not_pass");
+                    if ($exam->isTypeExam()) {
+                        //ban user
+                        do_log("$currentLogPrefix, [will be banned]");
+                        clear_user_cache($examUser->user->id, $examUser->user->passkey);
+                        $uidToDisable[] = $uid;
+                        $userModcomment = nexus_trans('exam.ban_user_modcomment', [
+                            'exam_name' => $exam->name,
+                            'begin' => $examUser->begin,
+                            'end' => $examUser->end
+                        ], $locale);
+                        $userModcomment = sprintf('%s - %s', date('Y-m-d'), $userModcomment);
+                        $userModcommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', modcomment)", $uid, $userModcomment);
+                        $banLogReason = nexus_trans('exam.ban_log_reason', [
+                            'exam_name' => $exam->name,
+                            'begin' => $examUser->begin,
+                            'end' => $examUser->end,
+                        ], $locale);
+                        $userBanLog[] = [
+                            'uid' => $uid,
+                            'username' => $examUser->user->username,
+                            'reason' => $banLogReason,
+                        ];
+                    } elseif ($exam->isTypeTask()) {
+                        //deduct bonus
+                        if ($exam->fail_deduct_bonus > 0) {
+                            $uidToUpdateBonus[] = $uid;
+                            $bonusLog[] = [
+                                "uid" => $uid,
+                                "old_total_value" => $examUser->user->seedbonus,
+                                "value" => -1*$exam->fail_deduct_bonus,
+                                "new_total_value" => $examUser->user->seedbonus - $exam->fail_deduct_bonus,
+                                "business_type" => BonusLogs::BUSINESS_TYPE_TASK_NOT_PASS_DEDUCT,
+                            ];
+                            $userBonusComment = nexus_trans("exam.deduct_bonus_comment", [
+                                'exam_name' => $exam->name,
+                                'begin' => $examUser->begin,
+                                'end' => $examUser->end,
+                                'fail_deduct_bonus' => $exam->fail_deduct_bonus,
+                            ], $locale);
+                            $userBonusCommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', bonuscomment)", $uid, $userBonusComment);
+                            $userBonusUpdate[] = sprintf("when `id` = %s then seedbonus - %d", $uid, $exam->fail_deduct_bonus);
+                        }
+                    }
                 }
                 $subject =  nexus_trans($subjectTransKey, [], $locale);
                 $msg = nexus_trans($msgTransKey, [
                     'exam_name' => $exam->name,
                     'begin' => $examUser->begin,
-                    'end' => $examUser->end
+                    'end' => $examUser->end,
+                    'success_reward_bonus' => $exam->success_reward_bonus,
+                    'fail_deduct_bonus' => $exam->fail_deduct_bonus,
                 ], $locale);
                 $messageToSend[] = [
                     'receiver' => $uid,
@@ -1169,7 +1219,7 @@ class ExamRepository extends BaseRepository
                     'msg' => $msg
                 ];
             }
-            DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr, $examUserToInsert, $userBanLog, $userModcommentUpdate, $userTable, $logPrefix) {
+            DB::transaction(function () use ($uidToDisable, $messageToSend, $examUserIdArr, $examUserToInsert, $userBanLog, $userModcommentUpdate, $userBonusUpdate, $userBonusCommentUpdate, $bonusLog, $uidToUpdateBonus, $userTable, $logPrefix) {
                 ExamUser::query()->whereIn('id', $examUserIdArr)->update(['status' => ExamUser::STATUS_FINISHED]);
                 do {
                     $deleted = ExamProgress::query()->whereIn('exam_user_id', $examUserIdArr)->limit(10000)->delete();
@@ -1190,6 +1240,18 @@ class ExamRepository extends BaseRepository
                 }
                 if (!empty($examUserToInsert)) {
                     ExamUser::query()->insert($examUserToInsert);
+                }
+                if (!empty($userBonusUpdate)) {
+                    $uidStr = implode(', ', $uidToUpdateBonus);
+                    $sql = sprintf(
+                        "update %s set seedbonus = case %s, bonuscomment = case %s end where id in (%s)",
+                        $userTable, implode(' ', $userBonusUpdate), implode(",", $userBonusCommentUpdate), $uidStr
+                    );
+                    $updateResult = DB::update($sql);
+                    do_log(sprintf("$logPrefix, update %s users: %s seedbonus, sql: %s, updateResult: %s", count($uidToUpdateBonus), $uidStr, $sql, $updateResult));
+                }
+                if (!empty($bonusLog)) {
+                    BonusLogs::query()->insert($bonusLog);
                 }
             });
         }

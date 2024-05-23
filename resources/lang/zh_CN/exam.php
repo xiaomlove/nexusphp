@@ -2,9 +2,9 @@
 
 return [
     'label' => '考核',
-    'name' => '考核名称',
-    'index' => '考核指标',
-    'time_range' => '考核时间',
+    'name' => '名称',
+    'index' => '指标',
+    'time_range' => '时间',
     'index_text_' . \App\Models\Exam::INDEX_UPLOADED => '上传增量',
     'index_text_' . \App\Models\Exam::INDEX_SEED_TIME_AVERAGE => '平均做种时间',
     'index_text_' . \App\Models\Exam::INDEX_DOWNLOADED => '下载增量',
@@ -20,14 +20,25 @@ return [
     'require_value' => '要求',
     'current_value' => '当前',
     'result' => '结果',
-    'result_pass' => '通过！',
-    'result_not_pass' => '<span style="color: red">未通过！</span>',
-    'checkout_pass_message_subject' => '考核通过！',
-    'checkout_pass_message_content' => '恭喜！你在规定时间内（:begin ~ :end）顺利完成了考核：:exam_name。',
-    'checkout_not_pass_message_subject' => '考核未通过，账号被禁用！',
-    'checkout_not_pass_message_content' => '你在规定时间内（:begin ~ :end）未完成考核：:exam_name，账号已被禁用。',
+    'result_pass_for_exam' => '通过！',
+    'result_pass_for_task' => '完成！',
+    'result_not_pass_for_exam' => '<span style="color: red">未通过！</span>',
+    'result_not_pass_for_task' => '<span style="color: red">未完成！</span>',
+    'checkout_pass_message_subject_for_exam' => '考核通过！',
+    'checkout_pass_message_content_for_exam' => '恭喜！你在规定时间内（:begin ~ :end）顺利完成了考核：:exam_name。',
+    'checkout_not_pass_message_subject_for_exam' => '考核未通过，账号被禁用！',
+    'checkout_not_pass_message_content_for_exam' => '你在规定时间内（:begin ~ :end）未完成考核：:exam_name，账号已被禁用。',
+
+    'checkout_pass_message_subject_for_task' => '任务完成！',
+    'checkout_pass_message_content_for_task' => '恭喜！你在规定时间内（:begin ~ :end）顺利完成了任务：:exam_name，获得奖励魔力：:success_reward_bonus',
+    'checkout_not_pass_message_subject_for_task' => '任务未完成！',
+    'checkout_not_pass_message_content_for_task' => '你在规定时间内（:begin ~ :end）未完成任务：:exam_name，扣除魔力：:fail_deduct_bonus。',
+
     'ban_log_reason' => '未完成考核：:exam_name(:begin ~ :end)',
     'ban_user_modcomment' => '未完成考核: :exam_name(:begin ~ :end), 被系统禁用.',
+    'deduct_bonus_comment' => '未完成任务: :exam_name(:begin ~ :end), 扣除魔力：:fail_deduct_bonus.',
+    'reward_bonus_comment' => '完成任务: :exam_name(:begin ~ :end), 奖励魔力：:success_reward_bonus.',
+
     'admin' => [
         'list' => [
             'page_title' => '考核列表'
@@ -48,5 +59,7 @@ return [
 
     'fail_deduct_bonus' => '任务失败扣除魔力',
     'success_reward_bonus' => '任务完成奖励魔力',
+
+    'action_claim_task' => '领取',
 
 ];

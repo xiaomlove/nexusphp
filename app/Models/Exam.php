@@ -254,4 +254,32 @@ class Exam extends NexusModel
         throw new \RuntimeException("Invalid recurring: $recurring");
     }
 
+    public function getMessageSubjectTransKey(string $result): string
+    {
+        return match ($this->type) {
+            self::TYPE_EXAM => "exam.checkout_{$result}_message_subject_for_exam",
+            self::TYPE_TASK => "exam.checkout_{$result}_message_subject_for_task",
+            default => throw new \RuntimeException("Invalid type: " . $this->type)
+        };
+    }
+
+    public function getMessageContentTransKey(string $result): string
+    {
+        return match ($this->type) {
+            self::TYPE_EXAM => "exam.checkout_{$result}_message_content_for_exam",
+            self::TYPE_TASK => "exam.checkout_{$result}_message_content_for_task",
+            default => throw new \RuntimeException("Invalid type: " . $this->type)
+        };
+    }
+
+    public function isTypeExam(): bool
+    {
+        return $this->type == self::TYPE_EXAM;
+    }
+
+    public function isTypeTask(): bool
+    {
+        return $this->type == self::TYPE_TASK;
+    }
+
 }
