@@ -29,6 +29,7 @@ class CreateExam extends CreateRecord
             }
             $this->redirect($this->getResource()::getUrl('index'));
         } catch (\Exception $exception) {
+            do_log($exception->getMessage() . "\n" . $exception->getTraceAsString(), "error");
             $this->notify('danger', $exception->getMessage());
         }
     }

@@ -16,4 +16,5 @@ return [
     'no_limit' => 'No limit',
     'sum' => 'Sum',
     'do_not_repeat' => 'Please do not repeat the operation!',
+    'no_permission' => 'No permission!',
 ];

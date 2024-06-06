@@ -48,4 +48,11 @@ return [
 
     'fail_deduct_bonus' => '任务失败扣除魔力',
     'success_reward_bonus' => '任务完成奖励魔力',
+
+    'action_claim_task' => '領取',
+    'confirm_to_claim' => '確定要認領嗎？',
+    'claim_by_yourself_only' => '只能自己認領!',
+    'not_match_target_user' => '你不是匹配的目標用戶！',
+    'has_other_on_the_way' => '有其他進行中的:type_text',
+    'claimed_already' => '已經認領',
 ];

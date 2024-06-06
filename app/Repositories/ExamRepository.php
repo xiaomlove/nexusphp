@@ -364,18 +364,30 @@ class ExamRepository extends BaseRepository
         /** @var Exam $exam */
         $exam = Exam::query()->find($examId);
         $user = User::query()->findOrFail($uid);
-        if (Auth::user()->class <= $user->class) {
-            throw new NexusException("No permission !");
+        $locale = $user->locale;
+        $authUserClass = get_user_class();
+        $authUserId = get_user_id();
+        if ($exam->isTypeExam()) {
+            if ($authUserClass <= $user->class) {
+                //exam only can assign by upper class admin
+                throw new NexusException(nexus_trans("nexus.no_permission", [], $locale));
+            }
+        } elseif ($exam->isTypeTask()) {
+            if ($user->id != $authUserId) {
+                //task only can be claimed by self
+                throw new NexusException(nexus_trans('exam.claim_by_yourself_only', [], $locale));
+            }
         }
+
         if (!$this->isExamMatchUser($exam, $user)) {
-            throw new NexusException("Exam: {$exam->id} no match this user.");
+            throw new NexusException(nexus_trans('exam.not_match_target_user', [], $locale));
         }
         if ($user->exams()->where('status', ExamUser::STATUS_NORMAL)->exists()) {
-            throw new NexusException("User: $uid already has exam on the way.");
+            throw new NexusException(nexus_trans('exam.has_other_on_the_way', ['type_text' => $exam->typeText], $locale));
         }
         $exists = $user->exams()->where('exam_id', $exam->id)->exists();
         if ($exists) {
-            throw new NexusException("Exam: {$exam->id} already assign to user: {$user->id}.");
+            throw new NexusException(nexus_trans('exam.claimed_already', [], $locale));
         }
         $data = [
             'exam_id' => $exam->id,

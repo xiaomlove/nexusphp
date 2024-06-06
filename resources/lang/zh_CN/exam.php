@@ -61,5 +61,9 @@ return [
     'success_reward_bonus' => '任务完成奖励魔力',
 
     'action_claim_task' => '领取',
-
+    'confirm_to_claim' => '确定要认领吗？',
+    'claim_by_yourself_only' => '只能自己认领!',
+    'not_match_target_user' => '你不是匹配的目标用户！',
+    'has_other_on_the_way' => '有其他进行中的:type_text',
+    'claimed_already' => '已经认领',
 ];

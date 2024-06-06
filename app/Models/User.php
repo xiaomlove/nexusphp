@@ -519,6 +519,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->belongsToMany(Exam::class, "exam_users", "uid", "exam_id");
     }
 
+    public function onGoingExamAndTasks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->examAndTasks()->wherePivot("status", ExamUser::STATUS_NORMAL);
+    }
+
     public function getAvatarAttribute($value)
     {
         if ($value) {

@@ -165,7 +165,10 @@ class Exam extends NexusModel
         $filter = self::FILTER_USER_CLASS;
         if (!empty($currentFilters[$filter])) {
             $classes = collect(User::$classes)->only($currentFilters[$filter]);
-            $arr[] = sprintf('%s: %s', nexus_trans("exam.filters.$filter"), $classes->pluck('text')->implode(', '));
+            $arr[] = sprintf(
+                '%s: %s',
+                nexus_trans("exam.filters.$filter"), $classes->map(fn ($value, $key) => User::getClassText($key))->implode(', ')
+            );
         }
 
         $filter = self::FILTER_USER_REGISTER_TIME_RANGE;

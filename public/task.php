@@ -43,18 +43,20 @@ TABLE;
 $now = now();
 $table .= '<tbody>';
 $userInfo = \App\Models\User::query()->findOrFail($CURUSER['id'], \App\Models\User::$commonFields);
-$userTasks = $userInfo->examAndTasks()->where("type", \App\Models\Exam::TYPE_TASK)
+$userTasks = $userInfo->onGoingExamAndTasks()->where("type", \App\Models\Exam::TYPE_TASK)
     ->orderBy('id', 'desc')
     ->get()
     ->keyBy('id')
 ;
-//dd($userTasks);
+//dd(last_query());
 foreach ($rows as $row) {
     $claimDisabled = $claimClass = '';
     $claimBtnText = "认领";
     if ($userTasks->has($row->id)) {
         $claimDisabled = " disabled";
         $claimBtnText = "已认领";
+    } else {
+        $claimClass = "claim";
     }
     $claimAction = sprintf(
         '<input type="button" class="%s" data-id="%s" value="%s"%s>',
@@ -75,15 +77,15 @@ foreach ($rows as $row) {
 $table .= '</tbody></table>';
 echo $header . $table . $paginationBottom;
 end_main_frame();
-$confirmBuyMsg = nexus_trans('medal.confirm_to_buy');
+$confirmBuyMsg = nexus_trans('exam.confirm_to_claim');
 $confirmGiftMsg = nexus_trans('medal.confirm_to_gift');
 $js = <<<JS
-jQuery('.buy').on('click', function (e) {
-    let medalId = jQuery(this).attr('data-id')
+jQuery('.claim').on('click', function (e) {
+    let id = jQuery(this).attr('data-id')
     layer.confirm("{$confirmBuyMsg}", function (index) {
         let params = {
-            action: "buyMedal",
-            params: {medal_id: medalId}
+            action: "claimTask",
+            params: {exam_id: id}
         }
         console.log(params)
         jQuery.post('ajax.php', params, function(response) {

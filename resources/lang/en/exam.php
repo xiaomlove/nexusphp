@@ -48,4 +48,11 @@ return [
 
     'fail_deduct_bonus' => 'Deduct bonus for task failure',
     'success_reward_bonus' => 'Reward bonus for task completion',
+
+    'action_claim_task' => 'Claim',
+    'confirm_to_claim' => 'Sure you want to claim?' ,
+    'claim_by_yourself_only' => 'Claim only by yourself!' ,
+    'not_match_target_user' => 'You are not a matching target user!' ,
+    'has_other_on_the_way' => 'There is an other :type_text in progress!' ,
+    'claimed_already' => 'Already claimed',
 ];

@@ -56,10 +56,12 @@ class ExamResource extends Resource
                         ->reactive()
                     ,
                     Forms\Components\TextInput::make('success_reward_bonus')
+                        ->required()
                         ->label(__('exam.success_reward_bonus'))
                         ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
                     ,
                     Forms\Components\TextInput::make('fail_deduct_bonus')
+                        ->required()
                         ->label(__('exam.fail_deduct_bonus'))
                         ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
                     ,

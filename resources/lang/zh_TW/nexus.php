@@ -16,4 +16,5 @@ return [
     'no_limit' => '不限',
     'sum' => '累計',
     'do_not_repeat' => '請不要重復操作！',
+    'no_permission' => '無權限!',
 ];

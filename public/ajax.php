@@ -150,6 +150,13 @@ class AjaxInterface{
         $rep = new \App\Repositories\MedalRepository();
         return $rep->saveUserMedal($CURUSER['id'], $data);
     }
+
+    public static function claimTask($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\ExamRepository();
+        return $rep->assignToUser($CURUSER['id'], $params['exam_id']);
+    }
 }
 
 $class = 'AjaxInterface';
