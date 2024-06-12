@@ -889,14 +889,16 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$length = $deldeadtorrent_torrent*86400;
 		$until = date("Y-m-d H:i:s",(TIMENOW - $length));
 		$dt = sqlesc(date("Y-m-d H:i:s"));
-		$res = sql_query("SELECT id, name, owner FROM torrents WHERE visible = 'no' AND last_action < ".sqlesc($until)." AND seeders = 0 AND leechers = 0") or sqlerr(__FILE__, __LINE__);
+		$res = sql_query("SELECT torrents.id, torrents.name, torrents.owner, users.id as uid FROM torrents left join users on torrents.owner = users.id WHERE torrents.visible = 'no' AND torrents.last_action < ".sqlesc($until)." AND torrents.seeders = 0 AND torrents.leechers = 0") or sqlerr(__FILE__, __LINE__);
 		while($arr = mysql_fetch_assoc($res))
 		{
 			deletetorrent($arr['id']);
-			$subject = $lang_cleanup_target[get_user_lang($arr['owner'])]['msg_your_torrent_deleted'];
-			$msg = $lang_cleanup_target[get_user_lang($arr['owner'])]['msg_your_torrent']."[i]".$arr['name']."[/i]".$lang_cleanup_target[get_user_lang($arr['owner'])]['msg_was_deleted_because_dead'];
-			sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['owner']}, $dt, ".sqlesc($subject).", ".sqlesc($msg).")") or sqlerr(__FILE__, __LINE__);
-			write_log("Torrent {$arr['id']} ({$arr['name']}) is deleted by system because of being dead for a long time.",'normal');
+            if (!empty($arr['uid'])) {
+                $subject = $lang_cleanup_target[get_user_lang($arr['owner'])]['msg_your_torrent_deleted'];
+                $msg = $lang_cleanup_target[get_user_lang($arr['owner'])]['msg_your_torrent']."[i]".$arr['name']."[/i]".$lang_cleanup_target[get_user_lang($arr['owner'])]['msg_was_deleted_because_dead'];
+                sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['owner']}, $dt, ".sqlesc($subject).", ".sqlesc($msg).")") or sqlerr(__FILE__, __LINE__);
+                write_log("Torrent {$arr['id']} ({$arr['name']}) is deleted by system because of being dead for a long time.",'normal');
+            }
 		}
 	}
 	$log = "delete torrents that have been dead for a long time";
