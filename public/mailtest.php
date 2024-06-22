@@ -20,9 +20,14 @@ if ($action == "sendmail")
 EOD;
 
 //	sent_mail($email, $SITENAME, $SITEEMAIL, change_email_encode(get_langfolder_cookie(), $title), change_email_encode(get_langfolder_cookie(),$body), '', false, false, '', get_email_encode(get_langfolder_cookie()));
-	sent_mail($email, $SITENAME, $SITEEMAIL, $title, $body, '', false, false, '', get_email_encode(get_langfolder_cookie()));
-
-	stderr($lang_mailtest['std_success'], $lang_mailtest['std_success_note']);
+//	sent_mail($email, $SITENAME, $SITEEMAIL, $title, $body, '', false, false, '', get_email_encode(get_langfolder_cookie()));
+    try {
+        $toolRep = new \App\Repositories\ToolRepository();
+        $toolRep->sendMail($email, $title, $body, true);
+        stderr($lang_mailtest['std_success'], $lang_mailtest['std_success_note']);
+    } catch (\Throwable $e) {
+        stderr($lang_functions['std_error'], $lang_functions['text_unable_to_send_mail'] . sprintf("<br/><br/><code>%s</code>", $e->getMessage()), false);
+    }
 }
 else
 {

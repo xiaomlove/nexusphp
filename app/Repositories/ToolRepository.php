@@ -316,7 +316,7 @@ class ToolRepository extends BaseRepository
      * @param $body
      * @return bool
      */
-    public function sendMail($to, $subject, $body): bool
+    public function sendMail($to, $subject, $body, $exception = false): bool
     {
         $log = "[SEND_MAIL]";
         $factory = new EsmtpTransportFactory();
@@ -353,7 +353,11 @@ class ToolRepository extends BaseRepository
             return true;
         } catch (\Throwable $e) {
             do_log("$log, fail: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error');
-            return false;
+            if ($exception) {
+                throw $e;
+            } else {
+                return false;
+            }
         }
     }
 
