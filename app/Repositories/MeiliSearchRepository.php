@@ -96,6 +96,9 @@ class MeiliSearchRepository extends BaseRepository
 
     public function import()
     {
+        if (!$this->isEnabled()) {
+            return 0;
+        }
         $client = $this->getClient();
         $stats = $client->stats();
         if (isset($stats['indexes'][self::INDEX_NAME])) {
