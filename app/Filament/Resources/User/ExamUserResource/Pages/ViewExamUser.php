@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\User\ExamUserResource\Pages;
 
 use App\Filament\Resources\User\ExamUserResource;
+use App\Models\Exam;
 use App\Repositories\ExamRepository;
 use Carbon\Carbon;
 use Filament\Pages\Actions;
@@ -62,8 +63,12 @@ class ViewExamUser extends ViewRecord
 
     protected function getViewData(): array
     {
+        /** @var Exam $exam */
+        $exam = $this->record->exam;
         return [
             'cardData' => $this->getDetailCardData(),
+            'result_pass_trans_key' => $exam->getPassResultTransKey('pass'),
+            'result_not_pass_trans_key' => $exam->getPassResultTransKey('not_pass'),
         ];
     }
 

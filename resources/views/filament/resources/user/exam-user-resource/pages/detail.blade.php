@@ -25,7 +25,7 @@
                 <td>{{ $index['index_formatted'] }}</td>
                 <td>{{ $index['require_value_formatted'] }}</td>
                 <td>{{ $index['current_value_formatted'] }}</td>
-                <td>{{ $index['passed'] ? __('admin.resources.exam_user.result_passed') : __('admin.resources.exam_user.result_not_passed') }}</td>
+                <td>{!! $index['passed'] ? __($result_pass_trans_key) : __($result_not_pass_trans_key) !!}</td>
             </tr>
             @endforeach
             </tbody>

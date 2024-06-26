@@ -20,12 +20,21 @@ return [
     'require_value' => 'Require',
     'current_value' => 'Current',
     'result' => 'Result',
-    'result_pass' => 'Pass!',
-    'result_not_pass' => '<span style="color: red">Not pass!</span>',
-    'checkout_pass_message_subject' => 'Exam pass!',
-    'checkout_pass_message_content' => 'Congratulation! You have complete the exam: :exam_name in time(:begin ~ :end)',
-    'checkout_not_pass_message_subject' => 'Exam not pass, and account is banned!',
-    'checkout_not_pass_message_content' => 'You did not complete the exam: :exam_name in time(:begin ~ :end), and your account has be banned!',
+
+    'result_pass_for_exam' => 'Passed!',
+    'result_pass_for_task' => 'Completed!',
+    'result_not_pass_for_exam' => '<span style="color: red">Not Passed!</span>',
+    'result_not_pass_for_task' => '<span style="color: red">Not Completed!</span>',
+    'checkout_pass_message_subject_for_exam' => 'Exam passed!',
+    'checkout_pass_message_content_for_exam' => 'Congratulation! You have pass the exam: :exam_name in time(:begin ~ :end)',
+    'checkout_not_pass_message_subject_for_exam' => 'Exam not pass, and account is banned!',
+    'checkout_not_pass_message_content_for_exam' => 'You did not pass the exam: :exam_name in time(:begin ~ :end), and your account has be banned!',
+
+    'checkout_pass_message_subject_for_task' => 'Task completed!',
+    'checkout_pass_message_content_for_task' => 'Congratulation! You have complete the task: :exam_name in time(:begin ~ :end), got bonus: :success_reward_bonus',
+    'checkout_not_pass_message_subject_for_task' => 'Task not completed!',
+    'checkout_not_pass_message_content_for_task' => 'You dit not complete the task: :exam_name in time (:begin ~ :end), deduct bonus: :fail_deduct_bonus.',
+
     'ban_log_reason' => 'Not complete exam: :exam_name in time(:begin ~ :end)',
     'ban_user_modcomment' => 'Due to not complete exam: :exam_name(:begin ~ :end), ban by system.',
     'admin' => [

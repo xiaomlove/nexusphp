@@ -275,6 +275,15 @@ class Exam extends NexusModel
         };
     }
 
+    public function getPassResultTransKey(string $result): string
+    {
+        return match ($this->type) {
+            self::TYPE_EXAM => "exam.result_{$result}_for_exam",
+            self::TYPE_TASK => "exam.result_{$result}_for_task",
+            default => throw new \RuntimeException("Invalid type: " . $this->type)
+        };
+    }
+
     public function isTypeExam(): bool
     {
         return $this->type == self::TYPE_EXAM;

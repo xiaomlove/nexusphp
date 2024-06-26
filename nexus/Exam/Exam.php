@@ -14,6 +14,7 @@ class Exam
         if (empty($userExam)) {
             return '';
         }
+        /** @var \App\Models\Exam $exam */
         $exam = $userExam->exam;
         $row = [];
         $row[] = sprintf('%s：%s', nexus_trans('exam.name'), $exam->name);
@@ -26,7 +27,7 @@ class Exam
                     nexus_trans('exam.require_value'), $index['require_value_formatted'],
                     nexus_trans('exam.current_value'), $index['current_value_formatted'],
                     nexus_trans('exam.result'),
-                    $index['passed'] ? nexus_trans('exam.result_pass') : nexus_trans('exam.result_not_pass')
+                    $index['passed'] ? nexus_trans($exam->getPassResultTransKey("pass")) : nexus_trans($exam->getPassResultTransKey("not_pass"))
                 );
             }
         }

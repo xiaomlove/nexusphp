@@ -20,12 +20,21 @@ return [
     'require_value' => '要求',
     'current_value' => '當前',
     'result' => '結果',
-    'result_pass' => '通過！',
-    'result_not_pass' => '<span style="color: red">未通過！</span>',
-    'checkout_pass_message_subject' => '考核通過！',
-    'checkout_pass_message_content' => '恭喜！你在規定時間內（:begin ~ :end）順利完成了考核：:exam_name。',
-    'checkout_not_pass_message_subject' => '考核未通過，賬號被禁用！',
-    'checkout_not_pass_message_content' => '你在規定時間內（:begin ~ :end）未完成考核：:exam_name，賬號已被禁用。',
+
+    'result_pass_for_exam' => '通過！',
+    'result_pass_for_task' => '完成！',
+    'result_not_pass_for_exam' => '<span style="color: red">未通過！</span>',
+    'result_not_pass_for_task' => '<span style="color: red">未完成！</span>',
+    'checkout_pass_message_subject_for_exam' => '考核通過！',
+    'checkout_pass_message_content_for_exam' => '恭喜！你在規定時間內（:begin ~ :end）順利完成了考核：:exam_name。',
+    'checkout_not_pass_message_subject_for_exam' => '考核未通過，賬號被禁用！',
+    'checkout_not_pass_message_content_for_exam' => '你在規定時間內（:begin ~ :end）未完成考核：:exam_name，賬號已被禁用。',
+
+    'checkout_pass_message_subject_for_task' => '任務完成！',
+    'checkout_pass_message_content_for_task' => '恭喜！你在規定時間內（:begin ~ :end）順利完成了任務：:exam_name，獲得獎勵魔力：:success_reward_bonus',
+    'checkout_not_pass_message_subject_for_task' => '任務未完成！',
+    'checkout_not_pass_message_content_for_task' => '你在規定時間內（:begin ~ :end）未完成任務：:exam_name，扣除魔力：:fail_deduct_bonus。',
+
     'ban_log_reason' => '未完成考核：:exam_name(:begin ~ :end)',
     'ban_user_modcomment' => '未完成考核: :exam_name(:begin ~ :end), 被系統禁用.',
     'admin' => [
