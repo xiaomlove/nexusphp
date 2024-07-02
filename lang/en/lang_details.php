@@ -241,6 +241,7 @@ $lang_details = array
     'claim_confirm' => 'Are you sure to claim this torrent?',
     'action_approval' => 'Approval',
     'row_tags' => 'Tags',
+    'torrent_existed' => 'Torrent already uploaded!',
 );
 
 ?>

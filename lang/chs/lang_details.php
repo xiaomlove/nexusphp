@@ -242,6 +242,7 @@ $lang_details = array
     'claim_confirm' => '确定要认领此种子吗？',
     'action_approval' => '审核',
     'row_tags' => '标签',
+    'torrent_existed' => '该种子已存在！'
 );
 
 ?>

@@ -68,7 +68,11 @@ if (!$row) {
 			print("<h1 align=\"center\">".$lang_details['text_successfully_edited']."</h1>");
 			if (isset($_GET["returnto"]))
 				print("<p><b>".$lang_details['text_go_back'] . "<a href=\"".htmlspecialchars($_GET["returnto"])."\">" . $lang_details['text_whence_you_came']."</a></b></p>");
-		}
+		} elseif (!empty($_GET['existed'])) {
+            print("<h1 align=\"center\" style='color: red'>".$lang_details['torrent_existed']."</h1>");
+            if (isset($_GET["returnto"]))
+                print("<p><b>".$lang_details['text_go_back'] . "<a href=\"".htmlspecialchars($_GET["returnto"])."\">" . $lang_details['text_whence_you_came']."</a></b></p>");
+        }
         $banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);

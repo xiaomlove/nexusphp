@@ -241,6 +241,7 @@ $lang_details = array
     'claim_confirm' => '確定要認領此種子嗎？',
     'action_approval' => '審核',
     'row_tags' => '標簽',
+    'torrent_existed' => '該種子已存在！',
 );
 
 ?>
