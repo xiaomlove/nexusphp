@@ -3,7 +3,9 @@
 namespace App\Console;
 
 use App\Jobs\CheckCleanup;
+use App\Jobs\CheckQueueFailedJobs;
 use Carbon\Carbon;
+use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -38,6 +40,7 @@ class Kernel extends ConsoleKernel
         })->withoutOverlapping();
         $schedule->command('meilisearch:import')->weeklyOn(1, "03:00")->withoutOverlapping();
         $schedule->command('torrent:load_pieces_hash')->dailyAt("01:00")->withoutOverlapping();
+        $schedule->job(new CheckQueueFailedJobs())->everySixHours()->withoutOverlapping();
 
         $this->registerScheduleCleanup($schedule);
     }

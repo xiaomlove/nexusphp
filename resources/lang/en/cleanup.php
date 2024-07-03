@@ -10,4 +10,6 @@ return [
     'destroy_disabled_account' => 'Timed physical deletion of disabled accounts',
     'alarm_email_subject' => '[:site_name] background cleanup task exception',
     'alarm_email_body' => 'Current time: :now_time, level :level, Last run time was: :last_time, it has been more than: :elapsed_seconds seconds(:elapsed_seconds_human) since it was run, the set run interval is: :interval seconds(:interval_human), please check!',
+    'alarm_email_subject_for_queue_failed_jobs' => '[:site_name]Asynchronous Task Exception',
+    'alarm_email_body_for_queue_failed_jobs' => 'There are a total of :count failed asynchronous jobs since :since, recorded in database table :failed_job_table, please check it!',
 ];

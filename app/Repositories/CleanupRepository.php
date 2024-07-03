@@ -273,16 +273,16 @@ LUA;
             do_log("receiverUid: $receiverUid");
             if (empty($receiverUid)) {
                 $locale = Locale::getDefault();
-                $subject = self::getAlarmEmailSubject($locale);
-                $msg = self::getAlarmEmailBody($now, $level, $lastTime, $interval, $locale);
+                $subject = self::getAlarmEmailSubjectForCleanup($locale);
+                $msg = self::getAlarmEmailBodyForCleanup($now, $level, $lastTime, $interval, $locale);
                 do_log(sprintf("%s - %s", $subject, $msg), "error");
             } else {
                 $receiverUidArr = preg_split("/\s+/", $receiverUid);
                 $users = User::query()->whereIn("id", $receiverUidArr)->get(User::$commonFields);
                 foreach ($users as $user) {
                     $locale = $user->locale;
-                    $subject = self::getAlarmEmailSubject($locale);
-                    $msg = self::getAlarmEmailBody($now, $level, $lastTime, $interval, $locale);
+                    $subject = self::getAlarmEmailSubjectForCleanup($locale);
+                    $msg = self::getAlarmEmailBodyForCleanup($now, $level, $lastTime, $interval, $locale);
                     $result = $toolRep->sendMail($user->email, $subject, $msg);
                     do_log(sprintf("send msg: %s result: %s", $msg, var_export($result, true)), $result ? "info" : "error");
                 }
@@ -291,12 +291,12 @@ LUA;
         }
     }
 
-    private static function getAlarmEmailSubject(string|null $locale = null)
+    private static function getAlarmEmailSubjectForCleanup(string|null $locale = null)
     {
         return nexus_trans("cleanup.alarm_email_subject", ["site_name" => get_setting("basic.SITENAME")], $locale);
     }
 
-    private static function getAlarmEmailBody(Carbon $now, string $level, int $lastTime, int $interval, string|null $locale = null)
+    private static function getAlarmEmailBodyForCleanup(Carbon $now, string $level, int $lastTime, int $interval, string|null $locale = null)
     {
         return  nexus_trans("cleanup.alarm_email_body", [
             "now_time" => $now->toDateTimeString(),
@@ -306,6 +306,51 @@ LUA;
             "elapsed_seconds_human" => $lastTime > 0 ? mkprettytime($now->getTimestamp() - $lastTime) : "",
             "interval" => $interval,
             "interval_human" => mkprettytime($interval),
+        ], $locale);
+    }
+
+    public static function checkQueueFailedJobs(): void
+    {
+        $now = Carbon::now();
+        $since = $now->subHours(6)->toDateTimeString();
+        $failedJobsTable = nexus_config("queue.failed.table");
+        $failedJobsCount = NexusDB::table($failedJobsTable)->where("failed_at", ">=", $since)->count();
+        if ($failedJobsCount == 0) {
+            do_log(sprintf("no failed jobs since: %s", $since));
+            return;
+        }
+        $receiverUid = get_setting("system.alarm_email_receiver");
+        do_log("receiverUid: $receiverUid");
+        $toolRep = new ToolRepository();
+        if (empty($receiverUid)) {
+            $locale = Locale::getDefault();
+            $subject = self::getAlarmEmailSubjectForQueueFailedJobs($locale);
+            $msg = self::getAlarmEmailBodyForQueueFailedJobs($since, $failedJobsCount, $failedJobsTable, $locale);
+            do_log(sprintf("%s - %s", $subject, $msg), "error");
+        } else {
+            $receiverUidArr = preg_split("/\s+/", $receiverUid);
+            $users = User::query()->whereIn("id", $receiverUidArr)->get(User::$commonFields);
+            foreach ($users as $user) {
+                $locale = $user->locale;
+                $subject = self::getAlarmEmailSubjectForQueueFailedJobs($locale);
+                $msg = self::getAlarmEmailBodyForQueueFailedJobs($since, $failedJobsCount, $failedJobsTable, $locale);
+                $result = $toolRep->sendMail($user->email, $subject, $msg);
+                do_log(sprintf("send msg: %s result: %s", $msg, var_export($result, true)), $result ? "info" : "error");
+            }
+        }
+    }
+
+    private static function getAlarmEmailSubjectForQueueFailedJobs(string|null $locale = null)
+    {
+        return nexus_trans("cleanup.alarm_email_subject_for_queue_failed_jobs", ["site_name" => get_setting("basic.SITENAME")], $locale);
+    }
+
+    private static function getAlarmEmailBodyForQueueFailedJobs(string $since, int $count, string $failedJobTable, string|null $locale = null)
+    {
+        return  nexus_trans("cleanup.alarm_email_body_for_queue_failed_jobs", [
+            "since" => $since,
+            "count" => $count,
+            "failed_job_table" => $failedJobTable,
         ], $locale);
     }
 }

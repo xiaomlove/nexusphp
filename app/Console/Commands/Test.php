@@ -98,8 +98,7 @@ class Test extends Command
      */
     public function handle()
     {
-        $diff = get_setting("system.alarm_email_receiver");
-        dd($diff);
+        CleanupRepository::checkQueueFailedJobs();
     }
 
 }
