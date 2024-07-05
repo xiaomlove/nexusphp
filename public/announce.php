@@ -262,11 +262,16 @@ $fields = "id, seeder, peer_id, ip, ipv4, ipv6, port, uploaded, downloaded, user
  */
 $peerlistsql = "SELECT ".$fields." FROM peers WHERE torrent = " . $torrentid . $only_leech_query . $limit;
 
-$real_annnounce_interval = $announce_interval;
+$announce_one_begin = (0+$announce_interval)/2;
+$announce_one_end = ($announce_interval+$annintertwo)/2;
+$announce_two_end = ($annintertwo+$anninterthree)/2;
+$announce_three_end = $anninterthree;//can not bigger, cleanup will consider dead and delete it
+
+$real_annnounce_interval = mt_rand($announce_one_begin, $announce_one_end);
 if ($anninterthreeage && ($anninterthree > $announce_wait) && (TIMENOW - $torrent['ts']) >= ($anninterthreeage * 86400))
-$real_annnounce_interval = $anninterthree;
+$real_annnounce_interval = mt_rand($announce_two_end, $announce_three_end);
 elseif ($annintertwoage && ($annintertwo > $announce_wait) && (TIMENOW - $torrent['ts']) >= ($annintertwoage * 86400))
-$real_annnounce_interval = $annintertwo;
+$real_annnounce_interval = mt_rand($announce_one_end, $announce_two_end);
 
 //$resp = "d" . benc_str("interval") . "i" . $real_annnounce_interval . "e" . benc_str("min interval") . "i" . $announce_wait . "e". benc_str("complete") . "i" . $torrent["seeders"] . "e" . benc_str("incomplete") . "i" . $torrent["leechers"] . "e" . benc_str("peers");
 $rep_dict = [
