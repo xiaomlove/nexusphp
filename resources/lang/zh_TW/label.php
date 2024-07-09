@@ -143,7 +143,7 @@ return [
         'label' => '用戶勛章',
     ],
     'exam' => [
-        'label' => '考核',
+        'label' => '考核 & 任務',
         'is_done' => '是否完成',
         'is_discovered' => '自動發現',
         'register_time_range' => [

@@ -63,7 +63,7 @@ foreach ($rows as $row) {
         $claimClass, $row->id, $claimBtnText, $claimDisabled
     );
     $columns = [];
-    $columns[] = sprintf('<td><strong>%s</strong></td>', $row->name);
+    $columns[] = sprintf('<td class="nowrap"><strong>%s</strong></td>', $row->name);
     $columns[] = sprintf('<td>%s</td>', $row->indexFormatted);
     $columns[] = sprintf('<td>%s</td>', $row->getBeginForUser());
     $columns[] = sprintf('<td>%s</td>', $row->getEndForUser());
