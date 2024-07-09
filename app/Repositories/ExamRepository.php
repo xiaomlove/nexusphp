@@ -1164,7 +1164,7 @@ class ExamRepository extends BaseRepository
                                 'end' => $examUser->end,
                                 'success_reward_bonus' => $exam->success_reward_bonus,
                             ], $locale);
-                            $userBonusCommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', bonuscomment)", $uid, $userBonusComment);
+                            $userBonusCommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', bonuscomment)", $uid, addslashes($userBonusComment));
                             $userBonusUpdate[] = sprintf("when `id` = %s then seedbonus + %d", $uid, $exam->success_reward_bonus);
                         }
                     }
@@ -1211,7 +1211,7 @@ class ExamRepository extends BaseRepository
                                 'end' => $examUser->end,
                                 'fail_deduct_bonus' => $exam->fail_deduct_bonus,
                             ], $locale);
-                            $userBonusCommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', bonuscomment)", $uid, $userBonusComment);
+                            $userBonusCommentUpdate[] = sprintf("when `id` = %s then concat_ws('\n', '%s', bonuscomment)", $uid, addslashes($userBonusComment));
                             $userBonusUpdate[] = sprintf("when `id` = %s then seedbonus - %d", $uid, $exam->fail_deduct_bonus);
                         }
                     }
