@@ -1257,7 +1257,7 @@ class ExamRepository extends BaseRepository
                     $uidStr = implode(', ', $uidToUpdateBonus);
                     $sql = sprintf(
                         "update %s set seedbonus = case %s, bonuscomment = case %s end where id in (%s)",
-                        $userTable, implode(' ', $userBonusUpdate), implode(",", $userBonusCommentUpdate), $uidStr
+                        $userTable, implode(' ', $userBonusUpdate), implode(' ', $userBonusCommentUpdate), $uidStr
                     );
                     $updateResult = DB::update($sql);
                     do_log(sprintf("$logPrefix, update %s users: %s seedbonus, sql: %s, updateResult: %s", count($uidToUpdateBonus), $uidStr, $sql, $updateResult));
