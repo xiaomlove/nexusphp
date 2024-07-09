@@ -1256,7 +1256,7 @@ class ExamRepository extends BaseRepository
                 if (!empty($userBonusUpdate)) {
                     $uidStr = implode(', ', $uidToUpdateBonus);
                     $sql = sprintf(
-                        "update %s set seedbonus = case %s, bonuscomment = case %s end where id in (%s)",
+                        "update %s set seedbonus = case %s end, bonuscomment = case %s end where id in (%s)",
                         $userTable, implode(' ', $userBonusUpdate), implode(' ', $userBonusCommentUpdate), $uidStr
                     );
                     $updateResult = DB::update($sql);
