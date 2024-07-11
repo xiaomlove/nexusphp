@@ -76,9 +76,16 @@ class AuthenticateController extends Controller
         $request->validate([
             'data' => 'required|string'
         ]);
-        $user = $this->repository->nasToolsApprove($request->data);
-        $resource = new UserResource($user);
-        return $this->success($resource);
+        try {
+            $user = $this->repository->nasToolsApprove($request->data);
+            $resource = new UserResource($user);
+            return $this->success($resource);
+        } catch (\Exception $exception) {
+            $msg = $exception->getMessage();
+            $params = $request->all();
+            do_log(sprintf("nasToolsApprove fail: %v, params: %v", $msg, nexus_json_encode($params)));
+            return $this->fail($params, $msg);
+        }
     }
 
     public function iyuuApprove(Request $request)
