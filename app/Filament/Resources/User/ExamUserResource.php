@@ -60,6 +60,7 @@ class ExamUserResource extends Resource
                     ->formatStateUsing(fn ($record) => new HtmlString(get_username($record->uid, false, true, true, true)))
                 ,
                 Tables\Columns\TextColumn::make('exam.name')->label(__('label.exam.label')),
+                Tables\Columns\TextColumn::make('exam.typeText')->label(__('exam.type')),
                 Tables\Columns\TextColumn::make('begin')->label(__('label.begin'))->dateTime(),
                 Tables\Columns\TextColumn::make('end')->label(__('label.end'))->dateTime(),
                 Tables\Columns\BooleanColumn::make('is_done')->label(__('label.exam_user.is_done')),
@@ -78,9 +79,20 @@ class ExamUserResource extends Resource
                         return $query->when($data['uid'], fn (Builder $query, $uid) => $query->where("uid", $uid));
                     })
                 ,
+                Tables\Filters\SelectFilter::make('exam_type')
+                    ->options(Exam::listTypeOptions())
+                    ->label(__('exam.type'))
+                    ->query(function (Builder $query, array $data) {
+                        $query->when($data['value'], function (Builder $query) use ($data) {
+                            $query->whereHas("exam", function (Builder $query) use ($data) {
+                                $query->where("type", $data['value']);
+                            });
+                        });
+                    })
+                ,
                 Tables\Filters\SelectFilter::make('exam_id')
                     ->options(Exam::query()->pluck('name', 'id')->toArray())
-                    ->label(__('exam.label'))
+                    ->label(__('label.exam.label'))
                 ,
                 Tables\Filters\SelectFilter::make('status')->options(ExamUser::listStatus(true))->label(__("label.status")),
                 Tables\Filters\SelectFilter::make('is_done')->options(['0' => 'No', '1' => 'yes'])->label(__('label.exam_user.is_done')),

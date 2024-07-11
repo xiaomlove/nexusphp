@@ -143,7 +143,7 @@ return [
         'label' => 'User medal',
     ],
     'exam' => [
-        'label' => 'Exam',
+        'label' => 'Exam & Task',
         'is_done' => 'Is done',
         'is_discovered' => 'Discovered',
         'register_time_range' => [
