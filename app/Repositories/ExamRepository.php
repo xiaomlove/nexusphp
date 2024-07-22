@@ -385,7 +385,7 @@ class ExamRepository extends BaseRepository
         if ($user->exams()->where('status', ExamUser::STATUS_NORMAL)->exists()) {
             throw new NexusException(nexus_trans('exam.has_other_on_the_way', ['type_text' => $exam->typeText], $locale));
         }
-        $exists = $user->exams()->where('exam_id', $exam->id)->exists();
+        $exists = ExamUser::query()->where('exam_id', $exam->id)->where("status", ExamUser::STATUS_NORMAL)->exists();
         if ($exists) {
             throw new NexusException(nexus_trans('exam.claimed_already', [], $locale));
         }
