@@ -17,6 +17,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Nexus\Database\NexusDB;
 
 class ExamRepository extends BaseRepository
 {
@@ -616,7 +617,7 @@ class ExamRepository extends BaseRepository
             $attributes['index'] = $index['index'];
             $attributes['created_at'] = $now;
             $attributes['updated_at'] = $now;
-            $attributes['value'] = $this->getProgressValue($user, $index['index']);
+            $attributes['value'] = $this->getProgressValue($user, $index['index'], $examUser);
             do_log("[GET_TOTAL_VALUE]: " . $attributes['value']);
             $newVersionProgress = ExamProgress::query()
                 ->where('exam_user_id', $examUser->id)
@@ -690,7 +691,7 @@ class ExamRepository extends BaseRepository
         return $examUser;
     }
 
-    private function getProgressValue(User $user, int $index)
+    private function getProgressValue(User $user, int $index, ExamUser $examUser)
     {
         if ($index == Exam::INDEX_UPLOADED) {
             return $user->uploaded;
@@ -708,7 +709,7 @@ class ExamRepository extends BaseRepository
             return $user->seed_points;
         }
         if ($index == Exam::INDEX_UPLOAD_TORRENT_COUNT) {
-            return Torrent::query()->where("owner", $user->id)->normal()->count();
+            return Torrent::query()->where("owner", $user->id)->where("added", ">=", $examUser->created_at)->normal()->count();
         }
         throw new \InvalidArgumentException("Invalid index: $index");
     }
@@ -1300,6 +1301,34 @@ class ExamRepository extends BaseRepository
         $result = compact('total', 'success');
         do_log("$logPrefix, result: " . json_encode($result));
         return $result;
+    }
+
+    public function fixIndexUploadTorrentCount()
+    {
+        $page = 1;
+        $size = 2000;
+        $examUserTable = (new ExamUser())->getTable();
+        $examProgressTable = (new ExamProgress())->getTable();
+        while (true) {
+            $offset = ($page - 1)*$size;
+            $list = NexusDB::table($examProgressTable)
+                ->select("$examProgressTable.*, $examUserTable.created_at as exam_created_at")
+                ->join($examUserTable, "$examProgressTable.exam_user_id", "=", "$examUserTable.id", "left")
+                ->where("$examUserTable.status", ExamUser::STATUS_NORMAL)
+                ->where("$examProgressTable.index", Exam::INDEX_UPLOAD_TORRENT_COUNT)
+                ->limit($size)
+                ->offset($offset)
+                ->get()
+            ;
+            if ($list->count() == 0) {
+                do_log("page: $page, offset: $offset, no more data...");
+                return;
+            }
+            foreach ($list as $item) {
+
+            }
+
+        }
     }
 
 }

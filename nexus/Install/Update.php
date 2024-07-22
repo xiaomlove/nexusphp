@@ -333,6 +333,14 @@ class Update extends Install
             );
         }
 
+        /**
+         * @since 1.8.13
+         */
+        $settingName = "__has_fix_exam_index_UPLOAD_TORRENT_COUNT";
+        $hasFixExamIndexUploadTorrentCount = get_setting($settingName, false);
+        if (!$hasFixExamIndexUploadTorrentCount) {
+
+        }
     }
 
     public function runExtraMigrate()
