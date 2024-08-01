@@ -39,7 +39,7 @@ class ToolRepository extends BaseRepository
                 $command .= " --exclude=$dirName/$item";
             }
             $command .= sprintf(
-                ' -czf %s -C %s %s',
+                ' -czf %s -C %s %s 2>&1',
                 $filename, dirname($webRoot), $dirName
             );
             $result = exec($command, $output, $result_code);
@@ -90,7 +90,7 @@ class ToolRepository extends BaseRepository
         $config = config("database.connections.$connectionName");
         $filename = sprintf('%s/%s.database.%s.sql', sys_get_temp_dir(), basename(base_path()), date('Ymd.His'));
         $command = sprintf(
-            'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --no-create-db %s >> %s',
+            'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --no-create-db %s >> %s 2>&1',
             $config['username'], $config['password'], $config['host'], $config['port'], $config['database'], $filename,
         );
         $result = exec($command, $output, $result_code);
@@ -118,7 +118,7 @@ class ToolRepository extends BaseRepository
         if (command_exists('tar') && ($method === 'tar' || $method === null)) {
             $filename = $baseFilename . ".tar.gz";
             $command = sprintf(
-                'tar -czf %s -C %s %s -C %s %s',
+                'tar -czf %s -C %s %s -C %s %s 2>&1',
                 $filename,
                 dirname($backupWeb['filename']), basename($backupWeb['filename']),
                 dirname($backupDatabase['filename']), basename($backupDatabase['filename'])
