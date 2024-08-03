@@ -83,7 +83,7 @@ class AuthenticateController extends Controller
         } catch (\Exception $exception) {
             $msg = $exception->getMessage();
             $params = $request->all();
-            do_log(sprintf("nasToolsApprove fail: %v, params: %v", $msg, nexus_json_encode($params)));
+            do_log(sprintf("nasToolsApprove fail: %s, params: %s", $msg, nexus_json_encode($params)));
             return $this->fail($params, $msg);
         }
     }
