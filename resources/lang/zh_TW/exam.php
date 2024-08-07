@@ -55,8 +55,8 @@ return [
     'type' => '类型',
     'type_help' => '考核是常规的考核，不通过会被封禁账号。任务可根据完成与否设置奖励魔力或扣除魔力',
 
-    'fail_deduct_bonus' => '任务失败扣除魔力',
-    'success_reward_bonus' => '任务完成奖励魔力',
+    'fail_deduct_bonus' => '失败扣除魔力',
+    'success_reward_bonus' => '完成奖励魔力',
 
     'action_claim_task' => '領取',
     'confirm_to_claim' => '確定要認領嗎？',
@@ -64,4 +64,8 @@ return [
     'not_match_target_user' => '你不是匹配的目標用戶！',
     'has_other_on_the_way' => '有其他進行中的:type_text',
     'claimed_already' => '已經認領',
+    'not_between_begin_end_time' => '不在開始結束時間範圍內',
+    'reach_max_user_count' => '認領人數已達上限',
+    'claimed_user_count' => '認領人數',
+    'max_user_count' => '最多認領人數(0表示無限製)',
 ];

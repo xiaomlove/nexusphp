@@ -11,7 +11,7 @@ class Exam extends NexusModel
 {
     protected $fillable = [
         'name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes', 'priority',
-        'recurring', 'type', 'success_reward_bonus', 'fail_deduct_bonus'
+        'recurring', 'type', 'success_reward_bonus', 'fail_deduct_bonus', 'max_user_count'
     ];
 
     public $timestamps = true;
@@ -292,6 +292,16 @@ class Exam extends NexusModel
     public function isTypeTask(): bool
     {
         return $this->type == self::TYPE_TASK;
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, "exam_users", "exam_id", "uid");
+    }
+
+    public function OnGoingUsers()
+    {
+        return $this->users()->wherePivot("status", ExamUser::STATUS_NORMAL);
     }
 
 }

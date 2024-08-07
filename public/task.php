@@ -2,11 +2,14 @@
 require "../include/bittorrent.php";
 dbconn();
 loggedinorreturn();
-$query = \App\Models\Exam::query()->where('type', \App\Models\Exam::TYPE_TASK)->where("status", \App\Models\Exam::STATUS_ENABLED);
+$query = \App\Models\Exam::query()
+    ->where('type', \App\Models\Exam::TYPE_TASK)
+    ->where("status", \App\Models\Exam::STATUS_ENABLED)
+;
 $total = (clone $query)->count();
 $perPage = 20;
 list($paginationTop, $paginationBottom, $limit, $offset) = pager($perPage, $total, "?");
-$rows = (clone $query)->offset($offset)->take($perPage)->orderBy('id', 'desc')->get();
+$rows = (clone $query)->offset($offset)->take($perPage)->orderBy('id', 'desc')->withCount("users")->get();
 $title = nexus_trans('exam.type_task');
 $columnNameLabel = nexus_trans('label.name');
 $columnIndexLabel = nexus_trans('exam.index');
@@ -20,6 +23,7 @@ $columnSuccessRewardLabel = nexus_trans('exam.success_reward_bonus');
 $columnFailDeductLabel = nexus_trans('exam.fail_deduct_bonus');
 $columnDescriptionDeductLabel = nexus_trans('label.description');
 $columnClaimLabel = nexus_trans('exam.action_claim_task');
+$columnClaimedUserCountLabel = nexus_trans('exam.claimed_user_count');
 
 $header = '<h1 style="text-align: center">'.$title.'</h1>';
 stdhead($title);
@@ -35,6 +39,7 @@ $table = <<<TABLE
 <td class="colhead">$columnTargetUserLabel</td>
 <td class="colhead">$columnSuccessRewardLabel</td>
 <td class="colhead">$columnFailDeductLabel</td>
+<td class="colhead">$columnClaimedUserCountLabel</td>
 <td class="colhead">$columnDescriptionDeductLabel</td>
 <td class="colhead">$columnClaimLabel</td>
 </tr>
@@ -51,10 +56,10 @@ $userTasks = $userInfo->onGoingExamAndTasks()->where("type", \App\Models\Exam::T
 //dd(last_query());
 foreach ($rows as $row) {
     $claimDisabled = $claimClass = '';
-    $claimBtnText = "认领";
+    $claimBtnText = nexus_trans("exam.action_claim_task");
     if ($userTasks->has($row->id)) {
         $claimDisabled = " disabled";
-        $claimBtnText = "已认领";
+        $claimBtnText = nexus_trans("exam.claimed_already");
     } else {
         $claimClass = "claim";
     }
@@ -64,12 +69,13 @@ foreach ($rows as $row) {
     );
     $columns = [];
     $columns[] = sprintf('<td class="nowrap"><strong>%s</strong></td>', $row->name);
-    $columns[] = sprintf('<td>%s</td>', $row->indexFormatted);
+    $columns[] = sprintf('<td class="nowrap">%s</td>', $row->indexFormatted);
     $columns[] = sprintf('<td>%s</td>', $row->getBeginForUser());
     $columns[] = sprintf('<td>%s</td>', $row->getEndForUser());
     $columns[] = sprintf('<td>%s</td>', $row->filterFormatted);
     $columns[] = sprintf('<td>%s</td>', number_format($row->success_reward_bonus));
     $columns[] = sprintf('<td>%s</td>', number_format($row->fail_deduct_bonus));
+    $columns[] = sprintf('<td>%s</td>', sprintf("%s/%s",$row->users_count, $row->max_user_count ?: nexus_trans("label.infinite")));
     $columns[] = sprintf('<td>%s</td>', $row->description);
     $columns[] = sprintf('<td>%s</td>', $claimAction);
     $table .= sprintf('<tr>%s</tr>', implode("", $columns));
@@ -83,35 +89,17 @@ $js = <<<JS
 jQuery('.claim').on('click', function (e) {
     let id = jQuery(this).attr('data-id')
     layer.confirm("{$confirmBuyMsg}", function (index) {
+        layer.close(index)
         let params = {
             action: "claimTask",
             params: {exam_id: id}
         }
         console.log(params)
+        jQuery('body').loading({
+            stoppable: false
+        });
         jQuery.post('ajax.php', params, function(response) {
-            console.log(response)
-            if (response.ret != 0) {
-                layer.alert(response.msg)
-                return
-            }
-            window.location.reload()
-        }, 'json')
-    })
-})
-jQuery('.gift').on('click', function (e) {
-    let medalId = jQuery(this).attr('data-id')
-    let uid = jQuery(this).prev().val()
-    if (!uid) {
-        layer.alert('Require UID')
-        return
-    }
-    layer.confirm("{$confirmGiftMsg}" + uid + " ?", function (index) {
-        let params = {
-            action: "giftMedal",
-            params: {medal_id: medalId, uid: uid}
-        }
-        console.log(params)
-        jQuery.post('ajax.php', params, function(response) {
+            jQuery('body').loading('stop');
             console.log(response)
             if (response.ret != 0) {
                 layer.alert(response.msg)
@@ -122,6 +110,7 @@ jQuery('.gift').on('click', function (e) {
     })
 })
 JS;
+\Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
 \Nexus\Nexus::js($js, 'footer', false);
 stdfoot();
 

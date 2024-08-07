@@ -368,6 +368,19 @@ class ExamRepository extends BaseRepository
         $locale = $user->locale;
         $authUserClass = get_user_class();
         $authUserId = get_user_id();
+        $now = Carbon::now();
+        if (!empty($exam->begin)) {
+            $specificBegin = Carbon::parse($exam->begin);
+            if ($specificBegin->isAfter($now)) {
+                throw new NexusException(nexus_trans("exam.not_between_begin_end_time", [], $locale));
+            }
+        }
+        if (!empty($exam->end)) {
+            $specificEnd = Carbon::parse($exam->end);
+            if ($specificEnd->isBefore($now)) {
+                throw new NexusException(nexus_trans("exam.not_between_begin_end_time", [], $locale));
+            }
+        }
         if ($exam->isTypeExam()) {
             if ($authUserClass <= $user->class) {
                 //exam only can assign by upper class admin
@@ -377,6 +390,12 @@ class ExamRepository extends BaseRepository
             if ($user->id != $authUserId) {
                 //task only can be claimed by self
                 throw new NexusException(nexus_trans('exam.claim_by_yourself_only', [], $locale));
+            }
+            if ($exam->max_user_count > 0) {
+                $claimUserCount = ExamUser::query()->where("exam_id", $examId)->count();
+                if ($claimUserCount >= $exam->max_user_count) {
+                    throw new NexusException(nexus_trans('exam.reach_max_user_count', [], $locale));
+                }
             }
         }
 

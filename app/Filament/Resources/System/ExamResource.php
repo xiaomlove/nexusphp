@@ -49,20 +49,30 @@ class ExamResource extends Resource
                 Forms\Components\Section::make(__('label.exam.section_base_info'))->schema([
                     Forms\Components\TextInput::make('name')->required()->columnSpan(['sm' => 2])->label(__('label.name')),
                     Forms\Components\Select::make('type')
-                        ->required()->columnSpan(['sm' => 2])
+                        ->required()
+                        ->columnSpanFull()
                         ->label(__('exam.type'))
                         ->options(Exam::listTypeOptions())
                         ->helperText(__('exam.type_help'))
                         ->reactive()
                     ,
                     Forms\Components\TextInput::make('success_reward_bonus')
+                        ->columnSpanFull()
                         ->required()
                         ->label(__('exam.success_reward_bonus'))
                         ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
                     ,
                     Forms\Components\TextInput::make('fail_deduct_bonus')
+                        ->columnSpanFull()
                         ->required()
                         ->label(__('exam.fail_deduct_bonus'))
+                        ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
+                    ,
+                    Forms\Components\TextInput::make('max_user_count')
+                        ->columnSpanFull()
+                        ->required()
+                        ->numeric()
+                        ->label(__('exam.max_user_count'))
                         ->hidden(fn (\Closure $get) => $get('type') != Exam::TYPE_TASK)
                     ,
 
@@ -148,7 +158,7 @@ class ExamResource extends Resource
                 Tables\Columns\TextColumn::make('end')->label(__('label.end')),
                 Tables\Columns\TextColumn::make('durationText')->label(__('label.duration')),
                 Tables\Columns\TextColumn::make('recurringText')->label(__('exam.recurring')),
-                Tables\Columns\TextColumn::make('filterFormatted')->label(__('label.exam.filter_formatted'))->html(),
+                Tables\Columns\TextColumn::make('filterFormatted')->label(__('label.exam.filter_formatted'))->html()->extraAttributes([]),
                 Tables\Columns\BooleanColumn::make('is_discovered')->label(__('label.exam.is_discovered')),
                 Tables\Columns\TextColumn::make('priority')->label(__('label.priority')),
                 Tables\Columns\TextColumn::make('statusText')->label(__('label.status')),
