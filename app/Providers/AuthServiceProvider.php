@@ -56,7 +56,9 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-        Passport::useClientModel(OauthClient::class);
+        if (class_exists(Passport::class)) {
+            Passport::useClientModel(OauthClient::class);
+        }
 
         Auth::viaRequest('nexus-cookie', function (Request $request) {
             return $this->getUserByCookie($request->cookie());
