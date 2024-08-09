@@ -9,7 +9,7 @@ $query = \App\Models\Exam::query()
 $total = (clone $query)->count();
 $perPage = 20;
 list($paginationTop, $paginationBottom, $limit, $offset) = pager($perPage, $total, "?");
-$rows = (clone $query)->offset($offset)->take($perPage)->orderBy('id', 'desc')->withCount("users")->get();
+$rows = (clone $query)->offset($offset)->take($perPage)->orderBy('id', 'desc')->withCount("onGoingUsers")->get();
 $title = nexus_trans('exam.type_task');
 $columnNameLabel = nexus_trans('label.name');
 $columnIndexLabel = nexus_trans('exam.index');
@@ -75,7 +75,7 @@ foreach ($rows as $row) {
     $columns[] = sprintf('<td>%s</td>', $row->filterFormatted);
     $columns[] = sprintf('<td>%s</td>', number_format($row->success_reward_bonus));
     $columns[] = sprintf('<td>%s</td>', number_format($row->fail_deduct_bonus));
-    $columns[] = sprintf('<td>%s</td>', sprintf("%s/%s",$row->users_count, $row->max_user_count ?: nexus_trans("label.infinite")));
+    $columns[] = sprintf('<td>%s</td>', sprintf("%s/%s",$row->on_going_users_count ?? 0, $row->max_user_count ?: nexus_trans("label.infinite")));
     $columns[] = sprintf('<td>%s</td>', $row->description);
     $columns[] = sprintf('<td>%s</td>', $claimAction);
     $table .= sprintf('<tr>%s</tr>', implode("", $columns));

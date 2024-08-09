@@ -299,7 +299,7 @@ class Exam extends NexusModel
         return $this->belongsToMany(User::class, "exam_users", "exam_id", "uid");
     }
 
-    public function OnGoingUsers()
+    public function onGoingUsers()
     {
         return $this->users()->wherePivot("status", ExamUser::STATUS_NORMAL);
     }

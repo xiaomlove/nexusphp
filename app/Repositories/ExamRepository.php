@@ -392,7 +392,7 @@ class ExamRepository extends BaseRepository
                 throw new NexusException(nexus_trans('exam.claim_by_yourself_only', [], $locale));
             }
             if ($exam->max_user_count > 0) {
-                $claimUserCount = ExamUser::query()->where("exam_id", $examId)->count();
+                $claimUserCount = $exam->onGoingUsers()->count();
                 if ($claimUserCount >= $exam->max_user_count) {
                     throw new NexusException(nexus_trans('exam.reach_max_user_count', [], $locale));
                 }
