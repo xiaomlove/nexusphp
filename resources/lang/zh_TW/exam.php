@@ -68,4 +68,5 @@ return [
     'reach_max_user_count' => '認領人數已達上限',
     'claimed_user_count' => '認領人數',
     'max_user_count' => '最多認領人數(0表示無限製)',
+    'background_color' => '信息框背景色',
 ];

@@ -7,12 +7,12 @@ use App\Repositories\ExamRepository;
 
 class Exam
 {
-    public function render($uid)
+    public function getCurrent($uid): array
     {
         $examRep = new ExamRepository();
         $userExam = $examRep->getUserExamProgress($uid, ExamUser::STATUS_NORMAL);
         if (empty($userExam)) {
-            return '';
+            return ['exam' => null, 'html' => ''];
         }
         /** @var \App\Models\Exam $exam */
         $exam = $userExam->exam;
@@ -34,6 +34,7 @@ class Exam
         if ($exam->description) {
             $row[] = "\n" . $exam->description;
         }
-        return  nl2br(implode("\n", $row));
+        $html =  nl2br(implode("\n", $row));
+        return compact('exam', 'html');
     }
 }

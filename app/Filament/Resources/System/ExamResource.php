@@ -104,6 +104,10 @@ class ExamResource extends Resource
                         ->inline()
                         ->required()
                         ->columnSpan(['sm' => 2]),
+                    Forms\Components\TextInput::make('background_color')
+                        ->required()
+                        ->label(__('exam.background_color'))
+                        ->columnSpan(['sm' => 2]),
                     Forms\Components\TextInput::make('priority')
                         ->columnSpan(['sm' => 2])
                         ->integer()

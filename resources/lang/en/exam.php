@@ -68,4 +68,5 @@ return [
     'reach_max_user_count' => 'The number of claimed users has reached its maximum',
     'claimed_user_count' => 'Claimed',
     'max_user_count' => 'Max claim user count(0 means unlimited)',
+    'background_color' => 'Info box background color',
 ];

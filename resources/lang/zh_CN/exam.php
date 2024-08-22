@@ -70,4 +70,5 @@ return [
     'reach_max_user_count' => '认领人数已达上限',
     'claimed_user_count' => '认领人数',
     'max_user_count' => '最多认领人数(0表示无限制)',
+    'background_color' => '信息框背景色',
 ];

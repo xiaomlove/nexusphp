@@ -11,7 +11,7 @@ class Exam extends NexusModel
 {
     protected $fillable = [
         'name', 'description', 'begin', 'end', 'duration', 'status', 'is_discovered', 'filters', 'indexes', 'priority',
-        'recurring', 'type', 'success_reward_bonus', 'fail_deduct_bonus', 'max_user_count'
+        'recurring', 'type', 'success_reward_bonus', 'fail_deduct_bonus', 'max_user_count', 'background_color',
     ];
 
     public $timestamps = true;

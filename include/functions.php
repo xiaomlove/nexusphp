@@ -2899,9 +2899,9 @@ if ($msgalert)
 
 	//show the exam info
     $exam = new \Nexus\Exam\Exam();
-    $examHtml = $exam->render($CURUSER['id']);
-    if (!empty($examHtml)) {
-        msgalert("messages.php", $examHtml, "blue");
+    $currentExam = $exam->getCurrent($CURUSER['id']);
+    if (!empty($currentExam['html'])) {
+        msgalert("messages.php", $currentExam['html'], $currentExam['exam']->background_color ?? 'blue');
     }
 }
 		if ($offlinemsg)
