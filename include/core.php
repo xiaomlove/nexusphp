@@ -52,3 +52,4 @@ ignore_user_abort(1);
 
 $hook = new \Nexus\Plugin\Hook();
 $plugin = new \Nexus\Plugin\Plugin();
+$plugin->start();

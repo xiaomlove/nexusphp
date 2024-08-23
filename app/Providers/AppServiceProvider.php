@@ -35,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        global $plugin;
+        $plugin->start();
 //        JsonResource::withoutWrapping();
         DB::connection(config('database.default'))->enableQueryLog();
 

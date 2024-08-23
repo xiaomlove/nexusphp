@@ -7,7 +7,12 @@ class Plugin
 
     private static array $plugins = [];
 
-    public function __construct()
+//    public function __construct()
+//    {
+//        $this->start();
+//    }
+
+    public function start(): void
     {
         $this->loadProviders();
         $this->bootPlugins();
