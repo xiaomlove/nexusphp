@@ -53,12 +53,9 @@ $table = <<<TABLE
 </thead>
 TABLE;
 $now = now();
+$user = \App\Models\User::query()->findOrFail($CURUSER['id']);
 $table .= '<tbody>';
-$userMedals = \App\Models\UserMedal::query()->where('uid', $CURUSER['id'])
-    ->orderBy('id', 'desc')
-    ->get()
-    ->keyBy('medal_id')
-;
+$userMedals = $user->valid_medals->keyBy('id');
 foreach ($rows as $row) {
     $buyDisabled = $giftDisabled = ' disabled';
     $buyClass = $giftClass = '';
