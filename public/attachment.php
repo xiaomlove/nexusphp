@@ -109,7 +109,7 @@ if ($Attach->enable_attachment())
 						if ($orig && !$stop)
 						{
 							$thumb = imagecreatetruecolor($newwidth, $newheight);
-							imagecopyresized($thumb, $orig, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+                            imagecopyresampled($thumb, $orig, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 							if ($thumbnailtype_attachment == 'createthumb'){
 								$hasthumb = true;
 								imagejpeg($thumb, $file_location.".".$ext.".thumb.jpg", $thumbquality_attachment);

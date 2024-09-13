@@ -818,7 +818,7 @@ function closeall() {
 			tagRemove = popstack(bbtags)
 			if ( (tagRemove != 'color') ) {
 				doInsert("[/"+tagRemove+"]", "", false);
-				eval("document.<?php echo $form?>." + tagRemove + ".value = ' " + tagRemove + " '");
+				eval("document.<?php echo $form?>." + tagRemove + ".value = ' " + tagRemove.toUpperCase() + " '");
 				eval(tagRemove + "_open = 0");
 			} else {
 				doInsert("[/"+tagRemove+"]", "", false);

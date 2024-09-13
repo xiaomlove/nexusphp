@@ -238,7 +238,7 @@ if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"])
 	tr_small($lang_userdetails['row_ip_address'], $user['ip'].$locationinfo.$seedBoxIcon, 1);
 }
 $clientselect = '';
-$res = sql_query("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = {$user['id']} GROUP BY agent") or sqlerr();
+$res = sql_query("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = {$user['id']} GROUP BY agent, ipv4, ipv6, port") or sqlerr();
 if (mysql_num_rows($res) > 0)
 {
     $clientselect .= "<table border='1' cellspacing='0' cellpadding='5'><tr><td class='colhead'>Agent</td><td class='colhead'>IPV4</td><td class='colhead'>IPV6</td><td class='colhead'>Port</td></tr>";

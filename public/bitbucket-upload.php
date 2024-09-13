@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	if(!$orig)
 	stderr($lang_bitbucketupload['std_image_processing_failed'],$lang_bitbucketupload['std_sorry_the_uploaded']."$imgtypes[$it]".$lang_bitbucketupload['std_failed_processing']);
 	$thumb = imagecreatetruecolor($newwidth, $newheight);
-	imagecopyresized($thumb, $orig, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+    imagecopyresampled($thumb, $orig, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 	switch ($it) {
         case 1:
             $ret = imagegif($thumb, $tgtfile);

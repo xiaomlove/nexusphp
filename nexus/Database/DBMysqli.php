@@ -12,8 +12,8 @@ class DBMysqli implements DBInterface
         if (mysqli_connect_errno()) {
             throw new DatabaseException(mysqli_connect_error());
         }
-        $mysqli->query("SET NAMES UTF8");
-        $mysqli->query("SET collation_connection = 'utf8_general_ci'");
+        $mysqli->set_charset("utf8mb4");
+        $mysqli->query("SET collation_connection = 'utf8mb4_unicode_ci'");
         $mysqli->query("SET sql_mode=''");
         $mysqli->query("SET time_zone='".date('P')."'");
 
