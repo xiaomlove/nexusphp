@@ -36,6 +36,8 @@ use Illuminate\Support\Str;
 use Nexus\Database\NexusDB;
 use Nexus\Imdb\Imdb;
 use Rhilip\Bencode\Bencode;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class TorrentRepository extends BaseRepository
 {
@@ -334,13 +336,23 @@ class TorrentRepository extends BaseRepository
     public function encryptDownHash($id, $user): string
     {
         $key = $this->getEncryptDownHashKey($user);
-        return (new Hashids($key))->encode($id);
+        $payload = [
+            'id' => $id,
+            'exp' => time() + 3600
+        ];
+        return JWT::encode($payload, $key, 'HS256');
     }
 
     public function decryptDownHash($downHash, $user)
     {
         $key = $this->getEncryptDownHashKey($user);
-        return (new Hashids($key))->decode($downHash);
+        try {
+            $decoded = JWT::decode($downHash, new Key($key, 'HS256'));
+            return [$decoded->id];
+        } catch (\Exception $e) {
+            do_log("Invalid down hash: $downHash, " . $e->getMessage(), "error");
+            return '';
+        }
     }
 
     private function getEncryptDownHashKey($user)
