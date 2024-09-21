@@ -1327,32 +1327,4 @@ class ExamRepository extends BaseRepository
         return $result;
     }
 
-    public function fixIndexUploadTorrentCount()
-    {
-        $page = 1;
-        $size = 2000;
-        $examUserTable = (new ExamUser())->getTable();
-        $examProgressTable = (new ExamProgress())->getTable();
-        while (true) {
-            $offset = ($page - 1)*$size;
-            $list = NexusDB::table($examProgressTable)
-                ->select("$examProgressTable.*, $examUserTable.created_at as exam_created_at")
-                ->join($examUserTable, "$examProgressTable.exam_user_id", "=", "$examUserTable.id", "left")
-                ->where("$examUserTable.status", ExamUser::STATUS_NORMAL)
-                ->where("$examProgressTable.index", Exam::INDEX_UPLOAD_TORRENT_COUNT)
-                ->limit($size)
-                ->offset($offset)
-                ->get()
-            ;
-            if ($list->count() == 0) {
-                do_log("page: $page, offset: $offset, no more data...");
-                return;
-            }
-            foreach ($list as $item) {
-
-            }
-
-        }
-    }
-
 }

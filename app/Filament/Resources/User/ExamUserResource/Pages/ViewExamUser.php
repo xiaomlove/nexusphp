@@ -117,9 +117,4 @@ class ViewExamUser extends ViewRecord
             Actions\DeleteAction::make(),
         ];
     }
-
-    private function getProgress()
-    {
-
-    }
 }
