@@ -301,7 +301,7 @@ if ($bonus_tweak == "disable" || $bonus_tweak == "disablesave")
 	stderr($lang_mybonus['std_sorry'],$lang_mybonus['std_karma_system_disabled'].($bonus_tweak == "disablesave" ? "<b>".$lang_mybonus['std_points_active']."</b>" : ""),false);
 
 $action = htmlspecialchars($_GET['action'] ?? '');
-$do = htmlspecialchars($_GET['do'] ?? null);
+$do = htmlspecialchars($_GET['do'] ?? '');
 unset($msg);
 if (isset($do)) {
 	if ($do == "upload")
@@ -398,7 +398,7 @@ for ($i=0; $i < count($allBonus); $i++)
 		elseif ($bonusarray['art'] == 'noad'){
 			if ($enablenoad_advertisement == 'yes' && get_user_class() >= $noad_advertisement)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_class_above_no_ad']."\" disabled=\"disabled\" /></td>");
-			elseif (strtotime($CURUSER['noaduntil']) >= TIMENOW)
+			elseif (!empty($CURUSER['noaduntil']) && strtotime($CURUSER['noaduntil']) >= TIMENOW)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".$lang_mybonus['submit_already_disabled']."\" disabled=\"disabled\" /></td>");
 			elseif (get_user_class() < $bonusnoad_advertisement)
 				print("<td class=\"rowfollow\" align=\"center\"><input type=\"submit\" name=\"submit\" value=\"".get_user_class_name($bonusnoad_advertisement,false,false,true).$lang_mybonus['text_plus_only']."\" disabled=\"disabled\" /></td>");
@@ -550,8 +550,6 @@ if ($offervote_bonus > 0)
 	print("<li>".$lang_mybonus['text_offer_vote'].$offervote_bonus.$lang_mybonus['text_point'].add_s($offervote_bonus)."</li>");
 if ($funboxvote_bonus > 0)
 	print("<li>".$lang_mybonus['text_funbox_vote'].$funboxvote_bonus.$lang_mybonus['text_point'].add_s($funboxvote_bonus)."</li>");
-if ($ratetorrent_bonus > 0)
-	print("<li>".$lang_mybonus['text_rate_torrent'].$ratetorrent_bonus.$lang_mybonus['text_point'].add_s($ratetorrent_bonus)."</li>");
 if ($saythanks_bonus > 0)
 	print("<li>".$lang_mybonus['text_say_thanks'].$saythanks_bonus.$lang_mybonus['text_point'].add_s($saythanks_bonus)."</li>");
 if ($receivethanks_bonus > 0)

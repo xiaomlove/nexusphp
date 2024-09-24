@@ -259,7 +259,7 @@ function maketable($res, $mode = 'seeding')
 	return [$ret, $total_size];
 }
 $count = 0;
-$torrentlist = "";
+$torrentlist = $pagertop = $pagerbottom = "";
 switch ($type)
 {
 	case 'uploaded':

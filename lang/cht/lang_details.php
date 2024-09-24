@@ -208,6 +208,7 @@ $lang_details = array
 	'text_creator' => "主創: ",
 	'submit_search_at_shooter' => "搜索射手網",
 	'submit_search_at_opensubtitles' => "搜索Opensubtitles",
+    'title_show_or_hide' => "顯示&nbsp;或&nbsp;隱藏",
 	'title_bookmark' => "收藏",
 	'text_album_information' => "專輯資訊：",
 	'text_about_album' => "關于該專輯：",
