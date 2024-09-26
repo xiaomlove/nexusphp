@@ -127,7 +127,7 @@ else
 			}
 		else $username = $lang_shoutbox['text_guest'];
 		if (isset($CURUSER) && $CURUSER['timetype'] != 'timealive')
-			$time = strftime("%m.%d %H:%M",$arr["date"]);
+			$time = (new DateTime())->setTimestamp($arr["date"])->format('m.d H:i');
 		else $time = get_elapsed_time($arr["date"]).$lang_shoutbox['text_ago'];
 		print("<tr><td class=\"shoutrow\"><span class='date'>[".$time."]</span> ".
 $del ." ". $username." " . format_comment($arr["text"],true,false,true,true,600,false,false)."
