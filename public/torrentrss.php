@@ -71,7 +71,7 @@ if (isset($searchstr)){
 
 	$ANDOR = ($search_mode == 0 ? " AND " : " OR ");	// only affects mode 0 and mode 1
 	foreach ($like_expression_array as &$like_expression_array_element)
-		$like_expression_array_element = "(torrents.name" . $like_expression_array_element.(!empty($_GET['ismalldescr']) ? " OR torrents.small_descr". $like_expression_array_element : "").")";
+		$like_expression_array_element = "(torrents.name" . $like_expression_array_element . (isset($_GET['ismalldescr']) && $_GET['ismalldescr'] ? " OR torrents.small_descr" . $like_expression_array_element : "") . ")";
 	$wherea[] = implode($ANDOR, $like_expression_array);
 	$where .= ($where ? " AND " : "") . implode(" AND ", $wherea);
 }
