@@ -168,16 +168,24 @@ function dltable($name, $arr, $torrent, &$isSeedBoxCaseWhens)
 	$s .= "</table>\n";
 	return $s;
 }
-	$downloaders = array();
-	$seeders = array();
-	$torrent = \App\Models\Torrent::query()->findOrFail($id, ['id', 'seeders', 'leechers']);
-	$subres = sql_query("SELECT id, seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id") or sqlerr();
-	while ($subrow = mysql_fetch_array($subres)) {
-	if ($subrow["seeder"] == "yes")
-		$seeders[] = $subrow;
-	else
-		$downloaders[] = $subrow;
-	}
+    $downloaders = array();
+    $seeders = array();
+    $torrent = \App\Models\Torrent::query()->findOrFail($id, ['id', 'seeders', 'leechers']);
+    $seedersAndLeechers = apply_filter("torrent_seeder_leecher_list", [], $id);
+    if (isset($seedersAndLeechers['seeders'], $seedersAndLeechers['leechers'])) {
+//        dd($seedersAndLeechers);
+        $seeders = $seedersAndLeechers['seeders'];
+        $downloaders = $seedersAndLeechers['leechers'];
+        do_log("SEEDER_LEECHER_FROM_FILTER: torrent_seeder_leecher_list");
+    } else {
+        $subres = sql_query("SELECT id, seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $id") or sqlerr();
+        while ($subrow = mysql_fetch_array($subres)) {
+            if ($subrow["seeder"] == "yes")
+                $seeders[] = $subrow;
+            else
+                $downloaders[] = $subrow;
+        }
+    }
 	$seedersCount = count($seeders);
 	$leechersCount = count($downloaders);
     if ($torrent->seeders != $seedersCount || $torrent->leechers != $leechersCount) {

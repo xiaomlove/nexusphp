@@ -16,6 +16,10 @@ class LoadTorrentBoughtUsers implements ShouldQueue
 
     private int $torrentId;
 
+    public $tries = 1;
+
+    public $timeout = 1800;
+
     /**
      * Create a new job instance.
      *

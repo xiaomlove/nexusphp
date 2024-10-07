@@ -2,9 +2,7 @@
 namespace Nexus\Plugin;
 
 use App\Repositories\BaseRepository;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
-use Nexus\Database\NexusDB;
 
 abstract class BasePlugin extends BaseRepository
 {
@@ -43,5 +41,15 @@ abstract class BasePlugin extends BaseRepository
         $reflection = new \ReflectionClass(get_called_class());
         $pluginRoot = dirname($reflection->getFileName(), 2);
         return $pluginRoot . "/resources/views/" . trim($name, "/");
+    }
+
+    public function trans($name): string
+    {
+        return nexus_trans(sprintf("%s::%s", static::ID, $name));
+    }
+
+    public static function getInstance(): static
+    {
+        return Plugin::getById(static::ID);
     }
 }

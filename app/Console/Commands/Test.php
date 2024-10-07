@@ -40,10 +40,12 @@ use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use GeoIp2\Database\Reader;
+use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -98,7 +100,17 @@ class Test extends Command
      */
     public function handle()
     {
-        CleanupRepository::checkQueueFailedJobs();
+        $url = "http://127.0.0.1:7777/list-seeder-leecher-count";
+        $idArr = [8, 12];
+        $client = new Client();
+        $response = $client->post($url, ['json' => ['torrent_ids' => $idArr]]);
+        $result = json_decode((string)$response->getBody(), true);
+        dump($result);
+        if (!isset($result['ret']) || $result['ret'] != 0) {
+            echo "Bad";
+        } else {
+            echo "OK";
+        }
     }
 
 }
