@@ -100,17 +100,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $url = "http://127.0.0.1:7777/list-seeder-leecher-count";
-        $idArr = [8, 12];
-        $client = new Client();
-        $response = $client->post($url, ['json' => ['torrent_ids' => $idArr]]);
-        $result = json_decode((string)$response->getBody(), true);
-        dump($result);
-        if (!isset($result['ret']) || $result['ret'] != 0) {
-            echo "Bad";
-        } else {
-            echo "OK";
-        }
+        $ip = "116.77.75.254";
+        $this->info(inet_pton($ip));
     }
 
 }

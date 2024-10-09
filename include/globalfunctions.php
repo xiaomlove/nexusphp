@@ -788,6 +788,15 @@ function get_user_id()
     return auth()->user()->id ?? 0;
 }
 
+function get_user_passkey()
+{
+    if (IN_NEXUS) {
+        global $CURUSER;
+        return $CURUSER["passkey"] ?? "";
+    }
+    return auth()->user()->passkey ?? "";
+}
+
 function get_pure_username()
 {
     if (IN_NEXUS) {
