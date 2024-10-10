@@ -6,6 +6,7 @@ use App\Events\NewsCreated;
 use App\Events\TorrentCreated;
 use App\Events\TorrentDeleted;
 use App\Events\TorrentUpdated;
+use App\Events\UserCreated;
 use App\Events\UserDestroyed;
 use App\Events\UserDisabled;
 use App\Events\UserEnabled;
@@ -31,15 +32,18 @@ class FireEvent extends Command
      *
      * @var string
      */
-    protected $description = 'Fire a event, options: --name, --idKey --idKeyOld';
+    protected $description = 'Fire an event, options: --name, --idKey --idKeyOld';
 
     protected array $eventMaps = [
         "torrent_created" => ['event' => TorrentCreated::class, 'model' => Torrent::class],
         "torrent_updated" => ['event' => TorrentUpdated::class, 'model' => Torrent::class],
         "torrent_deleted" => ['event' => TorrentDeleted::class, 'model' => Torrent::class],
+
+        "user_created" => ['event' => UserCreated::class, 'model' => User::class],
         "user_destroyed" => ['event' => UserDestroyed::class, 'model' => User::class],
         "user_disabled" => ['event' => UserDisabled::class, 'model' => User::class],
         "user_enabled" => ['event' => UserEnabled::class, 'model' => User::class],
+
         "news_created" => ['event' => NewsCreated::class, 'model' => News::class],
     ];
 
@@ -69,6 +73,7 @@ class FireEvent extends Command
                 }
                 $result = call_user_func_array([$eventName, "dispatch"], $params);
                 $log .= ", success call dispatch, result: " . var_export($result, true);
+                publish_model_event($name, $model->id);
             } else {
                 $log .= ", invalid argument to call, it should be instance of: " . Model::class;
             }

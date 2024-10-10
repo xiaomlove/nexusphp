@@ -151,6 +151,7 @@ $secret = mksecret();
 $wantpasshash = md5($secret . $wantpassword . $secret);
 $editsecret = ($verification == 'admin' ? '' : $secret);
 $invite_count = (int) $invite_count;
+$passkey = md5($wantusername.date("Y-m-d H:i:s").$wantpasshash);
 
 $wantusername = sqlesc($wantusername);
 $wantpasshash = sqlesc($wantpasshash);
@@ -167,8 +168,9 @@ $res_check_user = sql_query("SELECT * FROM users WHERE username = " . $wantusern
 if(mysql_num_rows($res_check_user) == 1)
   bark($lang_takesignup['std_username_exists']);
 
-$ret = sql_query("INSERT INTO users (username, passhash, secret, editsecret, email, country, gender, status, class, invites, ".($type == 'invite' ? "invited_by," : "")." added, last_access, lang, stylesheet".($showschool == 'yes' ? ", school" : "").", uploaded) VALUES (" . $wantusername . "," . $wantpasshash . "," . $secret . "," . $editsecret . "," . $email . "," . $country . "," . $gender . ", 'pending', ".$defaultclass_class.",". $invite_count .", ".($type == 'invite' ? "'$inviter'," : "") ." '". date("Y-m-d H:i:s") ."' , " . " '". date("Y-m-d H:i:s") ."' , ".$sitelangid . ",".$defcss.($showschool == 'yes' ? ",".$school : "").",".($iniupload_main > 0 ? $iniupload_main : 0).")") or sqlerr(__FILE__, __LINE__);
+$ret = sql_query("INSERT INTO users (username, passhash, passkey, secret, editsecret, email, country, gender, status, class, invites, ".($type == 'invite' ? "invited_by," : "")." added, last_access, lang, stylesheet".($showschool == 'yes' ? ", school" : "").", uploaded) VALUES (" . $wantusername . "," . $wantpasshash . "," . sqlesc($passkey) . "," . $secret . "," . $editsecret . "," . $email . "," . $country . "," . $gender . ", 'pending', ".$defaultclass_class.",". $invite_count .", ".($type == 'invite' ? "'$inviter'," : "") ." '". date("Y-m-d H:i:s") ."' , " . " '". date("Y-m-d H:i:s") ."' , ".$sitelangid . ",".$defcss.($showschool == 'yes' ? ",".$school : "").",".($iniupload_main > 0 ? $iniupload_main : 0).")") or sqlerr(__FILE__, __LINE__);
 $id = mysql_insert_id();
+fire_event("user_created", \App\Models\User::query()->first($id, \App\Models\User::$commonFields));
 $tmpInviteCount = get_setting('main.tmp_invite_count');
 if ($tmpInviteCount > 0) {
     $userRep = new \App\Repositories\UserRepository();

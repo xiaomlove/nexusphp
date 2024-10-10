@@ -132,7 +132,8 @@ class UserRepository extends BaseRepository
             'stylesheet' => $setting['defstylesheet'],
             'added' => now()->toDateTimeString(),
             'status' => User::STATUS_CONFIRMED,
-            'class' => $class
+            'class' => $class,
+            'passkey' => md5($username.date("Y-m-d H:i:s").$passhash)
         ];
         $user = new User($data);
         if (!empty($params['id'])) {
@@ -143,7 +144,7 @@ class UserRepository extends BaseRepository
             $user->id = $params['id'];
         }
         $user->save();
-
+        fire_event("user_created", $user);
         return $user;
     }
 

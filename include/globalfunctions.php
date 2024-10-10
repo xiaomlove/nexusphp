@@ -1247,6 +1247,9 @@ function get_snatch_info($torrentId, $userId)
     return mysql_fetch_assoc(sql_query(sprintf('select * from snatched where torrentid = %s and userid = %s order by id desc limit 1', $torrentId, $userId)));
 }
 
+/**
+ * 完整的 Laravel 事件, 在 php 端有监听者的需要触发. 同样会执行 publish_model_event()
+ */
 function fire_event(string $name, \Illuminate\Database\Eloquent\Model $model, \Illuminate\Database\Eloquent\Model $oldModel = null): void
 {
     $prefix = "fire_event:";
@@ -1258,4 +1261,17 @@ function fire_event(string $name, \Illuminate\Database\Eloquent\Model $model, \I
         \Nexus\Database\NexusDB::cache_put($idKeyOld, serialize($oldModel), 3600*24*30);
     }
     executeCommand("event:fire --name=$name --idKey=$idKey --idKeyOld=$idKeyOld", "string", true, false);
+}
+
+/**
+ * 仅仅是往 redis 发布事件, php 端无监听者仅在其他平台有需要的触发这个即可, 较轻量
+ */
+function publish_model_event(string $event, int $id): void
+{
+    $channel = nexus_env("CHANNEL_NAME_MODEL_EVENT");
+    if (!empty($channel)) {
+        \Nexus\Database\NexusDB::redis()->publish($channel, json_encode(["event" => $event, "id" => $id]));
+    } else {
+        do_log("event: $event, id: $id, channel: $channel, channel is empty!", "error");
+    }
 }
