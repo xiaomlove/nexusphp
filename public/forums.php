@@ -765,7 +765,7 @@ if ($action == "viewtopic")
 
 		print("<table class=\"main\" width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
 
-		$body = "<div id=\"pid".$postid."body\">";
+		$body = "<div id=\"pid".$postid."body\" style=\"word-break: break-all;\">";
 		//hidden content applied to second or higher floor post (for whose user class below Ad , not poster , not mods ,not reply's author)
 //		if ($protected_enabled && $pn+$offset>1 && get_user_class()<UC_ADMINISTRATOR && $userid != $base_posterid && $posterid!=$userid && !$is_forummod){
 		if ($pn+$offset>1 && !can_view_post($userid, $arr)){
