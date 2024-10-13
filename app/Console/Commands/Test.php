@@ -100,8 +100,11 @@ class Test extends Command
      */
     public function handle()
     {
-        $ip = "116.77.75.254";
-        $this->info(inet_pton($ip));
+        $ip = "44,
+55,
+444,65 5 32";
+        $result =  preg_split("/[\r\n\s,，]+/", trim($ip));
+        dd($result);
     }
 
 }
