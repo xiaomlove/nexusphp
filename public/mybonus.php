@@ -609,6 +609,10 @@ if ($action == "exchange") {
 			else {
 			$upload = $CURUSER['uploaded'];
 			$up = $upload + $bonusarray['menge'];
+            do_log(sprintf(
+                "user: %s going to use %s bonus to exchange uploaded from %s to %s",
+                $CURUSER['id'], $points, $CURUSER['uploaded'], $up
+            ));
 //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for upload bonus.\n " .$bonuscomment;
 //			sql_query("UPDATE users SET uploaded = ".sqlesc($up).", seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_UPLOAD, $points. " Points for uploaded.", ['uploaded' => $up]);
@@ -618,6 +622,10 @@ if ($action == "exchange") {
         if($art == "traffic_downloaded") {
             $downloaded = $CURUSER['downloaded'];
             $down = $downloaded + $bonusarray['menge'];
+            do_log(sprintf(
+                "user: %s going to use %s bonus to exchange downloaded from %s to %s",
+                $CURUSER['id'], $points, $CURUSER['downloaded'], $down
+            ));
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, \App\Models\BonusLogs::BUSINESS_TYPE_EXCHANGE_DOWNLOAD, $points. " Points for downloaded.", ['downloaded' => $down]);
             nexus_redirect("" . get_protocol_prefix() . "$BASEURL/mybonus.php?do=download");
         }
