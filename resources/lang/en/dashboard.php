@@ -47,6 +47,7 @@ return [
         'server_software' => 'Web software',
         'load_average' => 'Server load average',
         'filament_version' => 'Filament version',
+        'redis_version' => 'Redis version',
     ],
     'latest_user' => [
         'page_title' => 'User latest',

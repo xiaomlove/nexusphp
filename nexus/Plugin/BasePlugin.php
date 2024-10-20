@@ -45,7 +45,12 @@ abstract class BasePlugin extends BaseRepository
 
     public function trans($name): string
     {
-        return nexus_trans(sprintf("%s::%s", static::ID, $name));
+        return nexus_trans($this->getTransKey($name));
+    }
+
+    public function getTransKey($name): string
+    {
+        return sprintf("%s::%s", static::ID, $name);
     }
 
     public static function getInstance(): static

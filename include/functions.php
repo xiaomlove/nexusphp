@@ -5319,7 +5319,7 @@ function torrentTags($tags = 0, $type = 'checkbox')
     return $html;
 }
 
-function saveSetting($prefix, $nameAndValue, $autoload = 'yes')
+function saveSetting(string $prefix, array $nameAndValue, string $autoload = 'yes'): void
 {
     $prefix = strtolower($prefix);
     $datetimeNow = date('Y-m-d H:i:s');

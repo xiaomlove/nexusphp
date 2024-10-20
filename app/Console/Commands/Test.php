@@ -61,6 +61,7 @@ use NexusPlugin\Permission\Models\Role;
 use NexusPlugin\PostLike\PostLikeRepository;
 use NexusPlugin\StickyPromotion\Models\StickyPromotion;
 use NexusPlugin\StickyPromotion\Models\StickyPromotionParticipator;
+use NexusPlugin\Tracker\TrackerRepository;
 use NexusPlugin\Work\Models\RoleWork;
 use NexusPlugin\Work\WorkRepository;
 use PhpIP\IP;
@@ -100,10 +101,8 @@ class Test extends Command
      */
     public function handle()
     {
-        $ip = "44,
-55,
-444,65 5 32";
-        $result =  preg_split("/[\r\n\s,，]+/", trim($ip));
+        $tool = new TrackerRepository();
+        $result = $tool->checkStatus();
         dd($result);
     }
 

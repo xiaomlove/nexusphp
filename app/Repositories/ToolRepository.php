@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Http\Middleware\Locale;
 use App\Models\Invite;
 use App\Models\Message;
 use App\Models\News;
@@ -500,6 +501,27 @@ class ToolRepository extends BaseRepository
                 $delIdStr = implode(',', $idArr);
                 do_log("[DELETE_DUPLICATED_PEERS], torrent: $torrentId, user: $userId, snatchIdStr: $delIdStr");
                 NexusDB::statement("delete from peers where id in ($delIdStr)");
+            }
+        }
+    }
+
+    public function sendAlarmEmail(string $subjectTransKey, array $subjectTransContext, string $msgTransKey, array $msgTransContext): void
+    {
+        $receiverUid = get_setting("system.alarm_email_receiver");
+        if (empty($receiverUid)) {
+            $locale = Locale::getDefault();
+            $subject = nexus_trans($subjectTransKey, $subjectTransContext, $locale);
+            $msg = nexus_trans($msgTransKey, $msgTransContext, $locale);
+            do_log(sprintf("%s - %s", $subject, $msg), "error");
+        } else {
+            $receiverUidArr = preg_split("/[\r\n\s,，]+/", $receiverUid);
+            $users = User::query()->whereIn("id", $receiverUidArr)->get(User::$commonFields);
+            foreach ($users as $user) {
+                $locale = $user->locale;
+                $subject = nexus_trans($subjectTransKey, $subjectTransContext, $locale);
+                $msg = nexus_trans($msgTransKey, $msgTransContext, $locale);
+                $result = $this->sendMail($user->email, $subject, $msg);
+                do_log(sprintf("send msg: %s result: %s", $msg, var_export($result, true)), $result ? "info" : "error");
             }
         }
     }
