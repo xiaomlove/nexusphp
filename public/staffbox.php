@@ -152,7 +152,7 @@ if ($action == "answermessage") {
 	stdhead($lang_staffbox['head_answer_to_staff_pm']);
 	begin_main_frame();
         ?>
-	<form method="post" id="compose" name="message" action="?action=takeanswer">
+	<form method="post" id="compose" name="compose" action="?action=takeanswer">
 <?php if ($_GET["returnto"] || $_SERVER["HTTP_REFERER"]) { ?>
         <input type=hidden name=returnto value="<?php echo htmlspecialchars($_GET["returnto"] ?? '') ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"])?>">
 <?php } ?>
