@@ -86,23 +86,25 @@ class AuthServiceProvider extends ServiceProvider
         }
         $b_id = base64($cookie["c_secure_uid"],false);
         $id = intval($b_id ?? 0);
-        if (!$id || !is_valid_id($id) || strlen($cookie["c_secure_pass"]) != 32) {
+        if (!$id || !is_valid_id($id)) {
             return null;
         }
         $user = User::query()->find($id);
         if (!$user) {
             return null;
         }
+
+        $passh = base64_decode($cookie["c_secure_pass"]);
         if ($cookie["c_secure_login"] == base64("yeah")) {
             /**
              * Not IP related
              * @since 1.8.0
              */
-            if ($cookie["c_secure_pass"] != md5($user->passhash)) {
+            if (!password_verify($user->passhash, $passh)) {
                 return null;
             }
         } else {
-            if ($cookie["c_secure_pass"] !== md5($user->passhash)) {
+            if (!password_verify($user->passhash, $passh)) {
                 return null;
             }
         }

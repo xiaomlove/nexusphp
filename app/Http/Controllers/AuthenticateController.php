@@ -61,8 +61,8 @@ class AuthenticateController extends Controller
                  * @since 1.8.0
                  */
 //                $passhash = md5($user->passhash . $ip);
-                $passhash = md5($user->passhash);
-                do_log(sprintf('passhash: %s, ip: %s, md5: %s', $user->passhash, $ip, $passhash));
+                $passhash = base64_encode(password_hash($user->passhash, PASSWORD_DEFAULT))
+                do_log(sprintf('passhash: %s, ip: %s, password_hash: %s', $user->passhash, $ip, $passhash));
                 logincookie($user->id, $passhash,false, get_setting('system.cookie_valid_days', 365) * 86400, true, true, true);
                 $user->last_login = now();
                 $user->save();

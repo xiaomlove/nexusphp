@@ -70,7 +70,7 @@ class NexusWebGuard implements StatefulGuard
         }
         $b_id = base64($credentials["c_secure_uid"],false);
         $id = intval($b_id ?? 0);
-        if (!$id || !is_valid_id($id) || strlen($credentials["c_secure_pass"]) != 32) {
+        if (!$id || !is_valid_id($id)) {
             return false;
         }
         $user = $this->provider->retrieveById($id);

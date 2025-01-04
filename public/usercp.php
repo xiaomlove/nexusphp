@@ -770,16 +770,21 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 					$updateset[] = "passhash = " . sqlesc($passhash);
 
 					//die($securelogin . base64_decode($_COOKIE["c_secure_login"]));
-					if ($_COOKIE["c_secure_login"] == base64("yeah"))
-					{
-						$passh = md5($passhash . $_SERVER["REMOTE_ADDR"]);
-						$securelogin_indentity_cookie = true;
-					}
-					else
-					{
-						$passh = md5($passhash);
-						$securelogin_indentity_cookie = false;
-					}
+                    if ($_COOKIE["c_secure_login"] == base64("yeah"))
+                    {
+                        /**
+                         * Not IP related
+                         * @since 1.8.0
+                         */
+                        //	$passh = md5($passhash . $_SERVER["REMOTE_ADDR"]);
+                        $passh = base64_encode(password_hash($passhash, PASSWORD_DEFAULT));
+                        $securelogin_indentity_cookie = true;
+                    }
+                    else
+                    {
+                        $passh = base64_encode(password_hash($passhash, PASSWORD_DEFAULT));
+                        $securelogin_indentity_cookie = false;
+                    }
 
 					if($_COOKIE["c_secure_ssl"] == base64("yeah"))
 						$ssl = true;

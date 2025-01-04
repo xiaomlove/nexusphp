@@ -32,13 +32,18 @@ if (!mysql_affected_rows())
 
 if ($securelogin == "yes")
 {
-	$securelogin_indentity_cookie = true;
-	$passh = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
+    $securelogin_indentity_cookie = true;
+    /**
+     * Not IP related
+     * @since 1.8.0
+     */
+    //	$passh = md5($row["passhash"].$_SERVER["REMOTE_ADDR"]);
+    $passh = base64_encode(password_hash($row["passhash"], PASSWORD_DEFAULT));
 }
-else	// when it's op, default is not use secure login
+else    // when it's op, default is not use secure login
 {
-	$securelogin_indentity_cookie = false;
-	$passh = md5($row["passhash"]);
+    $securelogin_indentity_cookie = false;
+    $passh = base64_encode(password_hash($row["passhash"], PASSWORD_DEFAULT));
 }
 logincookie($id, $passh,1,get_setting('system.cookie_valid_days', 365) * 86400,$securelogin_indentity_cookie);
 //sessioncookie($row["id"], $passh,false);

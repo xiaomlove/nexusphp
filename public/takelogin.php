@@ -46,20 +46,20 @@ if ($row["enabled"] == "no")
 
 if (isset($_POST["securelogin"]) && $_POST["securelogin"] == "yes")
 {
-	$securelogin_indentity_cookie = true;
+    $securelogin_indentity_cookie = true;
     /**
      * Not IP related
      * @since 1.8.0
      */
 //	$passh = md5($row["passhash"].$ip);
-	$passh = md5($row["passhash"]);
-	$log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, md5: $passh";
+    $passh = base64_encode(password_hash($row["passhash"], PASSWORD_DEFAULT));
+    $log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, password_hash: $passh";
 }
 else
 {
-	$securelogin_indentity_cookie = false;
-	$passh = md5($row["passhash"]);
-    $log .= ",  passhash: {$row['passhash']}, md5: $passh";
+    $securelogin_indentity_cookie = false;
+    $passh = base64_encode(password_hash($row["passhash"], PASSWORD_DEFAULT));
+    $log .= ",  passhash: {$row['passhash']}, password_hash: $passh";
 }
 
 if ($securelogin=='yes' || (isset($_POST["ssl"]) && $_POST["ssl"] == "yes"))

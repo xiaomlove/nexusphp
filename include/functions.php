@@ -1983,23 +1983,13 @@ function userlogin() {
 	    do_log("$log, param not enough");
 	    return $loginResult = false;
     }
-	if ($_COOKIE["c_secure_login"] == base64("yeah"))
-	{
-		//if (empty($_SESSION["s_secure_uid"]) || empty($_SESSION["s_secure_pass"]))
-		//return;
-	}
+
 	$b_id = base64($_COOKIE["c_secure_uid"],false);
 	$id = intval($b_id ?? 0);
-	if (!$id || !is_valid_id($id) || strlen($_COOKIE["c_secure_pass"]) != 32) {
+	if (!$id || !is_valid_id($id)) {
         do_log("$log, invalid c_secure_uid");
         return $loginResult = false;
     }
-
-	if ($_COOKIE["c_secure_login"] == base64("yeah"))
-	{
-		//if (strlen($_SESSION["s_secure_pass"]) != 32)
-		//return;
-	}
 
 	$res = sql_query("SELECT * FROM users WHERE users.id = ".sqlesc($id)." AND users.enabled='yes' AND users.status = 'confirmed' LIMIT 1");
 	$row = mysql_fetch_array($res);
@@ -2012,29 +2002,31 @@ function userlogin() {
 
 	//die(base64_decode($_COOKIE["c_secure_login"]));
 
-	if ($_COOKIE["c_secure_login"] == base64("yeah"))
-	{
+    if ($_COOKIE["c_secure_login"] == base64("yeah"))
+    {
         /**
          * Not IP related
          * @since 1.8.0
          */
 //        $md5 = md5($row["passhash"].$ip);
-        $md5 = md5($row["passhash"]);
-        $log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, md5: $md5";
-		if ($_COOKIE["c_secure_pass"] != $md5) {
-		    do_log("$log, c_secure_pass != md5");
+        $passh = base64_decode($_COOKIE["c_secure_pass"]);
+        $verify = password_verify($row["passhash"], $passh);
+        $log .= ", secure login == yeah, passhash: {$row['passhash']}, ip: $ip, password_hash: $passh";
+        if (!$verify) {
+            do_log("$log, password_verify fail!");
             return $loginResult = false;
         }
-	}
-	else
-	{
-	    $md5 = md5($row["passhash"]);
-        $log .= "$log, passhash: {$row['passhash']}, md5: $md5";
-		if ($_COOKIE["c_secure_pass"] !== $md5) {
-            do_log("$log, c_secure_pass != md5");
+    }
+    else
+    {
+        $passh = base64_decode($_COOKIE["c_secure_pass"]);
+        $verify = password_verify($row["passhash"], $passh);
+        $log .= ", passhash: {$row['passhash']}, password_hash: $passh";
+        if (!$verify) {
+            do_log("$log, password_verify fail!");
             return $loginResult = false;
         }
-	}
+    }
 
 	if ($_COOKIE["c_secure_login"] == base64("yeah"))
 	{
@@ -3018,22 +3010,22 @@ function logincookie($id, $passhash, $updatedb = 1, $expires = 0x7fffffff, $secu
 	if ($expires != 0x7fffffff)
 	$expires = time()+$expires;
 
-	setcookie("c_secure_uid", base64($id), $expires, "/", "", false, true);
-	setcookie("c_secure_pass", $passhash, $expires, "/", "", false, true);
+	setcookie("c_secure_uid", base64($id), $expires, "/", "", $ssl, true);
+	setcookie("c_secure_pass", $passhash, $expires, "/", "", $ssl, true);
 	if($ssl)
-	setcookie("c_secure_ssl", base64("yeah"), $expires, "/", "", false, true);
+	setcookie("c_secure_ssl", base64("yeah"), $expires, "/", "", $ssl, true);
 	else
-	setcookie("c_secure_ssl", base64("nope"), $expires, "/", "", false, true);
+	setcookie("c_secure_ssl", base64("nope"), $expires, "/", "", $ssl, true);
 
 	if($trackerssl)
-	setcookie("c_secure_tracker_ssl", base64("yeah"), $expires, "/", "", false, true);
+	setcookie("c_secure_tracker_ssl", base64("yeah"), $expires, "/", "", $ssl, true);
 	else
-	setcookie("c_secure_tracker_ssl", base64("nope"), $expires, "/", "", false, true);
+	setcookie("c_secure_tracker_ssl", base64("nope"), $expires, "/", "", $ssl, true);
 
 	if ($securelogin)
-	setcookie("c_secure_login", base64("yeah"), $expires, "/", "", false, true);
+	setcookie("c_secure_login", base64("yeah"), $expires, "/", "", $ssl, true);
 	else
-	setcookie("c_secure_login", base64("nope"), $expires, "/", "", false, true);
+	setcookie("c_secure_login", base64("nope"), $expires, "/", "", $ssl, true);
 
 
 	if ($updatedb)
