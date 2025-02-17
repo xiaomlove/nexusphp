@@ -42,7 +42,7 @@ class AuthenticateRepository extends BaseRepository
 
     public function nasToolsApprove(string $json)
     {
-        $key = env('NAS_TOOLS_KEY');
+        $key = nexus_env('NAS_TOOLS_KEY');
         $encrypter = new Encrypter($key);
         $decrypted = $encrypter->decryptString($json);
         $data = json_decode($decrypted, true);
@@ -63,7 +63,7 @@ class AuthenticateRepository extends BaseRepository
 
     public function iyuuApprove($token, $id, $verity)
     {
-        $secret = env('IYUU_SECRET');
+        $secret = nexus_env('IYUU_SECRET');
         $user = User::query()->findOrFail($id, User::$commonFields);
         $user->checkIsNormal();
         $encryptedResult = md5($token . $id . sha1($user->passkey) . $secret);
