@@ -70,7 +70,11 @@ foreach ($settings as $name => $value) {
 $SITENAME = $BASIC['SITENAME'];
 $BASEURL = $BASIC['BASEURL'] ?: ($_SERVER['HTTP_HOST'] ?? '');
 $announce_urls = array();
-$announce_urls[] = $BASIC['announce_url'] ?: ($BASEURL . DEFAULT_TRACKER_URI);
+// Cast to array and iterate through announce URLs
+// This handles both single URL string and array of URLs
+foreach ((array)$BASIC['announce_url'] as $url) {
+    $announce_urls[] = $url ?: ($BASEURL . DEFAULT_TRACKER_URI);
+}
 
 $SITE_ONLINE = $MAIN['site_online'];
 $max_torrent_size = (int)$MAIN['max_torrent_size'];
@@ -158,7 +162,12 @@ $accountpassword = $SMTP['accountpassword'] ?? '';
 $securelogin = $SECURITY['securelogin'];
 $securetracker = $SECURITY['securetracker'];
 $https_announce_urls = array();
-$https_announce_urls[] = $SECURITY['https_announce_url'];
+// Cast to array and iterate through HTTPS announce URLs
+// This handles both single URL string and array of URLs
+foreach ((array)$SECURITY['https_announce_url'] as $url) {
+    // Add HTTPS URL to array
+    $https_announce_urls[] = $url;
+}
 $iv = $SECURITY['iv'];
 $maxip = $SECURITY['maxip'];
 $maxloginattempts = $SECURITY['maxloginattempts'];
