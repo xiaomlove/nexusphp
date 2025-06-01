@@ -98,6 +98,9 @@ class TechnicalInformation
             if (!empty($values['Language'])) {
                 $audioInfoArr[] = $values['Language'];
             }
+            if (!empty($values['Title'])) {
+                $audioInfoArr[] = $values['Title'];
+            }
             if (!empty($values['Format'])) {
                 $audioInfoArr[] = $values['Format'];
             }
@@ -123,13 +126,16 @@ class TechnicalInformation
             }
             $audioInfoArr = [];
             if (!empty($values['Language'])) {
-                $audioInfoArr[] = $values['Language'];
+                $subtitlesInfoArr[] = $values['Language'];
+            }
+            if (!empty($values['Title'])) {
+                $subtitlesInfoArr[] = $values['Title'];
             }
             if (!empty($values['Format'])) {
-                $audioInfoArr[] = $values['Format'];
+                $subtitlesInfoArr[] = $values['Format'];
             }
-            if (!empty($audioInfoArr)) {
-                $result[$parentKey] = implode(" ", $audioInfoArr);
+            if (!empty($subtitlesInfoArr)) {
+                $result[$parentKey] = implode(" ", $subtitlesInfoArr);
             }
         }
         return $result;
