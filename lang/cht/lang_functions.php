@@ -341,6 +341,8 @@ $lang_functions = array
     'select_at_least_one_record' => '至少選擇一條記錄！',
     'text_seed_box_record_to_approval' => '有 %s%u 條待審核的 SeedBox 記錄%s',
     'approval_deny_reach_upper_limit' => '當前審核被拒絕的種子數：%s 達到上限，不允許發布。',
+    'text_with' => '有',
+    'text_without' => '無',
 );
 
 ?>

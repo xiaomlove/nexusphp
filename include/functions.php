@@ -6106,6 +6106,7 @@ function calculate_harem_addition($uid)
 
 function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPrefix, $taxonomyHrefPrefix, $taxonomyNameLength, $checkedValues = '', array $options = [])
 {
+    global $lang_functions;
     parse_str($checkedValues, $checkedValuesArr);
     $searchBox = \App\Models\SearchBox::query()->with(['categories', 'categories.icon'])->findOrFail($mode);
     $lang = get_langfolder_cookie();
@@ -6256,6 +6257,44 @@ TD;
         $html .= '</tr>';
     }
     $html .= '</table>';
+    $tags = \App\Models\Tag::query()->where(function ($query) use ($mode) {
+        return $query->where('mode', $mode)->orWhere('mode', 0);
+    })->orderBy('priority','desc')->pluck('id')->toArray();
+    if (!empty($tags)) {
+        $html .= '<table><tr><td class="embedded" align="left">' . $lang_functions['text_tags'] . '</td></tr>';
+        $html .= '<tr style="display: flex; flex-wrap: wrap; gap:10px;">';
+        $tagRep = new \App\Repositories\TagRepository();
+        foreach ($tags as $tag) {
+            $html .= '<td align="left" class="bottom" style="padding-bottom: 4px;padding-left: 7px">';
+            $selected0 = $selected1 = $selected2 = "";
+            if(isset($_GET['tagid_' . $tag])){
+                switch ($_GET['tagid_' . $tag]) {
+                    case 0:
+                        $selected0 = ' selected';
+                        break;
+                    case 1:
+                        $selected1 = ' selected';
+                        break;
+                    case 2:
+                        $selected2 = ' selected';
+                        break;
+                }
+            }
+            $html .= <<<HTML
+<select name="tagid_{$tag}" style="margin-right: 4px">
+    <option value="0" $selected0 >--</option>
+    <option value="1" $selected1 >{$lang_functions['text_with']}</option>
+    <option value="2" $selected2 >{$lang_functions['text_without']}</option>
+</select>
+HTML;
+
+            $html .= $tagRep->renderSpan($mode, [$tag], false);
+            $html .= '</td>';
+        }
+
+
+        $html .= '</tr></table>';
+    }
     return $html;
 }
 

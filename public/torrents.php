@@ -166,6 +166,59 @@ if (!isset($CURUSER) || !user_can('seebanned')) {
     $searchParams["banned"] = 'no';
 }
 
+// ----------------- start tag ---------------------//
+$tags = App\Models\Tag::query()->where(function ($query) use ($sectiontype) {
+    return $query->where('mode', $sectiontype)->orWhere('mode', 0);
+})->orderByDesc('priority')->get();
+$intag = [];
+$notintag = [];
+for($tagindex=0;$tagindex<$tags->count();$tagindex++){
+    $tag_select_name = "tagid_".(string)$tags[$tagindex]->id;
+    if(isset($_GET[$tag_select_name])){
+        switch((int)$_GET[$tag_select_name]){
+            case 1:
+                $addparam .= $tag_select_name."=1&";
+                $intag[] = $tags[$tagindex]->id;
+                break;
+            case 2:
+                $addparam .= $tag_select_name."=2&";
+                $notintag[] = $tags[$tagindex]->id;
+                break;
+            default:
+                $addparam .= $tag_select_name."=0&";
+        }
+    }
+}
+$intagCount = count($intag);
+$notintagCount = count($notintag);
+
+if (!empty($intag) && empty($notintag)) {
+    $wherea[] = "torrents.id IN (
+        SELECT t.id
+        FROM torrents t
+        LEFT JOIN torrent_tags tt ON t.id = tt.torrent_id
+        GROUP BY t.id
+        HAVING COUNT(DISTINCT CASE WHEN tt.tag_id IN (".implode(',', $intag).") THEN tt.tag_id END) = $intagCount
+    )";
+} elseif (empty($intag) && !empty($notintag)) {
+    $wherea[] = "torrents.id IN (
+        SELECT t.id
+        FROM torrents t
+        LEFT JOIN torrent_tags tt ON t.id = tt.torrent_id
+        GROUP BY t.id
+        HAVING COUNT(DISTINCT CASE WHEN tt.tag_id IN (".implode(',', $notintag).") THEN tt.tag_id END) = 0
+    )";
+} elseif (!empty($intag) && !empty($notintag)) {
+    $wherea[] = "torrents.id IN (
+        SELECT t.id
+        FROM torrents t
+        LEFT JOIN torrent_tags tt ON t.id = tt.torrent_id
+        GROUP BY t.id
+        HAVING COUNT(DISTINCT CASE WHEN tt.tag_id IN (".implode(',', $intag).") THEN tt.tag_id END) = $intagCount
+           AND COUNT(DISTINCT CASE WHEN tt.tag_id IN (".implode(',', $notintag).") THEN tt.tag_id END) = 0
+    )";
+}
+// ----------------- end tag ---------------------//
 // ----------------- start include dead ---------------------//
 if (isset($_GET["incldead"]))
 	$include_dead = intval($_GET["incldead"] ?? 0);
