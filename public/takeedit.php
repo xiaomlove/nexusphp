@@ -25,7 +25,7 @@ if (!$id)
 	die();
 
 
-$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, banned FROM torrents WHERE id = ".mysql_real_escape_string($id));
+$res = sql_query("SELECT torrents.id, torrents.category, torrents.owner, torrents.filename, torrents.save_as, torrents.anonymous, torrents.picktype, torrents.picktime, torrents.added, torrents.banned, torrent_extras.pt_gen FROM torrents left join torrent_extras on torrents.id = torrent_extras.torrent_id WHERE torrents.id = ".mysql_real_escape_string($id));
 $row = mysql_fetch_array($res);
 $torrentAddedTimeString = $row['added'];
 if (!$row)
@@ -53,8 +53,7 @@ if (!empty($_POST['pt_gen'])) {
     $existsPtGenInfo = json_decode($row['pt_gen'], true) ?? [];
     $ptGen = new \Nexus\PTGen\PTGen();
     if ($postPtGen != $ptGen->getLink($existsPtGenInfo)) {
-//        $updateset[] = "pt_gen = " . sqlesc($postPtGen);
-        $extraUpdate["pt_gen"] = $postPtGen;
+        $extraUpdate["pt_gen"] = ['__link' => $postPtGen];
     }
 } else {
 //    $updateset[] = "pt_gen = ''";
