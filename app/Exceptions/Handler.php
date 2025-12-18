@@ -54,6 +54,9 @@ class Handler extends ExceptionHandler
             }
         });
         $this->renderable(function (PassportAuthenticationException $e) use ($request) {
+            if ($request->is('oauth/user-info') || $request->expectsJson() || $request->ajax()) {
+                return response()->json(fail($e->getMessage() ?: 'Unauthenticated.', $request->all()), 401);
+            }
             return response()->redirectTo(sprintf("%s/login.php?returnto=%s", $request->getSchemeAndHttpHost(), urlencode($request->fullUrl())));
         });
 
