@@ -91,7 +91,7 @@ class PTGen
         } else {
             $targetUrl .= "?";
         }
-        $targetUrl .= sprintf('site=%s&sid=%s&url=%s', $parsed['site'] , $parsed['id'], urlencode($parsed['url']));
+        $targetUrl .= sprintf('site=%s&sid=%s&url=%s&key=1', $parsed['site'] , $parsed['id'], urlencode($parsed['url']));
         return $this->request($targetUrl, $withoutCache);
     }
 
@@ -177,7 +177,7 @@ HTML;
         }
         do_log("$logPrefix, going to send request...");
         $http = new Client();
-        $response = $http->get($url, ['timeout' => 10]);
+        $response = $http->get($url, ['timeout' => 10, 'headers' => ['x-internal-request' => 'true',],]);
         $statusCode = $response->getStatusCode();
         if ($statusCode != 200) {
             $msg = "api point response http status code: $statusCode";
