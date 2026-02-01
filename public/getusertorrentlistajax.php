@@ -152,9 +152,9 @@ function maketable($res, $mode = 'seeding')
 		$catimage = htmlspecialchars($arr["image"]);
 		$catname = htmlspecialchars($arr["catname"]);
 
-		$sphighlight = get_torrent_bg_color($arr['sp_state']);
+		$sphighlight = get_torrent_bg_color($arr['sp_state'], '', $arr);
         $banned_torrent = ($arr["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
-		$sp_torrent = get_torrent_promotion_append($arr['sp_state'], '', false, '', 0, '', $arr['__ignore_global_sp_state'] ?? false);
+		$sp_torrent = get_torrent_promotion_append($arr['sp_state'], '', false, $arr['added'], 0, '', $arr['__ignore_global_sp_state'] ?? false);
         //Total size
         if ($showtotalsize){
 			$total_size += $arr['size'];

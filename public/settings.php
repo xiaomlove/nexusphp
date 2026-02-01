@@ -158,10 +158,17 @@ elseif($action == 'savesettings_torrent') 	// save account
         'thirtypercentleechbecome', 'expirethirtypercentleech', 'sticky_first_level_background_color', 'sticky_second_level_background_color',
         'download_support_passkey', 'claim_enabled', 'claim_torrent_ttl', 'claim_torrent_user_counts_up_limit', 'claim_user_torrent_counts_up_limit', 'claim_remove_deduct_user_bonus',
         'claim_give_up_deduct_user_bonus', 'claim_bonus_multiplier', 'claim_reach_standard_seed_time', 'claim_reach_standard_uploaded', 'approval_status_icon_enabled', 'approval_status_none_visible',
-        'nfo_view_style_default', 'tax_factor', 'max_price', 'paid_torrent_enabled', 'reward_bonus_options', 'reward_times_limit'
+        'nfo_view_style_default', 'tax_factor', 'max_price', 'paid_torrent_enabled', 'reward_bonus_options', 'reward_times_limit',
+        'new_promotion_time', 'new_promotion_state'
     );
 	$validConfig = apply_filter('setting_valid_config', $validConfig);
 	GetVar($validConfig);
+    // normalize new torrent promotion settings
+    $new_promotion_time = max(0, (int)($new_promotion_time ?? 0));
+    $new_promotion_state = (int)($new_promotion_state ?? 0);
+    if ($new_promotion_state < 2 || $new_promotion_state > 7) {
+        $new_promotion_state = 2;
+    }
 	$TORRENT = [];
 	foreach($validConfig as $config) {
 		$TORRENT[$config] = $$config ?? null;
@@ -752,6 +759,7 @@ elseif ($action == 'torrentsettings')
 //    yesorno($lang_settings['row_promotion_rules'], 'prorules', $TORRENT["prorules"], $lang_settings['text_promotion_rules_note']);
 	tr($lang_settings['row_random_promotion'], $lang_settings['text_random_promotion_note_one']."<ul><li><input type='text' style=\"width: 50px\" name=randomhalfleech value='".(isset($TORRENT["randomhalfleech"]) ? $TORRENT["randomhalfleech"] : 5 )."'>".$lang_settings['text_halfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomfree value='".(isset($TORRENT["randomfree"]) ? $TORRENT["randomfree"] : 2 )."'>".$lang_settings['text_free_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoup value='".(isset($TORRENT["randomtwoup"]) ? $TORRENT["randomtwoup"] : 2 )."'>".$lang_settings['text_twoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwoupfree value='".(isset($TORRENT["randomtwoupfree"]) ? $TORRENT["randomtwoupfree"] : 1 )."'>".$lang_settings['text_freetwoup_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomtwouphalfdown value='".(isset($TORRENT["randomtwouphalfdown"]) ? $TORRENT["randomtwouphalfdown"] : 0 )."'>".$lang_settings['text_twouphalfleech_chance_becoming']."</li><li><input type='text' style=\"width: 50px\" name=randomthirtypercentdown value='".(isset($TORRENT["randomthirtypercentdown"]) ? $TORRENT["randomthirtypercentdown"] : 0 )."'>".$lang_settings['text_thirtypercentleech_chance_becoming']."</li></ul>".$lang_settings['text_random_promotion_note_two'], 1);
 	tr($lang_settings['row_large_torrent_promotion'], $lang_settings['text_torrent_larger_than']."<input type='text' style=\"width: 50px\" name=largesize value='".(isset($TORRENT["largesize"]) ? $TORRENT["largesize"] : 20 )."'>".$lang_settings['text_gb_promoted_to']."<select name=largepro>".promotion_selection((isset($TORRENT['largepro']) ? $TORRENT['largepro'] : 2), 1)."</select>".$lang_settings['text_by_system_upon_uploading']."<br />".$lang_settings['text_large_torrent_promotion_note'], 1);
+	tr($lang_settings['row_new_torrent_promotion'], $lang_settings['text_new_torrent_promotion_time']."<input type='text' style=\"width: 50px\" name=new_promotion_time value='".(isset($TORRENT["new_promotion_time"]) ? $TORRENT["new_promotion_time"] : 0 )."'>".$lang_settings['text_new_torrent_promotion_days'].$lang_settings['text_new_torrent_promotion_type']."<select name=new_promotion_state>".promotion_selection((isset($TORRENT['new_promotion_state']) ? $TORRENT['new_promotion_state'] : 2), 1)."</select><br />".$lang_settings['text_new_torrent_promotion_note'], 1);
 	tr($lang_settings['row_promotion_timeout'], $lang_settings['text_promotion_timeout_note_one']."<ul>
 <li>".$lang_settings['text_halfleech_will_become']."<select name=halfleechbecome>".promotion_selection((isset($TORRENT['halfleechbecome']) ? $TORRENT['halfleechbecome'] : 1), 5)."</select>".$lang_settings['text_after']."<input type='text' style=\"width: 50px\" name=expirehalfleech value='".(isset($TORRENT["expirehalfleech"]) ? $TORRENT["expirehalfleech"] : 150 )."'>".$lang_settings['text_halfleech_timeout_default']."</li>
 

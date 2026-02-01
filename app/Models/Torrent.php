@@ -212,8 +212,20 @@ class Torrent extends NexusModel
             throw new \RuntimeException('no select sp_state field');
         }
         $spState = $this->sp_state;
+        $newPromotionInfo = self::getNewPromotionInfoFromArray([
+            'added' => $this->getRawOriginal('added') ?? $this->added,
+        ]);
+        $ignoreGlobal = false;
+        if ($newPromotionInfo) {
+            $spState = $newPromotionInfo['sp_state'];
+            $ignoreGlobal = true;
+        }
         $global = get_global_sp_state();
         $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
+        if ($ignoreGlobal) {
+            $global = self::PROMOTION_NORMAL;
+            $log .= ", new promotion active, ignore global";
+        }
         if ($global != self::PROMOTION_NORMAL) {
             $spState = $global;
             $log .= sprintf(", global != %s, set sp_state to global: %s", self::PROMOTION_NORMAL, $global);
@@ -224,6 +236,43 @@ class Torrent extends NexusModel
         }
         do_log($log, 'debug');
         return $spState;
+    }
+
+    public static function getNewPromotionInfoFromArray(array $torrent): ?array
+    {
+        $timeDays = Setting::getNewTorrentPromotionTime();
+        if ($timeDays <= 0) {
+            return null;
+        }
+        $state = Setting::getNewTorrentPromotionState();
+        if (!isset(self::$promotionTypes[$state])) {
+            return null;
+        }
+        $added = $torrent['added'] ?? null;
+        if (empty($added)) {
+            return null;
+        }
+        if ($added instanceof \DateTimeInterface) {
+            $addedTimestamp = $added->getTimestamp();
+        } elseif (is_numeric($added)) {
+            $addedTimestamp = (int) $added;
+        } else {
+            $addedTimestamp = strtotime((string) $added);
+        }
+        if (!$addedTimestamp) {
+            return null;
+        }
+        $now = defined('TIMENOW') ? TIMENOW : time();
+        $untilTimestamp = $addedTimestamp + ($timeDays * 86400);
+        if ($now > $untilTimestamp) {
+            return null;
+        }
+        return [
+            'sp_state' => $state,
+            'promotion_time_type' => 2,
+            'promotion_until' => date('Y-m-d H:i:s', $untilTimestamp),
+            '__ignore_global_sp_state' => true,
+        ];
     }
 
     protected function getPosStateTextAttribute()

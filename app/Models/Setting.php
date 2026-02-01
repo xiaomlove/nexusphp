@@ -168,6 +168,16 @@ class Setting extends NexusModel
         return intval(self::get("torrent.largepro"));
     }
 
+    public static function getNewTorrentPromotionTime(): int
+    {
+        return intval(self::get("torrent.new_promotion_time"));
+    }
+
+    public static function getNewTorrentPromotionState(): int
+    {
+        return intval(self::get("torrent.new_promotion_state"));
+    }
+
     public static function getUploadTorrentHalfDownProbability(): int
     {
         return intval(self::get("torrent.randomhalfleech"));

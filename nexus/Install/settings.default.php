@@ -324,6 +324,8 @@ return array (
     'randomtwouphalfdown' => '0',
     'largesize' => '20',
     'largepro' => '2',
+    'new_promotion_time' => '0',
+    'new_promotion_state' => '2',
     'expirehalfleech' => '150',
     'expirefree' => '60',
     'expiretwoup' => '60',

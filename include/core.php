@@ -57,3 +57,17 @@ ignore_user_abort(1);
 $hook = new \Nexus\Plugin\Hook();
 $plugin = new \Nexus\Plugin\Plugin();
 $plugin->start();
+add_filter('torrent_promotion', function ($torrent) {
+    if (!is_array($torrent)) {
+        return $torrent;
+    }
+    $newPromotionInfo = \App\Models\Torrent::getNewPromotionInfoFromArray($torrent);
+    if (!$newPromotionInfo) {
+        return $torrent;
+    }
+    $torrent['sp_state'] = $newPromotionInfo['sp_state'];
+    $torrent['promotion_time_type'] = $newPromotionInfo['promotion_time_type'];
+    $torrent['promotion_until'] = $newPromotionInfo['promotion_until'];
+    $torrent['__ignore_global_sp_state'] = true;
+    return $torrent;
+}, 10, 1);

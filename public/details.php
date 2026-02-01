@@ -75,7 +75,7 @@ if (!$row) {
                 print("<p><b>".$lang_details['text_go_back'] . "<a href=\"".htmlspecialchars($_GET["returnto"])."\">" . $lang_details['text_whence_you_came']."</a></b></p>");
         }
         $banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
-		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
+		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, $row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
         $hrImg = get_hr_img($row, $row['search_box_id']);
         $approvalStatusIcon = $torrentRep->renderApprovalStatus($row["approval_status"]);
@@ -463,8 +463,8 @@ WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE
 
                     $taxonomyInfo = $searchBoxRep->listTaxonomyInfo($copy_row['search_box_id'], $copy_row);
                     $taxonomyValues = array_column($taxonomyInfo, 'value');
-					$sphighlight = get_torrent_bg_color($copy_row['sp_state']);
-					$sp_info = get_torrent_promotion_append($copy_row['sp_state'], '', false, '', 0, '', $copy_row['__ignore_global_sp_state'] ?? false);
+					$sphighlight = get_torrent_bg_color($copy_row['sp_state'], '', $copy_row);
+					$sp_info = get_torrent_promotion_append($copy_row['sp_state'], '', false, $copy_row['added'], 0, '', $copy_row['__ignore_global_sp_state'] ?? false);
 					$hrImg = get_hr_img($copy_row, $copy_row['search_box_id']);
 
 					$s .= "<tr". $sphighlight."><td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>".return_category_image($copy_row["catid"], "torrents.php?allsec=1&amp;")."</td><td class=\"rowfollow\" align=\"left\"><a href=\"" . htmlspecialchars(get_protocol_prefix() . $BASEURL . "/details.php?id=" . $copy_row["id"]. "&hit=1")."\">" . $dispname ."</a>". $sp_info. $hrImg ."</td>" .

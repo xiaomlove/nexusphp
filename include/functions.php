@@ -4508,9 +4508,17 @@ function get_second_icon($row) //for CHDBits
 function get_torrent_bg_color($promotion = 1, $posState = "", array $torrent = [])
 {
 	global $CURUSER;
+    $ignoreGlobalPromotion = false;
+    if (!empty($torrent)) {
+        $newPromotionInfo = \App\Models\Torrent::getNewPromotionInfoFromArray($torrent);
+        if ($newPromotionInfo) {
+            $promotion = $newPromotionInfo['sp_state'];
+            $ignoreGlobalPromotion = true;
+        }
+    }
     $sphighlight = null;
 	if ($CURUSER['appendpromotion'] == 'highlight'){
-		$global_promotion_state = get_global_sp_state();
+		$global_promotion_state = $ignoreGlobalPromotion ? 1 : get_global_sp_state();
 		if ($global_promotion_state == 1){
 			if($promotion==1)
 				$sphighlight = "";
@@ -4555,6 +4563,15 @@ function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimele
 	global $CURUSER,$lang_functions;
 	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
 
+    $newPromotionInfo = \App\Models\Torrent::getNewPromotionInfoFromArray([
+        'added' => $added,
+    ]);
+    if ($newPromotionInfo) {
+        $promotion = $newPromotionInfo['sp_state'];
+        $promotionTimeType = $newPromotionInfo['promotion_time_type'];
+        $promotionUntil = $newPromotionInfo['promotion_until'];
+        $ignoreGlobal = true;
+    }
 	$globalSpState = get_global_sp_state();
 	$sp_torrent = "";
 	$onmouseover = "";
@@ -4726,7 +4743,16 @@ function get_torrent_promotion_append_sub($promotion = 1,$forcemode = "",$showti
 	global $CURUSER,$lang_functions;
 	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
 
-    $globalSpState = get_global_sp_state();
+    $newPromotionInfo = \App\Models\Torrent::getNewPromotionInfoFromArray([
+        'added' => $added,
+    ]);
+    if ($newPromotionInfo) {
+        $promotion = $newPromotionInfo['sp_state'];
+        $promotionTimeType = $newPromotionInfo['promotion_time_type'];
+        $promotionUntil = $newPromotionInfo['promotion_until'];
+        $ignoreGlobal = true;
+    }
+	$globalSpState = get_global_sp_state();
 	$sp_torrent = "";
 	$onmouseover = "";
 	$log = "[GET_PROMOTION], promotion: $promotion, forcemode: $forcemode, showtimeleft: $showtimeleft, added: $added, promotionTimeType: $promotionTimeType, promotionUntil: $promotionUntil";
