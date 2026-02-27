@@ -4559,10 +4559,8 @@ function get_torrent_bg_color($promotion = 1, $posState = "", array $torrent = [
 	return apply_filter('torrent_background_color', (string)$sphighlight, $torrent);
 }
 
-function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = '', $ignoreGlobal = false){
-	global $CURUSER,$lang_functions;
-	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
-
+function apply_new_torrent_promotion_override($promotion, $promotionTimeType, $promotionUntil, $ignoreGlobal, $added): array
+{
     $newPromotionInfo = \App\Models\Torrent::getNewPromotionInfoFromArray([
         'added' => $added,
     ]);
@@ -4572,6 +4570,15 @@ function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimele
         $promotionUntil = $newPromotionInfo['promotion_until'];
         $ignoreGlobal = true;
     }
+
+    return [$promotion, $promotionTimeType, $promotionUntil, $ignoreGlobal];
+}
+
+function get_torrent_promotion_append($promotion = 1,$forcemode = "",$showtimeleft = false, $added = "", $promotionTimeType = 0, $promotionUntil = '', $ignoreGlobal = false){
+	global $CURUSER,$lang_functions;
+	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
+
+	[$promotion, $promotionTimeType, $promotionUntil, $ignoreGlobal] = apply_new_torrent_promotion_override($promotion, $promotionTimeType, $promotionUntil, $ignoreGlobal, $added);
 	$globalSpState = get_global_sp_state();
 	$sp_torrent = "";
 	$onmouseover = "";
@@ -4743,15 +4750,7 @@ function get_torrent_promotion_append_sub($promotion = 1,$forcemode = "",$showti
 	global $CURUSER,$lang_functions;
 	global $expirehalfleech_torrent, $expirefree_torrent, $expiretwoup_torrent, $expiretwoupfree_torrent, $expiretwouphalfleech_torrent, $expirethirtypercentleech_torrent;
 
-    $newPromotionInfo = \App\Models\Torrent::getNewPromotionInfoFromArray([
-        'added' => $added,
-    ]);
-    if ($newPromotionInfo) {
-        $promotion = $newPromotionInfo['sp_state'];
-        $promotionTimeType = $newPromotionInfo['promotion_time_type'];
-        $promotionUntil = $newPromotionInfo['promotion_until'];
-        $ignoreGlobal = true;
-    }
+	[$promotion, $promotionTimeType, $promotionUntil, $ignoreGlobal] = apply_new_torrent_promotion_override($promotion, $promotionTimeType, $promotionUntil, $ignoreGlobal, $added);
 	$globalSpState = get_global_sp_state();
 	$sp_torrent = "";
 	$onmouseover = "";
