@@ -69,6 +69,16 @@ td.shoutrow .shout-mention {
 	text-decoration: none;
 	font-weight: bold;
 }
+td.shoutrow .shout-mention.shout-mention-me {
+	background: rgba(255,196,0,.30);
+	color: inherit;
+	box-shadow: 0 0 0 1px rgba(255,196,0,.55) inset;
+}
+td.shoutrow.shoutrow-mentions-me {
+	background: rgba(255,196,0,.08);
+	border-left: 3px solid rgba(255,196,0,.65);
+	padding-left: 5px;
+}
 td.shoutrow .shout-nick-reply {
 	cursor: pointer;
 }
@@ -225,17 +235,25 @@ if ($where == 'helpbox' && $showhelpbox_main == 'yes') {
  * doesn't resolve to a real user, so false positives (emails, URL fragments) are
  * left untouched.
  */
-function shoutbox_render_mentions($html)
+function shoutbox_render_mentions($html, &$mentionsMe = false)
 {
     static $cache = [];
+    global $CURUSER;
+    $myId = (int) ($CURUSER['id'] ?? 0);
     if ($html === '' || strpos($html, '@') === false) {
         return $html;
     }
 
+    // Username charset is intentionally permissive to cover legacy nicknames that
+    // contain brackets/parens (e.g. "[LP-Bits]", "(Mod)Name"). The lookup-only-on-success
+    // behaviour below means false positives stay as plain text.
     return preg_replace_callback(
-        '/(?<![A-Za-z0-9_\-])@([A-Za-z0-9_\-]{2,40})(?![A-Za-z0-9_\-])/u',
-        function ($m) use (&$cache) {
+        '/(?<![\w\-\[\]\(\)])@([\w\-\[\]\(\)]{2,40})(?![\w\-\[\]\(\)])/u',
+        function ($m) use (&$cache, $myId, &$mentionsMe) {
             $nick = $m[1];
+            if ($nick === '' || strlen($nick) < 2) {
+                return $m[0];
+            }
             $key = strtolower($nick);
             if (! array_key_exists($key, $cache)) {
                 $row = NexusDB::table('users')
@@ -247,8 +265,13 @@ function shoutbox_render_mentions($html)
             if (! $cache[$key]) {
                 return $m[0];
             }
+            $isMe = $myId > 0 && $cache[$key]['id'] === $myId;
+            if ($isMe) {
+                $mentionsMe = true;
+            }
+            $cls = $isMe ? 'shout-mention shout-mention-me' : 'shout-mention';
 
-            return '<a class="shout-mention" href="userdetails.php?id='.$cache[$key]['id'].'">@'.htmlspecialchars($cache[$key]['name']).'</a>';
+            return '<a class="'.$cls.'" href="userdetails.php?id='.$cache[$key]['id'].'">@'.htmlspecialchars($cache[$key]['name']).'</a>';
         },
         $html
     );
@@ -313,9 +336,11 @@ function shoutbox_render_row(array $arr, $where, array $lang_shoutbox, $CURUSER,
         $time = get_elapsed_time($arr['date']).$lang_shoutbox['text_ago'];
     }
     $message = format_comment($arr['text'], true, false, true, true, 600, false, false);
-    $message = shoutbox_render_mentions($message);
+    $mentionsMe = false;
+    $message = shoutbox_render_mentions($message, $mentionsMe);
+    $rowClass = $mentionsMe ? 'shoutrow shoutrow-mentions-me' : 'shoutrow';
 
-    return '<tr data-shout-id="'.(int) $arr['id'].'"><td class="shoutrow"><span class=\'date\'>['.$time.']</span> '.
+    return '<tr data-shout-id="'.(int) $arr['id'].'"><td class="'.$rowClass.'"><span class=\'date\'>['.$time.']</span> '.
         $del.' '.$avatarHtml.' '.$username.' '.$message."\n</td></tr>\n";
 }
 
