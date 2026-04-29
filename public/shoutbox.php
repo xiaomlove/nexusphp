@@ -24,6 +24,11 @@ $refresh = ($CURUSER['sbrefresh'] ?? 120)
 <link rel="stylesheet" href="styles/nexus.css" type="text/css">
 <script src="js/curtain_imageresizer.js" type="text/javascript"></script><style type="text/css">
 body {overflow-y:scroll; overflow-x: hidden}
+td.shoutrow .shout-avatar-link {
+	display: inline-block;
+	line-height: 0;
+	vertical-align: middle;
+}
 td.shoutrow .shout-avatar {
 	width: 22px;
 	height: 22px;
@@ -39,6 +44,9 @@ td.shoutrow .shout-mention {
 	padding: 0 3px;
 	text-decoration: none;
 	font-weight: bold;
+}
+td.shoutrow .shout-nick-reply {
+	cursor: pointer;
 }
 </style>
 <?php
@@ -73,6 +81,28 @@ parent.document.getElementById("hbsubmit").disabled=true;
 var time=10;
 countdown(time);
 //]]>
+}
+function shoutReply(nick) {
+	try {
+		var input = null;
+		if (parent && parent.document) {
+			if (parent.document.forms && parent.document.forms['shbox'] && parent.document.forms['shbox'].shbox_text) {
+				input = parent.document.forms['shbox'].shbox_text;
+			}
+			if (!input) {
+				input = parent.document.getElementById('hbtext');
+			}
+		}
+		if (!input) { return false; }
+		var prefix = '@' + nick + ', ';
+		var val = input.value || '';
+		if (val.indexOf(prefix) !== 0) {
+			input.value = prefix + val;
+		}
+		input.focus();
+		try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+	} catch (e) {}
+	return false;
 }
 </script>
 </head>
@@ -179,20 +209,45 @@ else
 			$del .= "[<a href=\"shoutbox.php?del=".$arr['id']."\">".$lang_shoutbox['text_del']."</a>]";
 		}
 		$avatarUrl = 'pic/default_avatar.png';
+		$nickReplyName = '';
 		if ($arr["userid"]) {
 			$username = get_username($arr["userid"],false,true,true,true,false,false,"",true);
 			if (isset($arr["type"]) && isset($_GET['type']) && $_GET["type"] != 'helpbox' && $arr["type"] == 'hb')
 				$username .= $lang_shoutbox['text_to_guest'];
+			$userRow = get_user_row((int)$arr["userid"]);
+			$nickReplyName = trim((string)($userRow["username"] ?? ''));
 			if ($showAvatars) {
-				$userRow = get_user_row((int)$arr["userid"]);
 				$rawAvatar = trim((string)($userRow["avatar"] ?? ''));
 				if ($rawAvatar !== '') {
 					$avatarUrl = $rawAvatar;
 				}
 			}
+			// Repurpose the nickname link: instead of going to userdetails, clicking the nick
+			// inserts "@nick, " into the input box. Avatar takes over the profile-link role below.
+			if ($nickReplyName !== '' && (int)($CURUSER['id'] ?? 0) > 0) {
+				$onclickAttr = 'return shoutReply(' . htmlspecialchars(json_encode($nickReplyName, JSON_UNESCAPED_UNICODE), ENT_QUOTES) . ')';
+				$username = preg_replace(
+					'#href="userdetails\.php\?id=\d+"#',
+					'href="javascript:void(0)" onclick="' . $onclickAttr . '"',
+					$username,
+					1
+				);
+				// Tag the rewritten link so we can give it a pointer cursor without affecting other anchors.
+				$username = preg_replace(
+					'#<a\s([^>]*onclick="return shoutReply\()#',
+					'<a class="shout-nick-reply" $1',
+					$username,
+					1
+				);
+			}
 		}
 		else $username = $lang_shoutbox['text_guest'];
-		$avatarHtml = '<img class="shout-avatar" src="' . htmlspecialchars($avatarUrl) . '" alt="" onerror="this.onerror=null;this.src=\'pic/default_avatar.png\';" />';
+		$avatarImg = '<img class="shout-avatar" src="' . htmlspecialchars($avatarUrl) . '" alt="" onerror="this.onerror=null;this.src=\'pic/default_avatar.png\';" />';
+		if ((int)$arr["userid"] > 0) {
+			$avatarHtml = '<a class="shout-avatar-link" href="userdetails.php?id=' . (int)$arr["userid"] . '" target="_blank">' . $avatarImg . '</a>';
+		} else {
+			$avatarHtml = $avatarImg;
+		}
 		if (isset($CURUSER) && $CURUSER['timetype'] != 'timealive')
 			$time = (new DateTime())->setTimestamp($arr["date"])->format('m.d H:i');
 		else $time = get_elapsed_time($arr["date"]).$lang_shoutbox['text_ago'];
