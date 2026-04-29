@@ -3149,6 +3149,99 @@ function make_folder($pre, $folder_name)
 	return $path;
 }
 
+/**
+ * Resize a cover image (remote URL or local path) to fit within $maxWidth x $maxHeight,
+ * persist the JPEG thumbnail under "<attachments>/covers/" and return its public HTTP URL.
+ *
+ * Idempotent: when the cached thumbnail already exists for the given source URL + dimensions,
+ * the file is reused. On any failure (download/decode/save) the function returns the
+ * original $url unchanged so the caller can still render something.
+ *
+ * @param string $url        Cover image URL (http/https) or path
+ * @param int    $maxWidth   Maximum thumbnail width in pixels
+ * @param int    $maxHeight  Maximum thumbnail height in pixels
+ * @param int    $quality    JPEG quality (1-100)
+ *
+ * @return string Public URL of the cached thumbnail, or original $url on failure
+ */
+function cover_thumb_url($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
+{
+	global $savedirectory_attachment, $httpdirectory_attachment;
+	$url = trim((string)$url);
+	if ($url === '') {
+		return '';
+	}
+	if (!extension_loaded('gd')) {
+		return $url;
+	}
+	$saveDir = $savedirectory_attachment ?: 'attachments';
+	$httpDir = $httpdirectory_attachment ?: 'attachments';
+	$key = md5($url . '|' . (int)$maxWidth . 'x' . (int)$maxHeight);
+	$relativeDir = 'covers/' . substr($key, 0, 2);
+	$filename = $key . '.jpg';
+	$absoluteDir = make_folder($saveDir . '/', $relativeDir);
+	$absolutePath = rtrim($absoluteDir, '/') . '/' . $filename;
+	$publicUrl = $httpDir . '/' . $relativeDir . '/' . $filename;
+	if (is_file($absolutePath) && filesize($absolutePath) > 0) {
+		return $publicUrl;
+	}
+	$data = false;
+	if (preg_match('#^https?://#i', $url)) {
+		if (function_exists('curl_init')) {
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+			curl_setopt($ch, CURLOPT_USERAGENT, 'NexusPHP/cover-thumb');
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+			$data = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+			if ($httpCode < 200 || $httpCode >= 400) {
+				$data = false;
+			}
+		} else {
+			$ctx = stream_context_create([
+				'http' => ['timeout' => 15, 'follow_location' => 1],
+				'ssl'  => ['verify_peer' => false, 'verify_peer_name' => false],
+			]);
+			$data = @file_get_contents($url, false, $ctx);
+		}
+	} else {
+		$localPath = ROOT_PATH . ltrim($url, '/');
+		if (is_file($localPath)) {
+			$data = @file_get_contents($localPath);
+		}
+	}
+	if (!$data) {
+		return $url;
+	}
+	$src = @imagecreatefromstring($data);
+	if (!$src) {
+		return $url;
+	}
+	$srcWidth  = imagesx($src);
+	$srcHeight = imagesy($src);
+	if ($srcWidth <= 0 || $srcHeight <= 0) {
+		imagedestroy($src);
+		return $url;
+	}
+	$scale = min(1.0, $maxWidth / $srcWidth, $maxHeight / $srcHeight);
+	$dstWidth  = max(1, (int) floor($srcWidth * $scale));
+	$dstHeight = max(1, (int) floor($srcHeight * $scale));
+	$dst = imagecreatetruecolor($dstWidth, $dstHeight);
+	imagecopyresampled($dst, $src, 0, 0, 0, 0, $dstWidth, $dstHeight, $srcWidth, $srcHeight);
+	$ok = @imagejpeg($dst, $absolutePath, max(1, min(100, (int)$quality)));
+	imagedestroy($src);
+	imagedestroy($dst);
+	if (!$ok) {
+		return $url;
+	}
+	return $publicUrl;
+}
+
 function logoutcookie() {
 //	setcookie("c_secure_uid", "", 0x7fffffff, "/", "", false, true);
 	setcookie("c_secure_pass", "", 0x7fffffff, "/", "", isHttps(), true);
