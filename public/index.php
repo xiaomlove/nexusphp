@@ -202,17 +202,140 @@ if ($showlastxforumposts_main == "yes" && $CURUSER)
 // ------------- start: latest torrents ------------------//
 
 if ($showlastxtorrents_main == "yes") {
-		$result = sql_query("SELECT id,name,small_descr,leechers,seeders FROM torrents where visible='yes' ORDER BY id DESC LIMIT 5") or sqlerr(__FILE__, __LINE__);
+		$result = sql_query("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.size, t.owner, t.anonymous, t.cover, s.name AS standard_name, src.name AS source_name FROM torrents t LEFT JOIN standards s ON t.standard = s.id LEFT JOIN sources src ON t.source = src.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 9") or sqlerr(__FILE__, __LINE__);
 		if(mysql_num_rows($result) != 0 )
 		{
 			print ("<h2>".$lang_index['text_last_five_torrent']."</h2>");
-			print ("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"colhead\" width=\"100%\">".$lang_index['col_name']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_seeder']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_leecher']."</td></tr>");
-
-			while( $row = mysql_fetch_assoc($result) )
+			?>
+			<style>
+				.lt-grid {
+					display: grid;
+					grid-template-columns: repeat(3, 1fr);
+					gap: 12px;
+					margin: 8px 0 16px;
+				}
+				.lt-grid .lt-card {
+					border: 1px solid rgba(127,127,127,.35);
+					border-radius: 6px;
+					overflow: hidden;
+					display: flex;
+					flex-direction: column;
+					background: rgba(127,127,127,.05);
+				}
+				.lt-grid .lt-cover {
+					position: relative;
+					display: block;
+					width: 100%;
+					aspect-ratio: 2 / 3;
+					max-height: 240px;
+					background: rgba(0,0,0,.08);
+					overflow: hidden;
+				}
+				.lt-grid .lt-cover img,
+				.lt-grid .lt-cover .lt-cover-fallback {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
+					display: block;
+				}
+				.lt-grid .lt-cover-fallback {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					padding: 8px;
+					box-sizing: border-box;
+					font-size: 12px;
+					line-height: 1.3;
+					color: rgba(127,127,127,.85);
+					text-align: center;
+					word-break: break-word;
+				}
+				.lt-grid .lt-quality {
+					position: absolute;
+					top: 6px;
+					right: 6px;
+					background: rgba(0,0,0,.78);
+					color: #fff;
+					font-size: 11px;
+					font-weight: bold;
+					padding: 2px 6px;
+					border-radius: 3px;
+					line-height: 1.2;
+					letter-spacing: .3px;
+					pointer-events: none;
+				}
+				.lt-grid .lt-title {
+					padding: 6px 8px 4px;
+					font-size: 12px;
+					line-height: 1.3;
+					overflow: hidden;
+					display: -webkit-box;
+					-webkit-line-clamp: 2;
+					-webkit-box-orient: vertical;
+				}
+				.lt-grid .lt-title a { text-decoration: none; }
+				.lt-grid .lt-meta {
+					margin-top: auto;
+					display: flex;
+					flex-wrap: wrap;
+					gap: 4px 10px;
+					padding: 6px 8px;
+					font-size: 11px;
+					border-top: 1px solid rgba(127,127,127,.2);
+				}
+				.lt-grid .lt-seed { color: #2fad2f; font-weight: bold; }
+				.lt-grid .lt-leech { color: #d04848; font-weight: bold; }
+				@media (max-width: 700px) {
+					.lt-grid { grid-template-columns: repeat(2, 1fr); }
+				}
+				@media (max-width: 420px) {
+					.lt-grid { grid-template-columns: 1fr; }
+				}
+			</style>
+			<div class="lt-grid">
+			<?php
+			while ($row = mysql_fetch_assoc($result))
 			{
-				print ("<tr><a href=\"details.php?id=". $row['id'] ."&amp;hit=1\"><td><a href=\"details.php?id=". $row['id'] ."&amp;hit=1\"><b>" . htmlspecialchars($row['name']) . "</b><br/>" . htmlspecialchars($row['small_descr']) ."</td></a><td align=\"center\">" . $row['seeders'] . "</td><td align=\"center\">" . $row['leechers'] . "</td></tr>");
+				$detailsUrl = 'details.php?id=' . (int)$row['id'] . '&hit=1';
+				$cover = trim((string)($row['cover'] ?? ''));
+				$quality = trim((string)($row['standard_name'] ?? ''));
+				if ($quality === '') {
+					$quality = trim((string)($row['source_name'] ?? ''));
+				}
+				if (($row['anonymous'] ?? 'no') === 'yes') {
+					$ownerHtml = '<i>Anonymous</i>';
+				} else {
+					$ownerHtml = get_username((int)$row['owner']);
+				}
+				$nameSafe = htmlspecialchars($row['name']);
+				?>
+				<div class="lt-card">
+					<a class="lt-cover" href="<?php echo htmlspecialchars($detailsUrl) ?>" title="<?php echo $nameSafe ?>">
+						<?php if ($cover !== '') { ?>
+							<img src="<?php echo htmlspecialchars($cover) ?>" alt="<?php echo $nameSafe ?>" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='flex';}" />
+							<div class="lt-cover-fallback" style="display:none;"><?php echo htmlspecialchars(mb_substr($row['name'], 0, 60)) ?></div>
+						<?php } else { ?>
+							<div class="lt-cover-fallback"><?php echo htmlspecialchars(mb_substr($row['name'], 0, 60)) ?></div>
+						<?php } ?>
+						<?php if ($quality !== '') { ?>
+							<span class="lt-quality"><?php echo htmlspecialchars($quality) ?></span>
+						<?php } ?>
+					</a>
+					<div class="lt-title">
+						<a href="<?php echo htmlspecialchars($detailsUrl) ?>"><b><?php echo $nameSafe ?></b></a>
+					</div>
+					<div class="lt-meta">
+						<span class="lt-seed" title="<?php echo htmlspecialchars($lang_index['col_seeder']) ?>">&#x25B2; <?php echo (int)$row['seeders'] ?></span>
+						<span class="lt-leech" title="<?php echo htmlspecialchars($lang_index['col_leecher']) ?>">&#x25BC; <?php echo (int)$row['leechers'] ?></span>
+						<span><?php echo mksize((int)$row['size']) ?></span>
+						<span><?php echo $ownerHtml ?></span>
+					</div>
+				</div>
+				<?php
 			}
-			print ("</table>");
+			?>
+			</div>
+			<?php
 		}
 }
 // ------------- end: latest torrents ------------------//
