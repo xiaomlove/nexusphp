@@ -29,6 +29,13 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         do_action('nexus_register');
+
+        // Telescope is only registered when explicitly enabled, since it
+        // captures every request/query/job and is intended for local and
+        // staging debugging — not production traffic.
+        if ($this->app->environment('local', 'staging') || config('telescope.enabled')) {
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
+use Sentry\Laravel\Integration as SentryIntegration;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 use Laravel\Passport\Exceptions\AuthenticationException as PassportAuthenticationException;
@@ -42,6 +43,12 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
+        // Forward unhandled exceptions to Sentry when a DSN is configured.
+        // Safe to call unconditionally — the integration no-ops without a DSN.
+        $this->reportable(function (Throwable $e) {
+            SentryIntegration::captureUnhandledException($e);
+        });
+
         if (app()->runningInConsole()) {
             return;
         }
