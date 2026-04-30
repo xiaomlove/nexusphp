@@ -1,3 +1,75 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source "../views";
+@source "../../app/Filament";
+@source "../../app/Livewire";
+@source "../../vendor/filament/**/resources/views";
+
+/*
+ * Custom palette aliases preserved from the legacy `tailwind.config.js`:
+ *
+ *     danger  → rose
+ *     primary → blue
+ *     success → green
+ *     warning → yellow
+ *
+ * Using `@theme inline` so the aliases reference Tailwind's built-in
+ * palette variables instead of duplicating their values.
+ */
+@theme inline {
+    --color-danger-50: var(--color-rose-50);
+    --color-danger-100: var(--color-rose-100);
+    --color-danger-200: var(--color-rose-200);
+    --color-danger-300: var(--color-rose-300);
+    --color-danger-400: var(--color-rose-400);
+    --color-danger-500: var(--color-rose-500);
+    --color-danger-600: var(--color-rose-600);
+    --color-danger-700: var(--color-rose-700);
+    --color-danger-800: var(--color-rose-800);
+    --color-danger-900: var(--color-rose-900);
+    --color-danger-950: var(--color-rose-950);
+
+    --color-primary-50: var(--color-blue-50);
+    --color-primary-100: var(--color-blue-100);
+    --color-primary-200: var(--color-blue-200);
+    --color-primary-300: var(--color-blue-300);
+    --color-primary-400: var(--color-blue-400);
+    --color-primary-500: var(--color-blue-500);
+    --color-primary-600: var(--color-blue-600);
+    --color-primary-700: var(--color-blue-700);
+    --color-primary-800: var(--color-blue-800);
+    --color-primary-900: var(--color-blue-900);
+    --color-primary-950: var(--color-blue-950);
+
+    --color-success-50: var(--color-green-50);
+    --color-success-100: var(--color-green-100);
+    --color-success-200: var(--color-green-200);
+    --color-success-300: var(--color-green-300);
+    --color-success-400: var(--color-green-400);
+    --color-success-500: var(--color-green-500);
+    --color-success-600: var(--color-green-600);
+    --color-success-700: var(--color-green-700);
+    --color-success-800: var(--color-green-800);
+    --color-success-900: var(--color-green-900);
+    --color-success-950: var(--color-green-950);
+
+    --color-warning-50: var(--color-yellow-50);
+    --color-warning-100: var(--color-yellow-100);
+    --color-warning-200: var(--color-yellow-200);
+    --color-warning-300: var(--color-yellow-300);
+    --color-warning-400: var(--color-yellow-400);
+    --color-warning-500: var(--color-yellow-500);
+    --color-warning-600: var(--color-yellow-600);
+    --color-warning-700: var(--color-yellow-700);
+    --color-warning-800: var(--color-yellow-800);
+    --color-warning-900: var(--color-yellow-900);
+    --color-warning-950: var(--color-yellow-950);
+}
+
+/*
+ * Tailwind v4 enables dark-mode via the `dark` variant which picks up the
+ * `prefers-color-scheme` media query by default. The legacy config used
+ * `darkMode: 'class'` — preserve that behaviour here so anything toggling
+ * a `dark` class on <html> still works.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
