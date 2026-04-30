@@ -2,12 +2,12 @@
 
 namespace App\Providers\Filament;
 
-use App\Models\User;
-use Filament\Http\Middleware\Authenticate;
+use App\Filament\Pages\Dashboard;
+use App\Http\Middleware\Filament;
+use App\Http\Middleware\Locale;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
@@ -17,6 +17,8 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Colors\Color;
 use Filament\Tables\Columns\Column;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -26,8 +28,6 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Table;
 use Livewire\Livewire;
 use NexusPlugin\TelegramBot\Filament\TelegramBotBindsResource;
 use NexusPlugin\TelegramBot\Filament\TelegramBotResource;
@@ -40,59 +40,58 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->spa()
-            ->homeUrl("/")
-            ->sidebarWidth("15rem")
+            ->homeUrl('/')
+            ->sidebarWidth('15rem')
             ->topbar(false)
             ->sidebarCollapsibleOnDesktop(true)
-            ->authGuard("nexus-web")
+            ->authGuard('nexus-web')
             ->path('nexusphp')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])
             ->resources([
-//                TelegramBotResource::class,
-//                TelegramBotBindsResource::class
+                //                TelegramBotResource::class,
+                //                TelegramBotBindsResource::class
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-//                Pages\Dashboard::class,
-                \App\Filament\Pages\Dashboard::class,
+                //                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-//                Widgets\AccountWidget::class,
-//                Widgets\FilamentInfoWidget::class,
+                //                Widgets\AccountWidget::class,
+                //                Widgets\FilamentInfoWidget::class,
             ])
             ->discoverClusters(app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->middleware([
-//                EncryptCookies::class,
+                //                EncryptCookies::class,
                 \App\Http\Middleware\EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
-//                AuthenticateSession::class,
+                //                AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\Locale::class,
+                Locale::class,
             ])
             ->authMiddleware([
-                \App\Http\Middleware\Filament::class,
+                Filament::class,
             ])
             ->navigationItems([
                 NavigationItem::make('Horizon')
-                ->label(fn () => nexus_trans('admin.sidebar.queue_monitor', [], Auth::user() ? get_langfolder_cookie(true) : 'en'))
-                ->icon('heroicon-o-presentation-chart-line')
-                ->group('System')
-                ->sort(99)
-                ->url('/horizon')
-                ->openUrlInNewTab()
-                ->hidden(fn() => !(Auth::user() && Auth::user()->class >= User::CLASS_SYSOP))
-            ])
-            ;
+                    ->label(fn () => nexus_trans('admin.sidebar.queue_monitor', [], Auth::user() ? get_langfolder_cookie(true) : 'en'))
+                    ->icon('heroicon-o-presentation-chart-line')
+                    ->group('System')
+                    ->sort(99)
+                    ->url('/horizon')
+                    ->openUrlInNewTab()
+                    ->hidden(fn () => ! (Auth::user() && Auth::user()->canAccessAdmin())),
+            ]);
     }
 
     public function boot()
@@ -109,8 +108,7 @@ class AppPanelProvider extends PanelProvider
         Table::configureUsing(function (Table $table): void {
             $table
                 ->filtersLayout(FiltersLayout::AboveContent)
-                ->paginationPageOptions([10, 25, 50, 100])
-            ;
+                ->paginationPageOptions([10, 25, 50, 100]);
         });
         Column::configureUsing(function (Column $section): void {
             $section
@@ -125,5 +123,4 @@ class AppPanelProvider extends PanelProvider
             return Route::post('/livewire/update', $handle)->middleware('filament');
         });
     }
-
 }
