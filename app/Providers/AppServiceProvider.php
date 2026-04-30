@@ -2,22 +2,15 @@
 
 namespace App\Providers;
 
-use App\Http\Middleware\Locale;
-use Carbon\Carbon;
+use Filament\Facades\Filament;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Console\Events\ScheduledTaskStarting;
-use Illuminate\Support\Facades\App;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Laravel\Passport\Passport;
 use Nexus\Database\NexusDB;
-use Nexus\Nexus;
-use Filament\Facades\Filament;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
         NexusDB::customModel();
         DB::connection(config('database.default'))->enableQueryLog();
         $forceScheme = strtolower(env('FORCE_SCHEME'));
-        if (env('APP_ENV') == "production" && in_array($forceScheme, ['https', 'http'])) {
+        if (env('APP_ENV') == 'production' && in_array($forceScheme, ['https', 'http'])) {
             URL::forceScheme($forceScheme);
         }
         $this->customScheduleTask();
@@ -69,8 +62,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         FilamentAsset::register([
-            Css::make("sprites", asset('styles/sprites.css')),
-            Css::make("admin", asset('styles/admin.css')),
+            Css::make('sprites', asset('styles/sprites.css')),
+            Css::make('admin', asset('styles/admin.css')),
         ]);
 
         do_action('nexus_boot');
@@ -78,7 +71,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function customScheduleTask(): void
     {
-        if (!isRunningInConsole()) {
+        if (! isRunningInConsole()) {
             return;
         }
         /** @var Dispatcher $eventDispatcher */
@@ -91,8 +84,8 @@ class AppServiceProvider extends ServiceProvider
                 // When we are using stterr as output for logs then schedule tasks will not output
                 // any logs  due the /dev/null usage. Let's fix this by appending the output to
                 // the docker process.
-                if (getenv("RUNNING_IN_DOCKER") == "1" && $event->task->output === $event->task->getDefaultOutput()) {
-                    $event->task->appendOutputTo("/proc/1/fd/1");
+                if (getenv('RUNNING_IN_DOCKER') == '1' && $event->task->output === $event->task->getDefaultOutput()) {
+                    $event->task->appendOutputTo('/proc/1/fd/1');
                 }
             }
         );

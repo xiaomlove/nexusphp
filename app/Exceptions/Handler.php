@@ -6,13 +6,14 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
+use Laravel\Passport\Exceptions\AuthenticationException as PassportAuthenticationException;
 use Sentry\Laravel\Integration as SentryIntegration;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
-use Laravel\Passport\Exceptions\AuthenticationException as PassportAuthenticationException;
 
 class Handler extends ExceptionHandler
 {
@@ -61,14 +62,15 @@ class Handler extends ExceptionHandler
             }
         });
         $this->renderable(function (PassportAuthenticationException $e) use ($request) {
-            return response()->redirectTo(sprintf("%s/login.php?returnto=%s", $request->getSchemeAndHttpHost(), urlencode($request->fullUrl())));
+            return response()->redirectTo(sprintf('%s/login.php?returnto=%s', $request->getSchemeAndHttpHost(), urlencode($request->fullUrl())));
         });
 
-        //Other Only handle in json request
-        if (!$request->expectsJson() && !$request->ajax()) {
-            $this->renderable(function (NexusException $e) use ($request) {
-                return redirect(url('/error?error=' . urlencode($e->getMessage())));
+        // Other Only handle in json request
+        if (! $request->expectsJson() && ! $request->ajax()) {
+            $this->renderable(function (NexusException $e) {
+                return redirect(url('/error?error='.urlencode($e->getMessage())));
             });
+
             return;
         }
 
@@ -83,13 +85,15 @@ class Handler extends ExceptionHandler
         $this->renderable(function (ValidationException $exception) {
             $errors = $exception->errors();
             $msg = Arr::first(Arr::first($errors));
+
             return response()->json(fail($msg, $errors));
         });
 
         $this->renderable(function (NotFoundHttpException $e) {
             if ($e->getPrevious() && $e->getPrevious() instanceof ModelNotFoundException) {
                 $exception = $e->getPrevious();
-                do_log(sprintf("NotFoundHttpException: %s, trace: %s", $exception->getMessage(), $exception->getTraceAsString()), 'error');
+                do_log(sprintf('NotFoundHttpException: %s, trace: %s', $exception->getMessage(), $exception->getTraceAsString()), 'error');
+
                 return response()->json(fail($exception->getMessage(), request()->all()));
             }
         });
@@ -98,9 +102,8 @@ class Handler extends ExceptionHandler
     /**
      * Prepare a JSON response for the given exception.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Throwable  $e
-     * @return \Illuminate\Http\JsonResponse
+     * @param  Request  $request
+     * @return JsonResponse
      */
     protected function prepareJsonResponse($request, Throwable $e)
     {
@@ -111,10 +114,11 @@ class Handler extends ExceptionHandler
         if (config('app.debug')) {
             $data['trace'] = $trace;
         }
-//        dd($e);
+        //        dd($e);
         if ($e instanceof \Error || $e instanceof \ErrorException) {
-            do_log(sprintf(get_class($e) . ": %s, trace: %s", $msg, $e->getTraceAsString()), "error");
+            do_log(sprintf(get_class($e).': %s, trace: %s', $msg, $e->getTraceAsString()), 'error');
         }
+
         return new JsonResponse(
             fail($msg, $data),
             $httpStatusCode,
@@ -136,9 +140,8 @@ class Handler extends ExceptionHandler
         if ($this->isHttpException($e)) {
             return $e->getStatusCode();
         }
+
         return 500;
 
     }
-
-
 }
