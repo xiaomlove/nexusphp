@@ -178,9 +178,11 @@ class SearchBox extends NexusModel
 
     public function getCustomFieldsAttribute($value): array
     {
-        if (!is_array($value)) {
-            return explode(',', $value);
+        if (is_array($value)) {
+            return $value;
         }
+
+        return explode(',', (string) $value);
     }
 
     public function setCustomFieldsAttribute($value)

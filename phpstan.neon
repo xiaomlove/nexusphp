@@ -1,0 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 0
+
+    paths:
+        - app
+
+    excludePaths:
+        - app/Console/Commands/Demo/*
+        - app/Filament/*
+        - app/Listeners/Toolbox/*
+
+    ignoreErrors: []
+
+    reportUnmatchedIgnoredErrors: false
