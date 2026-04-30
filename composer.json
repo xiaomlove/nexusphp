@@ -63,8 +63,10 @@
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "kitloong/laravel-migrations-generator": "^7.0",
+        "larastan/larastan": "^3.0",
         "laravel-lang/lang": "^15.10",
         "laravel-lang/publisher": "^16.0",
+        "laravel/pint": "^1.0",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^11.0"
@@ -90,7 +92,11 @@
         "post-update-cmd": [
             "@php artisan filament:upgrade",
             "@php artisan livewire:publish --assets"
-        ]
+        ],
+        "lint": "vendor/bin/pint --test",
+        "lint:fix": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "test": "vendor/bin/phpunit --testsuite=Unit"
     },
     "extra": {
         "laravel": {
