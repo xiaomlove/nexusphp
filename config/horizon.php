@@ -70,7 +70,7 @@ return [
     |
     */
 
-//    'middleware' => ['web'],
+    //    'middleware' => ['web'],
     'middleware' => ['auth.nexus:nexus-web'],
 
     /*
@@ -210,5 +210,21 @@ return [
                 'maxProcesses' => 3,
             ],
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notification Routing
+    |--------------------------------------------------------------------------
+    |
+    | These options configure where Horizon sends long-wait/failure
+    | notifications. Leave empty to disable. Read from .env.
+    |
+    */
+
+    'notifications' => [
+        'slack_webhook' => env('HORIZON_SLACK_WEBHOOK'),
+        'slack_channel' => env('HORIZON_SLACK_CHANNEL', '#horizon-alerts'),
+        'mail' => env('HORIZON_NOTIFY_EMAIL'),
     ],
 ];
