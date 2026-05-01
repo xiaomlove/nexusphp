@@ -55,9 +55,11 @@ $inviter =  $_POST["inviter"];
 $code = unesc($_POST["hash"]);
 
 //check invite code
-	$sq = sprintf("SELECT * FROM invites WHERE valid = %s and hash ='%s'", \App\Models\Invite::VALID_YES, mysql_real_escape_string($code));
-	$res = sql_query($sq) or sqlerr(__FILE__, __LINE__);
-	$inv = mysql_fetch_assoc($res);
+	$inv = \Nexus\Database\NexusDB::table('invites')
+		->where('valid', (int) \App\Models\Invite::VALID_YES)
+		->where('hash', (string) $code)
+		->first();
+	$inv = $inv ? (array) $inv : null;
 	if (!$inv)
 		bark('invalid invite code');
 	if ($inv['inviter'] != $inviter) {
@@ -69,9 +71,12 @@ $code = unesc($_POST["hash"]);
 $ip = getip();
 
 
-$res = sql_query("SELECT username FROM users WHERE id = $inviter") or sqlerr(__FILE__, __LINE__);
-$arr = mysql_fetch_assoc($res);
-$invusername = $arr['username'];
+$arr = \Nexus\Database\NexusDB::table('users')
+    ->where('id', (int) $inviter)
+    ->select(['username'])
+    ->first();
+$arr = $arr ? (array) $arr : [];
+$invusername = $arr['username'] ?? '';
 }
 if (!mkglobal("wantusername:wantpassword:email")) {
     die();
@@ -134,8 +139,10 @@ if ($_POST["rulesverify"] != "yes" || $_POST["faqverify"] != "yes" || $_POST["ag
 	stderr($lang_takesignup['std_signup_failed'], $lang_takesignup['std_unqualified']);
 
 // check if email addy is already in use
-$a = (@mysql_fetch_row(@sql_query("select count(*) from users where BINARY email='".mysql_real_escape_string($email)."'"))) or sqlerr(__FILE__, __LINE__);
-if ($a[0] != 0)
+$emailInUse = \Nexus\Database\NexusDB::table('users')
+    ->whereRaw('BINARY email = ?', [(string) $email])
+    ->count();
+if ($emailInUse != 0)
   bark($lang_takesignup['std_email_address'].$email.$lang_takesignup['std_in_use']);
 
 /*
@@ -153,24 +160,43 @@ $wantpasshash = hash('sha256', $secret . $wantpassword);
 $editsecret = ($verification == 'admin' ? '' : $secret);
 $invite_count = (int) $invite_count;
 $passkey = md5($wantusername.date("Y-m-d H:i:s").$wantpasshash);
-
-$wantusername = sqlesc($wantusername);
-$wantpasshash = sqlesc($wantpasshash);
-$secret = sqlesc($secret);
-$editsecret = sqlesc($editsecret);
 $send_email = $email;
-$email = sqlesc($email);
-$country = sqlesc($country);
-$gender = sqlesc($gender);
-$sitelangid = sqlesc(get_langid_from_langcookie());
-$authKey = sqlesc(mksecret());
-$res_check_user = sql_query("SELECT * FROM users WHERE username = " . $wantusername);
+$authKey = mksecret();
+$sitelangid = (int) get_langid_from_langcookie();
 
-if(mysql_num_rows($res_check_user) == 1)
+$existingUserCount = \Nexus\Database\NexusDB::table('users')
+    ->where('username', (string) $wantusername)
+    ->count();
+if ($existingUserCount == 1)
   bark($lang_takesignup['std_username_exists']);
 
-$ret = sql_query("INSERT INTO users (username, passhash, passkey, secret, auth_key, editsecret, email, country, gender, status, class, invites, ".($type == 'invite' ? "invited_by," : "")." added, last_access, lang, stylesheet".($showschool == 'yes' ? ", school" : "").", uploaded) VALUES (" . $wantusername . "," . $wantpasshash . "," . sqlesc($passkey) . "," . $secret . "," . $authKey. "," . $editsecret . "," . $email . "," . $country . "," . $gender . ", 'pending', ".$defaultclass_class.",". $invite_count .", ".($type == 'invite' ? "'$inviter'," : "") ." '". date("Y-m-d H:i:s") ."' , " . " '". date("Y-m-d H:i:s") ."' , ".$sitelangid . ",".$defcss.($showschool == 'yes' ? ",".$school : "").",".($iniupload_main > 0 ? $iniupload_main : 0).")") or sqlerr(__FILE__, __LINE__);
-$id = mysql_insert_id();
+$now = date("Y-m-d H:i:s");
+$insertData = [
+    'username' => (string) $wantusername,
+    'passhash' => (string) $wantpasshash,
+    'passkey' => (string) $passkey,
+    'secret' => (string) $secret,
+    'auth_key' => (string) $authKey,
+    'editsecret' => (string) $editsecret,
+    'email' => (string) $email,
+    'country' => (int) $country,
+    'gender' => (string) $gender,
+    'status' => 'pending',
+    'class' => (int) $defaultclass_class,
+    'invites' => (int) $invite_count,
+    'added' => $now,
+    'last_access' => $now,
+    'lang' => $sitelangid,
+    'stylesheet' => (int) $defcss,
+    'uploaded' => $iniupload_main > 0 ? (int) $iniupload_main : 0,
+];
+if ($type == 'invite') {
+    $insertData['invited_by'] = (int) $inviter;
+}
+if ($showschool == 'yes') {
+    $insertData['school'] = (int) $school;
+}
+$id = (int) \Nexus\Database\NexusDB::insert('users', $insertData);
 $userInfo = \App\Models\User::query()->find($id, \App\Models\User::$commonFields);
 fire_event("user_created", $userInfo);
 $tmpInviteCount = get_setting('main.tmp_invite_count');
@@ -195,8 +221,11 @@ if (empty($msg)) {
 ]);
 
 //write_log("User account $id ($wantusername) was created");
-$res = sql_query("SELECT passhash, secret, editsecret, status FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_assoc($res);
+$row = \Nexus\Database\NexusDB::table('users')
+    ->where('id', (int) $id)
+    ->select(['passhash', 'secret', 'editsecret', 'status'])
+    ->first();
+$row = $row ? (array) $row : [];
 $psecret = md5($row['secret']);
 $ip = getip();
 $usern = htmlspecialchars($wantusername);
