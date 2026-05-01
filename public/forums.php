@@ -54,12 +54,12 @@ function catch_up()
 
 	if (!$CURUSER)
 		die;
-	sql_query("DELETE FROM readposts WHERE userid=".sqlesc($CURUSER['id']));
+	\Nexus\Database\NexusDB::statement("DELETE FROM readposts WHERE userid = " . (int) $CURUSER['id']);
 	$Cache->delete_value('user_'.$CURUSER['id'].'_last_read_post_list');
 	$lastpostid=get_single_value("posts","id","ORDER BY id DESC");
 	if ($lastpostid){
 		$CURUSER['last_catchup'] = $lastpostid;
-		sql_query("UPDATE users SET last_catchup = ".sqlesc($lastpostid)." WHERE id=".sqlesc($CURUSER['id']));
+		\Nexus\Database\NexusDB::statement("UPDATE users SET last_catchup = " . (int) $lastpostid . " WHERE id = " . (int) $CURUSER['id']);
 	}
 }
 
@@ -130,10 +130,12 @@ function check_whether_exist($id, $place='forum'){
 function update_topic_last_post($topicid)
 {
 	global $lang_forums;
-	$res = sql_query("SELECT id FROM posts WHERE topicid=".sqlesc($topicid)." ORDER BY id DESC LIMIT 1") or sqlerr(__FILE__, __LINE__);
-	$arr = mysql_fetch_row($res) or die($lang_forums['std_no_post_found']);
-	$postid = $arr[0];
-	sql_query("UPDATE topics SET lastpost=".sqlesc($postid)." WHERE id=".sqlesc($topicid)) or sqlerr(__FILE__, __LINE__);
+	$rows = \Nexus\Database\NexusDB::select("SELECT id FROM posts WHERE topicid = " . (int) $topicid . " ORDER BY id DESC LIMIT 1");
+	if (empty($rows)) {
+		die($lang_forums['std_no_post_found']);
+	}
+	$postid = (int) $rows[0]['id'];
+	\Nexus\Database\NexusDB::statement("UPDATE topics SET lastpost = " . $postid . " WHERE id = " . (int) $topicid);
 }
 
 function get_forum_row($forumid = 0)
@@ -141,9 +143,9 @@ function get_forum_row($forumid = 0)
 	global $Cache;
 	if (!$forums = $Cache->get_value('forums_list')){
 		$forums = array();
-		$res2 = sql_query("SELECT * FROM forums ORDER BY forid ASC, sort ASC") or sqlerr(__FILE__, __LINE__);
-		while ($row2 = mysql_fetch_array($res2))
+		foreach (\Nexus\Database\NexusDB::select("SELECT * FROM forums ORDER BY forid ASC, sort ASC") as $row2) {
 			$forums[$row2['id']] = $row2;
+		}
 		$Cache->cache_value('forums_list', $forums, 86400);
 	}
 	if (!$forumid)
@@ -155,10 +157,11 @@ function get_last_read_post_id($topicid) {
 	static $ret;
 	if (!$ret && !$ret = $Cache->get_value('user_'.$CURUSER['id'].'_last_read_post_list')){
 		$ret = array();
-		$res = sql_query("SELECT * FROM readposts WHERE userid=" . sqlesc($CURUSER['id']));
-		if (mysql_num_rows($res) != 0){
-			while ($row = mysql_fetch_array($res))
-			$ret[$row['topicid']] = $row['lastpostread'];
+		$rows = \Nexus\Database\NexusDB::select("SELECT * FROM readposts WHERE userid = " . (int) $CURUSER['id']);
+		if (count($rows) != 0) {
+			foreach ($rows as $row) {
+				$ret[$row['topicid']] = $row['lastpostread'];
+			}
 			$Cache->cache_value('user_'.$CURUSER['id'].'_last_read_post_list', $ret, 900);
 		}
 		else $Cache->cache_value('user_'.$CURUSER['id'].'_last_read_post_list', 'no record', 900);
@@ -199,10 +202,10 @@ function insert_compose_frame($id, $type = 'new')
 			$topicid=get_single_value("posts","topicid","WHERE id=".sqlesc($id));
 			$topicname = get_single_value("topics","subject","WHERE id=".sqlesc($topicid));
 			$title = $lang_forums['text_reply_to_topic']." <a href=\"".htmlspecialchars("?action=viewtopic&topicid=".$topicid)."\">".htmlspecialchars($topicname)."</a> ";
-			$res = sql_query("SELECT posts.body, users.username FROM posts LEFT JOIN users ON posts.userid = users.id WHERE posts.id=$id") or sqlerr(__FILE__, __LINE__);
-			if (mysql_num_rows($res) != 1)
+			$rows = \Nexus\Database\NexusDB::select("SELECT posts.body, users.username FROM posts LEFT JOIN users ON posts.userid = users.id WHERE posts.id = " . (int) $id);
+			if (count($rows) != 1)
 				stderr($lang_forums['std_error'], $lang_forums['std_no_post_id']);
-			$arr = mysql_fetch_assoc($res);
+			$arr = $rows[0];
 			$body = "[quote=".htmlspecialchars($arr["username"])."]".htmlspecialchars(unesc($arr["body"]))."[/quote]";
 			$postid = $id;
 			$id = $topicid;
@@ -212,8 +215,8 @@ function insert_compose_frame($id, $type = 'new')
 		}
 		case 'edit':
 		{
-			$res = sql_query("SELECT topicid, body FROM posts WHERE id=".sqlesc($id)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
-			$row = mysql_fetch_array($res);
+			$rows = \Nexus\Database\NexusDB::select("SELECT topicid, body FROM posts WHERE id = " . (int) $id . " LIMIT 1");
+			$row = $rows[0] ?? [];
 			$topicid=$row['topicid'];
 			$firstpost = get_single_value("posts","MIN(id)", "WHERE topicid=".sqlesc($topicid));
 			if ($firstpost == $id){
@@ -304,11 +307,11 @@ if ($action == "editpost")
 	$postid = intval($_GET["postid"] ?? 0);
 	check_whether_exist($postid, 'post');
 
-	$res = sql_query("SELECT userid, topicid FROM posts WHERE id=".sqlesc($postid)) or sqlerr(__FILE__, __LINE__);
-	$arr = mysql_fetch_assoc($res);
+	$rows = \Nexus\Database\NexusDB::select("SELECT userid, topicid FROM posts WHERE id = " . (int) $postid);
+	$arr = $rows[0] ?? [];
 
-	$res2 = sql_query("SELECT locked FROM topics WHERE id = " . $arr["topicid"]) or sqlerr(__FILE__, __LINE__);
-	$arr2 = mysql_fetch_assoc($res2);
+	$rows2 = \Nexus\Database\NexusDB::select("SELECT locked FROM topics WHERE id = " . (int) ($arr["topicid"] ?? 0));
+	$arr2 = $rows2[0] ?? [];
 	$locked = ($arr2["locked"] == 'yes');
 
 	$ismod = is_forum_moderator($postid, 'post');
@@ -355,8 +358,8 @@ if ($action == "post")
 		case 'edit':
 		{
 			check_whether_exist($id, 'post');
-			$res = sql_query("SELECT topicid FROM posts WHERE id=".sqlesc($id)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
-			$row = mysql_fetch_array($res);
+			$rows = \Nexus\Database\NexusDB::select("SELECT topicid FROM posts WHERE id = " . (int) $id . " LIMIT 1");
+			$row = $rows[0] ?? [];
 			$topicid=$row['topicid'];
 			$forumid = get_single_value("topics", "forumid", "WHERE id=".sqlesc($topicid));
 			$firstpost = get_single_value("posts","MIN(id)", "WHERE topicid=".sqlesc($topicid));
@@ -398,8 +401,11 @@ if ($action == "post")
 	if ($type != 'new'){
 		//---- Make sure topic is unlocked
 
-		$res = sql_query("SELECT locked FROM topics WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
-		$arr = mysql_fetch_assoc($res) or die("Topic id n/a");
+		$rows = \Nexus\Database\NexusDB::select("SELECT locked FROM topics WHERE id = " . (int) $topicid);
+		$arr = $rows[0] ?? null;
+		if (!$arr) {
+			die("Topic id n/a");
+		}
 		if ($arr["locked"] == 'yes' && !user_can('postmanage') && !is_forum_moderator($topicid, 'topic'))
 			stderr($lang_forums['std_error'], $lang_forums['std_topic_locked']);
 	}
@@ -413,12 +419,12 @@ if ($action == "post")
             permissiondenied();
         }
 		if ($hassubject){
-			sql_query("UPDATE topics SET subject=".sqlesc($subject)." WHERE id=".sqlesc($topicid)) or sqlerr(__FILE__, __LINE__);
+			\Nexus\Database\NexusDB::statement("UPDATE topics SET subject = " . sqlesc($subject) . " WHERE id = " . (int) $topicid);
 			$forum_last_replied_topic_row = $Cache->get_value('forum_'.$forumid.'_last_replied_topic_content');
 			if ($forum_last_replied_topic_row && $forum_last_replied_topic_row['id'] == $topicid)
 				$Cache->delete_value('forum_'.$forumid.'_last_replied_topic_content');
 		}
-		sql_query("UPDATE posts SET body=".sqlesc($body).", editdate=".sqlesc($date).", editedby=".sqlesc($CURUSER['id'])." WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE posts SET body = " . sqlesc($body) . ", editdate = " . sqlesc($date) . ", editedby = " . (int) $CURUSER['id'] . " WHERE id = " . (int) $id);
 		$Cache->delete_value('post_'.$postid.'_content');
         //send pm
         $postUrl = sprintf('[url=forums.php?action=viewtopic&topicid=%s&page=p%s#pid%s]%s[/url]', $topicid, $id, $id, $topicInfo->subject);
@@ -454,19 +460,33 @@ if ($action == "post")
 			KPS("+",$starttopic_bonus,$userid);
 
 			//---- Create topic
-			sql_query("INSERT INTO topics (userid, forumid, subject) VALUES($userid, $forumid, ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
-			$topicid = mysql_insert_id() or stderr($lang_forums['std_error'],$lang_forums['std_no_topic_id_returned']);
-			sql_query("UPDATE forums SET topiccount=topiccount+1, postcount=postcount+1 WHERE id=".sqlesc($forumid));
+			$topicid = (int) \Nexus\Database\NexusDB::insert('topics', [
+				'userid' => $userid,
+				'forumid' => $forumid,
+				'subject' => $subject,
+			]);
+			if (!$topicid) {
+				stderr($lang_forums['std_error'],$lang_forums['std_no_topic_id_returned']);
+			}
+			\Nexus\Database\NexusDB::statement("UPDATE forums SET topiccount = topiccount + 1, postcount = postcount + 1 WHERE id = " . (int) $forumid);
 		}
 		else // new post
 		{
 			//add bonus
 			KPS("+",$makepost_bonus,$userid);
-			sql_query("UPDATE forums SET postcount=postcount+1 WHERE id=".sqlesc($forumid));
+			\Nexus\Database\NexusDB::statement("UPDATE forums SET postcount = postcount + 1 WHERE id = " . (int) $forumid);
 		}
 
-		sql_query("INSERT INTO posts (topicid, userid, added, body, ori_body) VALUES ($topicid, $userid, ".sqlesc($date).", ".sqlesc($body).", ".sqlesc($body).")") or sqlerr(__FILE__, __LINE__);
-		$postid = mysql_insert_id() or die($lang_forums['std_post_id_not_available']);
+		$postid = (int) \Nexus\Database\NexusDB::insert('posts', [
+			'topicid' => $topicid,
+			'userid' => $userid,
+			'added' => $date,
+			'body' => $body,
+			'ori_body' => $body,
+		]);
+		if (!$postid) {
+			die($lang_forums['std_post_id_not_available']);
+		}
 		//send pm
         $topicInfo = \App\Models\Topic::query()->findOrFail($topicid);
         $postUrl = sprintf('[url=forums.php?action=viewtopic&topicid=%s&page=p%s#pid%s]%s[/url]', $topicid, $postid, $postid, $topicInfo->subject);
@@ -517,13 +537,13 @@ if ($action == "post")
 		if ($type == 'new')
 		{
 			// update the first post of topic
-			sql_query("UPDATE topics SET firstpost=$postid, lastpost=$postid WHERE id=".sqlesc($topicid)) or sqlerr(__FILE__, __LINE__);
+			\Nexus\Database\NexusDB::statement("UPDATE topics SET firstpost = " . (int) $postid . ", lastpost = " . (int) $postid . " WHERE id = " . (int) $topicid);
 		}
 		else
 		{
-			sql_query("UPDATE topics SET lastpost=$postid WHERE id=".sqlesc($topicid)) or sqlerr(__FILE__, __LINE__);
+			\Nexus\Database\NexusDB::statement("UPDATE topics SET lastpost = " . (int) $postid . " WHERE id = " . (int) $topicid);
 		}
-		sql_query("UPDATE users SET last_post=".sqlesc($date)." WHERE id=".sqlesc($CURUSER['id'])) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE users SET last_post = " . sqlesc($date) . " WHERE id = " . (int) $CURUSER['id']);
 	}
 
 	//------ All done, redirect user to the post
@@ -561,8 +581,11 @@ if ($action == "viewtopic")
 
 	//------ Get topic info
 
-	$res = sql_query("SELECT * FROM topics WHERE id=".sqlesc($topicid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
-	$arr = mysql_fetch_assoc($res) or stderr($lang_forums['std_forum_error'], $lang_forums['std_topic_not_found']);
+	$rows = \Nexus\Database\NexusDB::select("SELECT * FROM topics WHERE id = " . (int) $topicid . " LIMIT 1");
+	$arr = $rows[0] ?? null;
+	if (!$arr) {
+		stderr($lang_forums['std_forum_error'], $lang_forums['std_topic_not_found']);
+	}
 
 	$forumid = $arr['forumid'];
 	$locked = $arr['locked'] == "yes";
@@ -589,7 +612,7 @@ if ($action == "viewtopic")
 	else $maypost = false;
 
 	//------ Update hits column
-	sql_query("UPDATE topics SET views = views + 1 WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE topics SET views = views + 1 WHERE id = " . (int) $topicid);
 
 	//------ Get post count
 	$postcount = get_row_count("posts",$where);
@@ -607,12 +630,10 @@ if ($action == "viewtopic")
 	if (isset($page[0]) && $page[0] == "p")
 	{
 		$findpost = substr($page, 1);
-		$res = sql_query("SELECT id FROM posts $where ORDER BY added") or sqlerr(__FILE__, __LINE__);
 		$i = 0;
-		while ($arr = mysql_fetch_row($res))
-		{
-			if ($arr[0] == $findpost)
-			break;
+		foreach (\Nexus\Database\NexusDB::select("SELECT id FROM posts $where ORDER BY added") as $arr) {
+			if ($arr['id'] == $findpost)
+				break;
 			++$i;
 		}
 		$page = floor($i / $perpage);
@@ -671,7 +692,7 @@ if ($action == "viewtopic")
 	$pagerbottom = "<p align=\"center\">".$pagerstr."<br />".$pager."</p>\n";
 	//------ Get posts
 
-	$res = sql_query("SELECT * FROM posts $where ORDER BY id LIMIT $perpage offset $offset") or sqlerr(__FILE__, __LINE__);
+	$postRows = \Nexus\Database\NexusDB::select("SELECT * FROM posts $where ORDER BY id LIMIT $perpage offset $offset");
 
 	stdhead($lang_forums['head_view_topic']." \"".$orgsubject."\"");
 	begin_main_frame("",true);
@@ -695,9 +716,9 @@ if ($action == "viewtopic")
 	print("</tr></table>\n");
 	begin_frame();
 
-	$pc = mysql_num_rows($res);
+	$pc = count($postRows);
 	$allPosts = $uidArr = [];
-    while ($arr = mysql_fetch_assoc($res)) {
+    foreach ($postRows as $arr) {
         $allPosts[] = $arr;
         $uidArr[$arr['userid']] = 1;
     }
@@ -767,9 +788,13 @@ if ($action == "viewtopic")
 			print("<span id=\"last\"></span>\n");
 			if ($postid > $lpr){
 				if ($lpr == $CURUSER['last_catchup']) // There is no record of this topic
-					sql_query("INSERT INTO readposts(userid, topicid, lastpostread) VALUES (".$userid.", ".$topicid.", ".$postid.")") or sqlerr(__FILE__, __LINE__);
+					\Nexus\Database\NexusDB::insert('readposts', [
+						'userid' => $userid,
+						'topicid' => $topicid,
+						'lastpostread' => $postid,
+					]);
 				elseif ($lpr > $CURUSER['last_catchup']) //There is record of this topic
-					sql_query("UPDATE readposts SET lastpostread=$postid WHERE userid=$userid AND topicid=$topicid") or sqlerr(__FILE__, __LINE__);
+					\Nexus\Database\NexusDB::statement("UPDATE readposts SET lastpostread = " . (int) $postid . " WHERE userid = " . (int) $userid . " AND topicid = " . (int) $topicid);
 				$Cache->delete_value('user_'.$CURUSER['id'].'_last_read_post_list');
 			}
 		}
@@ -946,38 +971,36 @@ if ($action == "movetopic")
 
 	// Make sure topic and forum is valid
 
-	$res = @sql_query("SELECT minclasswrite FROM forums WHERE id=$forumid") or sqlerr(__FILE__, __LINE__);
+	$rows = \Nexus\Database\NexusDB::select("SELECT minclasswrite FROM forums WHERE id = " . (int) $forumid);
 
-	if (mysql_num_rows($res) != 1)
-	stderr($lang_forums['std_error'], $lang_forums['std_forum_not_found']);
+	if (count($rows) != 1)
+		stderr($lang_forums['std_error'], $lang_forums['std_forum_not_found']);
 
-	$arr = mysql_fetch_row($res);
+	$arr = $rows[0];
 
-	if (get_user_class() < $arr[0])
+	if (get_user_class() < $arr['minclasswrite'])
 		permissiondenied();
 
-	$res = @sql_query("SELECT forumid FROM topics WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) != 1)
+	$rows = \Nexus\Database\NexusDB::select("SELECT forumid FROM topics WHERE id = " . (int) $topicid);
+	if (count($rows) != 1)
 		stderr($lang_forums['std_error'], $lang_forums['std_topic_not_found']);
-	$arr = mysql_fetch_row($res);
-	$old_forumid=$arr[0];
+	$old_forumid = (int) $rows[0]['forumid'];
 
 	// get posts count
-	$res = sql_query("SELECT COUNT(id) AS nb_posts FROM posts WHERE topicid=$topicid") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) != 1)
-	stderr($lang_forums['std_error'], $lang_forums['std_cannot_get_posts_count']);
-	$arr = mysql_fetch_row($res);
-	$nb_posts = $arr[0];
+	$rows = \Nexus\Database\NexusDB::select("SELECT COUNT(id) AS nb_posts FROM posts WHERE topicid = " . (int) $topicid);
+	if (count($rows) != 1)
+		stderr($lang_forums['std_error'], $lang_forums['std_cannot_get_posts_count']);
+	$nb_posts = (int) $rows[0]['nb_posts'];
 
 	// move topic
 	if ($old_forumid != $forumid)
 	{
-		@sql_query("UPDATE topics SET forumid=$forumid WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE topics SET forumid = " . (int) $forumid . " WHERE id = " . (int) $topicid);
 		// update counts
-		@sql_query("UPDATE forums SET topiccount=topiccount-1, postcount=postcount-$nb_posts WHERE id=$old_forumid") or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE forums SET topiccount = topiccount - 1, postcount = postcount - " . (int) $nb_posts . " WHERE id = " . (int) $old_forumid);
 		$Cache->delete_value('forum_'.$old_forumid.'_post_'.$today_date.'_count');
 		$Cache->delete_value('forum_'.$old_forumid.'_last_replied_topic_content');
-		@sql_query("UPDATE forums SET topiccount=topiccount+1, postcount=postcount+$nb_posts WHERE id=$forumid") or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE forums SET topiccount = topiccount + 1, postcount = postcount + " . (int) $nb_posts . " WHERE id = " . (int) $forumid);
 		$Cache->delete_value('forum_'.$forumid.'_post_'.$today_date.'_count');
 		$Cache->delete_value('forum_'.$forumid.'_last_replied_topic_content');
 	}
@@ -994,8 +1017,8 @@ if ($action == "movetopic")
 if ($action == "deletetopic")
 {
 	$topicid = intval($_GET["topicid"] ?? 0);
-	$res1 = sql_query("SELECT forumid, userid FROM topics WHERE id=".sqlesc($topicid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
-	$row1 = mysql_fetch_array($res1);
+	$rows1 = \Nexus\Database\NexusDB::select("SELECT forumid, userid FROM topics WHERE id = " . (int) $topicid . " LIMIT 1");
+	$row1 = $rows1[0] ?? null;
 	if (!$row1){
 		die;
 	}
@@ -1016,10 +1039,10 @@ if ($action == "deletetopic")
 
 	$postcount = get_row_count("posts","WHERE topicid=".sqlesc($topicid));
 
-	sql_query("DELETE FROM topics WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
-	sql_query("DELETE FROM posts WHERE topicid=$topicid") or sqlerr(__FILE__, __LINE__);
-	sql_query("DELETE FROM readposts WHERE topicid=$topicid") or sqlerr(__FILE__, __LINE__);
-	@sql_query("UPDATE forums SET topiccount=topiccount-1, postcount=postcount-$postcount WHERE id=".sqlesc($forumid)) or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::statement("DELETE FROM topics WHERE id = " . (int) $topicid);
+	\Nexus\Database\NexusDB::statement("DELETE FROM posts WHERE topicid = " . (int) $topicid);
+	\Nexus\Database\NexusDB::statement("DELETE FROM readposts WHERE topicid = " . (int) $topicid);
+	\Nexus\Database\NexusDB::statement("UPDATE forums SET topiccount = topiccount - 1, postcount = postcount - " . (int) $postcount . " WHERE id = " . (int) $forumid);
 	$Cache->delete_value('forum_'.$forumid.'_post_'.$today_date.'_count');
 	$forum_last_replied_topic_row = $Cache->get_value('forum_'.$forumid.'_last_replied_topic_content');
 	if ($forum_last_replied_topic_row && $forum_last_replied_topic_row['id'] == $topicid)
@@ -1045,20 +1068,23 @@ if ($action == "deletepost")
 		permissiondenied();
 
 	//------- Get topic id
-	$res = sql_query("SELECT topicid, userid FROM posts WHERE id=$postid") or sqlerr(__FILE__, __LINE__);
-	$arr = mysql_fetch_array($res) or stderr($lang_forums['std_error'], $lang_forums['std_post_not_found']);
+	$rows = \Nexus\Database\NexusDB::select("SELECT topicid, userid FROM posts WHERE id = " . (int) $postid);
+	$arr = $rows[0] ?? null;
+	if (!$arr) {
+		stderr($lang_forums['std_error'], $lang_forums['std_post_not_found']);
+	}
 	$topicid = $arr['topicid'];
 	$userid = $arr['userid'];
 
 	//------- Get the id of the last post before the one we're deleting
-	$res = sql_query("SELECT id FROM posts WHERE topicid=$topicid AND id < $postid ORDER BY id DESC LIMIT 1") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) == 0) // This is the first post of a topic
+	$rows = \Nexus\Database\NexusDB::select("SELECT id FROM posts WHERE topicid = " . (int) $topicid . " AND id < " . (int) $postid . " ORDER BY id DESC LIMIT 1");
+	if (count($rows) == 0) // This is the first post of a topic
 		stderr($lang_forums['std_error'], $lang_forums['std_cannot_delete_post'] .
 	"<a class=altlink href=?action=deletetopic&topicid=$topicid&sure=1>".$lang_forums['std_delete_topic_instead'],false);
 	else
 	{
-		$arr = mysql_fetch_row($res);
-		$redirtopost = "&page=p$arr[0]#pid$arr[0]";
+		$prevPostId = (int) $rows[0]['id'];
+		$redirtopost = "&page=p" . $prevPostId . "#pid" . $prevPostId;
 	}
 
 	//------- Make sure we know what we do :-)
@@ -1069,7 +1095,7 @@ if ($action == "deletepost")
 	}
 
 	//------- Delete post
-	sql_query("DELETE FROM posts WHERE id=$postid") or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::statement("DELETE FROM posts WHERE id = " . (int) $postid);
 	$Cache->delete_value('user_'.$userid.'_post_count');
 	$Cache->delete_value('topic_'.$topicid.'_post_count');
 	// update forum
@@ -1077,7 +1103,7 @@ if ($action == "deletepost")
 	if (!$forumid)
 		die();
 	else{
-		sql_query("UPDATE forums SET postcount=postcount-1 WHERE id=".sqlesc($forumid));
+		\Nexus\Database\NexusDB::statement("UPDATE forums SET postcount = postcount - 1 WHERE id = " . (int) $forumid);
 	}
 	$forum_last_replied_topic_row = $Cache->get_value('forum_'.$forumid.'_last_replied_topic_content');
 	if ($forum_last_replied_topic_row && $forum_last_replied_topic_row['lastpost'] == $postid)
@@ -1102,7 +1128,7 @@ if ($action == "setlocked")
 		permissiondenied();
 
 	$locked = sqlesc($_POST["locked"]);
-	sql_query("UPDATE topics SET locked=$locked WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE topics SET locked = $locked WHERE id = " . (int) $topicid);
 
 	header("Location: $_POST[returnto]");
 	die;
@@ -1116,7 +1142,7 @@ if ($action == 'hltopic')
 		permissiondenied();
 	$color = $_POST["color"];
 	if ($color==0 || get_hl_color($color))
-		sql_query("UPDATE topics SET hlcolor=".sqlesc($color)." WHERE id=".sqlesc($topicid)) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE topics SET hlcolor = " . (int) $color . " WHERE id = " . (int) $topicid);
 
 	$forumid = get_single_value("topics","forumid","WHERE id=".sqlesc($topicid));
 	$forum_last_replied_topic_row = $Cache->get_value('forum_'.$forumid.'_last_replied_topic_content');
@@ -1136,7 +1162,7 @@ if ($action == "setsticky")
 		permissiondenied();
 
 	$sticky = sqlesc($_POST["sticky"]);
-	sql_query("UPDATE topics SET sticky=$sticky WHERE id=$topicid") or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE topics SET sticky = $sticky WHERE id = " . (int) $topicid);
 
 	header("Location: $_POST[returnto]");
 	die;
@@ -1160,7 +1186,7 @@ if ($action == "viewforum")
 
 	$forumname = $row['name'];
 	$forummoderators = get_forum_moderators($forumid,false);
-	$search = mysql_real_escape_string(trim($_GET["search"] ?? ''));
+	$search = \Nexus\Database\NexusDB::getInstance()->escapeString(trim($_GET["search"] ?? ''));
 	if ($search){
 		$wherea = " AND subject LIKE '%$search%'";
 		$addparam .= "&search=".rawurlencode($search);
@@ -1205,8 +1231,8 @@ if ($action == "viewforum")
 		$orderby = "lastpost DESC";
 	}
 	//------ Get topics data
-	$topicsres = sql_query("SELECT * FROM topics WHERE forumid=".sqlesc($forumid).$wherea." ORDER BY sticky DESC,".$orderby." ".$limit) or sqlerr(__FILE__, __LINE__);
-	$numtopics = mysql_num_rows($topicsres);
+	$topicRows = \Nexus\Database\NexusDB::select("SELECT * FROM topics WHERE forumid = " . (int) $forumid . $wherea . " ORDER BY sticky DESC," . $orderby . " " . $limit);
+	$numtopics = count($topicRows);
 	stdhead($lang_forums['head_forum']." ".$forumname);
 	begin_main_frame("",true);
 	print("<h1 align=\"center\"><a class=\"faqlink\" href=\"forums.php\">".$SITENAME."&nbsp;".$lang_forums['text_forums'] ."</a>--><a class=\"faqlink\" href=\"".htmlspecialchars("forums.php?action=viewforum&forumid=".$forumid)."\">".$forumname."</a></h1>\n");
@@ -1234,7 +1260,7 @@ if ($action == "viewforum")
 		print("</tr>\n");
 		$counter = 0;
 
-		while ($topicarr = mysql_fetch_assoc($topicsres))
+		foreach ($topicRows as $topicarr)
 		{
 			$topicid = $topicarr["id"];
 
@@ -1373,7 +1399,7 @@ if ($action == "viewunread")
 
 	$beforepostid = intval($_GET['beforepostid'] ?? 0);
 	$maxresults = 25;
-	$res = sql_query("SELECT id, forumid, subject, lastpost, hlcolor FROM topics WHERE lastpost > ".$CURUSER['last_catchup'].($beforepostid ? " AND lastpost < ".sqlesc($beforepostid) : "")." ORDER BY lastpost DESC LIMIT 100") or sqlerr(__FILE__, __LINE__);
+	$unreadRows = \Nexus\Database\NexusDB::select("SELECT id, forumid, subject, lastpost, hlcolor FROM topics WHERE lastpost > " . (int) $CURUSER['last_catchup'] . ($beforepostid ? " AND lastpost < " . (int) $beforepostid : "") . " ORDER BY lastpost DESC LIMIT 100");
 
 	stdhead($lang_forums['head_view_unread']);
 	print("<h1 align=\"center\"><a class=\"faqlink\" href=\"forums.php\">".$SITENAME."&nbsp;".$lang_forums['text_forums']."</a>-->".$lang_forums['text_topics_with_unread_posts']."</h1>");
@@ -1381,7 +1407,7 @@ if ($action == "viewunread")
 	$n = 0;
 	$uc = get_user_class();
 
-	while ($arr = mysql_fetch_assoc($res))
+	foreach ($unreadRows as $arr)
 	{
 		$topiclastpost = $arr['lastpost'];
 		$topicid = $arr['id'];
@@ -1436,11 +1462,10 @@ if ($action == "search")
 	$keywords = htmlspecialchars(trim($_GET["keywords"]));
 	if ($keywords != "")
 	{
-		$extraSql 	= " LIKE '%".mysql_real_escape_string($keywords)."%'";
+		$extraSql 	= " LIKE '%" . \Nexus\Database\NexusDB::getInstance()->escapeString($keywords) . "%'";
 
-		$res = sql_query("SELECT COUNT(posts.id) FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= ".sqlesc(get_user_class())." AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql)") or sqlerr(__FILE__, __LINE__);
-		$arr = mysql_fetch_row($res);
-		$hits = intval($arr[0] ?? 0);
+		$countRows = \Nexus\Database\NexusDB::select("SELECT COUNT(posts.id) AS cnt FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= " . (int) get_user_class() . " AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql)");
+		$hits = (int) ($countRows[0]['cnt'] ?? 0);
 		if ($hits){
 			$error = false;
 			$found = "[<b><font class=\"striking\"> ".$lang_forums['text_found'].$hits.$lang_forums['text_num_posts']." </font></b>]";
@@ -1498,13 +1523,13 @@ if ($action == "search")
 	{
 		$perpage = $topicsperpage;
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $hits, "forums.php?action=search&keywords=".rawurlencode($keywords)."&");
-		$res = sql_query("SELECT posts.id, posts.topicid, posts.userid, posts.added, topics.subject, topics.hlcolor, forums.id AS forumid, forums.name AS forumname FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= ".sqlesc(get_user_class())." AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql) ORDER BY posts.id DESC $limit") or sqlerr(__FILE__, __LINE__);
+		$searchRows = \Nexus\Database\NexusDB::select("SELECT posts.id, posts.topicid, posts.userid, posts.added, topics.subject, topics.hlcolor, forums.id AS forumid, forums.name AS forumname FROM posts LEFT JOIN topics ON posts.topicid = topics.id LEFT JOIN forums ON topics.forumid = forums.id WHERE forums.minclassread <= " . (int) get_user_class() . " AND ((topics.subject $extraSql AND posts.id=topics.firstpost) OR posts.body $extraSql) ORDER BY posts.id DESC $limit");
 
 		print($pagertop);
 		print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"97%\">\n");
 		print("<tr><td class=\"colhead\" align=\"center\">".$lang_forums['col_post']."</td><td class=\"colhead\" align=\"center\" width=\"70%\">".$lang_forums['col_topic']."</td><td class=\"colhead\" align=\"left\">".$lang_forums['col_forum']."</td><td class=\"colhead\" align=\"left\">".$lang_forums['col_posted_by']."</td></tr>\n");
 
-		while ($post = mysql_fetch_array($res))
+		foreach ($searchRows as $post)
 		{
 			print("<tr><td class=\"rowfollow\" align=\"center\" width=\"1%\">".$post['id']."</td><td class=\"rowfollow\" align=\"left\"><a href=\"".htmlspecialchars("?action=viewtopic&topicid=".$post['topicid']."&highlight=".rawurlencode($keywords)."&page=p".$post['id']."#pid".$post['id'])."\">" . highlight_topic(highlight($keywords,htmlspecialchars($post['subject'])), $post['hlcolor']) . "</a></td><td class=\"rowfollow nowrap\" align=\"left\"><a href=\"".htmlspecialchars("?action=viewforum&forumid=".$post['forumid'])."\"><b>" . htmlspecialchars($post["forumname"]) . "</b></a></td><td class=\"rowfollow nowrap\" align=\"left\">" . gettime($post['added'],true,false) . "&nbsp;|&nbsp;". get_username($post['userid']) ."</td></tr>\n");
 		}
@@ -1538,9 +1563,9 @@ print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" width=\"100%\">\n
 
 if (!$overforums = $Cache->get_value('overforums_list')){
 	$overforums = array();
-	$res = sql_query("SELECT * FROM overforums ORDER BY sort ASC") or sqlerr(__FILE__, __LINE__);
-	while ($row = mysql_fetch_array($res))
+	foreach (\Nexus\Database\NexusDB::select("SELECT * FROM overforums ORDER BY sort ASC") as $row) {
 		$overforums[] = $row;
+	}
 	$Cache->cache_value('overforums_list', $overforums, 86400);
 }
 $count=0;
@@ -1585,8 +1610,8 @@ foreach ($overforums as $a)
 		// Find last post ID
 		//Returns the ID of the last post of a forum
 		if (!$arr = $Cache->get_value('forum_'.$forumid.'_last_replied_topic_content')){
-			$res = sql_query("SELECT * FROM topics WHERE forumid=".sqlesc($forumid)." ORDER BY lastpost DESC LIMIT 1") or sqlerr(__FILE__, __LINE__);
-			$arr = mysql_fetch_array($res);
+			$lastTopicRows = \Nexus\Database\NexusDB::select("SELECT * FROM topics WHERE forumid = " . (int) $forumid . " ORDER BY lastpost DESC LIMIT 1");
+			$arr = $lastTopicRows[0] ?? [];
 			$Cache->cache_value('forum_'.$forumid.'_last_replied_topic_content', $arr, 900);
 		}
 
@@ -1622,9 +1647,8 @@ foreach ($overforums as $a)
 		}
 		$posttodaycount = $Cache->get_value('forum_'.$forumid.'_post_'.$today_date.'_count');
 		if ($posttodaycount == ""){
-			$res3 = sql_query("SELECT COUNT(posts.id) FROM posts LEFT JOIN topics ON posts.topicid = topics.id WHERE posts.added > ".sqlesc(date("Y-m-d"))." AND topics.forumid=".sqlesc($forumid)) or sqlerr(__FILE__, __LINE__);
-			$row3 = mysql_fetch_row($res3);
-			$posttodaycount = $row3[0];
+			$row3Rows = \Nexus\Database\NexusDB::select("SELECT COUNT(posts.id) AS cnt FROM posts LEFT JOIN topics ON posts.topicid = topics.id WHERE posts.added > " . sqlesc(date("Y-m-d")) . " AND topics.forumid = " . (int) $forumid);
+			$posttodaycount = (int) ($row3Rows[0]['cnt'] ?? 0);
 			$Cache->cache_value('forum_'.$forumid.'_post_'.$today_date.'_count', $posttodaycount, 1800);
 		}
 		if ($posttodaycount > 0)
