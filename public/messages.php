@@ -28,12 +28,11 @@ if (!$mailbox)
 // Get Mailbox Name
 if ($mailbox != PM_INBOX && $mailbox != PM_SENTBOX)
 {
-$res = sql_query('SELECT name FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' AND boxnumber=' . sqlesc($mailbox) . ' LIMIT 1') or sqlerr(__FILE__,__LINE__);
-if (mysql_num_rows($res) == 0)
+$mailboxNameRows = \Nexus\Database\NexusDB::select('SELECT name FROM pmboxes WHERE userid = ' . (int) $CURUSER['id'] . ' AND boxnumber = ' . (int) $mailbox . ' LIMIT 1');
+if (count($mailboxNameRows) == 0)
 	stderr($lang_messages['std_error'],$lang_messages['std_invalid_mailbox']);
 
-$mailbox_name = mysql_fetch_array($res);
-$mailbox_name = htmlspecialchars($mailbox_name[0]);
+$mailbox_name = htmlspecialchars($mailboxNameRows[0]['name']);
 }
 else
 {
@@ -58,7 +57,7 @@ stdhead($mailbox_name);
 
 <?php
 //search
-		$keyword = mysql_real_escape_string(trim($_GET["keyword"] ?? ''));
+		$keyword = \Nexus\Database\NexusDB::getInstance()->escapeString(trim($_GET["keyword"] ?? ''));
 		$place = $_GET["place"] ?? '';
 		if($keyword)
 			switch ($place){
@@ -77,30 +76,26 @@ stdhead($mailbox_name);
 				}
 if ($mailbox != PM_SENTBOX)
 {
-		$res = sql_query('SELECT COUNT(*) FROM messages WHERE receiver=' . sqlesc($CURUSER['id']) . ' AND location=' . sqlesc($mailbox).$wherea);
-		$row = mysql_fetch_array($res);
-		$count = $row[0];
+		$countRows = \Nexus\Database\NexusDB::select('SELECT COUNT(*) AS c FROM messages WHERE receiver = ' . (int) $CURUSER['id'] . ' AND location = ' . (int) $mailbox . $wherea);
+		$count = (int) ($countRows[0]['c'] ?? 0);
 
 		$perpage = ($CURUSER['pmnum'] ? $CURUSER['pmnum'] : 20);
 
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "?action=viewmailbox".($mailbox ? "&box=".$mailbox : "").($place ? "&place=".$place : "").($keyword ? "&keyword=".rawurlencode($keyword) : "").($unread ? "&unread=".$unread : "")."&");
-$res = sql_query('SELECT * FROM messages WHERE receiver=' . sqlesc($CURUSER['id']) . ' AND location=' . sqlesc($mailbox) .$wherea. ' ORDER BY id DESC '.$limit) or
-
-sqlerr(__FILE__,__LINE__);
+$messageRows = \Nexus\Database\NexusDB::select('SELECT * FROM messages WHERE receiver = ' . (int) $CURUSER['id'] . ' AND location = ' . (int) $mailbox . $wherea . ' ORDER BY id DESC ' . $limit);
 }
 else
 {
-		$res = sql_query('SELECT COUNT(*) FROM messages WHERE sender=' . sqlesc($CURUSER['id']) . ' AND saved=\'yes\''.$wherea);
-		$row = mysql_fetch_array($res);
-		$count = $row[0];
+		$countRows = \Nexus\Database\NexusDB::select('SELECT COUNT(*) AS c FROM messages WHERE sender = ' . (int) $CURUSER['id'] . ' AND saved = \'yes\'' . $wherea);
+		$count = (int) ($countRows[0]['c'] ?? 0);
 
 		$perpage = ($CURUSER['pmnum'] ? $CURUSER['pmnum'] : 20);
 
 		list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "?action=viewmailbox".($mailbox ? "&box=".$mailbox : "").($place ? "&place=".$place : "").($keyword ? "&keyword=".rawurlencode($keyword) : "").($unread ? "&unread=".$unread : "")."&");
-$res = sql_query('SELECT * FROM messages WHERE sender=' . sqlesc($CURUSER['id']) . ' AND saved=\'yes\''.$wherea.' ORDER BY id DESC '.$limit) or sqlerr(__FILE__,__LINE__);
+$messageRows = \Nexus\Database\NexusDB::select('SELECT * FROM messages WHERE sender = ' . (int) $CURUSER['id'] . ' AND saved = \'yes\'' . $wherea . ' ORDER BY id DESC ' . $limit);
 }
 
-if (mysql_num_rows($res) == 0)
+if (count($messageRows) == 0)
 {
 echo("<p align=\"center\">".$lang_messages['text_no_messages']."</p>\n");
 }
@@ -121,7 +116,7 @@ print("<td width=\"35%\" class=\"colhead\" align=\"left\">$sender_receiver</td>"
 <td width="1%" class="colhead" align="center"><?php echo $lang_messages['col_act'] ?></td>
 </tr>
 <?php
-while ($row = mysql_fetch_assoc($res))
+foreach ($messageRows as $row)
 {
 // Get Sender Username
 if ($row['sender'] != 0)
@@ -165,8 +160,8 @@ echo("<td class=rowfollow><input class=checkbox type=\"checkbox\" name=\"message
 if($mailbox != PM_SENTBOX){
 	echo $lang_messages['text_or'];
 	print("<input class=btn type=\"submit\" name=\"move\" value=\"".$lang_messages['submit_move_to']."\"> <select name=\"box\"><option value=\"1\">".$lang_messages['text_inbox']."</option>");
-        $res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' ORDER BY boxnumber') or sqlerr(__FILE__,__LINE__);
-        while ($row = mysql_fetch_assoc($res))
+        $boxRows = \Nexus\Database\NexusDB::select('SELECT * FROM pmboxes WHERE userid = ' . (int) $CURUSER['id'] . ' ORDER BY boxnumber');
+        foreach ($boxRows as $row)
         {
           echo("<option value=\"" . $row['boxnumber'] . "\">" . htmlspecialchars($row['name']) . "</option>\n");
         }
@@ -197,16 +192,14 @@ stderr($lang_messages['std_error'],$lang_messages['std_no_permission']);
 }
 
 // Get the message
-$res = sql_query('SELECT * FROM messages WHERE id=' . sqlesc($pm_id) . ' AND (receiver=' . sqlesc($CURUSER['id']) . ' OR (sender=' . sqlesc($CURUSER['id'])
-
-. ' AND saved=\'yes\')) LIMIT 1') or sqlerr(__FILE__,__LINE__);
-if (!$res)
-{
-	stderr($lang_messages['std_error'],$lang_messages['std_no_permission']);
-}
+$messageLookupRows = \Nexus\Database\NexusDB::select('SELECT * FROM messages WHERE id = ' . (int) $pm_id . ' AND (receiver = ' . (int) $CURUSER['id'] . ' OR (sender = ' . (int) $CURUSER['id'] . ' AND saved = \'yes\')) LIMIT 1');
 
 // Prepare for displaying message
-$message = mysql_fetch_assoc($res) or header("Location: messages.php");
+$message = $messageLookupRows[0] ?? null;
+if (!$message) {
+	header("Location: messages.php");
+	exit;
+}
 if ($message['sender'] == $CURUSER['id'])
 {
 // Display to
@@ -245,7 +238,7 @@ $subject = $lang_messages['text_no_subject'];
 }
 
 // Mark message unread
-sql_query("UPDATE messages SET unread='no' WHERE id=" . sqlesc($pm_id) . " AND receiver=" . sqlesc($CURUSER['id']));
+\Nexus\Database\NexusDB::statement("UPDATE messages SET unread = 'no' WHERE id = " . (int) $pm_id . " AND receiver = " . (int) $CURUSER['id']);
 $Cache->delete_value('user_'.$CURUSER['id'].'_unread_message_count');
 // Display message
 stdhead("PM ($subject)"); ?>
@@ -271,8 +264,8 @@ messagemenu($mailbox);
 <?php if($message['sender'] != $CURUSER['id']){
 print("<form action=\"messages.php\" method=\"post\"><input type=\"hidden\" name=\"action\" value=\"moveordel\"><input type=\"hidden\" name=\"id\" value=".$pm_id.">
 <input type=\"submit\" name=\"move\" value=".$lang_messages['submit_move_to']."><select name=\"box\"><option value=\"1\">".$lang_messages['text_inbox']."</option>");
-$res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' ORDER BY boxnumber') or sqlerr(__FILE__,__LINE__);
-while ($row = mysql_fetch_assoc($res))
+$boxRows = \Nexus\Database\NexusDB::select('SELECT * FROM pmboxes WHERE userid = ' . (int) $CURUSER['id'] . ' ORDER BY boxnumber');
+foreach ($boxRows as $row)
 {
 echo("<option value=\"" . $row['boxnumber'] . "\">" . htmlspecialchars($row['name']) . "</option>\n");
 }
@@ -297,7 +290,7 @@ if ($_POST['markread'])
 	if ($pm_id)
 	{
 //Mark a single message as read
-	@sql_query("UPDATE messages SET unread='no' WHERE id=" . sqlesc($pm_id) . " AND receiver=" . $CURUSER['id'] . " LIMIT 1");
+	@\Nexus\Database\NexusDB::statement("UPDATE messages SET unread = 'no' WHERE id = " . (int) $pm_id . " AND receiver = " . (int) $CURUSER['id'] . " LIMIT 1");
 	}
 	else
 	{
@@ -305,11 +298,11 @@ if ($_POST['markread'])
             stderr('Error', $lang_functions['select_at_least_one_record']);
         }
 // Mark multiple messages as read
-	@sql_query("UPDATE messages SET unread='no' WHERE id IN (" . implode(", ", array_map("sqlesc",$pm_messages)) . ") AND receiver=" .$CURUSER['id']);
+	@\Nexus\Database\NexusDB::statement("UPDATE messages SET unread = 'no' WHERE id IN (" . implode(", ", array_map("intval", $pm_messages)) . ") AND receiver = " . (int) $CURUSER['id']);
 	}
 	$Cache->delete_value('user_'.$CURUSER['id'].'_unread_message_count');
 // Check if messages were moved
-	if (@mysql_affected_rows() == 0)
+	if (@\Nexus\Database\NexusDB::getInstance()->affectedRows() == 0)
 	{
 	stderr($lang_messages['std_error'],$lang_messages['std_cannot_mark_messages']);
 	}
@@ -322,16 +315,16 @@ elseif ($_POST['move'])
 if ($pm_id)
 {
 // Move a single message
-@sql_query("UPDATE messages SET location=" . sqlesc($pm_box) . " WHERE id=" . sqlesc($pm_id) . " AND receiver=" . $CURUSER['id'] . " LIMIT 1");
+@\Nexus\Database\NexusDB::statement("UPDATE messages SET location = " . (int) $pm_box . " WHERE id = " . (int) $pm_id . " AND receiver = " . (int) $CURUSER['id'] . " LIMIT 1");
 
 }
 else
 {
 // Move multiple messages
-@sql_query("UPDATE messages SET location=" . sqlesc($pm_box) . " WHERE id IN (" . implode(", ", array_map("sqlesc",$pm_messages)) . ') AND receiver=' .$CURUSER['id']);
+@\Nexus\Database\NexusDB::statement("UPDATE messages SET location = " . (int) $pm_box . " WHERE id IN (" . implode(", ", array_map("intval", $pm_messages)) . ') AND receiver = ' . (int) $CURUSER['id']);
 }
 // Check if messages were moved
-if (@mysql_affected_rows() == 0)
+if (@\Nexus\Database\NexusDB::getInstance()->affectedRows() == 0)
 {
 stderr($lang_messages['std_error'],$lang_messages['std_cannot_move_messages']);
 }
@@ -346,28 +339,28 @@ elseif ($_POST['delete'])
 if ($pm_id)
 {
 // Delete a single message
-$res = sql_query("SELECT * FROM messages WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
-$message = mysql_fetch_assoc($res);
-if ($message['receiver'] == $CURUSER['id'] && $message['saved'] == 'no')
+$singleMsgRows = \Nexus\Database\NexusDB::select("SELECT * FROM messages WHERE id = " . (int) $pm_id);
+$message = $singleMsgRows[0] ?? [];
+if (($message['receiver'] ?? null) == $CURUSER['id'] && ($message['saved'] ?? null) == 'no')
 {
-	sql_query("DELETE FROM messages WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+	\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . (int) $pm_id);
 	$Cache->delete_value('user_'.$CURUSER['id'].'_unread_message_count');
 	$Cache->delete_value('user_'.$CURUSER['id'].'_inbox_count');
 }
-elseif ($message['sender'] == $CURUSER['id'] && $message['location'] == PM_DELETED)
+elseif (($message['sender'] ?? null) == $CURUSER['id'] && ($message['location'] ?? null) == PM_DELETED)
 {
-	sql_query("DELETE FROM messages WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+	\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . (int) $pm_id);
 	$Cache->delete_value('user_'.$CURUSER["id"].'_outbox_count');
 }
-elseif ($message['receiver'] == $CURUSER['id'] && $message['saved'] == 'yes')
+elseif (($message['receiver'] ?? null) == $CURUSER['id'] && ($message['saved'] ?? null) == 'yes')
 {
-	sql_query("UPDATE messages SET location=0, unread = 'no' WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE messages SET location = 0, unread = 'no' WHERE id = " . (int) $pm_id);
 	$Cache->delete_value('user_'.$CURUSER['id'].'_unread_message_count');
 	$Cache->delete_value('user_'.$CURUSER['id'].'_inbox_count');
 }
-elseif ($message['sender'] == $CURUSER['id'] && $message['location'] != PM_DELETED)
+elseif (($message['sender'] ?? null) == $CURUSER['id'] && ($message['location'] ?? null) != PM_DELETED)
 {
-	sql_query("UPDATE messages SET saved='no' WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE messages SET saved = 'no' WHERE id = " . (int) $pm_id);
 	$Cache->delete_value('user_'.$CURUSER["id"].'_outbox_count');
 }
 }
@@ -378,23 +371,24 @@ stderr($lang_messages['std_error'], $lang_messages['std_no_message_selected']);
 // Delete multiple messages
 foreach ($pm_messages as $id)
 {
-$res = sql_query("SELECT * FROM messages WHERE id=" . sqlesc((int) $id));
-$message = mysql_fetch_assoc($res);
-if ($message['receiver'] == $CURUSER['id'] && $message['saved'] == 'no')
+$id = (int) $id;
+$multiMsgRows = \Nexus\Database\NexusDB::select("SELECT * FROM messages WHERE id = " . $id);
+$message = $multiMsgRows[0] ?? [];
+if (($message['receiver'] ?? null) == $CURUSER['id'] && ($message['saved'] ?? null) == 'no')
 {
-sql_query("DELETE FROM messages WHERE id=" . sqlesc((int) $id)) or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . $id);
 }
-elseif ($message['sender'] == $CURUSER['id'] && $message['location'] == PM_DELETED)
+elseif (($message['sender'] ?? null) == $CURUSER['id'] && ($message['location'] ?? null) == PM_DELETED)
 {
-sql_query("DELETE FROM messages WHERE id=" . sqlesc((int) $id)) or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . $id);
 }
-elseif ($message['receiver'] == $CURUSER['id'] && $message['saved'] == 'yes')
+elseif (($message['receiver'] ?? null) == $CURUSER['id'] && ($message['saved'] ?? null) == 'yes')
 {
-sql_query("UPDATE messages SET location=0, unread = 'no' WHERE id=" . sqlesc((int) $id)) or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::statement("UPDATE messages SET location = 0, unread = 'no' WHERE id = " . $id);
 }
-elseif ($message['sender'] == $CURUSER['id'] && $message['location'] != PM_DELETED)
+elseif (($message['sender'] ?? null) == $CURUSER['id'] && ($message['location'] ?? null) != PM_DELETED)
 {
-sql_query("UPDATE messages SET saved='no' WHERE id=" . sqlesc((int) $id)) or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::statement("UPDATE messages SET saved = 'no' WHERE id = " . $id);
 }
 }
 	$Cache->delete_value('user_'.$CURUSER['id'].'_unread_message_count');
@@ -402,7 +396,7 @@ sql_query("UPDATE messages SET saved='no' WHERE id=" . sqlesc((int) $id)) or sql
 	$Cache->delete_value('user_'.$CURUSER["id"].'_outbox_count');
 }
 // Check if messages were moved
-if (@mysql_affected_rows() == 0)
+if (@\Nexus\Database\NexusDB::getInstance()->affectedRows() == 0)
 {
 stderr($lang_messages['std_error'],$lang_messages['std_cannot_delete_messages']);
 }
@@ -422,16 +416,12 @@ if ($action == "forward")
 $pm_id = (int) $_GET['id'];
 
 // Get the message
-$res = sql_query('SELECT * FROM messages WHERE id=' . sqlesc($pm_id) . ' AND (receiver=' . sqlesc($CURUSER['id']) . ' OR sender=' . sqlesc($CURUSER['id']) .') LIMIT 1') or sqlerr(__FILE__,__LINE__);
-if (!$res)
+$forwardRows = \Nexus\Database\NexusDB::select('SELECT * FROM messages WHERE id = ' . (int) $pm_id . ' AND (receiver = ' . (int) $CURUSER['id'] . ' OR sender = ' . (int) $CURUSER['id'] . ') LIMIT 1');
+if (count($forwardRows) == 0)
 {
 stderr($lang_messages['std_error'],$lang_messages['std_no_permission_forwarding']);
 }
-if (mysql_num_rows($res) == 0)
-{
-stderr($lang_messages['std_error'],$lang_messages['std_no_permission_forwarding']);
-}
-$message = mysql_fetch_assoc($res);
+$message = $forwardRows[0];
 
 // Prepare variables
 $subject = "Fwd: " . htmlspecialchars($message['subject']);
@@ -446,9 +436,8 @@ $orig_name = $orig_name2 = $lang_messages['text_system'];
 else
 {
 $orig_name = get_username($orig);
-$res = sql_query("SELECT username FROM users WHERE id=" . sqlesc($orig)) or sqlerr(__FILE__,__LINE__);
-$orig_nameres = mysql_fetch_array($res);
-$orig_name2 = $orig_nameres['username'];
+$origNameRows = \Nexus\Database\NexusDB::select("SELECT username FROM users WHERE id = " . (int) $orig);
+$orig_name2 = $origNameRows[0]['username'] ?? '';
 }
 
 $body = "-------- Original Message from " . $orig_name2 . " --------<br />" . format_comment($message['msg']);
@@ -490,7 +479,7 @@ stdfoot();
 }
 if ($action == "editmailboxes")
 {
-$res = sql_query("SELECT * FROM pmboxes WHERE userid=" . sqlesc($CURUSER['id'])) or sqlerr(__FILE__,__LINE__);
+$editboxRows = \Nexus\Database\NexusDB::select("SELECT * FROM pmboxes WHERE userid = " . (int) $CURUSER['id']);
 
 stdhead($lang_messages['head_editing_mailboxes']); ?>
 <h1><?php echo $lang_messages['text_editing_mailboxes'] ?></h1>
@@ -519,17 +508,13 @@ stdhead($lang_messages['head_editing_mailboxes']); ?>
 <input type="hidden" name="action" value="editmailboxes2">
 <input type="hidden" name="action2" value="edit">
 <?php
-if (!$res)
-{
-echo ("<span align=\"center\"><b>".$lang_messages['text_no_mailboxes_to_edit']."<b></span>");
-}
-if (mysql_num_rows($res) == 0)
+if (count($editboxRows) == 0)
 {
 echo ("<span align=\"center\"><b>".$lang_messages['text_no_mailboxes_to_edit']."</b></span>");
 }
 else
 {
-while ($row = mysql_fetch_assoc($res))
+foreach ($editboxRows as $row)
 {
 $id = $row['id'];
 $name = htmlspecialchars($row['name']);
@@ -557,9 +542,8 @@ $nametwo = $_GET['new2'];
 $namethree = $_GET['new3'];
 
 // Get current max box number
-$res = sql_query("SELECT MAX(boxnumber) FROM pmboxes WHERE userid=" . sqlesc($CURUSER['id']));
-$box = mysql_fetch_array($res);
-$box = (int) $box[0];
+$maxBoxRows = \Nexus\Database\NexusDB::select("SELECT MAX(boxnumber) AS m FROM pmboxes WHERE userid = " . (int) $CURUSER['id']);
+$box = (int) ($maxBoxRows[0]['m'] ?? 0);
 if ($box < 2)
 {
 $box = 1;
@@ -567,35 +551,31 @@ $box = 1;
 if (strlen($nameone) > 0)
 {
 ++$box;
-sql_query("INSERT INTO pmboxes (userid, name, boxnumber) VALUES (" . sqlesc($CURUSER['id']) . ", " . sqlesc($nameone) . ", $box)") or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::insert('pmboxes', ['userid' => (int) $CURUSER['id'], 'name' => $nameone, 'boxnumber' => $box]);
 }
 if (strlen($nametwo) > 0)
 {
 ++$box;
-sql_query("INSERT INTO pmboxes (userid, name, boxnumber) VALUES (" . sqlesc($CURUSER['id']) . ", " . sqlesc($nametwo) . ", $box)") or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::insert('pmboxes', ['userid' => (int) $CURUSER['id'], 'name' => $nametwo, 'boxnumber' => $box]);
 }
 if (strlen($namethree) > 0)
 {
 ++$box;
-sql_query("INSERT INTO pmboxes (userid, name, boxnumber) VALUES (" . sqlesc($CURUSER['id']) . ", " . sqlesc($namethree) . ", $box)") or sqlerr(__FILE__,__LINE__);
+\Nexus\Database\NexusDB::insert('pmboxes', ['userid' => (int) $CURUSER['id'], 'name' => $namethree, 'boxnumber' => $box]);
 }
 header("Location: messages.php?action=editmailboxes");
 exit();
 }
 if ($action2 == "edit");
 {
-$res = sql_query("SELECT * FROM pmboxes WHERE userid=" . sqlesc($CURUSER['id']));
-if (!$res)
-{
-stderr($lang_messages['std_error'],$lang_messages['text_no_mailboxes_to_edit']);
-}
-if (mysql_num_rows($res) == 0)
+$editRows = \Nexus\Database\NexusDB::select("SELECT * FROM pmboxes WHERE userid = " . (int) $CURUSER['id']);
+if (count($editRows) == 0)
 {
 stderr($lang_messages['std_error'],$lang_messages['text_no_mailboxes_to_edit']);
 }
 else
 {
-while ($row = mysql_fetch_assoc($res))
+foreach ($editRows as $row)
 {
 if (isset($_GET['edit' . $row['id']]))
 {
@@ -605,17 +585,17 @@ if ($_GET['edit' . $row['id']] != $row['name'])
 if (strlen($_GET['edit' . $row['id']]) > 0)
 {
 // Edit name
-sql_query("UPDATE pmboxes SET name=" . sqlesc($_GET['edit' . $row['id']]) . " WHERE id=" . sqlesc($row['id']) . " LIMIT 1");
+\Nexus\Database\NexusDB::table('pmboxes')->where('id', (int) $row['id'])->limit(1)->update(['name' => $_GET['edit' . $row['id']]]);
 }
 else
 {
 // Delete
-sql_query("DELETE FROM pmboxes WHERE id=" . sqlesc($row['id']) . " LIMIT 1");
+\Nexus\Database\NexusDB::statement("DELETE FROM pmboxes WHERE id = " . (int) $row['id'] . " LIMIT 1");
 // Delete all messages from this folder (uses multiple queries because we can only perform security checks in WHERE clauses)
-sql_query("UPDATE messages SET location=0 WHERE saved='yes' AND location=" . sqlesc($row['boxnumber']) . " AND receiver=" . sqlesc($CURUSER['id']));
-sql_query("UPDATE messages SET saved='no' WHERE saved='yes' AND sender=" . sqlesc($CURUSER['id']));
-sql_query("DELETE FROM messages WHERE saved='no' AND location=" . sqlesc($row['boxnumber']) . " AND receiver=" . sqlesc($CURUSER['id']));
-sql_query("DELETE FROM messages WHERE location=0 AND saved='yes' AND sender=" . sqlesc($CURUSER['id']));
+\Nexus\Database\NexusDB::statement("UPDATE messages SET location = 0 WHERE saved = 'yes' AND location = " . (int) $row['boxnumber'] . " AND receiver = " . (int) $CURUSER['id']);
+\Nexus\Database\NexusDB::statement("UPDATE messages SET saved = 'no' WHERE saved = 'yes' AND sender = " . (int) $CURUSER['id']);
+\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE saved = 'no' AND location = " . (int) $row['boxnumber'] . " AND receiver = " . (int) $CURUSER['id']);
+\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE location = 0 AND saved = 'yes' AND sender = " . (int) $CURUSER['id']);
 }
 }
 }
@@ -630,37 +610,34 @@ if ($action == "deletemessage")
 $pm_id = (int) $_GET['id'];
 
 // Delete message
-$res = sql_query("SELECT * FROM messages WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
-if (!$res)
+$deleteMsgRows = \Nexus\Database\NexusDB::select("SELECT * FROM messages WHERE id = " . (int) $pm_id);
+if (count($deleteMsgRows) == 0)
 {
 stderr($lang_messages['std_error'],$lang_messages['std_no_message_id']);
 }
-if (mysql_num_rows($res) == 0)
-{
-stderr($lang_messages['std_error'],$lang_messages['std_no_message_id']);
-}
-$message = mysql_fetch_assoc($res);
+$message = $deleteMsgRows[0];
+$res2 = false;
 if ($message['receiver'] == $CURUSER['id'] && $message['saved'] == 'no')
 {
-$res2 = sql_query("DELETE FROM messages WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+$res2 = \Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . (int) $pm_id);
 }
 elseif ($message['sender'] == $CURUSER['id'] && $message['location'] == PM_DELETED)
 {
-$res2 = sql_query("DELETE FROM messages WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+$res2 = \Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . (int) $pm_id);
 }
 elseif ($message['receiver'] == $CURUSER['id'] && $message['saved'] == 'yes')
 {
-$res2 = sql_query("UPDATE messages SET location=0 WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+$res2 = \Nexus\Database\NexusDB::statement("UPDATE messages SET location = 0 WHERE id = " . (int) $pm_id);
 }
 elseif ($message['sender'] == $CURUSER['id'] && $message['location'] != PM_DELETED)
 {
-$res2 = sql_query("UPDATE messages SET saved='no' WHERE id=" . sqlesc($pm_id)) or sqlerr(__FILE__,__LINE__);
+$res2 = \Nexus\Database\NexusDB::statement("UPDATE messages SET saved = 'no' WHERE id = " . (int) $pm_id);
 }
 if (!$res2)
 {
 stderr($lang_messages['std_error'],$lang_messages['std_could_not_delete_message']);
 }
-if (mysql_affected_rows() == 0)
+if (\Nexus\Database\NexusDB::getInstance()->affectedRows() == 0)
 {
 stderr($lang_messages['std_error'],$lang_messages['std_could_not_delete_message']);
 }
@@ -676,7 +653,7 @@ function insertJumpTo($selected = 0)
 {
 global $lang_messages;
 global $CURUSER;
-$res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id']) . ' ORDER BY boxnumber');
+$jumpToRows = \Nexus\Database\NexusDB::select('SELECT * FROM pmboxes WHERE userid = ' . (int) $CURUSER['id'] . ' ORDER BY boxnumber');
 $place = $_GET['place'] ?? '';
 ?>
 <form action="messages.php" method="get">
@@ -690,7 +667,7 @@ $place = $_GET['place'] ?? '';
 <option value="1" <?php echo ($selected == PM_INBOX ? " selected" : "")?>><?php echo $lang_messages['select_inbox'] ?></option>
 <option value="-1" <?php echo ($selected == PM_SENTBOX ? " selected" : "")?>><?php echo $lang_messages['select_sentbox'] ?></option>
 <?php
-while ($row = mysql_fetch_assoc($res))
+foreach ($jumpToRows as $row)
 {
 if ($row['boxnumber'] == $selected)
 {
@@ -713,12 +690,11 @@ function messagemenu ($selected = 1) {
 	print ("<div id=\"pmboxnav\"><ul id=\"pmboxmenu\" class=\"menu\">");
 	print ("<li" . ($selected == 1 ? " class=selected" : "") . "><a href=\"" . get_protocol_prefix() . $BASEURL . "/messages.php\" >".$lang_messages['text_inbox']."</a></li>");
 	print ("<li" . ($selected == -1 ? " class=selected" : "") . "><a href=\"" . get_protocol_prefix() . $BASEURL . "/messages.php?action=viewmailbox&box=-1\">".$lang_messages['text_sentbox']."</a></li>");
-	$res = sql_query('SELECT * FROM pmboxes WHERE userid=' . sqlesc($CURUSER['id'])) or sqlerr(__FILE__,__LINE__);
-	if (mysql_num_rows($res))
-		while ($row = mysql_fetch_assoc($res))
-		{
+	$menuRows = \Nexus\Database\NexusDB::select('SELECT * FROM pmboxes WHERE userid = ' . (int) $CURUSER['id']);
+	foreach ($menuRows as $row)
+	{
 		print ("<li" . ($selected == $row['boxnumber'] ? " class=selected" : "") . "><a href=\"" . get_protocol_prefix() . $BASEURL . "/messages.php?action=viewmailbox&box=".$row['boxnumber']."\">".$row['name']."</a></li>");
-		}
+	}
 	print ("</ul></div>");
 	end_main_frame();
 }
