@@ -25,11 +25,14 @@ if (!$id)
 	die();
 
 
-$res = sql_query("SELECT id, category, owner, filename, save_as, anonymous, picktype, picktime, added, banned FROM torrents WHERE id = ".mysql_real_escape_string($id));
-$row = mysql_fetch_array($res);
-$torrentAddedTimeString = $row['added'];
+$row = \Nexus\Database\NexusDB::table('torrents')
+	->where('id', (int) $id)
+	->select(['id', 'category', 'owner', 'filename', 'save_as', 'anonymous', 'picktype', 'picktime', 'added', 'banned'])
+	->first();
+$row = $row ? (array) $row : null;
 if (!$row)
 	die();
+$torrentAddedTimeString = $row['added'];
 $torrentOld = \App\Models\Torrent::query()->find($id);
 if ($CURUSER["id"] != $row["owner"] && !user_can('torrentmanage'))
 	bark($lang_takeedit['std_not_owner']);
@@ -99,55 +102,53 @@ if ($enablespecial == 'yes' && user_can('movetorrent'))
 else $allowmove = false;
 if ($oldcatmode != $newcatmode && !$allowmove)
 	bark($lang_takeedit['std_cannot_move_torrent']);
-$updateset[] = "anonymous = '" . (!empty($_POST["anonymous"]) ? "yes" : "no") . "'";
-$updateset[] = "name = " . sqlesc($name);
-//$updateset[] = "descr = " . sqlesc($descr);
+$updateset['anonymous'] = !empty($_POST["anonymous"]) ? "yes" : "no";
+$updateset['name'] = (string) $name;
 $extraUpdate["descr"] = $descr;
-$updateset[] = "url = " . sqlesc($url);
-$updateset[] = "small_descr = " . sqlesc($_POST["small_descr"]);
-//$updateset[] = "ori_descr = " . sqlesc($descr);
-$updateset[] = "category = " . sqlesc($catid);
-$updateset[] = "source = " . sqlesc(intval($_POST["source_sel"][$newcatmode] ?? 0));
-$updateset[] = "medium = " . sqlesc(intval($_POST["medium_sel"][$newcatmode] ?? 0));
-$updateset[] = "codec = " . sqlesc(intval($_POST["codec_sel"][$newcatmode] ?? 0));
-$updateset[] = "standard = " . sqlesc(intval($_POST["standard_sel"][$newcatmode] ?? 0));
-$updateset[] = "processing = " . sqlesc(intval($_POST["processing_sel"][$newcatmode] ?? 0));
-$updateset[] = "team = " . sqlesc(intval($_POST["team_sel"][$newcatmode] ?? 0));
-$updateset[] = "audiocodec = " . sqlesc(intval($_POST["audiocodec_sel"][$newcatmode] ?? 0));
+$updateset['url'] = (string) $url;
+$updateset['small_descr'] = (string) ($_POST["small_descr"] ?? '');
+$updateset['category'] = (int) $catid;
+$updateset['source'] = (int) ($_POST["source_sel"][$newcatmode] ?? 0);
+$updateset['medium'] = (int) ($_POST["medium_sel"][$newcatmode] ?? 0);
+$updateset['codec'] = (int) ($_POST["codec_sel"][$newcatmode] ?? 0);
+$updateset['standard'] = (int) ($_POST["standard_sel"][$newcatmode] ?? 0);
+$updateset['processing'] = (int) ($_POST["processing_sel"][$newcatmode] ?? 0);
+$updateset['team'] = (int) ($_POST["team_sel"][$newcatmode] ?? 0);
+$updateset['audiocodec'] = (int) ($_POST["audiocodec_sel"][$newcatmode] ?? 0);
 if (user_can('torrentmanage')) {
-    $updateset[] = "visible = '" . (isset($_POST["visible"]) && $_POST["visible"] ? "yes" : "no") . "'";
+    $updateset['visible'] = (isset($_POST["visible"]) && $_POST["visible"]) ? "yes" : "no";
 }
 if(user_can('torrentonpromotion'))
 {
 	if(!isset($_POST["sel_spstate"]) || $_POST["sel_spstate"] == 1)
-		$updateset[] = "sp_state = 1";
+		$updateset['sp_state'] = 1;
 	elseif(intval($_POST["sel_spstate"] ?? 0) == 2)
-		$updateset[] = "sp_state = 2";
+		$updateset['sp_state'] = 2;
 	elseif(intval($_POST["sel_spstate"] ?? 0) == 3)
-		$updateset[] = "sp_state = 3";
+		$updateset['sp_state'] = 3;
 	elseif(intval($_POST["sel_spstate"] ?? 0) == 4)
-		$updateset[] = "sp_state = 4";
+		$updateset['sp_state'] = 4;
 	elseif(intval($_POST["sel_spstate"] ?? 0) == 5)
-		$updateset[] = "sp_state = 5";
+		$updateset['sp_state'] = 5;
 	elseif(intval($_POST["sel_spstate"] ?? 0) == 6)
-		$updateset[] = "sp_state = 6";
+		$updateset['sp_state'] = 6;
 	elseif(intval($_POST["sel_spstate"] ?? 0) == 7)
-		$updateset[] = "sp_state = 7";
+		$updateset['sp_state'] = 7;
 
 	//promotion expiration type
 	if(!isset($_POST["promotion_time_type"]) || $_POST["promotion_time_type"] == 0) {
-		$updateset[] = "promotion_time_type = 0";
-		$updateset[] = "promotion_until = null";
+		$updateset['promotion_time_type'] = 0;
+		$updateset['promotion_until'] = null;
 	} elseif ($_POST["promotion_time_type"] == 1) {
-		$updateset[] = "promotion_time_type = 1";
-		$updateset[] = "promotion_until = null";
+		$updateset['promotion_time_type'] = 1;
+		$updateset['promotion_until'] = null;
 	} elseif ($_POST["promotion_time_type"] == 2) {
 		if ($_POST["promotionuntil"] && strtotime($torrentAddedTimeString) <= strtotime($_POST["promotionuntil"])) {
-			$updateset[] = "promotion_time_type = 2";
-			$updateset[] = "promotion_until = ".sqlesc($_POST["promotionuntil"]);
+			$updateset['promotion_time_type'] = 2;
+			$updateset['promotion_until'] = (string) $_POST["promotionuntil"];
 		} else {
-			$updateset[] = "promotion_time_type = 0";
-			$updateset[] = "promotion_until = null";
+			$updateset['promotion_time_type'] = 0;
+			$updateset['promotion_until'] = null;
 		}
 	}
 }
@@ -163,8 +164,8 @@ if(user_can('torrentsticky'))
             $posState = \App\Models\Torrent::POS_STATE_STICKY_NONE;
             $posStateUntil = null;
         }
-        $updateset[] = sprintf("pos_state = %s", sqlesc($posState));
-        $updateset[] = sprintf("pos_state_until = %s", sqlesc($posStateUntil));
+        $updateset['pos_state'] = $posState;
+        $updateset['pos_state_until'] = $posStateUntil;
     }
 
 }
@@ -178,32 +179,32 @@ if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class()
 	{
 		if($row["picktype"] != 'normal')
 			$pick_info = ", recomendation canceled!";
-		$updateset[] = "picktype = 'normal'";
-		$updateset[] = "picktime = null";
+		$updateset['picktype'] = 'normal';
+		$updateset['picktime'] = null;
         $doRecommend = true;
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 1)
 	{
 		if($row["picktype"] != 'hot')
 			$pick_info = ", recommend as hot movie";
-		$updateset[] = "picktype = 'hot'";
-		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
+		$updateset['picktype'] = 'hot';
+		$updateset['picktime'] = date("Y-m-d H:i:s");
         $doRecommend = true;
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 2)
 	{
 		if($row["picktype"] != 'classic')
 			$pick_info = ", recommend as classic movie";
-		$updateset[] = "picktype = 'classic'";
-		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
+		$updateset['picktype'] = 'classic';
+		$updateset['picktime'] = date("Y-m-d H:i:s");
         $doRecommend = true;
 	}
 	elseif(intval($_POST["sel_recmovie"] ?? 0) == 3)
 	{
 		if($row["picktype"] != 'recommended')
 			$pick_info = ", recommend as recommended movie";
-		$updateset[] = "picktype = 'recommended'";
-		$updateset[] = "picktime = ". sqlesc(date("Y-m-d H:i:s"));
+		$updateset['picktype'] = 'recommended';
+		$updateset['picktime'] = date("Y-m-d H:i:s");
         $doRecommend = true;
 	}
     if ($doRecommend) {
@@ -221,26 +222,27 @@ if(user_can('torrentmanage') && ($CURUSER['picker'] == 'yes' || get_user_class()
  */
 $descriptionArr = format_description($descr);
 $cover = get_image_from_description($descriptionArr, true, false);
-$updateset[] = "cover = " . sqlesc($cover);
+$updateset['cover'] = (string) $cover;
 
 /**
  * hr
  * @since 1.6.0-beta12
  */
 if (isset($_POST['hr'][$newcatmode]) && isset(\App\Models\Torrent::$hrStatus[$_POST['hr'][$newcatmode]]) && user_can('torrent_hr')) {
-    $updateset[] = "hr = " . sqlesc($_POST['hr'][$newcatmode]);
+    $updateset['hr'] = (string) $_POST['hr'][$newcatmode];
 }
 /**
  * price
  * @since 1.8.0
  */
 if (user_can('torrent-set-price') && $paidTorrentEnabled) {
-    $updateset[] = "price = " . sqlesc($_POST['price'] ?? 0);
+    $updateset['price'] = (string) ($_POST['price'] ?? 0);
 }
 
-$sql = "UPDATE torrents SET " . join(",", $updateset) . " WHERE id = $id";
-do_log("[UPDATE_TORRENT]: $sql");
-$affectedRows = sql_query($sql) or sqlerr(__FILE__, __LINE__);
+do_log("[UPDATE_TORRENT] id=$id columns=" . implode(',', array_keys($updateset)));
+$affectedRows = \Nexus\Database\NexusDB::table('torrents')
+	->where('id', (int) $id)
+	->update($updateset);
 $torrentInfo = \App\Models\Torrent::query()->find($id);
 $torrentInfo->extra()->updateOrCreate(['torrent_id' => $id], $extraUpdate);
 fire_event("torrent_updated", $torrentInfo, $torrentOld);
@@ -282,7 +284,7 @@ else
 $searchRep = new \App\Repositories\SearchRepository();
 $searchRep->updateTorrent($id);
 
-if ($affectedRows == 1) {
+if ($affectedRows >= 0) {
     $torrentUrl = sprintf('details.php?id=%s', $row['id']);
     if ($row['banned'] == 'yes' && $row['owner'] == $CURUSER['id']) {
         \App\Models\StaffMessage::query()->insert([
