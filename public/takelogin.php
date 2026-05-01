@@ -29,8 +29,11 @@ if ($useChallengeResponse) {
     }
 }
 
-$res = sql_query("SELECT id, passhash, secret, auth_key, enabled, status, two_step_secret, lang FROM users WHERE username = " . sqlesc($username));
-$row = mysql_fetch_array($res);
+$row = \Nexus\Database\NexusDB::table('users')
+    ->where('username', (string) $username)
+    ->select(['id', 'passhash', 'secret', 'auth_key', 'enabled', 'status', 'two_step_secret', 'lang'])
+    ->first();
+$row = $row ? (array) $row : null;
 
 if (!$row)
 	failedlogins();
