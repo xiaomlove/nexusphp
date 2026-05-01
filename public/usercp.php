@@ -144,8 +144,8 @@ if ($action){
                     }
                     $updateset[] = "notifs = " . sqlesc('[' . implode('][', array_keys($notifsArr)) . ']');
                 }
-				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id = ".sqlesc($CURUSER["id"]);
-				$result = sql_query($query);
+				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id = " . (int) $CURUSER["id"];
+				$result = \Nexus\Database\NexusDB::statement($query);
 				if (!$result) {
                     sqlerr(__FILE__,__LINE__);
                 } else {
@@ -156,8 +156,7 @@ if ($action){
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_personal_settings'],true);
 
 			$countries = "<option value=0>---- ".$lang_usercp['select_none_selected']." ----</option>\n";
-			$ct_r = sql_query("SELECT id,name FROM countries ORDER BY name") or die;
-			while ($ct_a = mysql_fetch_array($ct_r))
+			foreach (\Nexus\Database\NexusDB::select("SELECT id, name FROM countries ORDER BY name") as $ct_a)
 			$countries .= "<option value=".htmlspecialchars($ct_a['id'])."" . (htmlspecialchars($CURUSER["country"]) == htmlspecialchars($ct_a['id']) ? " selected" : "") . ">".htmlspecialchars($ct_a['name'])."</option>\n";
 
             $trackerUrls = "<option value=0>---- ".$lang_usercp['select_none_selected']." ----</option>\n";
@@ -166,23 +165,19 @@ if ($action){
                 $trackerUrls .= "<option value=".htmlspecialchars($item->id)."" . (htmlspecialchars($CURUSER["tracker_url_id"]) == htmlspecialchars($item->id) ? " selected" : "") . ">".htmlspecialchars($item->url)."</option>\n";
             }
             $isplist = "<option value=0>---- ".$lang_usercp['select_none_selected']." ----</option>\n";
-			$isp_r = sql_query("SELECT id,name FROM isp ORDER BY id ASC") or die;
-			while ($isp_a = mysql_fetch_array($isp_r))
+			foreach (\Nexus\Database\NexusDB::select("SELECT id, name FROM isp ORDER BY id ASC") as $isp_a)
 			$isplist .= "<option value=".htmlspecialchars($isp_a['id'])."" . (htmlspecialchars($CURUSER["isp"]) == htmlspecialchars($isp_a['id']) ? " selected" : "") . ">".htmlspecialchars($isp_a['name'])."</option>\n";
 
             $downloadspeed = "<option value=0>---- ".$lang_usercp['select_none_selected']." ----</option>\n";
-			$ds_a = sql_query("SELECT id,name FROM downloadspeed ORDER BY id") or die;
-			while ($ds_b = mysql_fetch_array($ds_a))
+			foreach (\Nexus\Database\NexusDB::select("SELECT id, name FROM downloadspeed ORDER BY id") as $ds_b)
 			$downloadspeed .= "<option value=".htmlspecialchars($ds_b['id'])."" . (htmlspecialchars($CURUSER["download"]) == htmlspecialchars($ds_b['id']) ? " selected" : "") . ">".htmlspecialchars($ds_b['name'])."</option>\n";
 
 			$uploadspeed = "<option value=0>---- ".$lang_usercp['select_none_selected']." ----</option>\n";
-			$us_a = sql_query("SELECT id,name FROM uploadspeed ORDER BY id") or die;
-			while ($us_b = mysql_fetch_array($us_a))
+			foreach (\Nexus\Database\NexusDB::select("SELECT id, name FROM uploadspeed ORDER BY id") as $us_b)
 			$uploadspeed .= "<option value=".htmlspecialchars($us_b['id'])."" . (htmlspecialchars($CURUSER["upload"]) == htmlspecialchars($us_b['id']) ? " selected" : "") . ">".htmlspecialchars($us_b['name'])."</option>\n";
-			$ra=sql_query("SELECT * FROM bitbucket WHERE public = '1'");
 			$options='';
 			$text = '';
-			while ($sor=mysql_fetch_array($ra))
+			foreach (\Nexus\Database\NexusDB::select("SELECT * FROM bitbucket WHERE public = '1'") as $sor)
 			{
 				$text.='<option value="'. get_protocol_prefix() . $BASEURL .'/bitbucket/'.$sor["name"].'">'.$sor["name"].'</option>';
 			}
@@ -214,8 +209,7 @@ if ($action){
 		//School select
 if ($showschool == 'yes'){
 $schools = "<option value=35>---- ".$lang_usercp['select_none_selected']." ----</option>n";
-$sc_r = sql_query("SELECT id,name FROM schools ORDER BY name") or die;
-while ($sc_a = mysql_fetch_array($sc_r))
+foreach (\Nexus\Database\NexusDB::select("SELECT id, name FROM schools ORDER BY name") as $sc_a)
 $schools .= "<option value={$sc_a['id']}" . ($sc_a['id'] == $CURUSER['school'] ? " selected" : "") . ">{$sc_a['name']}</option>n";
 tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 }
@@ -272,18 +266,14 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 
 			function browsecheck($dbtable, $cbname, array &$result){
 				global $_POST;
-				$r = sql_query("SELECT id FROM ".$dbtable) or sqlerr();
-				$rows = mysql_num_rows($r);
-				for ($i = 0; $i < $rows; ++$i)
-					{
-						$a = mysql_fetch_assoc($r);
-						if (isset($_POST[$cbname.$a['id']]) && $_POST[$cbname.$a['id']] == 'yes') {
-						    $result[$cbname.$a['id']] = 1;
-                        } else {
-						    unset($result[$cbname.$a['id']]);
-                        }
-					}
+				foreach (\Nexus\Database\NexusDB::select("SELECT id FROM " . $dbtable) as $a) {
+					if (isset($_POST[$cbname.$a['id']]) && $_POST[$cbname.$a['id']] == 'yes') {
+					    $result[$cbname.$a['id']] = 1;
+                    } else {
+					    unset($result[$cbname.$a['id']]);
+                    }
 				}
+			}
                 browsecheck("categories", "cat", $notifs);
 				browsecheck("sources", "sou", $notifs);
 				browsecheck("media", "med", $notifs);
@@ -406,9 +396,9 @@ tr($lang_usercp['row_school'], "<select name=school>$schools</select>", 1);
 				else $showcomment = 'no';
 				$updateset[] = "showcomment = " . sqlesc($showcomment);
 
-				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id =".sqlesc($CURUSER["id"]);
+				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id = " . (int) $CURUSER["id"];
 				//stderr("",$query);
-				$result = sql_query($query) or sqlerr(__FILE__,__LINE__);
+				\Nexus\Database\NexusDB::statement($query) or sqlerr(__FILE__,__LINE__);
 				header("Location: usercp.php?action=tracker&type=saved");
 			}
 			stdhead($lang_usercp['head_control_panel'].$lang_usercp['head_tracker_settings']);
@@ -601,9 +591,8 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
             }
             $categories .= $delimiter . "<table><caption><font class='big'>{$lang_usercp['text_additional_selection']}</font></caption><tr><td class=bottom><b>".$lang_usercp['text_show_dead_active']."</b><br /><select name=\"incldead\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[incldead=0]") !== false ? " selected" : "").">".$lang_usercp['select_including_dead']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[incldead=1]") !== false ||  strpos($CURUSER['notifs'], "incldead") == false ? " selected" : "").">".$lang_usercp['select_active']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[incldead=2]") !== false  ? " selected" : "").">".$lang_usercp['select_dead']."</option></select></td><td class=bottom align=left><b>".$lang_usercp['text_show_special_torrents']."</b><br /><select name=\"spstate\"><option value=\"0\" ".($special_state == 0 ? " selected" : "").">".$lang_usercp['select_all']."</option>".promotion_selection($special_state)."</select></td><td class=bottom><b>".$lang_usercp['text_show_bookmarked']."</b><br /><select name=\"inclbookmarked\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=0]") !== false ? " selected" : "").">".$lang_usercp['select_all']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=1]") !== false ? " selected" : "")." >".$lang_usercp['select_bookmarked']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=2]") !== false ? " selected" : "").">".$lang_usercp['select_bookmarked_exclude']."</option></select></td></tr></table>";
             tr_small($lang_usercp['row_browse_default_categories'], $categories,1);
-			$ss_r = sql_query("SELECT * FROM stylesheets") or die;
 			$ss_sa = array();
-			while ($ss_a = mysql_fetch_array($ss_r))
+			foreach (\Nexus\Database\NexusDB::select("SELECT * FROM stylesheets") as $ss_a)
 			{
 				$ss_id = $ss_a["id"];
 				$ss_name = $ss_a["name"];
@@ -695,8 +684,8 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 				$updateset[] = "clicktopic = ".sqlesc($clicktopic);
 				$updateset[] = "signature = " . sqlesc($signature);
 
-				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id =".sqlesc($CURUSER["id"]);
-				$result = sql_query($query);
+				$query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id = " . (int) $CURUSER["id"];
+				$result = \Nexus\Database\NexusDB::statement($query);
 				if (!$result)
 				sqlerr(__FILE__,__LINE__);
 				else
@@ -743,7 +732,7 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 				$passupdated = 0;
 				$privacyupdated = 0;
 				$resetpasskey = $_POST["resetpasskey"];
-				$email = mysql_real_escape_string( htmlspecialchars( trim($_POST["email"]) ));
+				$email = htmlspecialchars( trim($_POST["email"]) );
 				$chpassword = $_POST["chpassword"];
 //				$passagain = $_POST["passagain"];
 				$privacy = $_POST["privacy"];
@@ -809,8 +798,11 @@ tr_small($lang_usercp['row_funbox'],"<input type=checkbox name=showfb".($CURUSER
 						stderr($lang_usercp['std_error'], $lang_usercp['std_wrong_email_address_format'].goback("-2"), 0);
 						die;
 					}
-					$r = sql_query("SELECT id FROM users WHERE email=" . sqlesc($email)) or sqlerr();
-					if (mysql_num_rows($r) > 0){
+					$existing = \Nexus\Database\NexusDB::table('users')
+						->where('email', $email)
+						->select(['id'])
+						->first();
+					if ($existing) {
 						stderr($lang_usercp['std_error'], $lang_usercp['std_email_in_use'].goback("-2"), 0);
 						die;
 					}
@@ -853,8 +845,8 @@ EOD;
 
 				$user = $CURUSER["id"];
                 \Nexus\Database\NexusDB::transaction(function () use ($user, $updateset) {
-                    $query = sprintf("UPDATE users SET " . implode(",", $updateset) . " WHERE id ='%s'", mysql_real_escape_string($user));
-                    sql_query($query);
+                    $query = "UPDATE users SET " . implode(",", $updateset) . " WHERE id = " . (int) $user;
+                    \Nexus\Database\NexusDB::statement($query);
                     if (!empty($_REQUEST['resetauthkey']) && $_REQUEST['resetauthkey'] == 1) {
                         //reset authkey
                         $torrentRep = new \App\Repositories\TorrentRepository();
@@ -883,7 +875,7 @@ EOD;
 //				print("<form method=post action=usercp.php><input type=hidden name=action value=security><input type=hidden name=type value=confirm>");
 				$resetpasskey = $_POST["resetpasskey"];
 				$resetauthkey = $_POST["resetauthkey"];
-				$email = mysql_real_escape_string( htmlspecialchars( trim($_POST["email"]) ));
+				$email = htmlspecialchars( trim($_POST["email"]) );
 				$chpassword = $_POST["chpassword"];
 				$passagain = $_POST["passagain"];
 				$privacy = $_POST["privacy"];
@@ -1222,8 +1214,10 @@ print("<table border=0 cellspacing=0 cellpadding=3 width=".CONTENT_WIDTH."><tr>"
 "<td class=colhead align=center>".$lang_usercp['col_topic_starter']."</td>".
 "<td class=colhead align=center width=20%>".$lang_usercp['col_last_post']."</td>".
 "</tr>");
-$res_topics = sql_query("SELECT * FROM readposts INNER JOIN topics ON topics.id = readposts.topicid WHERE readposts.userid = ".$CURUSER['id']." ORDER BY readposts.id DESC LIMIT 5") or sqlerr();
-while ($topicarr = mysql_fetch_assoc($res_topics))
+$readpostsTopics = \Nexus\Database\NexusDB::select(
+	"SELECT * FROM readposts INNER JOIN topics ON topics.id = readposts.topicid WHERE readposts.userid = " . (int) $CURUSER['id'] . " ORDER BY readposts.id DESC LIMIT 5"
+);
+foreach ($readpostsTopics as $topicarr)
 {
 	$topicid = $topicarr["id"];
 	$topic_title = $topicarr["subject"];
