@@ -13,7 +13,29 @@ if (isset($_GET['del']))
 	}
 }
 $where=$_GET["type"] ?? '';
-$refresh = ($CURUSER['sbrefresh'] ?? 120)
+$refresh = ($CURUSER['sbrefresh'] ?? 120);
+
+// Resolve channel for live updates. Defaults to 'sb' (shoutbox); 'hb' for helpbox.
+$shoutChannel = ($where === 'helpbox') ? 'shoutbox.hb' : 'shoutbox.sb';
+
+// Pull frontend Reverb settings so echo.js can connect. Empty values
+// are fine — the bootstrap silently no-ops without a configured key.
+$reverbConfig = [
+    'key' => (string) (env('REVERB_APP_KEY') ?: ''),
+    'host' => (string) (env('REVERB_HOST') ?: $_SERVER['HTTP_HOST'] ?? ''),
+    'port' => (int) (env('REVERB_PORT') ?: 8080),
+    'scheme' => (string) (env('REVERB_SCHEME') ?: 'http'),
+];
+
+// Locate the Vite-built echo.js bundle. Falls back to '' if Vite hasn't run.
+$reverbBundleUrl = '';
+$manifestPath = __DIR__ . '/build/manifest.json';
+if (is_file($manifestPath)) {
+    $manifest = json_decode(file_get_contents($manifestPath), true);
+    if (isset($manifest['resources/js/echo.js']['file'])) {
+        $reverbBundleUrl = '/build/' . $manifest['resources/js/echo.js']['file'];
+    }
+}
 ?>
 <html><head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -106,7 +128,11 @@ function shoutReply(nick) {
 }
 </script>
 </head>
-<body class='inframe' <?php if (isset($_GET["type"]) && $_GET["type"] != "helpbox"){?> onload="<?php echo $startcountdown?>" <?php } else {?> onload="hbquota()" <?php } ?>>
+<body class='inframe' data-shout-channel="<?php echo htmlspecialchars($shoutChannel)?>" <?php if (isset($_GET["type"]) && $_GET["type"] != "helpbox"){?> onload="<?php echo $startcountdown?>" <?php } else {?> onload="hbquota()" <?php } ?>>
+<?php if ($reverbBundleUrl !== '' && $reverbConfig['key'] !== ''): ?>
+<script>window.__REVERB__ = <?php echo json_encode($reverbConfig); ?>;</script>
+<script type="module" src="<?php echo htmlspecialchars($reverbBundleUrl); ?>"></script>
+<?php endif; ?>
 <?php
 if(isset($_GET["sent"]) && $_GET["sent"]=="yes"){
 if(!isset($_GET["shbox_text"]) || !$_GET['shbox_text'])
@@ -146,6 +172,21 @@ else
         die($lang_shoutbox['speaking_too_often']);
     }
 	sql_query("INSERT INTO shoutbox (userid, date, text, type) VALUES (" . sqlesc($userid) . ", $date, " . sqlesc($text) . ", ".sqlesc($type).")") or sqlerr(__FILE__, __LINE__);
+	// Broadcast the new shout over Reverb so live listeners refresh
+	// without waiting for the meta-refresh poll. Wrapped to ensure a
+	// broadcasting failure never breaks the legacy insert flow.
+	try {
+		$shoutId = (int) mysql_insert_id();
+		event(new \App\Events\ShoutSent(
+			$shoutId,
+			(int) $userid,
+			(int) (is_string($date) ? trim($date, "'") : $date),
+			(string) $text,
+			(string) $type,
+		));
+	} catch (\Throwable $e) {
+		do_log("ShoutSent broadcast failed: " . $e->getMessage(), 'error');
+	}
 	print "<script type=\"text/javascript\">parent.document.forms['shbox'].shbox_text.value='';</script>";
 }
 }
