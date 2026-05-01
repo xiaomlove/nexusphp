@@ -61,8 +61,11 @@ function additem($title, $action){
 
 function edititem($title, $action, $id){
 		global $lang_log;
-		$result = sql_query ("SELECT * FROM ".$action." where id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-		if ($row = mysql_fetch_array($result)) {
+		$row = \Nexus\Database\NexusDB::table((string) $action)
+			->where('id', (int) $id)
+			->first();
+		$row = $row ? (array) $row : null;
+		if ($row) {
 		print("<table border=1 cellspacing=0 width=940 cellpadding=5>\n");
 		print("<tr><td class=colhead align=left>".$title."</td></tr>\n");
 		print("<tr><td class=toolbox align=left><form method=\"post\" action='" . $_SERVER['REQUEST_URI'] . "'>\n");
@@ -86,43 +89,55 @@ else {
 	case "dailylog":
 		stdhead($lang_log['head_site_log']);
 
-		$query = mysql_real_escape_string($q);
+		$query = $q;
 		$search = $_GET["search"] ?? '';
 
 		$addparam = "";
-		$wherea = "";
+		$securityFilter = null;
 		if (user_can('confilog')){
 			switch ($search)
 			{
-				case "mod": $wherea=" WHERE security_level = 'mod'"; break;
-				case "normal": $wherea=" WHERE security_level = 'normal'"; break;
+				case "mod": $securityFilter = 'mod'; break;
+				case "normal": $securityFilter = 'normal'; break;
 				case "all": break;
 			}
-			$addparam = ($wherea ? "search=".rawurlencode($search)."&" : "");
+			$addparam = ($securityFilter !== null ? "search=".rawurlencode($search)."&" : "");
 		}
 		else{
-			$wherea=" WHERE security_level = 'normal'";
+			$securityFilter = 'normal';
 		}
 
 		if($query){
-				$wherea .= ($wherea ? " AND " : " WHERE ")." txt LIKE '%$query%' ";
 				$addparam .= "query=".rawurlencode($query)."&";
 		}
+
+		$baseQuery = function () use ($securityFilter, $query) {
+			$qb = \Nexus\Database\NexusDB::table('sitelog');
+			if ($securityFilter !== null) {
+				$qb->where('security_level', $securityFilter);
+			}
+			if ($query !== '') {
+				$qb->where('txt', 'like', "%{$query}%");
+			}
+			return $qb;
+		};
 
 		logmenu('dailylog');
 		$opt = array ('all' => $lang_log['text_all'], 'normal' => $lang_log['text_normal'], 'mod' => $lang_log['text_mod']);
 		searchtable($lang_log['text_search_log'], 'dailylog',$opt);
 
-		$res = sql_query("SELECT COUNT(*) FROM sitelog".$wherea);
-		$row = mysql_fetch_array($res);
-		$count = $row[0];
+		$count = $baseQuery()->count();
 
 		$perpage = 50;
 
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "log.php?action=dailylog&".$addparam);
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $count, "log.php?action=dailylog&".$addparam);
 
-		$res = sql_query("SELECT * FROM sitelog $wherea ORDER BY added DESC $limit") or sqlerr(__FILE__, __LINE__);
-		if (mysql_num_rows($res) == 0)
+		$rows = $baseQuery()
+			->orderByDesc('added')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
+		if ($rows->isEmpty())
 		print($lang_log['text_log_empty']);
 		else
 		{
@@ -135,8 +150,9 @@ else {
                 print("<td class=colhead align=left>".$lang_log['col_user']."</td>");
             }
             print("</td></tr>\n");
-			while ($arr = mysql_fetch_assoc($res))
+			foreach ($rows as $arr)
 			{
+				$arr = (array) $arr;
 				$color = "";
 				if (strpos($arr['txt'],'was uploaded by')) $color = "green";
 				if (strpos($arr['txt'],'was deleted by')) $color = "red";
@@ -161,13 +177,11 @@ else {
 		break;
 	case "chronicle":
 		stdhead($lang_log['head_chronicle']);
-		$query = mysql_real_escape_string($q);
+		$query = $q;
 		if($query){
-		$wherea=" WHERE txt LIKE '%$query%' ";
 		$addparam = "query=".rawurlencode($query)."&";
 		}
 		else{
-		$wherea="";
 		$addparam = "";
 		}
 		logmenu("chronicle");
@@ -185,29 +199,47 @@ else {
             if (get_user_class() < $chrmanage_class)
                 permissiondeny();
 			elseif (isset($_POST['do']) && $_POST['do'] == "add")
-					sql_query ("INSERT INTO chronicle (userid,added, txt) VALUES ('".$CURUSER["id"]."', now(), ".sqlesc($txt).")") or sqlerr(__FILE__, __LINE__);
+					\Nexus\Database\NexusDB::insert('chronicle', [
+						'userid' => (int) $CURUSER["id"],
+						'added' => \Nexus\Database\NexusDB::raw('NOW()'),
+						'txt' => (string) $txt,
+					]);
 			elseif (isset($_POST['do'] ) && $_POST['do'] == "update"){
 				$id = intval($_POST['id'] ?? 0);
 				if (!$id) { header("Location: log.php?action=chronicle"); die();}
-				else sql_query ("UPDATE chronicle SET txt=".sqlesc($txt)." WHERE id=".$id) or sqlerr(__FILE__, __LINE__);}
+				else \Nexus\Database\NexusDB::table('chronicle')
+					->where('id', (int) $id)
+					->update(['txt' => (string) $txt]);}
 			else {$id = (intval($_GET['id'] ?? 0));
 				if (!$id) { header("Location: log.php?action=chronicle"); die();}
 				elseif ($_GET['do'] == "del")
-					sql_query ("DELETE FROM chronicle where id = '".$id."'") or sqlerr(__FILE__, __LINE__);
+					\Nexus\Database\NexusDB::table('chronicle')
+						->where('id', (int) $id)
+						->delete();
 				elseif (isset($_GET['do']) && $_GET['do'] == "edit")
 					edititem($lang_log['text_edit_chronicle'],'chronicle', $id);
 				}
 		}
 
-		$res = sql_query("SELECT COUNT(*) FROM chronicle".$wherea);
-		$row = mysql_fetch_array($res);
-		$count = $row[0];
+		$baseQuery = function () use ($query) {
+			$qb = \Nexus\Database\NexusDB::table('chronicle');
+			if ($query !== '') {
+				$qb->where('txt', 'like', "%{$query}%");
+			}
+			return $qb;
+		};
+		$count = $baseQuery()->count();
 
 		$perpage = 50;
 
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "log.php?action=chronicle&".$addparam);
-		$res = sql_query("SELECT id, added, txt FROM chronicle $wherea ORDER BY added DESC $limit") or sqlerr(__FILE__, __LINE__);
-		if (mysql_num_rows($res) == 0)
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $count, "log.php?action=chronicle&".$addparam);
+		$rows = $baseQuery()
+			->select(['id', 'added', 'txt'])
+			->orderByDesc('added')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
+		if ($rows->isEmpty())
 		print($lang_log['text_chronicle_empty']);
 		else
 		{
@@ -216,8 +248,9 @@ else {
 
 			print("<table width=940 border=1 cellspacing=0 cellpadding=5>\n");
 			print("<tr><td class=colhead align=center>".$lang_log['col_date']."</td><td class=colhead align=left>".$lang_log['col_event']."</td>".(user_can('chrmanage') ? "<td class=colhead align=center>".$lang_log['col_modify']."</td>" : "")."</tr>\n");
-			while ($arr = mysql_fetch_assoc($res))
+			foreach ($rows as $arr)
 			{
+				$arr = (array) $arr;
 				$date = gettime($arr['added'],true,false);
 				print("<tr><td class=rowfollow align=center><nobr>$date</nobr></td><td class=rowfollow align=left>".format_comment($arr["txt"],true,false,true)."</td>".(user_can('chrmanage') ? "<td align=center nowrap><b><a href=\"?action=chronicle&do=edit&id=".$arr["id"]."\">".$lang_log['text_edit']."</a>&nbsp;|&nbsp;<a href=\"?action=chronicle&do=del&id=".$arr["id"]."\"><font color=red>".$lang_log['text_delete']."</font></a></b></td>" : "")."</tr>\n");
 			}
@@ -232,37 +265,50 @@ else {
 		break;
 	case "funbox":
 		stdhead($lang_log['head_funbox']);
-		$query = mysql_real_escape_string($q);
+		$query = $q;
 		$search = $_GET["search"] ?? '';
 		if($query){
-			switch ($search){
-				case "title": $wherea=" WHERE title LIKE '%$query%' AND status != 'banned'"; break;
-				case "body": $wherea=" WHERE body LIKE '%$query%' AND status != 'banned'"; break;
-				case "both": $wherea=" WHERE (body LIKE '%$query%' or title LIKE '%$query%') AND status != 'banned'" ; break;
-				}
 			$addparam = "search=".rawurlencode($search)."&query=".rawurlencode($query)."&";
-			}
+		}
 		else{
-		$wherea=" WHERE status != 'banned'";
-		$addparam = "";
+			$addparam = "";
 		}
 		logmenu("funbox");
 		$opt = array ('title' => $lang_log['text_title'], 'body' => $lang_log['text_body'], 'both' => $lang_log['text_both']);
 		searchtable($lang_log['text_search_funbox'], 'funbox', $opt);
-		$res = sql_query("SELECT COUNT(*) FROM fun ".$wherea);
-		$row = mysql_fetch_array($res);
-		$count = $row[0];
+		$baseQuery = function () use ($query, $search) {
+			$qb = \Nexus\Database\NexusDB::table('fun')
+				->where('status', '!=', 'banned');
+			if ($query !== '') {
+				$like = "%{$query}%";
+				if ($search === 'title') $qb->where('title', 'like', $like);
+				elseif ($search === 'body') $qb->where('body', 'like', $like);
+				elseif ($search === 'both') {
+					$qb->where(function ($w) use ($like) {
+						$w->where('body', 'like', $like)->orWhere('title', 'like', $like);
+					});
+				}
+			}
+			return $qb;
+		};
+		$count = $baseQuery()->count();
 
 		$perpage = 10;
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "log.php?action=funbox&".$addparam);
-		$res = sql_query("SELECT added, body, title, status FROM fun $wherea ORDER BY added DESC $limit") or sqlerr(__FILE__, __LINE__);
-		if (mysql_num_rows($res) == 0)
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $count, "log.php?action=funbox&".$addparam);
+		$rows = $baseQuery()
+			->select(['added', 'body', 'title', 'status'])
+			->orderByDesc('added')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
+		if ($rows->isEmpty())
 			print($lang_log['text_funbox_empty']);
 		else
 		{
 
 		//echo $pagertop;
-			while ($arr = mysql_fetch_assoc($res)){
+			foreach ($rows as $arr){
+				$arr = (array) $arr;
 				$date = gettime($arr['added'],true,false);
 			print("<table width=940 border=1 cellspacing=0 cellpadding=5>\n");
 			print("<tr><td class=rowhead width='10%'>".$lang_log['col_title']."</td><td class=rowfollow align=left>".$arr["title"]." - <b>".$arr["status"]."</b></td></tr><tr><td class=rowhead width='10%'>".$lang_log['col_date']."</td><td class=rowfollow align=left>".$date."</td></tr><tr><td class=rowhead width='10%'>".$lang_log['col_body']."</td><td class=rowfollow align=left>".format_comment($arr["body"],false,false,true)."</td></tr>\n");
@@ -277,39 +323,51 @@ else {
 		break;
 	case "news":
 		stdhead($lang_log['head_news']);
-		$query = mysql_real_escape_string($q);
+		$query = $q;
 		$search = $_GET["search"] ?? '';
 		if($query){
-			switch ($search){
-				case "title": $wherea=" WHERE title LIKE '%$query%' "; break;
-				case "body": $wherea=" WHERE body LIKE '%$query%' "; break;
-				case "both": $wherea=" WHERE body LIKE '%$query%' or title LIKE '%$query%'" ; break;
-				}
 			$addparam = "search=".rawurlencode($search)."&query=".rawurlencode($query)."&";
 		}
 		else{
-		$wherea= "";
-		$addparam = "";
+			$addparam = "";
 		}
 		logmenu("news");
 		$opt = array ('title' => $lang_log['text_title'], 'body' => $lang_log['text_body'], 'both' => $lang_log['text_both']);
 		searchtable($lang_log['text_search_news'], 'news', $opt);
 
-		$res = sql_query("SELECT COUNT(*) FROM news".$wherea);
-		$row = mysql_fetch_array($res);
-		$count = $row[0];
+		$baseQuery = function () use ($query, $search) {
+			$qb = \Nexus\Database\NexusDB::table('news');
+			if ($query !== '') {
+				$like = "%{$query}%";
+				if ($search === 'title') $qb->where('title', 'like', $like);
+				elseif ($search === 'body') $qb->where('body', 'like', $like);
+				elseif ($search === 'both') {
+					$qb->where(function ($w) use ($like) {
+						$w->where('body', 'like', $like)->orWhere('title', 'like', $like);
+					});
+				}
+			}
+			return $qb;
+		};
+		$count = $baseQuery()->count();
 
 		$perpage = 20;
 
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "log.php?action=news&".$addparam);
-		$res = sql_query("SELECT id, added, body, title FROM news $wherea ORDER BY added DESC $limit") or sqlerr(__FILE__, __LINE__);
-		if (mysql_num_rows($res) == 0)
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $count, "log.php?action=news&".$addparam);
+		$rows = $baseQuery()
+			->select(['id', 'added', 'body', 'title'])
+			->orderByDesc('added')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
+		if ($rows->isEmpty())
 		print($lang_log['text_news_empty']);
 		else
 		{
 
 		//echo $pagertop;
-			while ($arr = mysql_fetch_assoc($res)){
+			foreach ($rows as $arr){
+				$arr = (array) $arr;
 				$date = gettime($arr['added'],true,false);
 			print("<table width=940 border=1 cellspacing=0 cellpadding=5>\n");
 			print("<tr><td class=rowhead width='10%'>".$lang_log['col_title']."</td><td class=rowfollow align=left>".$arr["title"]."</td></tr><tr><td class=rowhead width='10%'>".$lang_log['col_date']."</td><td class=rowfollow align=left>".$date."</td></tr><tr><td class=rowhead width='10%'>".$lang_log['col_body']."</td><td class=rowfollow align=left>".format_comment($arr["body"],false,false,true)."</td></tr>\n");
@@ -339,8 +397,8 @@ else {
     		stderr($lang_log['std_delete_poll'],$lang_log['std_delete_poll_confirmation'] .
     		"<a href=?action=poll&do=delete&pollid=$pollid&returnto=$returnto&sure=1>".$lang_log['std_here_if_sure'],false);
 
-		sql_query("DELETE FROM pollanswers WHERE pollid = $pollid") or sqlerr();
-		sql_query("DELETE FROM polls WHERE id = $pollid") or sqlerr();
+		\Nexus\Database\NexusDB::table('pollanswers')->where('pollid', (int) $pollid)->delete();
+		\Nexus\Database\NexusDB::table('polls')->where('id', (int) $pollid)->delete();
 		$Cache->delete_value('current_poll_content');
 		$Cache->delete_value('current_poll_result', true);
 		if ($returnto == "main")
@@ -350,12 +408,14 @@ else {
 		die;
   }
 
-  $rows = sql_query("SELECT COUNT(*) FROM polls") or sqlerr();
-  $row = mysql_fetch_row($rows);
-  $pollcount = $row[0];
+  $pollcount = \Nexus\Database\NexusDB::table('polls')->count();
   if ($pollcount == 0)
   	stderr($lang_log['std_sorry'], $lang_log['std_no_polls']);
-  $polls = sql_query("SELECT * FROM polls ORDER BY id DESC LIMIT 1," . ($pollcount - 1 )) or sqlerr();
+  $polls = \Nexus\Database\NexusDB::table('polls')
+  	->orderByDesc('id')
+  	->offset(1)
+  	->limit((int) ($pollcount - 1))
+  	->get();
   stdhead($lang_log['head_previous_polls']);
   		logmenu("poll");
   		print("<table border=1 cellspacing=0 width=940 cellpadding=5>\n");
@@ -368,8 +428,9 @@ else {
       return 0;
     }
 
-  while ($poll = mysql_fetch_assoc($polls))
+  foreach ($polls as $poll)
   {
+    $poll = (array) $poll;
     $o = array($poll["option0"], $poll["option1"], $poll["option2"], $poll["option3"], $poll["option4"],
     $poll["option5"], $poll["option6"], $poll["option7"], $poll["option8"], $poll["option9"],
     $poll["option10"], $poll["option11"], $poll["option12"], $poll["option13"], $poll["option14"],
@@ -396,20 +457,26 @@ else {
 
     print("<p align=center><b>" . $poll["question"] . "</b></p>");
 
-    $pollanswers = sql_query("SELECT selection FROM pollanswers WHERE pollid=" . $poll["id"] . " AND  selection < 20") or sqlerr();
+    $pollanswers = \Nexus\Database\NexusDB::table('pollanswers')
+    	->where('pollid', (int) $poll["id"])
+    	->where('selection', '<', 20)
+    	->select(['selection'])
+    	->get();
 
-    $tvotes = mysql_num_rows($pollanswers);
+    $tvotes = $pollanswers->count();
 
     $vs = array(); // count for each option ([0]..[19])
     $os = array(); // votes and options: array(array(123, "Option 1"), array(45, "Option 2"))
 
     // Count votes
-    while ($pollanswer = mysql_fetch_row($pollanswers)) {
-    	if (isset($pollanswer[0])) {
-    		if (!isset($vs[$pollanswer[0]])) {
-				$vs[$pollanswer[0]] = 0;
+    foreach ($pollanswers as $pollanswer) {
+    	$pollanswer = (array) $pollanswer;
+    	if (isset($pollanswer['selection'])) {
+    		$key = $pollanswer['selection'];
+    		if (!isset($vs[$key])) {
+				$vs[$key] = 0;
 			}
-			$vs[$pollanswer[0]] += 1;
+			$vs[$key] += 1;
 		}
 	}
 
