@@ -9,8 +9,11 @@ if (!$id)
 
 dbconn();
 
-$res = sql_query("SELECT passhash, secret, auth_key, editsecret, status FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_assoc($res);
+$row = \Nexus\Database\NexusDB::table('users')
+    ->where('id', (int) $id)
+    ->select(['passhash', 'secret', 'auth_key', 'editsecret', 'status'])
+    ->first();
+$row = $row ? (array) $row : null;
 
 if (!$row)
 	httperr();
@@ -24,9 +27,12 @@ $confirm_sec = hash_pad($row["secret"]);
 if ($confirm_md5 != md5($confirm_sec))
 	httperr();
 
-sql_query("UPDATE users SET status='confirmed', editsecret='' WHERE id=".sqlesc($id)." AND status='pending'") or sqlerr(__FILE__, __LINE__);
+$updated = \Nexus\Database\NexusDB::table('users')
+	->where('id', (int) $id)
+	->where('status', 'pending')
+	->update(['status' => 'confirmed', 'editsecret' => '']);
 
-if (!mysql_affected_rows())
+if (!$updated)
 	httperr();
 
 publish_model_event(\App\Enums\ModelEventEnum::USER_UPDATED, $id);
