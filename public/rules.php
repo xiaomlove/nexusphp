@@ -17,8 +17,12 @@ $is_rulelang = get_single_value("language","rule_lang","WHERE id = ".sqlesc($lan
 if (!$is_rulelang){
 	$lang_id = 6; //English
 }
-$res = sql_query("SELECT * FROM rules WHERE lang_id = ".sqlesc($lang_id)." ORDER BY id");
-while ($arr=mysql_fetch_assoc($res)){
+$rules = \Nexus\Database\NexusDB::table('rules')
+	->where('lang_id', (int) $lang_id)
+	->orderBy('id')
+	->get();
+foreach ($rules as $arr) {
+	$arr = (array) $arr;
 	begin_frame($arr['title'], false);
 	print(format_comment($arr["text"]));
 	end_frame();

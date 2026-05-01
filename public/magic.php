@@ -11,8 +11,11 @@ if (!in_array($value, \App\Models\Setting::getBonusRewardOptions())) {
 }
 
 if($value > $CURUSER['seedbonus']) exit(json_encode(fail('You do not have such bonus!', $_POST)));
-$tsql = sql_query("SELECT owner FROM torrents WHERE id = $torrentid") or sqlerr(__FILE__,__LINE__);
-$arr = mysql_fetch_assoc($tsql);
+$arr = \Nexus\Database\NexusDB::table('torrents')
+    ->where('id', (int) $torrentid)
+    ->select(['owner'])
+    ->first();
+$arr = $arr ? (array) $arr : null;
 if (!$arr) exit(json_encode(fail("Invalid torrent id!", $_POST)));
 
 $torrentowner = $arr['owner'];
@@ -31,7 +34,11 @@ if (!$torrentOwnerInfo) {
     exit(json_encode(fail("Invalid torrent owner!", $_POST)));
 }
 if (isset($userid) && isset($torrentid)&& isset($value)) {
-    sql_query("INSERT INTO magic (torrentid, userid,value) VALUES ($torrentid, $userid, $value)") or sqlerr(__FILE__,__LINE__);
+    \Nexus\Database\NexusDB::insert('magic', [
+        'torrentid' => (int) $torrentid,
+        'userid' => (int) $userid,
+        'value' => (int) $value,
+    ]);
     KPS("-",$value,$CURUSER['id']);//selete
     \App\Models\BonusLogs::add($CURUSER['id'], $CURUSER['seedbonus'], $value, $CURUSER['seedbonus'] - $value, "", \App\Models\BonusLogs::BUSINESS_TYPE_REWARD_TORRENT);
     KPS("+",$value,$torrentowner);//add to the owner
