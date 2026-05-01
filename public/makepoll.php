@@ -12,10 +12,12 @@ $poll = [];
 if ($action == "edit")
 {
 	int_check($pollid,true);
-	$res = sql_query("SELECT * FROM polls WHERE id = $pollid") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) == 0)
+	$poll = \Nexus\Database\NexusDB::table('polls')
+		->where('id', (int) $pollid)
+		->first();
+	$poll = $poll ? (array) $poll : null;
+	if (!$poll)
 		stderr($lang_makepoll['std_error'], $lang_makepoll['std_no_poll_id']);
-	$poll = mysql_fetch_array($res);
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
@@ -47,53 +49,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	if (!$question || !$option0 || !$option1)
 		stderr($lang_makepoll['std_error'], $lang_makepoll['std_missing_form_data']);
 
-	if ($pollid)
-		sql_query("UPDATE polls SET " .
-		"question = " . sqlesc($question) . ", " .
-		"option0 = " . sqlesc($option0) . ", " .
-		"option1 = " . sqlesc($option1) . ", " .
-		"option2 = " . sqlesc($option2) . ", " .
-		"option3 = " . sqlesc($option3) . ", " .
-		"option4 = " . sqlesc($option4) . ", " .
-		"option5 = " . sqlesc($option5) . ", " .
-		"option6 = " . sqlesc($option6) . ", " .
-		"option7 = " . sqlesc($option7) . ", " .
-		"option8 = " . sqlesc($option8) . ", " .
-		"option9 = " . sqlesc($option9) . ", " .
-		"option10 = " . sqlesc($option10) . ", " .
-		"option11 = " . sqlesc($option11) . ", " .
-		"option12 = " . sqlesc($option12) . ", " .
-		"option13 = " . sqlesc($option13) . ", " .
-		"option14 = " . sqlesc($option14) . ", " .
-		"option15 = " . sqlesc($option15) . ", " .
-		"option16 = " . sqlesc($option16) . ", " .
-		"option17 = " . sqlesc($option17) . ", " .
-		"option18 = " . sqlesc($option18) . ", " .
-		"option19 = " . sqlesc($option19) . " " .
-		" WHERE id = $pollid") or sqlerr(__FILE__, __LINE__);
-	else
-  		sql_query("INSERT INTO polls VALUES(0, " . sqlesc(date("Y-m-d H:i:s")) .", " .
-		sqlesc($question) . ", " .
-		sqlesc($option0) . ", " .
-		sqlesc($option1) . ", " .
-		sqlesc($option2) . ", " .
-		sqlesc($option3) . ", " .
-		sqlesc($option4) . ", " .
-		sqlesc($option5) . ", " .
-		sqlesc($option6) . ", " .
-		sqlesc($option7) . ", " .
-		sqlesc($option8) . ", " .
-		sqlesc($option9) . ", " .
-		sqlesc($option10) . ", " .
-		sqlesc($option11) . ", " .
-		sqlesc($option12) . ", " .
-		sqlesc($option13) . ", " .
-		sqlesc($option14) . ", " .
-		sqlesc($option15) . ", " .
-		sqlesc($option16) . ", " .
-		sqlesc($option17) . ", " .
-		sqlesc($option18) . ", " .
-		sqlesc($option19).")") or sqlerr(__FILE__, __LINE__);
+	$pollData = [
+		'question' => (string) $question,
+		'option0' => (string) $option0,
+		'option1' => (string) $option1,
+		'option2' => (string) $option2,
+		'option3' => (string) $option3,
+		'option4' => (string) $option4,
+		'option5' => (string) $option5,
+		'option6' => (string) $option6,
+		'option7' => (string) $option7,
+		'option8' => (string) $option8,
+		'option9' => (string) $option9,
+		'option10' => (string) $option10,
+		'option11' => (string) $option11,
+		'option12' => (string) $option12,
+		'option13' => (string) $option13,
+		'option14' => (string) $option14,
+		'option15' => (string) $option15,
+		'option16' => (string) $option16,
+		'option17' => (string) $option17,
+		'option18' => (string) $option18,
+		'option19' => (string) $option19,
+	];
+	if ($pollid) {
+		\Nexus\Database\NexusDB::table('polls')
+			->where('id', (int) $pollid)
+			->update($pollData);
+	} else {
+		$pollData['added'] = date("Y-m-d H:i:s");
+		\Nexus\Database\NexusDB::insert('polls', $pollData);
+	}
 
 	$Cache->delete_value('current_poll_content');
 	$Cache->delete_value('current_poll_result', true);
@@ -114,8 +100,12 @@ else
 {
 	stdhead($lang_makepoll['head_new_poll']);
 	// Warn if current poll is less than 3 days old
-	$res = sql_query("SELECT question, added FROM polls ORDER BY added DESC LIMIT 1") or sqlerr();
-	$arr = mysql_fetch_assoc($res);
+	$arr = \Nexus\Database\NexusDB::table('polls')
+		->select(['question', 'added'])
+		->orderByDesc('added')
+		->limit(1)
+		->first();
+	$arr = $arr ? (array) $arr : null;
 	if ($arr)
 	{
 		$hours = floor((strtotime(date("Y-m-d H:i:s")) - strtotime($arr["added"])) / 3600);
