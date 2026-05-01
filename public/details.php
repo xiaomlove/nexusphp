@@ -12,7 +12,7 @@ die();
 
 $taxonomyFields = "sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name";
 $extraFields = "torrent_extras.descr, torrent_extras.nfo, LENGTH(torrent_extras.nfo) AS nfosz, torrent_extras.media_info as technical_info";
-$res = sql_query("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status, torrents.price,
+$detailsRows = \Nexus\Database\NexusDB::select("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status, torrents.price,
        categories.name AS cat_name, categories.mode as search_box_id, $taxonomyFields, $extraFields
 FROM torrents LEFT JOIN categories ON torrents.category = categories.id
     LEFT JOIN sources ON torrents.source = sources.id
@@ -23,9 +23,8 @@ FROM torrents LEFT JOIN categories ON torrents.category = categories.id
     LEFT JOIN teams ON torrents.team = teams.id
     LEFT JOIN audiocodecs ON torrents.audiocodec = audiocodecs.id
     LEFT JOIN torrent_extras ON torrents.id = torrent_extras.torrent_id
-WHERE torrents.id = $id LIMIT 1")
-or sqlerr();
-$row = mysql_fetch_array($res);
+WHERE torrents.id = " . (int) $id . " LIMIT 1");
+$row = $detailsRows[0] ?? null;
 if (user_can('torrentmanage') || $CURUSER["id"] == $row["owner"])
 $owned = 1;
 else $owned = 0;
@@ -257,13 +256,14 @@ JS;
             $otherCopiesIdArr = \App\Models\Torrent::query()->where('url', $imdb_id)->where('id', '!=', $row['id'])->pluck('id')->toArray();
 //            $subTorrentIdArr = array_merge($subTorrentIdArr, $otherCopiesIdArr);
         }
-		$r = sql_query("SELECT subs.*, language.flagpic, language.lang_name FROM subs LEFT JOIN language ON subs.lang_id=language.id WHERE torrent_id in(" . implode(',', $subTorrentIdArr). ") ORDER BY subs.lang_id ASC") or sqlerr(__FILE__, __LINE__);
+		$subTorrentIdInts = array_map('intval', $subTorrentIdArr);
+		$subRows = \Nexus\Database\NexusDB::select("SELECT subs.*, language.flagpic, language.lang_name FROM subs LEFT JOIN language ON subs.lang_id=language.id WHERE torrent_id in(" . implode(',', $subTorrentIdInts) . ") ORDER BY subs.lang_id ASC");
 		print("<tr><td class=\"rowhead\" valign=\"top\">".$lang_details['row_subtitles']."</td>");
 		print("<td class=\"rowfollow\" align=\"left\" valign=\"top\">");
 		print("<table border=\"0\" cellspacing=\"0\">");
-		if (mysql_num_rows($r) > 0)
+		if (count($subRows) > 0)
 		{
-			while($a = mysql_fetch_assoc($r))
+			foreach ($subRows as $a)
 			{
 				$lang = "<tr><td class=\"embedded\"><img border=\"0\" src=\"pic/flag/". $a["flagpic"] . "\" alt=\"" . $a["lang_name"] . "\" title=\"" . $a["lang_name"] . "\" style=\"padding-bottom: 4px\" /></td>";
 				$lang .= "<td class=\"embedded\">&nbsp;&nbsp;<a href=\"downloadsubs.php?torrentid=".$a['torrent_id']."&subid=".$a['id']."\"><u>". htmlspecialchars($a["title"]) . "</u></a>".(user_can('submanage') || (user_can('delownsub') && $a["uppedby"] == $CURUSER["id"]) ? " <font class=\"small\"><a href=\"subtitles.php?delete=".$a['id']."\">[".$lang_details['text_delete']."</a>]</font>" : "")."</td><td class=\"embedded\">&nbsp;&nbsp;".($a["anonymous"] == 'yes' ? $lang_details['text_anonymous'] . (user_can('viewanonymous') ? get_username($a['uppedby'],false,true,true,false,true) : "") : get_username($a['uppedby']))."</td></tr>";
@@ -423,8 +423,9 @@ JS;
 		if (!empty($otherCopiesIdArr))
 		{
 //			$where_area = " url = " . sqlesc((int)$imdb_id) ." AND torrents.id != ".sqlesc($id);
-			$where_area = sprintf('torrents.id in (%s)', implode(',', $otherCopiesIdArr));
-			$copies_res = sql_query("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, $taxonomyFields, categories.mode as search_box_id FROM torrents
+			$otherCopiesIdInts = array_map('intval', $otherCopiesIdArr);
+			$where_area = sprintf('torrents.id in (%s)', implode(',', $otherCopiesIdInts));
+			$copyRows = \Nexus\Database\NexusDB::select("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, $taxonomyFields, categories.mode as search_box_id FROM torrents
     LEFT JOIN categories ON torrents.category=categories.id
     LEFT JOIN sources ON torrents.source = sources.id
     LEFT JOIN media ON torrents.medium = media.id
@@ -433,14 +434,14 @@ JS;
     LEFT JOIN teams ON torrents.team = teams.id
     LEFT JOIN audiocodecs ON torrents.audiocodec = audiocodecs.id
     LEFT JOIN processings ON torrents.processing = processings.id
-WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
+WHERE " . $where_area . " ORDER BY torrents.id DESC");
 
-			$copies_count = mysql_num_rows($copies_res);
+			$copies_count = count($copyRows);
 			if($copies_count > 0)
 			{
 				$s = "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n";
 				$s.="<tr><td class=\"colhead\" style=\"padding: 0px; text-align:center;\">".$lang_details['col_type']."</td><td class=\"colhead\" align=\"left\">".$lang_details['col_name']."</td><td class=\"colhead\" align=\"center\">".$lang_details['col_quality']."</td><td class=\"colhead\" align=\"center\"><img class=\"size\" src=\"pic/trans.gif\" alt=\"size\" title=\"".$lang_details['title_size']."\" /></td><td class=\"colhead\" align=\"center\"><img class=\"time\" src=\"pic/trans.gif\" alt=\"time added\" title=\"".$lang_details['title_time_added']."\" /></td><td class=\"colhead\" align=\"center\"><img class=\"seeders\" src=\"pic/trans.gif\" alt=\"seeders\" title=\"".$lang_details['title_seeders']."\" /></td><td class=\"colhead\" align=\"center\"><img class=\"leechers\" src=\"pic/trans.gif\" alt=\"leechers\" title=\"".$lang_details['title_leechers']."\" /></td></tr>\n";
-				while ($copy_row = mysql_fetch_assoc($copies_res))
+				foreach ($copyRows as $copy_row)
 				{
 					$dispname = htmlspecialchars(trim($copy_row["name"]));
 					$count_dispname=strlen($dispname);
@@ -498,8 +499,8 @@ WHERE " . $where_area . " ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE
         }
         tr($lang_details['row_torrent_info'], "<table><tr>" . implode("", $infoTds) . "</tr></table><span id='filelist'></span>",1);
 		tr($lang_details['row_hot_meter'], "<table><tr><td class=\"no_border_wide\"><b>" . $lang_details['text_views']."</b>". $row["views"] . "</td><td class=\"no_border_wide\"><b>" . $lang_details['text_hits']. "</b>" . $row["hits"] . "</td><td class=\"no_border_wide\"><b>" .$lang_details['text_snatched'] . "</b><a href=\"viewsnatches.php?id=".$id."\"><b>" . $row["times_completed"]. $lang_details['text_view_snatches'] . "</td><td class=\"no_border_wide\"><b>" . $lang_details['row_last_seeder']. "</b>" . gettime($row["last_action"]) . "</td></tr></table>",1);
-		$bwres = sql_query("SELECT uploadspeed.name AS upname, downloadspeed.name AS downname, isp.name AS ispname FROM users LEFT JOIN uploadspeed ON users.upload = uploadspeed.id LEFT JOIN downloadspeed ON users.download = downloadspeed.id LEFT JOIN isp ON users.isp = isp.id WHERE users.id=".$row['owner']);
-		$bwrow = mysql_fetch_array($bwres);
+		$bwrows = \Nexus\Database\NexusDB::select("SELECT uploadspeed.name AS upname, downloadspeed.name AS downname, isp.name AS ispname FROM users LEFT JOIN uploadspeed ON users.upload = uploadspeed.id LEFT JOIN downloadspeed ON users.download = downloadspeed.id LEFT JOIN isp ON users.isp = isp.id WHERE users.id = " . (int) $row['owner']);
+		$bwrow = $bwrows[0] ?? [];
 		if (isset($bwrow['upname']) && isset($bwrow['downname']) && $bwrow['upname'] && $bwrow['downname'])
 			tr($lang_details['row_uploader_bandwidth'], "<img class=\"speed_down\" src=\"pic/trans.gif\" alt=\"Downstream Rate\" /> ".$bwrow['downname']."&nbsp;&nbsp;&nbsp;&nbsp;<img class=\"speed_up\" src=\"pic/trans.gif\" alt=\"Upstream Rate\" /> ".$bwrow['upname']."&nbsp;&nbsp;&nbsp;&nbsp;".$bwrow['ispname'],1);
 
@@ -618,17 +619,17 @@ echo "</script>";
         $no_give = "";
         $add_value ="";
 
-        $tempresult = sql_query ("SELECT count( DISTINCT userid ) as count FROM magic WHERE torrentid=".sqlesc($id));
-        $count_user = mysql_fetch_array($tempresult);
+        $countUserRows = \Nexus\Database\NexusDB::select("SELECT count(DISTINCT userid) as count FROM magic WHERE torrentid = " . (int) $id);
+        $count_user = $countUserRows[0] ?? ['count' => 0];
         $count_user_number = $count_user['count'];
 
-        $give_value_sql = sql_query("SELECT userid,value FROM magic WHERE torrentid=".sqlesc($id)." ORDER BY id DESC");
+        $giveValueRows = \Nexus\Database\NexusDB::select("SELECT userid, value FROM magic WHERE torrentid = " . (int) $id . " ORDER BY id DESC");
 
-        $give_value_count = get_row_count("magic", "WHERE torrentid=".sqlesc($id));
-        $give_value_all = mysql_num_rows($give_value_sql);
+        $give_value_count = get_row_count("magic", "WHERE torrentid = " . (int) $id);
+        $give_value_all = count($giveValueRows);
         $sum_value = 0;
         if ($give_value_all) {
-            while($rows_t = mysql_fetch_array($give_value_sql)) {
+            foreach ($giveValueRows as $rows_t) {
                 $give_value_userid = $rows_t["userid"];
                 $sum_value += $rows_t["value"]*1;
                 if ($give_value_userid == $CURUSER['id']) {
@@ -693,11 +694,11 @@ echo "</script>";
 		$thanksby = "";
 		$nothanks = "";
 		$thanks_said = 0;
-		$thanks_sql = sql_query("SELECT userid FROM thanks WHERE torrentid=".sqlesc($torrentid)." ORDER BY id DESC LIMIT 20");
-		$thanksCount = get_row_count("thanks", "WHERE torrentid=".sqlesc($torrentid));
-		$thanks_all = mysql_num_rows($thanks_sql);
+		$thanksRows = \Nexus\Database\NexusDB::select("SELECT userid FROM thanks WHERE torrentid = " . (int) $torrentid . " ORDER BY id DESC LIMIT 20");
+		$thanksCount = get_row_count("thanks", "WHERE torrentid = " . (int) $torrentid);
+		$thanks_all = count($thanksRows);
 		if ($thanks_all) {
-			while($rows_t = mysql_fetch_array($thanks_sql)) {
+			foreach ($thanksRows as $rows_t) {
 				$thanks_userid = $rows_t["userid"];
 				if ($rows_t["userid"] == $CURUSER['id']) {
 					$thanks_said = 1;
@@ -728,7 +729,7 @@ echo "</script>";
 		print("<h1 id=\"top\">".$lang_details['text_comments_for']."<a href=\"details.php?id=".$id."\">" . htmlspecialchars($row["name"]) . "</a></h1>\n");
 	}
 	if (!empty($torrentUpdate)) {
-        sql_query("UPDATE torrents SET " . join(",", $torrentUpdate) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
+        \Nexus\Database\NexusDB::statement("UPDATE torrents SET " . join(",", $torrentUpdate) . " WHERE id = " . (int) $id);
     }
 
 	// -----------------COMMENT SECTION ---------------------//
@@ -740,11 +741,7 @@ if ($CURUSER['showcomment'] != 'no'){
 		print("<h1 align=\"center\" id=\"startcomments\">" .$lang_details['h1_user_comments'] . "</h1>\n");
 		list($pagertop, $pagerbottom, $limit) = pager(10, $count, "details.php?id=$id&cmtpage=1&", array('lastpagedefault' => 1), "page");
 
-		$subres = sql_query("SELECT id, text, user, added, editedby, editdate FROM comments WHERE torrent = $id ORDER BY id $limit") or sqlerr(__FILE__, __LINE__);
-		$allrows = array();
-		while ($subrow = mysql_fetch_array($subres)) {
-			$allrows[] = $subrow;
-		}
+		$allrows = \Nexus\Database\NexusDB::select("SELECT id, text, user, added, editedby, editdate FROM comments WHERE torrent = " . (int) $id . " ORDER BY id $limit");
 		print($pagertop);
 		commenttable($allrows,"torrent",$id);
 		print($pagerbottom);
