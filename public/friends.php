@@ -47,11 +47,17 @@ if ($action == 'add')
 	else
 	stderr($lang_friends['std_error'], $lang_friends['std_unknown_type']."$type");
 
-	$r = sql_query("SELECT id FROM $table_is WHERE userid=$userid AND $field_is=$targetid") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($r) == 1)
+	$exists = \Nexus\Database\NexusDB::table($table_is)
+		->where('userid', (int) $userid)
+		->where($field_is, (int) $targetid)
+		->exists();
+	if ($exists)
 	stderr($lang_friends['std_error'], $lang_friends['std_user_id'].$targetid.$lang_friends['std_already_in'].$table_is.$lang_friends['std_list']);
 
-	sql_query("INSERT INTO $table_is VALUES (0,$userid, $targetid)") or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::insert($table_is, [
+		'userid' => (int) $userid,
+		$field_is => (int) $targetid,
+	]);
 
 	purge_neighbors_cache();
 
@@ -80,15 +86,21 @@ if ($action == 'delete')
 
 	if ($type == 'friend')
 	{
-		sql_query("DELETE FROM friends WHERE userid=$userid AND friendid=$targetid") or sqlerr(__FILE__, __LINE__);
-		if (mysql_affected_rows() == 0)
+		$affected = \Nexus\Database\NexusDB::table('friends')
+			->where('userid', (int) $userid)
+			->where('friendid', (int) $targetid)
+			->delete();
+		if ($affected == 0)
 		stderr($lang_friends['std_error'], $lang_friends['std_no_friend_found']."$targetid");
 		$frag = "friends";
 	}
 	elseif ($type == 'block')
 	{
-		sql_query("DELETE FROM blocks WHERE userid=$userid AND blockid=$targetid") or sqlerr(__FILE__, __LINE__);
-		if (mysql_affected_rows() == 0)
+		$affected = \Nexus\Database\NexusDB::table('blocks')
+			->where('userid', (int) $userid)
+			->where('blockid', (int) $targetid)
+			->delete();
+		if ($affected == 0)
 		stderr($lang_friends['std_error'], $lang_friends['std_no_block_found']."$targetid");
 		$frag = "blocks";
 	} else {
@@ -119,11 +131,11 @@ print("<table width=737 border=1 cellspacing=0 cellpadding=5><tr class=tablea><t
 $i = 0;
 
 unset($friend_id_arr);
-$res = sql_query("SELECT f.friendid as id, u.last_access, u.class, u.avatar, u.title FROM friends AS f LEFT JOIN users as u ON f.friendid = u.id WHERE userid=$userid ORDER BY id") or sqlerr(__FILE__, __LINE__);
-if(mysql_num_rows($res) == 0)
+$res = \Nexus\Database\NexusDB::select("SELECT f.friendid as id, u.last_access, u.class, u.avatar, u.title FROM friends AS f LEFT JOIN users as u ON f.friendid = u.id WHERE userid=" . (int) $userid . " ORDER BY id");
+if (count($res) == 0)
 $friends = $lang_friends['text_friends_empty'];
 else
-while ($friend = mysql_fetch_array($res))
+foreach ($res as $friend)
 {
 	$friend_id_arr[] = $friend["id"];
 	$title = $friend["title"];
@@ -323,14 +335,14 @@ print("</td></tr></table></table><br />\n");
 
 
 
-$res = sql_query("SELECT blockid as id FROM blocks WHERE userid=$userid ORDER BY id") or sqlerr(__FILE__, __LINE__);
-if(mysql_num_rows($res) == 0)
+$res = \Nexus\Database\NexusDB::select("SELECT blockid as id FROM blocks WHERE userid=" . (int) $userid . " ORDER BY id");
+if (count($res) == 0)
 $blocks = $lang_friends['text_blocklist_empty'];
 else
 {
 	$i = 0;
 	$blocks = "<table width=100% cellspacing=0 cellpadding=0>";
-	while ($block = mysql_fetch_array($res))
+	foreach ($res as $block)
 	{
 		if ($i % 6 == 0)
 		$blocks .= "<tr>";
