@@ -91,22 +91,20 @@ if (isset($_GET['new_offer']) && $_GET["new_offer"]){
 	$descr = $pic;
 	$descr .= $descrmain;
 
-	$res = sql_query("SELECT name FROM offers WHERE name =".sqlesc($_POST['name'])) or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_assoc($res);
-	if (!$arr['name']){
+	$existRows = \Nexus\Database\NexusDB::select("SELECT name FROM offers WHERE name = " . sqlesc($_POST['name']));
+	$arr = $existRows[0] ?? [];
+	if (empty($arr['name'])){
 		//===add karma //=== uncomment if you use the mod
 		//sql_query("UPDATE users SET seedbonus = seedbonus+10.0 WHERE id = $CURUSER['id']") or sqlerr(__FILE__, __LINE__);
 		//===end
 
-		$ret = sql_query("INSERT INTO offers (userid, name, descr, category, added) VALUES (" .
-		implode(",", array_map("sqlesc", array($CURUSER["id"], $name, $descr, intval($_POST["type"] ?? 0)))) .
-		", '" . date("Y-m-d H:i:s") . "')");
-		if (!$ret) {
-			if (mysql_errno() == 1062)
-			bark("!!!");
-			bark("mysql puked: ".mysql_error());
-		}
-		$id = mysql_insert_id();
+		$id = (int) \Nexus\Database\NexusDB::insert('offers', [
+			'userid' => (int) $CURUSER["id"],
+			'name' => $name,
+			'descr' => $descr,
+			'category' => intval($_POST["type"] ?? 0),
+			'added' => date("Y-m-d H:i:s"),
+		]);
 
 		// add new offer message to staffmessage
 		\App\Models\StaffMessage::query()->insert([
@@ -145,8 +143,8 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 		die();
 		//stderr("Error", "I smell a rat!");
 
-	$res = sql_query("SELECT * FROM offers WHERE id = $id") or sqlerr(__FILE__,__LINE__);
-	$num = mysql_fetch_array($res);
+	$detailRows = \Nexus\Database\NexusDB::select("SELECT * FROM offers WHERE id = " . (int) $id);
+	$num = $detailRows[0] ?? null;
     if (!$num) {
         bark($lang_offers['text_nothing_found']);
     }
@@ -175,12 +173,10 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	"<input class=\"btn\" type=\"submit\" value=\"".$lang_offers['submit_allow']."\" />&nbsp;&nbsp;</form></td><td class=\"embedded\"><form method=\"post\" action=\"?id=".$id."&amp;finish_offer=1\">".
 	"<input type=\"hidden\" value=\"".$id."\" name=\"finish\" /><input class=\"btn\" type=\"submit\" value=\"".$lang_offers['submit_let_votes_decide']."\" /></form></td></tr></table>", 1);
 
-	$zres = sql_query("SELECT COUNT(*) from offervotes where vote='yeah' and offerid=$id");
-	$arr = mysql_fetch_row($zres);
-	$za = $arr[0];
-	$pres = sql_query("SELECT COUNT(*) from offervotes where vote='against' and offerid=$id");
-	$arr2 = mysql_fetch_row($pres);
-	$protiv = $arr2[0];
+	$zres = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS cnt from offervotes where vote='yeah' and offerid = " . (int) $id);
+	$za = (int) ($zres[0]['cnt'] ?? 0);
+	$pres = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS cnt from offervotes where vote='against' and offerid = " . (int) $id);
+	$protiv = (int) ($pres[0]['cnt'] ?? 0);
 	//=== in the following section, there is a line to report comment... either remove the link or change it to work with your report script :)
 
 	//if pending
@@ -211,9 +207,8 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	print("</table>");
 	// -----------------COMMENT SECTION ---------------------//
 	$commentbar = "<p align=\"center\"><a class=\"index\" href=\"comment.php?action=add&amp;pid=".$id."&amp;type=offer\">".$lang_offers['text_add_comment']."</a></p>\n";
-	$subres = sql_query("SELECT COUNT(*) FROM comments WHERE offer = $id");
-	$subrow = mysql_fetch_array($subres);
-	$count = $subrow[0];
+	$subres = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS cnt FROM comments WHERE offer = " . (int) $id);
+	$count = (int) ($subres[0]['cnt'] ?? 0);
 	if (!$count) {
 		print("<h1 id=\"startcomments\" align=\"center\">".$lang_offers['text_no_comments']."</h1>\n");
 	}
@@ -221,10 +216,7 @@ if (isset($_GET['off_details']) && $_GET["off_details"]){
 	else {
 		list($pagertop, $pagerbottom, $limit) = pager(10, $count, "offers.php?id=$id&off_details=1&", array('lastpagedefault' => 1));
 
-		$subres = sql_query("SELECT id, text, user, added, editedby, editdate FROM comments  WHERE offer = " . sqlesc($id) . " ORDER BY id $limit") or sqlerr(__FILE__, __LINE__);
-		$allrows = array();
-		while ($subrow = mysql_fetch_array($subres))
-		$allrows[] = $subrow;
+		$allrows = \Nexus\Database\NexusDB::select("SELECT id, text, user, added, editedby, editdate FROM comments  WHERE offer = " . (int) $id . " ORDER BY id $limit");
 
 		//end_frame();
 		//print($commentbar);
@@ -260,9 +252,9 @@ if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 	if(!is_valid_id($offid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$res = sql_query("SELECT users.username, offers.userid, offers.name FROM offers inner join users on offers.userid = users.id where offers.id = $offid") or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_assoc($res);
-    $locale = get_user_locale($arr["userid"]);
+	$allowRows = \Nexus\Database\NexusDB::select("SELECT users.username, offers.userid, offers.name FROM offers inner join users on offers.userid = users.id where offers.id = " . (int) $offid);
+	$arr = $allowRows[0] ?? [];
+    $locale = get_user_locale($arr["userid"] ?? 0);
 	if ($offeruptimeout_main){
 		$timeouthour = floor($offeruptimeout_main/3600);
 		$timeoutnote = nexus_trans("offer.msg_you_must_upload_in", [], $locale).$timeouthour.nexus_trans("offer.msg_hours_otherwise", [], $locale);
@@ -282,7 +274,7 @@ if (isset($_GET["allow_offer"]) && $_GET["allow_offer"]) {
 		'added' => $allowedtime,
 	]);
 
-	sql_query ("UPDATE offers SET allowed = 'allowed', allowedtime = '".$allowedtime."' WHERE id = $offid") or sqlerr(__FILE__,__LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE offers SET allowed = 'allowed', allowedtime = " . sqlesc($allowedtime) . " WHERE id = " . (int) $offid);
 
 	write_log("{$CURUSER['username']} allowed offer {$arr['name']}",'normal');
 	header("Location: " . get_protocol_prefix() . "$BASEURL/offers.php?id=$offid&off_details=1");
@@ -303,16 +295,14 @@ if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 	if(!is_valid_id($offid))
 		stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$res = sql_query("SELECT users.username, offers.userid, offers.name FROM offers inner join users on offers.userid = users.id where offers.id = $offid") or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_assoc($res);
-    $locale = get_user_locale($arr["userid"]);
+	$finishRows = \Nexus\Database\NexusDB::select("SELECT users.username, offers.userid, offers.name FROM offers inner join users on offers.userid = users.id where offers.id = " . (int) $offid);
+	$arr = $finishRows[0] ?? [];
+    $locale = get_user_locale($arr["userid"] ?? 0);
 
-	$voteresyes = sql_query("SELECT COUNT(*) from offervotes where vote='yeah' and offerid=$offid");
-	$arryes = mysql_fetch_row($voteresyes);
-	$yes = $arryes[0];
-	$voteresno = sql_query("SELECT COUNT(*) from offervotes where vote='against' and offerid=$offid");
-	$arrno = mysql_fetch_row($voteresno);
-	$no = $arrno[0];
+	$voteresyes = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS cnt from offervotes where vote='yeah' and offerid = " . (int) $offid);
+	$yes = (int) ($voteresyes[0]['cnt'] ?? 0);
+	$voteresno = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS cnt from offervotes where vote='against' and offerid = " . (int) $offid);
+	$no = (int) ($voteresno[0]['cnt'] ?? 0);
 
 	if($yes == '0' && $no == '0')
 	stderr($lang_offers['std_sorry'], $lang_offers['std_no_votes_yet']."<a  href=offers.php?id=$offid&off_details=1>".$lang_offers['std_back_to_offer_detail']."</a>",false);
@@ -324,11 +314,11 @@ if (isset($_GET["finish_offer"]) && $_GET["finish_offer"]) {
 		}
 		else $timeoutnote = "";
 		$msg = nexus_trans("offer.msg_offer_voted_on", [], $locale)."[b][url=" . get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b].". nexus_trans("offer.msg_find_offer_option", [], $locale).$timeoutnote;
-		sql_query ("UPDATE offers SET allowed = 'allowed',allowedtime ='".$finishvotetime."' WHERE id = $offid") or sqlerr(__FILE__,__LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE offers SET allowed = 'allowed', allowedtime = " . sqlesc($finishvotetime) . " WHERE id = " . (int) $offid);
 	}
 	else if(($no - $yes)>=$minoffervotes){
 		$msg = nexus_trans("offer.msg_offer_voted_off", [], $locale)."[b][url=". get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b].".nexus_trans("offer.msg_offer_deleted", [], $locale) ;
-		sql_query ("UPDATE offers SET allowed = 'denied' WHERE id = $offid") or sqlerr(__FILE__,__LINE__);
+		\Nexus\Database\NexusDB::statement("UPDATE offers SET allowed = 'denied' WHERE id = " . (int) $offid);
 	}
 			//===use this line if you DO HAVE subject in your PM system
 	$subject = nexus_trans("offer.msg_your_offer", [], $locale).$arr['name'].nexus_trans("offer.msg_voted_on", [], $locale);
@@ -360,8 +350,8 @@ if (isset($_GET["edit_offer"]) && $_GET["edit_offer"]) {
 
 	$id = intval($_GET["id"] ?? 0);
 
-	$res = sql_query("SELECT * FROM offers WHERE id = $id") or sqlerr(__FILE__, __LINE__);
-	$num = mysql_fetch_array($res);
+	$editRows = \Nexus\Database\NexusDB::select("SELECT * FROM offers WHERE id = " . (int) $id);
+	$num = $editRows[0] ?? [];
 
 	$timezone = $num["added"];
 
@@ -406,8 +396,8 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 
 	$id = intval($_GET["id"] ?? 0);
 
-	$res = sql_query("SELECT userid FROM offers WHERE id = $id") or sqlerr(__FILE__, __LINE__);
-	$num = mysql_fetch_array($res);
+	$takeRows = \Nexus\Database\NexusDB::select("SELECT userid FROM offers WHERE id = " . (int) $id);
+	$num = $takeRows[0] ?? [];
 
 	if ($CURUSER['id'] != $num['userid'] && !user_can('offermanage'))
 	stderr($lang_offers['std_error'], $lang_offers['std_access_denied']);
@@ -434,7 +424,7 @@ if (isset($_GET["take_off_edit"]) && $_GET["take_off_edit"]){
 	$descr = sqlesc($descr);
 	$cat = sqlesc($cat);
 
-	sql_query("UPDATE offers SET category=$cat, name=$name, descr=$descr where id=".sqlesc($id));
+	\Nexus\Database\NexusDB::statement("UPDATE offers SET category = $cat, name = $name, descr = $descr where id = " . (int) $id);
 
 	//header("Location: offers.php?id=$id&off_details=1");
 }
@@ -449,9 +439,8 @@ if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 
 	$offerid = htmlspecialchars(intval($_GET['id'] ?? 0));
 
-	$res2 = sql_query("SELECT COUNT(*) FROM offervotes WHERE offerid = ".sqlesc($offerid)) or sqlerr(__FILE__, __LINE__);
-	$row = mysql_fetch_array($res2);
-	$count = $row[0];
+	$res2 = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS cnt FROM offervotes WHERE offerid = " . (int) $offerid);
+	$count = (int) ($res2[0]['cnt'] ?? 0);
 
 	$offername = get_single_value("offers","name","WHERE id=".sqlesc($offerid));
 	stdhead($lang_offers['head_offer_voters']." - \"".$offername."\"");
@@ -460,16 +449,16 @@ if (isset($_GET["offer_vote"]) && $_GET["offer_vote"]){
 
 	$perpage = 25;
 	list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"] ."?id=".$offerid."&offer_vote=1&");
-	$res = sql_query("SELECT * FROM offervotes WHERE offerid=".sqlesc($offerid)." ".$limit) or sqlerr(__FILE__, __LINE__);
+	$voteListRows = \Nexus\Database\NexusDB::select("SELECT * FROM offervotes WHERE offerid = " . (int) $offerid . " " . $limit);
 
-	if (mysql_num_rows($res) == 0)
+	if (count($voteListRows) == 0)
 	print("<p align=center><b>".$lang_offers['std_no_votes_yet']."</b></p>\n");
 	else
 	{
 		echo $pagertop;
 		print("<table border=1 cellspacing=0 cellpadding=5><tr><td class=colhead>".$lang_offers['col_user']."</td><td class=colhead align=left>".$lang_offers['col_vote']."</td>\n");
 
-		while ($arr = mysql_fetch_assoc($res))
+		foreach ($voteListRows as $arr)
 		{
 			if ($arr['vote'] == 'yeah')
 				$vote = "<b><font color=green>".$lang_offers['text_for']."</font></b>";
@@ -497,8 +486,8 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 	if ($vote =='yeah' || $vote =='against')
 	{
 		$userid = intval($CURUSER["id"] ?? 0);
-		$res = sql_query("SELECT * FROM offervotes WHERE offerid=".sqlesc($offerid)." AND userid=".sqlesc($userid)) or sqlerr(__FILE__,__LINE__);
-		$arr = mysql_fetch_assoc($res);
+		$voteCheckRows = \Nexus\Database\NexusDB::select("SELECT * FROM offervotes WHERE offerid = " . (int) $offerid . " AND userid = " . (int) $userid);
+		$arr = $voteCheckRows[0] ?? null;
 		$voted = $arr;
 		$offer_userid = get_single_value("offers", "userid", "WHERE id=".sqlesc($offerid));
 		if ($offer_userid == $CURUSER['id'])
@@ -511,16 +500,16 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 		}
 		else
 		{
-			$res = sql_query("SELECT users.username, offers.userid, offers.name FROM offers LEFT JOIN users ON offers.userid = users.id WHERE offers.id = ".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
-			$arr = mysql_fetch_assoc($res);
+			$voteOfferRows = \Nexus\Database\NexusDB::select("SELECT users.username, offers.userid, offers.name FROM offers LEFT JOIN users ON offers.userid = users.id WHERE offers.id = " . (int) $offerid);
+			$arr = $voteOfferRows[0] ?? null;
             if (!$arr) {
                 bark($lang_offers['text_nothing_found']);
             }
-            sql_query("UPDATE offers SET $vote = $vote + 1 WHERE id=".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
+            \Nexus\Database\NexusDB::statement("UPDATE offers SET $vote = $vote + 1 WHERE id = " . (int) $offerid);
             $locale = get_user_locale($arr['userid']);
 
-			$rs = sql_query("SELECT yeah, against, allowed FROM offers WHERE id=".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
-			$ya_arr = mysql_fetch_assoc($rs);
+			$yaRows = \Nexus\Database\NexusDB::select("SELECT yeah, against, allowed FROM offers WHERE id = " . (int) $offerid);
+			$ya_arr = $yaRows[0] ?? [];
 			$yeah = $ya_arr["yeah"];
 			$against = $ya_arr["against"];
 			$finishtime = date("Y-m-d H:i:s");
@@ -532,7 +521,7 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 					$timeoutnote = nexus_trans("offer.msg_you_must_upload_in", [], $locale).$timeouthour.nexus_trans("offer.msg_hours_otherwise", [], $locale);
 				}
 				else $timeoutnote = "";
-				sql_query("UPDATE offers SET allowed='allowed', allowedtime=".sqlesc($finishtime)." WHERE id=".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
+				\Nexus\Database\NexusDB::statement("UPDATE offers SET allowed = 'allowed', allowedtime = " . sqlesc($finishtime) . " WHERE id = " . (int) $offerid);
 				$msg = nexus_trans("offer.msg_offer_voted_on", [], $locale)."[b][url=". get_protocol_prefix() . $BASEURL."/offers.php?id=$offerid&off_details=1]" . $arr['name'] . "[/url][/b].". nexus_trans("offer.msg_find_offer_option", [], $locale).$timeoutnote;
 				$subject =  nexus_trans("offer.msg_your_offer_allowed", [], $locale);
 
@@ -549,7 +538,7 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 			//denied and send offer voted off message
 			if(($against-$yeah)>=$minoffervotes && $ya_arr['allowed'] != "denied")
 			{
-				sql_query("UPDATE offers SET allowed='denied' WHERE id=".sqlesc($offerid)) or sqlerr(__FILE__,__LINE__);
+				\Nexus\Database\NexusDB::statement("UPDATE offers SET allowed = 'denied' WHERE id = " . (int) $offerid);
 				$msg = nexus_trans("offer.msg_offer_voted_off", [], $locale)."[b][url=" . get_protocol_prefix() . $BASEURL."/offers.php?id=$offid&off_details=1]" . $arr['name'] . "[/url][/b].".nexus_trans("offer.msg_offer_deleted", [], $locale) ;
 				$subject = nexus_trans("offer.msg_offer_deleted", [], $locale);
 
@@ -567,7 +556,11 @@ if (isset($_GET["vote"]) && $_GET["vote"]){
 			}
 
 
-			sql_query("INSERT INTO offervotes (offerid, userid, vote) VALUES($offerid, $userid, ".sqlesc($vote).")") or sqlerr(__FILE__,__LINE__);
+			\Nexus\Database\NexusDB::insert('offervotes', [
+				'offerid' => (int) $offerid,
+				'userid' => (int) $userid,
+				'vote' => $vote,
+			]);
 			KPS("+",$offervote_bonus,$CURUSER["id"]);
 			stdhead($lang_offers['head_vote_for_offer']);
 			print("<h1 align=center>".$lang_offers['std_vote_accepted']."</h1>");
@@ -594,8 +587,8 @@ if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 	if (!is_valid_id($userid))
 	stderr($lang_offers['std_error'], $lang_offers['std_smell_rat']);
 
-	$res = sql_query("SELECT * FROM offers WHERE id = $offer") or sqlerr(__FILE__, __LINE__);
-	$num = mysql_fetch_array($res);
+	$delRows = \Nexus\Database\NexusDB::select("SELECT * FROM offers WHERE id = " . (int) $offer);
+	$num = $delRows[0] ?? [];
 
 	$name = $num["name"];
 
@@ -617,9 +610,9 @@ if (isset($_GET["del_offer"]) && $_GET["del_offer"]){
 	elseif ($sure == 1)
 	{
 		$reason = $_POST["reason"];
-		sql_query("DELETE FROM offers WHERE id=$offer");
-		sql_query("DELETE FROM offervotes WHERE offerid=$offer");
-		sql_query("DELETE FROM comments WHERE offer=$offer");
+		\Nexus\Database\NexusDB::statement("DELETE FROM offers WHERE id = " . (int) $offer);
+		\Nexus\Database\NexusDB::statement("DELETE FROM offervotes WHERE offerid = " . (int) $offer);
+		\Nexus\Database\NexusDB::statement("DELETE FROM comments WHERE offer = " . (int) $offer);
 
 		//===add karma	//=== use this if you use the karma mod
 		//sql_query("UPDATE users SET seedbonus = seedbonus-10.0 WHERE id = $num['userid']") or sqlerr(__FILE__, __LINE__);
@@ -739,9 +732,8 @@ $categ = '';
 else
 $categ = "WHERE offers.category = " . $categ;
 
-$res = sql_query("SELECT count(offers.id) FROM offers inner join categories on offers.category = categories.id inner join users on offers.userid = users.id  $categ $search") or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_array($res);
-$count = $row[0];
+$countRows = \Nexus\Database\NexusDB::select("SELECT count(offers.id) AS cnt FROM offers inner join categories on offers.category = categories.id inner join users on offers.userid = users.id  $categ $search");
+$count = (int) ($countRows[0]['cnt'] ?? 0);
 
 $perpage = 25;
 
@@ -751,8 +743,8 @@ list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SE
 if($sort == "")
 $sort =  "ORDER BY added desc ";
 
-$res = sql_query("SELECT offers.id, offers.userid, offers.name, offers.added, offers.allowedtime, offers.comments, offers.yeah, offers.against, offers.category as cat_id, offers.allowed, categories.image, categories.name as cat FROM offers inner join categories on offers.category = categories.id $categ $search $sort $limit") or sqlerr(__FILE__,__LINE__);
-$num = mysql_num_rows($res);
+$offerRows = \Nexus\Database\NexusDB::select("SELECT offers.id, offers.userid, offers.name, offers.added, offers.allowedtime, offers.comments, offers.yeah, offers.against, offers.category as cat_id, offers.allowed, categories.image, categories.name as cat FROM offers inner join categories on offers.category = categories.id $categ $search $sort $limit");
+$num = count($offerRows);
 
 stdhead($lang_offers['head_offers']);
 begin_main_frame();
@@ -801,9 +793,9 @@ if ($offervotetimeout_main > 0 && $offeruptimeout_main > 0)
 	print("<td class=\"colhead\">".$lang_offers['col_timeout']."</td>");
 print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 (user_can('offermanage') ? "<td class=\"colhead\">".$lang_offers['col_act']."</td>" : "")."</tr>\n");
-	for ($i = 0; $i < $num; ++$i)
+	$i = 0;
+	foreach ($offerRows as $arr)
 	{
-	$arr = mysql_fetch_assoc($res);
 
 
 	$addedby = get_username($arr['userid']);
@@ -813,8 +805,8 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 	else
 	{
 		if (!$lastcom = $Cache->get_value('offer_'.$arr['id'].'_last_comment_content')){
-			$res2 = sql_query("SELECT user, added, text FROM comments WHERE offer = {$arr['id']} ORDER BY added DESC LIMIT 1");
-			$lastcom = mysql_fetch_array($res2);
+			$lastcomRows = \Nexus\Database\NexusDB::select("SELECT user, added, text FROM comments WHERE offer = " . (int) $arr['id'] . " ORDER BY added DESC LIMIT 1");
+			$lastcom = $lastcomRows[0] ?? [];
 			$Cache->cache_value('offer_'.$arr['id'].'_last_comment_content', $lastcom, 1855);
 		}
 		$timestamp = strtotime($lastcom["added"]);
@@ -893,6 +885,7 @@ print("<td class=\"colhead\">".$lang_offers['col_offered_by']."</td>".
 		print("<td class=\"rowfollow nowrap\">".$timeout."</td>");
 	}
 	print("<td class=\"rowfollow\">".$addedby."</td>".(user_can('offermanage') ? "<td class=\"rowfollow\"><a href=\"?id=".$arr['id']."&amp;del_offer=1\"><img class=\"staff_delete\" src=\"pic/trans.gif\" alt=\"D\" title=\"".$lang_offers['title_delete']."\" /></a><br /><a href=\"?id=".$arr['id']."&amp;edit_offer=1\"><img class=\"staff_edit\" src=\"pic/trans.gif\" alt=\"E\" title=\"".$lang_offers['title_edit']."\" /></a></td>" : "")."</tr>");
+	$i++;
 	}
 	print("</table>\n");
 	echo $pagerbottom;

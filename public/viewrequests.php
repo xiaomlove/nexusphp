@@ -63,23 +63,23 @@ else {
             if (!empty($_POST['query'])) $limit = $limit . " and (request like " . sqlesc("%" . $_POST['query'] . "%") . " or descr like " . sqlesc("%" . $_POST['query'] . "%") . ")";
 
 
-            $rows = sql_query("SELECT  requests.*  FROM requests WHERE " . $limit . " ORDER BY id DESC") or sqlerr(__FILE__, __LINE__);
-            list($pagertop, $pagerbottom, $limit2) = pager(20, mysql_num_rows($rows), "?$finishedlimit");
+            $rows = \Nexus\Database\NexusDB::select("SELECT  requests.*  FROM requests WHERE " . $limit . " ORDER BY id DESC");
+            list($pagertop, $pagerbottom, $limit2) = pager(20, count($rows), "?$finishedlimit");
             //if (mysql_num_rows($rows) == 0) stderr( "没有求种" , "没有符合条件的求种项目，<a href=viewrequests.php?action=new>点击这里增加新求种</a>",0);
             //else
             {
                 stdhead($lang_viewrequests['page_title']);
 
-                $rows = sql_query("SELECT requests.* ,(SELECT count(DISTINCT torrentid) FROM resreq  where reqid=requests.id ) as Totalreq FROM requests WHERE " . $limit . " ORDER BY $limitorder id DESC $limit2") or sqlerr(__FILE__, __LINE__);
+                $rows = \Nexus\Database\NexusDB::select("SELECT requests.* ,(SELECT count(DISTINCT torrentid) FROM resreq  where reqid=requests.id ) as Totalreq FROM requests WHERE " . $limit . " ORDER BY $limitorder id DESC $limit2");
                 print("<h1 align=center>{$lang_viewrequests['page_title']}</h1>");
                 print("<br><b><a href='viewrequests.php?action=new'>{$lang_viewrequests['add_request']}</a> | <a href='viewrequests.php?finished=all'>{$lang_viewrequests['view_request_all']}</a> | <a href='viewrequests.php?finished=yes'>{$lang_viewrequests['view_request_resolved']}</a> | <a href='viewrequests.php?finished=no'>{$lang_viewrequests['view_request_unresolved']}</a> | <a href='viewrequests.php?finished=ing'>{$lang_viewrequests['view_request_resolving']}</a> | <a href='viewrequests.php?finished=my' " . get_requestcount() . ">{$lang_viewrequests['view_request_my']}</a></b><p>\n");
                 print("<table width=98% border=1 cellspacing=0 cellpadding=5 style=border-collapse:collapse >\n");
 
-                if (mysql_num_rows($rows) == 0) {
+                if (count($rows) == 0) {
                     print("<tr><td class=colhead align=center>Nothing</td></tr>\n");
                 } else {
                     print("<tr><td class=colhead align=left>{$lang_viewrequests['thead_name']}</td><td class=colhead align=center>{$lang_viewrequests['thead_price_newest']}</td><td class=colhead align=center>{$lang_viewrequests['thead_price_original']}</td><td class=colhead  align=center>{$lang_viewrequests['thead_comment_count']}</td><td class=colhead  align=center>{$lang_viewrequests['thead_on_request_count']}</td><td class=colhead align=center>{$lang_viewrequests['thead_request_user']}</td><td class=colhead align=center>{$lang_viewrequests['thead_created_at']}</td><td class=colhead align=center>{$lang_viewrequests['thead_status']}</td></tr>\n");
-                    while ($row = mysql_fetch_array($rows)) {
+                    foreach ($rows as $row) {
                         print("<tr>
                                 <td align=left class='rowfollow'><a href='viewrequests.php?action=view&id=" . $row["id"] . "'><b>" . $row["request"] . "</b></a></td>
                                 <td align=center class='rowfollow nowrap'><font color=#ff0000><b>" . $row['amount'] . "</b></font></td>
@@ -115,31 +115,32 @@ else {
         {
             if (is_numeric($_GET["id"])) {
                 $id = $_GET["id"];
-                $res = sql_query("SELECT * FROM requests WHERE id ='" . $_GET["id"] . "'") or sqlerr(__FILE__, __LINE__);
-                if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], $lang_functions['std_target_not_exists']);
-                else $arr = mysql_fetch_assoc($res);
+                $reqRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_GET["id"]);
+                if (count($reqRows) == 0) stderr($lang_functions['std_error'], $lang_functions['std_target_not_exists']);
+                else $arr = $reqRows[0];
                 stdhead($lang_viewrequests['page_title']);
                 print("<h1 align=center id=top>{$lang_viewrequests['request']}-" . htmlspecialchars($arr["request"]) . "</h1>\n");
                 print("<table width=100% cellspacing=0 cellpadding=5>\n");
-                $res = sql_query("SELECT * FROM resreq WHERE reqid ='" . $_GET["id"] . "'" . $limit) or sqlerr(__FILE__, __LINE__);
+                $resRows = \Nexus\Database\NexusDB::select("SELECT * FROM resreq WHERE reqid = " . (int) $_GET["id"] . $limit);
                 tr($lang_viewrequests['basic_info'], get_username($arr['userid']) . $lang_viewrequests['created_at'] . gettime($arr["added"], true, false) . "\n", 1);
                 tr($lang_viewrequests['reward'], $lang_viewrequests['newest_bidding'] . $arr['amount'] . "     {$lang_viewrequests['original_bidding']}" . $arr["ori_amount"] . "\n", 1);
                 tr($lang_functions['std_action'], "<a href='report.php?reportrequestid=" . $id . "' >{$lang_functions['std_report']}</a>" .
                     (($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) && $arr["finish"] == "no" ? " | <a href='viewrequests.php?action=edit&id=" . $id . "' >{$lang_functions['title_edit']}</a>" : "") . "\n" .
                     ($arr['userid'] == $CURUSER['id'] || $arr["finish"] == "yes" ? "" : " | <a href='viewrequests.php?action=res&id=" . $id . "' >{$lang_viewrequests['on_request']}</a>\n") .
-                    ((get_user_class() >= UC_UPLOADER || $arr['userid'] == $CURUSER['id']) && $arr['finish'] == "no" ? " | <a href='viewrequests.php?action=delete&id=" . $id . "' " . (mysql_num_rows($res) ? ">{$lang_functions['title_delete']}" : "title='{$lang_viewrequests['recycle_title']}'>{$lang_viewrequests['recycle']}") . "</a>" : "") . "\n"
+                    ((get_user_class() >= UC_UPLOADER || $arr['userid'] == $CURUSER['id']) && $arr['finish'] == "no" ? " | <a href='viewrequests.php?action=delete&id=" . $id . "' " . (count($resRows) ? ">{$lang_functions['title_delete']}" : "title='{$lang_viewrequests['recycle_title']}'>{$lang_viewrequests['recycle']}") . "</a>" : "") . "\n"
                     , 1);
                 if ($arr["finish"] == "no") tr($lang_viewrequests['add_reward'], "<form action=viewrequests.php method=post> <input type=hidden name=action value=addamount><input type=hidden name=reqid value=" . $arr["id"] . "><input size=6 name=amount value=1000 ><input type=submit value={$lang_functions['submit_submit']} > {$lang_viewrequests['add_reward_desc']}</form>", 1);
                 tr($lang_functions['std_desc'], format_comment(unesc($arr["descr"])), 1);
                 $limit = ($arr['finish'] == "no" ? "" : " AND chosen = 'yes' ");
                 $ress = "";
-                if (mysql_num_rows($res) == 0) $ress = $lang_viewrequests['no_request_yet'];
+                if (count($resRows) == 0) $ress = $lang_viewrequests['no_request_yet'];
                 else {
                     if ($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER)
                         $ress .= "<form action=viewrequests.php method=post>\n<input type=hidden name=action value=confirm > <input type=hidden name=id value=" . $id . " >\n";
-                    while ($row = mysql_fetch_array($res)) {
-                        $each = mysql_fetch_assoc(sql_query("SELECT * FROM torrents WHERE id = '" . $row["torrentid"] . "'"));
-                        if (mysql_num_rows(sql_query("SELECT * FROM torrents WHERE id = '" . $row["torrentid"] . "'")) == 1)
+                    foreach ($resRows as $row) {
+                        $torRows = \Nexus\Database\NexusDB::select("SELECT * FROM torrents WHERE id = " . (int) $row["torrentid"]);
+                        $each = $torRows[0] ?? [];
+                        if (count($torRows) == 1)
                             $ress .= (($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) && $arr['finish'] == "no" ? "<input type=checkbox name=torrentid[] value=" . $each["id"] . ">" : "") . "<a href='details.php?id=" . $each["id"] . "&hit=1' >" . $each["name"] . "</a> " . ($arr['finish'] == "no" ? "" : "by " . get_username($each['owner'])) . "<br/>\n";
                     }
                     $ress .= "";
@@ -158,12 +159,7 @@ else {
                     print("<h1 align=\"center\" id=\"startcomments\">{$lang_functions['std_comment']}</h1>\n");
                     list($pagertop, $pagerbottom, $limit) = pager(10, $count, "viewrequests.php?action=view&id=" . $_GET["id"] . "&", array('lastpagedefault' => 1), "page");
 
-                    $subres = sql_query("SELECT * FROM comments WHERE request=" . sqlesc($_GET["id"]) . " ORDER BY id $limit") or sqlerr(__FILE__, __LINE__);
-
-                    $allrows = array();
-                    while ($subrow = mysql_fetch_array($subres)) {
-                        $allrows[] = $subrow;
-                    }
+                    $allrows = \Nexus\Database\NexusDB::select("SELECT * FROM comments WHERE request = " . (int) $_GET["id"] . " ORDER BY id $limit");
                     print($pagertop);
                     commenttable($allrows, 'request', $_GET["id"]);
                     print($pagerbottom);
@@ -193,9 +189,9 @@ else {
         case "edit":
         {
             if (!is_numeric($_GET["id"])) stderr($lang_functions['std_error'], $lang_functions['std_target_not_exists']);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . $_GET["id"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], $lang_functions['std_target_not_exists']);
-            $arr = mysql_fetch_assoc($res);
+            $editRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_GET["id"]);
+            if (count($editRows) == 0) stderr($lang_functions['std_error'], $lang_functions['std_target_not_exists']);
+            $arr = $editRows[0];
             if ($arr["finish"] == "yes") stderr($lang_functions['std_error'], $lang_viewrequests['request_already_resolved']);
             if ($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) {
                 stdhead($lang_functions['title_edit'] . $lang_viewrequests['request']);
@@ -299,10 +295,16 @@ else {
             $amount += 100;
             if ($amount + 100 > $CURUSER['seedbonus']) stderr($lang_functions['std_error'], "{$lang_viewrequests['bouns_not_enough']}<a href='viewrequests.php?action=new'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (get_user_class() >= 1) {
-                sql_query("UPDATE users SET seedbonus = seedbonus - " . $amount . " WHERE id = " . sqlesc($CURUSER['id']));
-                sql_query("INSERT requests ( request , descr, ori_descr ,amount , ori_amount , userid ,added ) VALUES ( " . sqlesc($_POST["request"]) . " , " . sqlesc($_POST["descr"]) . " , " . sqlesc($_POST["descr"]) . " , " . sqlesc($_POST["amount"]) . " , " . sqlesc($_POST["amount"]) . " , " . sqlesc($CURUSER['id']) . " , '" . date("Y-m-d H:i:s") . "' )") or sqlerr(__FILE__, __LINE__);
-//                shoutbox_into('[rid' . ($id = mysql_insert_id()) . ']');
-                $id = mysql_insert_id();
+                \Nexus\Database\NexusDB::statement("UPDATE users SET seedbonus = seedbonus - " . (int) $amount . " WHERE id = " . (int) $CURUSER['id']);
+                $id = (int) \Nexus\Database\NexusDB::insert('requests', [
+                    'request' => $_POST["request"],
+                    'descr' => $_POST["descr"],
+                    'ori_descr' => $_POST["descr"],
+                    'amount' => $_POST["amount"],
+                    'ori_amount' => $_POST["amount"],
+                    'userid' => $CURUSER['id'],
+                    'added' => date("Y-m-d H:i:s"),
+                ]);
                 stderr($lang_functions['std_success'], "{$lang_viewrequests['add_request_success']}，<a href='viewrequests.php?action=view&id=" . $id . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             } else stderr($lang_functions['std_error'], "{$lang_functions['std_permission_denied']}<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             die;
@@ -312,14 +314,14 @@ else {
         case "takeedit":
         {
             if (!is_numeric($_POST["reqid"])) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_id_must_be_numeric']}<a href='viewrequests.php?action=edit&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            $res = sql_query("SELECT * FROM requests WHERE id =" . sqlesc( $_POST["reqid"])) or sqlerr(__FILE__, __LINE__);
+            $editRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_POST["reqid"]);
             if (!$_POST["descr"]) stderr($lang_functions['std_error'], "{$lang_viewrequests['description_required']}<a href='viewrequests.php?action=edit&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (!$_POST["request"]) stderr($lang_functions['std_error'], "{$lang_viewrequests['name_required']}<a href='viewrequests.php?action=edit&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_deleted']}<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            $arr = mysql_fetch_assoc($res);
+            if (count($editRows) == 0) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_deleted']}<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
+            $arr = $editRows[0];
             if ($arr["finish"] == "yes") stderr($lang_functions['std_error'], "{$lang_viewrequests['request_already_resolved']}<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if ($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) {
-                sql_query("UPDATE requests SET descr = " . sqlesc($_POST["descr"]) . " , request = " . sqlesc($_POST["request"]) . " WHERE id =" . sqlesc($_POST["reqid"])) or sqlerr(__FILE__, __LINE__);
+                \Nexus\Database\NexusDB::statement("UPDATE requests SET descr = " . sqlesc($_POST["descr"]) . " , request = " . sqlesc($_POST["request"]) . " WHERE id = " . (int) $_POST["reqid"]);
                 stderr($lang_functions['std_success'], "{$lang_viewrequests['edit_request_success']}，<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             } else stderr($lang_functions['std_error'], "{$lang_functions['std_permission_denied']}<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             die;
@@ -343,18 +345,21 @@ else {
         case "takeres":
         {
             if (!is_numeric($_POST["reqid"])) stderr($lang_functions['std_error'], $lang_viewrequests['request_id_must_be_numeric']);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . $_POST["reqid"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_deleted']}<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            $arr = mysql_fetch_assoc($res);
+            $reqRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_POST["reqid"]);
+            if (count($reqRows) == 0) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_deleted']}<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
+            $arr = $reqRows[0];
             if ($arr["finish"] == "yes") stderr($lang_functions['std_error'], "{$lang_viewrequests['request_already_resolved']}<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (!is_numeric($_POST["torrentid"])) stderr($lang_functions['std_error'], "{$lang_viewrequests['request_id_must_be_numeric']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            $res = sql_query("SELECT * FROM torrents WHERE id ='" . $_POST["torrentid"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], "{$lang_functions['std_target_not_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            $tor = mysql_fetch_assoc($res);
+            $torRows = \Nexus\Database\NexusDB::select("SELECT * FROM torrents WHERE id = " . (int) $_POST["torrentid"]);
+            if (count($torRows) == 0) stderr($lang_functions['std_error'], "{$lang_functions['std_target_not_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
+            $tor = $torRows[0];
 //            if ($tor['last_seed'] == "0000-00-00 00:00:00" || is_null(($tor['last_seed']))) stderr($lang_functions['std_error'], "{$lang_viewrequests['torrent_not_release_yet']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             if (get_row_count('resreq', "where reqid ='" . $_POST["reqid"] . "' and torrentid='" . $_POST["torrentid"] . "'"))
                 stderr($lang_functions['std_error'], "{$lang_viewrequests['supply_already_exists']}<a href='viewrequests.php?action=res&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
-            sql_query("INSERT resreq (reqid , torrentid) VALUES ( '" . $_POST["reqid"] . "' , '" . $_POST["torrentid"] . "')");
+            \Nexus\Database\NexusDB::insert('resreq', [
+                'reqid' => (int) $_POST["reqid"],
+                'torrentid' => (int) $_POST["torrentid"],
+            ]);
 
 
             $added = sqlesc(date("Y-m-d H:i:s"));
@@ -377,9 +382,9 @@ else {
         case "addamount":
         {
             if (!is_numeric($_POST["reqid"])) stderr($lang_functions['std_error'], $lang_viewrequests['request_id_must_be_numeric']);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . $_POST["reqid"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
-            $arr = mysql_fetch_assoc($res);
+            $reqRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_POST["reqid"]);
+            if (count($reqRows) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
+            $arr = $reqRows[0];
             if ($arr["finish"] == "yes") stderr($lang_functions['std_error'], $lang_viewrequests['request_already_resolved']);
             if (!is_numeric($_POST["amount"])) stderr($lang_functions['std_error'], $lang_viewrequests['amount_must_be_numeric']);
             $amount = $_POST["amount"];
@@ -387,8 +392,8 @@ else {
             if ($amount > 5000) stderr($lang_functions['std_error'], $lang_viewrequests['add_reward_amount_maximum']);
             $amount += 25;
             if ($amount > $CURUSER['seedbonus']) stderr($lang_functions['std_error'], $lang_viewrequests['bouns_not_enough']);
-            sql_query("UPDATE users SET seedbonus = seedbonus - " . $amount . " WHERE id = " . $CURUSER['id']);
-            sql_query("UPDATE requests SET amount = amount + " . $_POST["amount"] . " WHERE id = " . $_POST["reqid"]);
+            \Nexus\Database\NexusDB::statement("UPDATE users SET seedbonus = seedbonus - " . (int) $amount . " WHERE id = " . (int) $CURUSER['id']);
+            \Nexus\Database\NexusDB::statement("UPDATE requests SET amount = amount + " . (int) $_POST["amount"] . " WHERE id = " . (int) $_POST["reqid"]);
             stderr($lang_functions['std_success'], "{$lang_viewrequests['add_reward_success']}，<a href='viewrequests.php?action=view&id=" . $_POST["reqid"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             die;
             break;
@@ -397,16 +402,16 @@ else {
         case "delete":
         {
             if (!is_numeric($_GET["id"])) stderr($lang_functions['std_error'], $lang_viewrequests['request_id_must_be_numeric']);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . $_GET["id"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
-            $arr = mysql_fetch_assoc($res);
+            $reqRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_GET["id"]);
+            if (count($reqRows) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
+            $arr = $reqRows[0];
             if (get_user_class() >= UC_UPLOADER || $arr['userid'] == $CURUSER["id"] && $arr['finish'] == 'no') {
                 if (!get_row_count("resreq", "WHERE reqid=" . sqlesc($_GET["id"]))) {
                     KPS("+", $arr['amount'] * 8 / 10, $arr['userid']);
                 }
-                sql_query("DELETE FROM requests WHERE id ='" . $_GET["id"] . "'") or sqlerr(__FILE__, __LINE__);
-                sql_query("DELETE FROM resreq WHERE reqid ='" . $_GET["id"] . "'") or sqlerr(__FILE__, __LINE__);
-                sql_query("DELETE FROM comments WHERE request ='" . $_GET["id"] . "'") or sqlerr(__FILE__, __LINE__);
+                \Nexus\Database\NexusDB::statement("DELETE FROM requests WHERE id = " . (int) $_GET["id"]);
+                \Nexus\Database\NexusDB::statement("DELETE FROM resreq WHERE reqid = " . (int) $_GET["id"]);
+                \Nexus\Database\NexusDB::statement("DELETE FROM comments WHERE request = " . (int) $_GET["id"]);
                 stderr($lang_functions['std_success'], "{$lang_viewrequests['delete_request_success']}，<a href='viewrequests.php'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             } else stderr($lang_functions['std_error'], "{$lang_functions['std_permission_denied']}");
             die;
@@ -416,32 +421,36 @@ else {
         case "confirm":
         {
             if (!is_numeric($_POST["id"])) stderr($lang_functions['std_error'], $lang_viewrequests['request_id_must_be_numeric']);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . $_POST["id"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
-            $arr = mysql_fetch_assoc($res);
+            $reqRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_POST["id"]);
+            if (count($reqRows) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
+            $arr = $reqRows[0];
             if (empty($_POST["torrentid"])) stderr($lang_functions['std_error'], $lang_functions['std_target_not_exists']);
             else $torrentid = $_POST["torrentid"];
             if ($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) {
                 $amount = $arr["amount"] / count($torrentid);
-                sql_query("UPDATE requests SET finish = 'yes' WHERE id = " . $_POST["id"]);
-                sql_query("UPDATE resreq SET chosen = 'yes' WHERE reqid = " . $_POST["id"] . " AND ( torrentid = '" . join("' OR torrentid = '", $torrentid) . "' )") or sqlerr(__FILE__, __LINE__);
-                sql_query("DELETE FROM resreq WHERE reqid ='" . $_POST["id"] . "' AND chosen = 'no'") or sqlerr(__FILE__, __LINE__);
-                $res = sql_query("SELECT owner FROM torrents WHERE ( id = '" . join("' OR id = '", $torrentid) . "' ) ") or sqlerr(__FILE__, __LINE__);
-                while ($row = mysql_fetch_array($res)) {
+                $torrentIdList = implode(',', array_map('intval', (array) $torrentid));
+                \Nexus\Database\NexusDB::statement("UPDATE requests SET finish = 'yes' WHERE id = " . (int) $_POST["id"]);
+                \Nexus\Database\NexusDB::statement("UPDATE resreq SET chosen = 'yes' WHERE reqid = " . (int) $_POST["id"] . " AND torrentid IN ($torrentIdList)");
+                \Nexus\Database\NexusDB::statement("DELETE FROM resreq WHERE reqid = " . (int) $_POST["id"] . " AND chosen = 'no'");
+                $ownerRows = \Nexus\Database\NexusDB::select("SELECT owner FROM torrents WHERE id IN ($torrentIdList)");
+                $owner = [];
+                foreach ($ownerRows as $row) {
 
-                    $owner[] = $row[0];
+                    $owner[] = $row['owner'];
                     $added = now();
                     $subject = $lang_viewrequests['torrent_is_picked_for_request'];
                     $notifs = "{$lang_viewrequests['request_name']}:[url=viewrequests.php?id=$arr[id]] " . $arr['request'] . "[/url].{$lang_functions['std_you_will_get']}: $amount {$lang_functions['text_bonus']}";
                     \App\Models\Message::add([
                         'sender' => 0,
-                        'receiver' => $row[0],
+                        'receiver' => $row['owner'],
                         'added' => now(),
                         'msg' => $notifs,
                         'subject' => $subject,
                     ]);
                 }
-                sql_query("UPDATE users SET seedbonus = seedbonus + $amount WHERE id = '" . join("' OR id = '", $owner) . "'") or sqlerr(__FILE__, __LINE__);
+                $ownerList = implode(',', array_map('intval', $owner));
+                if ($ownerList !== '')
+                    \Nexus\Database\NexusDB::statement("UPDATE users SET seedbonus = seedbonus + " . (float) $amount . " WHERE id IN ($ownerList)");
                 stderr($lang_functions['std_success'], "{$lang_viewrequests['confirm_request_success']}，<a href='viewrequests.php?action=view&id=" . $_POST["id"] . "'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
 
             }
@@ -451,10 +460,10 @@ else {
         case "message":
         {
             if (!is_numeric($_POST["id"])) stderr($lang_functions['std_error'], $lang_viewrequests['request_id_must_be_numeric']);
-            $res = sql_query("SELECT * FROM requests WHERE id ='" . $_POST["id"] . "'") or sqlerr(__FILE__, __LINE__);
-            if (mysql_num_rows($res) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
+            $reqRows = \Nexus\Database\NexusDB::select("SELECT * FROM requests WHERE id = " . (int) $_POST["id"]);
+            if (count($reqRows) == 0) stderr($lang_functions['std_error'], $lang_viewrequests['request_deleted']);
             if (!$_POST["message"]) stderr($lang_functions['std_error'], $lang_viewrequests['message_required']);
-            $arr = mysql_fetch_assoc($res);
+            $arr = $reqRows[0];
             $message = $arr["message"];
             $message .= "<tr><td width=240>{$lang_functions['std_by']}" . $CURUSER["username"] . $lang_viewrequests['request_created_at']. date("Y-m-d H:i:s") . "</td><td>" . $_POST["message"] . "</td></tr>";
 
@@ -462,7 +471,13 @@ else {
             //sql_query("UPDATE requests SET message = '".$message."' WHERE id = ".$_POST["id"])or sqlerr(__FILE__, __LINE__);
 
             //sql_query("INSERT reqcommen (user , added ,text ,reqid) VALUES ( '".$CURUSER["id"]."' , ".sqlesc(date("Y-m-d H:i:s"))." , ".sqlesc($_POST["message"])." , '".$_POST["id"]."'    )");
-            sql_query("INSERT INTO comments (user, request, added, text, ori_text) VALUES (" . $CURUSER["id"] . ",{$_POST['id']}, '" . date("Y-m-d H:i:s") . "', " . sqlesc($_POST["message"]) . "," . sqlesc($_POST["message"]) . ")");
+            \Nexus\Database\NexusDB::insert('comments', [
+                'user' => $CURUSER["id"],
+                'request' => (int) $_POST['id'],
+                'added' => date("Y-m-d H:i:s"),
+                'text' => $_POST["message"],
+                'ori_text' => $_POST["message"],
+            ]);
             $id = (int) ($_POST['id'] ?? 0);
             if ($CURUSER["id"] <> $arr['userid']) 
             {
