@@ -14,8 +14,8 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 	{
 		if (!$origmsg)
 			stderr($lang_takemessage['std_error'], $lang_takemessage['std_invalid_id']);
-		$res = sql_query("SELECT * FROM messages WHERE id=" . sqlesc($origmsg) . " AND (receiver=" . sqlesc($CURUSER['id']) . " OR sender=" . sqlesc($CURUSER['id']) .") LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$origmsgrow = mysql_fetch_assoc($res);
+		$origMsgRows = \Nexus\Database\NexusDB::select("SELECT * FROM messages WHERE id = " . (int) $origmsg . " AND (receiver = " . (int) $CURUSER['id'] . " OR sender = " . (int) $CURUSER['id'] . ") LIMIT 1");
+		$origmsgrow = $origMsgRows[0] ?? null;
 		if (!$origmsgrow)
 			stderr($lang_takemessage['std_error'], $lang_takemessage['std_no_permission_forwarding']);
 		if(!$_POST['to'])
@@ -60,8 +60,8 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 	$save = ($save == 'yes') ? "yes" : "no";
 	// End of Change
 
-	$res = sql_query("SELECT id,username,parked,email,acceptpms, notifs, UNIX_TIMESTAMP(last_access) as la FROM users WHERE id=".sqlesc($receiver)) or sqlerr(__FILE__, __LINE__);
-	$user = mysql_fetch_assoc($res);
+	$userRows = \Nexus\Database\NexusDB::select("SELECT id, username, parked, email, acceptpms, notifs, UNIX_TIMESTAMP(last_access) as la FROM users WHERE id = " . (int) $receiver);
+	$user = $userRows[0] ?? null;
 	if (!$user)
 		stderr($lang_takemessage['std_error'], $lang_takemessage['std_user_not_exist']);
 
@@ -72,14 +72,14 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 		stderr($lang_takemessage['std_refused'], $lang_takemessage['std_account_parked']);
 		if ($user["acceptpms"] == "yes")
 		{
-			$res2 = sql_query("SELECT * FROM blocks WHERE userid=".sqlesc($receiver)." AND blockid=" . sqlesc($CURUSER["id"])) or sqlerr(__FILE__, __LINE__);
-			if (mysql_num_rows($res2) == 1)
+			$blockRows = \Nexus\Database\NexusDB::select("SELECT id FROM blocks WHERE userid = " . (int) $receiver . " AND blockid = " . (int) $CURUSER["id"]);
+			if (count($blockRows) == 1)
 			stderr($lang_takemessage['std_refused'], $lang_takemessage['std_user_blocks_your_pms']);
 		}
 		elseif ($user["acceptpms"] == "friends")
 		{
-			$res2 = sql_query("SELECT * FROM friends WHERE userid=".sqlesc($receiver)." AND friendid=" . sqlesc($CURUSER["id"])) or sqlerr(__FILE__, __LINE__);
-			if (mysql_num_rows($res2) != 1)
+			$friendRows = \Nexus\Database\NexusDB::select("SELECT id FROM friends WHERE userid = " . (int) $receiver . " AND friendid = " . (int) $CURUSER["id"]);
+			if (count($friendRows) != 1)
 			stderr($lang_takemessage['std_refused'], $lang_takemessage['std_user_accepts_friends_pms']);
 		}
 		elseif ($user["acceptpms"] == "no")
@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 
 	$subject = trim($_POST['subject']);
 
-	\App\Models\Message::add([
+	$createdMessage = \App\Models\Message::add([
 		'sender' => $CURUSER["id"],
 		'receiver' => $receiver,
 		'msg' => $msg,
@@ -100,10 +100,10 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
 
 	$Cache->delete_value('user_'.$CURUSER["id"].'_outbox_count');
 
-	$msgid=mysql_insert_id();
+	$msgid = (int) $createdMessage->id;
 	$date=date("Y-m-d H:i:s");
 	// Update Last PM sent...
-	sql_query("UPDATE users SET last_pm = NOW() WHERE id = ".sqlesc($CURUSER['id'])) or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::statement("UPDATE users SET last_pm = NOW() WHERE id = " . (int) $CURUSER['id']);
 
 	// Send notification email.
 if ($emailnotify_smtp=='yes' && $smtptype != 'none'){
@@ -161,16 +161,16 @@ EOD;
 		if ($delete == "yes")
 		{
 			// Make sure receiver of $origmsg is current user
-			$res = sql_query("SELECT * FROM messages WHERE id=$origmsg") or sqlerr(__FILE__, __LINE__);
-			if (mysql_num_rows($res) == 1)
+			$origRows = \Nexus\Database\NexusDB::select("SELECT * FROM messages WHERE id = " . (int) $origmsg);
+			if (count($origRows) == 1)
 			{
-				$arr = mysql_fetch_assoc($res);
+				$arr = $origRows[0];
 				if ($arr["receiver"] != $CURUSER["id"])
 				stderr("w00t","This shouldn't happen.");
 				if ($arr["saved"] == "no")
-				sql_query("DELETE FROM messages WHERE id=$origmsg") or sqlerr(__FILE__, __LINE__);
+				\Nexus\Database\NexusDB::statement("DELETE FROM messages WHERE id = " . (int) $origmsg);
 				elseif ($arr["saved"] == "yes")
-				sql_query("UPDATE messages SET location = '0' WHERE id=$origmsg") or sqlerr(__FILE__, __LINE__);
+				\Nexus\Database\NexusDB::statement("UPDATE messages SET location = '0' WHERE id = " . (int) $origmsg);
 
 			}
 		}
