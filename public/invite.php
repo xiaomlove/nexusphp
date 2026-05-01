@@ -31,8 +31,10 @@ function inviteMenu ($selected = "invitee") {
     end_main_frame();
 }
 
-$res = sql_query("SELECT * FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
-$user =  mysql_fetch_assoc($res);
+$user = \Nexus\Database\NexusDB::table('users')
+    ->where('id', (int) $id)
+    ->first();
+$user = $user ? (array) $user : null;
 if (!$user) {
     stderr($lang_invite['std_sorry'], 'Invalid id');
 }
@@ -100,16 +102,18 @@ if ($type == 'new'){
 } else {
     inviteMenu($menuSelected);
     if ($menuSelected == 'invitee') {
-        $whereStr = "u.invited_by = " . sqlesc($id);
-        if (!empty($_GET['status'])) {
-            $whereStr .= " and u.status = " . sqlesc($_GET['status']);
-        }
-        if (!empty($_GET['enabled'])) {
-            $whereStr .= " and u.enabled = " . sqlesc($_GET['enabled']);
-        }
-        $rel = sql_query("SELECT COUNT(*) FROM users u WHERE $whereStr") or sqlerr(__FILE__, __LINE__);
-        $arro = mysql_fetch_row($rel);
-        $number = $arro[0];
+        $inviteeQuery = function () use ($id) {
+            $q = \Nexus\Database\NexusDB::table('users as u')
+                ->where('u.invited_by', (int) $id);
+            if (!empty($_GET['status'])) {
+                $q->where('u.status', (string) $_GET['status']);
+            }
+            if (!empty($_GET['enabled'])) {
+                $q->where('u.enabled', (string) $_GET['enabled']);
+            }
+            return $q;
+        };
+        $number = $inviteeQuery()->count();
         $textSelectOnePlease = nexus_trans('nexus.select_one_please');
         $enabledOptions = $statusOptions = '';
         foreach (['yes', 'no'] as $item) {
@@ -162,10 +166,17 @@ JS;
         if(!$number){
             print("<tr><td colspan=7 align=center>".$lang_invite['text_no_invites']."</tr>");
         } else {
-            list($pagertop, $pagerbottom, $limit) = pager($pageSize, $number, "?id=$id&menu=$menuSelected&");
+            list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($pageSize, $number, "?id=$id&menu=$menuSelected&");
             $haremAdditionFactor = (float)get_setting('bonus.harem_addition');
-            $ret = sql_query("SELECT u.id, u.username, u.email, u.uploaded, u.downloaded, u.status, u.warned, u.enabled, u.donor, u.email, u.seed_points_per_hour, u.seeding_torrent_count, u.seeding_torrent_size, u.last_announce_at, COUNT(t.id) AS torrent_count FROM users u LEFT JOIN torrents t ON t.owner = u.id WHERE $whereStr GROUP BY u.id $limit") or sqlerr();
-            $num = mysql_num_rows($ret);
+            $inviteeRows = $inviteeQuery()
+                ->leftJoin('torrents as t', 't.owner', '=', 'u.id')
+                ->groupBy('u.id')
+                ->offset((int) $start)
+                ->limit((int) $rpp)
+                ->select('u.id', 'u.username', 'u.email', 'u.uploaded', 'u.downloaded', 'u.status', 'u.warned', 'u.enabled', 'u.donor', 'u.seed_points_per_hour', 'u.seeding_torrent_count', 'u.seeding_torrent_size', 'u.last_announce_at', \Nexus\Database\NexusDB::raw('COUNT(t.id) AS torrent_count'))
+                ->get()
+                ->toArray();
+            $num = count($inviteeRows);
 
             print("<tr>
 <td class=colhead><b>".$lang_invite['text_username']."</b></td>
@@ -192,7 +203,7 @@ JS;
             print("</tr>");
             for ($i = 0; $i < $num; ++$i)
             {
-                $arr = mysql_fetch_assoc($ret);
+                $arr = (array) $inviteeRows[$i];
 
                 if ($arr["downloaded"] > 0) {
                     $ratio = number_format($arr["uploaded"] / $arr["downloaded"], 3);
@@ -254,24 +265,29 @@ JS;
         print("</table>");
         print("</td></tr></table>" . ($pagertop ?? ''));
     } elseif (in_array($menuSelected, ['sent', 'tmp'])) {
-        $whereStr = "inviter = " . sqlesc($id);
-        if ($menuSelected == 'sent') {
-            $whereStr .= " and invitee != ''";
-        } elseif ($menuSelected == 'tmp') {
-            $whereStr .= " and invitee = '' and expired_at is not null";
-        }
-        $rul = sql_query("SELECT COUNT(*) FROM invites WHERE $whereStr");
-        $arre = mysql_fetch_row($rul);
-        $number1 = $arre[0];
+        $invitesQuery = function () use ($id, $menuSelected) {
+            $q = \Nexus\Database\NexusDB::table('invites')->where('inviter', (int) $id);
+            if ($menuSelected == 'sent') {
+                $q->where('invitee', '!=', '');
+            } elseif ($menuSelected == 'tmp') {
+                $q->where('invitee', '')->whereNotNull('expired_at');
+            }
+            return $q;
+        };
+        $number1 = $invitesQuery()->count();
         print("<table border=1 width=100% cellspacing=0 cellpadding=5>");
 
         if(!$number1){
             print("<tr align=center><td colspan=6>".$lang_functions['text_none']."</tr>");
         } else {
-            list($pagertop, $pagerbottom, $limit) = pager($pageSize, $number1, "?id=$id&menu=$menuSelected&");
+            list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($pageSize, $number1, "?id=$id&menu=$menuSelected&");
 
-            $rer = sql_query("SELECT * FROM invites WHERE $whereStr $limit") or sqlerr();
-            $num1 = mysql_num_rows($rer);
+            $sentRows = $invitesQuery()
+                ->offset((int) $start)
+                ->limit((int) $rpp)
+                ->get()
+                ->toArray();
+            $num1 = count($sentRows);
 
             print("<tr><td class=colhead>".$lang_invite['text_email']."</td><td class=colhead>".$lang_invite['text_hash']."</td><td class=colhead>".$lang_invite['text_send_date']."</td>");
             if ($menuSelected == 'sent') {
@@ -285,7 +301,7 @@ JS;
             print("</tr>");
             for ($i = 0; $i < $num1; ++$i)
             {
-                $arr1 = mysql_fetch_assoc($rer);
+                $arr1 = (array) $sentRows[$i];
                 $isHashValid = $arr1['valid'] == \App\Models\Invite::VALID_YES;
                 $registerLink = '';
                 if ($isHashValid) {

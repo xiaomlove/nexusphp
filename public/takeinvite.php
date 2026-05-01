@@ -58,15 +58,18 @@ if ($isPreRegisterEmailAndUsername) {
 
 
 // check if email addy is already in use
-$a = (@mysql_fetch_row(@sql_query("select count(*) from users where email=".sqlesc($email))));
-if ($a[0] != 0)
+$emailInUse = \Nexus\Database\NexusDB::table('users')->where('email', (string) $email)->count();
+if ($emailInUse)
   bark($lang_takeinvite['std_email_address'].htmlspecialchars($email).$lang_takeinvite['std_is_in_use']);
-$b = (@mysql_fetch_row(@sql_query("select count(*) from invites where invitee=".sqlesc($email))));
-if ($b[0] != 0)
+$inviteSent = \Nexus\Database\NexusDB::table('invites')->where('invitee', (string) $email)->count();
+if ($inviteSent)
   bark($lang_takeinvite['std_invitation_already_sent_to'].htmlspecialchars($email).$lang_takeinvite['std_await_user_registeration']);
 
-$ret = sql_query("SELECT username FROM users WHERE id = ".sqlesc($id)) or sqlerr();
-$arr = mysql_fetch_assoc($ret);
+$arr = \Nexus\Database\NexusDB::table('users')
+    ->where('id', (int) $id)
+    ->select(['username'])
+    ->first();
+$arr = $arr ? (array) $arr : null;
 
 if (empty($_POST['hash'])) {
     bark($lang_takeinvite['std_must_select_invite']);
@@ -130,7 +133,9 @@ if ($sendResult === true) {
         }
         \App\Models\Invite::query()->insert($insert);
 //        sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
-        sql_query("UPDATE users SET invites = invites - 1 WHERE id = ".mysql_real_escape_string($id)) or sqlerr(__FILE__, __LINE__);
+        \Nexus\Database\NexusDB::table('users')
+            ->where('id', (int) $id)
+            ->update(['invites' => \Nexus\Database\NexusDB::raw('invites - 1')]);
     }
 }
 $lock->release();
