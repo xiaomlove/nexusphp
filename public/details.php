@@ -710,7 +710,10 @@ echo "</script>";
 		else $nothanks = $lang_details['text_no_thanks_added'];
 
 		if (!$thanks_said) {
-			$thanks_said = get_row_count("thanks", "WHERE torrentid=$torrentid AND userid=".sqlesc($CURUSER['id']));
+			$thanks_said = \Nexus\Database\NexusDB::table('thanks')
+				->where('torrentid', (int) $torrentid)
+				->where('userid', (int) $CURUSER['id'])
+				->count();
 		}
 		if ($thanks_said == 0) {
 			$buttonvalue = " value=\"".$lang_details['submit_say_thanks']."\"";
@@ -734,7 +737,9 @@ echo "</script>";
 
 	// -----------------COMMENT SECTION ---------------------//
 if ($CURUSER['showcomment'] != 'no'){
-	$count = get_row_count("comments","WHERE torrent=".sqlesc($id));
+	$count = \Nexus\Database\NexusDB::table('comments')
+		->where('torrent', (int) $id)
+		->count();
 	if ($count)
 	{
 		print("<br /><br />");

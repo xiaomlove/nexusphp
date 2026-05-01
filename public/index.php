@@ -16,7 +16,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 			if (!$arr) die($lang_index['std_no_poll']);
 			$pollid = $arr["id"];
 
-			$hasvoted = get_row_count("pollanswers","WHERE pollid=".sqlesc($pollid)." && userid=".sqlesc($CURUSER["id"]));
+			$hasvoted = \Nexus\Database\NexusDB::table('pollanswers')
+				->where('pollid', (int) $pollid)
+				->where('userid', (int) $CURUSER["id"])
+				->count();
 			if ($hasvoted)
 				stderr($lang_index['std_error'],$lang_index['std_duplicate_votes_denied']);
 			\Nexus\Database\NexusDB::insert('pollanswers', [
@@ -106,16 +109,24 @@ if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes
 	{
 	$totalvote = $Cache->get_value('current_fun_vote_count');
 	if ($totalvote == ""){
-		$totalvote = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id']));
+		$totalvote = \Nexus\Database\NexusDB::table('funvotes')
+			->where('funid', (int) $row['id'])
+			->count();
 		$Cache->cache_value('current_fun_vote_count', $totalvote, 756);
 	}
 	$funvote = $Cache->get_value('current_fun_vote_funny_count');
 	if ($funvote == ""){
-		$funvote = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id'])." AND vote='fun'");
+		$funvote = \Nexus\Database\NexusDB::table('funvotes')
+			->where('funid', (int) $row['id'])
+			->where('vote', 'fun')
+			->count();
 		$Cache->cache_value('current_fun_vote_funny_count', $funvote, 756);
 	}
 //check whether current user has voted
-	$funvoted = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id'])." AND userid=".sqlesc($CURUSER['id']));
+	$funvoted = \Nexus\Database\NexusDB::table('funvotes')
+		->where('funid', (int) $row['id'])
+		->where('userid', (int) $CURUSER['id'])
+		->count();
 
 	print ("<h2>".$lang_index['text_funbox']);
 	if ($CURUSER)
@@ -567,8 +578,8 @@ if ($showstats_main == "yes")
 	$Cache->add_whole_row();
 	$registered = number_format(get_row_count("users"));
 	$unverified = number_format(get_row_count("users", "WHERE status='pending' and enabled='yes'"));
-	$totalonlinetoday = number_format(get_row_count("users","WHERE last_access >= ". sqlesc(date("Y-m-d H:i:s",(TIMENOW - 86400)))));
-	$totalonlineweek = number_format(get_row_count("users","WHERE last_access >= ". sqlesc(date("Y-m-d H:i:s",(TIMENOW - 604800)))));
+	$totalonlinetoday = number_format(\Nexus\Database\NexusDB::table('users')->where('last_access', '>=', date("Y-m-d H:i:s", (TIMENOW - 86400)))->count());
+	$totalonlineweek = number_format(\Nexus\Database\NexusDB::table('users')->where('last_access', '>=', date("Y-m-d H:i:s", (TIMENOW - 604800)))->count());
 	$VIP = number_format(get_row_count("users", "WHERE class=".UC_VIP));
 	$donated = number_format(get_row_count("users", "WHERE donor = 'yes'"));
 	$warned = number_format(get_row_count("users", "WHERE warned='yes'"));
@@ -625,7 +636,9 @@ if ($showstats_main == "yes")
 		$ratio = 0;
 	else
 		$ratio = round($seeders / $leechers * 100);
-	$activewebusernow = get_row_count("users","WHERE last_access >= ".sqlesc(date("Y-m-d H:i:s",(TIMENOW - 900))));
+	$activewebusernow = \Nexus\Database\NexusDB::table('users')
+		->where('last_access', '>=', date("Y-m-d H:i:s", (TIMENOW - 900)))
+		->count();
 	$activewebusernow=number_format($activewebusernow);
 	$activetrackerusernow = number_format(get_single_value("peers","COUNT(DISTINCT(userid))"));
 	$peers = number_format($seeders + $leechers);
