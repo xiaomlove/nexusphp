@@ -20,7 +20,9 @@ if ($action == 'delete')
 	if (!$sure)
 	stderr($lang_news['std_delete_news_item'], $lang_news['std_are_you_sure'] . "<a class=altlink href=?action=delete&newsid=$newsid&returnto=$returnto&sure=1>".$lang_news['std_here']."</a>".$lang_news['std_if_sure'],false);
 
-	sql_query("DELETE FROM news WHERE id=".sqlesc($newsid)) or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::table('news')
+		->where('id', (int) $newsid)
+		->delete();
 	$Cache->delete_value('recent_news','true');
 	if ($returnto != "")
 	header("Location: $returnto");
@@ -40,18 +42,24 @@ if ($action == 'add')
 	if (!$title)
 	stderr($lang_news['std_error'], $lang_news['std_news_title_empty']);
 
-	$added = intval($_POST["added"] ?? 0);
-	if (!$added)
-	$added = sqlesc(date("Y-m-d H:i:s"));
+	$addedRaw = $_POST["added"] ?? 0;
+	$addedInt = intval($addedRaw);
+	$addedDate = $addedInt ? date("Y-m-d H:i:s", $addedInt) : date("Y-m-d H:i:s");
 	$notify = $_POST['notify'] ?? '';
 	if ($notify != 'yes')
 		$notify = 'no';
-	sql_query("INSERT INTO news (userid, added, body, title, notify) VALUES (".sqlesc($CURUSER['id']) . ", $added, " . sqlesc($body) . ", " . sqlesc($title) . ", " . sqlesc($notify).")") or sqlerr(__FILE__, __LINE__);
+	$newsId = (int) \Nexus\Database\NexusDB::insert('news', [
+		'userid' => (int) $CURUSER['id'],
+		'added' => $addedDate,
+		'body' => (string) $body,
+		'title' => (string) $title,
+		'notify' => (string) $notify,
+	]);
 	$Cache->delete_value('recent_news',true);
-	if (mysql_affected_rows() != 1) {
+	if (!$newsId) {
         stderr($lang_news['std_error'], $lang_news['std_something_weird_happened']);
     }
-	fire_event("news_created", \App\Models\News::query()->find(mysql_insert_id()));
+	fire_event("news_created", \App\Models\News::query()->find($newsId));
 	header("Location: " . get_protocol_prefix() . "$BASEURL/index.php");
 }
 
@@ -63,12 +71,12 @@ if ($action == 'edit')
 	$newsid = intval($_GET["newsid"] ?? 0);
 	int_check($newsid,true);
 
-	$res = sql_query("SELECT * FROM news WHERE id=".sqlesc($newsid)) or sqlerr(__FILE__, __LINE__);
+	$rows = \Nexus\Database\NexusDB::select("SELECT * FROM news WHERE id=" . (int) $newsid);
 
-	if (mysql_num_rows($res) != 1)
+	if (count($rows) != 1)
 	stderr($lang_news['std_error'], $lang_news['std_invalid_news_id'].$newsid);
 
-	$arr = mysql_fetch_array($res);
+	$arr = $rows[0];
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
@@ -82,15 +90,16 @@ if ($action == 'edit')
 		if ($title == "")
 		stderr($lang_news['std_error'], $lang_news['std_news_title_empty']);
 
-		$body = sqlesc($body);
-
-		$editdate = sqlesc(date("Y-m-d H:i:s"));
 		$notify = $_POST['notify'] ?? '';
 		if ($notify != 'yes')
 			$notify = 'no';
-		$notify = sqlesc($notify);
-		$title = sqlesc($title);
-		sql_query("UPDATE news SET body=$body, title=$title, notify=$notify WHERE id=".sqlesc($newsid)) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::table('news')
+			->where('id', (int) $newsid)
+			->update([
+				'body' => (string) $body,
+				'title' => (string) $title,
+				'notify' => (string) $notify,
+			]);
 		$Cache->delete_value('recent_news',true);
 		header("Location: " . get_protocol_prefix() . "$BASEURL/index.php");
 	}
