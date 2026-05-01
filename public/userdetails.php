@@ -17,8 +17,11 @@ function bark($msg)
 $id = intval($_GET["id"] ?? 0);
 int_check($id,true);
 
-$r = sql_query("SELECT * FROM users WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-$user = mysql_fetch_array($r) or bark($lang_userdetails['std_no_such_user']);
+$userRows = \Nexus\Database\NexusDB::select("SELECT * FROM users WHERE id = " . (int) $id);
+$user = $userRows[0] ?? null;
+if (!$user) {
+	bark($lang_userdetails['std_no_such_user']);
+}
 
 if ($user["status"] == "pending")
 stderr($lang_userdetails['std_sorry'], $lang_userdetails['std_user_not_confirmed']);
@@ -100,10 +103,8 @@ if (!$enabled)
 print("<p><b>".$lang_userdetails['text_account_disabled_note']."</b></p>");
 elseif ($CURUSER["id"] <> $user["id"])
 {
-	$r = sql_query("SELECT id FROM friends WHERE userid={$CURUSER['id']} AND friendid=$id") or sqlerr(__FILE__, __LINE__);
-	$friend = mysql_num_rows($r);
-	$r = sql_query("SELECT id FROM blocks WHERE userid={$CURUSER['id']} AND blockid=$id") or sqlerr(__FILE__, __LINE__);
-	$block = mysql_num_rows($r);
+	$friend = count(\Nexus\Database\NexusDB::select("SELECT id FROM friends WHERE userid = " . (int) $CURUSER['id'] . " AND friendid = " . (int) $id));
+	$block = count(\Nexus\Database\NexusDB::select("SELECT id FROM blocks WHERE userid = " . (int) $CURUSER['id'] . " AND blockid = " . (int) $id));
 
 	if ($friend)
 	print("<p>(<a href=\"friends.php?action=delete&amp;type=friend&amp;targetid=".$id."\">".$lang_userdetails['text_remove_from_friends']."</a>)</p>\n");
@@ -222,8 +223,7 @@ if (user_can('userprofile') OR $user["privacy"] == "low" ||  $user["id"] == $CUR
 	tr_small($lang_userdetails['row_email'], "<a href=\"mailto:".$user['email']."\">".$user['email']."</a>", 1);
 }
 if (user_can('userprofile')) {
-	$resip = sql_query("SELECT ip FROM iplog WHERE userid =$id GROUP BY ip") or sqlerr(__FILE__, __LINE__);
-	$iphistory = mysql_num_rows($resip);
+	$iphistory = count(\Nexus\Database\NexusDB::select("SELECT ip FROM iplog WHERE userid = " . (int) $id . " GROUP BY ip"));
 
 	if ($iphistory > 0)
 	tr_small($lang_userdetails['row_ip_history'], $lang_userdetails['text_user_earlier_used']."<b><a href=\"iphistory.php?id=" . $user['id'] . "\">" . $iphistory. $lang_userdetails['text_different_ips'].add_s($iphistory, true)."</a></b>", 1);
@@ -242,11 +242,11 @@ if (user_can('userprofile') ||  $user["id"] == $CURUSER["id"])
 	tr_small($lang_userdetails['row_ip_address'], hide_text($ip.$locationinfo.$seedBoxIcon), 1);
 }
 $clientselect = '';
-$res = sql_query("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = {$user['id']} GROUP BY peer_id, agent, ipv4, ipv6, port") or sqlerr();
-if (mysql_num_rows($res) > 0)
+$peerRows = \Nexus\Database\NexusDB::select("SELECT peer_id, agent, ipv4, ipv6, port FROM peers WHERE userid = " . (int) $user['id'] . " GROUP BY peer_id, agent, ipv4, ipv6, port");
+if (count($peerRows) > 0)
 {
     $clientselect .= "<table border='1' cellspacing='0' cellpadding='5'><tr><td class='colhead'>Agent</td><td class='colhead'>IPV4</td><td class='colhead'>IPV6</td><td class='colhead'>Port</td></tr>";
-	while($arr = mysql_fetch_assoc($res))
+	foreach ($peerRows as $arr)
 	{
 	    $clientselect .= "<tr>";
 		$clientselect .= sprintf('<td>%s</td>', get_agent($arr['peer_id'], $arr['agent']));
@@ -266,15 +266,14 @@ if ($clientselect)
 
 
 //真实分享、上传、下载率显示
-$rs_true_trans = sql_query("SELECT SUM(uploaded), SUM(downloaded) FROM snatched WHERE userid = $user[id]") or sqlerr(__FILE__, __LINE__);
+$trueTransRows = \Nexus\Database\NexusDB::select("SELECT SUM(uploaded), SUM(downloaded) FROM snatched WHERE userid = " . (int) $user['id']);
 $true_download = 0;
 $true_upload = 0;
-if(mysql_num_rows($rs_true_trans) > 0)
+if (count($trueTransRows) > 0)
 {
-    $row_true_trans = mysql_fetch_assoc($rs_true_trans);
+    $row_true_trans = $trueTransRows[0];
     $true_upload = $row_true_trans['SUM(uploaded)'];
     $true_download = $row_true_trans['SUM(downloaded)'];
-
 }
 if ($user["downloaded"] > 0 && $true_download > 0)
 {
@@ -441,13 +440,11 @@ if (user_can('staffmem'))
 $showpmbutton = 1;
 elseif ($user["acceptpms"] == "yes")
 {
-	$r = sql_query("SELECT id FROM blocks WHERE userid={$user['id']} AND blockid={$CURUSER['id']}") or sqlerr(__FILE__,__LINE__);
-	$showpmbutton = (mysql_num_rows($r) == 1 ? 0 : 1);
+	$showpmbutton = count(\Nexus\Database\NexusDB::select("SELECT id FROM blocks WHERE userid = " . (int) $user['id'] . " AND blockid = " . (int) $CURUSER['id'])) === 1 ? 0 : 1;
 }
 elseif ($user["acceptpms"] == "friends")
 {
-	$r = sql_query("SELECT id FROM friends WHERE userid={$user['id']} AND friendid={$CURUSER['id']}") or sqlerr(__FILE__,__LINE__);
-	$showpmbutton = (mysql_num_rows($r) == 1 ? 1 : 0);
+	$showpmbutton = count(\Nexus\Database\NexusDB::select("SELECT id FROM friends WHERE userid = " . (int) $user['id'] . " AND friendid = " . (int) $CURUSER['id'])) === 1 ? 1 : 0;
 }
 if ($CURUSER["id"] != $user["id"]){
 print("<tr><td colspan=\"2\" align=\"center\">");
@@ -562,8 +559,8 @@ if (user_can('prfmanage') && $user["class"] < get_user_class())
 	}else{
 		if ($user["warnedby"] != "System")
 		{
-			$res = sql_query("SELECT id, username, warnedby FROM users WHERE id = " . $user['warnedby']) or sqlerr(__FILE__,__LINE__);
-			$arr = mysql_fetch_assoc($res);
+			$warnedByRows = \Nexus\Database\NexusDB::select("SELECT id, username, warnedby FROM users WHERE id = " . (int) $user['warnedby']);
+			$arr = $warnedByRows[0] ?? ['id' => 0];
 			$warnedby = "<br />[".$lang_userdetails['text_by']."<u>" . get_username($arr['id']) . "</u></a>]";
 		}else{
 			$warnedby = "<br />[".$lang_userdetails['text_by_system']."]";
