@@ -884,11 +884,11 @@ if (isset($_GET['times_completed_end']) && ctype_digit($_GET['times_completed_en
 }
 
 if (isset($_GET['added_begin']) && !empty($_GET['added_begin'])) {
-    $wherea[] = "torrents.added >= " . sqlesc($_GET['added_begin']);
+    $wherea[] = "torrents.added >= " . \Illuminate\Support\Facades\DB::getPdo()->quote($_GET['added_begin']);
     $addparam .= "added_begin=" . $_GET['added_begin'] . "&";
 }
 if (isset($_GET['added_end']) && !empty($_GET['added_end'])) {
-    $wherea[] = "torrents.added <= " . sqlesc(\Carbon\Carbon::parse($_GET['added_end'])->endOfDay()->toDateTimeString());
+    $wherea[] = "torrents.added <= " . \Illuminate\Support\Facades\DB::getPdo()->quote(\Carbon\Carbon::parse($_GET['added_end'])->endOfDay()->toDateTimeString());
     $addparam .= "added_end=" . $_GET['added_end'] . "&";
 }
 
@@ -1255,14 +1255,21 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 $Cache->new_page('hot_search', 3670, true);
 if (!$Cache->get_page()){
 	$secs = 3*24*60*60;
-	$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs)));
-	$dt2 = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs*2)));
-	\Nexus\Database\NexusDB::statement("DELETE FROM suggest WHERE adddate < " . $dt2);
-	$searchRows = \Nexus\Database\NexusDB::select("SELECT keywords, COUNT(DISTINCT userid) as count FROM suggest WHERE adddate > " . $dt . " GROUP BY keywords ORDER BY count DESC LIMIT 15");
+	$dt = date("Y-m-d H:i:s", (TIMENOW - $secs));
+	$dt2 = date("Y-m-d H:i:s", (TIMENOW - $secs * 2));
+	\Nexus\Database\NexusDB::table('suggest')->where('adddate', '<', $dt2)->delete();
+	$searchRows = \Nexus\Database\NexusDB::table('suggest')
+		->where('adddate', '>', $dt)
+		->groupBy('keywords')
+		->orderByRaw('count desc')
+		->limit(15)
+		->select(['keywords', \Nexus\Database\NexusDB::raw('COUNT(DISTINCT userid) as count')])
+		->get();
 	$hotcount = 0;
 	$hotsearch = "";
 	foreach ($searchRows as $searchrow)
 	{
+		$searchrow = (array) $searchrow;
 		$hotsearch .= "<a href=\"".htmlspecialchars("?search=" . rawurlencode($searchrow["keywords"]) . "&notnewword=1")."\"><u>" . htmlspecialchars($searchrow["keywords"]) . "</u></a>&nbsp;&nbsp;";
 		$hotcount += mb_strlen($searchrow["keywords"],"UTF-8");
 		if ($hotcount > 60)
