@@ -12,20 +12,20 @@ parked();
 	if ($replyto && !is_valid_id($replyto))
 		stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_permission_denied']);
 
-	$res = sql_query("SELECT * FROM users WHERE id=$receiver");
-	$user = mysql_fetch_assoc($res);
+	$userRows = \Nexus\Database\NexusDB::select("SELECT * FROM users WHERE id = " . (int) $receiver);
+	$user = $userRows[0] ?? null;
 	if (!$user)
 		stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_no_user_id']);
 	$subject = "";
 	$body = "";
 	if ($replyto)
 	{
-		$res = sql_query("SELECT * FROM messages WHERE id=$replyto") or sqlerr();
-		$msga = mysql_fetch_assoc($res);
-		if ($msga["receiver"] != $CURUSER["id"])
+		$replyRows = \Nexus\Database\NexusDB::select("SELECT * FROM messages WHERE id = " . (int) $replyto);
+		$msga = $replyRows[0] ?? [];
+		if (($msga["receiver"] ?? null) != $CURUSER["id"])
 			stderr($lang_sendmessage['std_error'],$lang_sendmessage['std_permission_denied']);
-		$res = sql_query("SELECT username FROM users WHERE id=" . $msga["sender"]) or sqlerr();
-		$usra = mysql_fetch_assoc($res);
+		$senderRows = \Nexus\Database\NexusDB::select("SELECT username FROM users WHERE id = " . (int) $msga["sender"]);
+		$usra = $senderRows[0] ?? [];
 		$body .= $msga['msg']."\n\n-------- [url=userdetails.php?id=".$CURUSER["id"]."]".$CURUSER["username"]."[/url][i] Wrote at ".date("Y-m-d H:i:s").":[/i] --------\n";
 		$subject = $msga['subject'];
 		if (preg_match('/^Re:\s/', $subject))
