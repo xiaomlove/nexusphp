@@ -11,18 +11,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		$choice = $_POST["choice"];
 		if ($CURUSER && $choice != "" && $choice < 256 && $choice == floor($choice))
 		{
-			$res = sql_query("SELECT * FROM polls ORDER BY added DESC LIMIT 1") or sqlerr(__FILE__, __LINE__);
-			$arr = mysql_fetch_assoc($res) or die($lang_index['std_no_poll']);
+			$pollRows = \Nexus\Database\NexusDB::select("SELECT * FROM polls ORDER BY added DESC LIMIT 1");
+			$arr = $pollRows[0] ?? null;
+			if (!$arr) die($lang_index['std_no_poll']);
 			$pollid = $arr["id"];
 
 			$hasvoted = get_row_count("pollanswers","WHERE pollid=".sqlesc($pollid)." && userid=".sqlesc($CURUSER["id"]));
 			if ($hasvoted)
 				stderr($lang_index['std_error'],$lang_index['std_duplicate_votes_denied']);
-			sql_query("INSERT INTO pollanswers VALUES(0, ".sqlesc($pollid).", ".sqlesc($CURUSER["id"]).", ".sqlesc($choice).")") or sqlerr(__FILE__, __LINE__);
+			\Nexus\Database\NexusDB::insert('pollanswers', [
+				'pollid' => (int) $pollid,
+				'userid' => (int) $CURUSER["id"],
+				'selection' => (int) $choice,
+			]);
 			$Cache->delete_value('current_poll_content');
 			$Cache->delete_value('current_poll_result', true);
-			if (mysql_affected_rows() != 1)
-			stderr($lang_index['std_error'], $lang_index['std_vote_not_counted']);
 			//add karma
 			KPS("+",$pollvote_bonus,$userid);
 
@@ -41,14 +44,14 @@ print("<h2>".$lang_index['text_recent_news'].(user_can('newsmanage') ? " - <font
 
 $Cache->new_page('recent_news', 86400, true);
 if (!$Cache->get_page()){
-$res = sql_query("SELECT * FROM news ORDER BY added DESC LIMIT ".(int)$maxnewsnum_main) or sqlerr(__FILE__, __LINE__);
-if (mysql_num_rows($res) > 0)
+$newsRows = \Nexus\Database\NexusDB::select("SELECT * FROM news ORDER BY added DESC LIMIT ".(int)$maxnewsnum_main);
+if (count($newsRows) > 0)
 {
 	$Cache->add_whole_row();
 	print("<table width=\"100%\"><tr><td class=\"text\"><div style=\"margin-left: 16pt;\">\n");
 	$Cache->end_whole_row();
 	$news_flag = 0;
-	while($array = mysql_fetch_array($res))
+	foreach ($newsRows as $array)
 	{
 		$Cache->add_row();
 		$Cache->add_part();
@@ -91,8 +94,8 @@ echo $Cache->next_row();
 if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes")){
 	// Get the newest fun stuff
 	if (!$row = $Cache->get_value('current_fun_content')){
-		$result = sql_query("SELECT fun.*, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($result);
+		$funRows = \Nexus\Database\NexusDB::select("SELECT fun.*, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1");
+		$row = $funRows[0] ?? null;
 		$Cache->cache_value('current_fun_content', $row, 1043);
 	}
 	if (!$row) //There is no funbox item
@@ -184,13 +187,13 @@ print implode('', $extraModules);
 
 if ($showlastxforumposts_main == "yes" && $CURUSER)
 {
-	$res = sql_query("SELECT posts.id AS pid, posts.userid AS userpost, posts.added, topics.id AS tid, topics.subject, topics.forumid, topics.views, forums.name FROM posts, topics, forums WHERE posts.topicid = topics.id AND topics.forumid = forums.id AND minclassread <=" . sqlesc(get_user_class()) . " ORDER BY posts.id DESC LIMIT 5") or sqlerr(__FILE__,__LINE__);
-	if(mysql_num_rows($res) != 0)
+	$lastPostRows = \Nexus\Database\NexusDB::select("SELECT posts.id AS pid, posts.userid AS userpost, posts.added, topics.id AS tid, topics.subject, topics.forumid, topics.views, forums.name FROM posts, topics, forums WHERE posts.topicid = topics.id AND topics.forumid = forums.id AND minclassread <= " . (int) get_user_class() . " ORDER BY posts.id DESC LIMIT 5");
+	if(count($lastPostRows) != 0)
 	{
 		print("<h2>".$lang_index['text_last_five_posts']."</h2>");
 		print("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"colhead\" width=\"100%\" align=\"left\">".$lang_index['col_topic_title']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_view']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_author']."</td><td class=\"colhead\" align=\"left\">".$lang_index['col_posted_at']."</td></tr>");
 
-		while ($postsx = mysql_fetch_assoc($res))
+		foreach ($lastPostRows as $postsx)
 		{
 			print("<tr><td><a href=\"forums.php?action=viewtopic&amp;topicid=".$postsx["tid"]."&amp;page=p".$postsx["pid"]."#pid".$postsx["pid"]."\"><b>".htmlspecialchars($postsx["subject"])."</b></a><br />".$lang_index['text_in']."<a href=\"forums.php?action=viewforum&amp;forumid=".$postsx["forumid"]."\">".htmlspecialchars($postsx["name"])."</a></td><td align=\"center\">".$postsx["views"]."</td><td align=\"center\">" . get_username($postsx["userpost"]) ."</td><td>".gettime($postsx["added"])."</td></tr>");
 		}
@@ -206,8 +209,8 @@ if ($showlastxtorrents_main == "yes") {
 		$ltCacheTtl = 120;
 		$ltHtml = $Cache->get_value($ltCacheKey);
 		if ($ltHtml === false || $ltHtml === null || $ltHtml === '') {
-			$result = sql_query("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.size, t.owner, t.anonymous, t.cover, c.name AS cat_name FROM torrents t LEFT JOIN categories c ON t.category = c.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 9") or sqlerr(__FILE__, __LINE__);
-			if (mysql_num_rows($result) != 0) {
+			$ltRows = \Nexus\Database\NexusDB::select("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.size, t.owner, t.anonymous, t.cover, c.name AS cat_name FROM torrents t LEFT JOIN categories c ON t.category = c.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 9");
+			if (count($ltRows) != 0) {
 				ob_start();
 				?>
 				<h2><?php echo $lang_index['text_last_five_torrent'] ?></h2>
@@ -298,7 +301,7 @@ if ($showlastxtorrents_main == "yes") {
 				</style>
 				<div class="lt-grid">
 				<?php
-				while ($row = mysql_fetch_assoc($result))
+				foreach ($ltRows as $row)
 				{
 					$detailsUrl = 'details.php?id=' . (int)$row['id'] . '&hit=1';
 					$rawCover = trim((string)($row['cover'] ?? ''));
@@ -411,8 +414,8 @@ if ($CURUSER && $showpolls_main == "yes")
 {
 		// Get current poll
 		if (!$arr = $Cache->get_value('current_poll_content')){
-			$res = sql_query("SELECT * FROM polls ORDER BY id DESC LIMIT 1") or sqlerr(__FILE__, __LINE__);
-			$arr = mysql_fetch_array($res);
+			$pollLatestRows = \Nexus\Database\NexusDB::select("SELECT * FROM polls ORDER BY id DESC LIMIT 1");
+			$arr = $pollLatestRows[0] ?? null;
 			$Cache->cache_value('current_poll_content', $arr, 7226);
 		}
 		if (!$arr)
@@ -448,8 +451,8 @@ if ($CURUSER && $showpolls_main == "yes")
 			print("<p align=\"center\"><b>".$question."</b></p>\n");
 
 			// Check if user has already voted
-			$res = sql_query("SELECT selection FROM pollanswers WHERE pollid=".sqlesc($pollid)." AND userid=".sqlesc($CURUSER["id"])) or sqlerr();
-			$voted = mysql_fetch_assoc($res);
+			$votedRows = \Nexus\Database\NexusDB::select("SELECT selection FROM pollanswers WHERE pollid = " . (int) $pollid . " AND userid = " . (int) $CURUSER["id"]);
+			$voted = $votedRows[0] ?? null;
 			if ($voted) //user has already voted
 			{
 				$uservote = $voted["selection"];
@@ -457,19 +460,20 @@ if ($CURUSER && $showpolls_main == "yes")
 				if (!$Cache->get_page())
 				{
 				// we reserve 255 for blank vote.
-				$res = sql_query("SELECT selection FROM pollanswers WHERE pollid=".sqlesc($pollid)." AND selection < 20") or sqlerr();
+				$voteSelectionRows = \Nexus\Database\NexusDB::select("SELECT selection FROM pollanswers WHERE pollid = " . (int) $pollid . " AND selection < 20");
 
-				$tvotes = mysql_num_rows($res);
+				$tvotes = count($voteSelectionRows);
 
 				$vs = array();
 				$os = array();
 
 				// Count votes
-                while ($arr2 = mysql_fetch_row($res)) {
-                    if (!isset($vs[$arr2[0]])) {
-                        $vs[$arr2[0]] = 0;
+                foreach ($voteSelectionRows as $arr2) {
+                    $sel = $arr2['selection'];
+                    if (!isset($vs[$sel])) {
+                        $vs[$sel] = 0;
                     }
-                    $vs[$arr2[0]] ++;
+                    $vs[$sel] ++;
                 }
 
 
@@ -767,11 +771,11 @@ if ($showtrackerload == "yes") {
 	$Cache->new_page('links', 86400, false);
 	if (!$Cache->get_page()){
 	$Cache->add_whole_row();
-	$res = sql_query("SELECT * FROM links ORDER BY id ASC") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) > 0)
+	$linkRows = \Nexus\Database\NexusDB::select("SELECT * FROM links ORDER BY id ASC");
+	if (count($linkRows) > 0)
 	{
 		$links = "";
-		while($array = mysql_fetch_array($res))
+		foreach ($linkRows as $array)
 		{
 			$links .= "<a href=\"" . $array['url'] . "\" title=\"" . $array['title'] . "\" target=\"_blank\">" . $array['name'] . "</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		}
