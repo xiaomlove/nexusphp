@@ -15,8 +15,11 @@ if ($action == 'delete')
 {
 	$id = intval($_GET["id"] ?? 0);
 	int_check($id,true);
-	$res = sql_query("SELECT userid FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_array($res);
+	$arr = \Nexus\Database\NexusDB::table('fun')
+		->where('id', (int) $id)
+		->select(['userid'])
+		->first();
+	$arr = $arr ? (array) $arr : null;
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
 	user_can('funmanage', true);
@@ -24,7 +27,7 @@ if ($action == 'delete')
 	$returnto = $_GET["returnto"] ? htmlspecialchars($_GET["returnto"]) : htmlspecialchars($_SERVER["HTTP_REFERER"]);
 	if (!$sure)
 		stderr($lang_fun['std_delete_fun'],$lang_fun['text_please_click'] ."<a class=altlink href=?action=delete&id=$id&returnto=$returnto&sure=1>".$lang_fun['text_here_if_sure'],false);
-	sql_query("DELETE FROM fun WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+	\Nexus\Database\NexusDB::table('fun')->where('id', (int) $id)->delete();
 	$Cache->delete_value('current_fun_content');
 	$Cache->delete_value('current_fun', true);
 	$Cache->delete_value('current_fun_vote_count');
@@ -34,9 +37,13 @@ if ($action == 'delete')
 }
 if ($action == 'new')
 {
-	$sql = "SELECT *, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1";
-	$result = sql_query($sql) or sqlerr(__FILE__,__LINE__);
-	$row = mysql_fetch_array($result);
+	$row = \Nexus\Database\NexusDB::table('fun')
+		->whereNotIn('status', ['banned', 'dull'])
+		->orderByDesc('added')
+		->limit(1)
+		->select(['fun.*', \Nexus\Database\NexusDB::raw("IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew")])
+		->first();
+	$row = $row ? (array) $row : null;
 	if ($row && !$row['neednew'])
 		stderr($lang_fun['std_error'],$lang_fun['std_the_newest_fun_item'].htmlspecialchars($row['title']).$lang_fun['std_posted_on'].$row['added'].$lang_fun['std_need_to_wait']);
 	else {
@@ -52,9 +59,13 @@ if ($action == 'new')
 }
 if ($action == 'add')
 {
-	$sql = "SELECT *, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1";
-	$result = sql_query($sql) or sqlerr(__FILE__,__LINE__);
-	$row = mysql_fetch_array($result);
+	$row = \Nexus\Database\NexusDB::table('fun')
+		->whereNotIn('status', ['banned', 'dull'])
+		->orderByDesc('added')
+		->limit(1)
+		->select(['fun.*', \Nexus\Database\NexusDB::raw("IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew")])
+		->first();
+	$row = $row ? (array) $row : null;
 	if ($row && !$row['neednew'])
 		stderr($lang_fun['std_error'],$lang_fun['std_the_newest_fun_item'].htmlspecialchars($row['title']).$lang_fun['std_posted_on'].$row['added'].$lang_fun['std_need_to_wait']);
 	else {
@@ -64,13 +75,18 @@ if ($action == 'add')
 	$title = htmlspecialchars($_POST['subject']);
 	if (!$title)
 	stderr($lang_fun['std_error'],$lang_fun['std_title_is_empty']);
-	$sql = "INSERT INTO fun (userid, added, body, title, status) VALUES (".sqlesc($CURUSER['id']).",".sqlesc(date("Y-m-d H:i:s")).",".sqlesc($body).",".sqlesc($title).", 'normal')";
-	sql_query($sql) or sqlerr(__FILE__, __LINE__);
+	$insertId = (int) \Nexus\Database\NexusDB::insert('fun', [
+		'userid' => (int) $CURUSER['id'],
+		'added' => date("Y-m-d H:i:s"),
+		'body' => (string) $body,
+		'title' => (string) $title,
+		'status' => 'normal',
+	]);
 	$Cache->delete_value('current_fun_content');
 	$Cache->delete_value('current_fun', true);
 	$Cache->delete_value('current_fun_vote_count');
 	$Cache->delete_value('current_fun_vote_funny_count');
-	if (mysql_affected_rows() == 1)
+	if ($insertId > 0)
 	$warning = $lang_fun['std_fun_added_successfully'];
 	else
 	stderr($lang_fun['std_error'],$lang_fun['std_error_happened']);
@@ -91,8 +107,13 @@ if ($action == 'view')
 <?php
 print(get_style_addicode());
 if (!$row = $Cache->get_value('current_fun_content')){
-	$result = sql_query("SELECT fun.*, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1") or sqlerr(__FILE__,__LINE__);
-	$row = mysql_fetch_array($result);
+	$row = \Nexus\Database\NexusDB::table('fun')
+		->whereNotIn('status', ['banned', 'dull'])
+		->orderByDesc('added')
+		->limit(1)
+		->select(['fun.*', \Nexus\Database\NexusDB::raw("IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew")])
+		->first();
+	$row = $row ? (array) $row : null;
 	$Cache->cache_value('current_fun_content', $row, 1043);
 }
 if ($row){
@@ -125,8 +146,10 @@ print("</body></html>");
 if ($action == 'edit'){
 	$id = intval($_GET["id"] ?? 0);
 	int_check($id,true);
-	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_array($res);
+	$arr = \Nexus\Database\NexusDB::table('fun')
+		->where('id', (int) $id)
+		->first();
+	$arr = $arr ? (array) $arr : null;
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
 	if ($arr["userid"] != $CURUSER["id"] && !user_can('funmanage'))
@@ -143,9 +166,12 @@ if ($action == 'edit'){
 		if ($title == "")
 		stderr($lang_fun['std_error'],$lang_fun['std_title_is_empty']);
 
-		$body = sqlesc($body);
-		$title = sqlesc($title);
-		sql_query("UPDATE fun SET body=$body, title=$title WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::table('fun')
+			->where('id', (int) $id)
+			->update([
+				'body' => (string) $body,
+				'title' => (string) $title,
+			]);
 		$Cache->delete_value('current_fun_content');
 		$Cache->delete_value('current_fun', true);
 		header("Location: " . get_protocol_prefix() . "$BASEURL/index.php");
@@ -166,8 +192,10 @@ if ($action == 'ban')
 	user_can('funmanage', true);
 	$id = intval($_GET["id"] ?? 0);
 	int_check($id,true);
-	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_array($res);
+	$arr = \Nexus\Database\NexusDB::table('fun')
+		->where('id', (int) $id)
+		->first();
+	$arr = $arr ? (array) $arr : null;
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
 	if ($_SERVER['REQUEST_METHOD'] == 'POST')
@@ -176,7 +204,9 @@ if ($action == 'ban')
 		$title = htmlspecialchars($arr['title']);
 		if ($banreason == "")
 		stderr($lang_fun['std_error'],$lang_fun['std_reason_is_empty']);
-		sql_query("UPDATE fun SET status='banned' WHERE id=".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::table('fun')
+			->where('id', (int) $id)
+			->update(['status' => 'banned']);
 
 		$Cache->delete_value('current_fun_content');
 		$Cache->delete_value('current_fun', true);
@@ -218,7 +248,6 @@ function funreward($funvote, $totalvote, $title, $posterid, $bonus)
 			'msg' => $msg,
 	]);
 
-	sql_query($sql) or sqlerr(__FILE__, __LINE__);
 	$Cache->delete_value('user_'.$posterid.'_unread_message_count');
 	$Cache->delete_value('user_'.$posterid.'_inbox_count');
 }
@@ -227,31 +256,44 @@ if ($action == 'vote')
 {
 	$id = intval($_GET["id"] ?? 0);
 	int_check($id,true);
-	$res = sql_query("SELECT * FROM fun WHERE id=$id") or sqlerr(__FILE__,__LINE__);
-	$arr = mysql_fetch_array($res);
+	$arr = \Nexus\Database\NexusDB::table('fun')
+		->where('id', (int) $id)
+		->first();
+	$arr = $arr ? (array) $arr : null;
 	if (!$arr)
 		stderr($lang_fun['std_error'], $lang_fun['std_invalid_id']);
 	else {
-		$res = sql_query("SELECT * FROM funvotes WHERE funid=$id AND userid = {$CURUSER['id']}") or sqlerr(__FILE__,__LINE__);
-		$checkvote = mysql_fetch_array($res);
+		$checkvote = \Nexus\Database\NexusDB::table('funvotes')
+			->where('funid', (int) $id)
+			->where('userid', (int) $CURUSER['id'])
+			->first();
 		if ($checkvote)
 			stderr($lang_fun['std_error'], $lang_fun['std_already_vote']);
 		else {
 			if ($_GET["yourvote"] == 'dull')
 				$vote = 'dull';
 			else $vote = 'fun';
-			$sql = "INSERT INTO funvotes (funid, userid, added, vote) VALUES (".sqlesc($id).",".$CURUSER['id'].",".sqlesc(date("Y-m-d H:i:s")).",".sqlesc($vote).")";
-			sql_query($sql) or sqlerr(__FILE__,__LINE__);
+			\Nexus\Database\NexusDB::insert('funvotes', [
+				'funid' => (int) $id,
+				'userid' => (int) $CURUSER['id'],
+				'added' => date("Y-m-d H:i:s"),
+				'vote' => (string) $vote,
+			]);
 			KPS("+",$funboxvote_bonus,$CURUSER['id']); //voter gets 1.0 bonus per vote
 			$totalvote = $Cache->get_value('current_fun_vote_count');
 			if ($totalvote == ""){
-				$totalvote = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id']));
+				$totalvote = \Nexus\Database\NexusDB::table('funvotes')
+					->where('funid', (int) ($row['id'] ?? 0))
+					->count();
 			}
 			else $totalvote++;
 			$Cache->cache_value('current_fun_vote_count', $totalvote, 756);
 			$funvote = $Cache->get_value('current_fun_vote_funny_count');
 			if ($funvote == ""){
-				$funvote = get_row_count("funvotes", "WHERE funid = ".sqlesc($row['id'])." AND vote='fun'");
+				$funvote = \Nexus\Database\NexusDB::table('funvotes')
+					->where('funid', (int) ($row['id'] ?? 0))
+					->where('vote', 'fun')
+					->count();
 			}
 			elseif($vote == 'fun')
 				$funvote++;
@@ -259,7 +301,7 @@ if ($action == 'vote')
 			if ($totalvote) $ratio = $funvote / $totalvote; else $ratio = 1;
 			if ($totalvote >= 20){
 				if ($ratio > 0.75){
-					sql_query("UPDATE fun SET status = 'veryfunny' WHERE id = ".sqlesc($id));
+					\Nexus\Database\NexusDB::table('fun')->where('id', (int) $id)->update(['status' => 'veryfunny']);
 					if ($totalvote == 25) //Give fun item poster some bonus and write a message to him
 						funreward($funvote, $totalvote, $arr['title'], $arr['userid'], $funboxreward_bonus * 2);
 					if ($totalvote == 50)
@@ -270,7 +312,7 @@ if ($action == 'vote')
 						funreward($funvote, $totalvote, $arr['title'], $arr['userid'], $funboxreward_bonus * 2);
 					}
 				elseif ($ratio > 0.5){
-					sql_query("UPDATE fun SET status = 'funny' WHERE id = ".sqlesc($id));
+					\Nexus\Database\NexusDB::table('fun')->where('id', (int) $id)->update(['status' => 'funny']);
 					if ($totalvote == 25) //Give fun item poster some bonus and write a message to him
 						funreward($funvote, $totalvote, $arr['id'], $arr['userid'], $funboxreward_bonus);
 					if ($totalvote == 50)
@@ -281,10 +323,10 @@ if ($action == 'vote')
 						funreward($funvote, $totalvote, $arr['id'], $arr['userid'], $funboxreward_bonus);
 					}
 				elseif ($ratio > 0.25){
-					sql_query("UPDATE fun SET status = 'notfunny' WHERE id = ".sqlesc($id));
+					\Nexus\Database\NexusDB::table('fun')->where('id', (int) $id)->update(['status' => 'notfunny']);
 				}
 				else{
-					sql_query("UPDATE fun SET status = 'dull' WHERE id = ".sqlesc($id));
+					\Nexus\Database\NexusDB::table('fun')->where('id', (int) $id)->update(['status' => 'dull']);
 				 	//write a message to fun item poster
                     $locale = get_user_locale($arr['userid']);
                     $subject = nexus_trans("fun.msg_fun_item_dull", [], $locale);
