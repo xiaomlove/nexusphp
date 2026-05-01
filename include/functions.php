@@ -3228,11 +3228,27 @@ function cover_thumb_url($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
 		imagedestroy($src);
 		return $url;
 	}
+	if (function_exists('imagepalettetotruecolor')) {
+		@imagepalettetotruecolor($src);
+	}
 	$scale = min(1.0, $maxWidth / $srcWidth, $maxHeight / $srcHeight);
 	$dstWidth  = max(1, (int) floor($srcWidth * $scale));
 	$dstHeight = max(1, (int) floor($srcHeight * $scale));
 	$dst = imagecreatetruecolor($dstWidth, $dstHeight);
+	$white = imagecolorallocate($dst, 255, 255, 255);
+	imagefilledrectangle($dst, 0, 0, $dstWidth, $dstHeight, $white);
 	imagecopyresampled($dst, $src, 0, 0, 0, 0, $dstWidth, $dstHeight, $srcWidth, $srcHeight);
+	if ($scale < 1.0 && function_exists('imageconvolution')) {
+		$sharpen = [
+			[ 0.0, -1.0,  0.0],
+			[-1.0,  5.0, -1.0],
+			[ 0.0, -1.0,  0.0],
+		];
+		@imageconvolution($dst, $sharpen, 1.0, 0);
+	}
+	if (function_exists('imageinterlace')) {
+		@imageinterlace($dst, true);
+	}
 	$ok = @imagejpeg($dst, $absolutePath, max(1, min(100, (int)$quality)));
 	imagedestroy($src);
 	imagedestroy($dst);

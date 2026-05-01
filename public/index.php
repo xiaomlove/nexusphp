@@ -205,12 +205,21 @@ if ($showlastxforumposts_main == "yes" && $CURUSER)
 // ------------- start: latest torrents ------------------//
 
 if ($showlastxtorrents_main == "yes") {
-		$ltCacheKey = 'index_latest_torrents_grid_v2';
+		$ltCacheKey = 'index_latest_torrents_grid_v3';
 		$ltCacheTtl = 120;
 		$ltHtml = $Cache->get_value($ltCacheKey);
 		if ($ltHtml === false || $ltHtml === null || $ltHtml === '') {
-			$ltRows = \Nexus\Database\NexusDB::select("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.size, t.owner, t.anonymous, t.cover, c.name AS cat_name FROM torrents t LEFT JOIN categories c ON t.category = c.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 9");
+			$ltRows = \Nexus\Database\NexusDB::select("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.times_completed, t.size, t.owner, t.anonymous, t.cover, t.sp_state, c.name AS cat_name FROM torrents t LEFT JOIN categories c ON t.category = c.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 12");
 			if (count($ltRows) != 0) {
+				$ltGlobalSpState = (int) get_global_sp_state();
+				$ltPromoLabels = [
+					\App\Models\Torrent::PROMOTION_FREE => ['text' => 'FREE', 'class' => 'lt-promo-free'],
+					\App\Models\Torrent::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'class' => 'lt-promo-2x'],
+					\App\Models\Torrent::PROMOTION_FREE_TWO_TIMES_UP => ['text' => '2X FREE', 'class' => 'lt-promo-2xfree'],
+					\App\Models\Torrent::PROMOTION_HALF_DOWN => ['text' => '50%', 'class' => 'lt-promo-50'],
+					\App\Models\Torrent::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'class' => 'lt-promo-2x50'],
+					\App\Models\Torrent::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'class' => 'lt-promo-30'],
+				];
 				ob_start();
 				?>
 				<h2><?php echo $lang_index['text_last_five_torrent'] ?></h2>
@@ -229,12 +238,23 @@ if ($showlastxtorrents_main == "yes") {
 						flex-direction: column;
 						background: rgba(127,127,127,.05);
 					}
+					.lt-grid .lt-title {
+						padding: 6px 8px 4px;
+						font-size: 12px;
+						line-height: 1.3;
+						overflow: hidden;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+						border-bottom: 1px solid rgba(127,127,127,.2);
+					}
+					.lt-grid .lt-title a { text-decoration: none; }
 					.lt-grid .lt-cover {
 						position: relative;
 						display: block;
 						width: 100%;
 						aspect-ratio: 2 / 3;
-						max-height: 240px;
+						max-height: 360px;
 						background: rgba(0,0,0,.08);
 						overflow: hidden;
 					}
@@ -244,6 +264,8 @@ if ($showlastxtorrents_main == "yes") {
 						height: 100%;
 						object-fit: cover;
 						display: block;
+						image-rendering: -webkit-optimize-contrast;
+						image-rendering: crisp-edges;
 					}
 					.lt-grid .lt-cover-fallback {
 						display: flex;
@@ -257,11 +279,10 @@ if ($showlastxtorrents_main == "yes") {
 						text-align: center;
 						word-break: break-word;
 					}
-					.lt-grid .lt-type {
+					.lt-grid .lt-type,
+					.lt-grid .lt-promo {
 						position: absolute;
 						top: 6px;
-						right: 6px;
-						background: rgba(0,0,0,.78);
 						color: #fff;
 						font-size: 11px;
 						font-weight: bold;
@@ -270,17 +291,19 @@ if ($showlastxtorrents_main == "yes") {
 						line-height: 1.2;
 						letter-spacing: .3px;
 						pointer-events: none;
+						box-shadow: 0 1px 3px rgba(0,0,0,.4);
 					}
-					.lt-grid .lt-title {
-						padding: 6px 8px 4px;
-						font-size: 12px;
-						line-height: 1.3;
-						overflow: hidden;
-						display: -webkit-box;
-						-webkit-line-clamp: 2;
-						-webkit-box-orient: vertical;
+					.lt-grid .lt-type {
+						right: 6px;
+						background: rgba(0,0,0,.78);
 					}
-					.lt-grid .lt-title a { text-decoration: none; }
+					.lt-grid .lt-promo { left: 6px; }
+					.lt-grid .lt-promo-free    { background: #0034ce; }
+					.lt-grid .lt-promo-2x      { background: #009900; }
+					.lt-grid .lt-promo-2xfree  { background: linear-gradient(90deg, #009900, #0034ce); }
+					.lt-grid .lt-promo-50      { background: #dc0003; }
+					.lt-grid .lt-promo-2x50    { background: linear-gradient(90deg, #009900, #dc0003); }
+					.lt-grid .lt-promo-30      { background: #411749; }
 					.lt-grid .lt-meta {
 						margin-top: auto;
 						display: flex;
@@ -290,8 +313,9 @@ if ($showlastxtorrents_main == "yes") {
 						font-size: 11px;
 						border-top: 1px solid rgba(127,127,127,.2);
 					}
-					.lt-grid .lt-seed { color: #2fad2f; font-weight: bold; }
+					.lt-grid .lt-seed  { color: #2fad2f; font-weight: bold; }
 					.lt-grid .lt-leech { color: #d04848; font-weight: bold; }
+					.lt-grid .lt-down  { color: #5b6cff; font-weight: bold; }
 					@media (max-width: 700px) {
 						.lt-grid { grid-template-columns: repeat(2, 1fr); }
 					}
@@ -305,8 +329,13 @@ if ($showlastxtorrents_main == "yes") {
 				{
 					$detailsUrl = 'details.php?id=' . (int)$row['id'] . '&hit=1';
 					$rawCover = trim((string)($row['cover'] ?? ''));
-					$thumbUrl = $rawCover !== '' ? cover_thumb_url($rawCover, 240, 360) : '';
+					$thumbUrl = $rawCover !== '' ? cover_thumb_url($rawCover, 360, 540, 90) : '';
 					$typeLabel = trim((string)($row['cat_name'] ?? ''));
+					$rowSpState = (int) ($row['sp_state'] ?? \App\Models\Torrent::PROMOTION_NORMAL);
+					$effectiveSp = $rowSpState > \App\Models\Torrent::PROMOTION_NORMAL
+						? $rowSpState
+						: ($ltGlobalSpState > \App\Models\Torrent::PROMOTION_NORMAL ? $ltGlobalSpState : 0);
+					$promoBadge = $ltPromoLabels[$effectiveSp] ?? null;
 					if (($row['anonymous'] ?? 'no') === 'yes') {
 						$ownerHtml = '<i>Anonymous</i>';
 					} else {
@@ -315,6 +344,9 @@ if ($showlastxtorrents_main == "yes") {
 					$nameSafe = htmlspecialchars($row['name']);
 					?>
 					<div class="lt-card">
+						<div class="lt-title">
+							<a href="<?php echo htmlspecialchars($detailsUrl) ?>" title="<?php echo $nameSafe ?>"><b><?php echo $nameSafe ?></b></a>
+						</div>
 						<a class="lt-cover" href="<?php echo htmlspecialchars($detailsUrl) ?>" title="<?php echo $nameSafe ?>">
 							<?php if ($thumbUrl !== '') { ?>
 								<img src="<?php echo htmlspecialchars($thumbUrl) ?>" alt="<?php echo $nameSafe ?>" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='flex';}" />
@@ -322,16 +354,17 @@ if ($showlastxtorrents_main == "yes") {
 							<?php } else { ?>
 								<div class="lt-cover-fallback"><?php echo htmlspecialchars(mb_substr($row['name'], 0, 60)) ?></div>
 							<?php } ?>
+							<?php if ($promoBadge !== null) { ?>
+								<span class="lt-promo <?php echo htmlspecialchars($promoBadge['class']) ?>"><?php echo htmlspecialchars($promoBadge['text']) ?></span>
+							<?php } ?>
 							<?php if ($typeLabel !== '') { ?>
 								<span class="lt-type"><?php echo htmlspecialchars($typeLabel) ?></span>
 							<?php } ?>
 						</a>
-						<div class="lt-title">
-							<a href="<?php echo htmlspecialchars($detailsUrl) ?>"><b><?php echo $nameSafe ?></b></a>
-						</div>
 						<div class="lt-meta">
 							<span class="lt-seed" title="<?php echo htmlspecialchars($lang_index['col_seeder']) ?>">&#x25B2; <?php echo (int)$row['seeders'] ?></span>
 							<span class="lt-leech" title="<?php echo htmlspecialchars($lang_index['col_leecher']) ?>">&#x25BC; <?php echo (int)$row['leechers'] ?></span>
+							<span class="lt-down" title="<?php echo htmlspecialchars($lang_index['col_completed'] ?? 'Downloads') ?>">&#x2913; <?php echo (int)$row['times_completed'] ?></span>
 							<span><?php echo mksize((int)$row['size']) ?></span>
 							<span><?php echo $ownerHtml ?></span>
 						</div>
