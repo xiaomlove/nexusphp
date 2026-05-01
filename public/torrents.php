@@ -55,7 +55,7 @@ if ($showsubcat){
 }
 
 $searchstr_ori = htmlspecialchars(trim($_GET["search"] ?? ''));
-$searchstr = mysql_real_escape_string(trim($_GET["search"] ?? ''));
+$searchstr = \Nexus\Database\NexusDB::getInstance()->escapeString(trim($_GET["search"] ?? ''));
 if (empty($searchstr)) {
     unset($searchstr);
 }
@@ -953,11 +953,11 @@ if ($shouldUseMeili) {
     $count = $resultFromSearchRep['total'];
 } else {
     do_log("[BEFORE_TORRENT_COUNT_SQL]", 'debug');
-    $res = sql_query($sql);
+    $countRows = \Nexus\Database\NexusDB::select($sql);
     do_log("[AFTER_TORRENT_COUNT_SQL] $sql", 'debug');
     $count = 0;
-    while($row = mysql_fetch_array($res)) {
-        $count += $row[0];
+    foreach ($countRows as $row) {
+        $count += (int) array_values($row)[0];
     }
 }
 $maxPageSize = 100;
@@ -1010,11 +1010,11 @@ if ($count)
 
     if (!$shouldUseMeili) {
         do_log("[BEFORE_TORRENT_LIST_SQL]", 'debug');
-        $res = sql_query($query);
+        $listRows = \Nexus\Database\NexusDB::select($query);
         do_log("[AFTER_TORRENT_LIST_SQL] $query", 'debug');
     }
 } else {
-    unset($res);
+    unset($listRows);
 }
 
 if (isset($searchstr))
@@ -1257,11 +1257,11 @@ if (!$Cache->get_page()){
 	$secs = 3*24*60*60;
 	$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs)));
 	$dt2 = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs*2)));
-	sql_query("DELETE FROM suggest WHERE adddate <" . $dt2) or sqlerr();
-	$searchres = sql_query("SELECT keywords, COUNT(DISTINCT userid) as count FROM suggest WHERE adddate >" . $dt . " GROUP BY keywords ORDER BY count DESC LIMIT 15") or sqlerr();
+	\Nexus\Database\NexusDB::statement("DELETE FROM suggest WHERE adddate < " . $dt2);
+	$searchRows = \Nexus\Database\NexusDB::select("SELECT keywords, COUNT(DISTINCT userid) as count FROM suggest WHERE adddate > " . $dt . " GROUP BY keywords ORDER BY count DESC LIMIT 15");
 	$hotcount = 0;
 	$hotsearch = "";
-	while ($searchrow = mysql_fetch_assoc($searchres))
+	foreach ($searchRows as $searchrow)
 	{
 		$hotsearch .= "<a href=\"".htmlspecialchars("?search=" . rawurlencode($searchrow["keywords"]) . "&notnewword=1")."\"><u>" . htmlspecialchars($searchrow["keywords"]) . "</u></a>&nbsp;&nbsp;";
 		$hotcount += mb_strlen($searchrow["keywords"],"UTF-8");
@@ -1313,9 +1313,7 @@ if ($count) {
     if ($shouldUseMeili) {
         $rows = $resultFromSearchRep['list'];
     } else {
-        while ($row = mysql_fetch_assoc($res)) {
-            $rows[] = $row;
-        }
+        $rows = $listRows ?? [];
     }
     $rows = apply_filter('torrent_list', $rows, $page, $sectiontype, $_GET['search'] ?? '');
 	print($pagertop);
