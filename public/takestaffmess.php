@@ -40,16 +40,14 @@ $whereStr = implode(' OR ', $conditions);
 while (true) {
     $msgValues = [];
     $offset = ($page - 1) * $size;
-    $query = sql_query("SELECT id FROM users WHERE ($whereStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size");
-    while($dat=mysql_fetch_assoc($query))
-    {
-        $msgValues[] = sprintf('(%s, %s, %s, %s, %s)', $sender_id, $dat['id'], $dt, sqlesc($subject), sqlesc($msg));
+    foreach (\Nexus\Database\NexusDB::select("SELECT id FROM users WHERE ($whereStr) and `enabled` = 'yes' and `status` = 'confirmed' limit $offset, $size") as $dat) {
+        $msgValues[] = sprintf('(%s, %s, %s, %s, %s)', $sender_id, (int) $dat['id'], $dt, sqlesc($subject), sqlesc($msg));
     }
     if (empty($msgValues)) {
         break;
     }
     $sql = "INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES " . implode(', ', $msgValues);
-    sql_query($sql);
+    \Nexus\Database\NexusDB::statement($sql);
     $page++;
 }
 

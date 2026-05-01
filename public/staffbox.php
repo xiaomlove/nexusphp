@@ -83,8 +83,8 @@ if ($action == "viewpm")
 {
 $pmid = intval($_GET["pmid"] ?? 0);
 
-$ress4 = sql_query("SELECT * FROM staffmessages WHERE id=".sqlesc($pmid));
-$arr4 = mysql_fetch_assoc($ress4);
+$ress4Rows = \Nexus\Database\NexusDB::select("SELECT * FROM staffmessages WHERE id = " . (int) $pmid);
+$arr4 = $ress4Rows[0] ?? [];
 can_access_staff_message($arr4);
 $answeredby = get_username($arr4["answeredby"]);
 
@@ -140,14 +140,14 @@ if ($action == "answermessage") {
 
         int_check($receiver,true);
 
-        $res = sql_query("SELECT * FROM users WHERE id=" . sqlesc($receiver));
-        $user = mysql_fetch_assoc($res);
+        $userRows = \Nexus\Database\NexusDB::select("SELECT * FROM users WHERE id = " . (int) $receiver);
+        $user = $userRows[0] ?? null;
 
         if (!$user)
    		stderr($lang_staffbox['std_error'], $lang_staffbox['std_no_user_id']);
 
-        $res2 = sql_query("SELECT * FROM staffmessages WHERE id=" . sqlesc($answeringto));
-        $staffmsg = mysql_fetch_assoc($res2);
+        $staffMsgRows = \Nexus\Database\NexusDB::select("SELECT * FROM staffmessages WHERE id = " . (int) $answeringto);
+        $staffmsg = $staffMsgRows[0] ?? [];
 
         can_access_staff_message($staffmsg);
 
@@ -204,7 +204,7 @@ $subject = \App\Models\StaffMessage::query()->findOrFail($answeringto)->toArray(
     'msg' => $msg,
 ]);
 
-sql_query("UPDATE staffmessages SET answer=$message, answered='1', answeredby='$userid' WHERE id=$answeringto") or sqlerr(__FILE__, __LINE__);
+\Nexus\Database\NexusDB::statement("UPDATE staffmessages SET answer = $message, answered = '1', answeredby = " . (int) $userid . " WHERE id = " . (int) $answeringto);
 $Cache->delete_value('staff_new_message_count');
 clear_staff_message_cache();
         header("Location: staffbox.php?action=viewpm&pmid=$answeringto");
@@ -222,7 +222,7 @@ if ($action == "deletestaffmessage") {
     die;
 
     can_access_staff_message($id);
-    sql_query("DELETE FROM staffmessages WHERE id=" . sqlesc($id)) or die();
+    \Nexus\Database\NexusDB::statement("DELETE FROM staffmessages WHERE id = " . (int) $id);
 $Cache->delete_value('staff_message_count');
 $Cache->delete_value('staff_new_message_count');
 clear_staff_message_cache();
@@ -238,7 +238,7 @@ if ($action == "setanswered") {
 
 $id = intval($_GET["id"] ?? 0);
     can_access_staff_message($id);
-sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = $id") or sqlerr();
+\Nexus\Database\NexusDB::statement("UPDATE staffmessages SET answered = 1, answeredby = " . (int) $CURUSER['id'] . " WHERE id = " . (int) $id);
 $Cache->delete_value('staff_new_message_count');
     clear_staff_message_cache();
 header("Location: staffbox.php" . (!empty($_GET['return']) ? "?" . $_GET['return'] : ''));
@@ -254,17 +254,17 @@ if ($action == "takecontactanswered") {
     }
 
 if ($_POST['setdealt']){
-	$res = sql_query ("SELECT * FROM staffmessages WHERE answered=0 AND id IN (" . implode(", ", $_POST['setanswered']) . ")");
-	while ($arr = mysql_fetch_assoc($res)) {
+	$idList = implode(", ", array_map("intval", $_POST['setanswered']));
+	foreach (\Nexus\Database\NexusDB::select("SELECT * FROM staffmessages WHERE answered = 0 AND id IN (" . $idList . ")") as $arr) {
 	    can_access_staff_message($arr);
-        sql_query ("UPDATE staffmessages SET answered=1, answeredby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
+        \Nexus\Database\NexusDB::statement("UPDATE staffmessages SET answered = 1, answeredby = " . (int) $CURUSER['id'] . " WHERE id = " . (int) $arr['id']);
     }
 }
 elseif ($_POST['delete']){
-	$res = sql_query ("SELECT * FROM staffmessages WHERE id IN (" . implode(", ", $_POST['setanswered']) . ")");
-	while ($arr = mysql_fetch_assoc($res)) {
+	$idList = implode(", ", array_map("intval", $_POST['setanswered']));
+	foreach (\Nexus\Database\NexusDB::select("SELECT * FROM staffmessages WHERE id IN (" . $idList . ")") as $arr) {
         can_access_staff_message($arr);
-        sql_query ("DELETE FROM staffmessages WHERE id = {$arr['id']}") or sqlerr();
+        \Nexus\Database\NexusDB::statement("DELETE FROM staffmessages WHERE id = " . (int) $arr['id']);
     }
 }
 $Cache->delete_value('staff_new_message_count');

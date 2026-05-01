@@ -17,8 +17,7 @@ $offlineimg = "<img class=\"button_offline\" src=\"pic/trans.gif\" alt=\"offline
 $sendpmimg = "<img class=\"button_pm\" src=\"pic/trans.gif\" alt=\"pm\" />";
 //--------------------- FIRST LINE SUPPORT SECTION ---------------------------//
 $ppl = '';
-$res = sql_query("SELECT * FROM users WHERE users.support='yes' AND users.status='confirmed' ORDER BY users.username") or sqlerr();
-while ($arr = mysql_fetch_assoc($res))
+foreach (\Nexus\Database\NexusDB::select("SELECT * FROM users WHERE users.support = 'yes' AND users.status = 'confirmed' ORDER BY users.username") as $arr)
 {
 	$countryrow = get_country_row($arr['country']);
 	$ppl .= "<tr><td class=embedded>". get_username($arr['id']) ."</td><td class=embedded><img width=24 height=15 src=\"pic/flag/".$countryrow['flagpic']."\" title=\"".$countryrow['name']."\" style=\"padding-bottom:1px;\"></td>
@@ -55,8 +54,7 @@ end_frame();
 
 //--------------------- film critics section ---------------------------//
 $ppl = '';
-$res = sql_query("SELECT * FROM users WHERE users.picker='yes' AND users.status='confirmed' ORDER BY users.username") or sqlerr();
-while ($arr = mysql_fetch_assoc($res))
+foreach (\Nexus\Database\NexusDB::select("SELECT * FROM users WHERE users.picker = 'yes' AND users.status = 'confirmed' ORDER BY users.username") as $arr)
 {
 	$countryrow = get_country_row($arr['country']);
 	$ppl .= "<tr height=15><td class=embedded>". get_username($arr['id']) ."</td><td class=embedded ><img width=24 height=15 src=\"pic/flag/".$countryrow['flagpic']."\" title=\"".$countryrow['name']."\" style=\"padding-bottom:1px;\"></td>
@@ -91,13 +89,11 @@ end_frame();
 
 //--------------------- forum moderators section ---------------------------//
 $ppl = '';
-$res = sql_query("SELECT forummods.userid AS userid, users.last_access, users.country FROM forummods LEFT JOIN users ON forummods.userid = users.id GROUP BY userid,users.last_access, users.country,forummods.forumid, forummods.userid ORDER BY forummods.forumid, forummods.userid") or sqlerr();
-while ($arr = mysql_fetch_assoc($res))
+foreach (\Nexus\Database\NexusDB::select("SELECT forummods.userid AS userid, users.last_access, users.country FROM forummods LEFT JOIN users ON forummods.userid = users.id GROUP BY userid, users.last_access, users.country, forummods.forumid, forummods.userid ORDER BY forummods.forumid, forummods.userid") as $arr)
 {
 	$countryrow = get_country_row($arr['country']);
 	$forums = "";
-	$forumres = sql_query("SELECT forums.id, forums.name FROM forums LEFT JOIN forummods ON forums.id = forummods.forumid WHERE forummods.userid = ".sqlesc($arr['userid']));
-	while ($forumrow = mysql_fetch_array($forumres)){
+	foreach (\Nexus\Database\NexusDB::select("SELECT forums.id, forums.name FROM forums LEFT JOIN forummods ON forums.id = forummods.forumid WHERE forummods.userid = " . (int) $arr['userid']) as $forumrow) {
 		$forums .= "<a href=forums.php?action=viewforum&forumid=".$forumrow['id'].">".$forumrow['name']."</a>, ";
 	}
 	$forums = rtrim(trim($forums),",");
@@ -133,9 +129,8 @@ end_frame();
 
 //--------------------- general staff section ---------------------------//
 $ppl = '';
-$res = sql_query("SELECT * FROM users WHERE class > ".UC_VIP." AND status='confirmed' ORDER BY class DESC, username") or sqlerr();
 $curr_class = '';
-while ($arr = mysql_fetch_assoc($res))
+foreach (\Nexus\Database\NexusDB::select("SELECT * FROM users WHERE class > " . UC_VIP . " AND status = 'confirmed' ORDER BY class DESC, username") as $arr)
 {
 	if($curr_class != $arr['class'])
 	{
@@ -175,8 +170,7 @@ end_frame();
 //--------------------- VIP section ---------------------------//
 
 $ppl = '';
-$res = sql_query("SELECT * FROM users WHERE class=".UC_VIP." AND status='confirmed' ORDER BY username") or sqlerr();
-while ($arr = mysql_fetch_assoc($res))
+foreach (\Nexus\Database\NexusDB::select("SELECT * FROM users WHERE class = " . UC_VIP . " AND status = 'confirmed' ORDER BY username") as $arr)
 {
 	$countryrow = get_country_row($arr['country']);
 	$ppl .= "<tr><td class=embedded>". get_username($arr['id']) ."</td><td class=embedded><img width=24 height=15 src=\"pic/flag/".$countryrow['flagpic']."\" title=\"".$countryrow['name']."\" style=\"padding-bottom:1px;\"></td>
