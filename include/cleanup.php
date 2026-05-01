@@ -1071,7 +1071,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 
     //delete old shoutbox
     $until = TIMENOW - $length;
-    sql_query("DELETE FROM shoutbox WHERE date < $until") or sqlerr(__FILE__, __LINE__);
+    \Nexus\Database\NexusDB::table('shoutbox')->where('date', '<', $until)->delete();
     $log = "delete old shoutbox";
     do_log($log);
     if ($printProgress) {

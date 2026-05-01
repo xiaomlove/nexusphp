@@ -8,7 +8,7 @@ if (isset($_GET['del']))
 	{
 		if(user_can('sbmanage'))
 		{
-			sql_query("DELETE FROM shoutbox WHERE id=".mysql_real_escape_string($_GET['del']));
+			\Nexus\Database\NexusDB::table('shoutbox')->where('id', (int) $_GET['del'])->delete();
 		}
 	}
 }
@@ -171,16 +171,21 @@ else
     if (!$lock->acquire()) {
         die($lang_shoutbox['speaking_too_often']);
     }
-	sql_query("INSERT INTO shoutbox (userid, date, text, type) VALUES (" . sqlesc($userid) . ", $date, " . sqlesc($text) . ", ".sqlesc($type).")") or sqlerr(__FILE__, __LINE__);
+	$dateInt = (int) (is_string($date) ? trim($date, "'") : $date);
+	$shoutId = (int) \Nexus\Database\NexusDB::insert('shoutbox', [
+		'userid' => (int) $userid,
+		'date' => $dateInt,
+		'text' => (string) $text,
+		'type' => (string) $type,
+	]);
 	// Broadcast the new shout over Reverb so live listeners refresh
 	// without waiting for the meta-refresh poll. Wrapped to ensure a
 	// broadcasting failure never breaks the legacy insert flow.
 	try {
-		$shoutId = (int) mysql_insert_id();
 		event(new \App\Events\ShoutSent(
 			$shoutId,
 			(int) $userid,
-			(int) (is_string($date) ? trim($date, "'") : $date),
+			$dateInt,
 			(string) $text,
 			(string) $type,
 		));
@@ -191,7 +196,7 @@ else
 }
 }
 
-$limit = ($CURUSER['sbnum'] ?? 70);
+$limit = (int) ($CURUSER['sbnum'] ?? 70);
 if ($where == "helpbox" && $showhelpbox_main == 'yes') {
     //request helpbox, not require login
     $sql = "SELECT * FROM shoutbox WHERE type='hb' ORDER BY date DESC LIMIT ".$limit;
@@ -222,9 +227,11 @@ function shoutbox_render_mentions($html)
 			$nick = $m[1];
 			$key = strtolower($nick);
 			if (!array_key_exists($key, $cache)) {
-				$res = sql_query("SELECT id, username FROM users WHERE LOWER(username) = LOWER(" . sqlesc($nick) . ") LIMIT 1");
-				$row = $res ? mysql_fetch_assoc($res) : false;
-				$cache[$key] = $row ? ['id' => (int)$row['id'], 'name' => $row['username']] : false;
+				$row = \Nexus\Database\NexusDB::table('users')
+					->whereRaw('LOWER(username) = LOWER(?)', [$nick])
+					->select(['id', 'username'])
+					->first();
+				$cache[$key] = $row ? ['id' => (int) $row->id, 'name' => $row->username] : false;
 			}
 			if (!$cache[$key]) {
 				return $m[0];
@@ -235,15 +242,15 @@ function shoutbox_render_mentions($html)
 	);
 }
 
-$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
-if (mysql_num_rows($res) == 0)
+$shoutRows = \Nexus\Database\NexusDB::select($sql);
+if (count($shoutRows) === 0)
 print("\n");
 else
 {
 	$showAvatars = isset($CURUSER['avatars']) && $CURUSER['avatars'] === 'yes';
 	print("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='left'>\n");
 
-	while ($arr = mysql_fetch_assoc($res))
+	foreach ($shoutRows as $arr)
 	{
         $del = '';
 		if (user_can('sbmanage')) {
