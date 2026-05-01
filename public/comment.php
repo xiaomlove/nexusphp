@@ -38,13 +38,13 @@ if ($action == "add")
 		int_check($parent_id,true);
 
 		if($type == "torrent")
-			$res = sql_query("SELECT name, owner FROM torrents WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+			$rows = \Nexus\Database\NexusDB::select("SELECT name, owner FROM torrents WHERE id = $parent_id");
 		else if($type == "offer")
-			$res = sql_query("SELECT name, userid as owner FROM offers WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+			$rows = \Nexus\Database\NexusDB::select("SELECT name, userid as owner FROM offers WHERE id = $parent_id");
 		else if($type == "request")
-			$res = sql_query("SELECT requests.request as name, userid as owner FROM requests WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+			$rows = \Nexus\Database\NexusDB::select("SELECT requests.request as name, userid as owner FROM requests WHERE id = $parent_id");
 
-		$arr = mysql_fetch_array($res);
+		$arr = $rows[0] ?? null;
 		if (!$arr)
 			stderr($lang_comment['std_error'], $lang_comment['std_no_torrent_id']);
 
@@ -52,28 +52,39 @@ if ($action == "add")
 		if (!$text)
 			stderr($lang_comment['std_error'], $lang_comment['std_comment_body_empty']);
 
+		$insertData = [
+			'user' => (int) $CURUSER["id"],
+			'added' => date("Y-m-d H:i:s"),
+			'text' => (string) $text,
+			'ori_text' => (string) $text,
+		];
 		if($type == "torrent"){
-			sql_query("INSERT INTO comments (user, torrent, added, text, ori_text) VALUES (" .$CURUSER["id"] . ",$parent_id, '" . date("Y-m-d H:i:s") . "', " . sqlesc($text) . "," . sqlesc($text) . ")");
+			$insertData['torrent'] = $parent_id;
+			$newid = (int) \Nexus\Database\NexusDB::insert('comments', $insertData);
 			$Cache->delete_value('torrent_'.$parent_id.'_last_comment_content');
 		}
 		elseif($type == "offer"){
-			sql_query("INSERT INTO comments (user, offer, added, text, ori_text) VALUES (" .$CURUSER["id"] . ",$parent_id, '" . date("Y-m-d H:i:s") . "', " . sqlesc($text) . "," . sqlesc($text) . ")");
+			$insertData['offer'] = $parent_id;
+			$newid = (int) \Nexus\Database\NexusDB::insert('comments', $insertData);
 			$Cache->delete_value('offer_'.$parent_id.'_last_comment_content');
 		}
-		elseif($type == "request")
-			sql_query("INSERT INTO comments (user, request, added, text, ori_text) VALUES (" .$CURUSER["id"] . ",$parent_id, '" . date("Y-m-d H:i:s") . "', " . sqlesc($text) . "," . sqlesc($text) . ")");
-
-		$newid = mysql_insert_id();
+		elseif($type == "request") {
+			$insertData['request'] = $parent_id;
+			$newid = (int) \Nexus\Database\NexusDB::insert('comments', $insertData);
+		}
 
 		if($type == "torrent")
-			sql_query("UPDATE torrents SET comments = comments + 1 WHERE id = $parent_id");
+			\Nexus\Database\NexusDB::statement("UPDATE torrents SET comments = comments + 1 WHERE id = $parent_id");
 		else if($type == "offer")
-			sql_query("UPDATE offers SET comments = comments + 1 WHERE id = $parent_id");
+			\Nexus\Database\NexusDB::statement("UPDATE offers SET comments = comments + 1 WHERE id = $parent_id");
 		else if($type == "request")
-			sql_query("UPDATE requests SET comments = comments + 1 WHERE id = $parent_id");
+			\Nexus\Database\NexusDB::statement("UPDATE requests SET comments = comments + 1 WHERE id = $parent_id");
 
-		$ras = sql_query("SELECT commentpm FROM users WHERE id = $arr[owner]") or sqlerr(__FILE__,__LINE__);
-		$arg = mysql_fetch_array($ras);
+		$arg = \Nexus\Database\NexusDB::table('users')
+			->where('id', (int) $arr['owner'])
+			->select(['commentpm'])
+			->first();
+		$arg = $arg ? (array) $arg : [];
 
 		if($arg["commentpm"] == 'yes' && $CURUSER['id'] != $arr["owner"])
 		{
@@ -98,7 +109,9 @@ if ($action == "add")
 		KPS("+",$addcomment_bonus,$CURUSER["id"]);
 
 		// Update Last comment sent...
-		sql_query("UPDATE users SET last_comment = NOW() WHERE id = ".sqlesc($CURUSER['id'])) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::table('users')
+			->where('id', (int) $CURUSER['id'])
+			->update(['last_comment' => \Nexus\Database\NexusDB::raw('NOW()')]);
 
 		if($type == "torrent")
 			header("Location: details.php?id=$parent_id#$newid");
@@ -117,27 +130,27 @@ if ($action == "add")
 		$commentid = intval($_GET["cid"] ?? 0);
 		int_check($commentid,true);
 
-		$res2 = sql_query("SELECT comments.text, users.username FROM comments LEFT JOIN users ON comments.user = users.id WHERE comments.id=$commentid") or sqlerr(__FILE__, __LINE__);
+		$rows2 = \Nexus\Database\NexusDB::select("SELECT comments.text, users.username FROM comments LEFT JOIN users ON comments.user = users.id WHERE comments.id=$commentid");
 
-		if (mysql_num_rows($res2) != 1)
+		if (count($rows2) != 1)
 			stderr($lang_comment['std_error'], $lang_comment['std_no_comment_id']);
 
-		$arr2 = mysql_fetch_assoc($res2);
+		$arr2 = $rows2[0];
 	}
 
 	if($type == "torrent"){
-		$res = sql_query("SELECT name, owner FROM torrents WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT name, owner FROM torrents WHERE id = $parent_id");
 		$url="details.php?id=$parent_id";
 	}
 	else if($type == "offer"){
-		$res = sql_query("SELECT name, userid as owner FROM offers WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT name, userid as owner FROM offers WHERE id = $parent_id");
 		$url="offers.php?id=$parent_id&off_details=1";
 	}
 	else if($type == "request"){
-		$res = sql_query("SELECT requests.request as name, userid as owner FROM requests WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT requests.request as name, userid as owner FROM requests WHERE id = $parent_id");
 		$url="viewrequests.php?id=$parent_id&req_details=1";
 	}
-	$arr = mysql_fetch_array($res);
+	$arr = $rows[0] ?? null;
 	if (!$arr)
 		stderr($lang_comment['std_error'], $lang_comment['std_no_torrent_id']);
 
@@ -159,13 +172,13 @@ elseif ($action == "edit")
 		int_check($commentid,true);
 
 		if($type == "torrent")
-			$res = sql_query("SELECT c.*, t.name, t.id AS parent_id FROM comments AS c JOIN torrents AS t ON c.torrent = t.id WHERE c.id=$commentid") or sqlerr(__FILE__,__LINE__);
+			$rows = \Nexus\Database\NexusDB::select("SELECT c.*, t.name, t.id AS parent_id FROM comments AS c JOIN torrents AS t ON c.torrent = t.id WHERE c.id=$commentid");
 		else if($type == "offer")
-			$res = sql_query("SELECT c.*, o.name, o.id AS parent_id FROM comments AS c JOIN offers AS o ON c.offer = o.id WHERE c.id=$commentid") or sqlerr(__FILE__,__LINE__);
+			$rows = \Nexus\Database\NexusDB::select("SELECT c.*, o.name, o.id AS parent_id FROM comments AS c JOIN offers AS o ON c.offer = o.id WHERE c.id=$commentid");
 		else if($type == "request")
-			$res = sql_query("SELECT c.*, r.request as name, r.id AS parent_id FROM comments AS c JOIN requests AS r ON c.request = r.id WHERE c.id=$commentid") or sqlerr(__FILE__,__LINE__);
+			$rows = \Nexus\Database\NexusDB::select("SELECT c.*, r.request as name, r.id AS parent_id FROM comments AS c JOIN requests AS r ON c.request = r.id WHERE c.id=$commentid");
 
-		$arr = mysql_fetch_array($res);
+		$arr = $rows[0] ?? null;
 		if (!$arr)
 		stderr($lang_comment['std_error'], $lang_comment['std_invalid_id']);
 
@@ -179,10 +192,14 @@ elseif ($action == "edit")
 
 			if ($text == "")
 				stderr($lang_comment['std_error'], $lang_comment['std_comment_body_empty']);
-			$text = sqlesc($text);
-			$editdate = sqlesc(date("Y-m-d H:i:s"));
 
-			sql_query("UPDATE comments SET text=$text, editdate=$editdate, editedby=$CURUSER[id] WHERE id=".sqlesc($commentid)) or sqlerr(__FILE__, __LINE__);
+			\Nexus\Database\NexusDB::table('comments')
+				->where('id', (int) $commentid)
+				->update([
+					'text' => (string) $text,
+					'editdate' => date("Y-m-d H:i:s"),
+					'editedby' => (int) $CURUSER['id'],
+				]);
 			if($type == "torrent")
 				$Cache->delete_value('torrent_'.$arr['parent_id'].'_last_comment_content');
 			elseif ($type == "offer")
@@ -229,13 +246,13 @@ elseif ($action == "delete")
 
 
 		if($type == "torrent")
-		$res = sql_query("SELECT torrent as pid,user FROM comments WHERE id=$commentid")  or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT torrent as pid,user FROM comments WHERE id=$commentid");
 		else if($type == "offer")
-		$res = sql_query("SELECT offer as pid,user FROM comments WHERE id=$commentid")  or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT offer as pid,user FROM comments WHERE id=$commentid");
 		else if($type == "request")
-		$res = sql_query("SELECT request as pid,user FROM comments WHERE id=$commentid")  or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT request as pid,user FROM comments WHERE id=$commentid");
 
-		$arr = mysql_fetch_array($res);
+		$arr = $rows[0] ?? null;
 		if ($arr)
 		{
 			$parent_id = $arr["pid"];
@@ -244,19 +261,21 @@ elseif ($action == "delete")
 		else
 		stderr($lang_comment['std_error'], $lang_comment['std_invalid_id']);
 
-		sql_query("DELETE FROM comments WHERE id=$commentid") or sqlerr(__FILE__,__LINE__);
+		$deleted = \Nexus\Database\NexusDB::table('comments')
+			->where('id', (int) $commentid)
+			->delete();
 		if ($type == "torrent")
 			$Cache->delete_value('torrent_'.$arr['pid'].'_last_comment_content');
 		elseif ($type == "offer")
 			$Cache->delete_value('offer_'.$arr['pid'].'_last_comment_content');
-		if ($parent_id && mysql_affected_rows() > 0)
+		if ($parent_id && $deleted > 0)
 		{
 			if($type == "torrent")
-			sql_query("UPDATE torrents SET comments = comments - 1 WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+			\Nexus\Database\NexusDB::statement("UPDATE torrents SET comments = comments - 1 WHERE id = " . (int) $parent_id);
 			else if($type == "offer")
-			sql_query("UPDATE offers SET comments = comments - 1 WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+			\Nexus\Database\NexusDB::statement("UPDATE offers SET comments = comments - 1 WHERE id = " . (int) $parent_id);
 			else if($type == "request")
-			sql_query("UPDATE requests SET comments = comments - 1 WHERE id = $parent_id") or sqlerr(__FILE__,__LINE__);
+			\Nexus\Database\NexusDB::statement("UPDATE requests SET comments = comments - 1 WHERE id = " . (int) $parent_id);
 		}
 
 		KPS("-",$addcomment_bonus,$userpostid);
@@ -276,13 +295,13 @@ elseif ($action == "vieworiginal")
 		int_check($commentid,true);
 
 		if($type == "torrent")
-		$res = sql_query("SELECT c.*, t.name FROM comments AS c JOIN torrents AS t ON c.torrent = t.id WHERE c.id=$commentid") or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT c.*, t.name FROM comments AS c JOIN torrents AS t ON c.torrent = t.id WHERE c.id=$commentid");
 		else if($type == "offer")
-		$res = sql_query("SELECT c.*, o.name FROM comments AS c JOIN offers AS o ON c.offer = o.id WHERE c.id=$commentid") or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT c.*, o.name FROM comments AS c JOIN offers AS o ON c.offer = o.id WHERE c.id=$commentid");
 		else if($type == "request")
-		$res = sql_query("SELECT c.*, r.request as name FROM comments AS c JOIN requests AS r ON c.request = r.id WHERE c.id=$commentid") or sqlerr(__FILE__,__LINE__);
+		$rows = \Nexus\Database\NexusDB::select("SELECT c.*, r.request as name FROM comments AS c JOIN requests AS r ON c.request = r.id WHERE c.id=$commentid");
 
-		$arr = mysql_fetch_array($res);
+		$arr = $rows[0] ?? null;
 		if (!$arr)
 		stderr($lang_comment['std_error'], $lang_comment['std_invalid_id']);
 
