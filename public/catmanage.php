@@ -53,20 +53,24 @@ function return_category_db_table_name($type)
 }
 function return_category_mode_selection($selname, $selectedid)
 {
-	$res = sql_query("SELECT * FROM searchbox ORDER BY id ASC");
+	$rows = \Nexus\Database\NexusDB::table('searchbox')->orderBy('id', 'asc')->get();
 	$selection = "<select name=\"".$selname."\">";
-	while ($row = mysql_fetch_array($res))
+	foreach ($rows as $row) {
+		$row = (array) $row;
 		$selection .= "<option value=\"" . $row["id"] . "\"". ($row["id"]==$selectedid ? " selected=\"selected\"" : "").">" . htmlspecialchars($row["name"]) . "</option>\n";
+	}
 	$selection .= "</select>";
 	return $selection;
 }
 
 function category_icon_selection($iconId = 0)
 {
-    $res = sql_query("SELECT * FROM caticons ORDER BY id ASC");
+    $rows = \Nexus\Database\NexusDB::table('caticons')->orderBy('id', 'asc')->get();
     $selection = "<select name=\"icon_id\">";
-    while ($row = mysql_fetch_array($res))
+    foreach ($rows as $row) {
+        $row = (array) $row;
         $selection .= "<option value=\"" . $row["id"] . "\"". ($row["id"]==$iconId ? " selected=\"selected\"" : "").">" . htmlspecialchars($row["name"]) . "</option>\n";
+    }
     $selection .= "</select>";
     return $selection;
 }
@@ -157,12 +161,16 @@ function print_sub_category_list($type)
 {
 	global $lang_catmanage, $perpage, $pagerParam;
 	$dbtablename = return_category_db_table_name($type);
-	$num = get_row_count($dbtablename);
+	$num = \Nexus\Database\NexusDB::table((string) $dbtablename)->count();
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
-		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id DESC ".$limit) or sqlerr(__FILE__, __LINE__);
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $num, $pagerParam);
+		$rows = \Nexus\Database\NexusDB::table((string) $dbtablename)
+			->orderByDesc('id')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
@@ -172,8 +180,9 @@ function print_sub_category_list($type)
 <td class="colhead"><?php echo $lang_catmanage['col_action']?></td>
 </tr>
 <?php
-		while ($row = mysql_fetch_array($res))
+		foreach ($rows as $row)
 		{
+			$row = (array) $row;
 ?>
 <tr>
 <td class="colfollow"><?php echo $row['id']?></td>
@@ -408,12 +417,16 @@ if ($action == 'view')
 	elseif ($type=='searchbox')
 	{
 	$dbtablename=return_category_db_table_name($type);
-	$num = get_row_count($dbtablename);
+	$num = \Nexus\Database\NexusDB::table((string) $dbtablename)->count();
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
-		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $num, $pagerParam);
+		$rows = \Nexus\Database\NexusDB::table((string) $dbtablename)
+			->orderBy('id', 'asc')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
@@ -432,8 +445,9 @@ if ($action == 'view')
 <td class="colhead"><?php echo $lang_catmanage['col_action']?></td>
 </tr>
 <?php
-		while ($row = mysql_fetch_array($res))
+		foreach ($rows as $row)
 		{
+			$row = (array) $row;
 ?>
 <tr>
 <td class="colfollow"><?php echo $row['id']?></td>
@@ -461,12 +475,16 @@ print($pagerbottom);
 	elseif($type=='caticon')
 	{
 	$dbtablename=return_category_db_table_name($type);
-	$num = get_row_count($dbtablename);
+	$num = \Nexus\Database\NexusDB::table((string) $dbtablename)->count();
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
-		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $num, $pagerParam);
+		$rows = \Nexus\Database\NexusDB::table((string) $dbtablename)
+			->orderBy('id', 'asc')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
@@ -481,8 +499,9 @@ print($pagerbottom);
 <td class="colhead"><?php echo $lang_catmanage['col_action']?></td>
 </tr>
 <?php
-		while ($row = mysql_fetch_array($res))
+		foreach ($rows as $row)
 		{
+			$row = (array) $row;
 ?>
 <tr>
 <td class="colfollow"><?php echo $row['id']?></td>
@@ -513,12 +532,16 @@ print($pagerbottom);
 	    $allTeam = \App\Models\Team::query()->get()->keyBy('id');
 	    $allAudioCodec = \App\Models\AudioCodec::query()->get()->keyBy('id');
 	$dbtablename=return_category_db_table_name($type);
-	$num = get_row_count($dbtablename);
+	$num = \Nexus\Database\NexusDB::table((string) $dbtablename)->count();
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
-		$res = sql_query("SELECT * FROM ".$dbtablename." ORDER BY id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $num, $pagerParam);
+		$rows = \Nexus\Database\NexusDB::table((string) $dbtablename)
+			->orderBy('id', 'asc')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
 <tr>
@@ -536,8 +559,9 @@ print($pagerbottom);
 <td class="colhead"><?php echo $lang_catmanage['col_action']?></td>
 </tr>
 <?php
-		while ($row = mysql_fetch_array($res))
+		foreach ($rows as $row)
 		{
+			$row = (array) $row;
 ?>
 <tr>
 <td class="colfollow"><?php echo $row['id']?></td>
@@ -564,12 +588,20 @@ print($pagerbottom);
 	elseif($type=='category')
 	{
 	$dbtablename=return_category_db_table_name($type);
-	$num = get_row_count($dbtablename);
+	$num = \Nexus\Database\NexusDB::table((string) $dbtablename)->count();
 	if (!$num)
 		print("<p align=\"center\">".$lang_catmanage['text_no_record_yet']."</p>");
 	else{
-		list($pagertop, $pagerbottom, $limit) = pager($perpage, $num, $pagerParam);
-        $res = sql_query("SELECT ".$dbtablename.".*, searchbox.name AS catmodename, caticons.name as icon_name FROM ".$dbtablename." LEFT JOIN searchbox ON ".$dbtablename.".mode=searchbox.id left join caticons on caticons.id = $dbtablename.icon_id ORDER BY ".$dbtablename.".mode ASC, ".$dbtablename.".id ASC ".$limit) or sqlerr(__FILE__, __LINE__);
+		list($pagertop, $pagerbottom, $limit, $start, $rpp) = pager($perpage, $num, $pagerParam);
+		$rows = \Nexus\Database\NexusDB::table((string) $dbtablename)
+			->leftJoin('searchbox', "{$dbtablename}.mode", '=', 'searchbox.id')
+			->leftJoin('caticons', 'caticons.id', '=', "{$dbtablename}.icon_id")
+			->select(["{$dbtablename}.*", 'searchbox.name AS catmodename', 'caticons.name as icon_name'])
+			->orderBy("{$dbtablename}.mode", 'asc')
+			->orderBy("{$dbtablename}.id", 'asc')
+			->offset((int) $start)
+			->limit((int) $rpp)
+			->get();
 
 ?>
 <table border="1" cellspacing="0" cellpadding="5" width="97%">
@@ -584,8 +616,9 @@ print($pagerbottom);
 <td class="colhead"><?php echo $lang_catmanage['col_action']?></td>
 </tr>
 <?php
-		while ($row = mysql_fetch_array($res))
+		foreach ($rows as $row)
 		{
+			$row = (array) $row;
 ?>
 <tr>
 <td class="colfollow"><?php echo $row['id']?></td>
@@ -619,9 +652,14 @@ elseif($action == 'del')
 		stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
 	}
 	$dbtablename=return_category_db_table_name($type);
-	$res = sql_query ("SELECT * FROM ".$dbtablename." WHERE id = ".sqlesc($id)." LIMIT 1");
-	if ($row = mysql_fetch_array($res)){
-		sql_query("DELETE FROM ".$dbtablename." WHERE id = ".sqlesc($row['id'])) or sqlerr(__FILE__, __LINE__);
+	$row = \Nexus\Database\NexusDB::table((string) $dbtablename)
+		->where('id', (int) $id)
+		->first();
+	$row = $row ? (array) $row : null;
+	if ($row){
+		\Nexus\Database\NexusDB::table((string) $dbtablename)
+			->where('id', (int) $row['id'])
+			->delete();
 		if(in_array($type, $validsubcattype))
 			$Cache->delete_value($dbtablename.'_list');
 		elseif ($type=='searchbox')
@@ -648,8 +686,11 @@ elseif($action == 'edit')
 	else
 	{
 		$dbtablename=return_category_db_table_name($type);
-		$res = sql_query ("SELECT * FROM ".$dbtablename." WHERE id = ".sqlesc($id)." LIMIT 1");
-		if (!$row = mysql_fetch_array($res))
+		$row = \Nexus\Database\NexusDB::table((string) $dbtablename)
+			->where('id', (int) $id)
+			->first();
+		$row = $row ? (array) $row : null;
+		if (!$row)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
 		else
 		{
@@ -686,8 +727,11 @@ elseif($action == 'submit')
 		}
 		else
 		{
-			$res = sql_query("SELECT * FROM ".$dbtablename." WHERE id = ".sqlesc($id)." LIMIT 1");
-			if (!$row = mysql_fetch_array($res))
+			$row = \Nexus\Database\NexusDB::table((string) $dbtablename)
+				->where('id', (int) $id)
+				->first();
+			$row = $row ? (array) $row : null;
+			if (!$row)
 				stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_id']);
 		}
 	}
@@ -696,9 +740,9 @@ elseif($action == 'submit')
 		$name = $_POST['name'];
 		if (!$name)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_missing_form_data']);
-		$updateset[] = "name=".sqlesc($name);
+		$updateset['name'] = (string) $name;
 		$sort_index = intval($_POST['sort_index'] ?? 0);
-		$updateset[] = "sort_index=".sqlesc($sort_index);
+		$updateset['sort_index'] = (int) $sort_index;
 		$Cache->delete_value($dbtablename.'_list');
 	}
 	elseif ($type=='searchbox'){
@@ -714,25 +758,25 @@ elseif($action == 'submit')
 		$showprocessing = intval($_POST['showprocessing'] ?? 0);
 		$showteam = intval($_POST['showteam'] ?? 0);
 		$showaudiocodec = intval($_POST['showaudiocodec'] ?? 0);
-		$updateset[] = "catsperrow=".sqlesc($catsperrow);
-		$updateset[] = "catpadding=".sqlesc($catpadding);
-		$updateset[] = "name=".sqlesc($name);
-		$updateset[] = "showsource=".sqlesc($showsource);
-		$updateset[] = "showmedium=".sqlesc($showmedium);
-		$updateset[] = "showcodec=".sqlesc($showcodec);
-		$updateset[] = "showstandard=".sqlesc($showstandard);
-		$updateset[] = "showprocessing=".sqlesc($showprocessing);
-		$updateset[] = "showteam=".sqlesc($showteam);
-		$updateset[] = "showaudiocodec=".sqlesc($showaudiocodec);
-		$updateset[] = "custom_fields=" . sqlesc(implode(',', $_POST['custom_fields'] ?? []));
-		$updateset[] = "custom_fields_display_name=" . sqlesc($_POST['custom_fields_display_name'] ?? '');
-		$updateset[] = "custom_fields_display=" . sqlesc($_POST['custom_fields_display'] ?? '');
-		$updateset[] = "extra=" . sqlesc(json_encode($_POST['extra'] ?? []));
+		$updateset['catsperrow'] = (int) $catsperrow;
+		$updateset['catpadding'] = (int) $catpadding;
+		$updateset['name'] = (string) $name;
+		$updateset['showsource'] = (int) $showsource;
+		$updateset['showmedium'] = (int) $showmedium;
+		$updateset['showcodec'] = (int) $showcodec;
+		$updateset['showstandard'] = (int) $showstandard;
+		$updateset['showprocessing'] = (int) $showprocessing;
+		$updateset['showteam'] = (int) $showteam;
+		$updateset['showaudiocodec'] = (int) $showaudiocodec;
+		$updateset['custom_fields'] = (string) implode(',', $_POST['custom_fields'] ?? []);
+		$updateset['custom_fields_display_name'] = (string) ($_POST['custom_fields_display_name'] ?? '');
+		$updateset['custom_fields_display'] = (string) ($_POST['custom_fields_display'] ?? '');
+		$updateset['extra'] = (string) json_encode($_POST['extra'] ?? []);
 
 		if ($showsource || $showmedium || $showcodec || $showstandard || $showprocessing || $showteam || $showaudiocodec)
-			$updateset[] = "showsubcat=1";
+			$updateset['showsubcat'] = 1;
 		else
-			$updateset[] = "showsubcat=0";
+			$updateset['showsubcat'] = 0;
 		if($_POST['isedit'])
 			$Cache->delete_value('searchbox_content');
 	}
@@ -750,13 +794,13 @@ elseif($action == 'submit')
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_character_in_filename'].htmlspecialchars($folder));
 		if ($cssfile && !valid_file_name($cssfile))
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_character_in_filename'].htmlspecialchars($cssfile));
-		$updateset[] = "name=".sqlesc($name);
-		$updateset[] = "folder=".sqlesc($folder);
-		$updateset[] = "multilang=".sqlesc($multilang);
-		$updateset[] = "secondicon=".sqlesc($secondicon);
-		$updateset[] = "cssfile=".sqlesc($cssfile);
-		$updateset[] = "designer=".sqlesc($designer);
-		$updateset[] = "comment=".sqlesc($comment);
+		$updateset['name'] = (string) $name;
+		$updateset['folder'] = (string) $folder;
+		$updateset['multilang'] = (string) $multilang;
+		$updateset['secondicon'] = (string) $secondicon;
+		$updateset['cssfile'] = (string) $cssfile;
+		$updateset['designer'] = (string) $designer;
+		$updateset['comment'] = (string) $comment;
 		if($_POST['isedit'])
 			$Cache->delete_value('category_icon_content');
 	}
@@ -779,19 +823,22 @@ elseif($action == 'submit')
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_character_in_filename'].htmlspecialchars($class_name));
 		if (!$source && !$medium && !$codec && !$standard && !$processing && !$team && !$audiocodec)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_must_define_one_selection']);
-		$updateset[] = "name=".sqlesc($name);
-		$updateset[] = "image=".sqlesc($image);
-		$updateset[] = "class_name=".sqlesc($class_name);
-		$updateset[] = "source=".sqlesc($source);
-		$updateset[] = "medium=".sqlesc($medium);
-		$updateset[] = "codec=".sqlesc($codec);
-		$updateset[] = "standard=".sqlesc($standard);
-		$updateset[] = "processing=".sqlesc($processing);
-		$updateset[] = "team=".sqlesc($team);
-		$updateset[] = "audiocodec=".sqlesc($audiocodec);
+		$updateset['name'] = (string) $name;
+		$updateset['image'] = (string) $image;
+		$updateset['class_name'] = (string) $class_name;
+		$updateset['source'] = (int) $source;
+		$updateset['medium'] = (int) $medium;
+		$updateset['codec'] = (int) $codec;
+		$updateset['standard'] = (int) $standard;
+		$updateset['processing'] = (int) $processing;
+		$updateset['team'] = (int) $team;
+		$updateset['audiocodec'] = (int) $audiocodec;
 		if($_POST['isedit']){
-			$res2=sql_query("SELECT * FROM secondicons WHERE id=".sqlesc($id)." LIMIT 1");
-			if ($row2=mysql_fetch_array($res))
+			$row2 = \Nexus\Database\NexusDB::table('secondicons')
+				->where('id', (int) $id)
+				->first();
+			$row2 = $row2 ? (array) $row2 : null;
+			if ($row2)
 			{
 				$Cache->delete_value('secondicon_'.$row2['source'].'_'.$row2['medium'].'_'.$row2['codec'].'_'.$row2['standard'].'_'.$row2['processing'].'_'.$row2['team'].'_'.$row2['audiocodec'].'_content');
 			}
@@ -812,12 +859,12 @@ elseif($action == 'submit')
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_character_in_filename'].htmlspecialchars($class_name));
 		if (!$mode)
 			stderr($lang_catmanage['std_error'], $lang_catmanage['std_invalid_mode_id']);
-		$updateset[] = "name=".sqlesc($name);
-		$updateset[] = "image=".sqlesc($image);
-		$updateset[] = "mode=".sqlesc($mode);
-		$updateset[] = "class_name=".sqlesc($class_name);
-		$updateset[] = "sort_index=".sqlesc($sort_index);
-		$updateset[] = "icon_id=".sqlesc(intval($_POST['icon_id'] ?? 0));
+		$updateset['name'] = (string) $name;
+		$updateset['image'] = (string) $image;
+		$updateset['mode'] = (int) $mode;
+		$updateset['class_name'] = (string) $class_name;
+		$updateset['sort_index'] = (int) $sort_index;
+		$updateset['icon_id'] = (int) ($_POST['icon_id'] ?? 0);
 		if($_POST['isedit']){
 			$Cache->delete_value('category_content');
 		}
@@ -825,11 +872,13 @@ elseif($action == 'submit')
 	}
 	if ($_POST['isedit'])
 	{
-		sql_query("UPDATE ".$dbtablename." SET " . join(",", $updateset) . " WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::table((string) $dbtablename)
+			->where('id', (int) $id)
+			->update($updateset);
 	}
 	else
 	{
-		sql_query("INSERT INTO ".$dbtablename." SET " . join(",", $updateset) ) or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::insert((string) $dbtablename, $updateset);
 	}
 	header("Location: ".get_protocol_prefix() . $BASEURL."/catmanage.php?action=view&type=".$type);
 }
