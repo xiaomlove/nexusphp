@@ -1,19 +1,32 @@
 <?php
-require "../include/bittorrent.php";
+
+use Nexus\Database\NexusDB;
+
+require '../include/bittorrent.php';
 dbconn();
-if (isset($_GET['q']) && $_GET['q'] != '')
-{
-	$searchstr = trim($_GET['q']);
-	
-	$suggest_query = sql_query("SELECT keywords AS suggest, COUNT(*) AS count FROM suggest WHERE keywords LIKE " . sqlesc($searchstr . "%")." GROUP BY keywords ORDER BY count DESC, keywords DESC LIMIT 10");
-	$result = array(htmlspecialchars($searchstr), array(), array());
-	while($suggest = mysql_fetch_array($suggest_query)){
-		if (strlen($suggest['suggest']) > 25) continue;
-		$result[1][] = $suggest['suggest'];
-		$result[2][] = $suggest['count']." times";
-		$i++;
-		if ($i >= 5) break;
-	}
-	echo json_encode($result);
+if (isset($_GET['q']) && $_GET['q'] != '') {
+    $searchstr = trim($_GET['q']);
+
+    $suggestRows = NexusDB::table('suggest')
+        ->where('keywords', 'like', $searchstr.'%')
+        ->groupBy('keywords')
+        ->orderByDesc(NexusDB::raw('COUNT(*)'))
+        ->orderByDesc('keywords')
+        ->limit(10)
+        ->selectRaw('keywords AS suggest, COUNT(*) AS count')
+        ->get();
+    $result = [htmlspecialchars($searchstr), [], []];
+    foreach ($suggestRows as $suggest) {
+        $suggest = (array) $suggest;
+        if (strlen($suggest['suggest']) > 25) {
+            continue;
+        }
+        $result[1][] = $suggest['suggest'];
+        $result[2][] = $suggest['count'].' times';
+        $i++;
+        if ($i >= 5) {
+            break;
+        }
+    }
+    echo json_encode($result);
 }
-?>
