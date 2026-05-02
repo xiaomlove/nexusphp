@@ -1,263 +1,275 @@
 <?php
-require "../include/bittorrent.php";
+
+use Nexus\Database\NexusDB;
+
+require '../include/bittorrent.php';
 dbconn();
-require_once(get_langfile_path());
+require_once get_langfile_path();
 loggedinorreturn();
 
 parked();
-$userid = intval($_GET["id"] ?? 0);
-int_check($userid,true);
+$userid = intval($_GET['id'] ?? 0);
+int_check($userid, true);
 
-if ($CURUSER["id"] != $userid && !user_can('viewhistory'))
-permissiondenied();
+if ($CURUSER['id'] != $userid && ! user_can('viewhistory')) {
+    permissiondenied();
+}
 
-$action = htmlspecialchars($_GET["action"]);
+$action = htmlspecialchars($_GET['action']);
 
-//-------- Global variables
+// -------- Global variables
 
 $perpage = 15;
 
-//-------- Action: View posts
+// -------- Action: View posts
 
-if ($action == "viewposts")
-{
-	$select_is = "COUNT(DISTINCT p.id)";
+if ($action == 'viewposts') {
+    $postcount = (int) NexusDB::table('posts AS p')
+        ->leftJoin('topics AS t', 'p.topicid', '=', 't.id')
+        ->leftJoin('forums AS f', 't.forumid', '=', 'f.id')
+        ->where('p.userid', (int) $userid)
+        ->where('f.minclassread', '<=', (int) $CURUSER['class'])
+        ->distinct()
+        ->count('p.id');
 
-	$from_is = "posts AS p LEFT JOIN topics as t ON p.topicid = t.id LEFT JOIN forums AS f ON t.forumid = f.id";
+    if ($postcount == 0) {
+        stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_posts_found']);
+    }
 
-	$where_is = "p.userid = $userid AND f.minclassread <= " . $CURUSER['class'];
+    // ------ Make page menu
 
-	$order_is = "p.id DESC";
+    [$pagertop, $pagerbottom, $limit, $offsetStart, $rowsPerPage] = pager($perpage, $postcount, $_SERVER['PHP_SELF']."?action=viewposts&id=$userid&");
 
-	$query = "SELECT $select_is FROM $from_is WHERE $where_is";
+    // ------ Get user data
 
-	$res = sql_query($query) or sqlerr(__FILE__, __LINE__);
+    $userRow = NexusDB::table('users')
+        ->where('id', (int) $userid)
+        ->select(['username', 'donor', 'warned', 'enabled'])
+        ->first();
 
-	$arr = mysql_fetch_row($res) or stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_posts_found']);
+    if ($userRow) {
+        $subject = get_username($userid);
+    } else {
+        $subject = "unknown[$userid]";
+    }
 
-	$postcount = $arr[0];
+    // ------ Get posts
 
-	//------ Make page menu
+    $rows = NexusDB::table('posts AS p')
+        ->leftJoin('topics AS t', 'p.topicid', '=', 't.id')
+        ->leftJoin('forums AS f', 't.forumid', '=', 'f.id')
+        ->leftJoin('readposts AS r', function ($join) {
+            $join->on('p.topicid', '=', 'r.topicid')->on('p.userid', '=', 'r.userid');
+        })
+        ->where('p.userid', (int) $userid)
+        ->where('f.minclassread', '<=', (int) $CURUSER['class'])
+        ->orderByDesc('p.id')
+        ->offset((int) $offsetStart)
+        ->limit((int) $rowsPerPage)
+        ->selectRaw('f.id AS f_id, f.name, t.id AS t_id, t.subject, t.lastpost, r.lastpostread, p.*')
+        ->get();
 
-	list($pagertop, $pagerbottom, $limit) = pager($perpage, $postcount, $_SERVER["PHP_SELF"] . "?action=viewposts&id=$userid&");
+    if (count($rows) == 0) {
+        stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_posts_found']);
+    }
 
-	//------ Get user data
+    stdhead($lang_userhistory['head_posts_history']);
 
-	$res = sql_query("SELECT username, donor, warned, enabled FROM users WHERE id=$userid") or sqlerr(__FILE__, __LINE__);
+    echo '<h1>'.$lang_userhistory['text_posts_history_for'].$subject."</h1>\n";
 
-	if (mysql_num_rows($res) == 1)
-	{
-		$arr = mysql_fetch_assoc($res);
+    if ($postcount > $perpage) {
+        echo $pagertop;
+    }
 
-		$subject = get_username($userid);
-	}
-	else
-	$subject = "unknown[$userid]";
+    // ------ Print table
 
-	//------ Get posts
+    begin_main_frame();
 
-	$from_is = "posts AS p LEFT JOIN topics as t ON p.topicid = t.id LEFT JOIN forums AS f ON t.forumid = f.id LEFT JOIN readposts as r ON p.topicid = r.topicid AND p.userid = r.userid";
+    begin_frame();
 
-	$select_is = "f.id AS f_id, f.name, t.id AS t_id, t.subject, t.lastpost, r.lastpostread, p.*";
+    foreach ($rows as $arr) {
+        $arr = (array) $arr;
+        $postid = $arr['id'];
 
-	$query = "SELECT $select_is FROM $from_is WHERE $where_is ORDER BY $order_is $limit";
+        $posterid = $arr['userid'];
 
-	$res = sql_query($query) or sqlerr(__FILE__, __LINE__);
+        $topicid = $arr['t_id'];
 
-	if (mysql_num_rows($res) == 0) stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_posts_found']);
+        $topicname = $arr['subject'];
 
-	stdhead($lang_userhistory['head_posts_history']);
+        $forumid = $arr['f_id'];
 
-	print("<h1>".$lang_userhistory['text_posts_history_for'].$subject."</h1>\n");
+        $forumname = $arr['name'];
 
-	if ($postcount > $perpage) echo $pagertop;
+        $newposts = ($arr['lastpostread'] < $arr['lastpost']) && $CURUSER['id'] == $userid;
 
-	//------ Print table
+        $added = gettime($arr['added'], true, false, false);
 
-	begin_main_frame();
-
-	begin_frame();
-
-	while ($arr = mysql_fetch_assoc($res))
-	{
-		$postid = $arr["id"];
-
-		$posterid = $arr["userid"];
-
-		$topicid = $arr["t_id"];
-
-		$topicname = $arr["subject"];
-
-		$forumid = $arr["f_id"];
-
-		$forumname = $arr["name"];
-
-		$newposts = ($arr["lastpostread"] < $arr["lastpost"]) && $CURUSER["id"] == $userid;
-
-		$added = gettime($arr["added"], true, false, false);
-
-		print("<p class=sub><table border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+        echo "<p class=sub><table border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
 	    $added&nbsp;--&nbsp;".$lang_userhistory['text_forum'].
-	    "<a href=forums.php?action=viewforum&forumid=$forumid>$forumname</a>
+        "<a href=forums.php?action=viewforum&forumid=$forumid>$forumname</a>
 	    &nbsp;--&nbsp;".$lang_userhistory['text_topic'].
-	    "<a href=forums.php?action=viewtopic&topicid=$topicid>$topicname</a>
+        "<a href=forums.php?action=viewtopic&topicid=$topicid>$topicname</a>
       &nbsp;--&nbsp;".$lang_userhistory['text_post'].
-      "<a href=forums.php?action=viewtopic&topicid=$topicid&page=p$postid#pid$postid>#$postid</a>" .
-      ($newposts ? " &nbsp;<b>(<font class=new>".$lang_userhistory['text_new']."</font>)</b>" : "") .
-      "</td></tr></table></p>\n");
+      "<a href=forums.php?action=viewtopic&topicid=$topicid&page=p$postid#pid$postid>#$postid</a>".
+      ($newposts ? ' &nbsp;<b>(<font class=new>'.$lang_userhistory['text_new'].'</font>)</b>' : '').
+      "</td></tr></table></p>\n";
 
-      print("<br />");
+        echo '<br />';
 
-      print("<table class=main width=100% border=1 cellspacing=0 cellpadding=5>\n");
+        echo "<table class=main width=100% border=1 cellspacing=0 cellpadding=5>\n";
 
-      $body = format_comment($arr["body"]);
+        $body = format_comment($arr['body']);
 
-      if (is_valid_id($arr['editedby']))
-      {
-      	$subres = sql_query("SELECT username FROM users WHERE id=$arr[editedby]");
-      	if (mysql_num_rows($subres) == 1)
-      	{
-      		$subrow = mysql_fetch_assoc($subres);
-      		$body .= "<p><font size=1 class=small>".$lang_userhistory['text_last_edited'].get_username($arr['editedby']).$lang_userhistory['text_at']."$arr[editdate]</font></p>\n";
-      	}
-      }
+        if (is_valid_id($arr['editedby'])) {
+            $subrow = NexusDB::table('users')
+                ->where('id', (int) $arr['editedby'])
+                ->select(['username'])
+                ->first();
+            if ($subrow) {
+                $body .= '<p><font size=1 class=small>'.$lang_userhistory['text_last_edited'].get_username($arr['editedby']).$lang_userhistory['text_at']."$arr[editdate]</font></p>\n";
+            }
+        }
 
-      print("<tr valign=top><td class=comment>$body</td></tr>\n");
+        echo "<tr valign=top><td class=comment>$body</td></tr>\n";
 
-      print("</td></tr></table>\n");
-      print("<br />");
-	}
+        echo "</td></tr></table>\n";
+        echo '<br />';
+    }
 
-	end_frame();
+    end_frame();
 
-	end_main_frame();
+    end_main_frame();
 
-	if ($postcount > $perpage) echo $pagerbottom;
+    if ($postcount > $perpage) {
+        echo $pagerbottom;
+    }
 
-	stdfoot();
+    stdfoot();
 
-	die;
+    exit;
 }
 
-//-------- Action: View comments
+// -------- Action: View comments
 
-if ($action == "viewcomments")
-{
-	$select_is = "COUNT(*)";
+if ($action == 'viewcomments') {
+    $commentcount = (int) NexusDB::table('comments AS c')
+        ->leftJoin('torrents AS t', 'c.torrent', '=', 't.id')
+        ->where('c.user', (int) $userid)
+        ->count();
 
-	// LEFT due to orphan comments
-	$from_is = "comments AS c LEFT JOIN torrents as t
-	            ON c.torrent = t.id";
+    if ($commentcount == 0) {
+        stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_comments_found']);
+    }
 
-	$where_is = "c.user = $userid";
-	$order_is = "c.id DESC";
+    // ------ Make page menu
 
-	$query = "SELECT $select_is FROM $from_is WHERE $where_is ORDER BY $order_is";
+    [$pagertop, $pagerbottom, $limit, $offsetStart, $rowsPerPage] = pager($perpage, $commentcount, $_SERVER['PHP_SELF']."?action=viewcomments&id=$userid&");
 
-	$res = sql_query($query) or sqlerr(__FILE__, __LINE__);
+    // ------ Get user data
 
-	$arr = mysql_fetch_row($res) or stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_comments_found']);
+    $userRow = NexusDB::table('users')
+        ->where('id', (int) $userid)
+        ->select(['username', 'donor', 'warned', 'enabled'])
+        ->first();
 
-	$commentcount = $arr[0];
+    if ($userRow) {
+        $subject = get_username($userid);
+    } else {
+        $subject = "unknown[$userid]";
+    }
 
-	//------ Make page menu
+    // ------ Get comments
 
-	list($pagertop, $pagerbottom, $limit) = pager($perpage, $commentcount, $_SERVER["PHP_SELF"] . "?action=viewcomments&id=$userid&");
+    $rows = NexusDB::table('comments AS c')
+        ->leftJoin('torrents AS t', 'c.torrent', '=', 't.id')
+        ->where('c.user', (int) $userid)
+        ->orderByDesc('c.id')
+        ->offset((int) $offsetStart)
+        ->limit((int) $rowsPerPage)
+        ->selectRaw('t.name, c.torrent AS t_id, c.id, c.added, c.text')
+        ->get();
 
-	//------ Get user data
+    if (count($rows) == 0) {
+        stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_comments_found']);
+    }
 
-	$res = sql_query("SELECT username, donor, warned, enabled FROM users WHERE id=$userid") or sqlerr(__FILE__, __LINE__);
+    stdhead($lang_userhistory['head_comments_history']);
 
-	if (mysql_num_rows($res) == 1)
-	{
-		$arr = mysql_fetch_assoc($res);
+    echo '<h1>'.$lang_userhistory['text_comments_history_for']."$subject</h1>\n";
 
-		$subject = get_username($userid);
-	}
-	else
-	$subject = "unknown[$userid]";
+    if ($commentcount > $perpage) {
+        echo $pagertop;
+    }
 
-	//------ Get comments
+    // ------ Print table
 
-	$select_is = "t.name, c.torrent AS t_id, c.id, c.added, c.text";
+    begin_main_frame();
 
-	$query = "SELECT $select_is FROM $from_is WHERE $where_is ORDER BY $order_is $limit";
+    begin_frame();
 
-	$res = sql_query($query) or sqlerr(__FILE__, __LINE__);
+    foreach ($rows as $arr) {
+        $arr = (array) $arr;
 
-	if (mysql_num_rows($res) == 0) stderr($lang_userhistory['std_error'], $lang_userhistory['std_no_comments_found']);
+        $commentid = $arr['id'];
 
-	stdhead($lang_userhistory['head_comments_history']);
+        $torrent = $arr['name'];
 
-	print("<h1>".$lang_userhistory['text_comments_history_for']."$subject</h1>\n");
+        // make sure the line doesn't wrap
+        if (strlen($torrent) > 55) {
+            $torrent = substr($torrent, 0, 52).'...';
+        }
 
-	if ($commentcount > $perpage) echo $pagertop;
+        $torrentid = $arr['t_id'];
 
-	//------ Print table
+        // find the page; this code should probably be in details.php instead
 
-	begin_main_frame();
+        $count = (int) NexusDB::table('comments')
+            ->where('torrent', (int) $torrentid)
+            ->where('id', '<', (int) $commentid)
+            ->count();
+        $comm_page = floor($count / 20);
+        $page_url = $comm_page ? "&page=$comm_page" : '';
 
-	begin_frame();
+        $added = gettime($arr['added'], true, false, false);
 
-	while ($arr = mysql_fetch_assoc($res))
-	{
+        echo '<p class=sub><table border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>'.
+        "$added&nbsp;---&nbsp;".$lang_userhistory['text_torrent'].
+        ($torrent ? ("<a href=details.php?id=$torrentid&tocomm=1&hit=1>$torrent</a>") : ' [Deleted] ').
+        '&nbsp;---&nbsp;'.$lang_userhistory['text_comment']."</b>#<a href=details.php?id=$torrentid&tocomm=1&hit=1$page_url>$commentid</a>
+	  </td></tr></table></p>\n";
+        echo '<br />';
 
-		$commentid = $arr["id"];
+        echo "<table class=main width=100% border=1 cellspacing=0 cellpadding=5>\n";
 
-		$torrent = $arr["name"];
+        $body = format_comment($arr['text']);
 
-		// make sure the line doesn't wrap
-		if (strlen($torrent) > 55) $torrent = substr($torrent,0,52) . "...";
+        echo "<tr valign=top><td class=comment>$body</td></tr>\n";
 
-		$torrentid = $arr["t_id"];
+        echo "</td></tr></table>\n";
 
-		//find the page; this code should probably be in details.php instead
+        echo '<br />';
+    }
 
-		$subres = sql_query("SELECT COUNT(*) FROM comments WHERE torrent = $torrentid AND id < $commentid")
-		or sqlerr(__FILE__, __LINE__);
-		$subrow = mysql_fetch_row($subres);
-		$count = $subrow[0];
-		$comm_page = floor($count/20);
-		$page_url = $comm_page?"&page=$comm_page":"";
+    end_frame();
 
-		$added = gettime($arr["added"], true, false, false);
+    end_main_frame();
 
-		print("<p class=sub><table border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>".
-		"$added&nbsp;---&nbsp;".$lang_userhistory['text_torrent'].
-		($torrent?("<a href=details.php?id=$torrentid&tocomm=1&hit=1>$torrent</a>"):" [Deleted] ").
-		"&nbsp;---&nbsp;".$lang_userhistory['text_comment']."</b>#<a href=details.php?id=$torrentid&tocomm=1&hit=1$page_url>$commentid</a>
-	  </td></tr></table></p>\n");
-		print("<br />");
+    if ($commentcount > $perpage) {
+        echo $pagerbottom;
+    }
 
-		print("<table class=main width=100% border=1 cellspacing=0 cellpadding=5>\n");
+    stdfoot();
 
-		$body = format_comment($arr["text"]);
-
-		print("<tr valign=top><td class=comment>$body</td></tr>\n");
-
-		print("</td></tr></table>\n");
-
-		print("<br />");
-	}
-
-	end_frame();
-
-	end_main_frame();
-
-	if ($commentcount > $perpage) echo $pagerbottom;
-
-	stdfoot();
-
-	die;
+    exit;
 }
 
-//-------- Handle unknown action
+// -------- Handle unknown action
 
-if ($action != "")
-stderr($lang_userhistory['std_history_error'], $lang_userhistory['std_unkown_action']);
+if ($action != '') {
+    stderr($lang_userhistory['std_history_error'], $lang_userhistory['std_unkown_action']);
+}
 
-//-------- Any other case
+// -------- Any other case
 
 stderr($lang_userhistory['std_history_error'], $lang_userhistory['std_invalid_or_no_query']);
-
-?>
