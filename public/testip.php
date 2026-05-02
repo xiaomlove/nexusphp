@@ -1,36 +1,44 @@
 <?php
-require "../include/bittorrent.php";
+
+use Nexus\Database\NexusDB;
+
+require '../include/bittorrent.php';
 dbconn();
 loggedinorreturn();
 
-if (get_user_class() < UC_MODERATOR) stderr("Error", "Permission denied");
+if (get_user_class() < UC_MODERATOR) {
+    stderr('Error', 'Permission denied');
+}
 
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-	$ip = $_POST["ip"];
-else
-	$ip = $_GET["ip"] ?? '';
-if ($ip)
-{
-	$nip = ip2long($ip);
-	if ($nip == -1)
-	  stderr("Error", "Bad IP.");
-	$res = sql_query("SELECT * FROM bans WHERE $nip >= first AND $nip <= last") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) == 0)
-	  stderr("Result", "The IP address <b>". htmlspecialchars($ip) ."</b> is not banned.",false);
-	else
-	{
-	  $banstable = "<table class=main border=0 cellspacing=0 cellpadding=5>\n" .
-	    "<tr><td class=colhead>First</td><td class=colhead>Last</td><td class=colhead>Comment</td></tr>\n";
-	  while ($arr = mysql_fetch_assoc($res))
-	  {
-	    $first = long2ip($arr["first"]);
-	    $last = long2ip($arr["last"]);
-	    $comment = htmlspecialchars($arr["comment"]);
-	    $banstable .= "<tr><td>$first</td><td>$last</td><td>$comment</td></tr>\n";
-	  }
-	  $banstable .= "</table>\n";
-	  stderr("Result", "<table border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>The IP address <b>". $ip ."</b> is banned:</td></tr></table><p>". $banstable ."</p>", false);
-	}
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $ip = $_POST['ip'];
+} else {
+    $ip = $_GET['ip'] ?? '';
+}
+if ($ip) {
+    $nip = ip2long($ip);
+    if ($nip == -1) {
+        stderr('Error', 'Bad IP.');
+    }
+    $rows = NexusDB::table('bans')
+        ->where('first', '<=', (int) $nip)
+        ->where('last', '>=', (int) $nip)
+        ->get();
+    if (count($rows) == 0) {
+        stderr('Result', 'The IP address <b>'.htmlspecialchars($ip).'</b> is not banned.', false);
+    } else {
+        $banstable = "<table class=main border=0 cellspacing=0 cellpadding=5>\n".
+          "<tr><td class=colhead>First</td><td class=colhead>Last</td><td class=colhead>Comment</td></tr>\n";
+        foreach ($rows as $arr) {
+            $arr = (array) $arr;
+            $first = long2ip($arr['first']);
+            $last = long2ip($arr['last']);
+            $comment = htmlspecialchars($arr['comment']);
+            $banstable .= "<tr><td>$first</td><td>$last</td><td>$comment</td></tr>\n";
+        }
+        $banstable .= "</table>\n";
+        stderr('Result', '<table border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>The IP address <b>'.$ip.'</b> is banned:</td></tr></table><p>'.$banstable.'</p>', false);
+    }
 }
 stdhead();
 
