@@ -1,158 +1,203 @@
 <?php
 
+use App\Enums\ModelEventEnum;
+use App\Enums\Permission\RoutePermissionEnum;
+use App\Exceptions\InsufficientPermissionException;
+use App\Exceptions\NexusException;
+use App\Exceptions\SeedBoxYesException;
+use App\Http\Middleware\Locale;
+use App\Jobs\FireEvent;
+use App\Models\Attachment;
+use App\Models\Language;
+use App\Models\SearchBox;
+use App\Models\Setting;
+use App\Models\Torrent;
+use App\Models\TorrentState;
+use App\Models\TrackerUrl;
+use App\Models\User;
+use App\Models\UserMeta;
+use App\Repositories\MessageRepository;
+use App\Repositories\SeedBoxRepository;
+use App\Repositories\ToolRepository;
+use App\Repositories\TorrentRepository;
+use App\Repositories\UserRepository;
+use Carbon\Carbon;
+use Filament\Notifications\Notification;
+use GeoIp2\Database\Reader;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Nexus\Database\NexusDB;
+
 function get_global_sp_state()
 {
-	static $global_promotion_state;
-	if (is_null($global_promotion_state)) {
-        $timeline = \App\Models\TorrentState::resolveTimeline();
+    static $global_promotion_state;
+    if (is_null($global_promotion_state)) {
+        $timeline = TorrentState::resolveTimeline();
         $current = $timeline['current'] ?? null;
 
         if (is_array($current) && isset($current['global_sp_state'])) {
             $global_promotion_state = $current['global_sp_state'];
         } else {
-            $global_promotion_state = \App\Models\Torrent::PROMOTION_NORMAL;
+            $global_promotion_state = Torrent::PROMOTION_NORMAL;
         }
-	}
-	return $global_promotion_state;
+    }
+
+    return $global_promotion_state;
 }
 
 // IP Validation
 function validip($ip)
 {
-	if (!ip2long($ip)) //IPv6
-		return true;
-	if (!empty($ip) && $ip == long2ip(ip2long($ip)))
-	{
-		// reserved IANA IPv4 addresses
-		// http://www.iana.org/assignments/ipv4-address-space
-		$reserved_ips = array (
-		array('192.0.2.0','192.0.2.255'),
-		array('192.168.0.0','192.168.255.255'),
-		array('255.255.255.0','255.255.255.255')
-		);
+    if (! ip2long($ip)) { // IPv6
+        return true;
+    }
+    if (! empty($ip) && $ip == long2ip(ip2long($ip))) {
+        // reserved IANA IPv4 addresses
+        // http://www.iana.org/assignments/ipv4-address-space
+        $reserved_ips = [
+            ['192.0.2.0', '192.0.2.255'],
+            ['192.168.0.0', '192.168.255.255'],
+            ['255.255.255.0', '255.255.255.255'],
+        ];
 
-		foreach ($reserved_ips as $r)
-		{
-			$min = ip2long($r[0]);
-			$max = ip2long($r[1]);
-			if ((ip2long($ip) >= $min) && (ip2long($ip) <= $max)) return false;
-		}
-		return true;
-	}
-	else return false;
+        foreach ($reserved_ips as $r) {
+            $min = ip2long($r[0]);
+            $max = ip2long($r[1]);
+            if ((ip2long($ip) >= $min) && (ip2long($ip) <= $max)) {
+                return false;
+            }
+        }
+
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function getip($real = true) {
-	if (isset($_SERVER)) {
-		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && validip($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		} elseif (isset($_SERVER['HTTP_CLIENT_IP']) && validip($_SERVER['HTTP_CLIENT_IP'])) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
-		} else {
-			$ip = $_SERVER['REMOTE_ADDR'] ?? '';
-		}
-	} else {
-		if (getenv('HTTP_X_FORWARDED_FOR') && validip(getenv('HTTP_X_FORWARDED_FOR'))) {
-			$ip = getenv('HTTP_X_FORWARDED_FOR');
-		} elseif (getenv('HTTP_CLIENT_IP') && validip(getenv('HTTP_CLIENT_IP'))) {
-			$ip = getenv('HTTP_CLIENT_IP');
-		} else {
-			$ip = getenv('REMOTE_ADDR') ?? '';
-		}
-	}
-    $ip = trim(trim($ip), ",");
-    if ($real && str_contains($ip, ",")) {
-        return strstr($ip, ",", true);
+function getip($real = true)
+{
+    if (isset($_SERVER)) {
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && validip($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } elseif (isset($_SERVER['HTTP_CLIENT_IP']) && validip($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        }
+    } else {
+        if (getenv('HTTP_X_FORWARDED_FOR') && validip(getenv('HTTP_X_FORWARDED_FOR'))) {
+            $ip = getenv('HTTP_X_FORWARDED_FOR');
+        } elseif (getenv('HTTP_CLIENT_IP') && validip(getenv('HTTP_CLIENT_IP'))) {
+            $ip = getenv('HTTP_CLIENT_IP');
+        } else {
+            $ip = getenv('REMOTE_ADDR') ?? '';
+        }
     }
-	return $ip;
+    $ip = trim(trim($ip), ',');
+    if ($real && str_contains($ip, ',')) {
+        return strstr($ip, ',', true);
+    }
+
+    return $ip;
 }
 
 function sql_query($query)
 {
-	$begin = microtime(true);
-	global $query_name;
-	$result = mysql_query($query);
-	$end = microtime(true);
-	$query_name[] = [
-		'query' => $query,
-		'time' => sprintf('%.2f ms', ($end - $begin) * 1000),
-	];
-	return $result;
+    $begin = microtime(true);
+    global $query_name;
+    $result = mysql_query($query);
+    $end = microtime(true);
+    $query_name[] = [
+        'query' => $query,
+        'time' => sprintf('%.2f ms', ($end - $begin) * 1000),
+    ];
+
+    return $result;
 }
 
-function sqlesc($value) {
-	if (is_null($value)) {
-		return 'null';
-	}
-	$value = "'" . mysql_real_escape_string($value) . "'";
-	return $value;
+function sqlesc($value)
+{
+    if (is_null($value)) {
+        return 'null';
+    }
+    $value = "'".mysql_real_escape_string($value)."'";
+
+    return $value;
 }
 
-function hash_pad($hash) {
+function hash_pad($hash)
+{
     if (is_resource($hash)) {
         rewind($hash);
         $hash = stream_get_contents($hash);
     }
+
     return str_pad($hash, 20);
 }
 
-function hash_where($name, $hash) {
-//	$shhash = preg_replace('/ *$/s', "", $hash);
-//	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
-//	return sprintf("$name in (%s, %s)", sqlesc($hash), sqlesc($shhash));
-    if (\Nexus\Database\NexusDB::isMysql()) {
-        return "$name = " . sqlesc($hash);
-    } elseif (Nexus\Database\NexusDB::isPgsql()) {
+function hash_where($name, $hash)
+{
+    //	$shhash = preg_replace('/ *$/s', "", $hash);
+    //	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
+    //	return sprintf("$name in (%s, %s)", sqlesc($hash), sqlesc($shhash));
+    if (NexusDB::isMysql()) {
+        return "$name = ".sqlesc($hash);
+    } elseif (NexusDB::isPgsql()) {
         return "$name = decode(bin2hex('$hash'), 'hex')";
     } else {
-        throw new \RuntimeException("Not supported database");
+        throw new RuntimeException('Not supported database');
     }
 
 }
 
-//no need any more...
+// no need any more...
 /*
 function strip_magic_quotes($arr)
 {
-	foreach ($arr as $k => $v)
-	{
-		if (is_array($v))
-		{
-			$arr[$k] = strip_magic_quotes($v);
-		} else {
-			$arr[$k] = stripslashes($v);
-		}
-	}
-	return $arr;
+    foreach ($arr as $k => $v)
+    {
+        if (is_array($v))
+        {
+            $arr[$k] = strip_magic_quotes($v);
+        } else {
+            $arr[$k] = stripslashes($v);
+        }
+    }
+    return $arr;
 }
 
 if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 {
-	if (!empty($_GET)) {
-		$_GET = strip_magic_quotes($_GET);
-	}
-	if (!empty($_POST)) {
-		$_POST = strip_magic_quotes($_POST);
-	}
-	if (!empty($_COOKIE)) {
-		$_COOKIE = strip_magic_quotes($_COOKIE);
-	}
+    if (!empty($_GET)) {
+        $_GET = strip_magic_quotes($_GET);
+    }
+    if (!empty($_POST)) {
+        $_POST = strip_magic_quotes($_POST);
+    }
+    if (!empty($_COOKIE)) {
+        $_COOKIE = strip_magic_quotes($_COOKIE);
+    }
 }
 */
 
 function get_langfolder_list()
 {
-	//do not access db for speed up, or for flexibility
-//	return array("en", "chs", "cht", "ko", "ja");
-    return \App\Models\Language::listAvailable();
+    // do not access db for speed up, or for flexibility
+    //	return array("en", "chs", "cht", "ko", "ja");
+    return Language::listAvailable();
 }
 
 function printLine($line, $exist = false)
 {
-	echo "[" . date('Y-m-d H:i:s') . "] $line<br />";
-	if ($exist) {
-		exit(0);
-	}
+    echo '['.date('Y-m-d H:i:s')."] $line<br />";
+    if ($exist) {
+        exit(0);
+    }
 }
 
 function nexus_dd($vars)
@@ -168,8 +213,7 @@ function nexus_dd($vars)
 /**
  * write log, use in both pure nexus and inside laravel
  *
- * @param $log
- * @param string $level
+ * @param  string  $level
  */
 function do_log($log, $level = 'info', $echo = false)
 {
@@ -193,11 +237,11 @@ function do_log($log, $level = 'info', $echo = false)
     }
 
     $logFile = getLogFile();
-	if (($fd = fopen($logFile, 'a')) === false) {
-	    $log .= "--------Can not open $logFile";
-        $fd = fopen(sys_get_temp_dir() . '/nexus.log', 'a');
-	}
-	$uid = 0;
+    if (($fd = fopen($logFile, 'a')) === false) {
+        $log .= "--------Can not open $logFile";
+        $fd = fopen(sys_get_temp_dir().'/nexus.log', 'a');
+    }
+    $uid = 0;
     if (IN_NEXUS) {
         global $CURUSER;
         $user = $CURUSER;
@@ -205,16 +249,16 @@ function do_log($log, $level = 'info', $echo = false)
         $passkey = $user['passkey'] ?? $_REQUEST['passkey'] ?? $_REQUEST['authkey'] ?? '';
     } else {
         try {
-            $user = \Illuminate\Support\Facades\Auth::user();
+            $user = Auth::user();
             $uid = $user->id ?? 0;
             $passkey = $user->passkey ?? request('passkey', request('authkey', ''));
-        } catch (\Throwable $exception) {
-            $passkey = "!IN_NEXUS:" . $exception->getMessage();
+        } catch (Throwable $exception) {
+            $passkey = '!IN_NEXUS:'.$exception->getMessage();
         }
     }
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
     $content = sprintf(
-        "[%s] [%s] [%s] [%s] [%s] [%s] %s.%s %s:%s %s%s%s %s%s",
+        '[%s] [%s] [%s] [%s] [%s] [%s] %s.%s %s:%s %s%s%s %s%s',
         getDtMillis(true),
         nexus() ? nexus()->getRequestId() : 'NO_REQUEST_ID',
         nexus() ? nexus()->getLogSequence() : 0,
@@ -233,24 +277,28 @@ function do_log($log, $level = 'info', $echo = false)
     fwrite($fd, $content);
     fclose($fd);
     if (is_bool($echo) && $echo) {
-        echo $content . PHP_EOL;
+        echo $content.PHP_EOL;
     }
     if (nexus()) {
         nexus()->incrementLogSequence();
     }
 }
 
-function getDtMillis($withTimeZone = false): string {
+function getDtMillis($withTimeZone = false): string
+{
     $dt = DateTime::createFromFormat('U.u', sprintf('%.6f', microtime(true)));
     $dt->setTimezone(new DateTimeZone(nexus_env('TIMEZONE', 'UTC')));
     $format = $withTimeZone ? 'Y-m-d\TH:i:s.vP' : 'Y-m-d H:i:s.v';
+
     return $dt->format($format);
 }
 
-function getDtMicro($withTimeZone = false): string {
+function getDtMicro($withTimeZone = false): string
+{
     $dt = DateTime::createFromFormat('U.u', sprintf('%.6f', microtime(true)));
     $dt->setTimezone(new DateTimeZone(nexus_env('TIMEZONE', 'UTC')));
     $format = $withTimeZone ? 'Y-m-d\TH:i:s.uP' : 'Y-m-d H:i:s.u';
+
     return $dt->format($format);
 }
 
@@ -260,7 +308,7 @@ function getLogFile($append = '')
     if (isset($logFiles[$append])) {
         return $logFiles[$append];
     }
-    $std = ["php://stdout", "php://stderr"];
+    $std = ['php://stdout', 'php://stderr'];
     $logFileFromDotEnv = nexus_env('LOG_FILE');
     if ($logFileFromDotEnv && in_array($logFileFromDotEnv, $std)) {
         return $logFiles[$append] = $logFileFromDotEnv;
@@ -274,8 +322,8 @@ function getLogFile($append = '')
         $fromEnv = false;
         $path = sys_get_temp_dir();
     }
-    $logFile = rtrim($path, '/') . '/nexus.log';
-    if (!$fromEnv && $logFileFromDotEnv) {
+    $logFile = rtrim($path, '/').'/nexus.log';
+    if (! $fromEnv && $logFileFromDotEnv) {
         $logFile = $logFileFromDotEnv;
     }
     $lastDotPos = strrpos($logFile, '.');
@@ -292,32 +340,33 @@ function getLogFile($append = '')
     }
     if (isRunningInConsole()) {
         $scriptUserInfo = posix_getpwuid(posix_getuid());
-        $name .= sprintf("-cli-%s", $scriptUserInfo['name']);
+        $name .= sprintf('-cli-%s', $scriptUserInfo['name']);
     }
-    $name .= "-" . date('Y-m-d');
-    return $logFiles[$append] = $name . $suffix;
+    $name .= '-'.date('Y-m-d');
+
+    return $logFiles[$append] = $name.$suffix;
 
 }
 
 function nexus_config($key, $default = null)
 {
-    if (!IN_NEXUS) {
+    if (! IN_NEXUS) {
         return config($key, $default);
     }
     static $configs;
     if (is_null($configs)) {
-        //get all configuration from config file
-//		$files = glob(ROOT_PATH . 'config/*.php');
+        // get all configuration from config file
+        //		$files = glob(ROOT_PATH . 'config/*.php');
         $files = [
-            ROOT_PATH . 'config/nexus.php',
-            ROOT_PATH . 'config/emoji.php',
-            ROOT_PATH . 'config/captcha.php',
-            ROOT_PATH . 'config/clickhouse.php',
+            ROOT_PATH.'config/nexus.php',
+            ROOT_PATH.'config/emoji.php',
+            ROOT_PATH.'config/captcha.php',
+            ROOT_PATH.'config/clickhouse.php',
         ];
         foreach ($files as $file) {
             $basename = basename($file);
             if ($basename == 'allconfig.php') {
-                //exclude the NexusPHP default config file
+                // exclude the NexusPHP default config file
                 continue;
             }
             $values = require $file;
@@ -325,30 +374,31 @@ function nexus_config($key, $default = null)
             $configs[$configPrefix] = $values;
         }
     }
+
     return arr_get($configs, $key, $default);
 }
-
 
 /**
  * get setting for given name and prefix
  *
  * @date 2021/1/11
- * @param null $name
- * @param null $default
- * @return mixed
+ *
+ * @param  null  $name
+ * @param  null  $default
  */
 function get_setting($name = null, $default = null): mixed
 {
-	static $settings;
-	if (is_null($settings)) {
-        $settings = \Nexus\Database\NexusDB::remember("nexus_settings_in_nexus", 600, function () {
-            //get all settings from database
-            return \App\Models\Setting::getFromDb();
+    static $settings;
+    if (is_null($settings)) {
+        $settings = NexusDB::remember('nexus_settings_in_nexus', 600, function () {
+            // get all settings from database
+            return Setting::getFromDb();
         });
-	}
-	if (is_null($name)) {
-	    return $settings;
     }
+    if (is_null($name)) {
+        return $settings;
+    }
+
     return arr_get($settings, $name, $default);
 }
 
@@ -356,40 +406,41 @@ function get_setting_from_db($name = null, $default = null)
 {
     static $final;
     if (is_null($final)) {
-        $final = \App\Models\Setting::getFromDb();
+        $final = Setting::getFromDb();
     }
     if (is_null($name)) {
         return $final;
     }
+
     return arr_get($final, $name, $default);
 }
-
 
 function nexus_env($key = null, $default = null)
 {
     static $env;
     if (is_null($env)) {
-        $envFile = dirname(__DIR__) . '/.env';
+        $envFile = dirname(__DIR__).'/.env';
         $env = readEnvFile($envFile);
     }
     if (is_null($key)) {
         return $env;
     }
+
     return $env[$key] ?? $default;
 }
 
 function readEnvFile($envFile)
 {
-    if (!file_exists($envFile)) {
+    if (! file_exists($envFile)) {
         if (php_sapi_name() == 'cli') {
             return [];
         }
-        throw new \RuntimeException("env file : $envFile is not exists in the root path.");
+        throw new RuntimeException("env file : $envFile is not exists in the root path.");
     }
     $env = [];
     $fp = fopen($envFile, 'r');
     if ($fp === false) {
-        throw new \RuntimeException(".env file: $envFile is not readable.");
+        throw new RuntimeException(".env file: $envFile is not readable.");
     }
     while (($line = fgets($fp)) !== false) {
         $line = trim($line);
@@ -407,29 +458,30 @@ function readEnvFile($envFile)
         $lineValue = normalize_env(mb_substr($line, $pos + 1, null, 'utf-8'));
         $env[$lineKey] = $lineValue;
     }
+
     return $env;
 }
 
 function normalize_env($value)
 {
-	$value = trim($value);
-	$toStrip = ['\'', '"'];
-	if (in_array(mb_substr($value, 0, 1, 'utf-8'), $toStrip)) {
-		$value = mb_substr($value, 1, null, 'utf-8');
-	}
-	if (in_array(mb_substr($value, -1, null,'utf-8'), $toStrip)) {
-		$value = mb_substr($value, 0, -1, 'utf-8');
-	}
-	switch (strtolower($value)) {
-		case 'true':
-			return true;
-		case 'false':
-			return false;
-		case 'null':
-			return null;
-		default:
-			return $value;
-	}
+    $value = trim($value);
+    $toStrip = ['\'', '"'];
+    if (in_array(mb_substr($value, 0, 1, 'utf-8'), $toStrip)) {
+        $value = mb_substr($value, 1, null, 'utf-8');
+    }
+    if (in_array(mb_substr($value, -1, null, 'utf-8'), $toStrip)) {
+        $value = mb_substr($value, 0, -1, 'utf-8');
+    }
+    switch (strtolower($value)) {
+        case 'true':
+            return true;
+        case 'false':
+            return false;
+        case 'null':
+            return null;
+        default:
+            return $value;
+    }
 }
 
 /**
@@ -438,24 +490,24 @@ function normalize_env($value)
  * reference to Laravel
  *
  * @date 2021/1/14
- * @param $array
- * @param $key
- * @param null $default
+ *
+ * @param  null  $default
  * @return mixed|null
  */
 function arr_get($array, $key, $default = null)
 {
-	if (strpos($key, '.') === false) {
-		return $array[$key] ?? $default;
-	}
-	foreach (explode('.', $key) as $segment) {
-		if (isset($array[$segment])) {
-			$array = $array[$segment];
-		} else {
-			return $default;
-		}
-	}
-	return $array;
+    if (strpos($key, '.') === false) {
+        return $array[$key] ?? $default;
+    }
+    foreach (explode('.', $key) as $segment) {
+        if (isset($array[$segment])) {
+            $array = $array[$segment];
+        } else {
+            return $default;
+        }
+    }
+
+    return $array;
 }
 
 /**
@@ -503,32 +555,34 @@ function arr_set(&$array, $key, $value)
 function isHttps(): bool
 {
     if (isRunningInConsole()) {
-        $securityLogin = get_setting("security.securelogin");
-        if ($securityLogin != "no") {
+        $securityLogin = get_setting('security.securelogin');
+        if ($securityLogin != 'no') {
             return true;
         }
+
         return false;
     }
+
     return nexus()->getRequestSchema() == 'https';
 }
-
 
 function getSchemeAndHttpHost(bool $fromConfig = false): string
 {
     if (isRunningInConsole() || $fromConfig) {
-        $host = get_setting("basic.BASEURL");
+        $host = get_setting('basic.BASEURL');
     } else {
         $host = nexus()->getRequestHost();
     }
     $isHttps = isHttps();
     $protocol = $isHttps ? 'https' : 'http';
-    return "$protocol://" . $host;
+
+    return "$protocol://".$host;
 }
 
 function getBaseUrl()
 {
     $url = getSchemeAndHttpHost();
-    if (!isRunningInConsole()) {
+    if (! isRunningInConsole()) {
         $requestUri = $_SERVER['REQUEST_URI'];
         $pos = strpos($requestUri, '?');
         if ($pos !== false) {
@@ -537,20 +591,20 @@ function getBaseUrl()
             $url .= $requestUri;
         }
     }
+
     return trim($url, '/');
 }
 
-
 function nexus_json_encode($data)
 {
-    return json_encode($data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 
 function api(...$args)
 {
-    do_log("api begin");
+    do_log('api begin');
     if (func_num_args() < 3) {
-        //参数少于3个时，默认为错误状态。
+        // 参数少于3个时，默认为错误状态。
         $ret = -1;
         $msg = isset($args[0]) ? $args[0] : 'ERROR';
         $data = isset($args[1]) ? $args[1] : [];
@@ -559,12 +613,12 @@ function api(...$args)
         $msg = $args[1];
         $data = $args[2];
     }
-    if ($data instanceof \Illuminate\Http\Resources\Json\JsonResource) {
+    if ($data instanceof JsonResource) {
         $data = $data->response()->getData(true);
     }
-    do_log("api after prepare data");
-//    dd($data);
-    $time = (float)number_format(microtime(true) - nexus()->getStartTimestamp(), 3);
+    do_log('api after prepare data');
+    //    dd($data);
+    $time = (float) number_format(microtime(true) - nexus()->getStartTimestamp(), 3);
     $count = null;
     $resultKey = 'ret';
     $msgKey = 'msg';
@@ -577,8 +631,8 @@ function api(...$args)
         }
     }
     $results = [
-        $resultKey => (int)$ret,
-        $msgKey => (string)$msg,
+        $resultKey => (int) $ret,
+        $msgKey => (string) $msg,
         'data' => $data,
         'time' => $time,
         'rid' => nexus()->getRequestId(),
@@ -591,10 +645,11 @@ function api(...$args)
         $results['recordsTotal'] = $count;
         $results['recordsFiltered'] = $count;
     }
-    if (!IN_NEXUS && config('app.debug')) {
+    if (! IN_NEXUS && config('app.debug')) {
         $results['queries'] = last_query(true);
     }
-    do_log("api end");
+    do_log('api end');
+
     return $results;
 }
 
@@ -610,7 +665,8 @@ function success(...$args)
         $msg = $args[0];
         $data = $args[1];
     }
-    do_log("success before api");
+    do_log('success before api');
+
     return api($ret, $msg, $data);
 }
 
@@ -626,6 +682,7 @@ function fail(...$args)
         $msg = $args[0];
         $data = $args[1];
     }
+
     return api($ret, $msg, $data);
 }
 
@@ -633,11 +690,11 @@ function last_query($all = false, $format = 'json')
 {
     static $connection;
     if (is_null($connection)) {
-        $connectionName = \Nexus\Database\NexusDB::getConnectionName();
+        $connectionName = NexusDB::getConnectionName();
         if (IN_NEXUS) {
-            $connection = \Illuminate\Database\Capsule\Manager::connection($connectionName);
+            $connection = Manager::connection($connectionName);
         } else {
-            $connection = \Illuminate\Support\Facades\DB::connection($connectionName);
+            $connection = DB::connection($connectionName);
         }
     }
     if ($all === 'COUNT') {
@@ -654,6 +711,7 @@ function last_query($all = false, $format = 'json')
     if ($format === 'json') {
         return nexus_json_encode($last);
     }
+
     return $last;
 }
 
@@ -663,32 +721,34 @@ function format_datetime($datetime, $format = 'Y-m-d H:i')
         return null;
     }
     try {
-        $carbonTime = \Carbon\Carbon::parse($datetime);
+        $carbonTime = Carbon::parse($datetime);
+
         return $carbonTime->format($format);
-    } catch (\Exception) {
+    } catch (Exception) {
         do_log("Invalid datetime: $datetime", 'error');
+
         return $datetime;
     }
 }
 
 function nexus_trans($key, $replace = [], $locale = null)
 {
-    return \Nexus\Nexus::trans($key, $replace, $locale);
+    return Nexus\Nexus::trans($key, $replace, $locale);
 }
 
 function isRunningInConsole(): bool
 {
-    return !RUNNING_IN_OCTANE && php_sapi_name() == 'cli';
+    return ! RUNNING_IN_OCTANE && php_sapi_name() == 'cli';
 }
 
 function isRunningOnWindows(): bool
 {
-    return !RUNNING_IN_OCTANE && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    return ! RUNNING_IN_OCTANE && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 }
 
 function command_exists($command): bool
 {
-    return !(trim(exec("command -v $command")) == '');
+    return ! (trim(exec("command -v $command")) == '');
 }
 
 function get_tracker_schema_and_host($trackerUrlId, $combine = false): array|string
@@ -728,51 +788,55 @@ function get_tracker_schema_and_host($trackerUrlId, $combine = false): array|str
     }
     */
     $log = "tracker_url_id: $trackerUrlId, combine: $combine";
-    $url = \App\Models\TrackerUrl::getById($trackerUrlId);
+    $url = TrackerUrl::getById($trackerUrlId);
     if (empty($url)) {
         $ssl_torrent = isHttps() ? 'https://' : 'http://';
         $base_announce_url = sprintf(
-            "%s/%s",
-            trim(\App\Models\Setting::getBaseUrl(), '/'), trim(DEFAULT_TRACKER_URI, '/')
+            '%s/%s',
+            trim(Setting::getBaseUrl(), '/'), trim(DEFAULT_TRACKER_URI, '/')
         );
-        $log .= ", ById no value";
+        $log .= ', ById no value';
     } else {
-        $ssl_torrent = parse_url($url, PHP_URL_SCHEME) . "://" ;
+        $ssl_torrent = parse_url($url, PHP_URL_SCHEME).'://';
         $base_announce_url = substr($url, strlen($ssl_torrent));
-        $log .= ", ById has value";
+        $log .= ', ById has value';
     }
     do_log("$log, ssl_torrent: $ssl_torrent, base_announce_url: $base_announce_url");
     if ($combine) {
-        return $ssl_torrent .  $base_announce_url;
+        return $ssl_torrent.$base_announce_url;
     }
+
     return compact('ssl_torrent', 'base_announce_url');
 }
-
 
 function get_hr_ratio($uped, $downed)
 {
     if ($downed > 0) {
         $ratio = $uped / $downed;
         $color = get_ratio_color($ratio);
-        if ($ratio > 10000) $ratio = 'Inf.';
-        else
+        if ($ratio > 10000) {
+            $ratio = 'Inf.';
+        } else {
             $ratio = number_format($ratio, 3);
+        }
 
-        if ($color)
-            $ratio = "<font color=\"" . $color . "\">" . $ratio . "</font>";
-    } elseif ($uped > 0)
+        if ($color) {
+            $ratio = '<font color="'.$color.'">'.$ratio.'</font>';
+        }
+    } elseif ($uped > 0) {
         $ratio = 'Inf.';
-    else
-        $ratio = "---";
+    } else {
+        $ratio = '---';
+    }
 
     return $ratio;
 }
 
-function get_row_count($table, $suffix = "")
+function get_row_count($table, $suffix = '')
 {
-    $r = sql_query("SELECT COUNT(*) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
-    $a = mysql_fetch_row($r);
-    return $a[0];
+    $rows = NexusDB::select("SELECT COUNT(*) AS c FROM $table $suffix");
+
+    return (int) ($rows[0]['c'] ?? 0);
 }
 
 function get_user_row($id)
@@ -780,62 +844,69 @@ function get_user_row($id)
     global $Cache, $CURUSER;
     static $userRows = [];
     static $curuserRowUpdated = false;
-    static $neededColumns = array(
+    static $neededColumns = [
         'id', 'noad', 'class', 'enabled', 'privacy', 'avatar', 'signature', 'uploaded', 'downloaded', 'last_access', 'username', 'donor',
         'donoruntil', 'leechwarn', 'warned', 'title', 'downloadpos', 'parked', 'clientselect', 'showclienterror',
-    );
-    if (isset($userRows[$id])) return $userRows[$id];
+    ];
+    if (isset($userRows[$id])) {
+        return $userRows[$id];
+    }
     $cacheKey = 'user_'.$id.'_content';
-    $row = \Nexus\Database\NexusDB::remember($cacheKey, 3600, function () use ($id, $neededColumns) {
-        $user = \App\Models\User::query()->with([
+    $row = NexusDB::remember($cacheKey, 3600, function () use ($id, $neededColumns) {
+        $user = User::query()->with([
             'wearing_medals' => function ($query) {
                 $query->orderBy('user_medals.priority', 'desc')
                     ->orderBy('user_medals.id', 'desc')
                     ->limit(get_setting('system.maximum_number_of_medals_can_be_worn', 3));
-            }
+            },
         ])->find($id, $neededColumns);
-        if (!$user) {
+        if (! $user) {
             return null;
         }
         $arr = $user->toArray();
-        //Rainbow ID
-        $userRep = new \App\Repositories\UserRepository();
-        $metas = $userRep->listMetas($id, \App\Models\UserMeta::META_KEY_PERSONALIZED_USERNAME);
+        // Rainbow ID
+        $userRep = new UserRepository;
+        $metas = $userRep->listMetas($id, UserMeta::META_KEY_PERSONALIZED_USERNAME);
         if ($metas->isNotEmpty()) {
             $arr['__is_rainbow'] = 1;
         } else {
             $arr['__is_rainbow'] = 0;
         }
         $arr['__is_donor'] = is_donor($arr);
-        return apply_filter("user_row", $arr);
+
+        return apply_filter('user_row', $arr);
     });
 
-//	if ($CURUSER && $id == $CURUSER['id']) {
-//		$row = array();
-//		foreach($neededColumns as $column) {
-//			$row[$column] = $CURUSER[$column];
-//		}
-//		if (!$curuserRowUpdated) {
-//			$Cache->cache_value('user_'.$CURUSER['id'].'_content', $row, 900);
-//			$curuserRowUpdated = true;
-//		}
-//	} elseif (!$row = $Cache->get_value('user_'.$id.'_content')){
-//		$res = sql_query("SELECT ".implode(',', $neededColumns)." FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
-//		$row = mysql_fetch_array($res);
-//		$Cache->cache_value('user_'.$id.'_content', $row, 900);
-//	}
+    //	if ($CURUSER && $id == $CURUSER['id']) {
+    //		$row = array();
+    //		foreach($neededColumns as $column) {
+    //			$row[$column] = $CURUSER[$column];
+    //		}
+    //		if (!$curuserRowUpdated) {
+    //			$Cache->cache_value('user_'.$CURUSER['id'].'_content', $row, 900);
+    //			$curuserRowUpdated = true;
+    //		}
+    //	} elseif (!$row = $Cache->get_value('user_'.$id.'_content')){
+    //		$res = sql_query("SELECT ".implode(',', $neededColumns)." FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
+    //		$row = mysql_fetch_array($res);
+    //		$Cache->cache_value('user_'.$id.'_content', $row, 900);
+    //	}
 
-    if (!$row)
+    if (! $row) {
         return false;
-    else return $userRows[$id] = $row;
+    } else {
+        return $userRows[$id] = $row;
+    }
 }
 
 function get_user_class()
 {
     if (IN_NEXUS) {
         global $CURUSER;
-        return $CURUSER["class"] ?? '';
+
+        return $CURUSER['class'] ?? '';
     }
+
     return auth()->user()->class;
 }
 
@@ -843,8 +914,10 @@ function get_user_id()
 {
     if (IN_NEXUS) {
         global $CURUSER;
-        return $CURUSER["id"] ?? 0;
+
+        return $CURUSER['id'] ?? 0;
     }
+
     return auth()->user()->id ?? 0;
 }
 
@@ -852,43 +925,48 @@ function get_user_passkey()
 {
     if (IN_NEXUS) {
         global $CURUSER;
-        return $CURUSER["passkey"] ?? "";
+
+        return $CURUSER['passkey'] ?? '';
     }
-    return auth()->user()->passkey ?? "";
+
+    return auth()->user()->passkey ?? '';
 }
 
 function get_pure_username()
 {
     if (IN_NEXUS) {
         global $CURUSER;
-        return $CURUSER["username"] ?? "";
+
+        return $CURUSER['username'] ?? '';
     }
-    return auth()->user()->username ?? "";
+
+    return auth()->user()->username ?? '';
 }
 
 function nexus()
 {
-    return \Nexus\Nexus::instance();
+    return Nexus\Nexus::instance();
 }
 
 function site_info()
 {
-    $setting = \App\Models\Setting::get('basic');
+    $setting = Setting::get('basic');
     $siteInfo = [
         'site_name' => $setting['SITENAME'],
         'base_url' => getSchemeAndHttpHost(),
     ];
+
     return $siteInfo;
 }
 
-function isIPV4 ($ip)
+function isIPV4($ip)
 {
-    return filter_var($ip,FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
 }
 
-function isIPV6 ($ip)
+function isIPV6($ip)
 {
-    return filter_var($ip,FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 }
 
 function add_filter($name, $function, $priority = 10, $argc = 1)
@@ -900,7 +978,8 @@ function add_filter($name, $function, $priority = 10, $argc = 1)
 function apply_filter($name, ...$args)
 {
     global $hook;
-//    do_log("[APPLY_FILTER]: $name");
+
+    //    do_log("[APPLY_FILTER]: $name");
     return $hook->applyFilter(...func_get_args());
 }
 
@@ -913,58 +992,61 @@ function add_action($name, $function, $priority = 10, $argc = 1)
 function do_action($name, ...$args)
 {
     global $hook;
-//    do_log("[DO_ACTION]: $name");
+
+    //    do_log("[DO_ACTION]: $name");
     return $hook->doAction(...func_get_args());
 }
 
 function isIPSeedBoxFromASN($ip, $exceptionWhenYes = false): bool
 {
-    $redis = \Nexus\Database\NexusDB::redis();
-    $key = "nexus_asn";
-    $notFoundCacheValue = "__NOT_FOUND__";
-   try {
-       static $reader;
-       $database = nexus_env('GEOIP2_ASN_DATABASE');
-       if (!file_exists($database) || !is_readable($database)) {
-           do_log("GEOIP2_ASN_DATABASE: $database not exists or not readable", "debug");
-           return false;
-       }
-       if (is_null($reader)) {
-           $reader = new \GeoIp2\Database\Reader($database);
-       }
-       $asnObj = $reader->asn($ip);
-       $asn = $asnObj->autonomousSystemNumber;
-       if ($asn <= 0) {
-           return false;
-       }
-       $cacheResult = $redis->hGet($key, $asn);
-       if ($cacheResult !== false) {
-           if ($cacheResult === $notFoundCacheValue) {
-               return false;
-           } else {
-               return true;
-           }
-       }
-       $row = \Nexus\Database\NexusDB::getOne("seed_box_records", "asn = $asn", "id");
-       if (!empty($row)) {
-           $redis->hSet($key, $asn, $row['id']);
-       } else {
-           $redis->hSet($key, $asn, $notFoundCacheValue);
-       }
-   } catch (\Throwable $throwable) {
-       do_log("ip: $ip, " . $throwable->getMessage());
-       $redis->hSet($key, $asn, $notFoundCacheValue);
-   }
-   $result = !empty($row);
-   if ($result && $exceptionWhenYes) {
-       throw new \App\Exceptions\SeedBoxYesException($row['id']);
-   }
-   return $result;
+    $redis = NexusDB::redis();
+    $key = 'nexus_asn';
+    $notFoundCacheValue = '__NOT_FOUND__';
+    try {
+        static $reader;
+        $database = nexus_env('GEOIP2_ASN_DATABASE');
+        if (! file_exists($database) || ! is_readable($database)) {
+            do_log("GEOIP2_ASN_DATABASE: $database not exists or not readable", 'debug');
+
+            return false;
+        }
+        if (is_null($reader)) {
+            $reader = new Reader($database);
+        }
+        $asnObj = $reader->asn($ip);
+        $asn = $asnObj->autonomousSystemNumber;
+        if ($asn <= 0) {
+            return false;
+        }
+        $cacheResult = $redis->hGet($key, $asn);
+        if ($cacheResult !== false) {
+            if ($cacheResult === $notFoundCacheValue) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        $row = NexusDB::getOne('seed_box_records', "asn = $asn", 'id');
+        if (! empty($row)) {
+            $redis->hSet($key, $asn, $row['id']);
+        } else {
+            $redis->hSet($key, $asn, $notFoundCacheValue);
+        }
+    } catch (Throwable $throwable) {
+        do_log("ip: $ip, ".$throwable->getMessage());
+        $redis->hSet($key, $asn, $notFoundCacheValue);
+    }
+    $result = ! empty($row);
+    if ($result && $exceptionWhenYes) {
+        throw new SeedBoxYesException($row['id']);
+    }
+
+    return $result;
 }
 
 function isIPSeedBox($ip, $uid): bool
 {
-    return \App\Repositories\SeedBoxRepository::isSeedBoxFromUserRecords($uid, $ip)['result'];
+    return SeedBoxRepository::isSeedBoxFromUserRecords($uid, $ip)['result'];
 
     /*
     $key = "nexus_is_ip_seed_box:ip:$ip:uid:$uid";
@@ -1031,52 +1113,53 @@ function isIPSeedBox($ip, $uid): bool
 
 function getDataTraffic(array $torrent, array $queries, array $user, $peer, $snatch, $promotionInfo)
 {
-    if (!isset($user['__is_donor'])) {
-        throw new \InvalidArgumentException("user no '__is_donor' field");
+    if (! isset($user['__is_donor'])) {
+        throw new InvalidArgumentException("user no '__is_donor' field");
     }
     $log = sprintf(
-        "torrent: %s, owner: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s",
+        'torrent: %s, owner: %s, user: %s, peerUploaded: %s, peerDownloaded: %s, queriesUploaded: %s, queriesDownloaded: %s',
         $torrent['id'], $torrent['owner'], $user['id'], $peer['uploaded'] ?? '', $peer['downloaded'] ?? '', $queries['uploaded'], $queries['downloaded']
     );
-    if (!empty($peer)) {
+    if (! empty($peer)) {
         $realUploaded = max(bcsub($queries['uploaded'], $peer['uploaded']), 0);
         $realDownloaded = max(bcsub($queries['downloaded'], $peer['downloaded']), 0);
         $log .= ", [PEER_EXISTS], realUploaded: $realUploaded, realDownloaded: $realDownloaded, [SP_STATE]";
         $spStateGlobal = get_global_sp_state();
-        $spStateNormal = \App\Models\Torrent::PROMOTION_NORMAL;
-        if (!empty($promotionInfo) && isset($promotionInfo['__ignore_global_sp_state'])) {
+        $spStateNormal = Torrent::PROMOTION_NORMAL;
+        if (! empty($promotionInfo) && isset($promotionInfo['__ignore_global_sp_state'])) {
             $log .= ', use promotionInfo';
             $spStateReal = $promotionInfo['sp_state'];
         } elseif ($spStateGlobal != $spStateNormal) {
-            $log .= ", use global";
+            $log .= ', use global';
             $spStateReal = $spStateGlobal;
         } else {
-            $log .= ", use torrent individual";
+            $log .= ', use torrent individual';
             $spStateReal = $torrent['sp_state'];
         }
-        if (!isset(\App\Models\Torrent::$promotionTypes[$spStateReal])) {
+        if (! isset(Torrent::$promotionTypes[$spStateReal])) {
             $log .= ", spStateReal = $spStateReal, invalid, reset to: $spStateNormal";
             $spStateReal = $spStateNormal;
         }
         $uploaderRatio = get_setting('torrent.uploaderdouble');
         $log .= ", uploaderRatio: $uploaderRatio";
         if ($torrent['owner'] == $user['id'] && $uploaderRatio != 1) {
-            //uploader, use the bigger one
-            $upRatio = max($uploaderRatio, \App\Models\Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
+            // uploader, use the bigger one
+            $upRatio = max($uploaderRatio, Torrent::$promotionTypes[$spStateReal]['up_multiplier']);
             $log .= ", [IS_UPLOADER] && uploaderRatio != 1, upRatio: $upRatio";
         } else {
-            $upRatio = \App\Models\Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
+            $upRatio = Torrent::$promotionTypes[$spStateReal]['up_multiplier'];
             $log .= ", [IS_NOT_UPLOADER] || uploaderRatio == 1, upRatio: $upRatio";
         }
         /**
          * VIP do not calculate downloaded
+         *
          * @since 1.7.13
          */
-        if ($user['class'] == \App\Models\User::CLASS_VIP) {
+        if ($user['class'] == User::CLASS_VIP) {
             $downRatio = 0;
             $log .= ", [IS_VIP], downRatio: $downRatio";
         } else {
-            $downRatio = \App\Models\Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
+            $downRatio = Torrent::$promotionTypes[$spStateReal]['down_multiplier'];
             $log .= ", [IS_NOT_VIP], downRatio: $downRatio";
         }
     } else {
@@ -1098,7 +1181,7 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
      */
     $isSeedBoxRuleEnabled = get_setting('seed_box.enabled') == 'yes';
     $log .= ", isSeedBoxRuleEnabled: $isSeedBoxRuleEnabled, user class: {$user['class']}, __is_donor: {$user['__is_donor']}";
-    if ($isSeedBoxRuleEnabled && $torrent['owner'] != $user['id'] && !($user['class'] >= \App\Models\User::CLASS_VIP || $user['__is_donor'])) {
+    if ($isSeedBoxRuleEnabled && $torrent['owner'] != $user['id'] && ! ($user['class'] >= User::CLASS_VIP || $user['__is_donor'])) {
         $isIPSeedBox = isIPSeedBox($queries['ip'], $user['id']);
         $log .= ", isIPSeedBox: $isIPSeedBox";
         if ($isIPSeedBox) {
@@ -1107,7 +1190,7 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
             if ($isSeedBoxNoPromotion) {
                 $uploadedIncrementForUser = $realUploaded;
                 $downloadedIncrementForUser = $realDownloaded;
-                $log .= ", isIPSeedBox && isSeedBoxNoPromotion, increment for user = real";
+                $log .= ', isIPSeedBox && isSeedBoxNoPromotion, increment for user = real';
             }
             $maxUploadedTimes = get_setting('seed_box.max_uploaded');
             $maxUploadedDurationSeconds = get_setting('seed_box.max_uploaded_duration', 0) * 3600;
@@ -1115,15 +1198,15 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
             $timeRangeValid = ($maxUploadedDurationSeconds == 0) || ($torrentTTL < $maxUploadedDurationSeconds);
             $log .= ", maxUploadedTimes: $maxUploadedTimes, maxUploadedDurationSeconds: $maxUploadedDurationSeconds, timeRangeValid: $timeRangeValid";
             if ($maxUploadedTimes > 0 && $timeRangeValid) {
-                $log .= ", [LIMIT_UPLOADED]";
-                if (!empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
+                $log .= ', [LIMIT_UPLOADED]';
+                if (! empty($snatch) && isset($torrent['size']) && $snatch['uploaded'] >= $torrent['size'] * $maxUploadedTimes) {
                     $log .= ", snatchUploaded({$snatch['uploaded']}) >= torrentSize({$torrent['size']}) * times($maxUploadedTimes), uploadedIncrementForUser = 0";
                     $uploadedIncrementForUser = 0;
                 } else {
                     $log .= ", snatchUploaded({$snatch['uploaded']}) < torrentSize({$torrent['size']}) * times($maxUploadedTimes), uploadedIncrementForUser do not change to 0";
                 }
             } else {
-                $log .= ", [NOT_LIMIT_UPLOADED]";
+                $log .= ', [NOT_LIMIT_UPLOADED]';
             }
         }
     }
@@ -1134,38 +1217,39 @@ function getDataTraffic(array $torrent, array $queries, array $user, $peer, $sna
         'downloaded_increment' => $realDownloaded,
         'downloaded_increment_for_user' => $downloadedIncrementForUser,
     ];
-    do_log("$log, result: " . json_encode($result), 'info');
+    do_log("$log, result: ".json_encode($result), 'info');
+
     return $result;
 }
 
 function clear_user_cache($uid, $passkey = '')
 {
     do_log("clear_user_cache, uid: $uid, passkey: $passkey");
-    \Nexus\Database\NexusDB::cache_del("user_{$uid}_content");
-    \Nexus\Database\NexusDB::cache_del("user_{$uid}_roles");
-    \Nexus\Database\NexusDB::cache_del("announce_user_passkey_$uid");//announce.php
-    \Nexus\Database\NexusDB::cache_del(\App\Models\Setting::DIRECT_PERMISSION_CACHE_KEY_PREFIX . $uid);
-    \Nexus\Database\NexusDB::cache_del("user_role_ids:$uid");
-    \Nexus\Database\NexusDB::cache_del("direct_permissions:$uid");
+    NexusDB::cache_del("user_{$uid}_content");
+    NexusDB::cache_del("user_{$uid}_roles");
+    NexusDB::cache_del("announce_user_passkey_$uid"); // announce.php
+    NexusDB::cache_del(Setting::DIRECT_PERMISSION_CACHE_KEY_PREFIX.$uid);
+    NexusDB::cache_del("user_role_ids:$uid");
+    NexusDB::cache_del("direct_permissions:$uid");
     if ($passkey) {
-        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');//announce.php
-        \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_rss');//torrentrss.php
+        NexusDB::cache_del('user_passkey_'.$passkey.'_content'); // announce.php
+        NexusDB::cache_del('user_passkey_'.$passkey.'_rss'); // torrentrss.php
     }
-    $userInfo = \App\Models\User::query()->find($uid, \App\Models\User::$commonFields);
+    $userInfo = User::query()->find($uid, User::$commonFields);
     if ($userInfo) {
-        fire_event("user_updated", $userInfo);
+        fire_event('user_updated', $userInfo);
     }
 }
 
 function clear_setting_cache()
 {
-    do_log("clear_setting_cache");
-    \Nexus\Database\NexusDB::cache_del('nexus_settings_in_laravel');
-    \Nexus\Database\NexusDB::cache_del('nexus_settings_in_nexus');
-    \Nexus\Database\NexusDB::cache_del('setting_protected_forum');
-    $channel = nexus_env("CHANNEL_NAME_SETTING");
-    if (!empty($channel)) {
-        \Nexus\Database\NexusDB::redis()->publish($channel, "update");
+    do_log('clear_setting_cache');
+    NexusDB::cache_del('nexus_settings_in_laravel');
+    NexusDB::cache_del('nexus_settings_in_nexus');
+    NexusDB::cache_del('setting_protected_forum');
+    $channel = nexus_env('CHANNEL_NAME_SETTING');
+    if (! empty($channel)) {
+        NexusDB::redis()->publish($channel, 'update');
     }
 }
 
@@ -1174,11 +1258,11 @@ function clear_setting_cache()
  */
 function clear_category_cache()
 {
-    do_log("clear_category_cache");
-    \Nexus\Database\NexusDB::cache_del('category_content');
-    $searchBoxList = \App\Models\SearchBox::query()->get(['id']);
+    do_log('clear_category_cache');
+    NexusDB::cache_del('category_content');
+    $searchBoxList = SearchBox::query()->get(['id']);
     foreach ($searchBoxList as $item) {
-        \Nexus\Database\NexusDB::cache_del("category_list_mode_{$item->id}");
+        NexusDB::cache_del("category_list_mode_{$item->id}");
     }
 
 }
@@ -1189,17 +1273,17 @@ function clear_category_cache()
 function clear_taxonomy_cache($table)
 {
     do_log("clear_taxonomy_cache: $table");
-    $list = \App\Models\SearchBox::query()->get(['id']);
+    $list = SearchBox::query()->get(['id']);
     foreach ($list as $item) {
-        \Nexus\Database\NexusDB::cache_del("{$table}_list_mode_{$item->id}");
+        NexusDB::cache_del("{$table}_list_mode_{$item->id}");
     }
-    \Nexus\Database\NexusDB::cache_del("{$table}_list_mode_0");
+    NexusDB::cache_del("{$table}_list_mode_0");
 }
 
 function clear_staff_message_cache()
 {
-    do_log("clear_staff_message_cache");
-    \App\Repositories\MessageRepository::updateStaffMessageCountCache(false);
+    do_log('clear_staff_message_cache');
+    MessageRepository::updateStaffMessageCountCache(false);
 }
 
 /**
@@ -1207,8 +1291,8 @@ function clear_staff_message_cache()
  */
 function clear_search_box_cache()
 {
-    do_log("clear_search_box_cache");
-    \Nexus\Database\NexusDB::cache_del("search_box_content");
+    do_log('clear_search_box_cache');
+    NexusDB::cache_del('search_box_content');
 }
 
 /**
@@ -1216,40 +1300,40 @@ function clear_search_box_cache()
  */
 function clear_icon_cache()
 {
-    do_log("clear_icon_cache");
-    \Nexus\Database\NexusDB::cache_del("category_icon_content");
+    do_log('clear_icon_cache');
+    NexusDB::cache_del('category_icon_content');
 }
 
 function clear_inbox_count_cache($uid)
 {
-    do_log("clear_inbox_count_cache");
-    foreach (\Illuminate\Support\Arr::wrap($uid) as $id) {
-        \Nexus\Database\NexusDB::cache_del('user_'.$id.'_inbox_count');
-        \Nexus\Database\NexusDB::cache_del('user_'.$id.'_unread_message_count');
+    do_log('clear_inbox_count_cache');
+    foreach (Arr::wrap($uid) as $id) {
+        NexusDB::cache_del('user_'.$id.'_inbox_count');
+        NexusDB::cache_del('user_'.$id.'_unread_message_count');
     }
 }
 
 function clear_agent_allow_deny_cache()
 {
-    do_log("clear_agent_allow_deny_cache");
-    $allowCacheKey = nexus_env("CACHE_KEY_AGENT_ALLOW", "all_agent_allows");
-    $denyCacheKey = nexus_env("CACHE_KEY_AGENT_DENY", "all_agent_denies");
-    foreach (["", ":php", ":go"] as $suffix) {
-        \Nexus\Database\NexusDB::cache_del($allowCacheKey . $suffix);
-        \Nexus\Database\NexusDB::cache_del($denyCacheKey . $suffix);
+    do_log('clear_agent_allow_deny_cache');
+    $allowCacheKey = nexus_env('CACHE_KEY_AGENT_ALLOW', 'all_agent_allows');
+    $denyCacheKey = nexus_env('CACHE_KEY_AGENT_DENY', 'all_agent_denies');
+    foreach (['', ':php', ':go'] as $suffix) {
+        NexusDB::cache_del($allowCacheKey.$suffix);
+        NexusDB::cache_del($denyCacheKey.$suffix);
     }
 }
 
 /**
  * @see announce.php
- * @param $infoHash
+ *
  * @return void
  */
 function clear_torrent_cache($infoHash)
 {
-    do_log("clear_torrent_cache");
-    \Nexus\Database\NexusDB::cache_del('torrent_hash_'.$infoHash.'_content');
-    \Nexus\Database\NexusDB::cache_del("torrent_not_exists:$infoHash");
+    do_log('clear_torrent_cache');
+    NexusDB::cache_del('torrent_hash_'.$infoHash.'_content');
+    NexusDB::cache_del("torrent_not_exists:$infoHash");
 }
 
 function user_can($permission, $fail = false, $uid = 0): bool
@@ -1266,53 +1350,54 @@ function user_can($permission, $fail = false, $uid = 0): bool
             goto FAIL;
         }
         do_log("$log, unauthenticated, false");
+
         return false;
     }
-    if (!$fail && isset($userCanCached[$permission][$uid])) {
+    if (! $fail && isset($userCanCached[$permission][$uid])) {
         return $userCanCached[$permission][$uid];
     }
     $userInfo = get_user_row($uid);
     $class = $userInfo['class'];
     $log .= ", userClass: $class";
-    if ($class == \App\Models\User::CLASS_STAFF_LEADER) {
+    if ($class == User::CLASS_STAFF_LEADER) {
         do_log("$log, CLASS_STAFF_LEADER, true");
         $userCanCached[$permission][$uid] = true;
+
         return true;
     }
-    $userAllPermissions = \App\Repositories\ToolRepository::listUserAllPermissions($uid);
+    $userAllPermissions = ToolRepository::listUserAllPermissions($uid);
     $result = isset($userAllPermissions[$permission]);
     if ($sequence == 0) {
         $sequence++;
-        $log .= ", userAllPermissions: " . json_encode($userAllPermissions);
+        $log .= ', userAllPermissions: '.json_encode($userAllPermissions);
     }
     $log .= ", result: $result";
-    if (!$fail || $result) {
+    if (! $fail || $result) {
         do_log($log);
         $userCanCached[$permission][$uid] = $result;
+
         return $result;
     }
     FAIL:
     do_log("$log, [FAIL]");
-    if (IN_NEXUS && !IN_TRACKER) {
+    if (IN_NEXUS && ! IN_TRACKER) {
         global $lang_functions;
         $requireClass = get_setting("authority.$permission");
-        if (isset(\App\Models\User::$classes[$requireClass])) {
-            stderr($lang_functions['std_sorry'],$lang_functions['std_permission_denied_only'].get_user_class_name($requireClass,false,true,true).sprintf($lang_functions['std_or_above_can_view'], \App\Models\Setting::getSiteName()),false);
+        if (isset(User::$classes[$requireClass])) {
+            stderr($lang_functions['std_sorry'], $lang_functions['std_permission_denied_only'].get_user_class_name($requireClass, false, true, true).sprintf($lang_functions['std_or_above_can_view'], Setting::getSiteName()), false);
         } else {
             stderr($lang_functions['std_error'], $lang_functions['std_permission_denied']);
         }
     }
-    throw new \App\Exceptions\InsufficientPermissionException();
+    throw new InsufficientPermissionException;
 }
 
 function assert_has_permission(bool $permissionCheckResult): void
 {
-    if (!$permissionCheckResult) {
-        throw new \App\Exceptions\InsufficientPermissionException();
+    if (! $permissionCheckResult) {
+        throw new InsufficientPermissionException;
     }
 }
-
-
 
 function is_donor(array $userInfo): bool
 {
@@ -1321,35 +1406,38 @@ function is_donor(array $userInfo): bool
 
 /**
  * @deprecated
- * @param $authkey
+ *
  * @return false|int|mixed|string|null
- * @throws \App\Exceptions\NexusException
+ *
+ * @throws NexusException
+ *
  * @see download.php
  */
 function get_passkey_by_authkey($authkey)
 {
-    return \Nexus\Database\NexusDB::remember("authkey2passkey:$authkey", 3600*24, function () use ($authkey) {
+    return NexusDB::remember("authkey2passkey:$authkey", 3600 * 24, function () use ($authkey) {
         $arr = explode('|', $authkey);
         if (count($arr) != 3) {
-            throw new \InvalidArgumentException("Invalid authkey: $authkey, format error");
+            throw new InvalidArgumentException("Invalid authkey: $authkey, format error");
         }
         $uid = $arr[1];
-        $torrentRep = new \App\Repositories\TorrentRepository();
+        $torrentRep = new TorrentRepository;
         $decrypted = $torrentRep->checkTrackerReportAuthKey($authkey);
         if (empty($decrypted)) {
-            throw new \InvalidArgumentException("Invalid authkey: $authkey");
+            throw new InvalidArgumentException("Invalid authkey: $authkey");
         }
-        $userInfo = \Nexus\Database\NexusDB::remember("announce_user_passkey_$uid", 3600, function () use ($uid) {
-            return \App\Models\User::query()->where('id', $uid)->first(['id', 'passkey']);
+        $userInfo = NexusDB::remember("announce_user_passkey_$uid", 3600, function () use ($uid) {
+            return User::query()->where('id', $uid)->first(['id', 'passkey']);
         });
+
         return $userInfo->passkey;
     });
 }
 
 function executeCommand($command, $format = 'string', $artisan = false, $exception = true): string|array
 {
-    $append = " 2>&1";
-    if (!str_ends_with($command, $append)) {
+    $append = ' 2>&1';
+    if (! str_ends_with($command, $append)) {
         $command .= $append;
     }
     if ($artisan) {
@@ -1362,13 +1450,14 @@ function executeCommand($command, $format = 'string', $artisan = false, $excepti
     $outputString = implode("\n", $output);
     $log = sprintf('result_code: %s, result: %s, output: %s', $result_code, $result, $outputString);
     if ($result_code != 0) {
-        do_log($log, "error");
+        do_log($log, 'error');
         if ($exception) {
-            throw new \RuntimeException($outputString);
+            throw new RuntimeException($outputString);
         }
     } else {
         do_log($log);
     }
+
     return $format == 'string' ? $outputString : $output;
 }
 
@@ -1376,6 +1465,7 @@ function has_role_work_seeding($uid)
 {
     $result = apply_filter('user_has_role_work_seeding', false, $uid);
     do_log("uid: $uid, result: $result");
+
     return $result;
 }
 
@@ -1387,17 +1477,17 @@ function filter_src($src)
     }
     $host = parse_url($src, PHP_URL_HOST);
     $currentHost = parse_url(getSchemeAndHttpHost(), PHP_URL_HOST);
-    if (!empty($host) && $host != $currentHost) {
+    if (! empty($host) && $host != $currentHost) {
         return $src;
     }
     if (isset($_SERVER['DOCUMENT_ROOT'])) {
-        $guessScriptFilename = sprintf("%s/%s", $_SERVER['DOCUMENT_ROOT'], trim($path, '/'));
-        if (!file_exists($guessScriptFilename)) {
+        $guessScriptFilename = sprintf('%s/%s', $_SERVER['DOCUMENT_ROOT'], trim($path, '/'));
+        if (! file_exists($guessScriptFilename)) {
             return $src;
         }
     }
-    //only allow these
-    $imgExtensions = implode("|", \App\Models\Attachment::IMG_EXTENSIONS);
+    // only allow these
+    $imgExtensions = implode('|', Attachment::IMG_EXTENSIONS);
     $allowSuffixPattern = "/\.($imgExtensions)/i";
     if (preg_match($allowSuffixPattern, $path)) {
         return $src;
@@ -1406,47 +1496,55 @@ function filter_src($src)
     if (preg_match($allowScriptPattern, $path)) {
         return $src;
     }
-    //log danger, deny directly
+    // log danger, deny directly
     $dangerScriptsPattern = "/(logout|login|ajax|announce|scrape|adduser|modtask|docleanup|freeleech|take.*)\.php/i";
     if (preg_match($dangerScriptsPattern, $path)) {
-        $msg = sprintf( "[DANGER_URL]: $src [%s]", nexus()->getRequestId());
-        do_log($msg, "alert");
-        write_log($msg, "mod");
+        $msg = sprintf("[DANGER_URL]: $src [%s]", nexus()->getRequestId());
+        do_log($msg, 'alert');
+        write_log($msg, 'mod');
     }
     do_log("[NOT_ALLOW_SRC]: $src with path: $path");
-    return "";
+
+    return '';
 }
 
-//here must retrieve the real time info, no cache!!!
+// here must retrieve the real time info, no cache!!!
 function get_snatch_info($torrentId, $userId)
 {
-    return mysql_fetch_assoc(sql_query(sprintf('select * from snatched where torrentid = %s and userid = %s order by id desc limit 1', $torrentId, $userId)));
+    $row = NexusDB::table('snatched')
+        ->where('torrentid', (int) $torrentId)
+        ->where('userid', (int) $userId)
+        ->orderByDesc('id')
+        ->limit(1)
+        ->first();
+
+    return $row ? (array) $row : false;
 }
 
 /**
  * 完整的 Laravel 事件, 在 php 端有监听者的需要触发. 同样会执行 publish_model_event()
  */
-function fire_event(string $name, \Illuminate\Database\Eloquent\Model $model, ?\Illuminate\Database\Eloquent\Model $oldModel = null): void
+function fire_event(string $name, Model $model, ?Model $oldModel = null): void
 {
-    if (!isset(\App\Enums\ModelEventEnum::$eventMaps[$name])) {
-        throw new \InvalidArgumentException("Event $name is not a valid event enumeration");
+    if (! isset(ModelEventEnum::$eventMaps[$name])) {
+        throw new InvalidArgumentException("Event $name is not a valid event enumeration");
     }
     if (IN_NEXUS) {
-        $prefix = "fire_event:";
-        $idKey = $prefix . \Illuminate\Support\Str::random();
-        $idKeyOld = "";
-        \Nexus\Database\NexusDB::cache_put($idKey, serialize($model->toArray()), 3600*24*30);
+        $prefix = 'fire_event:';
+        $idKey = $prefix.Str::random();
+        $idKeyOld = '';
+        NexusDB::cache_put($idKey, serialize($model->toArray()), 3600 * 24 * 30);
         if ($oldModel) {
-            $idKeyOld = $prefix . \Illuminate\Support\Str::random();
-            \Nexus\Database\NexusDB::cache_put($idKeyOld, serialize($oldModel->toArray()), 3600*24*30);
+            $idKeyOld = $prefix.Str::random();
+            NexusDB::cache_put($idKeyOld, serialize($oldModel->toArray()), 3600 * 24 * 30);
         }
-//        executeCommand("event:fire --name=$name --idKey=$idKey --idKeyOld=$idKeyOld", "string", true, false);
-        \Nexus\Nexus::dispatchQueueJob(new \App\Jobs\FireEvent($name, $idKey, $idKeyOld));
+        //        executeCommand("event:fire --name=$name --idKey=$idKey --idKeyOld=$idKeyOld", "string", true, false);
+        Nexus\Nexus::dispatchQueueJob(new FireEvent($name, $idKey, $idKeyOld));
         do_log("success fire_event in nexus, name: $name, idKey: $idKey, idKeyOld: $idKeyOld");
     } else {
-        $eventClass = \App\Enums\ModelEventEnum::$eventMaps[$name]['event'];
+        $eventClass = ModelEventEnum::$eventMaps[$name]['event'];
         if (str_ends_with($name, '_deleted')) {
-            //if deleted from database, can not pass model instance, use array
+            // if deleted from database, can not pass model instance, use array
             $params = [$model->toArray()];
             if ($oldModel) {
                 $params[] = $oldModel->toArray();
@@ -1457,58 +1555,64 @@ function fire_event(string $name, \Illuminate\Database\Eloquent\Model $model, ?\
                 $params[] = $oldModel;
             }
         }
-        call_user_func_array([$eventClass, "dispatch"], $params);
+        call_user_func_array([$eventClass, 'dispatch'], $params);
         publish_model_event($name, $model->id, $model->toJson());
-        do_log("success fire_event in laravel, name: $name, id: $model->id, oldId: " . ($oldModel ? $oldModel->id : ""));
+        do_log("success fire_event in laravel, name: $name, id: $model->id, oldId: ".($oldModel ? $oldModel->id : ''));
     }
 }
 
 /**
  * 仅仅是往 redis 发布事件, php 端无监听者仅在其他平台有需要的触发这个即可, 较轻量
  */
-function publish_model_event(string $event, int $id, string $json = ""): void
+function publish_model_event(string $event, int $id, string $json = ''): void
 {
-    $channel = nexus_env("CHANNEL_NAME_MODEL_EVENT");
-    if (!empty($channel)) {
-        \Nexus\Database\NexusDB::redis()->publish($channel, json_encode(["event" => $event, "id" => $id, "json" => $json]));
+    $channel = nexus_env('CHANNEL_NAME_MODEL_EVENT');
+    if (! empty($channel)) {
+        NexusDB::redis()->publish($channel, json_encode(['event' => $event, 'id' => $id, 'json' => $json]));
     } else {
-        do_log("event: $event, id: $id, channel: $channel, channel is empty!", "error");
+        do_log("event: $event, id: $id, channel: $channel, channel is empty!", 'error');
     }
 }
 
 function convertNamespaceToSnake(string $str): string
 {
-    return str_replace(["\\", "::"], ["_", "."], $str);
+    return str_replace(['\\', '::'], ['_', '.'], $str);
 }
 
 function get_user_locale(int $uid): string
 {
     $sql = "select language.site_lang_folder from users inner join language on users.lang = language.id where users.id = $uid limit 1";
-    $result = \Nexus\Database\NexusDB::select($sql);
+    $result = NexusDB::select($sql);
     if (empty($result) || empty($result[0]['site_lang_folder'])) {
-        return "en";
+        return 'en';
     }
-    return \App\Http\Middleware\Locale::$languageMaps[$result[0]['site_lang_folder']] ?? $result[0]['site_lang_folder'];
+
+    return Locale::$languageMaps[$result[0]['site_lang_folder']] ?? $result[0]['site_lang_folder'];
 }
 
-function send_admin_success_notification(string $msg = ""): void {
-    \Filament\Notifications\Notification::make()->success()->title($msg ?: "Success!")->send();
+function send_admin_success_notification(string $msg = ''): void
+{
+    Notification::make()->success()->title($msg ?: 'Success!')->send();
 }
 
-function send_admin_fail_notification(string $msg = ""): void {
-    \Filament\Notifications\Notification::make()->danger()->title($msg ?: "Fail!")->send();
+function send_admin_fail_notification(string $msg = ''): void
+{
+    Notification::make()->danger()->title($msg ?: 'Fail!')->send();
 }
 
-function ability(\App\Enums\Permission\RoutePermissionEnum $permission): string {
-    return sprintf("ability:%s", $permission->value);
+function ability(RoutePermissionEnum $permission): string
+{
+    return sprintf('ability:%s', $permission->value);
 }
 
-function get_challenge_key(string $challenge): string {
-    return "challenge:".$challenge;
+function get_challenge_key(string $challenge): string
+{
+    return 'challenge:'.$challenge;
 }
 
-function get_user_from_cookie(array $cookie, $isArray = true): array|\App\Models\User|null {
-    $log = "cookie: " . json_encode($cookie);
+function get_user_from_cookie(array $cookie, $isArray = true): array|User|null
+{
+    $log = 'cookie: '.json_encode($cookie);
     $result = get_user_id_and_signature_from_cookie($cookie);
     if (empty($result)) {
         return null;
@@ -1518,89 +1622,103 @@ function get_user_from_cookie(array $cookie, $isArray = true): array|\App\Models
     $signature = $result['signature'];
     $log .= ", uid = $id";
     $isAjax = nexus()->isAjax();
-    $selfEnableBonus = \App\Models\Setting::getSelfEnableBonus();
-    //only in nexus web can self-enable, and require bonus > 0
-    $shouldIgnoreEnabled = IN_NEXUS && !$isAjax && $selfEnableBonus > 0;
+    $selfEnableBonus = Setting::getSelfEnableBonus();
+    // only in nexus web can self-enable, and require bonus > 0
+    $shouldIgnoreEnabled = IN_NEXUS && ! $isAjax && $selfEnableBonus > 0;
     if ($isArray) {
-        $whereStr = sprintf("id = %d and status = 'confirmed'", $id);
-        if (!$shouldIgnoreEnabled) {
-            $whereStr .= " and enabled = 'yes'";
+        $userQuery = NexusDB::table('users')
+            ->where('id', (int) $id)
+            ->where('status', 'confirmed');
+        if (! $shouldIgnoreEnabled) {
+            $userQuery->where('enabled', 'yes');
         }
-        $res = sql_query("SELECT * FROM users WHERE $whereStr LIMIT 1");
-        $row = mysql_fetch_array($res);
-        if (!$row) {
+        $row = $userQuery->first();
+        $row = $row ? (array) $row : null;
+        if (! $row) {
             do_log("$log, user not exists");
+
             return null;
         }
-        $authKey = $row["auth_key"];
+        $authKey = $row['auth_key'];
         unset($row['auth_key'], $row['passhash']);
     } else {
-        $row = \App\Models\User::query()->find($id);
-        if (!$row) {
+        $row = User::query()->find($id);
+        if (! $row) {
             do_log("$log, user not exists");
+
             return null;
         }
         $checkFields = ['status'];
-        if (!$shouldIgnoreEnabled) {
+        if (! $shouldIgnoreEnabled) {
             $checkFields[] = 'enabled';
         }
         $row->checkIsNormal($checkFields);
         $authKey = $row->auth_key;
     }
     $expectedSignature = hash_hmac('sha256', $tokenJson, $authKey);
-    if (!hash_equals($expectedSignature, $signature)) {
+    if (! hash_equals($expectedSignature, $signature)) {
         do_log("$log, !hash_equals, expectedSignature: $expectedSignature, actualSignature: $signature");
+
         return null;
     }
+
     return $row;
 }
 
-function get_user_id_and_signature_from_cookie(array $cookie): array|null
+function get_user_id_and_signature_from_cookie(array $cookie): ?array
 {
-    $log = "cookie: " . json_encode($cookie);
-    if (empty($cookie["c_secure_pass"])) {
+    $log = 'cookie: '.json_encode($cookie);
+    if (empty($cookie['c_secure_pass'])) {
         do_log("$log, param not enough");
+
         return null;
     }
-    $base64Decoded = base64_decode($cookie["c_secure_pass"]);
+    $base64Decoded = base64_decode($cookie['c_secure_pass']);
     if (empty($base64Decoded)) {
         do_log("$log, invalid c_secure_pass");
+
         return null;
     }
-    $log .= ", base64 decoded: " . $base64Decoded;
-    $tokenJsonAndSignature = explode(".", $base64Decoded);
+    $log .= ', base64 decoded: '.$base64Decoded;
+    $tokenJsonAndSignature = explode('.', $base64Decoded);
     if (count($tokenJsonAndSignature) != 2) {
         do_log("$log, invalid c_secure_pass base64_decoded");
+
         return null;
     }
     $tokenJson = $tokenJsonAndSignature[0];
     $signature = $tokenJsonAndSignature[1];
     if (empty($tokenJson) || empty($signature)) {
         do_log("$log, no tokenJson or signature");
+
         return null;
     }
     $tokenData = json_decode($tokenJson, true);
-    if (!isset($tokenData['user_id'])) {
+    if (! isset($tokenData['user_id'])) {
         do_log("$log, no user_id");
+
         return null;
     }
-    if (!isset($tokenData['expires']) || $tokenData['expires'] < time()) {
+    if (! isset($tokenData['expires']) || $tokenData['expires'] < time()) {
         do_log("$log, signature expired");
+
         return null;
     }
+
     return [
-        "user_id" => $tokenData['user_id'],
+        'user_id' => $tokenData['user_id'],
         'token_json' => $tokenJson,
         'signature' => $signature,
     ];
 }
 
-function render_password_hash_js(string $formId, string $passwordOriginalClass, string $passwordHashedName, bool $passwordRequired, string $passwordConfirmClass = "password_confirmation", string $usernameName = "username"): void {
+function render_password_hash_js(string $formId, string $passwordOriginalClass, string $passwordHashedName, bool $passwordRequired, string $passwordConfirmClass = 'password_confirmation', string $usernameName = 'username'): void
+{
     $tipTooShort = nexus_trans('signup.password_too_short');
     $tipTooLong = nexus_trans('signup.password_too_long');
     $tipEqualUsername = nexus_trans('signup.password_equals_username');
     $tipNotMatch = nexus_trans('signup.passwords_unmatched');
-    $passwordValidateJS = "";
+    $passwordValidateJS = '';
     if ($passwordRequired) {
         $passwordValidateJS = <<<JS
 if (password.length < 6) {
@@ -1613,7 +1731,7 @@ if (password.length > 40) {
 }
 JS;
     }
-    $formVar = "jqForm" . md5($formId);
+    $formVar = 'jqForm'.md5($formId);
     $js = <<<JS
 var $formVar = jQuery("#{$formId}");
 $formVar.on("click", "input[type=button]", function() {
@@ -1639,12 +1757,13 @@ $formVar.on("click", "input[type=button]", function() {
     }
 })
 JS;
-    \Nexus\Nexus::js("js/crypto-js.js", 'footer', true);
-    \Nexus\Nexus::js($js, 'footer', false);
+    Nexus\Nexus::js('js/crypto-js.js', 'footer', true);
+    Nexus\Nexus::js($js, 'footer', false);
 }
 
-function render_password_challenge_js(string $formId, string $usernameName, string $passwordOriginalClass): void {
-    $formVar = "jqForm" . md5($formId);
+function render_password_challenge_js(string $formId, string $usernameName, string $passwordOriginalClass): void
+{
+    $formVar = 'jqForm'.md5($formId);
     $js = <<<JS
 var $formVar = jQuery("#{$formId}");
 $formVar.on("click", "input[type=button]", function() {
@@ -1689,9 +1808,9 @@ async function login(username, password, jqForm) {
     }
 }
 JS;
-    \Nexus\Nexus::js("vendor/jquery-loading/jquery.loading.min.js", 'footer', true);
-    \Nexus\Nexus::js("js/crypto-js.js", 'footer', true);
-    \Nexus\Nexus::js($js, 'footer', false);
+    Nexus\Nexus::js('vendor/jquery-loading/jquery.loading.min.js', 'footer', true);
+    Nexus\Nexus::js('js/crypto-js.js', 'footer', true);
+    Nexus\Nexus::js($js, 'footer', false);
 }
 
 function nexus_escape($data): array|string
@@ -1699,6 +1818,7 @@ function nexus_escape($data): array|string
     if (is_array($data)) {
         return array_map('nexus_escape', $data);
     }
+
     return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
 }
 
