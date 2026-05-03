@@ -16,10 +16,8 @@ if (!$msg)
 if (!$subject)
 	stderr($lang_takecontact['std_error'],$lang_takecontact['std_please_define_subject']);
 
-$added = "'" . date("Y-m-d H:i:s") . "'";
+$added = date("Y-m-d H:i:s");
 $userid = $CURUSER['id'];
-$message = sqlesc($msg);
-$subject = sqlesc($subject);
 
 // Anti Flood Code
 // This code ensures that a member can only send one PM per minute.
@@ -30,9 +28,14 @@ if (get_user_class() < UC_MODERATOR) {
 		stderr($lang_takecontact['std_error'],$lang_takecontact['std_message_flooding'].$secs.$lang_takecontact['std_second'].($secs == 1 ? '' : $lang_takecontact['std_s']).$lang_takecontact['std_before_sending_pm']);
 	}
 }
-sql_query("INSERT INTO staffmessages (sender, added, msg, subject) VALUES($userid, $added, $message, $subject)") or sqlerr(__FILE__, __LINE__);
+\Nexus\Database\NexusDB::insert('staffmessages', [
+	'sender' => (int) $userid,
+	'added' => (string) $added,
+	'msg' => (string) $msg,
+	'subject' => (string) $subject,
+]);
 // Update Last PM sent...
-sql_query("UPDATE users SET last_staffmsg = NOW() WHERE id = ".sqlesc($CURUSER['id'])) or sqlerr(__FILE__, __LINE__);
+\Nexus\Database\NexusDB::table('users')->where('id', (int) $CURUSER['id'])->update(['last_staffmsg' => \Nexus\Database\NexusDB::raw('NOW()')]);
 $Cache->delete_value('staff_message_count');
 $Cache->delete_value('staff_new_message_count');
 clear_staff_message_cache();

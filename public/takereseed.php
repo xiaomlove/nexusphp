@@ -7,16 +7,17 @@ loggedinorreturn();
 user_can('askreseed', true);
 
 $reseedid = intval($_GET["reseedid"] ?? 0);
-$res = sql_query("SELECT seeders, last_reseed FROM torrents WHERE id=".sqlesc($reseedid)." LIMIT 1") or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_array($res);
-$seederCount = get_row_count("peers", "where torrent = ".sqlesc($reseedid));
+$rowObj = \Nexus\Database\NexusDB::table('torrents')->where('id', (int) $reseedid)->select(['seeders', 'last_reseed'])->first();
+$row = $rowObj ? (array) $rowObj : ['seeders' => 0, 'last_reseed' => null];
+$seederCount = (int) \Nexus\Database\NexusDB::table('peers')->where('torrent', (int) $reseedid)->count();
 if ($seederCount > 0)
 	stderr($lang_takereseed['std_error'], $lang_takereseed['std_torrent_not_dead']);
 elseif (strtotime($row['last_reseed']) > (TIMENOW - 900))
 	stderr($lang_takereseed['std_error'], $lang_takereseed['std_reseed_sent_recently']);
 else{
-$res = sql_query("SELECT snatched.userid, snatched.torrentid, torrents.name as torrent_name, users.id FROM snatched inner join users on snatched.userid = users.id inner join torrents on snatched.torrentid = torrents.id  where snatched.finished = 'Yes' AND snatched.torrentid = $reseedid") or sqlerr();
-while($row = mysql_fetch_assoc($res)) {
+$reseedRows = \Nexus\Database\NexusDB::select("SELECT snatched.userid, snatched.torrentid, torrents.name as torrent_name, users.id FROM snatched inner join users on snatched.userid = users.id inner join torrents on snatched.torrentid = torrents.id  where snatched.finished = 'Yes' AND snatched.torrentid = " . (int) $reseedid);
+foreach ($reseedRows as $row) {
+	$row = (array) $row;
     $locale = get_user_locale($row['userid']);
 $rs_subject = nexus_trans("torrent.msg_reseed_request", [], $locale);
 $pn_msg = nexus_trans("torrent.msg_reseed_user", [], $locale).$CURUSER["username"].nexus_trans("torrent.msg_ask_reseed", [], $locale)."[url=" . get_protocol_prefix() . "$BASEURL/details.php?id=".$reseedid."]".$row["torrent_name"]."[/url]".nexus_trans("torrent.msg_thank_you", [], $locale);

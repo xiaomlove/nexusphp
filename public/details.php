@@ -625,7 +625,7 @@ echo "</script>";
 
         $giveValueRows = \Nexus\Database\NexusDB::select("SELECT userid, value FROM magic WHERE torrentid = " . (int) $id . " ORDER BY id DESC");
 
-        $give_value_count = get_row_count("magic", "WHERE torrentid = " . (int) $id);
+        $give_value_count = (int) \Nexus\Database\NexusDB::table('magic')->where('torrentid', (int) $id)->count();
         $give_value_all = count($giveValueRows);
         $sum_value = 0;
         if ($give_value_all) {
@@ -695,7 +695,7 @@ echo "</script>";
 		$nothanks = "";
 		$thanks_said = 0;
 		$thanksRows = \Nexus\Database\NexusDB::select("SELECT userid FROM thanks WHERE torrentid = " . (int) $torrentid . " ORDER BY id DESC LIMIT 20");
-		$thanksCount = get_row_count("thanks", "WHERE torrentid = " . (int) $torrentid);
+		$thanksCount = (int) \Nexus\Database\NexusDB::table('thanks')->where('torrentid', (int) $torrentid)->count();
 		$thanks_all = count($thanksRows);
 		if ($thanks_all) {
 			foreach ($thanksRows as $rows_t) {

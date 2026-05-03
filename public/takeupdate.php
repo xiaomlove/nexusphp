@@ -12,16 +12,16 @@ user_can('staffmem', true);
 if (empty($_POST['delreport'])) {
     stderr('Error', $lang_functions['select_at_least_one_record']);
 }
+$reportIds = array_map('intval', (array) $_POST['delreport']);
 if ($_POST['setdealt']){
-$res = sql_query ("SELECT id FROM reports WHERE dealtwith=0 AND id IN (" . implode(", ", $_POST['delreport']) . ")");
-while ($arr = mysql_fetch_assoc($res))
-	sql_query ("UPDATE reports SET dealtwith=1, dealtby = {$CURUSER['id']} WHERE id = {$arr['id']}") or sqlerr();
+\Nexus\Database\NexusDB::table('reports')->where('dealtwith', 0)->whereIn('id', $reportIds)->update([
+	'dealtwith' => 1,
+	'dealtby' => (int) $CURUSER['id'],
+]);
 	$Cache->delete_value('staff_new_report_count');
 }
 elseif ($_POST['delete']){
-$res = sql_query ("SELECT id FROM reports WHERE id IN (" . implode(", ", $_POST['delreport']) . ")");
-while ($arr = mysql_fetch_assoc($res))
-	sql_query ("DELETE from reports WHERE id = {$arr['id']}") or sqlerr();
+\Nexus\Database\NexusDB::table('reports')->whereIn('id', $reportIds)->delete();
 	$Cache->delete_value('staff_new_report_count');
 	$Cache->delete_value('staff_report_count');
 }

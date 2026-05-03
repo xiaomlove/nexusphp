@@ -10,27 +10,28 @@ if (get_user_class() >= UC_MODERATOR)
 {
 	 $delete = intval($_GET["delete"] ?? 0);
 	 if (is_valid_id($delete)) {
-		 $r = sql_query("SELECT name,owner FROM bitbucket WHERE id=".mysql_real_escape_string($delete)) or sqlerr(__FILE__, __LINE__);
-		 if (mysql_num_rows($r) == 1) {
-			 $a = mysql_fetch_assoc($r);
+		 $aObj = \Nexus\Database\NexusDB::table('bitbucket')->where('id', (int) $delete)->select(['name', 'owner'])->first();
+		 if ($aObj) {
+			 $a = (array) $aObj;
 			 if (get_user_class() >= UC_MODERATOR || $a["owner"] == $CURUSER["id"]) {
-				 sql_query("DELETE FROM bitbucket WHERE id=".mysql_real_escape_string($delete)) or sqlerr(__FILE__, __LINE__);
+				 \Nexus\Database\NexusDB::table('bitbucket')->where('id', (int) $delete)->delete();
 				 if (!unlink("$bucketpath/{$a['name']}"))
 				 stderr("Warning", "Unable to unlink file: <b>{$a['name']}</b>. You should contact an administrator about this error.",false);
 				 				}			}		}	}
 				 				stdhead("BitBucket Log");
-				 				$res = sql_query("SELECT count(*) FROM bitbucket");	$row = mysql_fetch_array($res);	$count = $row[0];
+				 				$count = (int) \Nexus\Database\NexusDB::table('bitbucket')->count();
 				 				$perpage = 10;
-				 				list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["PHP_SELF"] . "?out=" . ($_GET["out"] ?? '') . "&" );
+				 				[$pagertop, $pagerbottom, $limit, $offsetStart, $rowsPerPage] = pager($perpage, $count, $_SERVER["PHP_SELF"] . "?out=" . ($_GET["out"] ?? '') . "&" );
 				 				print("<h1>BitBucket Log</h1>\n");
 				 				print("Total Images Stored: $count");
 				 				echo $pagertop;
-				 				$res = sql_query("SELECT * FROM bitbucket ORDER BY added DESC $limit") or sqlerr(__FILE__, __LINE__);
-				 				if (mysql_num_rows($res) == 0)
+				 				$bucketRows = \Nexus\Database\NexusDB::table('bitbucket')->orderByDesc('added')->offset((int) $offsetStart)->limit((int) $rowsPerPage)->get();
+				 				if (count($bucketRows) == 0)
 				 				print("<b>BitBucket Log is empty</b>\n");
 				 				else {
 					 				print("<table align='center' border='0' cellspacing='0' cellpadding='5'>\n");
-					 				while ($arr = mysql_fetch_assoc($res)) {
+					 				foreach ($bucketRows as $arr) {
+					 					$arr = (array) $arr;
 						 				$date = substr($arr['added'], 0, strpos($arr['added'], " "));
 						 				$time = substr($arr['added'], strpos($arr['added'], " ") + 1);
 						 				$name = $arr["name"];

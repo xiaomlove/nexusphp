@@ -64,25 +64,26 @@ $query = 'WHERE enabled = 1 AND downloaded > 0 AND uploaded > 0';
 if ($class>2) $query .= ' AND class < '.($class - 1);
 if ($ratio>1) $query .= ' AND (uploaded / downloaded) > '.($ratio - 1);
 
-$res = sql_query("SELECT COUNT(*),MIN(cheat),MAX(cheat) FROM users $query") or sqlerr();
-$arr = mysql_fetch_row($res);
-$top = MIN($top, $arr[0]);
-$min = $arr[1];
-$max = $arr[2];
+$summaryRows = \Nexus\Database\NexusDB::select("SELECT COUNT(*) AS c, MIN(cheat) AS mn, MAX(cheat) AS mx FROM users $query");
+$summary = $summaryRows ? (array) $summaryRows[0] : ['c' => 0, 'mn' => 0, 'mx' => 0];
+$top = MIN($top, (int) $summary['c']);
+$min = $summary['mn'];
+$max = $summary['mx'];
 
 $pages = ceil($top / 20);
 if ($page < 1) $page = 1;
 elseif ($page > $pages) $page = $pages;
 
-list($pagertop, $pagerbottom, $limit) = pager(20, $top, "cheaters.php?");
+[$pagertop, $pagerbottom, $limit] = pager(20, $top, "cheaters.php?");
 
 echo $pagertop;
 begin_table();
 print("<tr><th class=\"left\">User name</th><th>Registered</th><th>Uploaded</th><th>Downloaded</th><th>Ratio</th><th>Cheat Value</th><th>Cheat Spread</th></tr>\n");
 
-$res = sql_query("SELECT * FROM users $query ORDER BY cheat DESC $limit") or sqlerr();
-while ($arr = mysql_fetch_assoc($res))
+$cheatRows = \Nexus\Database\NexusDB::select("SELECT * FROM users $query ORDER BY cheat DESC $limit");
+foreach ($cheatRows as $arr)
 {
+  $arr = (array) $arr;
   if ($arr['added'] == "0000-00-00 00:00:00" || $arr['added'] == null) $joindate = 'N/A';
   else $joindate = get_elapsed_time(strtotime($arr['added'])).' ago';
   $age = date('U') - date('U',strtotime($arr['added']));

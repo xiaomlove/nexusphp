@@ -10,18 +10,22 @@ if ($key)
 	{
 	if ($prolinkpoint_bonus)
 	{
-		$res=sql_query("SELECT id FROM users WHERE promotion_link=".sqlesc($key)." LIMIT 1");
-		$row=mysql_fetch_array($res);
-		if ($row)
+		$promoUserId = \Nexus\Database\NexusDB::table('users')->where('promotion_link', (string) $key)->value('id');
+		if ($promoUserId)
 		{
 			$ip = getip();
-			$dt=sqlesc(date("Y-m-d H:i:s",(TIMENOW-$prolinktime_bonus)));
-			$res2=sql_query("SELECT COUNT(id) FROM prolinkclicks WHERE userid=".sqlesc($row['id'])." AND (added > ".$dt." OR ip=".sqlesc($ip).")");
-			$row2=mysql_fetch_array($res2);
-			if ($row2[0]==0)
+			$dt = date("Y-m-d H:i:s",(TIMENOW-$prolinktime_bonus));
+			$existingClicks = (int) \Nexus\Database\NexusDB::table('prolinkclicks')->where('userid', (int) $promoUserId)->where(function($q) use ($dt, $ip) {
+				$q->where('added', '>', $dt)->orWhere('ip', $ip);
+			})->count();
+			if ($existingClicks == 0)
 			{
-				KPS("+", $prolinkpoint_bonus, $row['id']);
-				sql_query("INSERT INTO prolinkclicks (userid, ip, added) VALUES (".$row['id'].", ".sqlesc($ip).", NOW())");
+				KPS("+", $prolinkpoint_bonus, $promoUserId);
+				\Nexus\Database\NexusDB::insert('prolinkclicks', [
+					'userid' => (int) $promoUserId,
+					'ip' => (string) $ip,
+					'added' => \Nexus\Database\NexusDB::raw('NOW()'),
+				]);
 			}
 		}
 	}
@@ -31,7 +35,7 @@ if ($key)
 elseif(($updatekey || !$CURUSER['promotion_link']) && $CURUSER)
 {
 	$promotionkey=md5($CURUSER['email'].date("Y-m-d H:i:s").$CURUSER['passhash']);
-	sql_query("UPDATE users SET promotion_link=".sqlesc($promotionkey)." WHERE id=".sqlesc($CURUSER['id']));
+	\Nexus\Database\NexusDB::table('users')->where('id', (int) $CURUSER['id'])->update(['promotion_link' => (string) $promotionkey]);
 	header("Location: " . get_protocol_prefix() . $BASEURL."/promotionlink.php");
 }
 else

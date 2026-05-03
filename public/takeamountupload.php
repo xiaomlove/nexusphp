@@ -9,7 +9,7 @@ if (get_user_class() < UC_SYSOP)
 	stderr("Sorry", "Permission denied.");
 
 $sender_id = ($_POST['sender'] == 'system' ? 0 : (int)$CURUSER['id']);
-$dt = sqlesc(date("Y-m-d H:i:s"));
+$dt = date("Y-m-d H:i:s");
 $msg = trim($_POST['msg']);
 $amount = $_POST['amount'];
 if (!$msg || !$amount)
@@ -27,14 +27,22 @@ if (is_array($updateset)) {
 		stderr("Error","Invalid Class");
 }
 $subject = trim($_POST['subject']);
-$query = sql_query("SELECT id FROM users WHERE class IN (".implode(",", $updateset).")");
+$classes = array_map('intval', is_array($updateset) ? $updateset : [$updateset]);
+$userRows = \Nexus\Database\NexusDB::table('users')->whereIn('class', $classes)->select(['id'])->get();
 
-$amount = sqlesc(getsize_int($amount,"G"));
-sql_query("UPDATE users SET uploaded=uploaded + $amount WHERE class IN (".implode(",", $updateset).")") or sqlerr(__FILE__, __LINE__);
+$amount = (int) getsize_int($amount,"G");
+\Nexus\Database\NexusDB::table('users')->whereIn('class', $classes)->update(['uploaded' => \Nexus\Database\NexusDB::raw('uploaded + ' . $amount)]);
 
-while($dat=mysql_fetch_assoc($query))
+foreach ($userRows as $dat)
 {
-	sql_query("INSERT INTO messages (sender, receiver, added,  subject, msg) VALUES ($sender_id, {$dat['id']}, $dt, " . sqlesc($subject) .", " . sqlesc($msg) .")") or sqlerr(__FILE__,__LINE__);
+	$dat = (array) $dat;
+	\Nexus\Database\NexusDB::insert('messages', [
+		'sender' => (int) $sender_id,
+		'receiver' => (int) $dat['id'],
+		'added' => (string) $dt,
+		'subject' => (string) $subject,
+		'msg' => (string) $msg,
+	]);
 }
 
 header("Location: amountupload.php?sent=1");

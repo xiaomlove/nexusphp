@@ -131,12 +131,13 @@ echo '<h1 align=center>' . "\n"
 /**
  * Sends the query and buffers the result
  */
-$res = @sql_query('SHOW STATUS') or Die(mysql_error());
-	while ($row = mysql_fetch_row($res)) {
-		$serverStatus[$row[0]] = $row[1];
+$statusRows = \Nexus\Database\NexusDB::select('SHOW STATUS');
+	foreach ($statusRows as $row) {
+		$row = (array) $row;
+		$values = array_values($row);
+		$serverStatus[$values[0]] = $values[1];
 	}
-@mysql_free_result($res);
-unset($res);
+unset($statusRows);
 unset($row);
 
 
@@ -144,8 +145,8 @@ unset($row);
  * Displays the page
  */
 //Uptime calculation
-$res = @sql_query('SELECT UNIX_TIMESTAMP() - ' . $serverStatus['Uptime']);
-$row = mysql_fetch_row($res);
+$uptimeRows = \Nexus\Database\NexusDB::select('SELECT UNIX_TIMESTAMP() - ' . (int) $serverStatus['Uptime'] . ' AS startedat');
+$row = $uptimeRows ? array_values((array) $uptimeRows[0]) : [0];
 //echo sprintf("Server Status Uptime", timespanFormat($serverStatus['Uptime']), localisedDate($row[0])) . "\n";
 ?>
 
@@ -158,8 +159,6 @@ print("This MySQL server has been running for ". timespanFormat($serverStatus['U
 	</td></tr></table>
 
 <?php
-mysql_free_result($res);
-unset($res);
 unset($row);
 //Get query statistics
 $queryStats = array();

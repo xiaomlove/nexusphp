@@ -14,21 +14,23 @@ if (!$id)
 	httperr();
 dbconn();
 
-$res = sql_query("SELECT editsecret FROM users WHERE id = $id");
-$row = mysql_fetch_array($res);
+$editsecret = \Nexus\Database\NexusDB::table('users')->where('id', (int) $id)->value('editsecret');
 
-if (!$row)
+if ($editsecret === null)
 	httperr();
 
-$sec = hash_pad($row["editsecret"]);
+$sec = hash_pad($editsecret);
 if (preg_match('/^ *$/s', $sec))
 	httperr();
 if ($md5 != md5($sec . $email . $sec))
 	httperr();
 
-sql_query("UPDATE users SET editsecret='', email=" . sqlesc($email) . " WHERE id=$id AND editsecret=" . sqlesc($row["editsecret"]));
+$affected = \Nexus\Database\NexusDB::table('users')->where('id', (int) $id)->where('editsecret', (string) $editsecret)->update([
+	'editsecret' => '',
+	'email' => (string) $email,
+]);
 
-if (!mysql_affected_rows())
+if (!$affected)
 	httperr();
 
 header("Location: " . get_protocol_prefix() . "$BASEURL/usercp.php?action=security&type=saved");

@@ -21,8 +21,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
  if (strlen($newpassword) < 6)
 	stderr("Error","Sorry, password is too short (min is 6 chars)");
 
-   $res = sql_query("SELECT * FROM users WHERE username=" . sqlesc($username) . " ") or sqlerr();
-$arr = mysql_fetch_assoc($res);
+$arrObj = \Nexus\Database\NexusDB::table('users')->where('username', (string) $username)->first();
+$arr = $arrObj ? (array) $arrObj : null;
 if (empty($arr)) {
     stderr("Error","Sorry, that username doesn't exist.");
 }
@@ -45,8 +45,7 @@ $id = $arr['id'];
         stderr('Error', $e->getMessage());
     }
 write_log("Password Reset For $username by {$CURUSER['username']}");
- if (mysql_affected_rows() != 1)
-   stderr("Error", "Unable to RESET PASSWORD on this account.");
+ // resetPassword throws on failure; if we get here, the password was successfully reset
  stderr("Success", "The password of account <b>$username</b> is reset , please inform user of this change.",false);
 }
 stdhead("Reset User's Lost Password");

@@ -36,7 +36,7 @@ $torrentAddedTimeString = $row['added'];
 $torrentOld = \App\Models\Torrent::query()->find($id);
 if ($CURUSER["id"] != $row["owner"] && !user_can('torrentmanage'))
 	bark($lang_takeedit['std_not_owner']);
-$oldcatmode = get_single_value("categories","mode","WHERE id=".sqlesc($row['category']));
+$oldcatmode = \Nexus\Database\NexusDB::table('categories')->where('id', (int) $row['category'])->value('mode');
 $updateset = array();
 $extraUpdate = [];
 
@@ -96,7 +96,7 @@ if (!is_valid_id($catid))
 bark($lang_takeedit['std_missing_form_data']);
 if (!$name || !$descr)
 bark($lang_takeedit['std_missing_form_data']);
-$newcatmode = get_single_value("categories","mode","WHERE id=".sqlesc($catid));
+$newcatmode = \Nexus\Database\NexusDB::table('categories')->where('id', (int) $catid)->value('mode');
 if ($enablespecial == 'yes' && user_can('movetorrent'))
 	$allowmove = true; //enable moving torrent to other section
 else $allowmove = false;

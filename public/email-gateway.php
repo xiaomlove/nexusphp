@@ -5,8 +5,9 @@ dbconn();
 $id = intval($_GET["id"] ?? 0);
 int_check($id,true);
 
-$res = sql_query("SELECT username, class, email FROM users WHERE id=".mysql_real_escape_string($id));
-$arr = mysql_fetch_assoc($res) or stderr("Error", "No such user.");
+$arrObj = \Nexus\Database\NexusDB::table('users')->where('id', (int) $id)->select(['username', 'class', 'email'])->first();
+$arr = $arrObj ? (array) $arrObj : null;
+if (!$arr) stderr("Error", "No such user.");
 $username = $arr["username"];
 if ($arr["class"] < UC_MODERATOR)
 	stderr("Error", "The gateway can only be used to e-mail staff members.");

@@ -12,28 +12,30 @@
   if ($type == 'in')
   {
   	// make sure message is in CURUSER's Inbox
-	  $res = sql_query("SELECT receiver, location FROM messages WHERE id=" . sqlesc($id)) or die("barf");
-	  $arr = mysql_fetch_array($res) or die($lang_deletemessage['std_bad_message_id']);
+	  $arrObj = \Nexus\Database\NexusDB::table('messages')->where('id', (int) $id)->select(['receiver', 'location'])->first();
+	  if (!$arrObj) die($lang_deletemessage['std_bad_message_id']);
+	  $arr = (array) $arrObj;
 	  if ($arr["receiver"] != $CURUSER["id"])
 	    die($lang_deletemessage['std_not_suggested']);
     if ($arr["location"] == 'in')
-	  	sql_query("DELETE FROM messages WHERE id=" . sqlesc($id)) or die('delete failed (error code 1).. this should never happen, contact an admin.');
+	  	\Nexus\Database\NexusDB::table('messages')->where('id', (int) $id)->delete();
     else if ($arr["location"] == 'both')
-			sql_query("UPDATE messages SET location = 'out' WHERE id=" . sqlesc($id)) or die('delete failed (error code 2).. this should never happen, contact an admin.');
+			\Nexus\Database\NexusDB::table('messages')->where('id', (int) $id)->update(['location' => 'out']);
     else
     	die($lang_deletemessage['std_not_in_inbox']);
   }
 	elseif ($type == 'out')
   {
    	// make sure message is in CURUSER's Sentbox
-	  $res = sql_query("SELECT sender, location FROM messages WHERE id=" . sqlesc($id)) or die("barf");
-	  $arr = mysql_fetch_array($res) or die($lang_deletemessage['std_bad_message_id']);
+	  $arrObj = \Nexus\Database\NexusDB::table('messages')->where('id', (int) $id)->select(['sender', 'location'])->first();
+	  if (!$arrObj) die($lang_deletemessage['std_bad_message_id']);
+	  $arr = (array) $arrObj;
 	  if ($arr["sender"] != $CURUSER["id"])
 	    die($lang_deletemessage['std_not_suggested']);
     if ($arr["location"] == 'out')
-	  	sql_query("DELETE FROM messages WHERE id=" . sqlesc($id)) or die('delete failed (error code 3).. this should never happen, contact an admin.');
+	  	\Nexus\Database\NexusDB::table('messages')->where('id', (int) $id)->delete();
     else if ($arr["location"] == 'both')
-			sql_query("UPDATE messages SET location = 'in' WHERE id=" . sqlesc($id)) or die('delete failed (error code 4).. this should never happen, contact an admin.');
+			\Nexus\Database\NexusDB::table('messages')->where('id', (int) $id)->update(['location' => 'in']);
     else
     	die($lang_deletemessage['std_not_in_sentbox']);
   }
