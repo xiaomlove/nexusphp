@@ -5,6 +5,7 @@ namespace App\Services\Captcha\Drivers;
 use App\Models\RegImage;
 use App\Services\Captcha\CaptchaDriverInterface;
 use App\Services\Captcha\Exceptions\CaptchaValidationException;
+use Nexus\Database\NexusDB;
 
 class ImageCaptchaDriver implements CaptchaDriverInterface
 {
@@ -45,18 +46,14 @@ class ImageCaptchaDriver implements CaptchaDriverInterface
             throw new CaptchaValidationException('Missing captcha parameters.');
         }
 
-        $query = sprintf(
-            "SELECT dateline FROM regimages WHERE imagehash='%s' AND imagestring='%s'",
-            mysql_real_escape_string($imagehash),
-            mysql_real_escape_string($imagestring)
-        );
-
-        $sql = sql_query($query);
-        $imgcheck = mysql_fetch_array($sql);
+        $dateline = NexusDB::table('regimages')
+            ->where('imagehash', $imagehash)
+            ->where('imagestring', $imagestring)
+            ->value('dateline');
 
         $this->deleteByHash($imagehash);
 
-        if (empty($imgcheck['dateline'])) {
+        if (empty($dateline)) {
             throw new CaptchaValidationException('Invalid captcha response.');
         }
 
@@ -73,29 +70,27 @@ class ImageCaptchaDriver implements CaptchaDriverInterface
             'dateline' => $dateline,
             'imagestring' => $random,
         ]);
+
         return $imagehash;
     }
 
     public function outputImage(string $imagehash): void
     {
-        $query = sprintf(
-            "SELECT imagestring FROM regimages WHERE imagehash=%s",
-            sqlesc($imagehash)
-        );
-
-        $sql = sql_query($query);
-        $regimage = mysql_fetch_array($sql);
-        $imagestring = $regimage['imagestring'] ?? '';
+        $imagestring = (string) NexusDB::table('regimages')
+            ->where('imagehash', $imagehash)
+            ->value('imagestring');
 
         if ($imagestring === '') {
             $this->renderFallback();
+
             return;
         }
 
         $characters = implode(' ', str_split($imagestring));
 
-        if (!function_exists('imagecreatefrompng')) {
+        if (! function_exists('imagecreatefrompng')) {
             $this->renderFallback();
+
             return;
         }
 
@@ -105,10 +100,11 @@ class ImageCaptchaDriver implements CaptchaDriverInterface
         $textheight = $fontheight;
 
         $randimg = rand(1, 5);
-        $imagePath = ROOT_PATH . "public/pic/regimages/reg{$randimg}.png";
+        $imagePath = ROOT_PATH."public/pic/regimages/reg{$randimg}.png";
 
-        if (!is_file($imagePath)) {
+        if (! is_file($imagePath)) {
             $this->renderFallback();
+
             return;
         }
 
@@ -137,12 +133,9 @@ class ImageCaptchaDriver implements CaptchaDriverInterface
             return;
         }
 
-        $delete = sprintf(
-            "DELETE FROM regimages WHERE imagehash='%s'",
-            mysql_real_escape_string($imagehash)
-        );
-
-        sql_query($delete);
+        NexusDB::table('regimages')
+            ->where('imagehash', $imagehash)
+            ->delete();
     }
 
     protected function renderFallback(): void

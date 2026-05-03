@@ -912,14 +912,4 @@ parameters:
 			count: 1
 			path: app/Repositories/UserRepository.php
 
-		-
-			message: '#^Function mysql_fetch_array not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: app/Services/Captcha/Drivers/ImageCaptchaDriver.php
 
-		-
-			message: '#^Function mysql_real_escape_string not found\.$#'
-			identifier: function.notFound
-			count: 3
-			path: app/Services/Captcha/Drivers/ImageCaptchaDriver.php
