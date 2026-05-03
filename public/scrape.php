@@ -14,8 +14,8 @@ $redis = $Cache->getRedis();
 $passkeyInvalidKey = "passkey_invalid";
 // check passkey
 if (!$az = $Cache->get_value('user_passkey_'.$passkey.'_content')){
-    $res = sql_query("SELECT id, username, downloadpos, enabled, uploaded, downloaded, class, parked, clientselect, showclienterror, passkey, donor, donoruntil, seedbonus, tracker_url_id FROM users WHERE passkey=". sqlesc($passkey)." LIMIT 1");
-    $az = mysql_fetch_array($res);
+    $azObj = \Nexus\Database\NexusDB::table('users')->where('passkey', (string) $passkey)->select(['id', 'username', 'downloadpos', 'enabled', 'uploaded', 'downloaded', 'class', 'parked', 'clientselect', 'showclienterror', 'passkey', 'donor', 'donoruntil', 'seedbonus', 'tracker_url_id'])->first();
+    $az = $azObj ? (array) $azObj : null;
     do_log("[check passkey], currentUser: " . nexus_json_encode($az));
     $Cache->cache_value('user_passkey_'.$passkey.'_content', $az, 3600);
 }
@@ -53,14 +53,15 @@ if ($cacheData) {
     exit(0);
 }
 
-$res = sql_query($query);
+$scrapeRows = \Nexus\Database\NexusDB::select($query);
 
-if (mysql_num_rows($res) < 1){
+if (count($scrapeRows) < 1){
     warn("Torrent not registered with this tracker.", 86400);
 }
 
 $torrent_details = [];
-while ($row = mysql_fetch_assoc($res)) {
+foreach ($scrapeRows as $row) {
+    $row = (array) $row;
     $torrent_details[$row['info_hash']] = [
         'complete' => (int)$row['seeders'],
         'downloaded' => (int)$row['times_completed'],

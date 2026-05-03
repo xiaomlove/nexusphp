@@ -845,10 +845,11 @@ elseif ($action == 'mainsettings')	// main settings
 	yesorno($lang_settings['row_use_external_forum'],'extforum', $MAIN['extforum'], $lang_settings['text_use_external_forum_note']);
 	tr($lang_settings['row_external_forum_url'],"<input type='text' style=\"width: 300px\" name=extforumurl value='".($MAIN["extforumurl"] ? $MAIN["extforumurl"] : "")."'> ".$lang_settings['text_external_forum_url_note'], 1);
     yesorno($lang_settings['row_show_special_section'],'spsct', $MAIN['spsct'], $lang_settings['text_show_special_section_note']);
-	$res = sql_query("SELECT id, name FROM searchbox") or sqlerr(__FILE__, __LINE__);
+	$searchboxRows = \Nexus\Database\NexusDB::table('searchbox')->select(['id', 'name'])->get();
 	$catlist = "";
 	$bcatlist = $scatlist = '';
-	while($array = mysql_fetch_array($res)){
+	foreach ($searchboxRows as $array){
+		$array = (array) $array;
 		$bcatlist .= "<input type=radio name=browsecat value='".$array['id']."'".($MAIN["browsecat"] == $array['id'] ? " checked" : "").">".$array['name']."&nbsp;";
 		$scatlist .= "<input type=radio name=specialcat value='".$array['id']."'".($MAIN["specialcat"] == $array['id'] ? " checked" : "").">".$array['name']."&nbsp;";
 	}
@@ -897,10 +898,12 @@ jQuery('input[name="site_language_enabled[]"]').on("change", function () {
 JS;
     \Nexus\Nexus::js($changeDefaultLangJs, 'footer', false);
 
-	$res = sql_query("SELECT * FROM stylesheets ORDER BY name") or sqlerr(__FILE__, __LINE__);
+	$styleRows = \Nexus\Database\NexusDB::table('stylesheets')->orderBy('name')->get();
 	$csslist = "<select name=defstylesheet>";
-	while($array = mysql_fetch_array($res))
+	foreach ($styleRows as $array) {
+		$array = (array) $array;
 		$csslist .= "<option value='".$array['id']."'".($MAIN["defstylesheet"] == $array['id'] ? " selected" : "").">".$array['name']."</option>";
+	}
 	$csslist .= "</select>";
 	tr($lang_settings['row_default_stylesheet'], $csslist."<br />".$lang_settings['text_default_stylesheet_note'], 1);
 	tr($lang_settings['row_site_logo'],"<input type='text' style=\"width: 100px\" name='logo' value='".($MAIN["logo"] ? $MAIN["logo"] : "")."'>".$lang_settings['text_site_logo_note'], 1);

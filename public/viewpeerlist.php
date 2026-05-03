@@ -180,8 +180,9 @@ function dltable($name, $arr, $torrent, &$isSeedBoxCaseWhens)
     } else {
         $startedField = \Nexus\Database\NexusDB::unixTimestampField('started');
         $lastActionField = \Nexus\Database\NexusDB::unixTimestampField('last_action');
-        $subres = sql_query("SELECT id, seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, $startedField AS st, connectable, agent, peer_id, $lastActionField AS la, userid FROM peers WHERE torrent = $id") or sqlerr();
-        while ($subrow = mysql_fetch_array($subres)) {
+        $subres = \Nexus\Database\NexusDB::select("SELECT id, seeder, finishedat, downloadoffset, uploadoffset, ip, ipv4, ipv6, port, uploaded, downloaded, to_go, $startedField AS st, connectable, agent, peer_id, $lastActionField AS la, userid FROM peers WHERE torrent = " . (int) $id);
+        foreach ($subres as $subrow) {
+            $subrow = (array) $subrow;
             if ($subrow["seeder"] == "yes")
                 $seeders[] = $subrow;
             else
@@ -217,8 +218,8 @@ function dltable($name, $arr, $torrent, &$isSeedBoxCaseWhens)
 			return 1;
 		return -1;
 	}
-	$res = sql_query("SELECT torrents.id, torrents.owner, torrents.size, torrents.anonymous FROM torrents WHERE torrents.id = $id LIMIT 1") or sqlerr();
-	$row = mysql_fetch_array($res);
+	$rowObj = \Nexus\Database\NexusDB::table('torrents')->where('id', (int) $id)->select(['id', 'owner', 'size', 'anonymous'])->first();
+	$row = $rowObj ? (array) $rowObj : [];
 	usort($seeders, "seed_sort");
 	usort($downloaders, "leech_sort");
 
@@ -232,7 +233,7 @@ function dltable($name, $arr, $torrent, &$isSeedBoxCaseWhens)
             implode(' ', array_values($isSeedBoxCaseWhens)), implode(',', array_keys($isSeedBoxCaseWhens))
         );
         do_log("[IS_SEED_BOX], $sql");
-        sql_query($sql);
+        \Nexus\Database\NexusDB::statement($sql);
     }
     print $seederTable . $leecherTable;
 }

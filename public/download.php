@@ -18,8 +18,8 @@ if (!empty($_REQUEST['downhash'])) {
     }
     $uid = $params[0];
     $hash = $params[1];
-    $res = sql_query("SELECT * FROM users WHERE id=". sqlesc($uid)." LIMIT 1");
-    $user = mysql_fetch_array($res);
+    $userObj = \Nexus\Database\NexusDB::table('users')->where('id', (int) $uid)->first();
+    $user = $userObj ? (array) $userObj : null;
     if (!$user)
         die("invalid uid");
     elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
@@ -34,8 +34,8 @@ if (!empty($_REQUEST['downhash'])) {
     }
     $id = $decrypted[0];
 } elseif (get_setting('torrent.download_support_passkey') == 'yes' && !empty($_REQUEST['passkey']) && !empty($_REQUEST['id'])) {
-    $res = sql_query("SELECT * FROM users WHERE passkey=". sqlesc($_REQUEST['passkey'])." LIMIT 1");
-    $user = mysql_fetch_array($res);
+    $userObj = \Nexus\Database\NexusDB::table('users')->where('passkey', $_REQUEST['passkey'])->first();
+    $user = $userObj ? (array) $userObj : null;
     if (!$user)
         die("invalid passkey");
     elseif ($user['enabled'] == 'no' || $user['parked'] == 'yes')
@@ -71,7 +71,10 @@ if (!empty($_REQUEST['downhash'])) {
 //}
 \App\Repositories\IpLogRepository::saveToCache($CURUSER['id']);
 //User may choose to download torrent from RSS. So update his last_access and ip when downloading torrents.
-sql_query("UPDATE users SET last_access = ".sqlesc(date("Y-m-d H:i:s")).", ip = ".sqlesc($CURUSER['ip'])."  WHERE id = ".sqlesc($CURUSER['id']));
+\Nexus\Database\NexusDB::table('users')->where('id', (int) $CURUSER['id'])->update([
+	'last_access' => \Nexus\Database\NexusDB::raw('NOW()'),
+	'ip' => (string) $CURUSER['ip'],
+]);
 
 /*
 @ini_set('zlib.output_compression', 'Off');
@@ -92,8 +95,12 @@ if ($CURUSER['downloadpos']=="no") {
 //$ssl_torrent = $trackerSchemaAndHost['ssl_torrent'];
 //$base_announce_url = $trackerSchemaAndHost['base_announce_url'];
 
-$res = sql_query("SELECT torrents.name, torrents.filename, torrents.save_as, torrents.size, torrents.owner, torrents.banned, torrents.approval_status, torrents.price, torrents.added, categories.mode as search_box_id FROM torrents left join categories on torrents.category = categories.id WHERE torrents.id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-$row = mysql_fetch_assoc($res);
+$rowObj = \Nexus\Database\NexusDB::table('torrents')
+	->leftJoin('categories', 'torrents.category', '=', 'categories.id')
+	->where('torrents.id', (int) $id)
+	->select(['torrents.name', 'torrents.filename', 'torrents.save_as', 'torrents.size', 'torrents.owner', 'torrents.banned', 'torrents.approval_status', 'torrents.price', 'torrents.added', 'categories.mode AS search_box_id'])
+	->first();
+$row = $rowObj ? (array) $rowObj : null;
 if (!$row) {
     do_log("[TORRENT_NOT_EXISTS_IN_DATABASE] $id");
     httperr();
@@ -135,13 +142,13 @@ if ((($row['banned'] == 'yes' || ($approvalNotAllowed && !$allowOwnerDownload)) 
 //    }
 //}
 
-sql_query("UPDATE torrents SET hits = hits + 1 WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+\Nexus\Database\NexusDB::table('torrents')->where('id', (int) $id)->increment('hits');
 
 //require_once "include/benc.php";
 
 if (strlen($CURUSER['passkey']) != 32) {
 	$CURUSER['passkey'] = md5($CURUSER['username'].date("Y-m-d H:i:s").$CURUSER['passhash']);
-	sql_query("UPDATE users SET passkey=".sqlesc($CURUSER['passkey'])." WHERE id=".sqlesc($CURUSER['id']));
+	\Nexus\Database\NexusDB::table('users')->where('id', (int) $CURUSER['id'])->update(['passkey' => (string) $CURUSER['passkey']]);
 }
 $dict = TorrentFile::load($fn);
 $dict->cleanRootFields();

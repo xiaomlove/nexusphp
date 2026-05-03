@@ -8,15 +8,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 if ($_POST["username"] == "" || $_POST["donated"] == "")
 stderr("Error", "Missing form data.");
-$username = sqlesc($_POST["username"]);
-$donated = sqlesc($_POST["donated"]);
+$username = (string) $_POST["username"];
+$donated = (string) $_POST["donated"];
 
-sql_query("UPDATE users SET donated=$donated WHERE username=$username") or sqlerr(__FILE__, __LINE__);
-$res = sql_query("SELECT id FROM users WHERE username=$username");
-$arr = mysql_fetch_row($res);
-if (!$arr)
+\Nexus\Database\NexusDB::table('users')->where('username', $username)->update(['donated' => $donated]);
+$userid = \Nexus\Database\NexusDB::table('users')->where('username', $username)->value('id');
+if ($userid === null)
 stderr("Error", "Unable to update account.");
-header("Location: " . get_protocol_prefix() . "$BASEURL/userdetails.php?id=$arr[0]");
+header("Location: " . get_protocol_prefix() . "$BASEURL/userdetails.php?id=$userid");
 die;
 }
 stdhead("Update Users Donated Amounts");

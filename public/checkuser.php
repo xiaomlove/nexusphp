@@ -15,8 +15,9 @@ function bark($msg)
   exit;
 }
 
-$r = @sql_query("SELECT * FROM users WHERE status = 'pending' AND id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
-$user = mysql_fetch_array($r) or bark($lang_checkuser['std_no_user_id']);
+$userObj = \Nexus\Database\NexusDB::table('users')->where('status', 'pending')->where('id', (int) $id)->first();
+if (!$userObj) bark($lang_checkuser['std_no_user_id']);
+$user = (array) $userObj;
 
 if (get_user_class() < UC_MODERATOR) {
 	if ($user['invited_by'] != $CURUSER['id'])
@@ -32,10 +33,10 @@ if ($user['added'] == "0000-00-00 00:00:00" || $user['added'] == null)
 else
   $joindate = "$user[added] (" . get_elapsed_time(strtotime($user["added"])) . " ago)";
 
-$res = sql_query("SELECT name,flagpic FROM countries WHERE id=$user[country] LIMIT 1") or sqlerr();
-if (mysql_num_rows($res) == 1)
+$countryObj = \Nexus\Database\NexusDB::table('countries')->where('id', (int) $user['country'])->select(['name', 'flagpic'])->first();
+if ($countryObj)
 {
-  $arr = mysql_fetch_assoc($res);
+  $arr = (array) $countryObj;
   $country = "<td class=embedded><img src=pic/flag/{$arr['flagpic']} alt=\"$arr[name]\" style='margin-left: 8pt'></td>";
 }
 

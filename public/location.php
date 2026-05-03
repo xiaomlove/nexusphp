@@ -9,8 +9,6 @@ loggedinorreturn();
 if (get_user_class() < UC_SYSOP) {
     exit('access denied.');
 }
-$config = nexus_config('nexus.mysql');
-mysql_connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port']);
 stdhead('Manage Locations');
 begin_main_frame('', false, 100);
 begin_frame('Manage Locations', true, 10, '100%', 'center');

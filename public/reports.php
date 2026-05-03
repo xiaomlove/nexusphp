@@ -130,13 +130,13 @@ foreach ($reportres as $row)
 			{
 					if ($arr['torrent'])
 					{
-						$name = get_single_value("torrents","name","WHERE id=".sqlesc($arr['torrent']));
+						$name = \Nexus\Database\NexusDB::table('torrents')->where('id', (int) $arr['torrent'])->value('name');
 						$url = "details.php?id=".$arr['torrent']."#cid".$row['reportid'];
 						$of = $lang_reports['text_of_torrent'];
 					}
 					elseif ($arr['offer'])
 					{
-						$name = get_single_value("offers","name","WHERE id=".sqlesc($arr['offer']));
+						$name = \Nexus\Database\NexusDB::table('offers')->where('id', (int) $arr['offer'])->value('name');
 						$url = "offers.php?id=".$arr['offer']."&off_details=1#cid".$row['reportid'];
 						$of = $lang_reports['text_of_offer'];
 					} else //Comment belongs to no one

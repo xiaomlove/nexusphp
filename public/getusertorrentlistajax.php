@@ -113,7 +113,8 @@ function maketable($res, $mode = 'seeding')
 	    $shouldShowClient = true;
     }
 	$results = $torrentIdArr = [];
-	while ($row = mysql_fetch_assoc($res)) {
+	foreach ($res as $row) {
+	    $row = (array) $row;
 	    $results[] = $row;
 	    $torrentIdArr[] = $row['torrent'];
     }
@@ -321,11 +322,13 @@ if (isset($tableWhere)) {
     $page = $_GET['page'] ?? 0;
     $sumSql = "select count(*) as count, sum(torrents.size) as total_size from $tableWhere limit 1";
     if ($page == 0) {
-        $sumRes = mysql_fetch_assoc(sql_query($sumSql));
+        $sumRows = \Nexus\Database\NexusDB::select($sumSql);
+        $sumRes = $sumRows ? (array) $sumRows[0] : ['count' => 0, 'total_size' => 0];
         \Nexus\Database\NexusDB::cache_put($cacheKey, $sumRes);
     } else {
         $sumRes = \Nexus\Database\NexusDB::remember($cacheKey, 3600, function () use ($sumSql) {
-            return mysql_fetch_assoc(sql_query($sumSql));
+            $sumRows = \Nexus\Database\NexusDB::select($sumSql);
+            return $sumRows ? (array) $sumRows[0] : ['count' => 0, 'total_size' => 0];
         });
     }
 
@@ -336,11 +339,11 @@ if (isset($tableWhere)) {
 if ($count > 0 && isset($tableWhere, $fields, $order))
 {
     $pageSize = 100;
-    list($pagertop, $pagerbottom, $limit) = pager($pageSize, $count, "getusertorrentlistajax.php?");
+    [$pagertop, $pagerbottom, $limit] = pager($pageSize, $count, "getusertorrentlistajax.php?");
     $sql = "select $fields from $tableWhere order by $order $limit";
     do_log("count: $count, list sql: $sql");
-    $res = sql_query($sql);
-    list($torrentlist, $total_size_this_page) = maketable ( $res, $type);
+    $res = \Nexus\Database\NexusDB::select($sql);
+    [$torrentlist, $total_size_this_page] = maketable ( $res, $type);
 }
 
 $table = $pagertop . $torrentlist . $pagerbottom;

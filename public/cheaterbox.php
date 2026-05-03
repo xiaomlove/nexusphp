@@ -34,12 +34,12 @@ elseif (!empty($_POST['delete'])) {
 	$Cache->delete_value('staff_new_cheater_count');
 }
 
-$count = get_row_count("cheaters");
+$count = (int) \Nexus\Database\NexusDB::table('cheaters')->count();
 if (!$count){
 	stderr($lang_cheaterbox['std_oho'], $lang_cheaterbox['std_no_suspect_detected']);
 }
 $perpage = 50;
-list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, "cheaterbox.php?");
+[$pagertop, $pagerbottom, $limit, $offsetStart, $rowsPerPage] = pager($perpage, $count, "cheaterbox.php?");
 stdhead($lang_cheaterbox['head_cheaterbox']);
 ?>
 <style type="text/css">
@@ -55,16 +55,16 @@ print("<table class=cheaterbox border=1 cellspacing=0 cellpadding=5 align=center
 print("<tr><td class=colhead><nobr>".$lang_cheaterbox['col_added']."</nobr></td><td class=colhead>".$lang_cheaterbox['col_suspect']."</td><td class=colhead><nobr>".$lang_cheaterbox['col_hit']."</nobr></td><td class=colhead>".$lang_cheaterbox['col_torrent']."</td><td class=colhead>".$lang_cheaterbox['col_ul']."</td><td class=colhead>".$lang_cheaterbox['col_dl']."</td><td class=colhead><nobr>".$lang_cheaterbox['col_ann_time']."</nobr></td><td class=colhead><nobr>".$lang_cheaterbox['col_seeders']."</nobr></td><td class=colhead><nobr>".$lang_cheaterbox['col_leechers']."</nobr></td><td class=colhead>".$lang_cheaterbox['col_comment']."</td><td class=colhead><nobr>".$lang_cheaterbox['col_dealt_with']."</nobr></td><td class=colhead><nobr>".$lang_cheaterbox['col_action']."</nobr></td></tr>");
 
 print("<form method=post action=cheaterbox.php>");
-$cheatersres = sql_query("SELECT * FROM cheaters ORDER BY dealtwith ASC, id DESC $limit");
+$cheaterRows = \Nexus\Database\NexusDB::table('cheaters')->orderBy('dealtwith')->orderByDesc('id')->offset((int) $offsetStart)->limit((int) $rowsPerPage)->get();
 
-while ($row = mysql_fetch_array($cheatersres))
+foreach ($cheaterRows as $row)
 {
+	$row = (array) $row;
 	$upspeed = ($row['uploaded'] > 0 ? $row['uploaded'] / $row['anctime'] : 0);
 	$lespeed = ($row['downloaded'] > 0 ? $row['downloaded'] / $row['anctime'] : 0);
-	$torrentres = sql_query("SELECT name FROM torrents WHERE id=".sqlesc($row['torrentid']));
-	$torrentrow = mysql_fetch_array($torrentres);
-	if ($torrentrow)
-		$torrent = "<a href=details.php?id=".$row['torrentid'].">".htmlspecialchars($torrentrow['name'])."</a>";
+	$torrentName = \Nexus\Database\NexusDB::table('torrents')->where('id', (int) $row['torrentid'])->value('name');
+	if ($torrentName !== null)
+		$torrent = "<a href=details.php?id=".$row['torrentid'].">".htmlspecialchars($torrentName)."</a>";
 	else $torrent = $lang_cheaterbox['text_torrent_does_not_exist'];
 	if ($row['dealtwith'])
 		$dealtwith = "<font color=green>".$lang_cheaterbox['text_yes']."</font> - " . get_username($row['dealtby']);

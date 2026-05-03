@@ -10,21 +10,22 @@ int_check($id,true);
 stdhead($lang_viewsnatches['head_snatch_detail']);
 begin_main_frame();
 
-$torrent_name = get_single_value("torrents", "name", "WHERE id = ".sqlesc($id));
+$torrent_name = \Nexus\Database\NexusDB::table('torrents')->where('id', (int) $id)->value('name');
 print("<h1 align=center>".$lang_viewsnatches['text_snatch_detail_for'] . "<a href=details.php?id=" . htmlspecialchars($id) . "><b>".htmlspecialchars($torrent_name)."</b></a></h1>");
-$count = get_row_count("snatched", "WHERE finished = 'yes' AND torrentid = ".sqlesc($id));
+$count = (int) \Nexus\Database\NexusDB::table('snatched')->where('finished', 'yes')->where('torrentid', (int) $id)->count();
 $seedBoxRep = new \App\Repositories\SeedBoxRepository();
 if ($count){
 	$perpage = 25;
-	list($pagertop, $pagerbottom, $limit) = pager($perpage, $count, $_SERVER["SCRIPT_NAME"] . "?id=" . htmlspecialchars($id) . "&" );
+	[$pagertop, $pagerbottom, $limit, $offsetStart, $rowsPerPage] = pager($perpage, $count, $_SERVER["SCRIPT_NAME"] . "?id=" . htmlspecialchars($id) . "&" );
 	print("<p align=center>".$lang_viewsnatches['text_users_top_finished_recently']."</p>");
 	print("<table border=1 cellspacing=0 cellpadding=5 align=center width=940>\n");
 	print("<tr><td class=colhead align=center>".$lang_viewsnatches['col_username']."</td>".(user_can('userprofile') ? "<td class=colhead align=center>".$lang_viewsnatches['col_ip']."</td>" : "")."<td class=colhead align=center>".$lang_viewsnatches['col_uploaded']."/".$lang_viewsnatches['col_downloaded']."</td><td class=colhead align=center>".$lang_viewsnatches['col_ratio']."</td><td class=colhead align=center>".$lang_viewsnatches['col_se_time']."</td><td class=colhead align=center>".$lang_viewsnatches['col_le_time']."</td><td class=colhead align=center>".$lang_viewsnatches['col_when_completed']."</td><td class=colhead align=center>".$lang_viewsnatches['col_last_action']."</td><td class=colhead align=center>".$lang_viewsnatches['col_report_user']."</td></tr>");
 
-	$res = sql_query("SELECT * FROM snatched WHERE finished='yes' AND torrentid =" . sqlesc($id) . " ORDER BY completedat DESC $limit");
+	$snatchRows = \Nexus\Database\NexusDB::table('snatched')->where('finished', 'yes')->where('torrentid', (int) $id)->orderByDesc('completedat')->offset((int) $offsetStart)->limit((int) $rowsPerPage)->get();
 
-	while ($arr = mysql_fetch_assoc($res))
+	foreach ($snatchRows as $arr)
 	{
+		$arr = (array) $arr;
 		//start torrent
 		if ($arr["downloaded"] > 0)
 		{

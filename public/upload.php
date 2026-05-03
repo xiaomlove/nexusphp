@@ -9,7 +9,7 @@ if ($CURUSER["uploadpos"] == 'no')
 	stderr($lang_upload['std_sorry'], $lang_upload['std_unauthorized_to_upload'],false);
 
 if ($enableoffer == 'yes')
-    $has_allowed_offer = get_row_count("offers","WHERE allowed='allowed' AND userid = ". sqlesc($CURUSER["id"]));
+    $has_allowed_offer = (int) \Nexus\Database\NexusDB::table('offers')->where('allowed', 'allowed')->where('userid', (int) $CURUSER['id'])->count();
 else $has_allowed_offer = 0;
 $uploadfreely = user_can_upload("torrents");
 $allowtorrents = ($has_allowed_offer || $uploadfreely);
@@ -172,12 +172,14 @@ stdhead($lang_upload['head_upload']);
                 }
 
 				//==== offer dropdown for offer mod  from code by S4NE
-				$offerres = sql_query("SELECT id, name FROM offers WHERE userid = ".sqlesc($CURUSER['id'])." AND allowed = 'allowed' ORDER BY name ASC") or sqlerr(__FILE__, __LINE__);
-				if (mysql_num_rows($offerres) > 0)
+				$offerRows = \Nexus\Database\NexusDB::table('offers')->where('userid', (int) $CURUSER['id'])->where('allowed', 'allowed')->orderBy('name')->select(['id', 'name'])->get();
+				if (count($offerRows) > 0)
 				{
 					$offer = "<select name=\"offer\"><option value=\"0\">".$lang_upload['select_choose_one']."</option>";
-					while($offerrow = mysql_fetch_array($offerres))
+					foreach ($offerRows as $offerrow) {
+						$offerrow = (array) $offerrow;
 						$offer .= "<option value=\"" . $offerrow["id"] . "\">" . htmlspecialchars($offerrow["name"]) . "</option>";
+					}
 					$offer .= "</select>";
 					tr($lang_upload['row_your_offer']. (!$uploadfreely && !$allowspecial ? "<font color=red>*</font>" : ""), $offer.$lang_upload['text_please_select_offer'] , 1);
 					$getOfferJs = <<<JS

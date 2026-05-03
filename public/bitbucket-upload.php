@@ -62,14 +62,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 //	$ret=($it==1)?imagegif($thumb, $tgtfile): ($it==2)?imagejpeg($thumb, $tgtfile):imagepng($thumb, $tgtfile);
 
 	$url = str_replace(" ", "%20", htmlspecialchars(get_protocol_prefix()."$BASEURL/bitbucket/$filename"));
-	$name = sqlesc($filename);
-	$added = sqlesc(date("Y-m-d H:i:s"));
-	if (!isset($_POST['public']) || $_POST['public'] != 'yes' )
-	$public='"0"';
-	else
-	$public='"1"';
-	sql_query("INSERT INTO bitbucket (owner, name, added, public) VALUES ({$CURUSER['id']}, $name, $added, $public)") or sqlerr(__FILE__, __LINE__);
-	sql_query("UPDATE users SET avatar = ".sqlesc($url)." WHERE id = {$CURUSER['id']}") or sqlerr(__FILE__, __LINE__);
+	$public = (!isset($_POST['public']) || $_POST['public'] != 'yes') ? '0' : '1';
+	\Nexus\Database\NexusDB::insert('bitbucket', [
+		'owner' => (int) $CURUSER['id'],
+		'name' => (string) $filename,
+		'added' => date("Y-m-d H:i:s"),
+		'public' => (string) $public,
+	]);
+	\Nexus\Database\NexusDB::table('users')->where('id', (int) $CURUSER['id'])->update(['avatar' => (string) $url]);
 
 	stderr($lang_bitbucketupload['std_success'], $lang_bitbucketupload['std_use_following_url']."<br /><b><a href=\"$url\">$url</a></b><p><a href=bitbucket-upload.php>".$lang_bitbucketupload['std_upload_another_file']."</a>.<br /><br /><img src=\"$url\" border=0><br /><br />".$lang_bitbucketupload['std_image']. ($width=$newwidth && $height==$newheight ? $lang_bitbucketupload['std_need_not_rescaling']:$lang_bitbucketupload['std_rescaled_from']."$height x $width".$lang_bitbucketupload['std_to']."$newheight x $newwidth") .$lang_bitbucketupload['std_profile_updated'],false);
 }
