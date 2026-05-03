@@ -94,8 +94,8 @@ class ImageCaptchaDriver implements CaptchaDriverInterface
             return;
         }
 
-        $fontwidth = imageFontWidth(5);
-        $fontheight = imageFontHeight(5);
+        $fontwidth = imagefontwidth(5);
+        $fontheight = imagefontheight(5);
         $textwidth = $fontwidth * strlen($characters);
         $textheight = $fontheight;
 
