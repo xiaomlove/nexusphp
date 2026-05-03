@@ -1,36 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Method App\\Auth\\NexusWebGuard\:\:attempt\(\) should return bool but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Auth/NexusWebGuard.php
-
-		-
-			message: '#^Method App\\Auth\\NexusWebGuard\:\:loginUsingId\(\) should return Illuminate\\Contracts\\Auth\\Authenticatable\|false but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Auth/NexusWebGuard.php
-
-		-
-			message: '#^Method App\\Auth\\NexusWebGuard\:\:once\(\) should return bool but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Auth/NexusWebGuard.php
-
-		-
-			message: '#^Method App\\Auth\\NexusWebGuard\:\:onceUsingId\(\) should return Illuminate\\Contracts\\Auth\\Authenticatable\|false but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Auth/NexusWebGuard.php
-
-		-
-			message: '#^Method App\\Auth\\NexusWebGuard\:\:viaRemember\(\) should return bool but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Auth/NexusWebGuard.php
-
-		-
 			message: '#^Method App\\Console\\Commands\\BackupAll\:\:handle\(\) should return int but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1

@@ -1,14 +1,13 @@
 <?php
+
 namespace App\Auth;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 
 class NexusWebGuard implements StatefulGuard
 {
@@ -17,7 +16,7 @@ class NexusWebGuard implements StatefulGuard
     /**
      * The request instance.
      *
-     * @var \Illuminate\Http\Request
+     * @var Request
      */
     protected $request;
 
@@ -25,11 +24,9 @@ class NexusWebGuard implements StatefulGuard
      * Create a new authentication guard.
      *
      * @param  callable  $callback
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Contracts\Auth\UserProvider|null  $provider
      * @return void
      */
-    public function __construct(Request $request, UserProvider $provider = null)
+    public function __construct(Request $request, ?UserProvider $provider = null)
     {
         $this->request = $request;
         $this->provider = $provider;
@@ -38,7 +35,7 @@ class NexusWebGuard implements StatefulGuard
     /**
      * Get the currently authenticated user.
      *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return Authenticatable|null
      */
     public function user()
     {
@@ -56,15 +53,17 @@ class NexusWebGuard implements StatefulGuard
             }
             if ($this->provider->validateCredentials($user, $credentials)) {
                 $user->checkIsNormal();
+
                 return $this->user = $user;
             }
         }
-    }
 
+        return null;
+    }
 
     /**
      * Validate a user's credentials.
-     * @param  array  $credentials
+     *
      * @return bool
      */
     public function validate(array $credentials = [])
@@ -75,43 +74,56 @@ class NexusWebGuard implements StatefulGuard
                 return false;
             }
         }
+
         return true;
     }
 
     public function logout()
     {
         logoutcookie();
+
         return nexus_redirect('login.php');
     }
 
-
     public function attempt(array $credentials = [], $remember = false)
     {
-        // TODO: Implement attempt() method.
+        throw new \BadMethodCallException(
+            __METHOD__.' is not implemented for '.static::class
+        );
     }
 
     public function once(array $credentials = [])
     {
-        // TODO: Implement once() method.
+        throw new \BadMethodCallException(
+            __METHOD__.' is not implemented for '.static::class
+        );
     }
 
     public function login(Authenticatable $user, $remember = false)
     {
-        // TODO: Implement login() method.
+        throw new \BadMethodCallException(
+            __METHOD__.' is not implemented for '.static::class
+        );
     }
 
     public function loginUsingId($id, $remember = false)
     {
-        // TODO: Implement loginUsingId() method.
+        throw new \BadMethodCallException(
+            __METHOD__.' is not implemented for '.static::class
+        );
     }
 
     public function onceUsingId($id)
     {
-        // TODO: Implement onceUsingId() method.
+        throw new \BadMethodCallException(
+            __METHOD__.' is not implemented for '.static::class
+        );
     }
 
     public function viaRemember()
     {
-        // TODO: Implement viaRemember() method.
+        throw new \BadMethodCallException(
+            __METHOD__.' is not implemented for '.static::class
+        );
     }
 }
