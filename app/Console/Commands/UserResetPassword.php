@@ -45,10 +45,12 @@ class UserResetPassword extends Command
         $this->info($log);
         do_log($log);
 
-        $rep = new UserRepository();
+        $rep = new UserRepository;
         $result = $rep->resetPassword($uid, $password, $passwordConfirmation);
         $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);
+
+        return self::SUCCESS;
     }
 }

@@ -1,42 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Method App\\Console\\Commands\\BackupAll\:\:handle\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Console/Commands/BackupAll.php
-
-		-
-			message: '#^Method App\\Console\\Commands\\BackupDatabase\:\:handle\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Console/Commands/BackupDatabase.php
-
-		-
-			message: '#^Method App\\Console\\Commands\\BackupWeb\:\:handle\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Console/Commands/BackupWeb.php
-
-		-
-			message: '#^Method App\\Console\\Commands\\Test\:\:handle\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Console/Commands/Test.php
-
-		-
-			message: '#^Method App\\Console\\Commands\\UserResetIdAutoIncrement\:\:handle\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Console/Commands/UserResetIdAutoIncrement.php
-
-		-
-			message: '#^Method App\\Console\\Commands\\UserResetPassword\:\:handle\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: app/Console/Commands/UserResetPassword.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\BookmarkController\:\:show\(\) should return Illuminate\\Http\\Response but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1

@@ -41,10 +41,12 @@ class BackupWeb extends Command
         $method = $this->option('method');
         $transfer = $this->option('transfer');
         $this->info("method: $method, transfer: $transfer");
-        $rep = new ToolRepository();
+        $rep = new ToolRepository;
         $result = $rep->backupWeb($method, $transfer);
         $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);
+
+        return self::SUCCESS;
     }
 }
