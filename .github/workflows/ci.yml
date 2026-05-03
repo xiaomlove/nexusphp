@@ -135,3 +135,76 @@ jobs:
 
       - name: Run PHPUnit (Unit suite)
         run: vendor/bin/phpunit --testsuite=Unit
+
+  phpunit-feature:
+    name: PHPUnit Feature (PHP 8.3)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: nexus_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          # mysqli is needed by legacy migrations that go through Nexus\Database\DBMysqli.
+          extensions: gmp, intl, bcmath, gd, mbstring, redis, pdo_mysql, mysqli, pdo_pgsql, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.3-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Prepare environment
+        run: |
+          # The .env.testing file is the source of truth for the test DB
+          # config. Both Laravel's env() and the legacy nexus_env() helper
+          # read it (the latter only when copied to .env), so we copy it
+          # in place for both code paths.
+          cp .env.testing .env
+          php artisan key:generate --ansi
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if mysqladmin ping -h 127.0.0.1 -uroot -ppassword --silent; then
+              echo "MySQL is up"; exit 0
+            fi
+            echo "Waiting for MySQL ($i)..."; sleep 2
+          done
+          echo "MySQL did not become ready"; exit 1
+
+      - name: Run migrations
+        run: php artisan migrate --force --no-interaction
+
+      - name: Run PHPUnit (Feature suite)
+        run: vendor/bin/phpunit --testsuite=Feature
