@@ -4,6 +4,7 @@ use App\Models\SearchBox;
 use App\Models\TorrentExtra;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Nexus\Database\NexusDB;
 
 function get_langfolder_cookie($transToLocale = false)
 {
@@ -33,8 +34,13 @@ function get_langfolder_cookie($transToLocale = false)
 
 function get_user_lang($user_id)
 {
-	$lang = mysql_fetch_assoc(sql_query("SELECT site_lang_folder FROM language LEFT JOIN users ON language.id = users.lang WHERE language.site_lang=1 AND users.id= ". sqlesc($user_id) ." LIMIT 1"));
-	return $lang['site_lang_folder'] ?: 'en';
+	$folder = NexusDB::table('language')
+		->leftJoin('users', 'language.id', '=', 'users.lang')
+		->where('language.site_lang', 1)
+		->where('users.id', $user_id)
+		->limit(1)
+		->value('language.site_lang_folder');
+	return $folder ?: 'en';
 }
 
 function get_langfile_path($script_name ="", $target = false, $lang_folder = "")
@@ -57,13 +63,12 @@ function get_row_sum($table, $field, $suffix = "")
 }
 
 function get_single_value($table, $field, $suffix = ""){
-	$r = sql_query("SELECT $field FROM $table $suffix LIMIT 1") or sqlerr(__FILE__, __LINE__);
-	$a = mysql_fetch_row($r);
-	if ($a) {
-		return $a[0];
-	} else {
-		return false;
+	$rows = NexusDB::select("SELECT $field FROM $table $suffix LIMIT 1");
+	if (!empty($rows)) {
+		$values = array_values((array) $rows[0]);
+		return $values[0] ?? false;
 	}
+	return false;
 }
 
 function stdmsg($heading, $text, $htmlstrip = false)
@@ -1259,13 +1264,9 @@ function get_torrent_extinfo_identifier($torrentid)
 
 	if($torrentid)
 	{
-		$res = sql_query("SELECT url FROM torrents WHERE id=" . $torrentid) or sqlerr(__FILE__,__LINE__);
-		if(mysql_num_rows($res) == 1)
-		{
-			$arr = mysql_fetch_array($res) or sqlerr(__FILE__,__LINE__);
-
-			$imdb_id = parse_imdb_id($arr["url"]);
-			$result['imdb_id'] = $imdb_id;
+		$url = NexusDB::table('torrents')->where('id', $torrentid)->value('url');
+		if ($url !== null) {
+			$result['imdb_id'] = parse_imdb_id($url);
 		}
 	}
 	return $result;
@@ -1293,10 +1294,10 @@ function get_torrent_2_user_value($user_snatched_arr)
 	// check if it's current user's torrent
 	$torrent_2_user_value = 1.0;
 
-	$torrent_res = sql_query("SELECT * FROM torrents WHERE id = " . $user_snatched_arr['torrentid']) or sqlerr(__FILE__, __LINE__);
-	if(mysql_num_rows($torrent_res) == 1)	// torrent still exists
+	$torrent_row = NexusDB::table('torrents')->where('id', $user_snatched_arr['torrentid'])->first();
+	if ($torrent_row !== null)	// torrent still exists
 	{
-		$torrent_arr = mysql_fetch_array($torrent_res) or sqlerr(__FILE__, __LINE__);
+		$torrent_arr = (array) $torrent_row;
 		if($torrent_arr['owner'] == $user_snatched_arr['userid'])	// owner's torrent
 		{
 			$torrent_2_user_value *= 0.7;	// owner's torrent
@@ -1353,9 +1354,11 @@ function cur_user_check () {
 function KPS($type = "+", $point = "1.0", $id = "") {
 	global $bonus_tweak;
 	if ($point != 0){
-		$point = sqlesc($point);
 		if ($bonus_tweak == "enable" || $bonus_tweak == "disablesave"){
-			sql_query("UPDATE users SET seedbonus = seedbonus$type$point WHERE id = ".sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+			$op = $type === '-' ? '-' : '+';
+			NexusDB::table('users')->where('id', $id)->update([
+				'seedbonus' => NexusDB::raw('seedbonus ' . $op . ' ' . (float) $point),
+			]);
 		}
 	}
 	else return;
@@ -1469,11 +1472,11 @@ function nexus_redirect($url)
 
 function set_cachetimestamp($id, $field = "cache_stamp")
 {
-	sql_query("UPDATE torrents SET $field = " . time() . " WHERE id = " . sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+	NexusDB::table('torrents')->where('id', $id)->update([$field => time()]);
 }
 function reset_cachetimestamp($id, $field = "cache_stamp")
 {
-	sql_query("UPDATE torrents SET $field = 0 WHERE id = " . sqlesc($id)) or sqlerr(__FILE__, __LINE__);
+	NexusDB::table('torrents')->where('id', $id)->update([$field => 0]);
 }
 
 function cache_check ($file = 'cachefile',$endpage = true, $cachetime = 600) {
@@ -5016,36 +5019,43 @@ function get_hr_img(array $torrent, $searchBoxId)
 
 function get_user_id_from_name($username){
 	global $lang_functions;
-	$res = sql_query("SELECT id FROM users WHERE LOWER(username)=LOWER(" . sqlesc($username).")");
-	$arr = mysql_fetch_array($res);
-	if (!$arr){
+	$id = NexusDB::table('users')
+		->whereRaw('LOWER(username) = LOWER(?)', [$username])
+		->value('id');
+	if ($id === null){
 		stderr($lang_functions['std_error'],$lang_functions['std_no_user_named']."'".$username."'");
 	}
-	else return $arr['id'];
+	else return $id;
 }
 
 function is_forum_moderator($id, $in = 'post'){
 	global $CURUSER;
 	switch($in){
 		case 'post':{
-			$res = sql_query("SELECT topicid FROM posts WHERE id=$id") or sqlerr(__FILE__, __LINE__);
-			if ($arr = mysql_fetch_array($res)){
-				if (is_forum_moderator($arr['topicid'],'topic'))
+			$topicid = NexusDB::table('posts')->where('id', $id)->value('topicid');
+			if ($topicid !== null){
+				if (is_forum_moderator($topicid,'topic'))
 					return true;
 			}
 			return false;
 			break;
 		}
 		case 'topic':{
-			$modcount = sql_query("SELECT COUNT(forummods.userid) FROM forummods LEFT JOIN topics ON forummods.forumid = topics.forumid WHERE topics.id=$id AND forummods.userid=".sqlesc($CURUSER['id'])) or sqlerr(__FILE__, __LINE__);
-			$arr = mysql_fetch_array($modcount);
-			if ($arr[0])
+			$modcount = NexusDB::table('forummods')
+				->leftJoin('topics', 'forummods.forumid', '=', 'topics.forumid')
+				->where('topics.id', $id)
+				->where('forummods.userid', $CURUSER['id'])
+				->count('forummods.userid');
+			if ($modcount > 0)
 				return true;
 			else return false;
 			break;
 		}
 		case 'forum':{
-			$modcount = get_row_count("forummods","WHERE forumid=$id AND userid=".sqlesc($CURUSER['id']));
+			$modcount = NexusDB::table('forummods')
+				->where('forumid', $id)
+				->where('userid', $CURUSER['id'])
+				->count();
 			if ($modcount)
 				return true;
 			else return false;
@@ -5060,10 +5070,12 @@ function is_forum_moderator($id, $in = 'post'){
 function get_guest_lang_id(){
 	global $CURLANGDIR;
 	$langfolder=$CURLANGDIR;
-	$res = sql_query("SELECT id FROM language WHERE site_lang_folder=".sqlesc($langfolder)." AND site_lang=1");
-	$row = mysql_fetch_array($res);
-	if ($row){
-		return $row['id'];
+	$id = NexusDB::table('language')
+		->where('site_lang_folder', $langfolder)
+		->where('site_lang', 1)
+		->value('id');
+	if ($id !== null){
+		return $id;
 	}
 	else return 6;//return English
 }
@@ -5076,9 +5088,13 @@ function set_forum_moderators($name, $forumid, $limit=3){
 		$userids[]=get_user_id_from_name(trim($user));
 	}
 	$max = count($userids);
-	sql_query("DELETE FROM forummods WHERE forumid=".sqlesc($forumid)) or sqlerr(__FILE__, __LINE__);
+	NexusDB::table('forummods')->where('forumid', $forumid)->delete();
+	$rows = [];
 	for($i=0; $i < $limit && $i < $max; $i++){
-		sql_query("INSERT INTO forummods (forumid, userid) VALUES (".sqlesc($forumid).",".sqlesc($userids[$i]).")") or sqlerr(__FILE__, __LINE__);
+		$rows[] = ['forumid' => $forumid, 'userid' => $userids[$i]];
+	}
+	if (!empty($rows)) {
+		NexusDB::table('forummods')->insert($rows);
 	}
 }
 
@@ -5340,8 +5356,8 @@ function get_post_row($postid)
 {
 	global $Cache;
 	if (!$row = $Cache->get_value('post_'.$postid.'_content')){
-		$res = sql_query("SELECT * FROM posts WHERE id=".sqlesc($postid)." LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
+		$found = NexusDB::table('posts')->where('id', $postid)->first();
+		$row = $found === null ? false : (array) $found;
 		$Cache->cache_value('post_'.$postid.'_content', $row, 7200);
 	}
 	if (!$row)
@@ -5353,8 +5369,8 @@ function get_country_row($id)
 {
 	global $Cache;
 	if (!$row = $Cache->get_value('country_'.$id.'_content')){
-		$res = sql_query("SELECT * FROM countries WHERE id=".sqlesc($id)." LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
+		$found = NexusDB::table('countries')->where('id', $id)->first();
+		$row = $found === null ? false : (array) $found;
 		$Cache->cache_value('country_'.$id.'_content', $row, 86400);
 	}
 	if (!$row)
@@ -5366,8 +5382,8 @@ function get_downloadspeed_row($id)
 {
 	global $Cache;
 	if (!$row = $Cache->get_value('downloadspeed_'.$id.'_content')){
-		$res = sql_query("SELECT * FROM downloadspeed WHERE id=".sqlesc($id)." LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
+		$found = NexusDB::table('downloadspeed')->where('id', $id)->first();
+		$row = $found === null ? false : (array) $found;
 		$Cache->cache_value('downloadspeed_'.$id.'_content', $row, 86400);
 	}
 	if (!$row)
@@ -5379,8 +5395,8 @@ function get_uploadspeed_row($id)
 {
 	global $Cache;
 	if (!$row = $Cache->get_value('uploadspeed_'.$id.'_content')){
-		$res = sql_query("SELECT * FROM uploadspeed WHERE id=".sqlesc($id)." LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
+		$found = NexusDB::table('uploadspeed')->where('id', $id)->first();
+		$row = $found === null ? false : (array) $found;
 		$Cache->cache_value('uploadspeed_'.$id.'_content', $row, 86400);
 	}
 	if (!$row)
@@ -5392,8 +5408,8 @@ function get_isp_row($id)
 {
 	global $Cache;
 	if (!$row = $Cache->get_value('isp_'.$id.'_content')){
-		$res = sql_query("SELECT * FROM isp WHERE id=".sqlesc($id)." LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
+		$found = NexusDB::table('isp')->where('id', $id)->first();
+		$row = $found === null ? false : (array) $found;
 		$Cache->cache_value('isp_'.$id.'_content', $row, 86400);
 	}
 	if (!$row)
