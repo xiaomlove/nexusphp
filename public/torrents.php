@@ -975,7 +975,7 @@ $torrentsperpage = min($maxPageSize, $torrentsperpage);
 if ($count)
 {
     if (isset($searchstr) && (!isset($_GET['notnewword']) || !$_GET['notnewword'])){
-        insert_suggest($searchstr, $CURUSER['id']);
+        insert_suggest($searchstr_ori, $CURUSER['id']);
     }
 	if ($addparam != "")
 	{

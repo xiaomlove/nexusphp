@@ -57,9 +57,8 @@ function get_langfile_path($script_name ="", $target = false, $lang_folder = "")
 
 function get_row_sum($table, $field, $suffix = "")
 {
-	$r = sql_query("SELECT SUM($field) FROM $table $suffix") or sqlerr(__FILE__, __LINE__);
-	$a = mysql_fetch_row($r);
-	return $a[0];
+	$rows = NexusDB::select("SELECT SUM($field) AS sum FROM $table $suffix");
+	return $rows[0]['sum'] ?? 0;
 }
 
 function get_single_value($table, $field, $suffix = ""){
@@ -138,10 +137,9 @@ function print_attachment($dlkey, $enableimage = true, $imageresizer = true)
 {
 	$httpdirectory_attachment = get_setting('attachment.httpdirectory');
 	if (strlen($dlkey) == 32){
-	if (!$row = \Nexus\Database\NexusDB::cache_get('attachment_'.$dlkey.'_content')){
-		$res = sql_query("SELECT * FROM attachments WHERE dlkey=".sqlesc($dlkey)." LIMIT 1") or sqlerr(__FILE__,__LINE__);
-		$row = mysql_fetch_array($res);
-        \Nexus\Database\NexusDB::cache_put('attachment_'.$dlkey.'_content', $row, 86400);
+	if (!$row = NexusDB::cache_get('attachment_'.$dlkey.'_content')){
+		$row = (array) (NexusDB::table('attachments')->where('dlkey', $dlkey)->first() ?: []);
+        NexusDB::cache_put('attachment_'.$dlkey.'_content', $row, 86400);
 	}
 	}
 	if (!$row)
@@ -1230,13 +1228,18 @@ function end_compose(){
 	print("<p align=\"center\"><a href=\"tags.php\" target=\"_blank\">".$lang_functions['text_tags']."</a> | <a href=\"smilies.php\" target=\"_blank\">".$lang_functions['text_smilies']."</a></p>\n");
 }
 
-function insert_suggest($keyword, $userid, $pre_escaped = true)
+function insert_suggest($keyword, $userid)
 {
-	if(mb_strlen($keyword,"UTF-8") >= 2)
+	if(mb_strlen((string) $keyword, "UTF-8") >= 2)
 	{
 		$userid = intval($userid ?? 0);
-		if($userid)
-		sql_query("INSERT INTO suggest(keywords, userid, adddate) VALUES (" . ($pre_escaped == true ? "'" . $keyword . "'" : sqlesc($keyword)) . "," . sqlesc($userid) . ", NOW())") or sqlerr(__FILE__,__LINE__);
+		if($userid) {
+			NexusDB::table('suggest')->insert([
+				'keywords' => $keyword,
+				'userid' => $userid,
+				'adddate' => NexusDB::raw('NOW()'),
+			]);
+		}
 	}
 }
 
@@ -1346,7 +1349,9 @@ function cur_user_check () {
 	global $CURUSER;
 	if ($CURUSER)
 	{
-		sql_query("UPDATE users SET lang=" . get_langid_from_langcookie() . " WHERE id = ". $CURUSER['id']);
+		NexusDB::table('users')
+			->where('id', $CURUSER['id'])
+			->update(['lang' => get_langid_from_langcookie()]);
 		stderr ($lang_functions['std_permission_denied'], $lang_functions['std_already_logged_in']);
 	}
 }
@@ -1372,9 +1377,8 @@ function get_agent($peer_id, $agent)
 function EmailBanned($newEmail)
 {
 	$newEmail = trim(strtolower($newEmail));
-	$sql = sql_query("SELECT * FROM bannedemails") or sqlerr(__FILE__, __LINE__);
-	$list = mysql_fetch_array($sql);
-	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'])) );
+	$list = (array) (NexusDB::table('bannedemails')->first() ?: []);
+	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'] ?? '')) );
 
 	if(count($addresses) > 0)
 	{
@@ -1413,9 +1417,8 @@ function EmailAllowed($newEmail)
 global $restrictemaildomain;
 if ($restrictemaildomain == 'yes'){
 	$newEmail = trim(strtolower($newEmail));
-	$sql = sql_query("SELECT * FROM allowedemails") or sqlerr(__FILE__, __LINE__);
-	$list = mysql_fetch_array($sql);
-	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'])) );
+	$list = (array) (NexusDB::table('allowedemails')->first() ?: []);
+	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'] ?? '')) );
 
 	if(count($addresses) > 0)
 	{
