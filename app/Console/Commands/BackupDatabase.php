@@ -38,12 +38,14 @@ class BackupDatabase extends Command
      */
     public function handle()
     {
-        $rep = new ToolRepository();
+        $rep = new ToolRepository;
         $transfer = $this->option('transfer');
         $this->info("transfer: $transfer");
         $result = $rep->backupDatabase($transfer);
         $log = sprintf('[%s], %s, result: %s', nexus()->getRequestId(), __METHOD__, var_export($result, true));
         $this->info($log);
         do_log($log);
+
+        return self::SUCCESS;
     }
 }

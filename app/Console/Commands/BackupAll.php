@@ -40,7 +40,7 @@ class BackupAll extends Command
     {
         $method = $this->option('method');
         $this->info("method: $method");
-        $rep = new ToolRepository();
+        $rep = new ToolRepository;
         $result = $rep->backupAll($method);
         $log = sprintf(
             '[%s], %s, result: %s',
@@ -48,5 +48,7 @@ class BackupAll extends Command
         );
         $this->info($log);
         do_log($log);
+
+        return self::SUCCESS;
     }
 }
