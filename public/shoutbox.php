@@ -289,7 +289,7 @@ if (count($shoutRows) === 0) {
         } else {
             $username = $lang_shoutbox['text_guest'];
         }
-        $avatarImg = '<img class="shout-avatar" src="'.htmlspecialchars($avatarUrl).'" alt="" onerror="this.onerror=null;this.src=\'pic/default_avatar.png\';" />';
+        $avatarImg = '<img class="shout-avatar" src="'.htmlspecialchars($avatarUrl).'" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'pic/default_avatar.png\';" />';
         if ((int) $arr['userid'] > 0) {
             $avatarHtml = '<a class="shout-avatar-link" href="userdetails.php?id='.(int) $arr['userid'].'" target="_blank">'.$avatarImg.'</a>';
         } else {

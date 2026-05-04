@@ -3264,6 +3264,86 @@ function cover_thumb_url($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
 	return $publicUrl;
 }
 
+/**
+ * Like cover_thumb_url() but also writes a sibling WebP next to the
+ * JPEG and returns both public URLs. Reuses cover_thumb_url() for the
+ * resize step so any future quality tweak there is picked up here for
+ * free; the WebP is encoded from the freshly written JPEG so we avoid
+ * decoding the source image twice.
+ *
+ * Return shape: ['jpg' => 'https://.../foo.jpg', 'webp' => '.../foo.webp']
+ * If WebP can't be produced (no imagewebp(), upstream resize failed,
+ * etc.) the 'webp' key is omitted and callers fall back to plain JPEG.
+ */
+function cover_thumb_set($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
+{
+	global $savedirectory_attachment, $httpdirectory_attachment;
+	$jpgUrl = cover_thumb_url($url, $maxWidth, $maxHeight, $quality);
+	if ($jpgUrl === '' || $jpgUrl === $url) {
+		// Empty input or upstream returned the original URL untouched
+		// (resize failed). No point trying to derive a WebP from it.
+		return ['jpg' => $jpgUrl];
+	}
+	if (!function_exists('imagewebp')) {
+		return ['jpg' => $jpgUrl];
+	}
+	$saveDir = $savedirectory_attachment ?: 'attachments';
+	$httpDir = $httpdirectory_attachment ?: 'attachments';
+	$key = md5(trim((string)$url) . '|' . (int)$maxWidth . 'x' . (int)$maxHeight);
+	$relativeDir = 'covers/' . substr($key, 0, 2);
+	$absJpg  = rtrim($saveDir, '/') . '/' . $relativeDir . '/' . $key . '.jpg';
+	$absWebp = rtrim($saveDir, '/') . '/' . $relativeDir . '/' . $key . '.webp';
+	$pubWebp = $httpDir . '/' . $relativeDir . '/' . $key . '.webp';
+	if (is_file($absWebp) && filesize($absWebp) > 0) {
+		return ['jpg' => $jpgUrl, 'webp' => $pubWebp];
+	}
+	if (!is_file($absJpg)) {
+		return ['jpg' => $jpgUrl];
+	}
+	$img = @imagecreatefromjpeg($absJpg);
+	if (!$img) {
+		return ['jpg' => $jpgUrl];
+	}
+	// WebP at q-2 typically yields ~25-35% smaller files than JPEG at
+	// equivalent visual quality. -2 keeps it visually indistinguishable
+	// while still saving bandwidth on every WebP-capable browser.
+	$ok = @imagewebp($img, $absWebp, max(1, min(100, (int)$quality - 2)));
+	imagedestroy($img);
+	if (!$ok) {
+		return ['jpg' => $jpgUrl];
+	}
+	return ['jpg' => $jpgUrl, 'webp' => $pubWebp];
+}
+
+/**
+ * Convenience helper that wraps cover_thumb_set() in a <picture>
+ * element with WebP <source> + JPEG <img> fallback. When WebP is
+ * unavailable, returns the bare <img> tag so callers stay agnostic.
+ *
+ * $imgAttr is rendered onto the <img>; pass loading="lazy",
+ * decoding="async", alt, onerror, etc. through here.
+ */
+function cover_thumb_picture($url, $maxWidth = 240, $maxHeight = 360, array $imgAttr = [], $quality = 82)
+{
+	$set = cover_thumb_set($url, $maxWidth, $maxHeight, $quality);
+	$jpg = $set['jpg'] ?? '';
+	if ($jpg === '') {
+		return '';
+	}
+	$attrs = '';
+	foreach ($imgAttr as $name => $value) {
+		$attrs .= ' ' . $name . '="' . htmlspecialchars((string)$value, ENT_QUOTES) . '"';
+	}
+	$imgTag = '<img src="' . htmlspecialchars($jpg, ENT_QUOTES) . '"' . $attrs . ' />';
+	if (!empty($set['webp'])) {
+		return '<picture>'
+			. '<source type="image/webp" srcset="' . htmlspecialchars($set['webp'], ENT_QUOTES) . '" />'
+			. $imgTag
+			. '</picture>';
+	}
+	return $imgTag;
+}
+
 function logoutcookie() {
 //	setcookie("c_secure_uid", "", 0x7fffffff, "/", "", false, true);
 	setcookie("c_secure_pass", "", 0x7fffffff, "/", "", isHttps(), true);
@@ -5448,7 +5528,7 @@ function valid_class_name($filename)
 function return_avatar_image($url)
 {
 	global $CURLANGDIR;
-	return "<img src=\"".$url."\" alt=\"avatar\" width=\"150px\" onload=\"check_avatar(this, '".$CURLANGDIR."');\" />";
+	return "<img src=\"".$url."\" alt=\"avatar\" width=\"150px\" loading=\"lazy\" decoding=\"async\" onload=\"check_avatar(this, '".$CURLANGDIR."');\" />";
 }
 function return_category_image($categoryid, $link="")
 {
