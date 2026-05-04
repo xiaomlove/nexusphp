@@ -1,163 +1,163 @@
 <?php
-require "../include/bittorrent.php";
+
+use App\Models\Setting;
+use App\Models\Torrent;
+use App\Models\User;
+use Carbon\Carbon;
+use Nexus\Database\NexusDB;
+use Nexus\Nexus;
+
+require '../include/bittorrent.php';
 dbconn(true);
-require_once(get_langfile_path());
+require_once get_langfile_path();
 loggedinorreturn(true);
-$userid = $CURUSER["id"];
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-{
-	if ($showpolls_main == "yes")
-	{
-		$choice = $_POST["choice"];
-		if ($CURUSER && $choice != "" && $choice < 256 && $choice == floor($choice))
-		{
-			$pollRows = \Nexus\Database\NexusDB::select("SELECT * FROM polls ORDER BY added DESC LIMIT 1");
-			$arr = $pollRows[0] ?? null;
-			if (!$arr) die($lang_index['std_no_poll']);
-			$pollid = $arr["id"];
+$userid = $CURUSER['id'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if ($showpolls_main == 'yes') {
+        $choice = $_POST['choice'];
+        if ($CURUSER && $choice != '' && $choice < 256 && $choice == floor($choice)) {
+            $pollRows = NexusDB::select('SELECT * FROM polls ORDER BY added DESC LIMIT 1');
+            $arr = $pollRows[0] ?? null;
+            if (! $arr) {
+                exit($lang_index['std_no_poll']);
+            }
+            $pollid = $arr['id'];
 
-			$hasvoted = \Nexus\Database\NexusDB::table('pollanswers')
-				->where('pollid', (int) $pollid)
-				->where('userid', (int) $CURUSER["id"])
-				->count();
-			if ($hasvoted)
-				stderr($lang_index['std_error'],$lang_index['std_duplicate_votes_denied']);
-			\Nexus\Database\NexusDB::insert('pollanswers', [
-				'pollid' => (int) $pollid,
-				'userid' => (int) $CURUSER["id"],
-				'selection' => (int) $choice,
-			]);
-			$Cache->delete_value('current_poll_content');
-			$Cache->delete_value('current_poll_result', true);
-			//add karma
-			KPS("+",$pollvote_bonus,$userid);
+            $hasvoted = NexusDB::table('pollanswers')
+                ->where('pollid', (int) $pollid)
+                ->where('userid', (int) $CURUSER['id'])
+                ->count();
+            if ($hasvoted) {
+                stderr($lang_index['std_error'], $lang_index['std_duplicate_votes_denied']);
+            }
+            NexusDB::insert('pollanswers', [
+                'pollid' => (int) $pollid,
+                'userid' => (int) $CURUSER['id'],
+                'selection' => (int) $choice,
+            ]);
+            $Cache->delete_value('current_poll_content');
+            $Cache->delete_value('current_poll_result', true);
+            // add karma
+            KPS('+', $pollvote_bonus, $userid);
 
-			header("Location: " . get_protocol_prefix() . "$BASEURL/");
-			die;
-		}
-		else
-		stderr($lang_index['std_error'], $lang_index['std_option_unselected']);
-	}
+            header('Location: '.get_protocol_prefix()."$BASEURL/");
+            exit;
+        } else {
+            stderr($lang_index['std_error'], $lang_index['std_option_unselected']);
+        }
+    }
 }
 stdhead($lang_index['head_home']);
 begin_main_frame();
 
 // ------------- start: recent news ------------------//
-print("<h2>".$lang_index['text_recent_news'].(user_can('newsmanage') ? " - <font class=\"small\">[<a class=\"altlink\" href=\"news.php\"><b>".$lang_index['text_news_page']."</b></a>]</font>" : "")."</h2>");
+echo '<h2>'.$lang_index['text_recent_news'].(user_can('newsmanage') ? ' - <font class="small">[<a class="altlink" href="news.php"><b>'.$lang_index['text_news_page'].'</b></a>]</font>' : '').'</h2>';
 
 $Cache->new_page('recent_news', 86400, true);
-if (!$Cache->get_page()){
-$newsRows = \Nexus\Database\NexusDB::select("SELECT * FROM news ORDER BY added DESC LIMIT ".(int)$maxnewsnum_main);
-if (count($newsRows) > 0)
-{
-	$Cache->add_whole_row();
-	print("<table width=\"100%\"><tr><td class=\"text\"><div style=\"margin-left: 16pt;\">\n");
-	$Cache->end_whole_row();
-	$news_flag = 0;
-	foreach ($newsRows as $array)
-	{
-		$Cache->add_row();
-		$Cache->add_part();
-		if ($news_flag < 1) {
-			print("<a href=\"javascript: klappe_news('a".$array['id']."')\"><img class=\"minus\" src=\"pic/trans.gif\" id=\"pica".$array['id']."\" alt=\"Show/Hide\" title=\"".$lang_index['title_show_or_hide']."\" />&nbsp;" . date("Y.m.d",strtotime($array['added'])) . " - " ."<b>". $array['title'] . "</b></a>");
-			print("<div id=\"ka".$array['id']."\" style=\"display: block;\"> ".format_comment($array["body"],0)." </div> ");
-			$news_flag = $news_flag + 1;
-		}
-		else
-		{
-			print("<a href=\"javascript: klappe_news('a".$array['id']."')\"><br /><img class=\"plus\" src=\"pic/trans.gif\" id=\"pica".$array['id']."\" alt=\"Show/Hide\" title=\"".$lang_index['title_show_or_hide']."\" />&nbsp;" . date("Y.m.d",strtotime($array['added'])) . " - " ."<b>". $array['title'] . "</b></a>");
-			print("<div id=\"ka".$array['id']."\" style=\"display: none;\"> ".format_comment($array["body"],0)." </div> ");
-		}
-		$Cache->end_part();
-		$Cache->add_part();
-		print("  &nbsp; [<a class=\"faqlink\" href=\"news.php?action=edit&amp;newsid=" . $array['id'] . "\"><b>".$lang_index['text_e']."</b></a>]");
-		print(" [<a class=\"faqlink\" href=\"news.php?action=delete&amp;newsid=" . $array['id'] . "\"><b>".$lang_index['text_d']."</b></a>]");
-		$Cache->end_part();
-		$Cache->end_row();
-	}
-	$Cache->break_loop();
-	$Cache->add_whole_row();
-	print("</div></td></tr></table>\n");
-	$Cache->end_whole_row();
-}
-	$Cache->cache_page();
+if (! $Cache->get_page()) {
+    $newsRows = NexusDB::select('SELECT * FROM news ORDER BY added DESC LIMIT '.(int) $maxnewsnum_main);
+    if (count($newsRows) > 0) {
+        $Cache->add_whole_row();
+        echo "<table width=\"100%\"><tr><td class=\"text\"><div style=\"margin-left: 16pt;\">\n";
+        $Cache->end_whole_row();
+        $news_flag = 0;
+        foreach ($newsRows as $array) {
+            $Cache->add_row();
+            $Cache->add_part();
+            if ($news_flag < 1) {
+                echo "<a href=\"javascript: klappe_news('a".$array['id']."')\"><img class=\"minus\" src=\"pic/trans.gif\" id=\"pica".$array['id'].'" alt="Show/Hide" title="'.$lang_index['title_show_or_hide'].'" />&nbsp;'.date('Y.m.d', strtotime($array['added'])).' - '.'<b>'.$array['title'].'</b></a>';
+                echo '<div id="ka'.$array['id'].'" style="display: block;"> '.format_comment($array['body'], 0).' </div> ';
+                $news_flag = $news_flag + 1;
+            } else {
+                echo "<a href=\"javascript: klappe_news('a".$array['id']."')\"><br /><img class=\"plus\" src=\"pic/trans.gif\" id=\"pica".$array['id'].'" alt="Show/Hide" title="'.$lang_index['title_show_or_hide'].'" />&nbsp;'.date('Y.m.d', strtotime($array['added'])).' - '.'<b>'.$array['title'].'</b></a>';
+                echo '<div id="ka'.$array['id'].'" style="display: none;"> '.format_comment($array['body'], 0).' </div> ';
+            }
+            $Cache->end_part();
+            $Cache->add_part();
+            echo '  &nbsp; [<a class="faqlink" href="news.php?action=edit&amp;newsid='.$array['id'].'"><b>'.$lang_index['text_e'].'</b></a>]';
+            echo ' [<a class="faqlink" href="news.php?action=delete&amp;newsid='.$array['id'].'"><b>'.$lang_index['text_d'].'</b></a>]';
+            $Cache->end_part();
+            $Cache->end_row();
+        }
+        $Cache->break_loop();
+        $Cache->add_whole_row();
+        echo "</div></td></tr></table>\n";
+        $Cache->end_whole_row();
+    }
+    $Cache->cache_page();
 }
 echo $Cache->next_row();
-while($Cache->next_row()){
-	echo $Cache->next_part();
-	if (user_can('newsmanage'))
-	echo $Cache->next_part();
+while ($Cache->next_row()) {
+    echo $Cache->next_part();
+    if (user_can('newsmanage')) {
+        echo $Cache->next_part();
+    }
 }
 echo $Cache->next_row();
 // ------------- end: recent news ------------------//
 // ------------- start: hot and classic movies ------------------//
-//displayHotAndClassic();
+// displayHotAndClassic();
 // ------------- end: hot and classic movies ------------------//
 // ------------- start: funbox ------------------//
-if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes")){
-	// Get the newest fun stuff
-	if (!$row = $Cache->get_value('current_fun_content')){
-		$funRows = \Nexus\Database\NexusDB::select("SELECT fun.*, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1");
-		$row = $funRows[0] ?? null;
-		$Cache->cache_value('current_fun_content', $row, 1043);
-	}
-	if (!$row) //There is no funbox item
-	{
-		print("<h2>".$lang_index['text_funbox'].(user_can('newfunitem') ? "<font class=\"small\"> - [<a class=\"altlink\" href=\"fun.php?action=new\"><b>".$lang_index['text_new_fun']."</b></a>]</font>" : "")."</h2>");
-	}
-	else
-	{
-	$totalvote = $Cache->get_value('current_fun_vote_count');
-	if ($totalvote == ""){
-		$totalvote = \Nexus\Database\NexusDB::table('funvotes')
-			->where('funid', (int) $row['id'])
-			->count();
-		$Cache->cache_value('current_fun_vote_count', $totalvote, 756);
-	}
-	$funvote = $Cache->get_value('current_fun_vote_funny_count');
-	if ($funvote == ""){
-		$funvote = \Nexus\Database\NexusDB::table('funvotes')
-			->where('funid', (int) $row['id'])
-			->where('vote', 'fun')
-			->count();
-		$Cache->cache_value('current_fun_vote_funny_count', $funvote, 756);
-	}
-//check whether current user has voted
-	$funvoted = \Nexus\Database\NexusDB::table('funvotes')
-		->where('funid', (int) $row['id'])
-		->where('userid', (int) $CURUSER['id'])
-		->count();
+if ($showfunbox_main == 'yes' && (! isset($CURUSER) || $CURUSER['showfb'] == 'yes')) {
+    // Get the newest fun stuff
+    if (! $row = $Cache->get_value('current_fun_content')) {
+        $funRows = NexusDB::select("SELECT fun.*, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1");
+        $row = $funRows[0] ?? null;
+        $Cache->cache_value('current_fun_content', $row, 1043);
+    }
+    if (! $row) { // There is no funbox item
+        echo '<h2>'.$lang_index['text_funbox'].(user_can('newfunitem') ? '<font class="small"> - [<a class="altlink" href="fun.php?action=new"><b>'.$lang_index['text_new_fun'].'</b></a>]</font>' : '').'</h2>';
+    } else {
+        $totalvote = $Cache->get_value('current_fun_vote_count');
+        if ($totalvote == '') {
+            $totalvote = NexusDB::table('funvotes')
+                ->where('funid', (int) $row['id'])
+                ->count();
+            $Cache->cache_value('current_fun_vote_count', $totalvote, 756);
+        }
+        $funvote = $Cache->get_value('current_fun_vote_funny_count');
+        if ($funvote == '') {
+            $funvote = NexusDB::table('funvotes')
+                ->where('funid', (int) $row['id'])
+                ->where('vote', 'fun')
+                ->count();
+            $Cache->cache_value('current_fun_vote_funny_count', $funvote, 756);
+        }
+        // check whether current user has voted
+        $funvoted = NexusDB::table('funvotes')
+            ->where('funid', (int) $row['id'])
+            ->where('userid', (int) $CURUSER['id'])
+            ->count();
 
-	print ("<h2>".$lang_index['text_funbox']);
-	if ($CURUSER)
-	{
-		print("<font class=\"small\">".(user_can('log') ? " - [<a class=\"altlink\" href=\"log.php?action=funbox\"><b>".$lang_index['text_more_fun']."</b></a>]": "").($row['neednew'] && user_can('newfunitem') ? " - [<a class=altlink href=\"fun.php?action=new\"><b>".$lang_index['text_new_fun']."</b></a>]" : "" ).( ($CURUSER['id'] == $row['userid'] || user_can('funmanage')) ? " - [<a class=\"altlink\" href=\"fun.php?action=edit&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_edit']."</b></a>]" : "").(get_user_class() >= $funmanage_class ? " - [<a class=\"altlink\" href=\"fun.php?action=delete&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_delete']."</b></a>] - [<a class=\"altlink\" href=\"fun.php?action=ban&amp;id=".$row['id']."&amp;returnto=index.php\"><b>".$lang_index['text_ban']."</b></a>]" : "")."</font>");
-	}
-	print("</h2>");
+        echo '<h2>'.$lang_index['text_funbox'];
+        if ($CURUSER) {
+            echo '<font class="small">'.(user_can('log') ? ' - [<a class="altlink" href="log.php?action=funbox"><b>'.$lang_index['text_more_fun'].'</b></a>]' : '').($row['neednew'] && user_can('newfunitem') ? ' - [<a class=altlink href="fun.php?action=new"><b>'.$lang_index['text_new_fun'].'</b></a>]' : '').(($CURUSER['id'] == $row['userid'] || user_can('funmanage')) ? ' - [<a class="altlink" href="fun.php?action=edit&amp;id='.$row['id'].'&amp;returnto=index.php"><b>'.$lang_index['text_edit'].'</b></a>]' : '').(get_user_class() >= $funmanage_class ? ' - [<a class="altlink" href="fun.php?action=delete&amp;id='.$row['id'].'&amp;returnto=index.php"><b>'.$lang_index['text_delete'].'</b></a>] - [<a class="altlink" href="fun.php?action=ban&amp;id='.$row['id'].'&amp;returnto=index.php"><b>'.$lang_index['text_ban'].'</b></a>]' : '').'</font>';
+        }
+        echo '</h2>';
 
-	print("<table width=\"100%\"><tr><td class=\"text\">");
-	print("<iframe src=\"fun.php?action=view\" width='100%' height='300' frameborder='0' name='funbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n");
+        echo '<table width="100%"><tr><td class="text">';
+        echo "<iframe src=\"fun.php?action=view\" width='100%' height='300' frameborder='0' name='funbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n";
 
-	if ($CURUSER)
-	{
-		$funonclick = " onclick=\"funvote(".$row['id'].",'fun'".")\"";
-		$dullonclick = " onclick=\"funvote(".$row['id'].",'dull'".")\"";
-		print("<span id=\"funvote\"><b>".$funvote."</b>".$lang_index['text_out_of'].$totalvote.$lang_index['text_people_found_it'].($funvoted ? "" : "<font class=\"striking\">".$lang_index['text_your_opinion']."</font>&nbsp;&nbsp;<input type=\"button\" class='btn' name='fun' id='fun' ".$funonclick." value=\"".$lang_index['submit_fun']."\" />&nbsp;<input type=\"button\" class='btn' name='dull' id='dull' ".$dullonclick." value=\"".$lang_index['submit_dull']."\" />")."</span><span id=\"voteaccept\" style=\"display: none;\">".$lang_index['text_vote_accepted']."</span>");
-	}
-	print("</td></tr></table>");
-	}
+        if ($CURUSER) {
+            $funonclick = ' onclick="funvote('.$row['id'].",'fun'".')"';
+            $dullonclick = ' onclick="funvote('.$row['id'].",'dull'".')"';
+            echo '<span id="funvote"><b>'.$funvote.'</b>'.$lang_index['text_out_of'].$totalvote.$lang_index['text_people_found_it'].($funvoted ? '' : '<font class="striking">'.$lang_index['text_your_opinion']."</font>&nbsp;&nbsp;<input type=\"button\" class='btn' name='fun' id='fun' ".$funonclick.' value="'.$lang_index['submit_fun']."\" />&nbsp;<input type=\"button\" class='btn' name='dull' id='dull' ".$dullonclick.' value="'.$lang_index['submit_dull'].'" />').'</span><span id="voteaccept" style="display: none;">'.$lang_index['text_vote_accepted'].'</span>';
+        }
+        echo '</td></tr></table>';
+    }
 }
 // ------------- end: funbox ------------------//
 // ------------- start: shoutbox ------------------//
-if ($showshoutbox_main == "yes") {
-?>
+if ($showshoutbox_main == 'yes') {
+    ?>
     <h2>
         <?php echo $lang_index['text_shoutbox'] ?> - <font class="small"><?php echo $lang_index['text_auto_refresh_after']?></font>
         <font class='striking' id="countdown"></font><font class="small"><?php echo $lang_index['text_seconds']?></font>
         <?php
-        if (user_can('sbmanage')) {
-            echo ' - <font class="small" id="clear-shout-box">[<a class="altlink" href="javascript:;"><b>'.$lang_index['clear_shout_box'].'</b></a>]</font>';
-            $clearShoutBoxJs = <<<JS
+            if (user_can('sbmanage')) {
+                echo ' - <font class="small" id="clear-shout-box">[<a class="altlink" href="javascript:;"><b>'.$lang_index['clear_shout_box'].'</b></a>]</font>';
+                $clearShoutBoxJs = <<<JS
 jQuery('#clear-shout-box').on("click", function () {
     layer.confirm("{$lang_index['sure_to_clear_shout_box']}", {title: "Info", btn: ['Yes', "Cancel"], btnAlign: 'c'}, function (layerIndex) {
         jQuery.post("ajax.php", {"action": "clearShoutBox"}, function (response) {
@@ -171,68 +171,66 @@ jQuery('#clear-shout-box').on("click", function () {
     })
 })
 JS;
-            \Nexus\Nexus::js($clearShoutBoxJs, 'footer', false);
-        }
-        ?>
+                Nexus::js($clearShoutBoxJs, 'footer', false);
+            }
+    ?>
     </h2>
 <?php
-	print("<table width=\"100%\"><tr><td class=\"text\">\n");
-	print("<iframe id='iframe-shout-box' src='shoutbox.php?type=shoutbox' width='100%' height='180' frameborder='0' name='sbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n");
-	print("<form action='shoutbox.php' method='get' target='sbox' name='shbox'>\n");
-    print('<div style="display: flex">');
-	print("<label for='shbox_text'>".$lang_index['text_message']."</label><input type='text' name='shbox_text' id='shbox_text' size='100' style='flex-grow: 1; border: 1px solid gray;' />  <input type='submit' id='hbsubmit' class='btn' name='shout' value=\"".$lang_index['sumbit_shout']."\" />");
-	if ($CURUSER['hidehb'] != 'yes' && $showhelpbox_main =='yes')
-		print("<input type='submit' class='btn' name='toguest' value=\"".$lang_index['sumbit_to_guest']."\" />");
-	print("<input type='reset' class='btn' value=\"".$lang_index['submit_clear']."\" /> <input type='hidden' name='sent' value='yes' /><input type='hidden' name='type' value='shoutbox' />");
-	print('</div>');
-    print(smile_row("shbox","shbox_text"));
-	print("</form></td></tr></table>");
+    echo "<table width=\"100%\"><tr><td class=\"text\">\n";
+    echo "<iframe id='iframe-shout-box' src='shoutbox.php?type=shoutbox' width='100%' height='180' frameborder='0' name='sbox' marginwidth='0' marginheight='0'></iframe><br /><br />\n";
+    echo "<form action='shoutbox.php' method='get' target='sbox' name='shbox'>\n";
+    echo '<div style="display: flex">';
+    echo "<label for='shbox_text'>".$lang_index['text_message']."</label><input type='text' name='shbox_text' id='shbox_text' size='100' style='flex-grow: 1; border: 1px solid gray;' />  <input type='submit' id='hbsubmit' class='btn' name='shout' value=\"".$lang_index['sumbit_shout'].'" />';
+    if ($CURUSER['hidehb'] != 'yes' && $showhelpbox_main == 'yes') {
+        echo "<input type='submit' class='btn' name='toguest' value=\"".$lang_index['sumbit_to_guest'].'" />';
+    }
+    echo "<input type='reset' class='btn' value=\"".$lang_index['submit_clear']."\" /> <input type='hidden' name='sent' value='yes' /><input type='hidden' name='type' value='shoutbox' />";
+    echo '</div>';
+    echo smile_row('shbox', 'shbox_text');
+    echo '</form></td></tr></table>';
 }
 // ------------- end: shoutbox ------------------//
 
 $extraModules = [];
 $extraModules = apply_filter('nexus_home_module', $extraModules);
-print implode('', $extraModules);
+echo implode('', $extraModules);
 
 // ------------- start: latest forum posts ------------------//
 
-if ($showlastxforumposts_main == "yes" && $CURUSER)
-{
-	$lastPostRows = \Nexus\Database\NexusDB::select("SELECT posts.id AS pid, posts.userid AS userpost, posts.added, topics.id AS tid, topics.subject, topics.forumid, topics.views, forums.name FROM posts, topics, forums WHERE posts.topicid = topics.id AND topics.forumid = forums.id AND minclassread <= " . (int) get_user_class() . " ORDER BY posts.id DESC LIMIT 5");
-	if(count($lastPostRows) != 0)
-	{
-		print("<h2>".$lang_index['text_last_five_posts']."</h2>");
-		print("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"colhead\" width=\"100%\" align=\"left\">".$lang_index['col_topic_title']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_view']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_author']."</td><td class=\"colhead\" align=\"left\">".$lang_index['col_posted_at']."</td></tr>");
+if ($showlastxforumposts_main == 'yes' && $CURUSER) {
+    $lastPostRows = NexusDB::select('SELECT posts.id AS pid, posts.userid AS userpost, posts.added, topics.id AS tid, topics.subject, topics.forumid, topics.views, forums.name FROM posts, topics, forums WHERE posts.topicid = topics.id AND topics.forumid = forums.id AND minclassread <= '.(int) get_user_class().' ORDER BY posts.id DESC LIMIT 5');
+    if (count($lastPostRows) != 0) {
+        echo '<h2>'.$lang_index['text_last_five_posts'].'</h2>';
+        echo '<table width="100%" border="1" cellspacing="0" cellpadding="5"><tr><td class="colhead" width="100%" align="left">'.$lang_index['col_topic_title'].'</td><td class="colhead" align="center">'.$lang_index['col_view'].'</td><td class="colhead" align="center">'.$lang_index['col_author'].'</td><td class="colhead" align="left">'.$lang_index['col_posted_at'].'</td></tr>';
 
-		foreach ($lastPostRows as $postsx)
-		{
-			print("<tr><td><a href=\"forums.php?action=viewtopic&amp;topicid=".$postsx["tid"]."&amp;page=p".$postsx["pid"]."#pid".$postsx["pid"]."\"><b>".htmlspecialchars($postsx["subject"])."</b></a><br />".$lang_index['text_in']."<a href=\"forums.php?action=viewforum&amp;forumid=".$postsx["forumid"]."\">".htmlspecialchars($postsx["name"])."</a></td><td align=\"center\">".$postsx["views"]."</td><td align=\"center\">" . get_username($postsx["userpost"]) ."</td><td>".gettime($postsx["added"])."</td></tr>");
-		}
-		print("</table>");
-	}
+        foreach ($lastPostRows as $postsx) {
+            echo '<tr><td><a href="forums.php?action=viewtopic&amp;topicid='.$postsx['tid'].'&amp;page=p'.$postsx['pid'].'#pid'.$postsx['pid'].'"><b>'.htmlspecialchars($postsx['subject']).'</b></a><br />'.$lang_index['text_in'].'<a href="forums.php?action=viewforum&amp;forumid='.$postsx['forumid'].'">'.htmlspecialchars($postsx['name']).'</a></td><td align="center">'.$postsx['views'].'</td><td align="center">'.get_username($postsx['userpost']).'</td><td>'.gettime($postsx['added']).'</td></tr>';
+        }
+        echo '</table>';
+    }
 }
 
 // ------------- end: latest forum posts ------------------//
 // ------------- start: latest torrents ------------------//
 
-if ($showlastxtorrents_main == "yes") {
-		$ltCacheKey = 'index_latest_torrents_grid_v3';
-		$ltCacheTtl = 120;
-		$ltHtml = $Cache->get_value($ltCacheKey);
-		if ($ltHtml === false || $ltHtml === null || $ltHtml === '') {
-			$ltRows = \Nexus\Database\NexusDB::select("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.times_completed, t.size, t.owner, t.anonymous, t.cover, t.sp_state, c.name AS cat_name FROM torrents t LEFT JOIN categories c ON t.category = c.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 12");
-			if (count($ltRows) != 0) {
-				$ltGlobalSpState = (int) get_global_sp_state();
-				$ltPromoLabels = [
-					\App\Models\Torrent::PROMOTION_FREE => ['text' => 'FREE', 'class' => 'lt-promo-free'],
-					\App\Models\Torrent::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'class' => 'lt-promo-2x'],
-					\App\Models\Torrent::PROMOTION_FREE_TWO_TIMES_UP => ['text' => '2X FREE', 'class' => 'lt-promo-2xfree'],
-					\App\Models\Torrent::PROMOTION_HALF_DOWN => ['text' => '50%', 'class' => 'lt-promo-50'],
-					\App\Models\Torrent::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'class' => 'lt-promo-2x50'],
-					\App\Models\Torrent::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'class' => 'lt-promo-30'],
-				];
-				ob_start();
-				?>
+if ($showlastxtorrents_main == 'yes') {
+    $ltCacheKey = 'index_latest_torrents_grid_v3';
+    $ltCacheTtl = 120;
+    $ltHtml = $Cache->get_value($ltCacheKey);
+    if ($ltHtml === false || $ltHtml === null || $ltHtml === '') {
+        $ltRows = NexusDB::select("SELECT t.id, t.name, t.small_descr, t.leechers, t.seeders, t.times_completed, t.size, t.owner, t.anonymous, t.cover, t.sp_state, c.name AS cat_name FROM torrents t LEFT JOIN categories c ON t.category = c.id WHERE t.visible='yes' ORDER BY t.id DESC LIMIT 12");
+        if (count($ltRows) != 0) {
+            $ltGlobalSpState = (int) get_global_sp_state();
+            $ltPromoLabels = [
+                Torrent::PROMOTION_FREE => ['text' => 'FREE', 'class' => 'lt-promo-free'],
+                Torrent::PROMOTION_TWO_TIMES_UP => ['text' => '2X', 'class' => 'lt-promo-2x'],
+                Torrent::PROMOTION_FREE_TWO_TIMES_UP => ['text' => '2X FREE', 'class' => 'lt-promo-2xfree'],
+                Torrent::PROMOTION_HALF_DOWN => ['text' => '50%', 'class' => 'lt-promo-50'],
+                Torrent::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['text' => '2X 50%', 'class' => 'lt-promo-2x50'],
+                Torrent::PROMOTION_ONE_THIRD_DOWN => ['text' => '30%', 'class' => 'lt-promo-30'],
+            ];
+            ob_start();
+            ?>
 				<h2><?php echo $lang_index['text_last_five_torrent'] ?></h2>
 				<style>
 					.lt-grid {
@@ -336,24 +334,23 @@ if ($showlastxtorrents_main == "yes") {
 				</style>
 				<div class="lt-grid">
 				<?php
-				foreach ($ltRows as $row)
-				{
-					$detailsUrl = 'details.php?id=' . (int)$row['id'] . '&hit=1';
-					$rawCover = trim((string)($row['cover'] ?? ''));
-					$thumbUrl = $rawCover !== '' ? cover_thumb_url($rawCover, 360, 540, 90) : '';
-					$typeLabel = trim((string)($row['cat_name'] ?? ''));
-					$rowSpState = (int) ($row['sp_state'] ?? \App\Models\Torrent::PROMOTION_NORMAL);
-					$effectiveSp = $rowSpState > \App\Models\Torrent::PROMOTION_NORMAL
-						? $rowSpState
-						: ($ltGlobalSpState > \App\Models\Torrent::PROMOTION_NORMAL ? $ltGlobalSpState : 0);
-					$promoBadge = $ltPromoLabels[$effectiveSp] ?? null;
-					if (($row['anonymous'] ?? 'no') === 'yes') {
-						$ownerHtml = '<i>Anonymous</i>';
-					} else {
-						$ownerHtml = get_username((int)$row['owner']);
-					}
-					$nameSafe = htmlspecialchars($row['name']);
-					?>
+            foreach ($ltRows as $row) {
+                $detailsUrl = 'details.php?id='.(int) $row['id'].'&hit=1';
+                $rawCover = trim((string) ($row['cover'] ?? ''));
+                $thumbUrl = $rawCover !== '' ? cover_thumb_url($rawCover, 360, 540, 90) : '';
+                $typeLabel = trim((string) ($row['cat_name'] ?? ''));
+                $rowSpState = (int) ($row['sp_state'] ?? Torrent::PROMOTION_NORMAL);
+                $effectiveSp = $rowSpState > Torrent::PROMOTION_NORMAL
+                    ? $rowSpState
+                    : ($ltGlobalSpState > Torrent::PROMOTION_NORMAL ? $ltGlobalSpState : 0);
+                $promoBadge = $ltPromoLabels[$effectiveSp] ?? null;
+                if (($row['anonymous'] ?? 'no') === 'yes') {
+                    $ownerHtml = '<i>Anonymous</i>';
+                } else {
+                    $ownerHtml = get_username((int) $row['owner']);
+                }
+                $nameSafe = htmlspecialchars($row['name']);
+                ?>
 					<div class="lt-card">
 						<div class="lt-title">
 							<a href="<?php echo htmlspecialchars($detailsUrl) ?>" title="<?php echo $nameSafe ?>"><b><?php echo $nameSafe ?></b></a>
@@ -373,44 +370,43 @@ if ($showlastxtorrents_main == "yes") {
 							<?php } ?>
 						</a>
 						<div class="lt-meta">
-							<span class="lt-seed" title="<?php echo htmlspecialchars($lang_index['col_seeder']) ?>">&#x25B2; <?php echo (int)$row['seeders'] ?></span>
-							<span class="lt-leech" title="<?php echo htmlspecialchars($lang_index['col_leecher']) ?>">&#x25BC; <?php echo (int)$row['leechers'] ?></span>
-							<span class="lt-down" title="<?php echo htmlspecialchars($lang_index['col_completed'] ?? 'Downloads') ?>">&#x2913; <?php echo (int)$row['times_completed'] ?></span>
-							<span><?php echo mksize((int)$row['size']) ?></span>
+							<span class="lt-seed" title="<?php echo htmlspecialchars($lang_index['col_seeder']) ?>">&#x25B2; <?php echo (int) $row['seeders'] ?></span>
+							<span class="lt-leech" title="<?php echo htmlspecialchars($lang_index['col_leecher']) ?>">&#x25BC; <?php echo (int) $row['leechers'] ?></span>
+							<span class="lt-down" title="<?php echo htmlspecialchars($lang_index['col_completed'] ?? 'Downloads') ?>">&#x2913; <?php echo (int) $row['times_completed'] ?></span>
+							<span><?php echo mksize((int) $row['size']) ?></span>
 							<span><?php echo $ownerHtml ?></span>
 						</div>
 					</div>
 					<?php
-				}
-				?>
+            }
+            ?>
 				</div>
 				<?php
-				$ltHtml = ob_get_clean();
-				$Cache->cache_value($ltCacheKey, $ltHtml, $ltCacheTtl);
-			} else {
-				$ltHtml = '';
-				$Cache->cache_value($ltCacheKey, $ltHtml, $ltCacheTtl);
-			}
-		}
-		echo $ltHtml;
+            $ltHtml = ob_get_clean();
+            $Cache->cache_value($ltCacheKey, $ltHtml, $ltCacheTtl);
+        } else {
+            $ltHtml = '';
+            $Cache->cache_value($ltCacheKey, $ltHtml, $ltCacheTtl);
+        }
+    }
+    echo $ltHtml;
 }
 // ------------- end: latest torrents ------------------//
 
 // ------------- start: top uploader ------------------//
 
-if (get_setting('main.show_top_uploader') == "yes") {
-    $topUploaderBaseQuery = \App\Models\Torrent::query()
-        ->selectRaw("owner, count(*) as counts")
+if (get_setting('main.show_top_uploader') == 'yes') {
+    $topUploaderBaseQuery = Torrent::query()
+        ->selectRaw('owner, count(*) as counts')
         ->groupBy('owner')
-        ->orderBy("counts", "desc")
+        ->orderBy('counts', 'desc')
         ->take(10);
-    $userStatResult = \Nexus\Database\NexusDB::remember("index_top_uploader_all", 60, function () use ($topUploaderBaseQuery) {
+    $userStatResult = NexusDB::remember('index_top_uploader_all', 60, function () use ($topUploaderBaseQuery) {
         return (clone $topUploaderBaseQuery)->get();
     });
-    if($userStatResult->isNotEmpty())
-    {
-        \Nexus\Nexus::css('.tr-top-uploader-tab>td {cursor: pointer}', 'footer', false);
-        $toggleTimeRangeJs = <<<JS
+    if ($userStatResult->isNotEmpty()) {
+        Nexus::css('.tr-top-uploader-tab>td {cursor: pointer}', 'footer', false);
+        $toggleTimeRangeJs = <<<'JS'
 jQuery(".tr-top-uploader-tab").on("click", "td", function () {
     let _this = jQuery(this)
     if (_this.hasClass("colhead")) {
@@ -423,376 +419,374 @@ jQuery(".tr-top-uploader-tab").on("click", "td", function () {
 
 })
 JS;
-        \Nexus\Nexus::js($toggleTimeRangeJs, "footer", false);
-        print ("<h2>".$lang_index['top_uploader_title']."</h2>");
-        print("<table width='100%'><tr class='tr-top-uploader-tab' title='{$lang_index['top_uploader_toggle_time_range_tab']}'><td class='colhead' align='center' data-table='top-uploader-recently'>{$lang_index['top_uploader_toggle_time_range_recently']}</td><td align='center' data-table='top-uploader-all'>{$lang_index['top_uploader_toggle_time_range_all']}</td></tr></table>");
+        Nexus::js($toggleTimeRangeJs, 'footer', false);
+        echo '<h2>'.$lang_index['top_uploader_title'].'</h2>';
+        echo "<table width='100%'><tr class='tr-top-uploader-tab' title='{$lang_index['top_uploader_toggle_time_range_tab']}'><td class='colhead' align='center' data-table='top-uploader-recently'>{$lang_index['top_uploader_toggle_time_range_recently']}</td><td align='center' data-table='top-uploader-all'>{$lang_index['top_uploader_toggle_time_range_all']}</td></tr></table>";
 
         $userTorrentCounts = $userStatResult->pluck('counts', 'owner');
         $uidArr = $userStatResult->pluck('owner')->toArray();
-        $result = \App\Models\User::query()->whereIn('id', $uidArr)->orderByRaw(sprintf("field(id,%s)", implode(',', $uidArr)))->get(['id', 'username']);
-        print ("<table class='top-uploader top-uploader-all' width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\" style='display: none'><tr><td class=\"colhead\" width=\"\">".$lang_index['col_author']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_counts']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_ranking']."</td></tr>");
-        foreach ($result as $ranking => $row)
-        {
-            print ("<tr><td>" . get_username($row->id) . "</td><td align=\"center\">" . $userTorrentCounts->get($row->id, 0) . "</td><td align=\"center\">" . ($ranking + 1) . "</td></tr>");
+        $result = User::query()->whereIn('id', $uidArr)->orderByRaw(sprintf('field(id,%s)', implode(',', $uidArr)))->get(['id', 'username']);
+        echo "<table class='top-uploader top-uploader-all' width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\" style='display: none'><tr><td class=\"colhead\" width=\"\">".$lang_index['col_author'].'</td><td class="colhead" align="center">'.$lang_index['col_counts'].'</td><td class="colhead" align="center">'.$lang_index['col_ranking'].'</td></tr>';
+        foreach ($result as $ranking => $row) {
+            echo '<tr><td>'.get_username($row->id).'</td><td align="center">'.$userTorrentCounts->get($row->id, 0).'</td><td align="center">'.($ranking + 1).'</td></tr>';
         }
-        print ("</table>");
+        echo '</table>';
 
-        $userStatResult = \Nexus\Database\NexusDB::remember("index_top_uploader_recently", 60, function () use ($topUploaderBaseQuery) {
-            return (clone $topUploaderBaseQuery)->where('added', '>=', \Carbon\Carbon::today()->subDays(30))->get();
+        $userStatResult = NexusDB::remember('index_top_uploader_recently', 60, function () use ($topUploaderBaseQuery) {
+            return (clone $topUploaderBaseQuery)->where('added', '>=', Carbon::today()->subDays(30))->get();
         });
         $userTorrentCounts = $userStatResult->pluck('counts', 'owner');
         $uidArr = $userStatResult->pluck('owner')->toArray() ?: [0];
-        $result = \App\Models\User::query()->whereIn('id', $uidArr)->orderByRaw(sprintf("field(id,%s)", implode(',', $uidArr)))->get(['id', 'username']);
-        print ("<table class='top-uploader top-uploader-recently' width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"colhead\" width=\"\">".$lang_index['col_author']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_counts']."</td><td class=\"colhead\" align=\"center\">".$lang_index['col_ranking']."</td></tr>");
-        foreach ($result as $ranking => $row)
-        {
-            print ("<tr><td>" . get_username($row->id) . "</td><td align=\"center\">" . $userTorrentCounts->get($row->id, 0) . "</td><td align=\"center\">" . ($ranking + 1) . "</td></tr>");
+        $result = User::query()->whereIn('id', $uidArr)->orderByRaw(sprintf('field(id,%s)', implode(',', $uidArr)))->get(['id', 'username']);
+        echo "<table class='top-uploader top-uploader-recently' width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"colhead\" width=\"\">".$lang_index['col_author'].'</td><td class="colhead" align="center">'.$lang_index['col_counts'].'</td><td class="colhead" align="center">'.$lang_index['col_ranking'].'</td></tr>';
+        foreach ($result as $ranking => $row) {
+            echo '<tr><td>'.get_username($row->id).'</td><td align="center">'.$userTorrentCounts->get($row->id, 0).'</td><td align="center">'.($ranking + 1).'</td></tr>';
         }
-        print ("</table>");
+        echo '</table>';
     }
 }
 // ------------- end: top uploader ------------------//
 
 // ------------- start: polls ------------------//
-if ($CURUSER && $showpolls_main == "yes")
-{
-		// Get current poll
-		if (!$arr = $Cache->get_value('current_poll_content')){
-			$pollLatestRows = \Nexus\Database\NexusDB::select("SELECT * FROM polls ORDER BY id DESC LIMIT 1");
-			$arr = $pollLatestRows[0] ?? null;
-			$Cache->cache_value('current_poll_content', $arr, 7226);
-		}
-		if (!$arr)
-			$pollexists = false;
-		else $pollexists = true;
+if ($CURUSER && $showpolls_main == 'yes') {
+    // Get current poll
+    if (! $arr = $Cache->get_value('current_poll_content')) {
+        $pollLatestRows = NexusDB::select('SELECT * FROM polls ORDER BY id DESC LIMIT 1');
+        $arr = $pollLatestRows[0] ?? null;
+        $Cache->cache_value('current_poll_content', $arr, 7226);
+    }
+    if (! $arr) {
+        $pollexists = false;
+    } else {
+        $pollexists = true;
+    }
 
-		print("<h2>".$lang_index['text_polls']);
+    echo '<h2>'.$lang_index['text_polls'];
 
-			if (user_can('pollmanage'))
-			{
-				print("<font class=\"small\"> - [<a class=\"altlink\" href=\"makepoll.php?returnto=main\"><b>".$lang_index['text_new']."</b></a>]\n");
-				if ($pollexists)
-				{
-					print(" - [<a class=\"altlink\" href=\"makepoll.php?action=edit&amp;pollid=".$arr['id']."&amp;returnto=main\"><b>".$lang_index['text_edit']."</b></a>]\n");
-					print(" - [<a class=\"altlink\" href=\"log.php?action=poll&amp;do=delete&amp;pollid=".$arr['id']."&amp;returnto=main\"><b>".$lang_index['text_delete']."</b></a>]");
-					print(" - [<a class=\"altlink\" href=\"polloverview.php?id=".$arr['id']."\"><b>".$lang_index['text_detail']."</b></a>]");
-				}
-				print("</font>");
-			}
-			print("</h2>");
-		if ($pollexists)
-		{
-			$pollid = intval($arr["id"] ?? 0);
+    if (user_can('pollmanage')) {
+        echo '<font class="small"> - [<a class="altlink" href="makepoll.php?returnto=main"><b>'.$lang_index['text_new']."</b></a>]\n";
+        if ($pollexists) {
+            echo ' - [<a class="altlink" href="makepoll.php?action=edit&amp;pollid='.$arr['id'].'&amp;returnto=main"><b>'.$lang_index['text_edit']."</b></a>]\n";
+            echo ' - [<a class="altlink" href="log.php?action=poll&amp;do=delete&amp;pollid='.$arr['id'].'&amp;returnto=main"><b>'.$lang_index['text_delete'].'</b></a>]';
+            echo ' - [<a class="altlink" href="polloverview.php?id='.$arr['id'].'"><b>'.$lang_index['text_detail'].'</b></a>]';
+        }
+        echo '</font>';
+    }
+    echo '</h2>';
+    if ($pollexists) {
+        $pollid = intval($arr['id'] ?? 0);
 
-			$question = $arr["question"];
-			$o = array($arr["option0"], $arr["option1"], $arr["option2"], $arr["option3"], $arr["option4"],
-			$arr["option5"], $arr["option6"], $arr["option7"], $arr["option8"], $arr["option9"],
-			$arr["option10"], $arr["option11"], $arr["option12"], $arr["option13"], $arr["option14"],
-			$arr["option15"], $arr["option16"], $arr["option17"], $arr["option18"], $arr["option19"]);
+        $question = $arr['question'];
+        $o = [$arr['option0'], $arr['option1'], $arr['option2'], $arr['option3'], $arr['option4'],
+            $arr['option5'], $arr['option6'], $arr['option7'], $arr['option8'], $arr['option9'],
+            $arr['option10'], $arr['option11'], $arr['option12'], $arr['option13'], $arr['option14'],
+            $arr['option15'], $arr['option16'], $arr['option17'], $arr['option18'], $arr['option19']];
 
-			print("<table width=\"100%\"><tr><td class=\"text\" align=\"center\">\n");
-			print("<table width=\"59%\" class=\"main\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\"><tr><td class=\"text\" align=\"left\">");
-			print("<p align=\"center\"><b>".$question."</b></p>\n");
+        echo "<table width=\"100%\"><tr><td class=\"text\" align=\"center\">\n";
+        echo '<table width="59%" class="main" border="1" cellspacing="0" cellpadding="5"><tr><td class="text" align="left">';
+        echo '<p align="center"><b>'.$question."</b></p>\n";
 
-			// Check if user has already voted
-			$votedRows = \Nexus\Database\NexusDB::select("SELECT selection FROM pollanswers WHERE pollid = " . (int) $pollid . " AND userid = " . (int) $CURUSER["id"]);
-			$voted = $votedRows[0] ?? null;
-			if ($voted) //user has already voted
-			{
-				$uservote = $voted["selection"];
-				$Cache->new_page('current_poll_result', 3652, true);
-				if (!$Cache->get_page())
-				{
-				// we reserve 255 for blank vote.
-				$voteSelectionRows = \Nexus\Database\NexusDB::select("SELECT selection FROM pollanswers WHERE pollid = " . (int) $pollid . " AND selection < 20");
+        // Check if user has already voted
+        $votedRows = NexusDB::select('SELECT selection FROM pollanswers WHERE pollid = '.(int) $pollid.' AND userid = '.(int) $CURUSER['id']);
+        $voted = $votedRows[0] ?? null;
+        if ($voted) { // user has already voted
+            $uservote = $voted['selection'];
+            $Cache->new_page('current_poll_result', 3652, true);
+            if (! $Cache->get_page()) {
+                // we reserve 255 for blank vote.
+                $voteSelectionRows = NexusDB::select('SELECT selection FROM pollanswers WHERE pollid = '.(int) $pollid.' AND selection < 20');
 
-				$tvotes = count($voteSelectionRows);
+                $tvotes = count($voteSelectionRows);
 
-				$vs = array();
-				$os = array();
+                $vs = [];
+                $os = [];
 
-				// Count votes
+                // Count votes
                 foreach ($voteSelectionRows as $arr2) {
                     $sel = $arr2['selection'];
-                    if (!isset($vs[$sel])) {
+                    if (! isset($vs[$sel])) {
                         $vs[$sel] = 0;
                     }
-                    $vs[$sel] ++;
+                    $vs[$sel]++;
                 }
 
+                reset($o);
+                for ($i = 0; $i < count($o); $i++) {
+                    if ($o[$i]) {
+                        $os[$i] = [$vs[$i] ?? 0, $o[$i], $i];
+                    }// field 1: options vote count, field 2: option name, field 3: option index
+                }
 
-				reset($o);
-				for ($i = 0; $i < count($o); ++$i){
-					if ($o[$i])
-						$os[$i] = array($vs[$i] ?? 0, $o[$i], $i);//field 1: options vote count, field 2: option name, field 3: option index
-				}
+                function srt($a, $b)
+                {
+                    if ($a[0] > $b[0]) {
+                        return -1;
+                    }
+                    if ($a[0] < $b[0]) {
+                        return 1;
+                    }
 
-				function srt($a,$b)
-				{
-					if ($a[0] > $b[0]) return -1;
-					if ($a[0] < $b[0]) return 1;
-					return 0;
-				}
+                    return 0;
+                }
 
-				// now os is an array like this: array(array(123, "Option 1", 1), array(45, "Option 2", 2))
-				$Cache->add_whole_row();
-				print("<table class=\"main\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
-				$Cache->end_whole_row();
-				$i = 0;
-				while (isset($os[$i]))
-				{
-				    $a = $os[$i];
-					if ($tvotes == 0)
-						$p = 0;
-					else
-						$p = round($a[0] / $tvotes * 100);
-					$Cache->add_row();
-					$Cache->add_part();
-					print("<tr><td width=\"1%\" class=\"embedded nowrap\">" . $a[1] . "&nbsp;&nbsp;</td><td width=\"99%\" class=\"embedded nowrap\"><img class=\"bar_end\" src=\"pic/trans.gif\" alt=\"\" /><img ");
-					$Cache->end_part();
-					$Cache->add_part();
-					print(" src=\"pic/trans.gif\" style=\"width: " . ($p * 3) ."px;\" alt=\"\" /><img class=\"bar_end\" src=\"pic/trans.gif\" alt=\"\" /> $p%</td></tr>\n");
-					$Cache->end_part();
-					$Cache->end_row();
-					++$i;
-				}
-				$Cache->break_loop();
-				$Cache->add_whole_row();
-				print("</table>\n");
-				$tvotes = number_format($tvotes);
-				print("<p align=\"center\">".$lang_index['text_votes']." ".$tvotes."</p>\n");
-				$Cache->end_whole_row();
-				$Cache->cache_page();
-				}
-				echo $Cache->next_row();
-				$i = 0;
-				while($Cache->next_row()){
-					echo $Cache->next_part();
-					if ($i == $uservote)
-						echo "class=\"sltbar\"";
-					else
-						echo "class=\"unsltbar\"";
-					echo $Cache->next_part();
-					$i++;
-				}
-				echo $Cache->next_row();
-			}
-			else //user has not voted yet
-			{
-				print("<form method=\"post\" action=\"index.php\">\n");
-				$i = 0;
-				while ($a = $o[$i])
-				{
-					print("<input type=\"radio\" name=\"choice\" value=\"".$i."\">".$a."<br />\n");
-					++$i;
-				}
-				print("<br />");
-				print("<input type=\"radio\" name=\"choice\" value=\"255\">".$lang_index['radio_blank_vote']."<br />\n");
-				print("<p align=\"center\"><input type=\"submit\" class=\"btn\" value=\"".$lang_index['submit_vote']."\" /></p>");
-			}
-			print("</td></tr></table>");
+                // now os is an array like this: array(array(123, "Option 1", 1), array(45, "Option 2", 2))
+                $Cache->add_whole_row();
+                echo "<table class=\"main\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+                $Cache->end_whole_row();
+                $i = 0;
+                while (isset($os[$i])) {
+                    $a = $os[$i];
+                    if ($tvotes == 0) {
+                        $p = 0;
+                    } else {
+                        $p = round($a[0] / $tvotes * 100);
+                    }
+                    $Cache->add_row();
+                    $Cache->add_part();
+                    echo '<tr><td width="1%" class="embedded nowrap">'.$a[1].'&nbsp;&nbsp;</td><td width="99%" class="embedded nowrap"><img class="bar_end" src="pic/trans.gif" alt="" /><img ';
+                    $Cache->end_part();
+                    $Cache->add_part();
+                    echo ' src="pic/trans.gif" style="width: '.($p * 3)."px;\" alt=\"\" /><img class=\"bar_end\" src=\"pic/trans.gif\" alt=\"\" /> $p%</td></tr>\n";
+                    $Cache->end_part();
+                    $Cache->end_row();
+                    $i++;
+                }
+                $Cache->break_loop();
+                $Cache->add_whole_row();
+                echo "</table>\n";
+                $tvotes = number_format($tvotes);
+                echo '<p align="center">'.$lang_index['text_votes'].' '.$tvotes."</p>\n";
+                $Cache->end_whole_row();
+                $Cache->cache_page();
+            }
+            echo $Cache->next_row();
+            $i = 0;
+            while ($Cache->next_row()) {
+                echo $Cache->next_part();
+                if ($i == $uservote) {
+                    echo 'class="sltbar"';
+                } else {
+                    echo 'class="unsltbar"';
+                }
+                echo $Cache->next_part();
+                $i++;
+            }
+            echo $Cache->next_row();
+        } else { // user has not voted yet
+            echo "<form method=\"post\" action=\"index.php\">\n";
+            $i = 0;
+            while ($a = $o[$i]) {
+                echo '<input type="radio" name="choice" value="'.$i.'">'.$a."<br />\n";
+                $i++;
+            }
+            echo '<br />';
+            echo '<input type="radio" name="choice" value="255">'.$lang_index['radio_blank_vote']."<br />\n";
+            echo '<p align="center"><input type="submit" class="btn" value="'.$lang_index['submit_vote'].'" /></p>';
+        }
+        echo '</td></tr></table>';
 
-			if ($voted && user_can('log'))
-				print("<p align=\"center\"><a href=\"log.php?action=poll\">".$lang_index['text_previous_polls']."</a></p>\n");
-			print("</td></tr></table>");
-		}
+        if ($voted && user_can('log')) {
+            echo '<p align="center"><a href="log.php?action=poll">'.$lang_index['text_previous_polls']."</a></p>\n";
+        }
+        echo '</td></tr></table>';
+    }
 }
 // ------------- end: polls ------------------//
 // ------------- start: stats ------------------//
-if ($showstats_main == "yes")
-{
-?>
+if ($showstats_main == 'yes') {
+    ?>
 <h2><?php echo $lang_index['text_tracker_statistics'] ?></h2>
 <table width="100%"><tr><td class="text" align="center">
 <table width="60%" class="main" border="1" cellspacing="0" cellpadding="10">
 <?php
-	$Cache->new_page('stats_users', 3000, true);
-	if (!$Cache->get_page()){
-	$Cache->add_whole_row();
-	$registered = number_format(get_row_count("users"));
-	$unverified = number_format(get_row_count("users", "WHERE status='pending' and enabled='yes'"));
-	$totalonlinetoday = number_format(\Nexus\Database\NexusDB::table('users')->where('last_access', '>=', date("Y-m-d H:i:s", (TIMENOW - 86400)))->count());
-	$totalonlineweek = number_format(\Nexus\Database\NexusDB::table('users')->where('last_access', '>=', date("Y-m-d H:i:s", (TIMENOW - 604800)))->count());
-	$VIP = number_format(get_row_count("users", "WHERE class=".UC_VIP));
-	$donated = number_format(get_row_count("users", "WHERE donor = 'yes'"));
-	$warned = number_format(get_row_count("users", "WHERE warned='yes'"));
-	$disabled = number_format(get_row_count("users", "WHERE enabled='no'"));
-	$registered_male = number_format(get_row_count("users", "WHERE gender='Male'"));
-	$registered_female = number_format(get_row_count("users", "WHERE gender='Female'"));
-?>
+        $Cache->new_page('stats_users', 3000, true);
+    if (! $Cache->get_page()) {
+        $Cache->add_whole_row();
+        $registered = number_format(NexusDB::table('users')->count());
+        $unverified = number_format(NexusDB::table('users')->where('status', 'pending')->where('enabled', 'yes')->count());
+        $totalonlinetoday = number_format(NexusDB::table('users')->where('last_access', '>=', date('Y-m-d H:i:s', (TIMENOW - 86400)))->count());
+        $totalonlineweek = number_format(NexusDB::table('users')->where('last_access', '>=', date('Y-m-d H:i:s', (TIMENOW - 604800)))->count());
+        $VIP = number_format(NexusDB::table('users')->where('class', UC_VIP)->count());
+        $donated = number_format(NexusDB::table('users')->where('donor', 'yes')->count());
+        $warned = number_format(NexusDB::table('users')->where('warned', 'yes')->count());
+        $disabled = number_format(NexusDB::table('users')->where('enabled', 'no')->count());
+        $registered_male = number_format(NexusDB::table('users')->where('gender', 'Male')->count());
+        $registered_female = number_format(NexusDB::table('users')->where('gender', 'Female')->count());
+        ?>
 <tr>
 <?php
-	twotd($lang_index['row_users_active_today'],$totalonlinetoday);
-	twotd($lang_index['row_users_active_this_week'],$totalonlineweek);
-?>
+            twotd($lang_index['row_users_active_today'], $totalonlinetoday);
+        twotd($lang_index['row_users_active_this_week'], $totalonlineweek);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_registered_users'],$registered." / ".number_format($maxusers));
-	twotd($lang_index['row_unconfirmed_users'],$unverified);
-?>
+            twotd($lang_index['row_registered_users'], $registered.' / '.number_format($maxusers));
+        twotd($lang_index['row_unconfirmed_users'], $unverified);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd(get_user_class_name(UC_VIP,false,false,true),$VIP);
-	twotd($lang_index['row_donors']." <img class=\"star\" src=\"pic/trans.gif\" alt=\"Donor\" />",$donated);
-?>
+            twotd(get_user_class_name(UC_VIP, false, false, true), $VIP);
+        twotd($lang_index['row_donors'].' <img class="star" src="pic/trans.gif" alt="Donor" />', $donated);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_warned_users']." <img class=\"warned\" src=\"pic/trans.gif\" alt=\"warned\" />",$warned);
-	twotd($lang_index['row_banned_users']." <img class=\"disabled\" src=\"pic/trans.gif\" alt=\"disabled\" />",$disabled);
-?>
+            twotd($lang_index['row_warned_users'].' <img class="warned" src="pic/trans.gif" alt="warned" />', $warned);
+        twotd($lang_index['row_banned_users'].' <img class="disabled" src="pic/trans.gif" alt="disabled" />', $disabled);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_male_users'],$registered_male);
-	twotd($lang_index['row_female_users'],$registered_female);
-?>
+            twotd($lang_index['row_male_users'], $registered_male);
+        twotd($lang_index['row_female_users'], $registered_female);
+        ?>
 </tr>
 <?php
-	$Cache->end_whole_row();
-	$Cache->cache_page();
-	}
-	echo $Cache->next_row();
-?>
+            $Cache->end_whole_row();
+        $Cache->cache_page();
+    }
+    echo $Cache->next_row();
+    ?>
 <tr><td colspan="4" class="rowhead">&nbsp;</td></tr>
 <?php
-	$Cache->new_page('stats_torrents', 1800, true);
-	if (!$Cache->get_page()){
-	$Cache->add_whole_row();
-	$torrents = number_format(get_row_count("torrents"));
-	$dead = number_format(get_row_count("torrents", "WHERE visible='no'"));
-	$seeders = get_row_count("peers", "WHERE seeder='yes'");
-	$leechers = get_row_count("peers", "WHERE seeder='no'");
-	if ($leechers == 0)
-		$ratio = 0;
-	else
-		$ratio = round($seeders / $leechers * 100);
-	$activewebusernow = \Nexus\Database\NexusDB::table('users')
-		->where('last_access', '>=', date("Y-m-d H:i:s", (TIMENOW - 900)))
-		->count();
-	$activewebusernow=number_format($activewebusernow);
-	$activetrackerusernow = number_format(get_single_value("peers","COUNT(DISTINCT(userid))"));
-	$peers = number_format($seeders + $leechers);
-	$seeders = number_format($seeders);
-	$leechers = number_format($leechers);
-	$totaltorrentssize = mksize(get_row_sum("torrents", "size"));
-	$totaluploaded = get_row_sum("users","uploaded");
-	$totaldownloaded = get_row_sum("users","downloaded");
-	$totaldata = $totaldownloaded+$totaluploaded;
-?>
+        $Cache->new_page('stats_torrents', 1800, true);
+    if (! $Cache->get_page()) {
+        $Cache->add_whole_row();
+        $torrents = number_format(NexusDB::table('torrents')->count());
+        $dead = number_format(NexusDB::table('torrents')->where('visible', 'no')->count());
+        $seeders = (int) NexusDB::table('peers')->where('seeder', 'yes')->count();
+        $leechers = (int) NexusDB::table('peers')->where('seeder', 'no')->count();
+        if ($leechers == 0) {
+            $ratio = 0;
+        } else {
+            $ratio = round($seeders / $leechers * 100);
+        }
+        $activewebusernow = NexusDB::table('users')
+            ->where('last_access', '>=', date('Y-m-d H:i:s', (TIMENOW - 900)))
+            ->count();
+        $activewebusernow = number_format($activewebusernow);
+        $activetrackerusernow = number_format(NexusDB::table('peers')->distinct()->count('userid'));
+        $peers = number_format($seeders + $leechers);
+        $seeders = number_format($seeders);
+        $leechers = number_format($leechers);
+        $totaltorrentssize = mksize(get_row_sum('torrents', 'size'));
+        $totaluploaded = get_row_sum('users', 'uploaded');
+        $totaldownloaded = get_row_sum('users', 'downloaded');
+        $totaldata = $totaldownloaded + $totaluploaded;
+        ?>
 <tr>
 <?php
-	twotd($lang_index['row_torrents'],$torrents);
-	twotd($lang_index['row_dead_torrents'],$dead);
-?>
+            twotd($lang_index['row_torrents'], $torrents);
+        twotd($lang_index['row_dead_torrents'], $dead);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_seeders'],$seeders);
-	twotd($lang_index['row_leechers'],$leechers);
-?>
+            twotd($lang_index['row_seeders'], $seeders);
+        twotd($lang_index['row_leechers'], $leechers);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_peers'],$peers);
-	twotd($lang_index['row_seeder_leecher_ratio'],$ratio."%");
-?>
+            twotd($lang_index['row_peers'], $peers);
+        twotd($lang_index['row_seeder_leecher_ratio'], $ratio.'%');
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_active_browsing_users'], $activewebusernow);
-	twotd($lang_index['row_tracker_active_users'], $activetrackerusernow);
-?>
+            twotd($lang_index['row_active_browsing_users'], $activewebusernow);
+        twotd($lang_index['row_tracker_active_users'], $activetrackerusernow);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_total_size_of_torrents'],$totaltorrentssize);
-	twotd($lang_index['row_total_uploaded'],mksize($totaluploaded));
-?>
+            twotd($lang_index['row_total_size_of_torrents'], $totaltorrentssize);
+        twotd($lang_index['row_total_uploaded'], mksize($totaluploaded));
+        ?>
 </tr>
 <tr>
 <?php
-	twotd($lang_index['row_total_downloaded'],mksize($totaldownloaded));
-	twotd($lang_index['row_total_data'],mksize($totaldata));
-?>
+            twotd($lang_index['row_total_downloaded'], mksize($totaldownloaded));
+        twotd($lang_index['row_total_data'], mksize($totaldata));
+        ?>
 </tr>
 <?php
-	$Cache->end_whole_row();
-	$Cache->cache_page();
-	}
-	echo $Cache->next_row();
-?>
+            $Cache->end_whole_row();
+        $Cache->cache_page();
+    }
+    echo $Cache->next_row();
+    ?>
 <tr><td colspan="4" class="rowhead">&nbsp;</td></tr>
 <?php
-	$Cache->new_page('stats_classes', 4535, true);
-	if (!$Cache->get_page()){
-	$Cache->add_whole_row();
-	$peasants =  number_format(get_row_count("users", "WHERE class=".UC_PEASANT));
-	$users = number_format(get_row_count("users", "WHERE class=".UC_USER));
-	$powerusers = number_format(get_row_count("users", "WHERE class=".UC_POWER_USER));
-	$eliteusers = number_format(get_row_count("users", "WHERE class=".UC_ELITE_USER));
-	$crazyusers = number_format(get_row_count("users", "WHERE class=".UC_CRAZY_USER));
-	$insaneusers = number_format(get_row_count("users", "WHERE class=".UC_INSANE_USER));
-	$veteranusers = number_format(get_row_count("users", "WHERE class=".UC_VETERAN_USER));
-	$extremeusers = number_format(get_row_count("users", "WHERE class=".UC_EXTREME_USER));
-	$ultimateusers = number_format(get_row_count("users", "WHERE class=".UC_ULTIMATE_USER));
-	$nexusmasters = number_format(get_row_count("users", "WHERE class=".UC_NEXUS_MASTER));
-?>
+        $Cache->new_page('stats_classes', 4535, true);
+    if (! $Cache->get_page()) {
+        $Cache->add_whole_row();
+        $peasants = number_format(NexusDB::table('users')->where('class', UC_PEASANT)->count());
+        $users = number_format(NexusDB::table('users')->where('class', UC_USER)->count());
+        $powerusers = number_format(NexusDB::table('users')->where('class', UC_POWER_USER)->count());
+        $eliteusers = number_format(NexusDB::table('users')->where('class', UC_ELITE_USER)->count());
+        $crazyusers = number_format(NexusDB::table('users')->where('class', UC_CRAZY_USER)->count());
+        $insaneusers = number_format(NexusDB::table('users')->where('class', UC_INSANE_USER)->count());
+        $veteranusers = number_format(NexusDB::table('users')->where('class', UC_VETERAN_USER)->count());
+        $extremeusers = number_format(NexusDB::table('users')->where('class', UC_EXTREME_USER)->count());
+        $ultimateusers = number_format(NexusDB::table('users')->where('class', UC_ULTIMATE_USER)->count());
+        $nexusmasters = number_format(NexusDB::table('users')->where('class', UC_NEXUS_MASTER)->count());
+        ?>
 <tr>
 <?php
-	twotd(get_user_class_name(UC_PEASANT,false,false,true)." <img class=\"leechwarned\" src=\"pic/trans.gif\" alt=\"leechwarned\" />",$peasants);
-	twotd(get_user_class_name(UC_USER,false,false,true),$users);
-?>
+            twotd(get_user_class_name(UC_PEASANT, false, false, true).' <img class="leechwarned" src="pic/trans.gif" alt="leechwarned" />', $peasants);
+        twotd(get_user_class_name(UC_USER, false, false, true), $users);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd(get_user_class_name(UC_POWER_USER,false,false,true),$powerusers);
-	twotd(get_user_class_name(UC_ELITE_USER,false,false,true),$eliteusers);
-?>
+            twotd(get_user_class_name(UC_POWER_USER, false, false, true), $powerusers);
+        twotd(get_user_class_name(UC_ELITE_USER, false, false, true), $eliteusers);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd(get_user_class_name(UC_CRAZY_USER,false,false,true),$crazyusers);
-	twotd(get_user_class_name(UC_INSANE_USER,false,false,true),$insaneusers);
-?>
+            twotd(get_user_class_name(UC_CRAZY_USER, false, false, true), $crazyusers);
+        twotd(get_user_class_name(UC_INSANE_USER, false, false, true), $insaneusers);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd(get_user_class_name(UC_VETERAN_USER,false,false,true),$veteranusers);
-	twotd(get_user_class_name(UC_EXTREME_USER,false,false,true),$extremeusers);
-?>
+            twotd(get_user_class_name(UC_VETERAN_USER, false, false, true), $veteranusers);
+        twotd(get_user_class_name(UC_EXTREME_USER, false, false, true), $extremeusers);
+        ?>
 </tr>
 <tr>
 <?php
-	twotd(get_user_class_name(UC_ULTIMATE_USER,false,false,true),$ultimateusers);
-	twotd(get_user_class_name(UC_NEXUS_MASTER,false,false,true),$nexusmasters);
-?>
+            twotd(get_user_class_name(UC_ULTIMATE_USER, false, false, true), $ultimateusers);
+        twotd(get_user_class_name(UC_NEXUS_MASTER, false, false, true), $nexusmasters);
+        ?>
 </tr>
 <?php
-	$Cache->end_whole_row();
-	$Cache->cache_page();
-	}
-	echo $Cache->next_row();
-?>
+            $Cache->end_whole_row();
+        $Cache->cache_page();
+    }
+    echo $Cache->next_row();
+    ?>
 </table>
 </td></tr></table>
 <?php
 }
 // ------------- end: stats ------------------//
 // ------------- start: tracker load ------------------//
-if ($showtrackerload == "yes") {
-	$uptimeresult=exec('uptime');
-	if ($uptimeresult){
-?>
+if ($showtrackerload == 'yes') {
+    $uptimeresult = exec('uptime');
+    if ($uptimeresult) {
+        ?>
 <h2><?php echo $lang_index['text_tracker_load'] ?></h2>
 <table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text" align="center">
 <?php
-	//uptime, work in *nix system
-	print ("<div align=\"center\">" . trim($uptimeresult) . "</div>");
-	print("</td></tr></table>");
-	}
+            // uptime, work in *nix system
+            echo '<div align="center">'.trim($uptimeresult).'</div>';
+        echo '</td></tr></table>';
+    }
 }
 // ------------- end: tracker load ------------------//
 
@@ -800,37 +794,35 @@ if ($showtrackerload == "yes") {
 ?>
 <h2><?php echo $lang_index['text_disclaimer'] ?></h2>
 <table width="100%"><tr><td class="text">
-  <?php echo sprintf($lang_index['text_disclaimer_content'], \App\Models\Setting::getSiteName(), \App\Models\Setting::getSiteName()) ?></td></tr></table>
+  <?php echo sprintf($lang_index['text_disclaimer_content'], Setting::getSiteName(), Setting::getSiteName()) ?></td></tr></table>
 <?php
 // ------------- end: disclaimer ------------------//
 // ------------- start: links ------------------//
-	print("<h2>".$lang_index['text_links']);
-	if (user_can('applylink'))
-		print("<font class=\"small\"> - [<a class=\"altlink\" href=\"linksmanage.php?action=apply\"><b>".$lang_index['text_apply_for_link']."</b></a>]</font>");
-	if (user_can('linkmanage'))
-	{
-		print("<font class=\"small\">");
-		print(" - [<a class=\"altlink\" href=\"linksmanage.php\"><b>".$lang_index['text_manage_links']."</b></a>]\n");
-		print("</font>");
-	}
-	print("</h2>");
-	$Cache->new_page('links', 86400, false);
-	if (!$Cache->get_page()){
-	$Cache->add_whole_row();
-	$linkRows = \Nexus\Database\NexusDB::select("SELECT * FROM links ORDER BY id ASC");
-	if (count($linkRows) > 0)
-	{
-		$links = "";
-		foreach ($linkRows as $array)
-		{
-			$links .= "<a href=\"" . $array['url'] . "\" title=\"" . $array['title'] . "\" target=\"_blank\">" . $array['name'] . "</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		}
-		print("<table width=\"100%\"><tr><td class=\"text\">".trim($links)."</td></tr></table>");
-	}
-	$Cache->end_whole_row();
-	$Cache->cache_page();
-	}
-	echo $Cache->next_row();
+    echo '<h2>'.$lang_index['text_links'];
+if (user_can('applylink')) {
+    echo '<font class="small"> - [<a class="altlink" href="linksmanage.php?action=apply"><b>'.$lang_index['text_apply_for_link'].'</b></a>]</font>';
+}
+if (user_can('linkmanage')) {
+    echo '<font class="small">';
+    echo ' - [<a class="altlink" href="linksmanage.php"><b>'.$lang_index['text_manage_links']."</b></a>]\n";
+    echo '</font>';
+}
+echo '</h2>';
+$Cache->new_page('links', 86400, false);
+if (! $Cache->get_page()) {
+    $Cache->add_whole_row();
+    $linkRows = NexusDB::select('SELECT * FROM links ORDER BY id ASC');
+    if (count($linkRows) > 0) {
+        $links = '';
+        foreach ($linkRows as $array) {
+            $links .= '<a href="'.$array['url'].'" title="'.$array['title'].'" target="_blank">'.$array['name'].'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        }
+        echo '<table width="100%"><tr><td class="text">'.trim($links).'</td></tr></table>';
+    }
+    $Cache->end_whole_row();
+    $Cache->cache_page();
+}
+echo $Cache->next_row();
 // ------------- end: links ------------------//
 // ------------- start: browser, client and code note ------------------//
 ?>
@@ -840,9 +832,10 @@ if ($showtrackerload == "yes") {
 </td></tr></table>
 <?php
 // ------------- end: browser, client and code note ------------------//
-if ($CURUSER)
-	$USERUPDATESET[] = "last_home = ".sqlesc(date("Y-m-d H:i:s"));
-$Cache->delete_value('user_'.$CURUSER["id"].'_unread_news_count');
+if ($CURUSER) {
+    $USERUPDATESET[] = 'last_home = '.sqlesc(date('Y-m-d H:i:s'));
+}
+$Cache->delete_value('user_'.$CURUSER['id'].'_unread_news_count');
 end_main_frame();
 stdfoot();
 ?>
