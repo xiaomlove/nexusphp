@@ -337,7 +337,28 @@ if ($showlastxtorrents_main == 'yes') {
             foreach ($ltRows as $row) {
                 $detailsUrl = 'details.php?id='.(int) $row['id'].'&hit=1';
                 $rawCover = trim((string) ($row['cover'] ?? ''));
-                $thumbUrl = $rawCover !== '' ? cover_thumb_url($rawCover, 360, 540, 90) : '';
+                // cover_thumb_picture() reuses cover_thumb_url() for the
+                // JPEG resize and additionally writes a sibling WebP, then
+                // returns a <picture> element with WebP <source> + JPEG
+                // <img> fallback. Browsers that don't support WebP get the
+                // bare <img>. The onerror handler walks up to the parent
+                // <picture>'s sibling so the fallback div still appears
+                // when both formats fail to load.
+                $coverPicture = '';
+                if ($rawCover !== '') {
+                    $coverPicture = cover_thumb_picture(
+                        $rawCover,
+                        360,
+                        540,
+                        [
+                            'alt' => $row['name'],
+                            'loading' => 'lazy',
+                            'decoding' => 'async',
+                            'onerror' => "this.style.display='none';var n=(this.parentNode&&this.parentNode.tagName==='PICTURE')?this.parentNode.nextElementSibling:this.nextElementSibling;if(n){n.style.display='flex';}",
+                        ],
+                        90
+                    );
+                }
                 $typeLabel = trim((string) ($row['cat_name'] ?? ''));
                 $rowSpState = (int) ($row['sp_state'] ?? Torrent::PROMOTION_NORMAL);
                 $effectiveSp = $rowSpState > Torrent::PROMOTION_NORMAL
@@ -356,8 +377,8 @@ if ($showlastxtorrents_main == 'yes') {
 							<a href="<?php echo htmlspecialchars($detailsUrl) ?>" title="<?php echo $nameSafe ?>"><b><?php echo $nameSafe ?></b></a>
 						</div>
 						<a class="lt-cover" href="<?php echo htmlspecialchars($detailsUrl) ?>" title="<?php echo $nameSafe ?>">
-							<?php if ($thumbUrl !== '') { ?>
-								<img src="<?php echo htmlspecialchars($thumbUrl) ?>" alt="<?php echo $nameSafe ?>" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='flex';}" />
+							<?php if ($coverPicture !== '') { ?>
+								<?php echo $coverPicture ?>
 								<div class="lt-cover-fallback" style="display:none;"><?php echo htmlspecialchars(mb_substr($row['name'], 0, 60)) ?></div>
 							<?php } else { ?>
 								<div class="lt-cover-fallback"><?php echo htmlspecialchars(mb_substr($row['name'], 0, 60)) ?></div>
