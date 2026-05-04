@@ -60,6 +60,12 @@ abstract class LegacyHttpFeatureTestCase extends TestCase
             'session.driver' => 'array',
         ]);
 
+        // Legacy scripts call Setting::getDefaultLang() / get_setting() during
+        // bootstrap, both of which return null on an empty `settings` table and
+        // crash on the string return-type. Seed the lookup + settings tables
+        // once per test run if they're empty (cheap NOOP afterwards).
+        static::ensureLookupAndSettingsSeeded();
+
         // Start the server lazily on the first test so the Laravel application
         // is already booted (we need `base_path()` and storage paths to be
         // resolvable). The server is reused for every test in the run and
@@ -101,6 +107,22 @@ abstract class LegacyHttpFeatureTestCase extends TestCase
     protected static function serverUrl(): string
     {
         return 'http://127.0.0.1:'.static::$serverPort;
+    }
+
+    protected static bool $seeded = false;
+
+    protected static function ensureLookupAndSettingsSeeded(): void
+    {
+        if (static::$seeded) {
+            return;
+        }
+        static::$seeded = true;
+
+        if (DB::table('settings')->count() === 0) {
+            (new \Database\Seeders\TestingDataSeeder)->run();
+        } elseif (DB::table('categories')->count() === 0) {
+            (new \Database\Seeders\DatabaseSeeder)->run();
+        }
     }
 
     protected static function ensureBuiltinServerStarted(): void

@@ -206,8 +206,5 @@ jobs:
       - name: Run migrations
         run: php artisan migrate --force --no-interaction
 
-      - name: Seed lookup + settings tables for legacy scripts
-        run: php artisan db:seed --class=Database\\Seeders\\TestingDataSeeder --force --no-interaction
-
       - name: Run PHPUnit (Feature suite)
         run: vendor/bin/phpunit --testsuite=Feature
