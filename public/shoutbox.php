@@ -175,16 +175,29 @@ if (isset($_GET['sent']) && $_GET['sent'] == 'yes') {
             'text' => (string) $text,
             'type' => (string) $type,
         ]);
-        // Broadcast the new shout over Reverb so live listeners refresh
-        // without waiting for the meta-refresh poll. Wrapped to ensure a
-        // broadcasting failure never breaks the legacy insert flow.
+        // Broadcast the new shout over Reverb so live listeners receive
+        // the row instantly without waiting for the meta-refresh poll.
+        // We render the same <tr> the listing below would render and
+        // ship it as part of the payload — subscribers just prepend it.
+        // Wrapped so a broadcasting failure never breaks the insert.
         try {
+            $broadcastRow = [
+                'id' => $shoutId,
+                'userid' => (int) $userid,
+                'date' => $dateInt,
+                'text' => (string) $text,
+                'type' => (string) $type,
+            ];
+            $broadcastShowAvatars = isset($CURUSER['avatars']) && $CURUSER['avatars'] === 'yes';
+            $broadcastWhere = ($type === 'hb') ? 'helpbox' : 'shoutbox';
+            $broadcastHtml = shoutbox_render_row($broadcastRow, $broadcastWhere, $lang_shoutbox, $CURUSER, $broadcastShowAvatars);
             event(new ShoutSent(
                 $shoutId,
                 (int) $userid,
                 $dateInt,
                 (string) $text,
                 (string) $type,
+                $broadcastHtml,
             ));
         } catch (Throwable $e) {
             do_log('ShoutSent broadcast failed: '.$e->getMessage(), 'error');
@@ -241,70 +254,80 @@ function shoutbox_render_mentions($html)
     );
 }
 
+/**
+ * Render one <tr>…</tr> for a shoutbox row. Extracted into a helper so
+ * the broadcast payload (sent over Reverb to every open iframe) and the
+ * initial server-rendered listing share one code path — any future
+ * formatting tweak only has to land here.
+ */
+function shoutbox_render_row(array $arr, $where, array $lang_shoutbox, $CURUSER, $showAvatars)
+{
+    $del = '';
+    if (user_can('sbmanage')) {
+        $del .= '[<a href="shoutbox.php?del='.$arr['id'].'">'.$lang_shoutbox['text_del'].'</a>]';
+    }
+    $avatarUrl = 'pic/default_avatar.png';
+    $nickReplyName = '';
+    if ($arr['userid']) {
+        $username = get_username($arr['userid'], false, true, true, true, false, false, '', true);
+        if (isset($arr['type']) && $where == 'shoutbox' && $arr['type'] == 'hb') {
+            $username .= $lang_shoutbox['text_to_guest'];
+        }
+        $userRow = get_user_row((int) $arr['userid']);
+        $nickReplyName = trim((string) ($userRow['username'] ?? ''));
+        if ($showAvatars) {
+            $rawAvatar = trim((string) ($userRow['avatar'] ?? ''));
+            if ($rawAvatar !== '') {
+                $avatarUrl = $rawAvatar;
+            }
+        }
+        // Repurpose the nickname link: instead of going to userdetails, clicking the nick
+        // inserts "@nick, " into the input box. Avatar takes over the profile-link role below.
+        if ($nickReplyName !== '' && (int) ($CURUSER['id'] ?? 0) > 0) {
+            $onclickAttr = 'return shoutReply('.htmlspecialchars(json_encode($nickReplyName, JSON_UNESCAPED_UNICODE), ENT_QUOTES).')';
+            $username = preg_replace(
+                '#href="userdetails\.php\?id=\d+"#',
+                'href="javascript:void(0)" onclick="'.$onclickAttr.'"',
+                $username,
+                1
+            );
+            $username = preg_replace(
+                '#<a\s([^>]*onclick="return shoutReply\()#',
+                '<a class="shout-nick-reply" $1',
+                $username,
+                1
+            );
+        }
+    } else {
+        $username = $lang_shoutbox['text_guest'];
+    }
+    $avatarImg = '<img class="shout-avatar" src="'.htmlspecialchars($avatarUrl).'" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'pic/default_avatar.png\';" />';
+    if ((int) $arr['userid'] > 0) {
+        $avatarHtml = '<a class="shout-avatar-link" href="userdetails.php?id='.(int) $arr['userid'].'" target="_blank">'.$avatarImg.'</a>';
+    } else {
+        $avatarHtml = $avatarImg;
+    }
+    if (isset($CURUSER) && ($CURUSER['timetype'] ?? '') != 'timealive') {
+        $time = (new DateTime)->setTimestamp((int) $arr['date'])->format('m.d H:i');
+    } else {
+        $time = get_elapsed_time($arr['date']).$lang_shoutbox['text_ago'];
+    }
+    $message = format_comment($arr['text'], true, false, true, true, 600, false, false);
+    $message = shoutbox_render_mentions($message);
+
+    return '<tr data-shout-id="'.(int) $arr['id'].'"><td class="shoutrow"><span class=\'date\'>['.$time.']</span> '.
+        $del.' '.$avatarHtml.' '.$username.' '.$message."\n</td></tr>\n";
+}
+
 $shoutRows = NexusDB::select($sql);
 if (count($shoutRows) === 0) {
     echo "\n";
 } else {
     $showAvatars = isset($CURUSER['avatars']) && $CURUSER['avatars'] === 'yes';
-    echo "<table border='0' cellspacing='0' cellpadding='2' width='100%' align='left'>\n";
+    echo "<table id=\"shoutbox-table\" data-shout-limit=\"".(int) $limit."\" border='0' cellspacing='0' cellpadding='2' width='100%' align='left'>\n";
 
     foreach ($shoutRows as $arr) {
-        $del = '';
-        if (user_can('sbmanage')) {
-            $del .= '[<a href="shoutbox.php?del='.$arr['id'].'">'.$lang_shoutbox['text_del'].'</a>]';
-        }
-        $avatarUrl = 'pic/default_avatar.png';
-        $nickReplyName = '';
-        if ($arr['userid']) {
-            $username = get_username($arr['userid'], false, true, true, true, false, false, '', true);
-            if (isset($arr['type']) && isset($_GET['type']) && $_GET['type'] != 'helpbox' && $arr['type'] == 'hb') {
-                $username .= $lang_shoutbox['text_to_guest'];
-            }
-            $userRow = get_user_row((int) $arr['userid']);
-            $nickReplyName = trim((string) ($userRow['username'] ?? ''));
-            if ($showAvatars) {
-                $rawAvatar = trim((string) ($userRow['avatar'] ?? ''));
-                if ($rawAvatar !== '') {
-                    $avatarUrl = $rawAvatar;
-                }
-            }
-            // Repurpose the nickname link: instead of going to userdetails, clicking the nick
-            // inserts "@nick, " into the input box. Avatar takes over the profile-link role below.
-            if ($nickReplyName !== '' && (int) ($CURUSER['id'] ?? 0) > 0) {
-                $onclickAttr = 'return shoutReply('.htmlspecialchars(json_encode($nickReplyName, JSON_UNESCAPED_UNICODE), ENT_QUOTES).')';
-                $username = preg_replace(
-                    '#href="userdetails\.php\?id=\d+"#',
-                    'href="javascript:void(0)" onclick="'.$onclickAttr.'"',
-                    $username,
-                    1
-                );
-                // Tag the rewritten link so we can give it a pointer cursor without affecting other anchors.
-                $username = preg_replace(
-                    '#<a\s([^>]*onclick="return shoutReply\()#',
-                    '<a class="shout-nick-reply" $1',
-                    $username,
-                    1
-                );
-            }
-        } else {
-            $username = $lang_shoutbox['text_guest'];
-        }
-        $avatarImg = '<img class="shout-avatar" src="'.htmlspecialchars($avatarUrl).'" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'pic/default_avatar.png\';" />';
-        if ((int) $arr['userid'] > 0) {
-            $avatarHtml = '<a class="shout-avatar-link" href="userdetails.php?id='.(int) $arr['userid'].'" target="_blank">'.$avatarImg.'</a>';
-        } else {
-            $avatarHtml = $avatarImg;
-        }
-        if (isset($CURUSER) && $CURUSER['timetype'] != 'timealive') {
-            $time = (new DateTime)->setTimestamp($arr['date'])->format('m.d H:i');
-        } else {
-            $time = get_elapsed_time($arr['date']).$lang_shoutbox['text_ago'];
-        }
-        $message = format_comment($arr['text'], true, false, true, true, 600, false, false);
-        $message = shoutbox_render_mentions($message);
-        echo "<tr><td class=\"shoutrow\"><span class='date'>[".$time.']</span> '.
-$del.' '.$avatarHtml.' '.$username.' '.$message."
-</td></tr>\n";
+        echo shoutbox_render_row($arr, $where, $lang_shoutbox, $CURUSER, $showAvatars);
     }
     echo '</table>';
 }
