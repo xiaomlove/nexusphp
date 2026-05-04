@@ -2,6 +2,8 @@
 # IMPORTANT: Do not edit below unless you know what you are doing!
 
 use App\Enums\ModelEventEnum;
+use App\Models\Message;
+use Nexus\Database\NexusDB;
 
 if(!defined('IN_TRACKER'))
 die('Hacking attempt!');
@@ -13,8 +15,7 @@ function printProgress($msg) {
 
 function torrent_promotion_expire($days, $type = 2, $targettype = 1){
 	$secs = (int)($days * 86400); //XX days
-	$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - ($secs))));
-	$res = sql_query("SELECT id, name FROM torrents WHERE added < $dt AND sp_state = ".sqlesc($type).' AND promotion_time_type=0') or sqlerr(__FILE__, __LINE__);
+	$dt = date("Y-m-d H:i:s",(TIMENOW - ($secs)));
 	switch($targettype)
 	{
 		case 1: //normal
@@ -60,8 +61,14 @@ function torrent_promotion_expire($days, $type = 2, $targettype = 1){
 			break;
 		}
 	}
-	while($arr = mysql_fetch_assoc($res)){
-		sql_query("UPDATE torrents SET sp_state = ".sqlesc($sp_state)." WHERE id={$arr['id']}") or sqlerr(__FILE__, __LINE__);
+	$rows = NexusDB::table('torrents')
+		->where('added', '<', $dt)
+		->where('sp_state', $type)
+		->where('promotion_time_type', 0)
+		->get(['id', 'name']);
+	foreach ($rows as $arr) {
+		$arr = (array) $arr;
+		NexusDB::table('torrents')->where('id', $arr['id'])->update(['sp_state' => $sp_state]);
         publish_model_event(ModelEventEnum::TORRENT_UPDATED, $arr['id']);
 		if ($sp_state == 1)
 			write_log("Torrent {$arr['id']} ({$arr['name']}) is no longer on promotion (time expired)",'normal');
@@ -70,9 +77,17 @@ function torrent_promotion_expire($days, $type = 2, $targettype = 1){
 }
 
 function torrent_promotion_individual_expire() {
-    $res = sql_query("select id from torrents  WHERE promotion_time_type=2 AND promotion_until < ".sqlesc(date("Y-m-d H:i:s")));
-    while ($arr = mysql_fetch_assoc($res)) {
-        sql_query("update torrents set sp_state = 1, promotion_time_type=0, promotion_until=null where id=" . $arr['id']);
+    $rows = NexusDB::table('torrents')
+        ->where('promotion_time_type', 2)
+        ->where('promotion_until', '<', date("Y-m-d H:i:s"))
+        ->get(['id']);
+    foreach ($rows as $arr) {
+        $arr = (array) $arr;
+        NexusDB::table('torrents')->where('id', $arr['id'])->update([
+            'sp_state' => 1,
+            'promotion_time_type' => 0,
+            'promotion_until' => null,
+        ]);
         publish_model_event(ModelEventEnum::TORRENT_UPDATED, $arr['id']);
     }
 }
@@ -82,18 +97,36 @@ function peasant_to_user($down_floor_gb, $down_roof_gb, $minratio){
 	if ($down_floor_gb){
 		$downlimit_floor = $down_floor_gb*1024*1024*1024;
 		$downlimit_roof = $down_roof_gb*1024*1024*1024;
-		$res = sql_query("SELECT id FROM users WHERE class = 0 AND downloaded >= $downlimit_floor ".($downlimit_roof > $down_floor_gb ? " AND downloaded < $downlimit_roof" : "")." AND uploaded / downloaded >= $minratio") or sqlerr(__FILE__, __LINE__);
-		if (mysql_num_rows($res) > 0)
+		$query = NexusDB::table('users')
+			->where('class', 0)
+			->where('downloaded', '>=', $downlimit_floor)
+			->whereRaw('uploaded / downloaded >= ?', [$minratio]);
+		if ($downlimit_roof > $down_floor_gb) {
+			$query->where('downloaded', '<', $downlimit_roof);
+		}
+		$rows = $query->get(['id']);
+		if (count($rows) > 0)
 		{
-			$dt = sqlesc(date("Y-m-d H:i:s"));
-			while ($arr = mysql_fetch_assoc($res))
+			$dt = date("Y-m-d H:i:s");
+			foreach ($rows as $arr)
 			{
+				$arr = (array) $arr;
                 $locale = get_user_locale($arr['id']);
-                $subject = sqlesc(nexus_trans("cleanup.msg_low_ratio_warning_removed", [], $locale));
-                $msg = sqlesc(nexus_trans("cleanup.msg_your_ratio_warning_removed", [], $locale));
+                $subject = nexus_trans("cleanup.msg_low_ratio_warning_removed", [], $locale);
+                $msg = nexus_trans("cleanup.msg_your_ratio_warning_removed", [], $locale);
 				writecomment($arr['id'],"Leech Warning removed by System.");
-				sql_query("UPDATE users SET class = 1, leechwarn = 'no', leechwarnuntil = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-				sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['id']}, $dt, $subject, $msg)") or sqlerr(__FILE__, __LINE__);
+				NexusDB::table('users')->where('id', $arr['id'])->update([
+					'class' => 1,
+					'leechwarn' => 'no',
+					'leechwarnuntil' => null,
+				]);
+				Message::add([
+					'sender' => 0,
+					'receiver' => $arr['id'],
+					'added' => $dt,
+					'subject' => $subject,
+					'msg' => $msg,
+				]);
                 publish_model_event(ModelEventEnum::USER_UPDATED, $arr['id']);
 			}
 		}
@@ -110,27 +143,43 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 		if ($minSeedPoints === false) {
 		    throw new \RuntimeException("class: $class can't get min seed points.");
         }
-		$sql = "SELECT id, max_class_once FROM users WHERE class = $oriclass AND downloaded >= $limit AND seed_points >= $minSeedPoints AND uploaded / downloaded >= $minratio AND added < ".sqlesc($maxdt);
-		$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
-		$matchUserCount = mysql_num_rows($res);
-        do_log("sql: $sql, match user count: $matchUserCount");
+		$rows = NexusDB::table('users')
+			->where('class', $oriclass)
+			->where('downloaded', '>=', $limit)
+			->where('seed_points', '>=', $minSeedPoints)
+			->whereRaw('uploaded / downloaded >= ?', [$minratio])
+			->where('added', '<', $maxdt)
+			->get(['id', 'max_class_once']);
+		$matchUserCount = count($rows);
+        do_log("class: $oriclass -> $class, match user count: $matchUserCount");
 		if ($matchUserCount > 0)
 		{
-			$dt = sqlesc(date("Y-m-d H:i:s"));
-			while ($arr = mysql_fetch_assoc($res))
+			$dt = date("Y-m-d H:i:s");
+			foreach ($rows as $arr)
 			{
+				$arr = (array) $arr;
 				$locale = get_user_locale($arr['id']);
-                $subject = sqlesc(nexus_trans("cleanup.msg_promoted_to", [], $locale).get_user_class_name($class,false,false,false));
-                $msg = sqlesc(nexus_trans("cleanup.msg_now_you_are", [], $locale).get_user_class_name($class,false,false,false).nexus_trans("cleanup.msg_see_faq", [], $locale));
+                $subject = nexus_trans("cleanup.msg_promoted_to", [], $locale).get_user_class_name($class,false,false,false);
+                $msg = nexus_trans("cleanup.msg_now_you_are", [], $locale).get_user_class_name($class,false,false,false).nexus_trans("cleanup.msg_see_faq", [], $locale);
 
                 if($class <= $arr['max_class_once']) {
                     do_log(sprintf('user: %s upgrade to class: %s', $arr['id'], $class));
-                    sql_query("UPDATE users SET class = $class WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
+                    NexusDB::table('users')->where('id', $arr['id'])->update(['class' => $class]);
                 } else {
                     do_log(sprintf('user: %s upgrade to class: %s, and add invites: %s', $arr['id'], $class, $addinvite));
-                    sql_query("UPDATE users SET class = $class, max_class_once=$class, invites=invites+$addinvite WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
+                    NexusDB::table('users')->where('id', $arr['id'])->update([
+                        'class' => $class,
+                        'max_class_once' => $class,
+                        'invites' => NexusDB::raw('invites + ' . (int) $addinvite),
+                    ]);
                 }
-				sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['id']}, $dt, $subject, $msg)") or sqlerr(__FILE__, __LINE__);
+				Message::add([
+					'sender' => 0,
+					'receiver' => $arr['id'],
+					'added' => $dt,
+					'subject' => $subject,
+					'msg' => $msg,
+				]);
                 publish_model_event(ModelEventEnum::USER_UPDATED, $arr['id']);
 			}
 		}
@@ -139,22 +188,30 @@ function promotion($class, $down_floor_gb, $minratio, $time_week, $addinvite = 0
 
 function demotion($class,$deratio){
 	$newclass = $class - 1;
-//    $sql = "SELECT id FROM users WHERE class = $class AND uploaded / downloaded < $deratio";
-    $sql = "SELECT id FROM users WHERE class = $class AND uploaded < downloaded * $deratio";
-	$res = sql_query($sql) or sqlerr(__FILE__, __LINE__);
-    $matchUserCount = mysql_num_rows($res);
-    do_log("sql: $sql, match user count: $matchUserCount");
+	$rows = NexusDB::table('users')
+		->where('class', $class)
+		->whereRaw('uploaded < downloaded * ?', [$deratio])
+		->get(['id']);
+    $matchUserCount = count($rows);
+    do_log("class: $class -> $newclass, deratio: $deratio, match user count: $matchUserCount");
     if ($matchUserCount > 0)
 	{
-		$dt = sqlesc(date("Y-m-d H:i:s"));
-		while ($arr = mysql_fetch_assoc($res))
+		$dt = date("Y-m-d H:i:s");
+		foreach ($rows as $arr)
 		{
+			$arr = (array) $arr;
 			$locale = get_user_locale($arr['id']);
             $subject = nexus_trans("cleanup.msg_demoted_to", [], $locale).get_user_class_name($newclass,false,false,false);
             $msg = nexus_trans("cleanup.msg_demoted_from", [], $locale).get_user_class_name($class,false,false,false).nexus_trans("cleanup.msg_to", [], $locale).get_user_class_name($newclass,false,false,false).nexus_trans("cleanup.msg_because_ratio_drop_below", [], $locale).$deratio.".\n";
 
-            sql_query("UPDATE users SET class = $newclass WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-			sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['id']}, $dt, ".sqlesc($subject).", ".sqlesc($msg).")") or sqlerr(__FILE__, __LINE__);
+            NexusDB::table('users')->where('id', $arr['id'])->update(['class' => $newclass]);
+			Message::add([
+				'sender' => 0,
+				'receiver' => $arr['id'],
+				'added' => $dt,
+				'subject' => $subject,
+				'msg' => $msg,
+			]);
             publish_model_event(ModelEventEnum::USER_UPDATED, $arr['id']);
 		}
 	}
@@ -166,19 +223,34 @@ function user_to_peasant($down_floor_gb, $minratio){
 	$length = $deletepeasant_account*86400; // warn users until xxx days
 	$until = date("Y-m-d H:i:s",(TIMENOW + $length));
 	$downlimit_floor = $down_floor_gb*1024*1024*1024;
-	$res = sql_query("SELECT id FROM users WHERE class = 1 AND downloaded > $downlimit_floor AND uploaded / downloaded < $minratio") or sqlerr(__FILE__, __LINE__);
-	if (mysql_num_rows($res) > 0)
+	$rows = NexusDB::table('users')
+		->where('class', 1)
+		->where('downloaded', '>', $downlimit_floor)
+		->whereRaw('uploaded / downloaded < ?', [$minratio])
+		->get(['id']);
+	if (count($rows) > 0)
 	{
-		$dt = sqlesc(date("Y-m-d H:i:s"));
-		while ($arr = mysql_fetch_assoc($res))
+		$dt = date("Y-m-d H:i:s");
+		foreach ($rows as $arr)
 		{
+			$arr = (array) $arr;
             $locale = get_user_locale($arr['id']);
             $subject = nexus_trans("cleanup.msg_demoted_to", [], $locale).get_user_class_name(UC_PEASANT,false,false,false);
             $msg = nexus_trans("cleanup.msg_must_fix_ratio_within", [], $locale).$deletepeasant_account.nexus_trans("cleanup.msg_days_or_get_banned", [], $locale);
 
             writecomment($arr['id'],"Leech Warned by System - Low Ratio.");
-			sql_query("UPDATE users SET class = 0 , leechwarn = 'yes', leechwarnuntil = ".sqlesc($until)." WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-			sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['id']}, $dt, ".sqlesc($subject).", ".sqlesc($msg).")") or sqlerr(__FILE__, __LINE__);
+			NexusDB::table('users')->where('id', $arr['id'])->update([
+				'class' => 0,
+				'leechwarn' => 'yes',
+				'leechwarnuntil' => $until,
+			]);
+			Message::add([
+				'sender' => 0,
+				'receiver' => $arr['id'],
+				'added' => $dt,
+				'subject' => $subject,
+				'msg' => $msg,
+			]);
             publish_model_event(ModelEventEnum::USER_UPDATED, $arr['id']);
 		}
 	}
@@ -260,11 +332,7 @@ function disable_user(\Illuminate\Database\Eloquent\Builder $query, $reasonKey)
     if (empty($uidArr)) {
         return [];
     }
-    $sql = sprintf(
-        "update users set enabled = '%s' where id in (%s)",
-        \App\Models\User::ENABLED_NO, implode(', ', $uidArr)
-    );
-    sql_query($sql);
+    \App\Models\User::query()->whereIn('id', $uidArr)->update(['enabled' => \App\Models\User::ENABLED_NO]);
     \App\Models\UserBanLog::query()->insert($userBanLogData);
     \App\Models\UserModifyLog::query()->insert($userModifyLogs);
     do_log("[DISABLE_USER]($reasonKey): " . implode(', ', $uidArr));
