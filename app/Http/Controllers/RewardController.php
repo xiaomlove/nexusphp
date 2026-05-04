@@ -3,13 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RewardResource;
-use App\Http\Resources\PeerResource;
-use App\Http\Resources\SnatchResource;
-use App\Models\Peer;
-use App\Models\Snatch;
 use App\Repositories\RewardRepository;
-use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class RewardController extends Controller
@@ -20,8 +16,8 @@ class RewardController extends Controller
     {
         $this->repository = $repository;
     }
+
     /**
-     * @param Request $request
      * @return array
      */
     public function index(Request $request)
@@ -38,12 +34,10 @@ class RewardController extends Controller
         return $this->success($resource);
     }
 
-
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -53,6 +47,7 @@ class RewardController extends Controller
         ]);
         $result = $this->repository->store($request->torrent_id, $request->value, Auth::user());
         $resource = new RewardResource($result);
+
         return $this->success($resource, '赠魔成功！');
     }
 
@@ -60,7 +55,6 @@ class RewardController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
@@ -70,9 +64,7 @@ class RewardController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -83,7 +75,6 @@ class RewardController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {

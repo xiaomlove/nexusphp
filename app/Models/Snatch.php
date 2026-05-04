@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use JetBrains\PhpStorm\Pure;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Snatch extends NexusModel
 {
@@ -37,54 +36,53 @@ class Snatch extends NexusModel
 
     /**
      * @deprecated Use uploadedText instead
-     * @return Attribute
      */
     protected function uploadText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['uploaded']), $this->getUploadSpeed())
+            get: fn ($value, $attributes) => sprintf('%s@%s', mksize($attributes['uploaded']), $this->getUploadSpeed())
         );
     }
 
     /**
      * @deprecated Use downloadedText instead
-     * @return Attribute
      */
     protected function downloadText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())
+            get: fn ($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())
         );
     }
 
     protected function uploadedText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['uploaded']), $this->getUploadSpeed())
+            get: fn ($value, $attributes) => sprintf('%s@%s', mksize($attributes['uploaded']), $this->getUploadSpeed())
         );
     }
 
     protected function downloadedText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())
+            get: fn ($value, $attributes) => sprintf('%s@%s', mksize($attributes['downloaded']), $this->getDownloadSpeed())
         );
     }
 
     protected function shareRatio(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => $this->getShareRatio()
+            get: fn ($value, $attributes) => $this->getShareRatio()
         );
     }
 
     public function getUploadSpeed(): string
     {
         if ($this->seedtime <= 0) {
-            $speed =  mksize(0);
+            $speed = mksize(0);
         } else {
             $speed = mksize($this->uploaded / ($this->seedtime + $this->leechtime));
         }
+
         return "$speed/s";
     }
 
@@ -95,6 +93,7 @@ class Snatch extends NexusModel
         } else {
             $speed = mksize($this->downloaded / $this->leechtime);
         }
+
         return "$speed/s";
     }
 
@@ -107,6 +106,7 @@ class Snatch extends NexusModel
         } else {
             $ratio = '---';
         }
+
         return $ratio;
     }
 
@@ -125,7 +125,7 @@ class Snatch extends NexusModel
         return $this->belongsTo(Torrent::class, 'torrentid');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'userid');
     }

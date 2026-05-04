@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MessageResource;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
@@ -12,7 +13,6 @@ class MessageController extends Controller
     /**
      * message list
      *
-     * @param Request $request
      * @return array
      */
     public function index(Request $request)
@@ -27,15 +27,13 @@ class MessageController extends Controller
         }
         $messages = $query->paginate();
         $resource = MessageResource::collection($messages);
+
         return $this->success($resource);
 
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -46,16 +44,16 @@ class MessageController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show($id)
     {
         $message = Message::query()->with(['send_user'])->findOrFail($id);
         $message->update(['unread' => 'no']);
         $resource = new MessageResource($message);
-//        $resource->additional([
-//            'page_title' => nexus_trans('message.show.page_title'),
-//        ]);
+        //        $resource->additional([
+        //            'page_title' => nexus_trans('message.show.page_title'),
+        //        ]);
 
         return $this->success($resource);
     }
@@ -63,9 +61,7 @@ class MessageController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -76,7 +72,6 @@ class MessageController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
@@ -93,9 +88,10 @@ class MessageController extends Controller
 
         $messages = $query->paginate();
         $resource = MessageResource::collection($messages);
-//        $resource->additional([
-//            'site_info' => site_info(),
-//        ]);
+
+        //        $resource->additional([
+        //            'site_info' => site_info(),
+        //        ]);
         return $this->success($resource);
     }
 
@@ -103,6 +99,7 @@ class MessageController extends Controller
     {
         $user = Auth::user();
         $count = $user->receive_messages()->where('unread', 'yes')->count();
+
         return $this->success(['unread' => $count]);
     }
 }

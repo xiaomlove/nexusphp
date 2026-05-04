@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\Repositories\TagRepository;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Nexus\Database\NexusDB;
 
 class Torrent extends NexusModel
@@ -20,13 +23,17 @@ class Torrent extends NexusModel
     ];
 
     const VISIBLE_YES = 'yes';
+
     const VISIBLE_NO = 'no';
 
     const FILTER_VISIBLE_ALL = '0';
+
     const FILTER_VISIBLE_YES = '1';
+
     const FILTER_VISIBLE_NO = '2';
 
     const BANNED_YES = 'yes';
+
     const BANNED_NO = 'no';
 
     protected $casts = [
@@ -53,7 +60,9 @@ class Torrent extends NexusModel
     ];
 
     const POS_STATE_STICKY_NONE = 'normal';
+
     const POS_STATE_STICKY_FIRST = 'sticky';
+
     /**
      * alphabet 'r' is  after 'n' and before 's', so it will fit: order by pos_state desc,
      * first sticky, then r_sticky, then normal
@@ -67,6 +76,7 @@ class Torrent extends NexusModel
     ];
 
     const HR_YES = 1;
+
     const HR_NO = 0;
 
     public static $hrStatus = [
@@ -75,11 +85,17 @@ class Torrent extends NexusModel
     ];
 
     const PROMOTION_NORMAL = 1;
+
     const PROMOTION_FREE = 2;
+
     const PROMOTION_TWO_TIMES_UP = 3;
+
     const PROMOTION_FREE_TWO_TIMES_UP = 4;
+
     const PROMOTION_HALF_DOWN = 5;
+
     const PROMOTION_HALF_DOWN_TWO_TIMES_UP = 6;
+
     const PROMOTION_ONE_THIRD_DOWN = 7;
 
     public static array $promotionTypes = [
@@ -87,49 +103,52 @@ class Torrent extends NexusModel
             'text' => 'Normal',
             'up_multiplier' => 1,
             'down_multiplier' => 1,
-            'color' => ''
+            'color' => '',
         ],
         self::PROMOTION_FREE => [
             'text' => 'Free',
             'up_multiplier' => 1,
             'down_multiplier' => 0,
-            'color' => 'linear-gradient(to right, rgba(0,52,206,0.5), rgba(0,52,206,1), rgba(0,52,206,0.5))'
+            'color' => 'linear-gradient(to right, rgba(0,52,206,0.5), rgba(0,52,206,1), rgba(0,52,206,0.5))',
         ],
         self::PROMOTION_TWO_TIMES_UP => [
             'text' => '2X',
             'up_multiplier' => 2,
             'down_multiplier' => 1,
-            'color' => 'linear-gradient(to right, rgba(0,153,0,0.5), rgba(0,153,0,1), rgba(0,153,0,0.5))'
+            'color' => 'linear-gradient(to right, rgba(0,153,0,0.5), rgba(0,153,0,1), rgba(0,153,0,0.5))',
         ],
         self::PROMOTION_FREE_TWO_TIMES_UP => [
             'text' => '2X Free',
             'up_multiplier' => 2,
             'down_multiplier' => 0,
-            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(0,52,206,1)'
+            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(0,52,206,1)',
         ],
         self::PROMOTION_HALF_DOWN => [
             'text' => '50%',
             'up_multiplier' => 1,
             'down_multiplier' => 0.5,
-            'color' => 'linear-gradient(to right, rgba(220,0,3,0.5), rgba(220,0,3,1), rgba(220,0,3,0.5))'
+            'color' => 'linear-gradient(to right, rgba(220,0,3,0.5), rgba(220,0,3,1), rgba(220,0,3,0.5))',
         ],
         self::PROMOTION_HALF_DOWN_TWO_TIMES_UP => [
             'text' => '2X 50%',
             'up_multiplier' => 2,
             'down_multiplier' => 0.5,
-            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(220,0,3,1)'
+            'color' => 'linear-gradient(to right, rgba(0,153,0,1), rgba(220,0,3,1)',
         ],
         self::PROMOTION_ONE_THIRD_DOWN => [
             'text' => '30%',
             'up_multiplier' => 1,
             'down_multiplier' => 0.3,
-            'color' => 'linear-gradient(to right, rgba(65,23,73,0.5), rgba(65,23,73,1), rgba(65,23,73,0.5))'
+            'color' => 'linear-gradient(to right, rgba(65,23,73,0.5), rgba(65,23,73,1), rgba(65,23,73,0.5))',
         ],
     ];
 
     const PICK_NORMAL = 'normal';
+
     const PICK_HOT = 'hot';
+
     const PICK_CLASSIC = 'classic';
+
     const PICK_RECOMMENDED = 'recommended';
 
     public static array $pickTypes = [
@@ -140,7 +159,9 @@ class Torrent extends NexusModel
     ];
 
     const PROMOTION_TIME_TYPE_GLOBAL = 0;
+
     const PROMOTION_TIME_TYPE_PERMANENT = 1;
+
     const PROMOTION_TIME_TYPE_DEADLINE = 2;
 
     public static array $promotionTimeTypes = [
@@ -152,7 +173,9 @@ class Torrent extends NexusModel
     const BONUS_REWARD_VALUES = [50, 100, 200, 500, 1000];
 
     const APPROVAL_STATUS_NONE = 0;
+
     const APPROVAL_STATUS_ALLOW = 1;
+
     const APPROVAL_STATUS_DENY = 2;
 
     public static array $approvalStatus = [
@@ -174,13 +197,20 @@ class Torrent extends NexusModel
     ];
 
     const NFO_VIEW_STYLE_DOS = 'magic';
+
     const NFO_VIEW_STYLE_WINDOWS = 'latin-1';
+
     const REQUIRE_SEED_SECTION_DEFAULT_PROMOTION_STATE = self::PROMOTION_FREE;
+
     const REQUIRE_SEED_SECTION_DEFAULT_BONUS_ADDITION_FACTOR = 0;
+
     const REQUIRE_SEED_SECTION_DEFAULT_TORRENT_COUNT_MAX = 100;
-    const REQUIRE_SEED_SECTION_PROMOTION_STATE_CACHE_KEY = "REQUIRE_SEED_SECTION_PROMOTION_STATE_CACHE";
-    const REQUIRE_SEED_SECTION_TORRENT_ON_LIST_CACHE_KEY = "REQUIRE_SEED_SECTION_TORRENT_ON_LIST_CACHE";
-    const REQUIRE_SEED_SECTION_TORRENT_USER_CACHE_KEY = "REQUIRE_SEED_SECTION_TORRENT_USER_CACHE";
+
+    const REQUIRE_SEED_SECTION_PROMOTION_STATE_CACHE_KEY = 'REQUIRE_SEED_SECTION_PROMOTION_STATE_CACHE';
+
+    const REQUIRE_SEED_SECTION_TORRENT_ON_LIST_CACHE_KEY = 'REQUIRE_SEED_SECTION_TORRENT_ON_LIST_CACHE';
+
+    const REQUIRE_SEED_SECTION_TORRENT_USER_CACHE_KEY = 'REQUIRE_SEED_SECTION_TORRENT_USER_CACHE';
 
     public static array $nfoViewStyles = [
         self::NFO_VIEW_STYLE_DOS => ['text' => 'DOS-vy'],
@@ -197,7 +227,7 @@ class Torrent extends NexusModel
         } elseif (NexusDB::isMysql()) {
             return $query->where('info_hash', $binaryHash);
         }
-        throw new \RuntimeException("Not supported database");
+        throw new \RuntimeException('Not supported database');
     }
 
     /**
@@ -211,8 +241,10 @@ class Torrent extends NexusModel
                 // PostgreSQL 返回 bytea 时可能是十六进制流或资源
                 if (is_resource($value)) {
                     rewind($value);
+
                     return stream_get_contents($value);
                 }
+
                 return $value;
             }
         )->shouldCache();
@@ -222,7 +254,8 @@ class Torrent extends NexusModel
     {
         $info = self::$pickTypes[$this->picktype] ?? null;
         if ($info) {
-            $info['text'] = nexus_trans('torrent.pick_info.' . $this->picktype);
+            $info['text'] = nexus_trans('torrent.pick_info.'.$this->picktype);
+
             return $info;
         }
     }
@@ -235,6 +268,7 @@ class Torrent extends NexusModel
     public function getSpStateRealTextAttribute()
     {
         $spStateReal = $this->sp_state_real;
+
         return self::$promotionTypes[$spStateReal]['text'] ?? '';
     }
 
@@ -248,19 +282,20 @@ class Torrent extends NexusModel
         $log = sprintf('torrent: %s sp_state: %s, global sp state: %s', $this->id, $spState, $global);
         if ($global != self::PROMOTION_NORMAL) {
             $spState = $global;
-            $log .= sprintf(", global != %s, set sp_state to global: %s", self::PROMOTION_NORMAL, $global);
+            $log .= sprintf(', global != %s, set sp_state to global: %s', self::PROMOTION_NORMAL, $global);
         }
-        if (!isset(self::$promotionTypes[$spState])) {
-            $log .= ", but now sp_state: $spState, is invalid, reset to: " . self::PROMOTION_NORMAL;
+        if (! isset(self::$promotionTypes[$spState])) {
+            $log .= ", but now sp_state: $spState, is invalid, reset to: ".self::PROMOTION_NORMAL;
             $spState = self::PROMOTION_NORMAL;
         }
         do_log($log, 'debug');
+
         return $spState;
     }
 
     protected function getPosStateTextAttribute()
     {
-        $text = nexus_trans('torrent.pos_state_' . $this->pos_state);
+        $text = nexus_trans('torrent.pos_state_'.$this->pos_state);
         if ($this->pos_state != Torrent::POS_STATE_STICKY_NONE) {
             if ($this->pos_state_until) {
                 $append = format_datetime($this->pos_state_until);
@@ -269,20 +304,21 @@ class Torrent extends NexusModel
             }
             $text .= "($append)";
         }
+
         return $text;
     }
 
     protected function approvalStatusText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => nexus_trans('torrent.approval.status_text.' . $attributes['approval_status'])
+            get: fn ($value, $attributes) => nexus_trans('torrent.approval.status_text.'.$attributes['approval_status'])
         );
     }
 
     protected function spStateText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => self::$promotionTypes[$this->sp_state]['text'] ?? ''
+            get: fn ($value, $attributes) => self::$promotionTypes[$this->sp_state]['text'] ?? ''
         );
     }
 
@@ -292,9 +328,10 @@ class Torrent extends NexusModel
         $fields = preg_split('/[,\s]+/', $fields);
         if ($appendTableName) {
             foreach ($fields as &$value) {
-                $value = "torrents." . $value;
+                $value = 'torrents.'.$value;
             }
         }
+
         return $fields;
     }
 
@@ -310,6 +347,7 @@ class Torrent extends NexusModel
         if ($onlyKeyValue) {
             return $keyValue;
         }
+
         return $result;
     }
 
@@ -325,6 +363,7 @@ class Torrent extends NexusModel
         if ($onlyKeyValue) {
             return $keyValue;
         }
+
         return $result;
     }
 
@@ -338,13 +377,14 @@ class Torrent extends NexusModel
         $result = self::$pickTypes;
         $keyValue = [];
         foreach ($result as $status => &$info) {
-            $text = nexus_trans('torrent.pick_info.' . $status);
+            $text = nexus_trans('torrent.pick_info.'.$status);
             $info['text'] = $text;
             $keyValue[$status] = $info[$valueField];
         }
         if ($onlyKeyValue) {
             return $keyValue;
         }
+
         return $result;
     }
 
@@ -353,6 +393,7 @@ class Torrent extends NexusModel
         $searchBoxId = $this->basic_category->mode ?? 0;
         if ($searchBoxId == 0) {
             do_log(sprintf('[INVALID_CATEGORY], Torrent: %s, category: %s invalid', $this->id, $this->category), 'error');
+
             return self::HR_NO;
         }
         $hrMode = HitAndRun::getConfig('mode', $searchBoxId);
@@ -362,6 +403,7 @@ class Torrent extends NexusModel
         if ($hrMode == HitAndRun::MODE_DISABLED) {
             return self::HR_NO;
         }
+
         return $this->getRawOriginal('hr');
     }
 
@@ -379,6 +421,7 @@ class Torrent extends NexusModel
                 $tag->font_color, $tag->color, $tag->border_radius, $tag->font_size, $tag->padding, $tag->margin, $tag->name
             );
         }
+
         return implode('', $html);
     }
 
@@ -387,12 +430,13 @@ class Torrent extends NexusModel
         $result = self::$posStates;
         $keyValues = [];
         foreach ($result as $key => &$value) {
-            $value['text'] = nexus_trans('torrent.pos_state_' . $key);
+            $value['text'] = nexus_trans('torrent.pos_state_'.$key);
             $keyValues[$key] = $value[$valueField];
         }
         if ($onlyKeyValue) {
             return $keyValues;
         }
+
         return $result;
     }
 
@@ -400,12 +444,13 @@ class Torrent extends NexusModel
     {
         $fields = [
             'comments', 'times_completed', 'peers_count', 'thank_users_count', 'numfiles', 'bookmark_yes', 'bookmark_no',
-            'reward_yes', 'reward_no', 'reward_logs', 'download', 'thanks_yes', 'thanks_no'
+            'reward_yes', 'reward_no', 'reward_logs', 'download', 'thanks_yes', 'thanks_no',
         ];
         $result = [];
-        foreach($fields as $field) {
+        foreach ($fields as $field) {
             $result[$field] = nexus_trans("torrent.show.{$field}_label");
         }
+
         return $result;
     }
 
@@ -426,12 +471,12 @@ class Torrent extends NexusModel
         return $this->basic_category->search_box->getTaxonomyLabel($field);
     }
 
-    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function bookmarks(): HasMany
     {
         return $this->hasMany(Bookmark::class, 'torrentid');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner')->withDefault(User::getDefaultUserAttributes());
     }
@@ -449,7 +494,7 @@ class Torrent extends NexusModel
     /**
      * 同伴
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function peers()
     {
@@ -459,7 +504,7 @@ class Torrent extends NexusModel
     /**
      * 完成情况
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function snatches()
     {
@@ -486,7 +531,7 @@ class Torrent extends NexusModel
         return $this->hasMany(File::class, 'torrent');
     }
 
-    public function basic_category()
+    public function basic_category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category');
     }
@@ -526,7 +571,7 @@ class Torrent extends NexusModel
         return $this->belongsTo(AudioCodec::class, 'audiocodec');
     }
 
-    public function claim_users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function claim_users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'claims', 'torrent_id');
     }
@@ -546,36 +591,37 @@ class Torrent extends NexusModel
         $query->where('visible', self::VISIBLE_YES)->where('banned', self::BANNED_NO);
     }
 
-    public function torrent_tags(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function torrent_tags(): HasMany
     {
         return $this->hasMany(TorrentTag::class, 'torrent_id');
     }
 
-    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function tags(): BelongsToMany
     {
         $idsString = TagRepository::getOrderByFieldIdString();
         if (NexusDB::isPgsql()) {
             $orderByRaw = "array_position(ARRAY[$idsString]::int[], tags.id)";
-        } else if (NexusDB::isMysql()) {
+        } elseif (NexusDB::isMysql()) {
             $orderByRaw = "FIELD(tags.id, $idsString)";
         } else {
-            throw new \RuntimeException("Unsupported database");
+            throw new \RuntimeException('Unsupported database');
         }
+
         return $this->belongsToMany(Tag::class, 'torrent_tags', 'torrent_id', 'tag_id')
             ->orderByRaw($orderByRaw);
     }
 
-    public function reward_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function reward_logs(): HasMany
     {
         return $this->hasMany(Reward::class, 'torrentid');
     }
 
-    public function operationLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function operationLogs(): HasMany
     {
         return $this->hasMany(TorrentOperationLog::class, 'torrent_id');
     }
 
-    public function extra(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function extra(): HasOne
     {
         return $this->hasOne(TorrentExtra::class, 'torrent_id');
     }

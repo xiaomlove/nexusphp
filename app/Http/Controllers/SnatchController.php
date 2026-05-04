@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\PeerResource;
 use App\Http\Resources\SnatchResource;
-use App\Models\Peer;
 use App\Models\Snatch;
 use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
@@ -17,8 +15,8 @@ class SnatchController extends Controller
     {
         $this->repository = $repository;
     }
+
     /**
-     * @param Request $request
      * @return array
      */
     public function index(Request $request)
@@ -28,19 +26,16 @@ class SnatchController extends Controller
         ]);
         $snatches = $this->repository->listSnatches($request->torrent_id);
         $resource = SnatchResource::collection($snatches);
-//        $resource->additional([
-//            'card_titles' => Snatch::$cardTitles,
-//            'page_title' => nexus_trans('snatch.index.page_title'),
-//        ]);
+        //        $resource->additional([
+        //            'card_titles' => Snatch::$cardTitles,
+        //            'page_title' => nexus_trans('snatch.index.page_title'),
+        //        ]);
 
         return $this->success($resource);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -51,7 +46,6 @@ class SnatchController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
@@ -61,9 +55,7 @@ class SnatchController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -74,7 +66,6 @@ class SnatchController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
