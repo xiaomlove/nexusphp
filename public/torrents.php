@@ -60,6 +60,12 @@ if (empty($searchstr)) {
     unset($searchstr);
 }
 
+// Search-as-you-type: when called with ?ajax=1 we render only the results
+// fragment (no header, no searchbox HTML, no footer) so the JS handler
+// attached to #searchinput can swap #torrents-results in place without
+// reloading the whole page.
+$isAjax = isset($_GET['ajax']) && $_GET['ajax'] === '1';
+
 $meilisearchEnabled = get_setting('meilisearch.enabled') == 'yes';
 $shouldUseMeili = $meilisearchEnabled && !empty($searchstr);
 do_log("[SHOULD_USE_MEILI]: $shouldUseMeili");
@@ -974,7 +980,10 @@ $torrentsperpage = min($maxPageSize, $torrentsperpage);
 
 if ($count)
 {
-    if (isset($searchstr) && (!isset($_GET['notnewword']) || !$_GET['notnewword'])){
+    // Don't pollute the suggest table with every intermediate keystroke fired
+    // by the live-search handler; only record the final search the user
+    // actually navigates to.
+    if (isset($searchstr) && (!isset($_GET['notnewword']) || !$_GET['notnewword']) && !$isAjax){
         insert_suggest($searchstr_ori, $CURUSER['id']);
     }
 	if ($addparam != "")
@@ -1017,16 +1026,18 @@ if ($count)
     unset($listRows);
 }
 
-if (isset($searchstr))
-	stdhead($lang_torrents['head_search_results_for'].$searchstr_ori);
-elseif ($sectiontype == $browsecatmode)
-	stdhead($lang_torrents['head_torrents']);
-else stdhead($lang_torrents['head_special']);
-print("<table width=\"97%\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
+if (!$isAjax) {
+	if (isset($searchstr))
+		stdhead($lang_torrents['head_search_results_for'].$searchstr_ori);
+	elseif ($sectiontype == $browsecatmode)
+		stdhead($lang_torrents['head_torrents']);
+	else stdhead($lang_torrents['head_special']);
+	print("<table width=\"97%\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
 
-displayHotAndClassic();
+	displayHotAndClassic();
+}
 $searchBoxRightTdStyle = 'padding: 1px;padding-left: 10px;white-space: nowrap';
-if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showing bookmarked torrents from all sections;
+if (!$isAjax && ($allsec != 1 || $enablespecial != 'yes')){ //do not print searchbox if showing bookmarked torrents from all sections;
 ?>
 <form method="get" name="searchbox" action="?">
 	<table border="1" class="searchbox" cellspacing="0" cellpadding="5" width="100%">
@@ -1315,6 +1326,10 @@ elseif($inclbookmarked == 2)
 	print("<h1 align=\"center\">" . get_username($CURUSER['id']) . $lang_torrents['text_s_not_bookmarked_torrent'] . "</h1>");
 }
 
+// The fragment between <div id="torrents-results"> ... </div> is exactly what
+// the search-as-you-type handler swaps in. Anything outside this wrapper
+// (header, searchbox, footer) is sent only when !$isAjax.
+print('<div id="torrents-results">');
 if ($count) {
     $rows = [];
     if ($shouldUseMeili) {
@@ -1340,10 +1355,77 @@ else {
 		stdmsg($lang_torrents['std_nothing_found'],$lang_torrents['std_no_active_torrents']);
 	}
 }
+print('</div>');
+if ($isAjax) {
+	// In ajax mode we only emit the fragment - no last_browse update, no footer.
+	exit;
+}
 if ($CURUSER){
 	if ($sectiontype == $browsecatmode)
 		$USERUPDATESET[] = "last_browse = ".TIMENOW;
 	else	$USERUPDATESET[] = "last_music = ".TIMENOW;
 }
 print("</td></tr></table>");
+
+// Search-as-you-type: debounced (350ms) live filter on #searchinput. Aborts
+// the previous in-flight request, keeps the URL bar in sync via
+// history.replaceState so a refresh preserves the current query, and falls
+// back to a normal form submit on Enter (handled by the existing noenter()
+// guard which lets Enter through). The handler is a no-op if the searchbox
+// is not present (e.g. when "show only bookmarked" hides the form).
+?>
+<script>
+(function () {
+	var input = document.getElementById('searchinput');
+	var form = document.forms['searchbox'];
+	var results = document.getElementById('torrents-results');
+	if (!input || !form || !results) { return; }
+	var debounce, controller;
+	function fire() {
+		var fd = new FormData(form);
+		// Drop empty values so the URL stays clean and matches what a normal submit produces.
+		var params = new URLSearchParams();
+		fd.forEach(function (v, k) { if (v !== '') { params.append(k, v); } });
+		params.set('ajax', '1');
+		if (controller) { try { controller.abort(); } catch (e) {} }
+		controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+		var url = '?' + params.toString();
+		results.classList.add('searching');
+		fetch(url, { credentials: 'same-origin', signal: controller ? controller.signal : undefined })
+			.then(function (r) { return r.text(); })
+			.then(function (html) {
+				// The fragment is itself a <div id="torrents-results">...</div>;
+				// strip the wrapper to avoid nesting.
+				var tmp = document.createElement('div');
+				tmp.innerHTML = html;
+				var inner = tmp.querySelector('#torrents-results');
+				results.innerHTML = inner ? inner.innerHTML : html;
+				results.classList.remove('searching');
+				params.delete('ajax');
+				try {
+					var pretty = params.toString();
+					history.replaceState(null, '', pretty ? '?' + pretty : location.pathname);
+				} catch (e) {}
+			})
+			.catch(function (err) {
+				if (err && err.name === 'AbortError') { return; }
+				results.classList.remove('searching');
+			});
+	}
+	function schedule() {
+		clearTimeout(debounce);
+		debounce = setTimeout(fire, 350);
+	}
+	input.addEventListener('input', schedule);
+	// Re-run when the user changes scope or mode, since they affect the result set.
+	var scope = form.elements['search_area'];
+	var mode = form.elements['search_mode'];
+	if (scope) { scope.addEventListener('change', schedule); }
+	if (mode) { mode.addEventListener('change', schedule); }
+})();
+</script>
+<style>
+#torrents-results.searching { opacity: 0.55; transition: opacity 0.15s linear; }
+</style>
+<?php
 stdfoot();
