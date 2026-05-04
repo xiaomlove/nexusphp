@@ -488,7 +488,11 @@ class NexusDB
                 }
             }
         }
-        return $indexesNames;
+
+        // A composite index that contains more than one of the requested
+        // columns would otherwise be reported (and dropped) multiple times;
+        // dedupe so callers can iterate the result safely.
+        return array_values(array_unique($indexesNames));
     }
 
     public static function getDatabaseVersionInfo(): array
