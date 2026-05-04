@@ -1342,8 +1342,8 @@ else {
 }
 if ($CURUSER){
 	if ($sectiontype == $browsecatmode)
-		$USERUPDATESET[] = "last_browse = ".TIMENOW;
-	else	$USERUPDATESET[] = "last_music = ".TIMENOW;
+		$USERUPDATESET['last_browse'] = TIMENOW;
+	else	$USERUPDATESET['last_music'] = TIMENOW;
 }
 print("</td></tr></table>");
 stdfoot();

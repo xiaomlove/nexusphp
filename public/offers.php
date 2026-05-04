@@ -922,5 +922,5 @@ if (! $num) {
     }
 }
 end_main_frame();
-$USERUPDATESET[] = 'last_offer = '.NexusDB::getPdo()->quote(date('Y-m-d H:i:s'));
+$USERUPDATESET['last_offer'] = date('Y-m-d H:i:s');
 stdfoot();

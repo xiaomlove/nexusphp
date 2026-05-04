@@ -833,7 +833,7 @@ echo $Cache->next_row();
 <?php
 // ------------- end: browser, client and code note ------------------//
 if ($CURUSER) {
-    $USERUPDATESET[] = 'last_home = '.sqlesc(date('Y-m-d H:i:s'));
+    $USERUPDATESET['last_home'] = date('Y-m-d H:i:s');
 }
 $Cache->delete_value('user_'.$CURUSER['id'].'_unread_news_count');
 end_main_frame();
