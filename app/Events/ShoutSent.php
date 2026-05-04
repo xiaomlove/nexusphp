@@ -18,11 +18,11 @@ class ShoutSent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
-     * @param string $html  Pre-rendered <tr>…</tr> for the new shout row,
-     *                      identical byte-for-byte to what the next page
-     *                      load would render. Letting subscribers prepend
-     *                      this directly avoids a full iframe reload on
-     *                      every shout.
+     * @param  string  $html  Pre-rendered <tr>…</tr> for the new shout row,
+     *                        identical byte-for-byte to what the next page
+     *                        load would render. Letting subscribers prepend
+     *                        this directly avoids a full iframe reload on
+     *                        every shout.
      */
     public function __construct(
         public int $id,
