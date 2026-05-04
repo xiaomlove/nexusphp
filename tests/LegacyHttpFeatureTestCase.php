@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\TestingDataSeeder;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Support\Facades\DB;
@@ -118,10 +120,17 @@ abstract class LegacyHttpFeatureTestCase extends TestCase
         }
         static::$seeded = true;
 
-        if (DB::table('settings')->count() === 0) {
-            (new \Database\Seeders\TestingDataSeeder)->run();
+        // Migrations may pre-insert a single settings row (e.g.
+        // `add_modern2025_stylesheet`), so a non-zero count is NOT a reliable
+        // signal that the legacy defaults have been loaded. Probe for a known
+        // default-only key instead.
+        $defaultsLoaded = DB::table('settings')
+            ->where('name', 'main.defaultlang')
+            ->exists();
+        if (! $defaultsLoaded) {
+            (new TestingDataSeeder)->run();
         } elseif (DB::table('categories')->count() === 0) {
-            (new \Database\Seeders\DatabaseSeeder)->run();
+            (new DatabaseSeeder)->run();
         }
     }
 
