@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Bookmark extends NexusModel
 {
@@ -10,10 +11,12 @@ class Bookmark extends NexusModel
     protected $fillable = ['userid', 'torrentid'];
 
     const FILTER_IGNORE = '0';
+
     const FILTER_INCLUDE = '1';
+
     const FILTER_EXCLUDE = '2';
 
-    public function torrent()
+    public function torrent(): BelongsTo
     {
         return $this->belongsTo(Torrent::class, 'torrentid');
     }

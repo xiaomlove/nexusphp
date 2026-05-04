@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ForumResource;
 use App\Models\Forum;
+use App\Models\OverForum;
 use Illuminate\Http\Request;
 
 class ForumController extends Controller
@@ -16,19 +17,18 @@ class ForumController extends Controller
     public function index(Request $request)
     {
         $forId = $request->forid;
-        $query = Forum::query()->orderBy("sort", "asc")->with("moderators");
+        $query = Forum::query()->orderBy('sort', 'asc')->with('moderators');
         if ($forId) {
-            $query->where("forid", $forId);
+            $query->where('forid', $forId);
         }
         $list = $query->get();
         $resource = ForumResource::collection($list);
+
         return $this->success($resource);
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
@@ -37,9 +37,6 @@ class ForumController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -48,9 +45,6 @@ class ForumController extends Controller
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\OverForum  $overForum
-     * @return \Illuminate\Http\Response
      */
     public function show(OverForum $overForum)
     {
@@ -59,9 +53,6 @@ class ForumController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\OverForum  $overForum
-     * @return \Illuminate\Http\Response
      */
     public function edit(OverForum $overForum)
     {
@@ -70,10 +61,6 @@ class ForumController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\OverForum  $overForum
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, OverForum $overForum)
     {
@@ -82,9 +69,6 @@ class ForumController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\OverForum  $overForum
-     * @return \Illuminate\Http\Response
      */
     public function destroy(OverForum $overForum)
     {

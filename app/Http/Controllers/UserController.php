@@ -10,12 +10,9 @@ use App\Models\Peer;
 use App\Models\Snatch;
 use App\Models\User;
 use App\Repositories\ExamRepository;
-use App\Repositories\TorrentRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
-use League\OAuth2\Server\Grant\AuthCodeGrant;
 
 class UserController extends Controller
 {
@@ -29,20 +26,19 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
      * @return array
      */
     public function index(Request $request)
     {
         $result = $this->repository->getList($request->all());
         $resource = UserResource::collection($result);
+
         return $this->success($resource);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function store(Request $request)
@@ -51,11 +47,12 @@ class UserController extends Controller
             'username' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|max:40',
-            'password_confirmation' => 'required|string|same:password'
+            'password_confirmation' => 'required|string|same:password',
         ];
         $request->validate($rules);
         $result = $this->repository->store($request->all());
         $resource = new UserResource($result);
+
         return $this->success($resource);
     }
 
@@ -73,15 +70,14 @@ class UserController extends Controller
         }
         $result = $this->repository->getDetail($id, $currentUser);
         $resource = new UserResource($result);
+
         return $this->success($resource);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -92,7 +88,6 @@ class UserController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
@@ -108,12 +103,14 @@ class UserController extends Controller
         ];
         $request->validate($rules);
         $result = $this->repository->resetPassword($request->uid, $request->password, $request->password_confirmation);
+
         return $this->success($result, 'Reset password success!');
     }
 
     public function classes()
     {
         $result = $this->repository->listClass();
+
         return $this->success($result);
     }
 
@@ -122,6 +119,7 @@ class UserController extends Controller
         $id = Auth::id();
         $result = $this->repository->getBase($id);
         $resource = new UserResource($result);
+
         return $this->success($resource);
     }
 
@@ -130,9 +128,10 @@ class UserController extends Controller
         $request->validate([
             'uid' => 'required',
         ]);
-        $examRepository = new ExamRepository();
+        $examRepository = new ExamRepository;
         $result = $examRepository->listMatchExam($request->uid);
         $resource = ExamResource::collection($result);
+
         return $this->success($resource);
     }
 
@@ -143,6 +142,7 @@ class UserController extends Controller
             'reason' => 'required',
         ]);
         $result = $this->repository->disableUser(Auth::user(), $request->uid, $request->reason);
+
         return $this->success($result, 'Disable user success!');
     }
 
@@ -152,6 +152,7 @@ class UserController extends Controller
             'uid' => 'required',
         ]);
         $result = $this->repository->enableUser(Auth::user(), $request->uid);
+
         return $this->success($result, 'Enable user success!');
     }
 
@@ -162,6 +163,7 @@ class UserController extends Controller
         ]);
         $result = $this->repository->getInviteInfo($request->uid);
         $resource = $result ? (new InviteResource($result)) : null;
+
         return $this->success($resource);
     }
 
@@ -171,6 +173,7 @@ class UserController extends Controller
             'uid' => 'required',
         ]);
         $result = $this->repository->getModComment($request->uid);
+
         return $this->success($result);
     }
 
@@ -179,23 +182,23 @@ class UserController extends Controller
         $user = Auth::user();
 
         $resource = $this->getUserProfile($user->id);
-//
-//        $rows = [
-//            [
-//                ['icon' => 'icon-user', 'label' => '种子评论', 'name' => 'comments_count'],
-//                ['icon' => 'icon-user', 'label' => '论坛帖子', 'name' => 'posts_count'],
-//            ],[
-//                ['icon' => 'icon-user', 'label' => '发布种子', 'name' => 'torrents_count'],
-//                ['icon' => 'icon-user', 'label' => '当前做种', 'name' => 'seeding_torrents_count'],
-//                ['icon' => 'icon-user', 'label' => '当前下载', 'name' => 'leeching_torrents_count'],
-//                ['icon' => 'icon-user', 'label' => '完成种子', 'name' => 'completed_torrents_count'],
-//                ['icon' => 'icon-user', 'label' => '未完成种子', 'name' => 'incomplete_torrents_count'],
-//            ]
-//        ];
-//        $resource->additional([
-//            'card_titles' => User::$cardTitles,
-//            'rows' => $rows
-//        ]);
+        //
+        //        $rows = [
+        //            [
+        //                ['icon' => 'icon-user', 'label' => '种子评论', 'name' => 'comments_count'],
+        //                ['icon' => 'icon-user', 'label' => '论坛帖子', 'name' => 'posts_count'],
+        //            ],[
+        //                ['icon' => 'icon-user', 'label' => '发布种子', 'name' => 'torrents_count'],
+        //                ['icon' => 'icon-user', 'label' => '当前做种', 'name' => 'seeding_torrents_count'],
+        //                ['icon' => 'icon-user', 'label' => '当前下载', 'name' => 'leeching_torrents_count'],
+        //                ['icon' => 'icon-user', 'label' => '完成种子', 'name' => 'completed_torrents_count'],
+        //                ['icon' => 'icon-user', 'label' => '未完成种子', 'name' => 'incomplete_torrents_count'],
+        //            ]
+        //        ];
+        //        $resource->additional([
+        //            'card_titles' => User::$cardTitles,
+        //            'rows' => $rows
+        //        ]);
 
         return $this->success($resource);
     }
@@ -204,11 +207,18 @@ class UserController extends Controller
     {
         $user = User::query()->withCount([
             'comments', 'posts', 'seeding_torrents', 'leeching_torrents',
-            'torrents' => function ($query) use ($id) {$query->whereHas('snatches');},
-            'completed_torrents' => function ($query) use ($id) {$query->where('torrents.owner', '!=', $id);},
-            'incomplete_torrents' => function ($query) use ($id) {$query->where('torrents.owner', '!=', $id);},
+            'torrents' => function ($query) {
+                $query->whereHas('snatches');
+            },
+            'completed_torrents' => function ($query) use ($id) {
+                $query->where('torrents.owner', '!=', $id);
+            },
+            'incomplete_torrents' => function ($query) use ($id) {
+                $query->where('torrents.owner', '!=', $id);
+            },
         ])->findOrFail($id);
         $resource = new UserResource($user);
+
         return $resource;
     }
 
@@ -290,6 +300,7 @@ class UserController extends Controller
             'value' => 'required|numeric',
         ]);
         $result = $this->repository->incrementDecrement($user, $request->uid, $request->action, $request->field, $request->value, $request->reason);
+
         return $this->success(['success' => $result]);
     }
 
@@ -299,8 +310,8 @@ class UserController extends Controller
         $request->validate([
             'uid' => 'required',
         ]);
-        $result = $this->repository->removeTwoStepAuthentication($user, $request->uid, );
+        $result = $this->repository->removeTwoStepAuthentication($user, $request->uid);
+
         return $this->success(['success' => $result]);
     }
-
 }

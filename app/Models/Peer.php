@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Peer extends NexusModel
 {
     protected $fillable = [
         'torrent', 'peer_id', 'ip', 'port', 'uploaded', 'downloaded', 'to_go', 'seeder', 'started', 'last_action',
         'prev_action', 'connectable', 'userid', 'agent', 'finishedat', 'downloadoffset', 'uploadedoffset', 'passkey',
-        'ipv4', 'ipv6', 'is_seed_box'
+        'ipv4', 'ipv6', 'is_seed_box',
     ];
 
     const CONNECTABLE_YES = 'yes';
@@ -69,12 +68,12 @@ class Peer extends NexusModel
         return $this->seeder == self::SEEDER_NO;
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'userid');
     }
 
-    public function relative_torrent()
+    public function relative_torrent(): BelongsTo
     {
         return $this->belongsTo(Torrent::class, 'torrent');
     }

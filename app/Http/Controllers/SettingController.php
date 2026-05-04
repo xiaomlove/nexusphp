@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\HitAndRun;
 use App\Repositories\SettingRepository;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
@@ -22,19 +20,18 @@ class SettingController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
      * @return array
      */
     public function index(Request $request)
     {
         $result = $this->repository->getList($request->all());
+
         return $this->success($result);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function store(Request $request)
@@ -43,6 +40,7 @@ class SettingController extends Controller
         $prefix = Arr::first(array_keys($data));
         $request->validate($this->getRules($prefix));
         $result = $this->repository->store($data);
+
         return $this->success($result, 'Save setting success!');
     }
 
@@ -50,35 +48,22 @@ class SettingController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return array
      */
-    public function show($id)
-    {
-
-    }
+    public function show($id) {}
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return array
      */
-    public function update(Request $request, $id)
-    {
-
-    }
+    public function update(Request $request, $id) {}
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return array
      */
-    public function destroy($id)
-    {
-
-    }
+    public function destroy($id) {}
 
     private function getRules($prefix): array
     {
@@ -101,7 +86,7 @@ class SettingController extends Controller
                 $result["$prefix.$key"] = $value;
             }
         }
+
         return $result;
     }
-
 }

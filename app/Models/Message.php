@@ -3,21 +3,21 @@
 namespace App\Models;
 
 use App\Enums\ModelEventEnum;
-use Nexus\Database\NexusDB;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Message extends NexusModel
 {
     protected $table = 'messages';
 
     protected $fillable = [
-        'sender', 'receiver', 'added', 'subject', 'msg', 'unread', 'location', 'saved'
+        'sender', 'receiver', 'added', 'subject', 'msg', 'unread', 'location', 'saved',
     ];
 
     protected $casts = [
         'added' => 'datetime',
     ];
 
-    public function send_user()
+    public function send_user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender')->withDefault(['id' => 0, 'username' => 'System']);
     }
@@ -29,10 +29,10 @@ class Message extends NexusModel
 
     public static function add(array $data): self
     {
-        clear_inbox_count_cache($data["receiver"]);
-        $message =  self::query()->create($data);
+        clear_inbox_count_cache($data['receiver']);
+        $message = self::query()->create($data);
         fire_event(ModelEventEnum::MESSAGE_CREATED, $message);
+
         return $message;
     }
-
 }

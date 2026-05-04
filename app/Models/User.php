@@ -8,52 +8,71 @@ use App\Models\Traits\NexusActivityLogTrait;
 use App\Repositories\ExamRepository;
 use App\Repositories\TokenRepository;
 use Carbon\Carbon;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use Nexus\Database\NexusDB;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasName;
 use NexusPlugin\Permission\Models\Role;
 use NexusPlugin\Permission\Models\UserPermission;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasFactory, Notifiable, HasApiTokens, NexusActivityLogTrait;
+    use HasApiTokens, HasFactory, NexusActivityLogTrait, Notifiable;
 
     public $timestamps = false;
 
     protected $perPage = 50;
 
     const STATUS_CONFIRMED = 'confirmed';
+
     const STATUS_PENDING = 'pending';
 
     const ENABLED_YES = 'yes';
+
     const ENABLED_NO = 'no';
 
-    const CLASS_PEASANT = "0";
-    const CLASS_USER = "1";
-    const CLASS_POWER_USER = "2";
-    const CLASS_ELITE_USER = "3";
-    const CLASS_CRAZY_USER = "4";
-    const CLASS_INSANE_USER = "5";
-    const CLASS_VETERAN_USER = "6";
-    const CLASS_EXTREME_USER = "7";
-    const CLASS_ULTIMATE_USER = "8";
-    const CLASS_NEXUS_MASTER = "9";
-    const CLASS_VIP = "10";
-    const CLASS_RETIREE = "11";
-    const CLASS_UPLOADER = "12";
-    const CLASS_MODERATOR = "13";
-    const CLASS_ADMINISTRATOR = "14";
-    const CLASS_SYSOP = "15";
-    const CLASS_STAFF_LEADER = "16";
+    const CLASS_PEASANT = '0';
+
+    const CLASS_USER = '1';
+
+    const CLASS_POWER_USER = '2';
+
+    const CLASS_ELITE_USER = '3';
+
+    const CLASS_CRAZY_USER = '4';
+
+    const CLASS_INSANE_USER = '5';
+
+    const CLASS_VETERAN_USER = '6';
+
+    const CLASS_EXTREME_USER = '7';
+
+    const CLASS_ULTIMATE_USER = '8';
+
+    const CLASS_NEXUS_MASTER = '9';
+
+    const CLASS_VIP = '10';
+
+    const CLASS_RETIREE = '11';
+
+    const CLASS_UPLOADER = '12';
+
+    const CLASS_MODERATOR = '13';
+
+    const CLASS_ADMINISTRATOR = '14';
+
+    const CLASS_SYSOP = '15';
+
+    const CLASS_STAFF_LEADER = '16';
 
     public static array $classes = [
         self::CLASS_PEASANT => ['text' => 'Peasant'],
@@ -76,6 +95,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     ];
 
     const DONATE_YES = 'yes';
+
     const DONATE_NO = 'no';
 
     public static $donateStatus = [
@@ -84,7 +104,9 @@ class User extends Authenticatable implements FilamentUser, HasName
     ];
 
     const GENDER_FEMALE = 'Female';
+
     const GENDER_MALE = 'Male';
+
     const GENDER_UNKNOWN = 'N/A';
 
     public static array $genders = [
@@ -97,7 +119,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'uploaded_human' => '上传量',
         'downloaded_human' => '下载量',
         'share_ratio' => '分享率',
-//        'seed_time' => '做种时间',
+        //        'seed_time' => '做种时间',
         'bonus' => '魔力值',
         'seed_points' => '做种积分',
         'invites' => '邀请',
@@ -105,7 +127,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public static array $notificationOptions = ['topic_reply', 'hr_reached'];
 
-    private const USER_ENABLE_LATELY = "user_enable_lately:%s";
+    private const USER_ENABLE_LATELY = 'user_enable_lately:%s';
 
     public function getConnectionName()
     {
@@ -124,18 +146,19 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public static function getClassText($class)
     {
-        if (!is_numeric($class)|| !isset(self::$classes[$class])) {
+        if (! is_numeric($class) || ! isset(self::$classes[$class])) {
             return '';
         }
         $classText = self::$classes[$class]['text'];
         if ($class >= self::CLASS_VIP) {
-            $alias = nexus_trans('user.class_names.' . $class);
+            $alias = nexus_trans('user.class_names.'.$class);
         } else {
             $alias = Setting::get("account.{$class}_alias");
         }
-        if (!empty($alias)) {
+        if (! empty($alias)) {
             $classText .= "({$alias})";
         }
+
         return $classText;
     }
 
@@ -147,15 +170,16 @@ class User extends Authenticatable implements FilamentUser, HasName
                 $result[$class] = self::getClassText($class);
             }
         }
+
         return $result;
     }
 
     public static function exists($id): bool
     {
-        return self::query()->where("id", $id)->exists();
+        return self::query()->where('id', $id)->exists();
     }
 
-    public function canAccessPanel(\Filament\Panel $panel): bool
+    public function canAccessPanel(Panel $panel): bool
     {
         return $this->canAccessAdmin();
     }
@@ -167,22 +191,18 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     /**
      * @see ExamRepository::isExamMatchUser()
-     *
-     * @return string
      */
     public function getDonateStatusAttribute(): string
     {
         if ($this->isDonating()) {
             return self::DONATE_YES;
         }
+
         return self::DONATE_NO;
     }
 
     /**
      * 为数组 / JSON 序列化准备日期。
-     *
-     * @param  \DateTimeInterface  $date
-     * @return string
      */
     protected function serializeDate(\DateTimeInterface $date): string
     {
@@ -198,7 +218,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'username', 'email', 'passhash', 'secret', 'stylesheet', 'editsecret', 'added', 'enabled', 'status',
         'leechwarn', 'leechwarnuntil', 'page', 'class', 'uploaded', 'downloaded', 'clientselect', 'showclienterror', 'last_home',
         'seedbonus', 'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
-        'seed_points_per_hour', 'passkey', 'auth_key', 'last_login', 'lang', 'provider_id'
+        'seed_points_per_hour', 'passkey', 'auth_key', 'last_login', 'lang', 'provider_id',
     ];
 
     /**
@@ -207,7 +227,7 @@ class User extends Authenticatable implements FilamentUser, HasName
      * @var array
      */
     protected $hidden = [
-        'secret', 'passhash', 'passkey', 'auth_key'
+        'secret', 'passhash', 'passkey', 'auth_key',
     ];
 
     /**
@@ -243,7 +263,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'invited_by', 'enabled', 'seed_points', 'last_access', 'invites',
         'lang', 'attendance_card', 'privacy', 'noad', 'downloadpos', 'donoruntil', 'donor',
         'downloadpos', 'vip_added', 'vip_until', 'title', 'invites', 'attendance_card',
-        'seed_points_per_hour'
+        'seed_points_per_hour',
     ];
 
     public static function getDefaultUserAttributes(): array
@@ -262,7 +282,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             'seedtime' => 0,
             'leechtime' => 0,
             'enabled' => self::ENABLED_NO,
-            'seed_points' => 0
+            'seed_points' => 0,
         ];
     }
 
@@ -279,11 +299,12 @@ class User extends Authenticatable implements FilamentUser, HasName
         }
         $class_name_color = self::$classes[$class]['text'] ?? '';
         if ($compact) {
-            $class_name = str_replace(" ", "",$class_name);
+            $class_name = str_replace(' ', '', $class_name);
         }
         if ($class_name && $b_colored) {
-            return "<b class='" . str_replace(" ", "",$class_name_color) . "_Name'>" . $class_name . "</b>";
+            return "<b class='".str_replace(' ', '', $class_name_color)."_Name'>".$class_name.'</b>';
         }
+
         return $class_name;
     }
 
@@ -294,28 +315,30 @@ class User extends Authenticatable implements FilamentUser, HasName
             'username' => $this->username,
         ];
         if (in_array('status', $fields) && $this->getAttribute('status') != self::STATUS_CONFIRMED) {
-            throw new NexusException(nexus_trans("user.user_is_not_confirmed", $params));
+            throw new NexusException(nexus_trans('user.user_is_not_confirmed', $params));
         }
         if (in_array('enabled', $fields) && $this->getAttribute('enabled') != self::ENABLED_YES) {
-            throw new NexusException(nexus_trans("user.user_is_disabled", $params));
+            throw new NexusException(nexus_trans('user.user_is_disabled', $params));
         }
+
         return true;
     }
 
     public function getLocaleAttribute()
     {
         $locale = null;
-        $log = "user: " . $this->id;
+        $log = 'user: '.$this->id;
         if (get_user_id() == $this->id) {
             $locale = Locale::getLocaleFromCookie();
             $log .= ", locale from cookie: $locale";
         }
-        if (!$locale) {
+        if (! $locale) {
             $lang = $this->language?->site_lang_folder ?? null;
             $locale = Locale::$languageMaps[$lang] ?? $lang;
             $log .= ", [NO_DATA_FROM_COOKIE], lang from database: $lang, locale: $locale";
         }
         do_log($log);
+
         return $locale;
     }
 
@@ -325,33 +348,34 @@ class User extends Authenticatable implements FilamentUser, HasName
         if ($result && in_array($result, ['en', 'chs', 'cht'])) {
             return $result;
         }
+
         return 'en';
     }
 
     protected function uploadedText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => mksize($attributes['uploaded'])
+            get: fn ($value, $attributes) => mksize($attributes['uploaded'])
         );
     }
 
     protected function downloadedText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => mksize($attributes['downloaded'])
+            get: fn ($value, $attributes) => mksize($attributes['downloaded'])
         );
     }
 
     protected function genderText(): Attribute
     {
         return new Attribute(
-            get: fn($value, $attributes) => nexus_trans('user.genders.' . $attributes['gender'])
+            get: fn ($value, $attributes) => nexus_trans('user.genders.'.$attributes['gender'])
         );
     }
 
     protected function getTwoFactorAuthenticationStatusAttribute(): string
     {
-        return $this->two_step_secret != "" ? "yes" : "no";
+        return $this->two_step_secret != '' ? 'yes' : 'no';
     }
 
     public static function getMinSeedPoints($class)
@@ -360,6 +384,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         if (is_numeric($setting)) {
             return $setting;
         }
+
         return self::$classes[$class]['min_seed_points'] ?? false;
     }
 
@@ -376,12 +401,12 @@ class User extends Authenticatable implements FilamentUser, HasName
         });
     }
 
-    public function exams()
+    public function exams(): HasMany
     {
         return $this->hasMany(ExamUser::class, 'uid');
     }
 
-    public function language()
+    public function language(): BelongsTo
     {
         return $this->belongsTo(Language::class, 'lang');
     }
@@ -401,8 +426,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(Invite::class, 'inviter')
             ->where('invitee', '')
             ->whereNotNull('expired_at')
-            ->where('expired_at', '>=', Carbon::now())
-        ;
+            ->where('expired_at', '>=', Carbon::now());
     }
 
     public function send_messages()
@@ -417,7 +441,8 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     /**
      * torrent comments
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     *
+     * @return HasMany
      */
     public function comments()
     {
@@ -426,7 +451,8 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     /**
      * forum posts
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     *
+     * @return HasMany
      */
     public function posts()
     {
@@ -438,11 +464,10 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(Torrent::class, 'owner');
     }
 
-    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function bookmarks(): HasMany
     {
         return $this->hasMany(Bookmark::class, 'userid');
     }
-
 
     public function peers_torrents()
     {
@@ -486,44 +511,42 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->snatched_torrents()->where('snatched.finished', Snatch::FINISHED_NO);
     }
 
-
-    public function hitAndRuns(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function hitAndRuns(): HasMany
     {
         return $this->hasMany(HitAndRun::class, 'uid');
     }
 
-    public function medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function medals(): BelongsToMany
     {
         return $this->belongsToMany(Medal::class, 'user_medals', 'uid', 'medal_id')
             ->withPivot(['id', 'expire_at', 'status', 'priority', 'bonus_addition_expire_at'])
             ->withTimestamps()
-            ->orderByPivot('priority', 'desc')
-            ;
+            ->orderByPivot('priority', 'desc');
     }
 
-    public function valid_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function valid_medals(): BelongsToMany
     {
         return $this->medals()->where(function ($query) {
             $query->whereNull('user_medals.expire_at')->orWhere('user_medals.expire_at', '>=', Carbon::now());
         });
     }
 
-    public function wearing_medals(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function wearing_medals(): BelongsToMany
     {
         return $this->valid_medals()->where('user_medals.status', UserMedal::STATUS_WEARING);
     }
 
-    public function reward_torrent_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function reward_torrent_logs(): HasMany
     {
         return $this->hasMany(Reward::class, 'userid');
     }
 
-    public function thank_torrent_logs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function thank_torrent_logs(): HasMany
     {
         return $this->hasMany(Thank::class, 'userid');
     }
 
-    public function poll_answers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function poll_answers(): HasMany
     {
         return $this->hasMany(PollAnswer::class, 'userid');
     }
@@ -548,22 +571,22 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(UserPermission::class, 'uid');
     }
 
-    public function examAndTasks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function examAndTasks(): BelongsToMany
     {
-        return $this->belongsToMany(Exam::class, "exam_users", "uid", "exam_id");
+        return $this->belongsToMany(Exam::class, 'exam_users', 'uid', 'exam_id');
     }
 
-    public function onGoingExamAndTasks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function onGoingExamAndTasks(): BelongsToMany
     {
-        return $this->examAndTasks()->wherePivot("status", ExamUser::STATUS_NORMAL);
+        return $this->examAndTasks()->wherePivot('status', ExamUser::STATUS_NORMAL);
     }
 
-    public function modifyLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function modifyLogs(): HasMany
     {
-        return $this->hasMany(UserModifyLog::class, "user_id");
+        return $this->hasMany(UserModifyLog::class, 'user_id');
     }
 
-    public function claims(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function claims(): HasMany
     {
         return $this->hasMany(Claim::class, 'uid');
     }
@@ -578,7 +601,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             }
         }
 
-        return getSchemeAndHttpHost() . '/pic/default_avatar.png';
+        return getSchemeAndHttpHost().'/pic/default_avatar.png';
 
     }
 
@@ -589,19 +612,21 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function updateWithComment(array $update, $comment, $commentField): bool
     {
-        if (!$this->exists) {
+        if (! $this->exists) {
             throw new \RuntimeException('This method only works when user exists !');
         }
-        //@todo how to do prepare bindings here ?
-//        $comment = addslashes($comment);
-//        do_log("update: " . json_encode($update) . ", $commentField: $comment", 'notice');
-//        $update[$commentField] = NexusDB::raw("if($commentField = '', '$comment', concat_ws('\n', '$comment', $commentField))");
+        // @todo how to do prepare bindings here ?
+        //        $comment = addslashes($comment);
+        //        do_log("update: " . json_encode($update) . ", $commentField: $comment", 'notice');
+        //        $update[$commentField] = NexusDB::raw("if($commentField = '', '$comment', concat_ws('\n', '$comment', $commentField))");
 
-        if ($commentField != "modcomment") {
+        if ($commentField != 'modcomment') {
             throw new \RuntimeException("unsupported commentField: $commentField !");
         }
+
         return NexusDB::transaction(function () use ($update, $comment) {
             $this->modifyLogs()->create(['content' => $comment]);
+
             return $this->update($update);
         });
     }
@@ -609,16 +634,18 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function canAccessAdmin(): bool
     {
         $targetClass = self::getAccessAdminClassMin();
-        if (!$this->class || $this->class < $targetClass) {
+        if (! $this->class || $this->class < $targetClass) {
             do_log(sprintf('user: %s, no class or class < %s, can not access admin.', $this->id, $targetClass));
+
             return false;
         }
+
         return true;
     }
 
     public static function getAccessAdminClassMin()
     {
-        return Setting::get("system.access_admin_class_min") ?: User::CLASS_ADMINISTRATOR;
+        return Setting::get('system.access_admin_class_min') ?: User::CLASS_ADMINISTRATOR;
     }
 
     public function isDonating(): bool
@@ -630,6 +657,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         ) {
             return true;
         }
+
         return false;
     }
 
@@ -642,17 +670,17 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $redis = NexusDB::redis();
         $cacheKey = Setting::USER_TOKEN_PERMISSION_ALLOWED_CACHE_KRY;
-        if (!$redis->exists($cacheKey)) {
+        if (! $redis->exists($cacheKey)) {
             $lockKey = "$cacheKey:lock";
             if ($redis->set($lockKey, 1, ['nx', 'ex' => 5])) {
                 try {
-                    if (!$redis->exists($cacheKey)) {
+                    if (! $redis->exists($cacheKey)) {
                         $abilities = TokenRepository::listUserTokenPermissions(false);
-                        do_log("load user token permissions: " . json_encode($abilities), 'alert');
-                        if (!empty($abilities)) {
+                        do_log('load user token permissions: '.json_encode($abilities), 'alert');
+                        if (! empty($abilities)) {
                             $redis->sadd($cacheKey, ...$abilities);
                         } else {
-                            $redis->sadd($cacheKey, "__NO_USER_TOKEN_PERMISSION__");
+                            $redis->sadd($cacheKey, '__NO_USER_TOKEN_PERMISSION__');
                             $redis->expire($cacheKey, 900);
                         }
                     }
@@ -663,8 +691,8 @@ class User extends Authenticatable implements FilamentUser, HasName
                 }
             }
         }
+
         return $redis->sismember($cacheKey, $ability)
             && $this->accessToken && $this->accessToken->can($ability);
     }
-
 }

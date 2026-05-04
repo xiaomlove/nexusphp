@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\RewardResource;
 use App\Http\Resources\TorrentOperationLogResource;
 use App\Http\Resources\TorrentResource;
 use App\Models\Setting;
@@ -13,7 +12,6 @@ use App\Models\User;
 use App\Repositories\TorrentRepository;
 use App\Repositories\UploadRepository;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,27 +24,28 @@ class TorrentController extends Controller
         $this->repository = $repository;
     }
 
-    public function index(Request $request, string $section = null)
+    public function index(Request $request, ?string $section = null)
     {
-        do_log("controller torrent index entry");
+        do_log('controller torrent index entry');
         $result = $this->repository->getList($request, Auth::user(), $section);
-        do_log("controller torrent index getList");
+        do_log('controller torrent index getList');
         $resource = TorrentResource::collection($result);
-        do_log("controller torrent index prepare resource");
+        do_log('controller torrent index prepare resource');
+
         return $this->success($resource);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return array
      */
     public function store(Request $request)
     {
-        $uploadRep = new UploadRepository();
+        $uploadRep = new UploadRepository;
         $newTorrent = $uploadRep->upload($request);
-        $resource = new JsonResource(["id" => $newTorrent->id]);
+        $resource = new JsonResource(['id' => $newTorrent->id]);
+
         return $this->success($resource);
     }
 
@@ -58,13 +57,13 @@ class TorrentController extends Controller
      */
     public function show($id)
     {
-        do_log("controller torrent show entry");
+        do_log('controller torrent show entry');
         /**
          * @var User
          */
         $user = Auth::user();
         $torrent = $this->repository->getDetail($id, $user);
-        do_log("controller torrent show getDetail");
+        do_log('controller torrent show getDetail');
         $resource = new TorrentResource($torrent);
         $additional = [];
         if ($this->hasExtraField('bonus_reward_values')) {
@@ -73,16 +72,15 @@ class TorrentController extends Controller
         $extraSettingsNames = ['torrent.claim_torrent_user_counts_up_limit'];
         $this->appendExtraSettings($additional, $extraSettingsNames);
         $resource->additional($additional);
-        do_log("controller torrent show prepare resource");
+        do_log('controller torrent show prepare resource');
+
         return $this->success($resource);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -93,7 +91,6 @@ class TorrentController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
@@ -114,6 +111,7 @@ class TorrentController extends Controller
         $torrentId = $request->torrent_id;
         $torrent = Torrent::query()->findOrFail($torrentId, Torrent::$commentFields);
         $denyReasons = TorrentDenyReason::query()->orderBy('priority', 'desc')->get();
+
         return view('torrent/approval', compact('torrent', 'denyReasons'));
     }
 
@@ -148,6 +146,7 @@ class TorrentController extends Controller
         ]);
         $params = $request->all();
         $this->repository->approval(Auth::user(), $params);
+
         return $this->success($params);
     }
 
@@ -157,7 +156,7 @@ class TorrentController extends Controller
             'pieces_hash' => 'required|array',
         ]);
         $result = $this->repository->getPiecesHashCache($request->pieces_hash);
-        return $this->success($result ?: (object)[]);
-    }
 
+        return $this->success($result ?: (object) []);
+    }
 }

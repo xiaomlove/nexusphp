@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Nexus\Database\NexusDB;
 
 class TorrentOperationLog extends NexusModel
@@ -13,9 +14,13 @@ class TorrentOperationLog extends NexusModel
     protected $fillable = ['uid', 'torrent_id', 'action_type', 'comment'];
 
     const ACTION_TYPE_APPROVAL_NONE = 'approval_none';
+
     const ACTION_TYPE_APPROVAL_ALLOW = 'approval_allow';
+
     const ACTION_TYPE_APPROVAL_DENY = 'approval_deny';
+
     const ACTION_TYPE_EDIT = 'edit';
+
     const ACTION_TYPE_DELETE = 'delete';
 
     public static array $actionTypes = [
@@ -31,7 +36,7 @@ class TorrentOperationLog extends NexusModel
         return nexus_trans("torrent.operation_log.{$this->action_type}.type_text");
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uid')->select(User::$commonFields);
     }
@@ -41,13 +46,13 @@ class TorrentOperationLog extends NexusModel
         return $this->belongsTo(Torrent::class, 'torrent_id')->select(Torrent::$commentFields);
     }
 
-
     public static function add(array $params, $notifyUser = false)
     {
         $log = self::query()->create($params);
         if ($notifyUser) {
             self::notifyUser($log);
         }
+
         return $log;
     }
 

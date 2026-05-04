@@ -8,6 +8,7 @@ use App\Models\Thank;
 use App\Models\Torrent;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ class ThankController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -27,9 +28,9 @@ class ThankController extends Controller
             ->with(['user'])
             ->paginate();
         $resource = ThankResource::collection($thanks);
-//        $resource->additional([
-//            'page_title' => nexus_trans('thank.index.page_title'),
-//        ]);
+        //        $resource->additional([
+        //            'page_title' => nexus_trans('thank.index.page_title'),
+        //        ]);
 
         return $this->success($resource);
     }
@@ -37,8 +38,7 @@ class ThankController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -53,7 +53,7 @@ class ThankController extends Controller
         }
         $torrentOwner->checkIsNormal();
         if ($user->thank_torrent_logs()->where('torrentid', $torrentId)->exists()) {
-            throw new \LogicException("you already thank this torrent");
+            throw new \LogicException('you already thank this torrent');
         }
 
         $result = DB::transaction(function () use ($user, $torrentOwner, $torrent) {
@@ -66,8 +66,8 @@ class ThankController extends Controller
                     ->where('seedbonus', $user->seedbonus)
                     ->increment('seedbonus', $sayThanksBonus);
                 if ($affectedRows != 1) {
-                    do_log("affectedRows: $affectedRows, query: " . last_query(), 'error');
-                    throw new \RuntimeException("increment user bonus fail.");
+                    do_log("affectedRows: $affectedRows, query: ".last_query(), 'error');
+                    throw new \RuntimeException('increment user bonus fail.');
                 }
             }
             if ($receiveThanksBonus > 0) {
@@ -76,13 +76,15 @@ class ThankController extends Controller
                     ->where('seedbonus', $torrentOwner->seedbonus)
                     ->increment('seedbonus', $receiveThanksBonus);
                 if ($affectedRows != 1) {
-                    do_log("affectedRows: $affectedRows, query: " . last_query(), 'error');
-                    throw new \RuntimeException("increment owner bonus fail.");
+                    do_log("affectedRows: $affectedRows, query: ".last_query(), 'error');
+                    throw new \RuntimeException('increment owner bonus fail.');
                 }
             }
+
             return $thank;
         });
         $resource = new ThankResource($result);
+
         return $this->success($resource, '说谢谢成功！');
     }
 
@@ -90,7 +92,6 @@ class ThankController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
@@ -100,9 +101,7 @@ class ThankController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -113,7 +112,6 @@ class ThankController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {

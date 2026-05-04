@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Claim extends NexusModel
 {
@@ -10,12 +11,19 @@ class Claim extends NexusModel
     public $timestamps = true;
 
     const TORRENT_TTL = 30;
+
     const USER_UP_LIMIT = 10;
+
     const TORRENT_UP_LIMIT = 1000;
+
     const REMOVE_DEDUCT = 600;
+
     const GIVE_UP_DEDUCT = 400;
+
     const BONUS_MULTIPLIER = 1;
+
     const STANDARD_SEED_TIME_HOURS = 300;
+
     const STANDARD_UPLOADED_TIMES = 2;
 
     protected $casts = [
@@ -51,12 +59,12 @@ class Claim extends NexusModel
         return $this->belongsTo(User::class, 'uid');
     }
 
-    public function torrent()
+    public function torrent(): BelongsTo
     {
         return $this->belongsTo(Torrent::class, 'torrent_id');
     }
 
-    public function snatch()
+    public function snatch(): BelongsTo
     {
         return $this->belongsTo(Snatch::class, 'snatched_id');
     }

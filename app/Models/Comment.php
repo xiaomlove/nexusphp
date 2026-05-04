@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Comment extends NexusModel
 {
@@ -15,7 +15,9 @@ class Comment extends NexusModel
     protected $fillable = ['user', 'torrent', 'added', 'text', 'ori_text', 'editedby', 'editdate', 'offer', 'request', 'anonymous'];
 
     const TYPE_TORRENT = 'torrent';
+
     const TYPE_REQUEST = 'request';
+
     const TYPE_OFFER = 'offer';
 
     const TYPE_MAPS = [
@@ -23,19 +25,19 @@ class Comment extends NexusModel
             'model' => Torrent::class,
             'foreign_key' => 'torrent',
             'target_name_field' => 'name',
-            'target_script' => 'details.php?id=%s'
+            'target_script' => 'details.php?id=%s',
         ],
         self::TYPE_REQUEST => [
             'model' => Request::class,
             'foreign_key' => 'request',
             'target_name_field' => 'request',
-            'target_script' => 'viewrequests.php?id=%s&req_details=1'
+            'target_script' => 'viewrequests.php?id=%s&req_details=1',
         ],
         self::TYPE_OFFER => [
             'model' => Offer::class,
             'foreign_key' => 'offer',
             'target_name_field' => 'name',
-            'target_script' => 'offers.php?id=%s&off_details=1'
+            'target_script' => 'offers.php?id=%s&off_details=1',
         ],
     ];
 
@@ -48,6 +50,7 @@ class Comment extends NexusModel
                 $query->where($value['foreign_key'], $typeValue);
             }
         }
+
         return $query;
     }
 
@@ -56,12 +59,12 @@ class Comment extends NexusModel
         return $this->belongsTo(Torrent::class, 'torrent');
     }
 
-    public function create_user()
+    public function create_user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user')->withDefault(User::getDefaultUserAttributes());
     }
 
-    public function update_user()
+    public function update_user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'editedby')->withDefault(User::getDefaultUserAttributes());
     }

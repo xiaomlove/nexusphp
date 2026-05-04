@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\PeerResource;
 use App\Models\Peer;
-use App\Models\Torrent;
 use App\Repositories\TorrentRepository;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class PeerController extends Controller
 {
@@ -16,11 +16,11 @@ class PeerController extends Controller
     {
         $this->repository = $repository;
     }
+
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -31,8 +31,8 @@ class PeerController extends Controller
         $response = [
             'seeder_list' => [],
             'leecher_list' => [],
-//            'card_titles' => Peer::$cardTitles,
-//            'page_title' => nexus_trans('peer.index.page_title'),
+            //            'card_titles' => Peer::$cardTitles,
+            //            'page_title' => nexus_trans('peer.index.page_title'),
         ];
         $result = $this->repository->listPeers($request->torrent_id);
         if ($result['seeder_list']->isNotEmpty()) {
@@ -48,9 +48,6 @@ class PeerController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -61,7 +58,6 @@ class PeerController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
@@ -71,9 +67,7 @@ class PeerController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -84,7 +78,6 @@ class PeerController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
