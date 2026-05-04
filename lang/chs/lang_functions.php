@@ -337,6 +337,9 @@ $lang_functions = array
     'select_at_least_one_record' => '至少选择一条记录！',
     'text_seed_box_record_to_approval' => '有 %s%u 条待审核的 SeedBox 记录%s',
     'approval_deny_reach_upper_limit' => '当前审核被拒绝的种子数：%s 达到上限，不允许发布。',
+    'tooltip_hit_and_run' => 'Hit & Run：此种子已加入 H&R 监控。请保持分享率 >= 1 或做种达到最低小时数，否则将记录一次 H&R 警告。',
+    'tooltip_user_ratio' => '分享率 = 上传 / 下载。低于 1.0 时数值变红，分享率越低颜色越深。请通过做种来提高它。',
+    'tooltip_user_class_format' => '用户等级：%s。等级越高代表信任度越高，可享受更多特权（额外槽位、H&R 豁免等）。',
 );
 
 ?>

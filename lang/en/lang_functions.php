@@ -345,6 +345,9 @@ $lang_functions = array
     'select_at_least_one_record' => 'Select at least one record!',
     'text_seed_box_record_to_approval' => 'There %s%u not approval seed box record%s.',
     'approval_deny_reach_upper_limit' => 'The number of torrents whose current approval was denied: %s reached the upper limit and is not allowed to be upload.',
+    'tooltip_hit_and_run' => 'Hit & Run: this torrent is monitored for H&R. Maintain ratio >= 1 or seed for the configured minimum hours, otherwise a warning is recorded against your account.',
+    'tooltip_user_ratio' => 'Share ratio = uploaded / downloaded. Below 1.0 the value turns red - the lower the ratio, the deeper the colour. Build it back up by seeding.',
+    'tooltip_user_class_format' => 'User class: %s. Hover ranks indicate trust level and unlock more privileges (extra slots, immunity to H&R, etc.).',
 );
 
 ?>
