@@ -5017,8 +5017,11 @@ function get_hr_img(array $torrent, $searchBoxId)
     $result = '';
     if ($mode == \App\Models\HitAndRun::MODE_GLOBAL || ($mode == \App\Models\HitAndRun::MODE_MANUAL && isset($torrent['hr']) && $torrent['hr'] == \App\Models\Torrent::HR_YES)) {
         // Progressive tooltip: short label as alt for screen-readers / no-CSS
-        // fallback, full explanation as the hover title.
-        $tip = isset($lang_functions['tooltip_hit_and_run']) ? $lang_functions['tooltip_hit_and_run'] : 'H&R';
+        // fallback, full explanation as the hover title. Falls back to an
+        // English string when the (optional) lang key is absent.
+        $tip = isset($lang_functions['tooltip_hit_and_run'])
+            ? $lang_functions['tooltip_hit_and_run']
+            : 'Hit & Run: this torrent is monitored for H&R. Maintain ratio >= 1 or seed for the configured minimum hours, otherwise a warning is recorded against your account.';
         $result = '<img class="hitandrun" src="pic/trans.gif" alt="H&R" title="'.htmlspecialchars($tip, ENT_QUOTES).'" />';
     }
     return $result;
@@ -5144,9 +5147,12 @@ function get_ratio($userid, $html = true){
 	if ($html == true){
 		// Wrap the rendered value in a <span title="..."> so hovering the
 		// ratio anywhere (forum signature, userdetails, top-bar) reveals
-		// what the colour means and how it is calculated.
-		$ratioTip = isset($lang_functions['tooltip_user_ratio']) ? $lang_functions['tooltip_user_ratio'] : '';
-		$ratioTipAttr = $ratioTip !== '' ? ' title="'.htmlspecialchars($ratioTip, ENT_QUOTES).'"' : '';
+		// what the colour means and how it is calculated. Falls back to an
+		// English string when the (optional) lang key is absent.
+		$ratioTip = isset($lang_functions['tooltip_user_ratio'])
+			? $lang_functions['tooltip_user_ratio']
+			: 'Share ratio = uploaded / downloaded. Below 1.0 the value turns red — the lower the ratio, the deeper the colour. Build it back up by seeding.';
+		$ratioTipAttr = ' title="'.htmlspecialchars($ratioTip, ENT_QUOTES).'"';
 		if ($downed > 0)
 		{
 			$ratio = $uped / $downed;
@@ -5155,12 +5161,11 @@ function get_ratio($userid, $html = true){
 
 			if ($color)
 				$ratio = "<font color=\"".$color."\">".$ratio."</font>";
-			if ($ratioTipAttr !== '')
-				$ratio = "<span class=\"ratio-tip\"".$ratioTipAttr.">".$ratio."</span>";
+			$ratio = "<span class=\"ratio-tip\"".$ratioTipAttr.">".$ratio."</span>";
 		}
 		elseif ($uped > 0) {
 			$infinite = nexus_trans("label.infinite");
-			$ratio = $ratioTipAttr !== '' ? "<span class=\"ratio-tip\"".$ratioTipAttr.">".$infinite."</span>" : $infinite;
+			$ratio = "<span class=\"ratio-tip\"".$ratioTipAttr.">".$infinite."</span>";
 		}
 		else
 			$ratio = "---";

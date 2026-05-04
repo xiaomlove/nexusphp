@@ -344,9 +344,6 @@ $lang_functions = array
     'select_at_least_one_record' => '至少選擇一條記錄！',
     'text_seed_box_record_to_approval' => '有 %s%u 條待審核的 SeedBox 記錄%s',
     'approval_deny_reach_upper_limit' => '當前審核被拒絕的種子數：%s 達到上限，不允許發布。',
-    'tooltip_hit_and_run' => 'Hit & Run：此種子已加入 H&R 監控。請保持分享率 >= 1 或做種達到最低小時數，否則將記錄一次 H&R 警告。',
-    'tooltip_user_ratio' => '分享率 = 上傳 / 下載。低於 1.0 時數值變紅，分享率越低顏色越深。請透過做種來提高它。',
-    'tooltip_user_class_format' => '用戶等級：%s。等級越高代表信任度越高，可享受更多特權（額外槽位、H&R 豁免等）。',
 );
 
 ?>
