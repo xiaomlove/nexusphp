@@ -1597,7 +1597,7 @@ if ($action != '') {
 
 // -------- Get forums
 if ($CURUSER) {
-    $USERUPDATESET[] = "forum_access = '".date('Y-m-d H:i:s')."'";
+    $USERUPDATESET['forum_access'] = date('Y-m-d H:i:s');
 }
 
 stdhead($lang_forums['head_forums']);

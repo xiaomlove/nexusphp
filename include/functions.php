@@ -2406,7 +2406,7 @@ function menu ($selected = "home") {
 	print ("</div>");
 	if ($CURUSER){
 		if ($where_tweak == 'yes')
-			$USERUPDATESET[] = "page = ".sqlesc($selected);
+			$USERUPDATESET['page'] = $selected;
 	}
 }
 function get_css_row() {
@@ -2515,8 +2515,8 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 //		}
         //record always
         \App\Repositories\IpLogRepository::saveToCache($CURUSER['id']);
-		$USERUPDATESET[] = "last_access = ".sqlesc(date("Y-m-d H:i:s"));
-		$USERUPDATESET[] = "ip = ".sqlesc($CURUSER['ip']);
+		$USERUPDATESET['last_access'] = date("Y-m-d H:i:s");
+		$USERUPDATESET['ip'] = $CURUSER['ip'];
 	}
 	header("Content-Type: text/html; charset=utf-8; Cache-control:private");
 	//header("Pragma: No-cache");
@@ -2998,8 +2998,8 @@ function stdfoot() {
 	}
 	print("<div style=\"margin-top: 10px; margin-bottom: 30px;\" align=\"center\">");
 	if ($CURUSER) {
-        if (count($USERUPDATESET)) {
-            sql_query("UPDATE users SET " . join(",", $USERUPDATESET) . " WHERE id = ".$CURUSER['id']);
+        if (!empty($USERUPDATESET)) {
+            NexusDB::table('users')->where('id', $CURUSER['id'])->update($USERUPDATESET);
         }
 	}
 	// Variables for End Time
