@@ -64,38 +64,6 @@ if ($currentStep == 3) {
     }
 }
 
-//if ($currentStep == 4) {
-//    $pass = true;
-//    while (true) {
-//        $shouldAlterTable = listShouldAlterTable();
-//        if ($isPost) {
-//            if (!empty($shouldAlterTable)) {
-//                try {
-//                    sql_query('SET sql_mode=(SELECT REPLACE(@@sql_mode,"NO_ZERO_DATE", ""));');
-//                    foreach ($shouldAlterTable as $table => $fields) {
-//                        $sqlAlter = "alter table $table";
-//                        $sqlUpdate = "update $table";
-//                        $updateWhere = [];
-//                        foreach ($fields as $field) {
-//                            $sqlAlter .= " modify $field datetime default null,";
-//                            $sqlUpdate .= " set $field = null,";
-//                            $updateWhere[] = "$field = '0000-00-00 00:00:00'";
-//                        }
-//                        $sqlAlter = rtrim($sqlAlter, ',');
-//                        $sqlUpdate = rtrim($sqlUpdate, ',') . " where " . implode(' or ', $updateWhere);
-//                        sql_query($sqlUpdate);
-//                        sql_query($sqlAlter);
-//                    }
-//                } catch (\Exception $e) {
-//                    $error = $e->getMessage();
-//                    break;
-//                }
-//            }
-//            goStep($currentStep + 1);
-//        }
-//        break;
-//    }
-//}
 
 if ($currentStep == 4) {
     $settingTableRows = $install->listSettingTableRows();

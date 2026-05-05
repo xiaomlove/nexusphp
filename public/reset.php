@@ -34,10 +34,6 @@ if (get_user_class() <= $arr['class']) {
 }
 
 $id = $arr['id'];
-//$wantpassword=$newpassword;
-//$secret = mksecret();
-//$wantpasshash = md5($secret . $wantpassword . $secret);
-//sql_query("UPDATE users SET passhash=".sqlesc($wantpasshash).", secret= ".sqlesc($secret)." where id=$id");
     $userRep = new \App\Repositories\UserRepository();
     try {
         $userRep->resetPassword($id, $newpassword, $newpasswordagain);

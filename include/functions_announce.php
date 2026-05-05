@@ -175,7 +175,6 @@ function check_cheater($userid, $torrentid, $uploaded, $downloaded, $anctime, $s
 				'dealtwith' => 0,
 			]);
 		}
-		//mysql_query("UPDATE users SET downloadpos = 'no' WHERE id=$userid") or err("Tracker error 53"); //automatically remove user's downloading privileges;
 		return false;
 	}
 if ($cheaterdet_security > 1){// do not check this with consertive level
@@ -210,7 +209,6 @@ if ($cheaterdet_security > 1){// do not check this with consertive level
 				'dealtwith' => 0,
 			]);
 		}
-		//mysql_query("UPDATE users SET downloadpos = 'no' WHERE id=$userid") or err("Tracker error 53"); //automatically remove user's downloading privileges;
 		return false;
 	}
 	if ($uploaded > 10485760 && $upspeed > 102400 && $leechers == 0) //Uploaded more than 10 MB with uploading speed faster than 100 KByte/S when there is no leecher. This is likely cheating.
@@ -244,7 +242,6 @@ if ($cheaterdet_security > 1){// do not check this with consertive level
 				'dealtwith' => 0,
 			]);
 		}
-		//mysql_query("UPDATE users SET downloadpos = 'no' WHERE id=$userid") or err("Tracker error 53"); //automatically remove user's downloading privileges;
 		return false;
 	}
 }

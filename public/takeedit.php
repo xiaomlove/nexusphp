@@ -56,7 +56,6 @@ if (!empty($_POST['pt_gen'])) {
     $existsPtGenInfo = json_decode($row['pt_gen'], true) ?? [];
     $ptGen = new \Nexus\PTGen\PTGen();
     if ($postPtGen != $ptGen->getLink($existsPtGenInfo)) {
-//        $updateset[] = "pt_gen = " . sqlesc($postPtGen);
         $extraUpdate["pt_gen"] = $postPtGen;
     }
 } else {
@@ -64,7 +63,6 @@ if (!empty($_POST['pt_gen'])) {
     $extraUpdate["pt_gen"] = "";
 }
 
-//$updateset[] = "technical_info = " . sqlesc($_POST['technical_info'] ?? '');
 $extraUpdate["media_info"] = $_POST['technical_info'] ?? '';
 $torrentOperationLog = [];
 
@@ -79,7 +77,6 @@ if ($nfoaction == "update")
 		bark($lang_takeedit['std_nfo_too_big']);
 	$nfofilename = $nfofile['tmp_name'];
 	if (@is_uploaded_file($nfofilename) && @filesize($nfofilename) > 0) {
-//        $updateset[] = "nfo = " . sqlesc(str_replace("\x0d\x0d\x0a", "\x0d\x0a", file_get_contents($nfofilename)));
         $extraUpdate["nfo"] = str_replace("\x0d\x0d\x0a", "\x0d\x0a", file_get_contents($nfofilename));
     }
 

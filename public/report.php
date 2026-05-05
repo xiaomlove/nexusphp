@@ -176,11 +176,6 @@ elseif (isset($commentid)) {
         $url = 'offers.php?id='.$arr['offer'].'&off_details=1#'.$commentid;
         $of = $lang_report['text_of_offer'];
     }
-    /*elseif ($arr['request']){ //Comment of request
-        $name = get_single_value("requests","request","WHERE id=".sqlesc($arr['request']));
-        $url = "viewrequests.php?id=".$arr['request']."&req_details=1#".$commentid;
-        $of = $lang_report['text_of_request'];
-    }*/
     else { // Comment belongs to no one
         stderr($lang_report['std_error'], $lang_report['std_orphaned_comment']);
     }

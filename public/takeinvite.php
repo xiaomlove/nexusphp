@@ -132,7 +132,6 @@ if ($sendResult === true) {
             $insert["pre_register_username"] = $preRegisterUsername;
         }
         \App\Models\Invite::query()->insert($insert);
-//        sql_query("INSERT INTO invites (inviter, invitee, hash, time_invited) VALUES ('".mysql_real_escape_string($id)."', '".mysql_real_escape_string($email)."', '".mysql_real_escape_string($hash)."', " . sqlesc(date("Y-m-d H:i:s")) . ")");
         \Nexus\Database\NexusDB::table('users')
             ->where('id', (int) $id)
             ->update(['invites' => \Nexus\Database\NexusDB::raw('invites - 1')]);

@@ -64,11 +64,6 @@ if (!empty($_REQUEST['downhash'])) {
         nexus_redirect(getSchemeAndHttpHost() . "/downloadnotice.php?torrentid=".$id."&type=ratio");
 	}
 }
-//User may choose to download torrent from RSS. So log ip changes when downloading torrents.
-//if ($iplog1 == "yes") {
-//	if (($oldip != $CURUSER["ip"]) && $CURUSER["ip"])
-//	sql_query("INSERT INTO iplog (ip, userid, access) VALUES (" . sqlesc($CURUSER['ip']) . ", " . $CURUSER['id'] . ", '" . $CURUSER['last_access'] . "')");
-//}
 \App\Repositories\IpLogRepository::saveToCache($CURUSER['id']);
 //User may choose to download torrent from RSS. So update his last_access and ip when downloading torrents.
 \Nexus\Database\NexusDB::table('users')->where('id', (int) $CURUSER['id'])->update([

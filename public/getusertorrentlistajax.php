@@ -265,8 +265,6 @@ switch ($type)
 {
 	case 'uploaded':
 	{
-//		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, snatched.seedtime, snatched.uploaded FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id AND snatched.userid=$id " . (($CURUSER["id"] != $id)?((get_user_class() < $viewanonymous_class) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.added DESC") or sqlerr(__FILE__, __LINE__);
-//		$res = sql_query("SELECT torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id " . (($CURUSER["id"] != $id)?((!user_can('viewanonymous')) ? " AND anonymous = 'no'":""):"") ." ORDER BY torrents.id DESC") or sqlerr(__FILE__, __LINE__);
 		$fields = "torrents.id AS torrent, torrents.name as torrentname, small_descr, seeders, leechers, anonymous, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,torrents.owner as userid, categories.mode as search_box_id";
 		$tableWhere = "torrents LEFT JOIN categories ON torrents.category = categories.id WHERE torrents.owner=$id";
 		if ($CURUSER['id'] != $id && !user_can('viewanonymous')) {
@@ -279,7 +277,6 @@ switch ($type)
 	// Current Seeding
 	case 'seeding':
 	{
-//		$res = sql_query("SELECT torrent,added,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='yes' ORDER BY torrents.id DESC") or sqlerr();
 		$fields = "torrent,added,snatched.uploaded,snatched.downloaded,snatched.seedtime,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers,snatched.userid, categories.mode as search_box_id, peers.peer_id, peers.agent, peers.port, peers.ipv4, peers.ipv6";
 		$tableWhere = "peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='yes'";
 		$order = "peers.id DESC";
@@ -289,7 +286,6 @@ switch ($type)
 	// Current Leeching
 	case 'leeching':
 	{
-//		$res = sql_query("SELECT torrent,snatched.uploaded,snatched.downloaded,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers, torrents.added FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='no' ORDER BY torrents.id DESC") or sqlerr();
 		$fields = "torrent,snatched.uploaded,snatched.downloaded,snatched.seedtime,torrents.name as torrentname, torrents.small_descr, torrents.sp_state, torrents.banned, torrents.approval_status, categories.name as catname,size,torrents.hr,image,category,seeders,leechers, torrents.added,snatched.userid, categories.mode as search_box_id, peers.peer_id, peers.agent, peers.port, peers.ipv4, peers.ipv6";
 		$tableWhere = "peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id LEFT JOIN snatched ON torrents.id = snatched.torrentid WHERE peers.userid=$id AND snatched.userid = $id AND peers.seeder='no'";
         $order = "peers.id DESC";
@@ -299,7 +295,6 @@ switch ($type)
 	// Completed torrents
 	case 'completed':
 	{
-//		$res = sql_query("SELECT torrents.id AS torrent, torrents.name AS torrentname, small_descr, categories.name AS catname, torrents.banned, torrents.approval_status, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.seedtime, snatched.leechtime, snatched.completedat FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='yes' AND torrents.owner != $id AND userid=$id ORDER BY snatched.id DESC") or sqlerr();
 		$fields = "torrents.id AS torrent, torrents.name AS torrentname, small_descr, categories.name AS catname, torrents.banned, torrents.approval_status, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.seedtime,snatched.uploaded, snatched.leechtime, snatched.completedat,snatched.userid, categories.mode as search_box_id";
 		$tableWhere = "torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='yes' AND userid=$id AND torrents.owner != $id";
 		$order = "snatched.id DESC";
@@ -309,7 +304,6 @@ switch ($type)
 	// Incomplete torrents
 	case 'incomplete':
 	{
-//		$res = sql_query("SELECT torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime FROM torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id ORDER BY snatched.id DESC") or sqlerr();
 		$fields = "torrents.id AS torrent, torrents.name AS torrentname, small_descr, torrents.banned, torrents.approval_status, categories.name AS catname, categories.image, category, sp_state, size, torrents.hr, torrents.added,snatched.uploaded, snatched.downloaded, snatched.leechtime,snatched.seedtime,snatched.userid, categories.mode as search_box_id";
 		$tableWhere = "torrents LEFT JOIN snatched ON torrents.id = snatched.torrentid LEFT JOIN categories on torrents.category = categories.id WHERE snatched.finished='no' AND userid=$id AND torrents.owner != $id";
 		$order = "snatched.id DESC";

@@ -755,8 +755,6 @@ if (count($_GET) > 0 && ! $_GET['h']) {
             );
             $n_posts = (int) ($postsRow[0]['c'] ?? 0);
 
-            // Use LEFT JOIN to exclude orphan comments
-            // $auxres = sql_query("SELECT COUNT(c.id) FROM comments AS c LEFT JOIN torrents as t ON c.torrent = t.id WHERE c.user = '".$user['id']."'") or sqlerr(__FILE__, __LINE__);
             $n_comments = (int) NexusDB::table('comments')->where('user', (int) $user['id'])->count();
 
             echo '<tr><td>'.

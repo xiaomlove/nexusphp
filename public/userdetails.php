@@ -43,13 +43,7 @@ else
 {
 	$lastseen .= " (" . gettime($lastseen, true, false, true).")";
 }
-//$res = sql_query("SELECT COUNT(*) FROM comments WHERE user=" . $user['id']) or sqlerr();
-//$arr3 = mysql_fetch_row($res);
-//$torrentcomments = $arr3[0];
 $torrentcomments = \App\Models\Comment::query()->where('user', $user['id'])->count();
-//$res = sql_query("SELECT COUNT(*) FROM posts WHERE userid=" . $user['id']) or sqlerr();
-//$arr3 = mysql_fetch_row($res);
-//$forumposts = $arr3[0];
 $forumposts = \App\Models\Post::query()->where('userid', $user['id'])->count();
 
 	$arr = get_country_row($user['country']);
@@ -131,72 +125,6 @@ if (user_can('prfmanage') && $user["class"] < get_user_class()) {
 }
 if (($user["privacy"] != "strong") OR (user_can('prfmanage')) || $CURUSER['id'] == $user['id']){
 //Xia Zuojie: Taste compatibility is extremely slow. It can takes thounsands of datebase queries. It is disabled until someone makes it fast.
-/*
-	if (isset($CURUSER) && $CURUSER['id'] != $user['id'])
-	{
-		$user_snatched = sql_query("SELECT * FROM snatched WHERE userid = $CURUSER['id']") or sqlerr(__FILE__, __LINE__);
-		if(mysql_num_rows($user_snatched) == 0)
-		$compatibility_info = $lang_userdetails['text_unknown'];
-		else
-		{
-			while ($user_snatched_arr = mysql_fetch_array($user_snatched))
-			{
-				$torrent_2_user_value = get_torrent_2_user_value($user_snatched_arr);
-
-				$user_snatched_res_target = sql_query("SELECT * FROM snatched WHERE torrentid = " . $user_snatched_arr['torrentid'] . " AND userid = " . $user['id']) or sqlerr(__FILE__, __LINE__);	//
-				if(mysql_num_rows($user_snatched_res_target) == 1)	// have other peole snatched this torrent
-				{
-					$user_snatched_arr_target = mysql_fetch_array($user_snatched_res_target) or sqlerr(__FILE__, __LINE__);	// find target user's current analyzing torrent's snatch info
-					$torrent_2_user_value_target = get_torrent_2_user_value($user_snatched_arr_target);	//get this torrent to target user's value
-
-					if(!isset($other_user_2_curuser_value[$user_snatched_arr_target['userid']]))	// first, set to 0
-					$other_user_2_curuser_value[$user_snatched_arr_target['userid']] = 0.0;
-
-					$other_user_2_curuser_value[$user_snatched_arr_target['userid']] += $torrent_2_user_value_target * $torrent_2_user_value;
-				}
-			}
-
-			$val = $other_user_2_curuser_value[$user['id']];
-			if ($val > 1)
-			{
-				$val = 1;
-				$compatibility_info = $lang_userdetails['text_super'];
-				$bar_url = "pic/loadbargreen.gif";
-			}
-			elseif ($val > 0.7 && $val<=1)
-			{
-				$compatibility_info = $lang_userdetails['text_very_high'];
-				$bar_url = "pic/loadbargreen.gif";
-			}
-			elseif ($val > 0.45 && $val<=0.7)
-			{
-				$compatibility_info = $lang_userdetails['text_high'];
-				$bar_url = "pic/loadbargreen.gif";
-			}
-			elseif ($val > 0.2 && $val<=0.45)
-			{
-				$compatibility_info = $lang_userdetails['text_medium'];
-				$bar_url = "pic/loadbaryellow.gif";
-			}
-			elseif ($val > 0.05 && $val<=0.2)
-			{
-				$compatibility_info = $lang_userdetails['text_low'];
-				$bar_url = "pic/loadbarred.gif";
-			}
-			else
-			{
-				$val = 0;
-				$compatibility_info = $lang_userdetails['text_very_low'];
-				$bar_url = "pic/loadbarred.gif";
-			}
-			$width = $val * 400;
-			$compatibility_info = "<table align=left border=0 width=400><tr><td style='padding: 0px; background-image: url(pic/loadbarbg.gif); background-repeat: repeat-x; width: 400px' title='" . number_format($val * 100, 2) . "%'><img align=left height=15 width=" . $width . " src=\"" . $bar_url ."\" alt='" . number_format($val * 100, 2) . "%'></td><td align=right class=embedded><strong>&nbsp;&nbsp;&nbsp;<nobr>" . $compatibility_info . "</nobr> </strong></td></tr></table>";
-
-			//die("ss" . htmlspecialchars($compatibility_info));
-		}
-		print("<tr><td class=rowhead width=13%>".$lang_userdetails['row_compatibility']."</td><td class=rowfollow align=left width=87%>". $compatibility_info ."</td></tr>\n");
-	}
-*/
     tr_small($lang_userdetails['text_user_id'], $userIdDisplay, 1);
     $tmpInviteCount = $userInfo->temporary_invites()->count();
 	if ($CURUSER['id'] == $user['id'] || user_can('viewinvite')){

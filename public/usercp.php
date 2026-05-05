@@ -672,12 +672,6 @@ if ($action) {
                  *
                  * @since v1.6.0
                  */
-                //			$cires = sql_query("SELECT * FROM caticons ORDER BY name") or die;
-                //			while($caticon = mysql_fetch_array($cires)){
-                //				if ($caticon['id'] == $CURUSER['caticon']) $sl = " selected"; else $sl = "";
-                //				$categoryicons .= "<option value=".$caticon['id'].$sl.">".$caticon['name']."</option>\n";
-                //			}
-                //			tr_small($lang_usercp['row_category_icons'], "<select name=caticon>".$categoryicons."</select>",1);
 
                 tr_small($lang_usercp['row_font_size'], '<select name=fontsize><option value=small '.($CURUSER['fontsize'] == 'small' ? ' selected' : '').'>'.$lang_usercp['select_small'].'</option><option value=medium '.($CURUSER['fontsize'] == 'medium' ? ' selected' : '').'>'.$lang_usercp['select_medium'].'</option><option value=large '.($CURUSER['fontsize'] == 'large' ? ' selected' : '').'>'.$lang_usercp['select_large'].'</option></select>', 1);
 

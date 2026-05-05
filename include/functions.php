@@ -1907,9 +1907,6 @@ function get_ip_location($ip)
 	if (!$ret = $Cache->get_value($cacheKey)){
 		$ret = array();
 
-//		$res = sql_query("SELECT * FROM locations") or sqlerr(__FILE__, __LINE__);
-//		while ($row = mysql_fetch_array($res))
-//			$ret[] = $row;
 
         //get from geoip2
         $row = get_ip_location_from_geoip($ip);
@@ -2518,11 +2515,6 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 	$tstart = getmicrotime(); // Start time
 	//Insert old ip into iplog
 	if ($CURUSER){
-//		if ($iplog1 == "yes") {
-//			if (($oldip != $CURUSER["ip"]) && $CURUSER["ip"])
-//			sql_query("INSERT INTO iplog (ip, userid, access) VALUES (" . sqlesc($CURUSER['ip']) . ", " . $CURUSER['id'] . ", '" . $CURUSER['last_access'] . "')");
-//		}
-        //record always
         \App\Repositories\IpLogRepository::saveToCache($CURUSER['id']);
 		$USERUPDATESET['last_access'] = date("Y-m-d H:i:s");
 		$USERUPDATESET['ip'] = $CURUSER['ip'];
@@ -2897,17 +2889,6 @@ if ($msgalert)
 	}
     \App\Utils\MsgAlert::getInstance()->render();
 
-/*
-	$pending_invitee = $Cache->get_value('user_'.$CURUSER["id"].'_pending_invitee_count');
-	if ($pending_invitee == ""){
-		$pending_invitee = get_row_count("users","WHERE status = 'pending' AND invited_by = ".sqlesc($CURUSER['id']));
-		$Cache->cache_value('user_'.$CURUSER["id"].'_pending_invitee_count', $pending_invitee, 900);
-	}
-	if ($pending_invitee > 0)
-	{
-		$text = $lang_functions['text_your_friends'].add_s($pending_invitee).is_or_are($pending_invitee).$lang_functions['text_awaiting_confirmation'];
-		msgalert("invite.php?id=".$CURUSER['id'],$text, "red");
-	}*/
 	$settings_script_name = $_SERVER["SCRIPT_FILENAME"];
 	if (!preg_match("/index/i", $settings_script_name))
 	{
@@ -3171,8 +3152,6 @@ function get_langid_from_langcookie($lang = '')
     }
     $row = \App\Models\Language::query()->where('site_lang', 1)->where("site_lang_folder", $lang)->orderBy("id")->first();
     return $row->id ?? 0;
-//	$row = mysql_fetch_array(sql_query("SELECT id FROM language WHERE site_lang = 1 AND site_lang_folder = " . sqlesc($lang) . "ORDER BY id ASC")) or sqlerr(__FILE__, __LINE__);
-//	return $row['id'];
 }
 
 function make_folder($pre, $folder_name)
@@ -3642,14 +3621,6 @@ function langlist($type, $enabled = null) {
         }
         return $query->get()->toArray();
     });
-//    if (!$ret = $Cache->get_value($type.'_lang_list')){
-//        $ret = array();
-//        $res = sql_query("SELECT id, lang_name, flagpic, site_lang_folder FROM language WHERE ". $type ."=1 ORDER BY site_lang DESC, id ASC");
-//        while ($row = mysql_fetch_array($res))
-//            $ret[] = $row;
-//        $Cache->cache_value($type.'_lang_list', $ret, 152800);
-//    }
-//	return $ret;
 }
 
 function linkcolor($num) {
@@ -3662,16 +3633,6 @@ function linkcolor($num) {
 
 function writecomment($userid, $comment, $oldModcomment = null) {
     \App\Models\UserModifyLog::query()->create(['user_id' => $userid, 'content' => $comment]);
-//    if (is_null($oldModcomment)) {
-//        $res = sql_query("SELECT modcomment FROM users WHERE id = '$userid'") or sqlerr(__FILE__, __LINE__);
-//        $arr = mysql_fetch_assoc($res);
-//        $modcomment = date("Y-m-d") . " - " . $comment . "" . ($arr['modcomment'] != "" ? "\n" : "") . $arr['modcomment'];
-//    } else {
-//        $modcomment = date("Y-m-d") . " - " . $comment . "" . ($oldModcomment != "" ? "\n" : "") .$oldModcomment;
-//    }
-//	$modcom = sqlesc($modcomment);
-//    do_log("update user: $userid prepend modcomment: $comment, with oldModcomment: $oldModcomment");
-//	return sql_query("UPDATE users SET modcomment = $modcom WHERE id = '$userid'") or sqlerr(__FILE__, __LINE__);
 }
 
 function return_torrent_bookmark_array($userid)
@@ -3857,7 +3818,6 @@ $counter = 0;
 if ($smalldescription_main == 'no' || $CURUSER['showsmalldescr'] == 'no')
 	$displaysmalldescr = false;
 else $displaysmalldescr = true;
-//while ($row = mysql_fetch_assoc($res))
 $lastcom_tooltip = [];
 $torrent_tooltip = [];
 foreach ($rows as $row)

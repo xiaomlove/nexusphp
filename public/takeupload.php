@@ -263,14 +263,6 @@ if ($largesize_torrent && $totallen > ($largesize_torrent * 1073741824)) { // La
         $sp_state = 1;
     } // normal
 }
-//
-// if ($altname_main == 'yes'){
-// $cnname_part = unesc(trim($_POST["cnname"]));
-// $size_part = str_replace(" ", "", mksize($totallen));
-// $date_part = date("m.d.y");
-// $category_part = get_single_value("categories","name","WHERE id = ".sqlesc($catid));
-// $torrent = "【".$date_part."】".($_POST["name"] ? "[".$_POST["name"]."]" : "").($cnname_part ? "[".$cnname_part."]" : "");
-// }
 
 // some ugly code of automatically promoting torrents based on some rules
 // if ($prorules_torrent == 'yes'){
@@ -396,15 +388,6 @@ if (user_can('torrent-set-price') && $paidTorrentEnabled) {
 do_log('[INSERT_TORRENT]: '.nexus_json_encode($insert));
 $id = Torrent::query()->insertGetId($insert);
 
-// $ret = sql_query("INSERT INTO torrents (filename, owner, visible, anonymous, name, size, numfiles, type, url, small_descr, descr, ori_descr, category, source, medium, codec, audiocodec, standard, processing, team, save_as, sp_state, added, last_action, nfo, info_hash, pt_gen, technical_info) VALUES (".sqlesc($fname).", ".sqlesc($CURUSER["id"]).", 'yes', ".sqlesc($anonymous).", ".sqlesc($torrent).", ".sqlesc($totallen).", ".count($filelist).", ".sqlesc($type).", ".sqlesc($url).", ".sqlesc($small_descr).", ".sqlesc($descr).", ".sqlesc($descr).", ".sqlesc($catid).", ".sqlesc($sourceid).", ".sqlesc($mediumid).", ".sqlesc($codecid).", ".sqlesc($audiocodecid).", ".sqlesc($standardid).", ".sqlesc($processingid).", ".sqlesc($teamid).", ".sqlesc($dname).", ".sqlesc($sp_state) .
-// ", " . sqlesc(date("Y-m-d H:i:s")) . ", " . sqlesc(date("Y-m-d H:i:s")) . ", ".sqlesc($nfo).", " . sqlesc($infohash). ", " . sqlesc($_POST['pt_gen']) . ", " . sqlesc($_POST['technical_info'] ?? '') . ")");
-// if (!$ret) {
-//	if (mysql_errno() == 1062)
-//	bark($lang_takeupload['std_torrent_existed']);
-//	bark("mysql puked: ".mysql_error());
-//	//bark("mysql puked: ".preg_replace_callback('/./s', "hex_esc2", mysql_error()));
-// }
-// $id = mysql_insert_id();
 
 $torrentFilePath = "$torrentSavePath/$id.torrent";
 $saveResult = $dict->dump($torrentFilePath);
@@ -481,8 +464,6 @@ if ($is_offer) {
 
         // === use this if you DO have subject in your PMs
         $subject = nexus_trans('torrent.msg_offer', [], $locale).$torrent.nexus_trans('torrent.msg_was_just_uploaded', [], $locale);
-        // === use this if you DO NOT have subject in your PMs
-        // $some_variable .= "(0, $row[userid], '" . date("Y-m-d H:i:s") . "', " . sqlesc($pn_msg) . ")";
 
         // === use this if you DO have subject in your PMs
         Message::add([
@@ -492,9 +473,6 @@ if ($is_offer) {
             'added' => now(),
             'msg' => $pn_msg,
         ]);
-        // === use this if you do NOT have subject in your PMs
-        // sql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES ".$some_variable."") or sqlerr(__FILE__, __LINE__);
-        // ===end
     }
     // === delete all offer stuff
     NexusDB::table('offers')->where('id', (int) $offerid)->delete();
@@ -508,65 +486,5 @@ if ($is_offer) {
 // === end notify people who voted on offer
 
 /* Email notifs */
-// //move to event listener
-// if ($emailnotify_smtp=='yes' && $smtptype != 'none')
-// {
-// $cat = get_single_value("categories","name","WHERE id=".sqlesc($catid));
-// $res = sql_query("SELECT id, email, lang FROM users WHERE enabled='yes' AND parked='no' AND status='confirmed' AND notifs LIKE '%[cat$catid]%' AND notifs LIKE '%[email]%' ORDER BY lang ASC") or sqlerr(__FILE__, __LINE__);
-//
-// $uploader = $anon;
-//
-// $size = mksize($totallen);
-//
-// $description = format_comment($descr);
-//
-// //dirty code, change later
-// $baseUrl = getSchemeAndHttpHost();
-// $langfolder_array = array("en", "chs", "cht", "ko", "ja");
-// $body_arr = array("en" => "", "chs" => "", "cht" => "", "ko" => "", "ja" => "");
-// $i = 0;
-// foreach($body_arr as $body)
-// {
-// $body_arr[$langfolder_array[$i]] = <<<EOD
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_hi']}
-//
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_new_torrent']}
-//
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_torrent_name']}$torrent
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_torrent_size']}$size
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_torrent_category']}$cat
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_torrent_uppedby']}$uploader
-//
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_torrent_description']}
-// -------------------------------------------------------------------------------------------------------------------------
-// $description
-// -------------------------------------------------------------------------------------------------------------------------
-//
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_torrent']}<b><a href="javascript:void(null)" onclick="window.open('$baseUrl/details.php?id=$id&hit=1')">{$lang_takeupload_target[$langfolder_array[$i]]['mail_here']}</a></b><br />
-// $baseUrl/details.php?id=$id&hit=1
-//
-// ------{$lang_takeupload_target[$langfolder_array[$i]]['mail_yours']}
-// {$lang_takeupload_target[$langfolder_array[$i]]['mail_team']}
-// EOD;
-//
-// $body_arr[$langfolder_array[$i]] = str_replace("<br />","<br />",nl2br($body_arr[$langfolder_array[$i]]));
-//	$i++;
-// }
-//
-// while($arr = mysql_fetch_array($res))
-// {
-//		$current_lang = $arr["lang"];
-//		$to = $arr["email"];
-//
-//		sent_mail(
-//            $to,$SITENAME,$SITEEMAIL,
-//            $lang_takeupload_target[validlang($current_lang)]['mail_title'],
-//            $torrent,
-//            validlang($current_lang),
-//            $body_arr[validlang($current_lang)],
-//            "torrent upload",false,false,'',
-//        );
-// }
-// }
 
 header('Location: '.get_protocol_prefix()."$BASEURL/details.php?id=".htmlspecialchars($id).'&uploaded=1');

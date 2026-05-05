@@ -145,14 +145,6 @@ $emailInUse = \Nexus\Database\NexusDB::table('users')
 if ($emailInUse != 0)
   bark($lang_takesignup['std_email_address'].$email.$lang_takesignup['std_in_use']);
 
-/*
-// do simple proxy check
-if (isproxy())
-	bark("You appear to be connecting through a proxy server. Your organization or ISP may use a transparent caching HTTP proxy. Please try and access the site on <a href="." . get_protocol_prefix() . "$BASEURL.":81/signup.php>port 81</a> (this should bypass the proxy server). <p><b>Note:</b> if you run an Internet-accessible web server on the local machine you need to shut it down until the sign-up is complete.");
-
-$res = sql_query("SELECT COUNT(*) FROM users") or sqlerr(__FILE__, __LINE__);
-$arr = mysql_fetch_row($res);
-*/
 
 $secret = mksecret();
 //$wantpasshash = md5($secret . $wantpassword . $secret);
@@ -248,9 +240,6 @@ EOD;
 
 if ($type == 'invite')
 {
-    //don't forget to delete confirmed invitee's hash code from table invites
-    //sql_query("DELETE FROM invites WHERE hash = '".mysql_real_escape_string($code)."'");
-    // set invalid
     $update = [
         'valid' => \App\Models\Invite::VALID_NO,
         'invitee_register_uid' => $id,
@@ -263,7 +252,6 @@ if ($type == 'invite')
     $locale = get_user_locale($inviter);
     $subject = nexus_trans("user.msg_invited_user_has_registered", [], $locale);
     $msg = nexus_trans("user.msg_user_you_invited", [],$locale).$wantusername.nexus_trans("user.msg_has_registered", [], $locale);
-    //sql_query("UPDATE users SET uploaded = uploaded + 10737418240 WHERE id = $inviter"); //add 10GB to invitor's uploading credit
     \App\Models\Message::add([
         'sender' => 0,
         'receiver' => $inviter,

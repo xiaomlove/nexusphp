@@ -84,21 +84,6 @@ foreach ($reportres as $row)
 			}
 			break;
 		}
-/*
-		case "request":
-		{
-			$type = "Request";
-			$res = sql_query("SELECT id, request FROM requests WHERE id=".sqlesc($row['reportid']));
-			if (mysql_num_rows($res) == 0)
-				$reporting = "Request doesn't exist or is deleted.";
-			else
-			{
-				$arr = mysql_fetch_array($res);
-				$reporting = "<a href=\"viewrequests.php?id=".$arr[id]."&req_details=1\">".htmlspecialchars($arr['request'])."</a>";
-			}
-			break;
-		}
-*/
 		case "post":
 		{
 			$type = $lang_reports['text_forum_post'];

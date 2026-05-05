@@ -74,8 +74,6 @@ if (! in_array($action, $allowed_actions)) {
 
             $rows = NexusDB::select('SELECT  requests.*  FROM requests WHERE '.$limit.' ORDER BY id DESC');
             [$pagertop, $pagerbottom, $limit2] = pager(20, count($rows), "?$finishedlimit");
-            // if (mysql_num_rows($rows) == 0) stderr( "没有求种" , "没有符合条件的求种项目，<a href=viewrequests.php?action=new>点击这里增加新求种</a>",0);
-            // else
 
             stdhead($lang_viewrequests['page_title']);
 
@@ -545,9 +543,7 @@ if (! in_array($action, $allowed_actions)) {
             $message = $arr['message'];
             $message .= "<tr><td width=240>{$lang_functions['std_by']}".$CURUSER['username'].$lang_viewrequests['request_created_at'].date('Y-m-d H:i:s').'</td><td>'.$_POST['message'].'</td></tr>';
 
-            // sql_query("UPDATE requests SET message = '".$message."' WHERE id = ".$_POST["id"])or sqlerr(__FILE__, __LINE__);
 
-            // sql_query("INSERT reqcommen (user , added ,text ,reqid) VALUES ( '".$CURUSER["id"]."' , ".sqlesc(date("Y-m-d H:i:s"))." , ".sqlesc($_POST["message"])." , '".$_POST["id"]."'    )");
             NexusDB::insert('comments', [
                 'user' => $CURUSER['id'],
                 'request' => (int) $_POST['id'],
@@ -557,7 +553,6 @@ if (! in_array($action, $allowed_actions)) {
             ]);
             $id = (int) ($_POST['id'] ?? 0);
             if ($CURUSER['id'] != $arr['userid']) {
-                // sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, " . $arr['userid'] . ", '{$lang_viewrequests['request_get_new_reply']}', " . sqlesc(" [url=viewrequests.php?action=view&id={$_POST['id']}] " . $arr['request'] . "[/url].") . ", " . sqlesc(date("Y-m-d H:i:s")) . ")") or sqlerr(__FILE__, __LINE__);
                 Message::add([
                     'sender' => 0,
                     'receiver' => $arr['userid'],
