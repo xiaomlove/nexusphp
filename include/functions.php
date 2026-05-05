@@ -3569,9 +3569,14 @@ function genrelist($catmode = 1) {
 	global $Cache;
 	if (!$ret = $Cache->get_value('category_list_mode_'.$catmode)){
 		$ret = array();
-		$res = sql_query("SELECT id, mode, name, image FROM categories WHERE mode = ".sqlesc($catmode)." ORDER BY sort_index desc");
-		while ($row = mysql_fetch_array($res))
-			$ret[] = $row;
+		$rows = \Nexus\Database\NexusDB::table('categories')
+			->select(['id', 'mode', 'name', 'image'])
+			->where('mode', $catmode)
+			->orderByDesc('sort_index')
+			->get();
+		foreach ($rows as $row) {
+			$ret[] = (array) $row;
+		}
 		$Cache->cache_value('category_list_mode_'.$catmode, $ret, 3600);
 	}
 	return $ret;
@@ -3582,14 +3587,16 @@ function searchbox_item_list(string $table, int $mode){
 	$cacheKey = "{$table}_list_mode_{$mode}";
 	if (!$ret = $Cache->get_value($cacheKey)){
 		$ret = array();
-		$sql = "SELECT * FROM $table";
+		$query = \Nexus\Database\NexusDB::table($table);
 		if ($mode > 0) {
-		    $sql .= " where (mode = '$mode' or mode = 0)";
-        }
-		$sql .= " ORDER BY sort_index, id";
-		$res = sql_query($sql);
-		while ($row = mysql_fetch_array($res))
-			$ret[] = $row;
+			$query->where(function ($q) use ($mode) {
+				$q->where('mode', $mode)->orWhere('mode', 0);
+			});
+		}
+		$rows = $query->orderBy('sort_index')->orderBy('id')->get();
+		foreach ($rows as $row) {
+			$ret[] = (array) $row;
+		}
 		$Cache->cache_value($cacheKey, $ret, 3600);
 	}
 	return $ret;
@@ -4648,8 +4655,9 @@ function get_category_icon_row($typeid)
 	}
 	if (!$rows && !$rows = $Cache->get_value('category_icon_content')){
 		$rows = array();
-		$res = sql_query("SELECT * FROM caticons ORDER BY id ASC");
-		while($row = mysql_fetch_array($res)) {
+		$resRows = \Nexus\Database\NexusDB::table('caticons')->orderBy('id')->get();
+		foreach ($resRows as $row) {
+			$row = (array) $row;
 			$rows[$row['id']] = $row;
 		}
 		$Cache->cache_value('category_icon_content', $rows, 156400);
@@ -4662,8 +4670,12 @@ function get_category_row($catid = NULL)
 	static $rows;
 	if (!$rows && !$rows = $Cache->get_value('category_content')){
         $rows = [];
-		$res = sql_query("SELECT categories.*, searchbox.name AS catmodename FROM categories LEFT JOIN searchbox ON categories.mode=searchbox.id");
-		while($row = mysql_fetch_array($res)) {
+		$resRows = \Nexus\Database\NexusDB::table('categories')
+			->leftJoin('searchbox', 'categories.mode', '=', 'searchbox.id')
+			->select(['categories.*', 'searchbox.name as catmodename'])
+			->get();
+		foreach ($resRows as $row) {
+			$row = (array) $row;
 			$rows[$row['id']] = $row;
 		}
 		$Cache->cache_value('category_content', $rows, 126400);
@@ -4688,8 +4700,24 @@ function get_second_icon($row) //for CHDBits
 	$mode = $row['search_box_id'];
 	$cacheKey = 'secondicon_'.$source.'_'.$medium.'_'.$codec.'_'.$standard.'_'.$processing.'_'.$team.'_'.$audiocodec.'_content';
 	if (!$sirow = $Cache->get_value($cacheKey)){
-		$res = sql_query("SELECT * FROM secondicons WHERE (mode = ".sqlesc($mode)." OR mode = 0) AND (source = ".sqlesc($source)." OR source=0) AND (medium = ".sqlesc($medium)." OR medium=0) AND (codec = ".sqlesc($codec)." OR codec = 0) AND (standard = ".sqlesc($standard)." OR standard = 0) AND (processing = ".sqlesc($processing)." OR processing = 0) AND (team = ".sqlesc($team)." OR team = 0) AND (audiocodec = ".sqlesc($audiocodec)." OR audiocodec = 0) LIMIT 1");
-		$sirow = mysql_fetch_array($res);
+		$pairs = [
+			['mode',       $mode],
+			['source',     $source],
+			['medium',     $medium],
+			['codec',      $codec],
+			['standard',   $standard],
+			['processing', $processing],
+			['team',       $team],
+			['audiocodec', $audiocodec],
+		];
+		$query = \Nexus\Database\NexusDB::table('secondicons');
+		foreach ($pairs as [$column, $value]) {
+			$query->where(function ($q) use ($column, $value) {
+				$q->where($column, $value)->orWhere($column, 0);
+			});
+		}
+		$siRowObj = $query->limit(1)->first();
+		$sirow = $siRowObj ? (array) $siRowObj : false;
 		if (!$sirow)
 			$sirow = 'not allowed';
 		$Cache->cache_value($cacheKey, $sirow, 600);
@@ -5202,8 +5230,9 @@ function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 	$cacheKey = "search_box_content";
 	if (!$rows && !$rows = $Cache->get_value($cacheKey)){
 		$rows = array();
-		$res = sql_query("SELECT * FROM searchbox ORDER BY id ASC");
-		while ($row = mysql_fetch_array($res)) {
+		$resRows = \Nexus\Database\NexusDB::table('searchbox')->orderBy('id')->get();
+		foreach ($resRows as $row) {
+			$row = (array) $row;
 		    if (isset($row['extra'])) {
 		        $row['extra'] = json_decode($row['extra'], true);
             }
