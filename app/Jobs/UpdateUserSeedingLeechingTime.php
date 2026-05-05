@@ -81,7 +81,6 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
             return;
         }
         //批量取，简单化
-//        $res = sql_query("select userid, sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum from snatched group by userid where userid in ($idStr)");
         $res = NexusDB::table("snatched")
             ->selectRaw("userid, sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum")
             ->whereRaw("userid in ($idStr)")

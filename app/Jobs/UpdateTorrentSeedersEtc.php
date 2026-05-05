@@ -83,7 +83,6 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
         $torrentIdArr = explode(",", $idStr);
         //批量取，简单化
         $torrents = array();
-//        $res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder where torrent in ($idStr)");
         $res = NexusDB::table("peers")
             ->selectRaw("torrent, seeder, COUNT(*) AS c")
             ->whereRaw("torrent in ($idStr)")
@@ -101,7 +100,6 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
             $torrents[$row->torrent][$key] = $row->c;
         }
 
-//        $res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent where torrent in ($idStr)");
         $res = NexusDB::table("comments")
             ->selectRaw("torrent, COUNT(*) AS c")
             ->whereRaw("torrent in ($idStr)")

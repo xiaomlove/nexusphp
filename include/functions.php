@@ -95,7 +95,7 @@ function sqlerr($file = '', $line = '')
 {
 	print("<table border=\"0\" bgcolor=\"blue\" align=\"left\" cellspacing=\"0\" cellpadding=\"10\" style=\"background: blue;\">" .
 	"<tr><td class=\"embedded\"><font color=\"white\"><h1>SQL Error</h1>\n" .
-	"<b>" . mysql_error() . ($file != '' && $line != '' ? "<p>in $file, line $line</p>" : "") . "</b></font></td></tr></table>");
+	"<b>" . \Nexus\Database\NexusDB::getInstance()->error() . ($file != '' && $line != '' ? "<p>in $file, line $line</p>" : "") . "</b></font></td></tr></table>");
 	die;
 }
 
