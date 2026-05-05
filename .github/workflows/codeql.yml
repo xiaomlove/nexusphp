@@ -1,0 +1,57 @@
+# CodeQL static analysis
+# https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - php8
+      - main
+      - master
+  pull_request:
+    branches:
+      - php8
+      - main
+      - master
+  schedule:
+    # Weekly Monday 04:30 UTC (off-peak relative to CI matrix)
+    - cron: '30 4 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+            build-mode: none
+          # NOTE: PHP is intentionally omitted — CodeQL does not support PHP as a
+          # first-class language. PHP static analysis is covered by PHPStan in
+          # the main CI workflow.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-and-quality
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
