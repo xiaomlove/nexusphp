@@ -21,7 +21,6 @@ foreach ($reseedRows as $row) {
     $locale = get_user_locale($row['userid']);
 $rs_subject = nexus_trans("torrent.msg_reseed_request", [], $locale);
 $pn_msg = nexus_trans("torrent.msg_reseed_user", [], $locale).$CURUSER["username"].nexus_trans("torrent.msg_ask_reseed", [], $locale)."[url=" . get_protocol_prefix() . "$BASEURL/details.php?id=".$reseedid."]".$row["torrent_name"]."[/url]".nexus_trans("torrent.msg_thank_you", [], $locale);
-//sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, $row[userid], '" . date("Y-m-d H:i:s") . "'," . sqlesc($rs_subject) . ", " . sqlesc($pn_msg) . ")") or sqlerr(__FILE__, __LINE__);
     \App\Models\Message::add([
         'sender' => 0,
         'receiver' => $row['userid'],
@@ -30,7 +29,6 @@ $pn_msg = nexus_trans("torrent.msg_reseed_user", [], $locale).$CURUSER["username
         'added' => now(),
     ]);
 }
-//sql_query("UPDATE torrents SET last_reseed = ".sqlesc(date("Y-m-d H:i:s"))." WHERE id=".sqlesc($reseedid));
 \App\Models\Torrent::query()->where("id", $reseedid)->update([
     "last_reseed" => now(),
     "seeders" => $seederCount,

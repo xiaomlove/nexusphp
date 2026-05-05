@@ -142,9 +142,6 @@ function hash_pad($hash)
 
 function hash_where($name, $hash)
 {
-    //	$shhash = preg_replace('/ *$/s', "", $hash);
-    //	return "($name = " . sqlesc($hash) . " OR $name = " . sqlesc($shhash) . ")";
-    //	return sprintf("$name in (%s, %s)", sqlesc($hash), sqlesc($shhash));
     if (NexusDB::isMysql()) {
         return "$name = ".sqlesc($hash);
     } elseif (NexusDB::isPgsql()) {
@@ -877,20 +874,6 @@ function get_user_row($id)
         return apply_filter('user_row', $arr);
     });
 
-    //	if ($CURUSER && $id == $CURUSER['id']) {
-    //		$row = array();
-    //		foreach($neededColumns as $column) {
-    //			$row[$column] = $CURUSER[$column];
-    //		}
-    //		if (!$curuserRowUpdated) {
-    //			$Cache->cache_value('user_'.$CURUSER['id'].'_content', $row, 900);
-    //			$curuserRowUpdated = true;
-    //		}
-    //	} elseif (!$row = $Cache->get_value('user_'.$id.'_content')){
-    //		$res = sql_query("SELECT ".implode(',', $neededColumns)." FROM users WHERE id = ".sqlesc($id)) or sqlerr(__FILE__,__LINE__);
-    //		$row = mysql_fetch_array($res);
-    //		$Cache->cache_value('user_'.$id.'_content', $row, 900);
-    //	}
 
     if (! $row) {
         return false;

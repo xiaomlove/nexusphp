@@ -111,9 +111,6 @@ if (isset($_GET['new_offer']) && $_GET['new_offer']) {
     $existRow = NexusDB::table('offers')->where('name', (string) $_POST['name'])->select(['name'])->first();
     $arr = $existRow ? (array) $existRow : [];
     if (empty($arr['name'])) {
-        // ===add karma //=== uncomment if you use the mod
-        // sql_query("UPDATE users SET seedbonus = seedbonus+10.0 WHERE id = $CURUSER['id']") or sqlerr(__FILE__, __LINE__);
-        // ===end
 
         $id = (int) NexusDB::insert('offers', [
             'userid' => (int) $CURUSER['id'],
@@ -289,7 +286,6 @@ if (isset($_GET['allow_offer']) && $_GET['allow_offer']) {
 
     $subject = nexus_trans('offer.msg_your_offer_allowed', [], $locale);
     $allowedtime = date('Y-m-d H:i:s');
-    // sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['userid']}, '" . $allowedtime . "', " . sqlesc($msg) . ", ".sqlesc($subject).")") or sqlerr(__FILE__, __LINE__);
 
     Message::add([
         'sender' => 0,
@@ -364,8 +360,6 @@ if (isset($_GET['finish_offer']) && $_GET['finish_offer']) {
         'msg' => $msg,
     ]);
 
-    // ===use this line if you DO NOT subject in your PM system
-    // sql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES(0, $arr['userid'], '" . date("Y-m-d H:i:s") . "', " . sqlesc($msg) . ")") or sqlerr(__FILE__, __LINE__);
     write_log("{$CURUSER['username']} closed poll {$arr['name']}", 'normal');
 
     header('Location: '.get_protocol_prefix()."$BASEURL/offers.php?id=$offid&off_details=1");
@@ -653,9 +647,6 @@ if (isset($_GET['del_offer']) && $_GET['del_offer']) {
         NexusDB::statement('DELETE FROM offervotes WHERE offerid = '.(int) $offer);
         NexusDB::statement('DELETE FROM comments WHERE offer = '.(int) $offer);
 
-        // ===add karma	//=== use this if you use the karma mod
-        // sql_query("UPDATE users SET seedbonus = seedbonus-10.0 WHERE id = $num['userid']") or sqlerr(__FILE__, __LINE__);
-        // ===end
 
         if ($CURUSER['id'] != $num['userid']) {
             $added = date('Y-m-d H:i:s');

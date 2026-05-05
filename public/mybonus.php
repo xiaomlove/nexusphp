@@ -639,8 +639,6 @@ if ($action == 'exchange') {
                     'user: %s going to use %s bonus to exchange uploaded from %s to %s',
                     $CURUSER['id'], $points, $CURUSER['uploaded'], $up
                 ));
-                //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for upload bonus.\n " .$bonuscomment;
-                //			sql_query("UPDATE users SET uploaded = ".sqlesc($up).", seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
                 $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_EXCHANGE_UPLOAD, $points.' Points for uploaded.', ['uploaded' => $up]);
                 nexus_redirect(''.get_protocol_prefix()."$BASEURL/mybonus.php?do=upload");
             }
@@ -663,8 +661,6 @@ if ($action == 'exchange') {
                 exit;
             }
             $vip_until = date('Y-m-d H:i:s', (strtotime(date('Y-m-d H:i:s')) + 28 * 86400));
-            //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for 1 month VIP Status.\n " .htmlspecialchars($bonuscomment);
-            //			sql_query("UPDATE users SET class = '".UC_VIP."', vip_added = 'yes', vip_until = ".sqlesc($vip_until).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_BUY_VIP, $points.' Points for 1 month VIP Status.', ['class' => UC_VIP, 'vip_added' => 'yes', 'vip_until' => $vip_until]);
             nexus_redirect(''.get_protocol_prefix()."$BASEURL/mybonus.php?do=vip");
         }
@@ -675,8 +671,6 @@ if ($action == 'exchange') {
             }
             $invites = $CURUSER['invites'];
             $inv = $invites + $bonusarray['menge'];
-            //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
-            //			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_EXCHANGE_INVITE, $points.' Points for invites.', ['invites' => $inv]);
             nexus_redirect(''.get_protocol_prefix()."$BASEURL/mybonus.php?do=invite");
         }
@@ -685,10 +679,6 @@ if ($action == 'exchange') {
             if (! user_can('buyinvite')) {
                 exit(get_user_class_name($buyinvite_class, false, false, true).$lang_mybonus['text_plus_only']);
             }
-            //            $invites = $CURUSER['invites'];
-            //            $inv = $invites+$bonusarray['menge'];
-            //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for invites.\n " .htmlspecialchars($bonuscomment);
-            //			sql_query("UPDATE users SET invites = ".sqlesc($inv).", seedbonus = seedbonus - $points, bonuscomment=".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeToBuyTemporaryInvite($CURUSER['id']);
             nexus_redirect(''.get_protocol_prefix()."$BASEURL/mybonus.php?do=tmp_invite");
         }
@@ -701,8 +691,6 @@ if ($action == 'exchange') {
             $title = $_POST['title'];
             $words = ['fuck', 'shit', 'pussy', 'cunt', 'nigger', 'Staff Leader', 'SysOp', 'Administrator', 'Moderator', 'Uploader', 'Retiree', 'VIP', 'Nexus Master', 'Ultimate User', 'Extreme User', 'Veteran User', 'Insane User', 'Crazy User', 'Elite User', 'Power User', 'User', 'Peasant', 'Champion'];
             $title = str_replace($words, $lang_mybonus['text_wasted_karma'], $title);
-            //			$bonuscomment = date("Y-m-d") . " - " .$points. " Points for custom title. Old title is ".htmlspecialchars(trim($CURUSER["title"]))." and new title is $title\n " .htmlspecialchars($bonuscomment);
-            //			sql_query("UPDATE users SET title = ".sqlesc($title).", seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
             $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_CUSTOM_TITLE, $points.' Points for custom title. Old title is '.htmlspecialchars(trim($CURUSER['title']))." and new title is $title.", ['title' => $title]);
             nexus_redirect(''.get_protocol_prefix()."$BASEURL/mybonus.php?do=title");
         } elseif ($art == 'noad' && $enablead_advertisement == 'yes' && $enablebonusnoad_advertisement == 'yes') {
@@ -710,8 +698,6 @@ if ($action == 'exchange') {
                 exit($lang_mybonus['text_cheat_alert']);
             } else {
                 $noaduntil = date('Y-m-d H:i:s', (TIMENOW + $bonusarray['menge']));
-                //				$bonuscomment = date("Y-m-d") . " - " .$points. " Points for ".$bonusnoadtime_advertisement." days without ads.\n " .htmlspecialchars($bonuscomment);
-                //				sql_query("UPDATE users SET noad='yes', noaduntil='".$noaduntil."', seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id=".sqlesc($userid));
                 $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_NO_AD, $points.' Points for '.$bonusnoadtime_advertisement.' days without ads.', ['noad' => 'yes', 'noaduntil' => $noaduntil]);
                 nexus_redirect(''.get_protocol_prefix()."$BASEURL/mybonus.php?do=noad");
             }
@@ -737,7 +723,6 @@ if ($action == 'exchange') {
                     ->whereRaw('? > uploaded/downloaded', [(float) $ratiocharity])
                     ->count();
                 if ($charityReceiverCount) {
-                    //					sql_query("UPDATE users SET seedbonus = seedbonus - $points, charity = charity + $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
                     $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_GIFT_TO_LOW_SHARE_RATIO, $points.' Points as charity to users with ratio below '.htmlspecialchars(trim($ratiocharity)).'.', ['charity' => NexusDB::raw("charity + $points")]);
                     $charityPerUser = $points / $charityReceiverCount;
                     NexusDB::statement('UPDATE users SET seedbonus = seedbonus + '.(float) $charityPerUser." WHERE enabled='yes' AND 10737418240 < downloaded AND ".(float) $ratiocharity.' > uploaded/downloaded');
@@ -793,7 +778,6 @@ if ($action == 'exchange') {
                     exit;
                 }
 
-                //				sql_query("UPDATE users SET seedbonus = seedbonus - $points, bonuscomment = ".sqlesc($bonuscomment)." WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
                 $bonusRep->consumeUserBonus($CURUSER['id'], $points, BonusLogs::BUSINESS_TYPE_GIFT_TO_SOMEONE, $points2.' Points as gift to '.htmlspecialchars(trim($_POST['username'])));
                 NexusDB::table('users')
                     ->where('id', (int) $useridgift)

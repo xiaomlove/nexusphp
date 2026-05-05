@@ -128,14 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $file['name'] = str_replace(' ', '_', htmlspecialchars("$file[name]"));
     }
 
-    /*
-    $r = sql_query("SELECT id FROM subs WHERE title=" . sqlesc($title)) or sqlerr(__FILE__, __LINE__);
-    if (mysql_num_rows($r) > 0)
-    {
-        echo($lang_subtitles['std_file_same_name_exists']."<font color=red><b>" . htmlspecialchars($title) . "</b></font> ");
-        exit;
-    }
-    */
     // end process title
 
     // start process language

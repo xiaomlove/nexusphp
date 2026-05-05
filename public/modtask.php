@@ -169,36 +169,6 @@ if ($action == 'edituser') {
             ];
             UsernameChangeLog::query()->create($changeLog);
         }
-        // migrate to management
-        //		if ($ori_downloaded != $downloaded){
-        //			$updateset[] = "downloaded = " . sqlesc($downloaded);
-        //			$modcomment = date("Y-m-d") . " - Downloaded amount changed from $arr[downloaded] to $downloaded by {$CURUSER['username']}.\n". $modcomment;
-        //			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_downloaded_change']);
-        //			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_downloaded_changed_from'].mksize($arr['downloaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($downloaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-        //			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-        //		}
-        //
-        //		if ($ori_uploaded != $uploaded){
-        //			$updateset[] = "uploaded = " . sqlesc($uploaded);
-        //			$modcomment = date("Y-m-d") . " - Uploaded amount changed from $arr[uploaded] to $uploaded by {$CURUSER['username']}.\n". $modcomment;
-        //			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_uploaded_change']);
-        //			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_uploaded_changed_from'].mksize($arr['uploaded']).$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . mksize($uploaded) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-        //			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-        //		}
-        //		if ($ori_bonus != $bonus){
-        //			$updateset[] = "seedbonus = " . sqlesc($bonus);
-        //			$modcomment = date("Y-m-d") . " - Bonus amount changed from $arr[seedbonus] to $bonus by {$CURUSER['username']}.\n". $modcomment;
-        //			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_bonus_change']);
-        //			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_bonus_changed_from'].$arr['seedbonus'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $bonus .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-        //			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-        //		}
-        //		if ($arr['invites'] != $invites){
-        //			$updateset[] = "invites = " . sqlesc($invites);
-        //			$modcomment = date("Y-m-d") . " - Invite amount changed from $arr[invites] to $invites by {$CURUSER['username']}.\n". $modcomment;
-        //			$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_invite_change']);
-        //			$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_your_invite_changed_from'].$arr['invites'].$lang_modtask_target[get_user_lang($userid)]['msg_to_new'] . $invites .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-        //			sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-        //		}
     }
     if (get_user_class() == UC_STAFFLEADER) {
         $donor = $_POST['donor'];
@@ -239,60 +209,11 @@ if ($action == 'edituser') {
             $userModifyLogs[] = "donor status changed by {$CURUSER['username']}. Current donor status: $donor";
         }
     }
-    // migrate to management
-    //	if ($chpassword != "" AND $passagain != "") {
-    //		unset($passupdate);
-    //		$passupdate=false;
-    //
-    //		if ($chpassword ==  $username OR strlen($chpassword) > 40 OR strlen($chpassword) < 6 OR $chpassword != $passagain)
-    //			$passupdate=false;
-    //		else
-    //			$passupdate=true;
-    //	}
-    //
-    //	if (isset($passupdate) && $passupdate) {
-    //		$sec = mksecret();
-    //		$passhash = md5($sec . $chpassword . $sec);
-    //		$updateset[] = "secret = " . sqlesc($sec);
-    //		$updateset[] = "passhash = " . sqlesc($passhash);
-    //	}
 
     if ($curclass >= get_user_class()) {
         puke();
     }
 
-    // migrate to management
-    //	if (user_can('user-change-class') && $curclass != $class)
-    //	{
-    //		$what = ($class > $curclass ? $lang_modtask_target[get_user_lang($userid)]['msg_promoted'] : $lang_modtask_target[get_user_lang($userid)]['msg_demoted']);
-    //		$subject = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_class_change']);
-    //		$msg = sqlesc($lang_modtask_target[get_user_lang($userid)]['msg_you_have_been'].$what.$lang_modtask_target[get_user_lang($userid)]['msg_to'] . get_user_class_name($class) .$lang_modtask_target[get_user_lang($userid)]['msg_by'].$CURUSER['username']);
-    //		$added = sqlesc(date("Y-m-d H:i:s"));
-    //		sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES(0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
-    //		$updateset[] = "class = $class";
-    //		$what = ($class > $curclass ? "Promoted" : "Demoted");
-    //		$modcomment = date("Y-m-d") . " - $what to '" . get_user_class_name($class) . "' by {$CURUSER['username']}.\n". $modcomment;
-    //	}
-    //	if ($class == UC_VIP)
-    //	{
-    //		$updateset[] = "vip_added = ".sqlesc($vip_added);
-    //		if ($vip_added == 'yes')
-    //			$updateset[] = "vip_until = ".sqlesc($vip_until);
-    //		$subject = nexus_trans("user.msg_your_vip_status_changed", [], $locale);
-    //		$msg = nexus_trans("user.msg_vip_status_changed_by", [], $locale).$CURUSER['username'];
-    //		$added = sqlesc(date("Y-m-d H:i:s"));
-    //
-    //		\App\Models\Message::add([
-    //		    'sender' => 0,
-    //		    'receiver' => $userid,
-    //		    'subject' => $subject,
-    //		    'msg' => $msg,
-    //		    'added' => now(),
-    //		]);
-    //
-    // //		$modcomment = date("Y-m-d") . " - VIP status changed by {$CURUSER['username']}. VIP added: ".$vip_added.($vip_added == 'yes' ? "; VIP until: ".$vip_until : "").".\n". $modcomment;
-    //        $userModifyLogs[] = "VIP status changed by {$CURUSER['username']}. VIP added: ".$vip_added.($vip_added == 'yes' ? "; VIP until: ".$vip_until : "");
-    //	}
 
     if ($warned && $curwarned != $warned) {
         $updateset['warned'] = (string) $warned;
@@ -305,7 +226,6 @@ if ($action == 'edituser') {
             $msg = nexus_trans('user.msg_your_warning_removed_by', [], $locale).$CURUSER['username'].'.';
         }
 
-        // sql_query("INSERT INTO messages (sender, receiver, subject, msg, added) VALUES (0, $userid, $subject, $msg, $added)") or sqlerr(__FILE__, __LINE__);
         Message::add([
             'sender' => 0,
             'receiver' => $userid,
@@ -343,29 +263,6 @@ if ($action == 'edituser') {
         $updateset['lastwarned'] = NexusDB::raw('NOW()');
         $updateset['warnedby'] = (int) $CURUSER['id'];
     }
-    // migrate to management
-    //	if ($enabled != $curenabled)
-    //	{
-    //		if ($enabled == 'yes') {
-    //			$modcomment = date("Y-m-d") . " - Enabled by " . $CURUSER['username']. ".\n". $modcomment;
-    //			if (get_single_value("users","class","WHERE id = ".sqlesc($userid)) == UC_PEASANT){
-    //				$length = 30*86400; // warn users until 30 days
-    //				$until = sqlesc(date("Y-m-d H:i:s",(strtotime(date("Y-m-d H:i:s")) + $length)));
-    //				sql_query("UPDATE users SET enabled='yes', leechwarn='yes', leechwarnuntil=$until WHERE id = ".sqlesc($userid));
-    //			}
-    //			else{
-    //				sql_query("UPDATE users SET enabled='yes', leechwarn='no' WHERE id = ".sqlesc($userid)) or sqlerr(__FILE__, __LINE__);
-    //			}
-    //		} else {
-    //			$modcomment = date("Y-m-d") . " - Disabled by " . $CURUSER['username']. ".\n". $modcomment;
-    //			$banLog = [
-    //			    'uid' => $userid,
-    //                'username' => $user->username,
-    //                'operator' => $CURUSER['id'],
-    //                'reason' => nexus_trans('user.edit_ban_reason', [], $user->locale),
-    //            ];
-    //		}
-    //	}
     if ($arr['noad'] != $noad) {
         $updateset['noad'] = (string) $noad;
         //		$modcomment = date("Y-m-d") . " - No Ad set to ".$noad." by ". $CURUSER['username']. ".\n". $modcomment;

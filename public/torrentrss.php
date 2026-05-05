@@ -61,7 +61,6 @@ if ($passkey) {
         }
     }
 }
-// $searchstr = mysql_real_escape_string(trim($_GET["search"] ?? ''));
 $searchstr = null; // don't support search, use client self filter instead
 if (empty($searchstr)) {
     unset($searchstr);

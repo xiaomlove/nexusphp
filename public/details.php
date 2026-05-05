@@ -422,7 +422,6 @@ JS;
 	}
 		if (!empty($otherCopiesIdArr))
 		{
-//			$where_area = " url = " . sqlesc((int)$imdb_id) ." AND torrents.id != ".sqlesc($id);
 			$otherCopiesIdInts = array_map('intval', $otherCopiesIdArr);
 			$where_area = sprintf('torrents.id in (%s)', implode(',', $otherCopiesIdInts));
 			$copyRows = \Nexus\Database\NexusDB::select("SELECT torrents.id, torrents.name, torrents.sp_state, torrents.size, torrents.added, torrents.seeders, torrents.leechers, torrents.hr,categories.id AS catid, categories.name AS catname, categories.image AS catimage, $taxonomyFields, categories.mode as search_box_id FROM torrents
@@ -504,58 +503,6 @@ WHERE " . $where_area . " ORDER BY torrents.id DESC");
 		if (isset($bwrow['upname']) && isset($bwrow['downname']) && $bwrow['upname'] && $bwrow['downname'])
 			tr($lang_details['row_uploader_bandwidth'], "<img class=\"speed_down\" src=\"pic/trans.gif\" alt=\"Downstream Rate\" /> ".$bwrow['downname']."&nbsp;&nbsp;&nbsp;&nbsp;<img class=\"speed_up\" src=\"pic/trans.gif\" alt=\"Upstream Rate\" /> ".$bwrow['upname']."&nbsp;&nbsp;&nbsp;&nbsp;".$bwrow['ispname'],1);
 
-		/*
-		// Health
-		$seedersTmp = $row['seeders'];
-		$leechersTmp = $row['leechers'];
-		if ($leechersTmp >= 1)	// it is possible that there's traffic while have no seeders
-		{
-			$progressPerTorrent = 0;
-			$i = 0;
-			$subres = sql_query("SELECT seeder, finishedat, downloadoffset, uploadoffset, ip, port, uploaded, downloaded, to_go, UNIX_TIMESTAMP(started) AS st, connectable, agent, peer_id, UNIX_TIMESTAMP(last_action) AS la, userid FROM peers WHERE torrent = $row[id]") or sqlerr();
-
-			while ($subrow = mysql_fetch_array($subres)) {
-				$progressPerTorrent += sprintf("%.2f", 100 * (1 - ($subrow["to_go"] / $row["size"])));
-				$i++;
-				if ($subrow["seeder"] == "yes")
-				$seeders[] = $subrow;
-				else
-				$downloaders[] = $subrow;
-			}
-			if ($i == 0)
-				$i = 1;
-			$progressTotal = sprintf("%.2f", $progressPerTorrent / $i);
-
-			$totalspeed = 0;
-
-			if($seedersTmp >=1)
-			{
-				if ($seeders) {
-					foreach($seeders as $e) {
-						$totalspeed = $totalspeed + ($e["uploaded"] - $e["uploadoffset"]) / max(1, ($e["la"] - $e["st"]));
-						$totalspeed = $totalspeed + ($e["downloaded"] - $e["downloadoffset"]) / max(1, $e["finishedat"] - $e[st]);
-					}
-				}
-			}
-
-			if ($downloaders) {
-				foreach($downloaders as $e) {
-					$totalspeed = $totalspeed + ($e["uploaded"] - $e["uploadoffset"]) / max(1, ($e["la"] - $e["st"]));
-					$totalspeed = $totalspeed + ($e["downloaded"] - $e["downloadoffset"]) / max(1, ($e["la"] - $e["st"]));
-				}
-			}
-
-			$avgspeed = $lang_details['text_average_speed']."<b>" . mksize($totalspeed/($seedersTmp+$leechersTmp)) . "/s</b>";
-			$totalspeed = $lang_details['text_total_speed']."<b>" . mksize($totalspeed) . "/s</b> ".$lang_details['text_health_note'];
-			$health = $lang_details['text_avprogress'] . get_percent_completed_image(floor($progressTotal))." (".round($progressTotal)."%)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>".$lang_details['text_traffic']."</b>" . $avgspeed ."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". $totalspeed;
-		}
-		else
-			$health = "<b>".$lang_details['text_traffic']. "</b>" . $lang_details['text_no_traffic'];
-
-		if ($row["visible"] == "no")
-			$health = "<b>".$lang_details['text_status']."</b>" . $lang_details['text_dead'] ."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;". $health;
-
-		tr($lang_details['row_health'], $health, 1);*/
 		tr("<span id=\"seeders\"></span><span id=\"leechers\"></span>".$lang_details['row_peers']."<br /><span id=\"showpeer\"><a href=\"javascript: viewpeerlist(".$row['id'].");\" class=\"sublink\">".$lang_details['text_see_full_list']."</a></span><span id=\"hidepeer\" style=\"display: none;\"><a href=\"javascript: hidepeerlist();\" class=\"sublink\">".$lang_details['text_hide_list']."</a></span>", "<div id=\"peercount\"><b>".$row['seeders'].$lang_details['text_seeders'].add_s($row['seeders'])."</b> | <b>".$row['leechers'].$lang_details['text_leechers'].add_s($row['leechers'])."</b></div><div id=\"peerlist\"></div>" , 1);
 		if (isset($_GET['dllist']) && $_GET['dllist'] == 1)
 		{

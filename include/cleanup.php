@@ -370,43 +370,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($printProgress) {
 		printProgress($log);
 	}
-//11.calculate seeding bonus
-//	$res = sql_query("SELECT DISTINCT userid FROM peers WHERE seeder = 'yes'") or sqlerr(__FILE__, __LINE__);
-//	if (mysql_num_rows($res) > 0)
-//	{
-//	    $haremAdditionFactor = get_setting('bonus.harem_addition');
-//	    $officialAdditionFactor = get_setting('bonus.official_addition');
-//		while ($arr = mysql_fetch_assoc($res))	//loop for different users
-//		{
-//		    $userInfo = get_user_row($arr['userid']);
-//            $isDonor = is_donor($userInfo);
-//            $seedBonusResult = calculate_seed_bonus($arr['userid']);
-//            $bonusLog = "[CLEANUP_CALCULATE_SEED_BONUS], user: {$arr['userid']}, seedBonusResult: " . nexus_json_encode($seedBonusResult);
-//            $all_bonus = $seedBonusResult['seed_bonus'];
-//            $bonusLog .= ", all_bonus: $all_bonus";
-//            if ($isDonor) {
-//                $all_bonus = $all_bonus * $donortimes_bonus;
-//                $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
-//            }
-//            if ($officialAdditionFactor > 0) {
-//                $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
-//                $all_bonus += $officialAddition;
-//                $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
-//            }
-//            if ($haremAdditionFactor > 0) {
-//                $haremBonus = calculate_harem_addition($arr['userid']);
-//                $haremAddition =  $haremBonus * $haremAdditionFactor;
-//                $all_bonus += $haremAddition;
-//                $bonusLog .= ", haremAdditionFactor: $haremAdditionFactor, haremBonus: $haremBonus, haremAddition: $haremAddition, all_bonus: $all_bonus";
-//            }
-//            $dividend = 3600 / $autoclean_interval_one;
-//            $all_bonus = $all_bonus / $dividend;
-//            $seed_points = $seedBonusResult['seed_points'] / $dividend;
-//            $sql = "update users set seed_points = ifnull(seed_points, 0) + $seed_points, seedbonus = seedbonus + $all_bonus where id = {$arr["userid"]}";
-//            do_log("$bonusLog, query: $sql");
-//			sql_query($sql);
-//		}
-//	}
 
     //rest seed_points_per_hour
     $seedPointsUpdatedAtMin = $carbonNow->subSeconds(2*intval($autoclean_interval_one))->toDateTimeString();
@@ -475,39 +438,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		NexusDB::table('avps')->where('arg', 'lastcleantime3')->update(['value_u' => (int) $now]);
 	}
 
-	//4.update count of seeders, leechers, comments for torrents
-//	$torrents = array();
-//	$res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder") or sqlerr(__FILE__, __LINE__);
-//	while ($row = mysql_fetch_assoc($res)) {
-//		if ($row["seeder"] == "yes")
-//		$key = "seeders";
-//		else
-//		$key = "leechers";
-//		$torrents[$row["torrent"]][$key] = $row["c"];
-//	}
-//
-//	$res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
-//	while ($row = mysql_fetch_assoc($res)) {
-//		$torrents[$row["torrent"]]["comments"] = $row["c"];
-//	}
-//
-//	$fields = explode(":", "comments:leechers:seeders");
-//	$res = sql_query("SELECT id, seeders, leechers, comments FROM torrents") or sqlerr(__FILE__, __LINE__);
-//	while ($row = mysql_fetch_assoc($res)) {
-//		$id = $row["id"];
-//		$torr = $torrents[$id] ?? [];
-//		foreach ($fields as $field) {
-//			if (!isset($torr[$field]))
-//			$torr[$field] = 0;
-//		}
-//		$update = array();
-//		foreach ($fields as $field) {
-//			if ($torr[$field] != $row[$field])
-//			$update[] = "$field = " . $torr[$field];
-//		}
-//		if (count($update))
-//		sql_query("UPDATE torrents SET " . implode(",", $update) . " WHERE id = $id") or sqlerr(__FILE__, __LINE__);
-//	}
 
     \App\Repositories\CleanupRepository::runBatchJobUpdateTorrentSeedersEtc($requestId);
 
@@ -605,8 +535,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	if ($expirenormal_torrent)
 		torrent_promotion_expire($expirenormal_torrent, 1, $normalbecome_torrent);
 
-	//expire individual torrent promotion
-//	sql_query("UPDATE torrents SET sp_state = 1, promotion_time_type=0, promotion_until=null WHERE promotion_time_type=2 AND promotion_until < ".sqlesc(date("Y-m-d H:i:s",TIMENOW))) or sqlerr(__FILE__, __LINE__);
     torrent_promotion_individual_expire();
 	//End: expire torrent promotion
 	$log = "expire torrent promotion";
@@ -740,7 +668,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$secs = $deletenotransfer_account*24*60*60;
 		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdelete_account;
-//		sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND last_access < $dt AND (uploaded = 0 || uploaded = ".sqlesc($iniupload_main).") AND downloaded = 0") or sqlerr(__FILE__, __LINE__);
         $query = \App\Models\User::query()
             ->where('parked', 'no')
             ->where('status', 'confirmed')
@@ -763,7 +690,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$secs = $deletenotransfertwo_account*24*60*60;
 		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdelete_account;
-//		sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND added < $dt AND (uploaded = 0 || uploaded = ".sqlesc($iniupload_main).") AND downloaded = 0") or sqlerr(__FILE__, __LINE__);
         $query = \App\Models\User::query()
             ->where('parked', 'no')
             ->where('status', 'confirmed')
@@ -786,7 +712,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$secs = $deleteunpacked_account*24*60*60;
 		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdelete_account;
-//	    sql_query("DELETE FROM users WHERE parked='no' AND status='confirmed' AND class < $maxclass AND last_access < $dt") or sqlerr(__FILE__, __LINE__);
         $query = \App\Models\User::query()
             ->where('parked', 'no')
             ->where('status', 'confirmed')
@@ -805,7 +730,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		$secs = $deletepacked_account*24*60*60;
 		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs));
 		$maxclass = $neverdeletepacked_account;
-//		sql_query("DELETE FROM users WHERE parked='yes' AND status='confirmed' AND class < $maxclass AND last_access < $dt") or sqlerr(__FILE__, __LINE__);
         $query = \App\Models\User::query()
             ->where('parked', 'yes')
             ->where('status', 'confirmed')
@@ -840,77 +764,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
         printProgress($log);
     }
 
-    //migrate to job: RemoveUserVipStatus
-	//remove VIP status if time's up
-//	$res = sql_query("SELECT id, class FROM users WHERE vip_added='yes' AND vip_until < NOW()") or sqlerr(__FILE__, __LINE__);
-//	$userModifyLogs = [];
-//    if (mysql_num_rows($res) > 0)
-//	{
-//		while ($arr = mysql_fetch_assoc($res))
-//		{
-//			$dt = sqlesc(date("Y-m-d H:i:s"));
-//            $locale = get_user_locale($arr['id']);
-//            $subject = sqlesc(nexus_trans("cleanup.msg_vip_status_removed", [], $locale));
-//            $msg = sqlesc(nexus_trans("cleanup.msg_vip_status_removed_body", [], $locale));
-//            $userModifyLogs[] = [
-//                'user_id' => $arr['id'],
-//                'content' => "VIP status removed by - AutoSystem",
-//                'created_at' => date("Y-m-d H:i:s"),
-//                'updated_at' => date("Y-m-d H:i:s"),
-//            ];
-//			if ($arr['class'] > \App\Models\User::CLASS_VIP) {
-//                /**
-//                 * @since 1.8
-//                 * never demotion VIP above
-//                 */
-//                sql_query("UPDATE users SET vip_added = 'no', vip_until = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-//            } else {
-//                sql_query("UPDATE users SET class = '1', vip_added = 'no', vip_until = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-//                sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['id']}, $dt, $msg, $subject)") or sqlerr(__FILE__, __LINE__);
-//            }
-//            publish_model_event(ModelEventEnum::USER_UPDATED, $arr['id']);
-//		}
-//	}
-//    if (!empty($userModifyLogs)) {
-//        \App\Models\UserModifyLog::query()->insert($userModifyLogs);
-//    }
-//	$log = "remove VIP status if time's up";
-//	do_log($log);
-//	if ($printProgress) {
-//		printProgress($log);
-//	}
 
-    //migrate to job: RemoveUserDonorStatus
-    //remove donor status if time's up
-//    $userModifyLogs = [];
-//    $res = sql_query("SELECT id FROM users WHERE donor='yes' AND donoruntil is not null and donoruntil != '0000-00-00 00:00:00' and donoruntil < NOW()") or sqlerr(__FILE__, __LINE__);
-//    if (mysql_num_rows($res) > 0)
-//    {
-//        while ($arr = mysql_fetch_assoc($res))
-//        {
-//            $dt = sqlesc(date("Y-m-d H:i:s"));
-//            $locale = get_user_locale($arr['id']);
-//            $subject = sqlesc(nexus_trans("cleanup.msg_donor_status_removed", [], $locale));
-//            $msg = sqlesc(nexus_trans("cleanup.msg_donor_status_removed_body", [], $locale));
-//            $userModifyLogs[] = [
-//                'user_id' => $arr['id'],
-//                'content' => "donor status removed by - AutoSystem",
-//                'created_at' => date("Y-m-d H:i:s"),
-//                'updated_at' => date("Y-m-d H:i:s"),
-//            ];
-//            sql_query("UPDATE users SET donor = 'no' WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-//            sql_query("INSERT INTO messages (sender, receiver, added, msg, subject) VALUES(0, {$arr['id']}, $dt, $msg, $subject)") or sqlerr(__FILE__, __LINE__);
-//            publish_model_event(ModelEventEnum::USER_UPDATED, $arr['id']);
-//        }
-//    }
-//    if (!empty($userModifyLogs)) {
-//        \App\Models\UserModifyLog::query()->insert($userModifyLogs);
-//    }
-//    $log = "remove donor status if time's up";
-//    do_log($log);
-//    if ($printProgress) {
-//        printProgress($log);
-//    }
 
 	// promote peasant back to user
 
@@ -975,21 +829,6 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	}
 	// end Users to Peasant
 
-	//ban users with leechwarning expired
-//	$dt = sqlesc(date("Y-m-d H:i:s")); // take date time
-//	$res = sql_query("SELECT id FROM users WHERE enabled = 'yes' AND leechwarn = 'yes' AND leechwarnuntil < $dt") or sqlerr(__FILE__, __LINE__);
-//
-//	if (mysql_num_rows($res) > 0)
-//	{
-//		while ($arr = mysql_fetch_assoc($res))
-//		{
-//			writecomment($arr['id'],"Banned by System because of Leech Warning expired.");
-//
-//			sql_query("UPDATE users SET enabled = 'no', leechwarnuntil = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-//
-//
-//		}
-//	}
     ban_user_with_leech_warning_expired();
 	$log = "ban users with leechwarning expired";
 	do_log($log);
@@ -997,42 +836,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
-    //migrate to job: RemoveUserWarning
-	//Remove warning of users
-//	$dt = sqlesc(date("Y-m-d H:i:s")); // take date time
-//	$res = sql_query("SELECT id FROM users WHERE enabled = 'yes' AND warned = 'yes' AND warneduntil < $dt") or sqlerr(__FILE__, __LINE__);
-//
-//	if (mysql_num_rows($res) > 0)
-//	{
-//		while ($arr = mysql_fetch_assoc($res))
-//		{
-//            $locale = get_user_locale($arr['id']);
-//            $subject = nexus_trans("cleanup.msg_warning_removed", [], $locale);
-//            $msg = nexus_trans("cleanup.msg_your_warning_removed", [], $locale);
-//			writecomment($arr['id'],"Warning removed by System.");
-//			sql_query("UPDATE users SET warned = 'no', warneduntil = null WHERE id = {$arr['id']}") or sqlerr(__FILE__, __LINE__);
-//			sql_query("INSERT INTO messages (sender, receiver, added, subject, msg) VALUES(0, {$arr['id']}, $dt, ".sqlesc($subject).", ".sqlesc($msg).")") or sqlerr(__FILE__, __LINE__);
-//		}
-//	}
-//	$log = "remove warning of users";
-//	do_log($log);
-//	if ($printProgress) {
-//		printProgress($log);
-//	}
 
-	//17.update total seeding and leeching time of users
-//	$res = sql_query("SELECT id FROM users where enabled = 'yes' and status = 'confirmed'") or sqlerr(__FILE__, __LINE__);
-//	while($arr = mysql_fetch_assoc($res))
-//	{
-//		//die("s" . $arr['id']);
-//		$res2 = sql_query("SELECT SUM(seedtime) as st, SUM(leechtime) as lt FROM snatched where userid = " . $arr['id'] . " LIMIT 1") or sqlerr(__FILE__, __LINE__);
-//		$arr2 = mysql_fetch_assoc($res2) or sqlerr(__FILE__, __LINE__);
-//
-//		//die("ss" . $arr2['st']);
-//		//die("sss" . "UPDATE users SET seedtime = " . $arr2['st'] . ", leechtime = " . $arr2['lt'] . " WHERE id = " . $arr['id']);
-//
-//		sql_query("UPDATE users SET seedtime = " . intval($arr2['st']) . ", leechtime = " . intval($arr2['lt']) . " WHERE id = " . $arr['id']) or sqlerr(__FILE__, __LINE__);
-//	}
 
     \App\Repositories\CleanupRepository::runBatchJobUpdateUserSeedingLeechingTime($requestId);
 
@@ -1204,81 +1008,11 @@ function docleanup($forceAll = 0, $printProgress = false) {
 		printProgress($log);
 	}
 
-	//1.delete torrents that doesn't exist any more
-//	do {
-//		$res = sql_query("SELECT id FROM torrents") or sqlerr(__FILE__, __LINE__);
-//		$ar = array();
-//		while ($row = mysql_fetch_array($res)) {
-//			$id = $row[0];
-//			$ar[$id] = 1;
-//		}
-//
-//		if (!count($ar))
-//		break;
-//
-//		$dp = @opendir($torrent_dir);
-//		if (!$dp)
-//		break;
-//
-//		$ar2 = array();
-//		while (($file = readdir($dp)) !== false) {
-//			if (!preg_match('/^(\d+)\.torrent$/', $file, $m))
-//			continue;
-//			$id = $m[1];
-//			$ar2[$id] = 1;
-//			if (isset($ar[$id]) && $ar[$id])
-//			continue;
-//			$ff = $torrent_dir . "/$file";
-//			unlink($ff);
-//		}
-//		closedir($dp);
-//
-//		if (!count($ar2))
-//		break;
-//
-//		$delids = array();
-//		foreach (array_keys($ar) as $k) {
-//			if (isset($ar2[$k]) && $ar2[$k])
-//			continue;
-//			$delids[] = $k;
-//			unset($ar[$k]);
-//		}
-//		if (count($delids))
-//		sql_query("DELETE FROM torrents WHERE id IN (" . join(",", $delids) . ")") or sqlerr(__FILE__, __LINE__);
-//
-//		$res = sql_query("SELECT torrent FROM peers GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
-//		$delids = array();
-//		while ($row = mysql_fetch_array($res)) {
-//			$id = $row[0];
-//			if (isset($ar[$id]) && $ar[$id])
-//			continue;
-//			$delids[] = $id;
-//		}
-//		if (count($delids))
-//		sql_query("DELETE FROM peers WHERE torrent IN (" . join(",", $delids) . ")") or sqlerr(__FILE__, __LINE__);
-//
-//		$res = sql_query("SELECT torrent FROM files GROUP BY torrent") or sqlerr(__FILE__, __LINE__);
-//		$delids = array();
-//		while ($row = mysql_fetch_array($res)) {
-//			$id = $row[0];
-//			if ($ar[$id])
-//			continue;
-//			$delids[] = $id;
-//		}
-//		if (count($delids))
-//		sql_query("DELETE FROM files WHERE torrent IN (" . join(",", $delids) . ")") or sqlerr(__FILE__, __LINE__);
-//	} while (0);
-//    $log = "delete torrents that doesn't exist any more";
-//    do_log($log);
-//	if ($printProgress) {
-//		printProgress($log);
-//	}
 
 	//8.lock topics where last post was made more than x days ago
 	$secs = 365*24*60*60;
     $postAddedField = \Nexus\Database\NexusDB::unixTimestampField('posts.added');
     $diff = TIMENOW - $secs;
-//	sql_query("UPDATE topics, posts SET topics.locked='yes' WHERE topics.lastpost = posts.id AND topics.sticky = 'no' AND $postAddedField < ".TIMENOW." - $secs") or sqlerr(__FILE__, __LINE__);
 	NexusDB::table('topics')
 		->where('sticky', 'no')
 		->whereRaw("lastpost IN (SELECT id FROM posts WHERE $postAddedField < $diff)")
