@@ -70,10 +70,10 @@ class Update extends Install
 
     public function listTableFieldsFromDb($table)
     {
-        $sql = "desc $table";
-        $res = sql_query($sql);
+        $res = NexusDB::select("desc $table");
         $data = [];
-        while ($row = mysql_fetch_assoc($res)) {
+        foreach ($res as $row) {
+            $row = (array) $row;
             $data[$row['Field']] = $row;
         }
         return $data;
@@ -110,14 +110,14 @@ class Update extends Install
         foreach (['adminpanel', 'modpanel', 'sysoppanel'] as $table) {
             $columnInfo = NexusDB::getMysqlColumnInfo($table, 'id');
             if ($columnInfo['DATA_TYPE'] == 'tinyint' || empty($columnInfo['EXTRA']) || $columnInfo['EXTRA'] != 'auto_increment') {
-                sql_query("alter table $table modify id int(11) unsigned not null AUTO_INCREMENT");
+                NexusDB::statement("alter table $table modify id int(11) unsigned not null AUTO_INCREMENT");
             }
         }
 
         //custom field menu
         $url = 'fields.php';
         $table = 'adminpanel';
-        $count = get_row_count($table, "where url = " . sqlesc($url));
+        $count = NexusDB::table($table)->where('url', $url)->count();
         if ($count == 0) {
             $insert = [
                 'name' => 'Custom Field Manage',
@@ -156,7 +156,7 @@ class Update extends Install
             if ($columnInfo['DATA_TYPE'] == 'enum') {
                 $sql = "alter table torrents modify `pos_state` varchar(32) NOT NULL DEFAULT 'normal'";
                 $this->doLog("[ALTER TORRENT POS_STATE TYPE TO VARCHAR], $sql");
-                sql_query($sql);
+                NexusDB::statement($sql);
             }
         }
 
@@ -222,7 +222,7 @@ class Update extends Install
         ];
         $table = 'modpanel';
         foreach ($menus as $menu) {
-            $count = get_row_count($table, "where url = " . sqlesc($menu['url']));
+            $count = NexusDB::table($table)->where('url', $menu['url'])->count();
             if ($count == 0) {
                 $id = NexusDB::insert($table, $menu);
                 $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
@@ -390,7 +390,7 @@ class Update extends Install
                 $this->doLog("[MIGRATE_TORRENT_TAG] done!");
             }
             $sql = 'alter table torrents drop column tags';
-            sql_query($sql);
+            NexusDB::statement($sql);
             $this->doLog($sql);
         } else {
             $this->doLog("torrents table does not has column: tags");
@@ -403,7 +403,7 @@ class Update extends Install
     private function addMenu($table, array $menus)
     {
         foreach ($menus as $menu) {
-            $count = get_row_count($table, "where url = " . sqlesc($menu['url']));
+            $count = NexusDB::table($table)->where('url', $menu['url'])->count();
             if ($count == 0) {
                 $id = NexusDB::insert($table, $menu);
                 $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
