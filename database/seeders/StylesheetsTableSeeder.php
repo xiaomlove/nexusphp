@@ -64,15 +64,6 @@ class StylesheetsTableSeeder extends Seeder
                 'designer' => 'Xia Zuojie',
                 'comment' => 'Baidu Hi clone',
             ),
-            5 =>
-            array (
-                'id' => 100,
-                'uri' => 'styles/Modern2025/',
-                'name' => 'Modern 2025',
-                'addicode' => '<script src="styles/Modern2025/init.js"></script>',
-                'designer' => 'devin',
-                'comment' => 'Responsive theme with light/dark toggle and modern typography.',
-            ),
         ));
         
         
