@@ -2,11 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Setting;
-use App\Repositories\CleanupRepository;
-use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -65,29 +61,31 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
     {
         $beginTimestamp = time();
         $logPrefix = sprintf(
-            "[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s, idStr: %s, idRedisKey: %s",
+            '[CLEANUP_CLI_UPDATE_SEEDING_LEECHING_TIME_HANDLE_JOB], commonRequestId: %s, beginUid: %s, endUid: %s, idStr: %s, idRedisKey: %s',
             $this->requestId, $this->beginUid, $this->endUid, $this->idStr, $this->idRedisKey,
         );
         do_log("$logPrefix, job start ...");
 
         $idStr = $this->idStr;
         $delIdRedisKey = false;
-        if (empty($idStr) && !empty($this->idRedisKey)) {
+        if (empty($idStr) && ! empty($this->idRedisKey)) {
             $delIdRedisKey = true;
             $idStr = NexusDB::cache_get($this->idRedisKey);
         }
         if (empty($idStr)) {
-            do_log("$logPrefix, no idStr or idRedisKey", "error");
+            do_log("$logPrefix, no idStr or idRedisKey", 'error');
+
             return;
         }
-        //批量取，简单化
-        $res = NexusDB::table("snatched")
-            ->selectRaw("userid, sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum")
+        // 批量取，简单化
+        $res = NexusDB::table('snatched')
+            ->selectRaw('userid, sum(seedtime) as seedtime_sum, sum(leechtime) as leechtime_sum')
             ->whereRaw("userid in ($idStr)")
-            ->groupBy("userid")
+            ->groupBy('userid')
             ->get();
         if ($res->isEmpty()) {
-            do_log("$logPrefix, no data from idStr: $idStr", "error");
+            do_log("$logPrefix, no data from idStr: $idStr", 'error');
+
             return;
         }
         $seedtimeUpdates = $leechTimeUpdates = [];
@@ -95,12 +93,12 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
         $count = 0;
         foreach ($res as $row) {
             $count++;
-            $seedtimeUpdates[] = sprintf("when %d then %d", $row->userid, $row->seedtime_sum ?? 0);
-            $leechTimeUpdates[] = sprintf("when %d then %d", $row->userid, $row->leechtime_sum ?? 0);
+            $seedtimeUpdates[] = sprintf('when %d then %d', $row->userid, $row->seedtime_sum ?? 0);
+            $leechTimeUpdates[] = sprintf('when %d then %d', $row->userid, $row->leechtime_sum ?? 0);
         }
         $sql = sprintf(
             "update users set seedtime = case id %s end, leechtime = case id %s end, seed_time_updated_at = '%s' where id in (%s)",
-            implode(" ", $seedtimeUpdates), implode(" ", $leechTimeUpdates), $nowStr, $idStr
+            implode(' ', $seedtimeUpdates), implode(' ', $leechTimeUpdates), $nowStr, $idStr
         );
         $result = NexusDB::statement($sql);
         if ($delIdRedisKey) {
@@ -111,17 +109,16 @@ class UpdateUserSeedingLeechingTime implements ShouldQueue
             "$logPrefix, [DONE], update user count: %s, result: %s, cost time: %s seconds",
             $count, var_export($result, true), $costTime
         ));
-        do_log("$logPrefix, sql: $sql", "debug");
+        do_log("$logPrefix, sql: $sql", 'debug');
     }
 
     /**
      * Handle a job failure.
      *
-     * @param  \Throwable  $exception
      * @return void
      */
     public function failed(\Throwable $exception)
     {
-        do_log("failed: " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
+        do_log('failed: '.$exception->getMessage().$exception->getTraceAsString(), 'error');
     }
 }
