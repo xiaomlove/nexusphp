@@ -2415,8 +2415,9 @@ function get_css_row() {
 	$cssid = $CURUSER ? $CURUSER["stylesheet"] : $defcss;
 	if (!$rows && !$rows = $Cache->get_value('stylesheet_content')){
 		$rows = array();
-		$res = sql_query("SELECT * FROM stylesheets ORDER BY id ASC");
-		while($row = mysql_fetch_array($res)) {
+		$resRows = \Nexus\Database\NexusDB::table('stylesheets')->orderBy('id')->get();
+		foreach ($resRows as $row) {
+			$row = (array) $row;
 			$rows[$row['id']] = $row;
 		}
 		$Cache->cache_value('stylesheet_content', $rows, 95400);
@@ -2429,7 +2430,7 @@ function get_css_uri($file = "")
 	$cssRow = get_css_row();
 	$ss_uri = $cssRow['uri'];
 	if (!$ss_uri)
-		$ss_uri = get_single_value("stylesheets","uri","WHERE id=".sqlesc($defcss));
+		$ss_uri = \Nexus\Database\NexusDB::table('stylesheets')->where('id', $defcss)->value('uri');
 	if ($file == "")
 		return $ss_uri;
 	else return $ss_uri.$file;
@@ -2479,16 +2480,14 @@ function get_cat_folder($cat = 101)
 function get_style_highlight()
 {
 	global $CURUSER;
+	$hltr = null;
 	if ($CURUSER)
 	{
-		$ss_a = @mysql_fetch_array(@sql_query("select hltr from stylesheets where id=" . $CURUSER["stylesheet"]));
-		if ($ss_a) $hltr = $ss_a["hltr"];
+		$hltr = \Nexus\Database\NexusDB::table('stylesheets')->where('id', (int) $CURUSER["stylesheet"])->value('hltr');
 	}
 	if (!$hltr)
 	{
-		$r = sql_query("SELECT hltr FROM stylesheets WHERE id=5");
-		$a = mysql_fetch_array($r);
-		$hltr = $a["hltr"];
+		$hltr = \Nexus\Database\NexusDB::table('stylesheets')->where('id', 5)->value('hltr');
 	}
 	return $hltr;
 }
@@ -2661,19 +2660,28 @@ else {
 	//// check every 15 minutes //////////////////
 	$messages = $Cache->get_value('user_'.$CURUSER["id"].'_inbox_count');
 	if ($messages == ""){
-		$messages = get_row_count("messages", "WHERE receiver=" . sqlesc($CURUSER["id"]) . " AND location<>0");
+		$messages = (int) \Nexus\Database\NexusDB::table('messages')
+			->where('receiver', (int) $CURUSER["id"])
+			->where('location', '<>', 0)
+			->count();
 		$Cache->cache_value('user_'.$CURUSER["id"].'_inbox_count', $messages, 900);
 	}
 	$outmessages = $Cache->get_value('user_'.$CURUSER["id"].'_outbox_count');
 	if ($outmessages == ""){
-		$outmessages = get_row_count("messages","WHERE sender=" . sqlesc($CURUSER["id"]) . " AND saved='yes'");
+		$outmessages = (int) \Nexus\Database\NexusDB::table('messages')
+			->where('sender', (int) $CURUSER["id"])
+			->where('saved', 'yes')
+			->count();
 		$Cache->cache_value('user_'.$CURUSER["id"].'_outbox_count', $outmessages, 900);
 	}
 	if (!$connect = $Cache->get_value('user_'.$CURUSER["id"].'_connect')){
-		$res3 = sql_query("SELECT connectable FROM peers WHERE userid=" . sqlesc($CURUSER["id"]) . " order by id desc LIMIT 1");
-		if($row = mysql_fetch_row($res3))
-			$connect = $row[0];
-		else $connect = 'unknown';
+		$connect = \Nexus\Database\NexusDB::table('peers')
+			->where('userid', (int) $CURUSER["id"])
+			->orderByDesc('id')
+			->value('connectable');
+		if ($connect === null) {
+			$connect = 'unknown';
+		}
 		$Cache->cache_value('user_'.$CURUSER["id"].'_connect', $connect, 900);
 	}
 
@@ -2687,17 +2695,26 @@ else {
 	//// check every 60 seconds //////////////////
 	$activeseed = $Cache->get_value('user_'.$CURUSER["id"].'_active_seed_count');
 	if ($activeseed == ""){
-		$activeseed = get_row_count("peers","WHERE userid=" . sqlesc($CURUSER["id"]) . " AND seeder='yes'");
+		$activeseed = (int) \Nexus\Database\NexusDB::table('peers')
+			->where('userid', (int) $CURUSER["id"])
+			->where('seeder', 'yes')
+			->count();
 		$Cache->cache_value('user_'.$CURUSER["id"].'_active_seed_count', $activeseed, 60);
 	}
 	$activeleech = $Cache->get_value('user_'.$CURUSER["id"].'_active_leech_count');
 	if ($activeleech == ""){
-		$activeleech = get_row_count("peers","WHERE userid=" . sqlesc($CURUSER["id"]) . " AND seeder='no'");
+		$activeleech = (int) \Nexus\Database\NexusDB::table('peers')
+			->where('userid', (int) $CURUSER["id"])
+			->where('seeder', 'no')
+			->count();
 		$Cache->cache_value('user_'.$CURUSER["id"].'_active_leech_count', $activeleech, 60);
 	}
 	$unread = $Cache->get_value('user_'.$CURUSER["id"].'_unread_message_count');
 	if ($unread == ""){
-		$unread = get_row_count("messages","WHERE receiver=" . sqlesc($CURUSER["id"]) . " AND unread='yes'");
+		$unread = (int) \Nexus\Database\NexusDB::table('messages')
+			->where('receiver', (int) $CURUSER["id"])
+			->where('unread', 'yes')
+			->count();
 		$Cache->cache_value('user_'.$CURUSER["id"].'_unread_message_count', $unread, 60);
 	}
 
@@ -2756,12 +2773,12 @@ else {
 if (user_can('staffmem')) {
     $totalreports = $Cache->get_value('staff_report_count');
     if ($totalreports == ""){
-        $totalreports = get_row_count("reports");
+        $totalreports = (int) \Nexus\Database\NexusDB::table('reports')->count();
         $Cache->cache_value('staff_report_count', $totalreports, 900);
     }
     $totalcheaters = $Cache->get_value('staff_cheater_count');
     if ($totalcheaters == ""){
-        $totalcheaters = get_row_count("cheaters");
+        $totalcheaters = (int) \Nexus\Database\NexusDB::table('cheaters')->count();
         $Cache->cache_value('staff_cheater_count', $totalcheaters, 900);
     }
     print(
@@ -2886,7 +2903,10 @@ if ($msgalert)
 	{
 		$new_news = $Cache->get_value('user_'.$CURUSER["id"].'_unread_news_count');
 		if ($new_news == ""){
-			$new_news = get_row_count("news","WHERE notify = 'yes' AND added > ".sqlesc($CURUSER['last_home']));
+			$new_news = (int) \Nexus\Database\NexusDB::table('news')
+				->where('notify', 'yes')
+				->where('added', '>', $CURUSER['last_home'])
+				->count();
 			$Cache->cache_value('user_'.$CURUSER["id"].'_unread_news_count', $new_news, 300);
 		}
 		if ($new_news > 0)
@@ -2916,7 +2936,7 @@ if ($msgalert)
         $cacheKey = 'TORRENT_APPROVAL_NONE';
         $toApprovalCounts = $Cache->get_value($cacheKey);
         if ($toApprovalCounts === false) {
-            $toApprovalCounts = get_row_count('torrents', 'where approval_status = 0');
+            $toApprovalCounts = (int) \Nexus\Database\NexusDB::table('torrents')->where('approval_status', 0)->count();
             $Cache->cache_value($cacheKey, $toApprovalCounts, 60);
         }
         if ($toApprovalCounts) {
@@ -2929,7 +2949,7 @@ if ($msgalert)
         $cacheKey = \App\Repositories\SeedBoxRepository::APPROVAL_COUNT_CACHE_KEY;
         $toApprovalCounts = $Cache->get_value($cacheKey);
         if ($toApprovalCounts === false) {
-            $toApprovalCounts = get_row_count('seed_box_records', 'where status = 0');
+            $toApprovalCounts = (int) \Nexus\Database\NexusDB::table('seed_box_records')->where('status', 0)->count();
             $Cache->cache_value($cacheKey, $toApprovalCounts, 60);
         }
         if ($toApprovalCounts) {
@@ -2941,7 +2961,7 @@ if ($msgalert)
 	{
 
         if(($complaints = $Cache->get_value('COMPLAINTS_COUNT_CACHE')) === false){
-            $complaints = get_row_count('complains', 'WHERE answered = 0');
+            $complaints = (int) \Nexus\Database\NexusDB::table('complains')->where('answered', 0)->count();
             $Cache->cache_value('COMPLAINTS_COUNT_CACHE', $complaints, 600);
         }
         if($complaints) {
@@ -2950,7 +2970,7 @@ if ($msgalert)
 
 		$numreports = $Cache->get_value('staff_new_report_count');
 		if ($numreports == ""){
-			$numreports = get_row_count("reports","WHERE dealtwith=0");
+			$numreports = (int) \Nexus\Database\NexusDB::table('reports')->where('dealtwith', 0)->count();
 			$Cache->cache_value('staff_new_report_count', $numreports, 900);
 		}
 		if ($numreports){
@@ -2960,7 +2980,7 @@ if ($msgalert)
 
 		$numcheaters = $Cache->get_value('staff_new_cheater_count');
 		if ($numcheaters == ""){
-			$numcheaters = get_row_count("cheaters","WHERE dealtwith=0");
+			$numcheaters = (int) \Nexus\Database\NexusDB::table('cheaters')->where('dealtwith', 0)->count();
 			$Cache->cache_value('staff_new_cheater_count', $numcheaters, 900);
 		}
 		if ($numcheaters){
