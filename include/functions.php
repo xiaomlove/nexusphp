@@ -1455,9 +1455,8 @@ else return true;
 
 function allowedemails()
 {
-	$sql = sql_query("SELECT * FROM allowedemails") or sqlerr(__FILE__, __LINE__);
-	$list = mysql_fetch_array($sql);
-	return $list['value'];
+	$row = \Nexus\Database\NexusDB::table('allowedemails')->first();
+	return $row ? ((array) $row)['value'] : null;
 }
 
 function nexus_redirect($url)
@@ -2315,11 +2314,12 @@ function validemail($email) {
 function validlang($langid) {
 	global $deflang;
 	$langid = intval($langid ?? 0);
-	$res = sql_query("SELECT * FROM language WHERE site_lang = 1 AND id = " . sqlesc($langid)) or sqlerr(__FILE__, __LINE__);
-	if(mysql_num_rows($res) == 1)
-	{
-		$arr = mysql_fetch_array($res)  or sqlerr(__FILE__, __LINE__);
-		return $arr['site_lang_folder'];
+	$row = \Nexus\Database\NexusDB::table('language')
+		->where('site_lang', 1)
+		->where('id', $langid)
+		->first();
+	if ($row) {
+		return ((array) $row)['site_lang_folder'];
 	}
 	else return $deflang;
 }
@@ -3555,14 +3555,14 @@ function commenttable($rows, $type, $parent_id, $review = false)
 
 		print("<table class=\"main\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\">\n");
 		$secs = 900;
-		$dt = sqlesc(date("Y-m-d H:i:s",(TIMENOW - $secs))); // calculate date.
+		$dt = date("Y-m-d H:i:s",(TIMENOW - $secs)); // calculate date.
 		print("<tr>\n");
 		print("<td class=\"rowfollow\" width=\"150\" valign=\"top\" style=\"padding: 0px;\">".return_avatar_image($avatar)."</td>\n");
 		print("<td class=\"rowfollow word-break-all\" valign=\"top\"><br />".$text.$text_editby."</td>\n");
 		print("</tr>\n");
 		$actionbar = "<a href=\"comment.php?action=add&amp;sub=quote&amp;cid=".$row['id']."&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_quote\" src=\"pic/trans.gif\" alt=\"Quote\" title=\"".$lang_functions['title_reply_with_quote']."\" /></a>".
 		"<a href=\"comment.php?action=add&amp;pid=".$parent_id."&amp;type=".$type."\"><img class=\"f_reply\" src=\"pic/trans.gif\" alt=\"Add Reply\" title=\"".$lang_functions['title_add_reply']."\" /></a>".(user_can('commanage') ? "<a href=\"comment.php?action=delete&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_delete\" src=\"pic/trans.gif\" alt=\"Delete\" title=\"".$lang_functions['title_delete']."\" /></a>" : "").($row["user"] == $CURUSER["id"] || get_user_class() >= $commanage_class ? "<a href=\"comment.php?action=edit&amp;cid=".$row['id']."&amp;type=".$type."\"><img class=\"f_edit\" src=\"pic/trans.gif\" alt=\"Edit\" title=\"".$lang_functions['title_edit']."\" />"."</a>" : "");
-		print("<tr><td class=\"toolbox\"> ".("'".$userRow['last_access']."'"> $dt ? "<img class=\"f_online\" src=\"pic/trans.gif\" alt=\"Online\" title=\"".$lang_functions['title_online']."\" />":"<img class=\"f_offline\" src=\"pic/trans.gif\" alt=\"Offline\" title=\"".$lang_functions['title_offline']."\" />" )."<a href=\"sendmessage.php?receiver=".htmlspecialchars(trim($row["user"]))."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_functions['title_send_message_to'].htmlspecialchars($userRow["username"])."\" /></a><a href=\"report.php?commentid=".htmlspecialchars(trim($row["id"]))."\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_functions['title_report_this_comment']."\" /></a></td><td class=\"toolbox\" align=\"right\">".$actionbar."</td>");
+		print("<tr><td class=\"toolbox\"> ".($userRow['last_access']> $dt ? "<img class=\"f_online\" src=\"pic/trans.gif\" alt=\"Online\" title=\"".$lang_functions['title_online']."\" />":"<img class=\"f_offline\" src=\"pic/trans.gif\" alt=\"Offline\" title=\"".$lang_functions['title_offline']."\" />" )."<a href=\"sendmessage.php?receiver=".htmlspecialchars(trim($row["user"]))."\"><img class=\"f_pm\" src=\"pic/trans.gif\" alt=\"PM\" title=\"".$lang_functions['title_send_message_to'].htmlspecialchars($userRow["username"])."\" /></a><a href=\"report.php?commentid=".htmlspecialchars(trim($row["id"]))."\"><img class=\"f_report\" src=\"pic/trans.gif\" alt=\"Report\" title=\"".$lang_functions['title_report_this_comment']."\" /></a></td><td class=\"toolbox\" align=\"right\">".$actionbar."</td>");
 
 		print("</tr></table>\n");
 		$count++;
@@ -5455,8 +5455,12 @@ function get_forum_moderators($forumid, $plaintext = true)
 
 	if (!$moderatorsArray && !$moderatorsArray = $Cache->get_value('forum_moderator_array')) {
 		$moderatorsArray = array();
-		$res = sql_query("SELECT forumid, userid FROM forummods ORDER BY forumid ASC") or sqlerr(__FILE__, __LINE__);
-		while ($row = mysql_fetch_array($res)) {
+		$rows = \Nexus\Database\NexusDB::table('forummods')
+			->select(['forumid', 'userid'])
+			->orderBy('forumid')
+			->get();
+		foreach ($rows as $row) {
+			$row = (array) $row;
 			$moderatorsArray[$row['forumid']][] = $row['userid'];
 		}
 		$Cache->cache_value('forum_moderator_array', $moderatorsArray, 86200);
@@ -5619,8 +5623,13 @@ function get_requestcount()
     //return;
     $CURUSERID = 0 + $CURUSER['id'];
     if (!$count = $Cache->get_value($CURUSERID . '_get_requestcount')) {
-        $row = @mysql_fetch_array(sql_query(" SELECT count(*) FROM requests LEFT JOIN resreq ON reqid=requests.id WHERE reqid>0 and finish = 'no' and userid= " . $CURUSERID));
-        $count = ($row[0] ? " style='background: none red;' " : " style='' ");
+        $rowCount = (int) \Nexus\Database\NexusDB::table('requests')
+            ->leftJoin('resreq', 'reqid', '=', 'requests.id')
+            ->where('reqid', '>', 0)
+            ->where('finish', 'no')
+            ->where('userid', $CURUSERID)
+            ->count();
+        $count = ($rowCount > 0 ? " style='background: none red;' " : " style='' ");
         $Cache->cache_value($CURUSERID . '_get_requestcount', $count, 120);
     }
     return $count;
@@ -5683,16 +5692,22 @@ function saveSetting(string $prefix, array $nameAndValue, string $autoload = 'ye
 {
     $prefix = strtolower($prefix);
     $datetimeNow = date('Y-m-d H:i:s');
-    $sql = "insert into settings (name, value, created_at, updated_at, autoload) values ";
-    $data = [];
+    $rows = [];
     foreach ($nameAndValue as $name => $value) {
         if (is_array($value)) {
             $value = json_encode($value);
         }
-        $data[] = sprintf("(%s, %s, %s, %s, '%s')", sqlesc("$prefix.$name"), sqlesc($value), sqlesc($datetimeNow), sqlesc($datetimeNow), $autoload);
+        $rows[] = [
+            'name'       => "$prefix.$name",
+            'value'      => $value,
+            'created_at' => $datetimeNow,
+            'updated_at' => $datetimeNow,
+            'autoload'   => $autoload,
+        ];
     }
-    $sql .= implode(",", $data) . " " . \Nexus\Database\NexusDB::upsertField(['name'], ['value']);
-    \Nexus\Database\NexusDB::statement($sql);
+    if (!empty($rows)) {
+        \Nexus\Database\NexusDB::table('settings')->upsert($rows, ['name'], ['value']);
+    }
     clear_setting_cache();
     do_action("nexus_setting_update");
 }
