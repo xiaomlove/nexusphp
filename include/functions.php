@@ -3654,10 +3654,12 @@ function return_torrent_bookmark_array($userid)
 	if (!$ret){
 		if (!$ret = $Cache->get_value('user_'.$userid.'_bookmark_array')){
 			$ret = array();
-			$res = sql_query("SELECT * FROM bookmarks WHERE userid=" . sqlesc($userid));
-			if (mysql_num_rows($res) != 0){
-				while ($row = mysql_fetch_array($res))
+			$rows = \Nexus\Database\NexusDB::table('bookmarks')->where('userid', (int) $userid)->get();
+			if (count($rows) != 0){
+				foreach ($rows as $row) {
+					$row = (array) $row;
 					$ret[] = $row['torrentid'];
+				}
 				$Cache->cache_value('user_'.$userid.'_bookmark_array', $ret, 132800);
 			} else {
 				$Cache->cache_value('user_'.$userid.'_bookmark_array', array(0), 132800);
@@ -3770,8 +3772,10 @@ function torrenttable($rows, $variant = "torrent", $searchBoxId = 0) {
 $count_get = 0;
 $oldlink = "";
 foreach ($_GET as $get_name => $get_value) {
-	$get_name = mysql_real_escape_string(strip_tags(str_replace(array("\"","'"),array("",""),$get_name)));
-	$get_value = mysql_real_escape_string(strip_tags(str_replace(array("\"","'"),array("",""),$get_value)));
+	// strip_tags + quote-removal already neutralizes harmful chars for href-building;
+	// the legacy mysql_real_escape_string was a dead-escape (URL context, not SQL) — removed.
+	$get_name = strip_tags(str_replace(array("\"","'"),array("",""),$get_name));
+	$get_value = strip_tags(str_replace(array("\"","'"),array("",""),(string) $get_value));
 
 	if ($get_name != "sort" && $get_name != "type") {
 		if ($count_get > 0) {
@@ -4019,8 +4023,12 @@ foreach ($rows as $row)
 		if ($enabletooltip_tweak == 'yes' && $CURUSER['showlastcom'] != 'no')
 		{
 			if (!$lastcom = $Cache->get_value('torrent_'.$id.'_last_comment_content')){
-				$res2 = sql_query("SELECT user, added, text FROM comments WHERE torrent = $id ORDER BY id DESC LIMIT 1");
-				$lastcom = mysql_fetch_array($res2);
+				$lastcomRow = \Nexus\Database\NexusDB::table('comments')
+					->select(['user', 'added', 'text'])
+					->where('torrent', (int) $id)
+					->orderByDesc('id')
+					->first();
+				$lastcom = $lastcomRow ? (array) $lastcomRow : false;
 				$Cache->cache_value('torrent_'.$id.'_last_comment_content', $lastcom, 1855);
 			}
 			$timestamp = strtotime($lastcom["added"]);
@@ -5786,16 +5794,28 @@ function displayHotAndClassic()
                 {
                     $Cache->add_whole_row();
 
-                    $res = sql_query("SELECT torrents.sp_state, torrents.url, torrents.id, torrents.name, torrents.small_descr, torrents.cover FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE categories.mode = $mode AND picktype = " . sqlesc($type_each) . " AND seeders > 0 AND (url != '' OR cover != '') ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
-                    if (mysql_num_rows($res) > 0)
+                    $resRows = \Nexus\Database\NexusDB::table('torrents')
+                        ->leftJoin('categories', 'torrents.category', '=', 'categories.id')
+                        ->select(['torrents.sp_state', 'torrents.url', 'torrents.id', 'torrents.name', 'torrents.small_descr', 'torrents.cover'])
+                        ->where('categories.mode', $mode)
+                        ->where('picktype', $type_each)
+                        ->where('seeders', '>', 0)
+                        ->where(function ($q) {
+                            $q->where('url', '!=', '')->orWhere('cover', '!=', '');
+                        })
+                        ->orderByDesc('torrents.id')
+                        ->limit(30)
+                        ->get();
+                    if (count($resRows) > 0)
                     {
                         $movies_list = "";
                         $count = 0;
                         $allImdb = array();
                         $width = 101;
                         $height = 140;
-                        while($array = mysql_fetch_array($res))
+                        foreach ($resRows as $array)
                         {
+                            $array = (array) $array;
                             $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word', false, '', 0, '', $array['__ignore_global_sp_state'] ?? false);
                             $photo_url = '';
                             if ($imdb_id = parse_imdb_id($array["url"])) {
