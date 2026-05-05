@@ -42,8 +42,8 @@ class AppServiceProvider extends ServiceProvider
         $plugin->start();
         NexusDB::customModel();
         DB::connection(config('database.default'))->enableQueryLog();
-        $forceScheme = strtolower(env('FORCE_SCHEME'));
-        if (env('APP_ENV') == 'production' && in_array($forceScheme, ['https', 'http'])) {
+        $forceScheme = strtolower((string) config('app.force_scheme'));
+        if (config('app.env') == 'production' && in_array($forceScheme, ['https', 'http'])) {
             URL::forceScheme($forceScheme);
         }
         $this->customScheduleTask();

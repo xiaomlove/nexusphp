@@ -288,6 +288,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public static function defaultUser(): static
     {
+        // @phpstan-ignore-next-line new.static
         return new static(self::getDefaultUserAttributes());
     }
 
@@ -563,11 +564,13 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function roles()
     {
+        // @phpstan-ignore-next-line class.notFound
         return $this->belongsToMany(Role::class, 'user_roles', 'uid', 'role_id')->withTimestamps();
     }
 
     public function directPermissions()
     {
+        // @phpstan-ignore-next-line class.notFound
         return $this->hasMany(UserPermission::class, 'uid');
     }
 

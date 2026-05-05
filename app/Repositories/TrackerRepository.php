@@ -1,13 +1,16 @@
 <?php
+
 /**
  * Handle announce and scrape
  *
  * @link https://github.com/HDInnovations/UNIT3D-Community-Edition/blob/master/app/Http/Controllers/AnnounceController.php
  * @link https://github.com/Rhilip/RidPT/blob/master/application/Controllers/Tracker/AnnounceController.php
  */
+
 namespace App\Repositories;
 
 use App\Exceptions\ClientNotAllowedException;
+use App\Exceptions\TrackerException;
 use App\Models\Cheater;
 use App\Models\HitAndRun;
 use App\Models\Peer;
@@ -17,9 +20,8 @@ use App\Models\Torrent;
 use App\Models\User;
 use App\Models\UserBanLog;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use App\Exceptions\TrackerException;
+use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -32,11 +34,14 @@ class TrackerRepository extends BaseRepository
 
     const MAX_PEER_NUM_WANT = 50;
 
-    const MUST_BE_CHEATER_SPEED = 1024 * 1024 * 1024; //1024 MB/s
-    const MAY_BE_CHEATER_SPEED = 1024 * 1024 * 100; //100 MB/s
+    const MUST_BE_CHEATER_SPEED = 1024 * 1024 * 1024; // 1024 MB/s
+
+    const MAY_BE_CHEATER_SPEED = 1024 * 1024 * 100; // 100 MB/s
 
     const ANNOUNCE_FIRST = 0;
+
     const ANNOUNCE_DUAL = 1;
+
     const ANNOUNCE_DUPLICATE = 2;
 
     // Port Blacklist
@@ -53,16 +58,17 @@ class TrackerRepository extends BaseRepository
         6699,  // Port used by p2p software, such as WinMX, Napster.
     ];
 
-    public function announce(Request $request): \Illuminate\Http\Response
+    public function announce(Request $request): Response
     {
-        do_log("queryString: " . $request->getQueryString());
+        do_log('queryString: '.$request->getQueryString());
 
         /**
          * Note: In Octane this class will be reused, use variable is better !!!
          */
         $userUpdates = [];
+        $user = null;
         try {
-            throw new TrackerException("Deprecated! Please announce to: " . getSchemeAndHttpHost() . DEFAULT_TRACKER_URI);
+            throw new TrackerException('Deprecated! Please announce to: '.getSchemeAndHttpHost().DEFAULT_TRACKER_URI);
             $withPeers = false;
             $queries = $this->checkAnnounceFields($request);
             $user = $this->checkUser($request);
@@ -77,7 +83,7 @@ class TrackerRepository extends BaseRepository
                     ->where('torrent', $torrent->id)
                     ->where('peer_id', $queries['peer_id'])
                     ->first();
-                if (!$peerSelf) {
+                if (! $peerSelf) {
                     $isPeerExists = false;
                     $this->checkPeer($torrent, $queries, $user);
                     $this->checkPermission($torrent, $queries, $user);
@@ -130,10 +136,10 @@ class TrackerRepository extends BaseRepository
                     $this->updateTorrent($torrent, $queries, $isPeerExists);
 
                     if ($dataTraffic['uploaded_increment_for_user'] > 0) {
-                        $userUpdates['uploaded'] = DB::raw('uploaded + ' . $dataTraffic['uploaded_increment_for_user']);
+                        $userUpdates['uploaded'] = DB::raw('uploaded + '.$dataTraffic['uploaded_increment_for_user']);
                     }
                     if ($dataTraffic['downloaded_increment_for_user'] > 0) {
-                        $userUpdates['downloaded'] = DB::raw('downloaded + ' . $dataTraffic['downloaded_increment_for_user']);
+                        $userUpdates['downloaded'] = DB::raw('downloaded + '.$dataTraffic['downloaded_increment_for_user']);
                     }
                     if ($user->clientselect != $clientAllow->id) {
                         $userUpdates['clientselect'] = $clientAllow->id;
@@ -148,7 +154,7 @@ class TrackerRepository extends BaseRepository
                 do_action('announced', $torrent->toArray(), $user->toArray(), $queries);
             }
         } catch (ClientNotAllowedException $exception) {
-            do_log("[ClientNotAllowedException] " . $exception->getMessage());
+            do_log('[ClientNotAllowedException] '.$exception->getMessage());
             if (isset($user) && $user->showclienterror == 'no') {
                 $userUpdates['showclienterror'] = 'yes';
             }
@@ -156,21 +162,22 @@ class TrackerRepository extends BaseRepository
         } catch (TrackerException $exception) {
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (\Throwable $exception) {
-            //other system exception
-            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
-            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
+            // other system exception
+            do_log('['.get_class($exception).'] '.$exception->getMessage().$exception->getTraceAsString(), 'error');
+            $repDict = $this->generateFailedAnnounceResponse('system error, report to sysop please, hint: '.nexus()->getRequestId());
         } finally {
             if (isset($user)) {
                 $this->updateUser($user, $userUpdates);
             }
+
             return $this->sendFinalAnnounceResponse($repDict);
         }
     }
 
     /**
-     * @param Request $request
      * @throws ClientNotAllowedException
      * @throws TrackerException
+     *
      * @refs
      */
     protected function checkClient(Request $request)
@@ -207,7 +214,7 @@ class TrackerRepository extends BaseRepository
             throw new TrackerException('Browser, Crawler or Cheater is not Allowed.');
         }
 
-        $agentAllowRep = new AgentAllowRepository();
+        $agentAllowRep = new AgentAllowRepository;
 
         return $agentAllowRep->checkClient($request->peer_id, $userAgent, config('app.debug'));
 
@@ -222,7 +229,7 @@ class TrackerRepository extends BaseRepository
 
         // If Passkey Format Is Wrong
         if (\strspn(\strtolower($passkey), 'abcdef0123456789') !== 32) {  // MD5 char limit
-            throw new TrackerException("Invalid passkey ! The format of passkey is not correct");
+            throw new TrackerException('Invalid passkey ! The format of passkey is not correct');
         }
 
     }
@@ -230,8 +237,8 @@ class TrackerRepository extends BaseRepository
     /**
      * @deprecated
      *
-     * @param $authkey
      * @return array
+     *
      * @throws TrackerException
      */
     protected function checkAuthkey($authkey)
@@ -242,7 +249,7 @@ class TrackerRepository extends BaseRepository
         }
         $torrentId = $arr[0];
         $uid = $arr[1];
-        $torrentRep = new TorrentRepository();
+        $torrentRep = new TorrentRepository;
         try {
             $decrypted = $torrentRep->checkTrackerReportAuthKey($authkey);
         } catch (\Exception $exception) {
@@ -251,12 +258,11 @@ class TrackerRepository extends BaseRepository
         if (empty($decrypted)) {
             throw new TrackerException('Invalid authkey');
         }
+
         return compact('torrentId', 'uid');
     }
 
     /**
-     * @param Request $request
-     * @return array
      * @throws TrackerException
      */
     protected function checkAnnounceFields(Request $request): array
@@ -314,7 +320,7 @@ class TrackerRepository extends BaseRepository
         }
 
         if (! \is_numeric($queries['port']) || $queries['port'] < 0 || $queries['port'] > 0xFFFF || \in_array($queries['port'], self::BLACK_PORTS,
-                true)) {
+            true)) {
             throw new TrackerException("Illegal port {$queries['port']} . Port should between 6881-64999");
         }
 
@@ -323,7 +329,7 @@ class TrackerRepository extends BaseRepository
         $ipv4 = $ipv6 = '';
         $ipv4Temp = $request->query->get('ipv4', '');
         $ipv6Temp = $request->query->get('ipv6', '');
-        //use the real ip first, ip from parameter second
+        // use the real ip first, ip from parameter second
         if (isIPV4($ip)) {
             $ipv4 = $ip;
         } elseif (isIPV4($ipv4Temp)) {
@@ -362,14 +368,14 @@ class TrackerRepository extends BaseRepository
             $field = 'passkey';
             $value = $passkey;
         } else {
-            throw new TrackerException("Require authkey or passkey.");
+            throw new TrackerException('Require authkey or passkey.');
         }
         /**
          * @var $user User
          */
-       $user = User::query()->where($field, $value)->first();
+        $user = User::query()->where($field, $value)->first();
 
-        if (!$user) {
+        if (! $user) {
             throw new TrackerException("Invalid user $field: $value.");
         }
         try {
@@ -379,10 +385,10 @@ class TrackerRepository extends BaseRepository
         }
 
         if ($user->parked == 'yes') {
-            throw new TrackerException("Your account is parked! (Read the FAQ)");
+            throw new TrackerException('Your account is parked! (Read the FAQ)');
         }
         if ($user->downloadpos == 'no') {
-            throw new TrackerException("Your downloading privilege have been disabled! (Read the rules)");
+            throw new TrackerException('Your downloading privilege have been disabled! (Read the rules)');
         }
 
         return $user;
@@ -400,34 +406,34 @@ class TrackerRepository extends BaseRepository
 
         if ($user->class < Setting::get('authority.seebanned')) {
             if ($torrent->banned == 'yes') {
-                throw new TrackerException("torrent banned");
+                throw new TrackerException('torrent banned');
             }
             if ($torrent->approval_status != Torrent::APPROVAL_STATUS_ALLOW && Setting::get('torrent.approval_status_none_visible') == 'no') {
-                throw new TrackerException("torrent review not approved");
+                throw new TrackerException('torrent review not approved');
             }
         }
+
         return $torrent;
     }
 
     protected function checkPeer(Torrent $torrent, array $queries, User $user): void
     {
         if ($queries['event'] === 'completed') {
-            throw new TrackerException("Torrent being announced as complete but no record found.");
+            throw new TrackerException('Torrent being announced as complete but no record found.');
         }
 
         $countResult = Peer::query()
             ->where('torrent', '=', $torrent->id)
             ->where('userid', $user->id)
             ->selectRaw('count(distinct(peer_id)) as counts')
-            ->first()
-        ;
+            ->first();
         $counts = $countResult ? $countResult->counts : 0;
-        do_log("query: " . last_query() . ", counts: $counts");
+        do_log('query: '.last_query().", counts: $counts");
         if ($queries['left'] == 0 && $counts >= 3) {
-            throw new TrackerException("You cannot seed the same torrent from more than 3 locations.");
+            throw new TrackerException('You cannot seed the same torrent from more than 3 locations.');
         }
         if ($queries['left'] > 0 && $counts >= 1) {
-            throw new TrackerException("You already are downloading the same torrent. You may only leech from one location at a time.");
+            throw new TrackerException('You already are downloading the same torrent. You may only leech from one location at a time.');
         }
     }
 
@@ -437,7 +443,7 @@ class TrackerRepository extends BaseRepository
             return;
         }
 
-        $gigs = $user->downloaded / (1024*1024*1024);
+        $gigs = $user->downloaded / (1024 * 1024 * 1024);
         if ($gigs < 10) {
             return;
         }
@@ -445,24 +451,36 @@ class TrackerRepository extends BaseRepository
         $settingsMain = Setting::get('main');
         if ($settingsMain['waitsystem'] == 'yes') {
             $elapsed = Carbon::now()->diffInHours($torrent->added);
-            if ($ratio < 0.4) $wait = 24;
-            elseif ($ratio < 0.5) $wait = 12;
-            elseif ($ratio < 0.6) $wait = 6;
-            elseif ($ratio < 0.8) $wait = 3;
-            else $wait = 0;
+            if ($ratio < 0.4) {
+                $wait = 24;
+            } elseif ($ratio < 0.5) {
+                $wait = 12;
+            } elseif ($ratio < 0.6) {
+                $wait = 6;
+            } elseif ($ratio < 0.8) {
+                $wait = 3;
+            } else {
+                $wait = 0;
+            }
 
             if ($elapsed < $wait) {
-                $msg = "Your ratio is too low! You need to wait " . mkprettytime($wait * 3600 - $elapsed) . " to start";
+                $msg = 'Your ratio is too low! You need to wait '.mkprettytime($wait * 3600 - $elapsed).' to start';
                 throw new TrackerException($msg);
             }
         }
 
         if ($settingsMain['maxdlsystem'] == 'yes') {
-            if ($ratio < 0.5) $max = 1;
-            elseif ($ratio < 0.65) $max = 2;
-            elseif ($ratio < 0.8) $max = 3;
-            elseif ($ratio < 0.95) $max = 4;
-            else $max = 0;
+            if ($ratio < 0.5) {
+                $max = 1;
+            } elseif ($ratio < 0.65) {
+                $max = 2;
+            } elseif ($ratio < 0.8) {
+                $max = 3;
+            } elseif ($ratio < 0.95) {
+                $max = 4;
+            } else {
+                $max = 0;
+            }
 
             if ($max > 0) {
                 $countResult = Peer::query()
@@ -478,13 +496,9 @@ class TrackerRepository extends BaseRepository
             }
         }
 
-
     }
 
-
     /**
-     * @param Peer $peer
-     * @param $queries
      * @throws TrackerException
      */
     protected function checkMinInterval(Peer $peer, $queries)
@@ -498,7 +512,7 @@ class TrackerRepository extends BaseRepository
             $queries['event'], $lastAction, var_export($isLastActionValidDate, true), $diffInSeconds
         ));
         if ($queries['event'] == '' && $isLastActionValidDate && $diffInSeconds < $min) {
-            throw new TrackerException('There is a minimum announce time of ' . $min . ' seconds');
+            throw new TrackerException('There is a minimum announce time of '.$min.' seconds');
         }
     }
 
@@ -507,21 +521,21 @@ class TrackerRepository extends BaseRepository
         $settingSecurity = Setting::get('security');
         $level = $settingSecurity['cheaterdet'];
         if ($level == 0) {
-            //don't do check
+            // don't do check
             return;
         }
         if ($user->class >= $settingSecurity['nodetect']) {
-            //forever trust
+            // forever trust
             return;
         }
-        if (!$peer->isValidDate('last_action')) {
-            //no last action
+        if (! $peer->isValidDate('last_action')) {
+            // no last action
             return;
         }
         $duration = Carbon::now()->diffInSeconds($peer->last_action);
         $upSpeed = $dataTraffic['uploaded_increment'] > 0 ? ($dataTraffic['uploaded_increment'] / $duration) : 0;
         $peerInfo = Arr::except($peer->toArray(), ['peer_id']);
-        do_log("peerInfo: " . json_encode($peerInfo) . ", upSpeed: $upSpeed, dataTraffic: " . json_encode($dataTraffic));
+        do_log('peerInfo: '.json_encode($peerInfo).", upSpeed: $upSpeed, dataTraffic: ".json_encode($dataTraffic));
         $oneGB = 1024 * 1024 * 1024;
         $tenMB = 1024 * 1024 * 10;
         $nowStr = Carbon::now()->toDateTimeString();
@@ -537,8 +551,8 @@ class TrackerRepository extends BaseRepository
         ];
 
         if ($dataTraffic['uploaded_increment'] > $oneGB && ($upSpeed > self::MUST_BE_CHEATER_SPEED / $level)) {
-            //Uploaded more than 1 GB with uploading rate higher than 1024 MByte/S (For Consertive level). This is no doubt cheating.
-            $comment = "User account was automatically disabled by system";
+            // Uploaded more than 1 GB with uploading rate higher than 1024 MByte/S (For Consertive level). This is no doubt cheating.
+            $comment = 'User account was automatically disabled by system';
             $data = array_merge($cheaterBaseData, ['comment' => $comment]);
             Cheater::query()->insert($data);
             $modComment = "We believe you're trying to cheat. And your account is disabled.";
@@ -546,30 +560,30 @@ class TrackerRepository extends BaseRepository
             $userBanLog = [
                 'uid' => $user->id,
                 'username' => $user->username,
-                'reason' => "$comment(Upload speed:" . mksize($upSpeed) . "/s)"
+                'reason' => "$comment(Upload speed:".mksize($upSpeed).'/s)',
             ];
             UserBanLog::query()->insert($userBanLog);
             throw new TrackerException($modComment);
         }
 
         if ($dataTraffic['uploaded_increment'] > $oneGB && ($upSpeed > self::MAY_BE_CHEATER_SPEED / $level)) {
-            //Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is likely cheating.
-            $comment = "Abnormally high uploading rate";
+            // Uploaded more than 1 GB with uploading rate higher than 100 MByte/S (For Consertive level). This is likely cheating.
+            $comment = 'Abnormally high uploading rate';
             $data = array_merge($cheaterBaseData, ['comment' => $comment]);
             $this->createOrUpdateCheater($torrent, $user, $data);
         }
 
         if ($level > 1) {
             if ($dataTraffic['uploaded_increment'] > $oneGB && ($upSpeed > 1024 * 1024) && ($torrent->leechers < 2 * $level)) {
-                //Uploaded more than 1 GB with uploading rate higher than 1 MByte/S when there is less than 8 leechers (For Consertive level). This is likely cheating.
-                $comment = "User is uploading fast when there is few leechers";
+                // Uploaded more than 1 GB with uploading rate higher than 1 MByte/S when there is less than 8 leechers (For Consertive level). This is likely cheating.
+                $comment = 'User is uploading fast when there is few leechers';
                 $data = array_merge($cheaterBaseData, ['comment' => $comment]);
                 $this->createOrUpdateCheater($torrent, $user, $data);
             }
 
             if ($dataTraffic['uploaded_increment'] > $tenMB && ($upSpeed > 1024 * 100) && ($torrent->leechers == 0)) {
-                ///Uploaded more than 10 MB with uploading speed faster than 100 KByte/S when there is no leecher. This is likely cheating.
-                $comment = "User is uploading when there is no leecher";
+                // /Uploaded more than 10 MB with uploading speed faster than 100 KByte/S when there is no leecher. This is likely cheating.
+                $comment = 'User is uploading when there is no leecher';
                 $data = array_merge($cheaterBaseData, ['comment' => $comment]);
                 $this->createOrUpdateCheater($torrent, $user, $data);
             }
@@ -583,15 +597,15 @@ class TrackerRepository extends BaseRepository
             return;
         }
         $isSeedBoxRuleEnabled = Setting::get('seed_box.enabled') == 'yes';
-        if (!$isSeedBoxRuleEnabled) {
+        if (! $isSeedBoxRuleEnabled) {
             return;
         }
         $isIPSeedBox = isIPSeedBox($queries['ip'], $user->id);
         if ($isIPSeedBox) {
             return;
         }
-        if (!$peer->isValidDate('last_action')) {
-            //no last action
+        if (! $peer->isValidDate('last_action')) {
+            // no last action
             return;
         }
         $duration = Carbon::now()->diffInSeconds($peer->last_action);
@@ -602,9 +616,9 @@ class TrackerRepository extends BaseRepository
         $notSeedBoxMaxSpeedMbps = Setting::get('seed_box.not_seed_box_max_speed');
         do_log("upSpeedMbps: $upSpeedMbps, notSeedBoxMaxSpeedMbps: $notSeedBoxMaxSpeedMbps");
         if ($upSpeedMbps > $notSeedBoxMaxSpeedMbps) {
-            (new \App\Repositories\UserRepository())->updateDownloadPrivileges(null, $user, 'no', 'upload_over_speed');
+            (new UserRepository)->updateDownloadPrivileges(null, $user, 'no', 'upload_over_speed');
             do_log("user: {$user->id} downloading privileges have been disabled! (over speed)", 'error');
-            throw new TrackerException("Your downloading privileges have been disabled! (over speed)");
+            throw new TrackerException('Your downloading privileges have been disabled! (over speed)');
         }
     }
 
@@ -637,15 +651,18 @@ class TrackerRepository extends BaseRepository
         $cache = $redis->get($lockKey);
         do_log("key: $key, queryString: $queryString, lockKeyOriginal: $lockKeyOriginal, startTimestamp: $startTimestamp, cache: $cache");
         if ($cache === false) {
-            //new request
+            // new request
             $redis->set($lockKey, $startTimestamp, ['ex' => self::MIN_ANNOUNCE_WAIT_SECOND]);
+
             return self::ANNOUNCE_FIRST;
         } else {
             if (bcsub($startTimestamp, $cache, 3) < 0.5) {
                 do_log('[DUAL]');
+
                 return self::ANNOUNCE_DUAL;
             } else {
                 do_log('[RE_ANNOUNCE]');
+
                 return self::ANNOUNCE_DUPLICATE;
             }
         }
@@ -657,14 +674,14 @@ class TrackerRepository extends BaseRepository
         $minInterval = self::MIN_ANNOUNCE_WAIT_SECOND;
         $interval = max($this->getRealAnnounceInterval($torrent), $minInterval);
         $repDict = [
-            'interval'     => $interval + random_int(10, 100),
+            'interval' => $interval + random_int(10, 100),
             'min interval' => $minInterval + random_int(1, 10),
-            'complete'     => (int) $torrent->seeders,
-            'incomplete'   => (int) $torrent->leechers,
-            'peers'        => [],
-            'peers6'       => [],
+            'complete' => (int) $torrent->seeders,
+            'incomplete' => (int) $torrent->leechers,
+            'peers' => [],
+            'peers6' => [],
         ];
-        do_log("[REP_DICT_BASE] " . json_encode($repDict));
+        do_log('[REP_DICT_BASE] '.json_encode($repDict));
 
         /**
          * For non `stopped` event only
@@ -677,8 +694,7 @@ class TrackerRepository extends BaseRepository
                 ->where('torrent', $torrent->id)
                 ->where('userid', '!=', $user->id)
                 ->limit($limit)
-                ->orderByRaw('rand()')
-            ;
+                ->orderByRaw('rand()');
 
             // Get Torrents Peers
             if ($queries['left'] == 0) {
@@ -687,7 +703,7 @@ class TrackerRepository extends BaseRepository
             } else {
                 $peers = $baseQuery->get()->toArray();
             }
-            do_log("[REP_DICT_PEER_QUERY] " . last_query());
+            do_log('[REP_DICT_PEER_QUERY] '.last_query());
             $repDict['peers'] = $this->givePeers($peers, $queries['compact'], $queries['no_peer_id']);
             $repDict['peers6'] = $this->givePeers($peers, $queries['compact'], $queries['no_peer_id'], FILTER_FLAG_IPV6);
         }
@@ -743,17 +759,16 @@ class TrackerRepository extends BaseRepository
         return \getDataTraffic($torrentInfo, $queries, $userInfo, $peerInfo, $snatchInfo, $promotionInfo);
     }
 
-
     private function givePeers($originalPeers, $compact, $noPeerId, int $filterFlag = FILTER_FLAG_IPV4): string|array
     {
         $peers = [];
         foreach ($originalPeers as $value) {
             $ipKey = $filterFlag == FILTER_FLAG_IPV4 ? 'ipv4' : 'ipv6';
-            if (!empty($value[$ipKey]) && filter_var($value[$ipKey], FILTER_VALIDATE_IP, $filterFlag)) {
+            if (! empty($value[$ipKey]) && filter_var($value[$ipKey], FILTER_VALIDATE_IP, $filterFlag)) {
                 $peers[] = [
                     'peer_id' => $value['peer_id'],
                     'ip' => $value[$ipKey],
-                    'port' => $value['port']
+                    'port' => $value['port'],
                 ];
             }
         }
@@ -764,6 +779,7 @@ class TrackerRepository extends BaseRepository
                 $pcomp .= \inet_pton($p['ip']);
                 $pcomp .= \pack('n', (int) $p['port']);
             }
+
             return $pcomp;
         }
 
@@ -782,34 +798,30 @@ class TrackerRepository extends BaseRepository
     {
         return [
             'failure reason' => $reason,
-            'min interval'   => self::MIN_ANNOUNCE_WAIT_SECOND,
-            //'retry in'     => self::MIN_ANNOUNCE_WAIT_SECOND
+            'min interval' => self::MIN_ANNOUNCE_WAIT_SECOND,
+            // 'retry in'     => self::MIN_ANNOUNCE_WAIT_SECOND
         ];
     }
 
-    protected function sendFinalAnnounceResponse($repDict): \Illuminate\Http\Response
+    protected function sendFinalAnnounceResponse($repDict): Response
     {
-        do_log("[repDict] " . nexus_json_encode($repDict));
+        do_log('[repDict] '.nexus_json_encode($repDict));
+
         return \response(Bencode::encode($repDict))
             ->withHeaders(['Content-Type' => 'text/plain; charset=utf-8'])
             ->withHeaders(['Connection' => 'close'])
             ->withHeaders(['Pragma' => 'no-cache']);
     }
 
-
     /**
-     *
-     * @param Torrent $torrent
-     * @param $queries
-     * @param Peer $peer
-     * @param bool $isPeerExists
+     * @param  Peer  $peer
      */
     private function updateTorrent(Torrent $torrent, $queries, bool $isPeerExists)
     {
-        if (!empty($queries['event']) || !$isPeerExists) {
+        if (! empty($queries['event']) || ! $isPeerExists) {
             $torrent->seeders = Peer::query()
                 ->where('torrent', $torrent->id)
-                ->where('to_go', '=',0)
+                ->where('to_go', '=', 0)
                 ->count();
 
             $torrent->leechers = Peer::query()
@@ -820,7 +832,7 @@ class TrackerRepository extends BaseRepository
         $torrent->visible = Torrent::VISIBLE_YES;
         $torrent->last_action = Carbon::now();
         if ($isPeerExists && $queries['event'] == 'completed') {
-            $torrent->times_completed = DB::raw("times_completed + 1");
+            $torrent->times_completed = DB::raw('times_completed + 1');
         }
         $torrent->save();
         do_log(last_query());
@@ -831,15 +843,17 @@ class TrackerRepository extends BaseRepository
         if ($queries['event'] == 'stopped') {
             Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->delete();
             do_log(last_query());
+
             return;
         }
-        if (!$peer->exists && $isReAnnounce == self::ANNOUNCE_DUAL) {
+        if (! $peer->exists && $isReAnnounce == self::ANNOUNCE_DUAL) {
             do_log('[ANNOUNCE_DUAL_AND_PEER_NOT_EXISTS], return');
+
             return;
         }
 
         $nowStr = Carbon::now()->toDateTimeString();
-        //torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey
+        // torrent, userid, peer_id, ip, port, connectable, uploaded, downloaded, to_go, started, last_action, seeder, agent, downloadoffset, uploadoffset, passkey
         $update = [
             'torrent' => $peer->torrent,
             'peer_id' => $queries['peer_id'],
@@ -848,16 +862,16 @@ class TrackerRepository extends BaseRepository
             'passkey' => $peer->passkey,
             'port' => $queries['port'],
             'agent' => $queries['user_agent'],
-            'connectable' => $this->getConnectable($queries['ip'], $queries['port'], $queries['user_agent'])
+            'connectable' => $this->getConnectable($queries['ip'], $queries['port'], $queries['user_agent']),
         ];
         $isSeedBox = false;
-        if (!empty($queries['ipv4'])) {
+        if (! empty($queries['ipv4'])) {
             $update['ipv4'] = $queries['ipv4'];
             $isSeedBox = isIPSeedBox($queries['ipv4'], $peer->userid);
         }
-        if (!empty($queries['ipv6'])) {
+        if (! empty($queries['ipv6'])) {
             $update['ipv6'] = $queries['ipv6'];
-            if (!$isSeedBox) {
+            if (! $isSeedBox) {
                 $isSeedBox = isIPSeedBox($queries['ipv6'], $peer->userid);
             }
         }
@@ -890,38 +904,36 @@ class TrackerRepository extends BaseRepository
             do_log("[INSERT], data: $logData");
         }
 
-
-
-//        $idArr = explode(',', $peer->ids);
-//        $ipArr = explode(',', $peer->ips);
-//        $logPrefix = "update: " . json_encode($update);
-//        $doUpdate = false;
-//        if ($peer->exists) {
-//            $logPrefix .= ", [EXISTS]";
-//            foreach ($idArr as $key => $id) {
-//                $ip = $ipArr[$key];
-//                if (isIPV4($ip) && isIPV4($queries['ip'])) {
-//                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
-//                    $doUpdate = true;
-//                    $logPrefix .= ", v4, id = $id";
-//                } elseif (isIPV6($ip) && isIPV6($queries['ip'])) {
-//                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
-//                    $doUpdate = true;
-//                    $logPrefix .= ", v6, id = $id";
-//                }
-//            }
-//            if ($doUpdate) {
-//                $affected = Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->update($update);
-//                do_log("$logPrefix, [UPDATE], affected: $affected");
-//            } else {
-//                Peer::query()->insert($update);
-//                do_log("$logPrefix, [INSERT]");
-//            }
-//        } else {
-//            $logPrefix .= ", [NOT_EXISTS]";
-//            Peer::query()->insert($update);
-//            do_log("$logPrefix, [INSERT]");
-//        }
+        //        $idArr = explode(',', $peer->ids);
+        //        $ipArr = explode(',', $peer->ips);
+        //        $logPrefix = "update: " . json_encode($update);
+        //        $doUpdate = false;
+        //        if ($peer->exists) {
+        //            $logPrefix .= ", [EXISTS]";
+        //            foreach ($idArr as $key => $id) {
+        //                $ip = $ipArr[$key];
+        //                if (isIPV4($ip) && isIPV4($queries['ip'])) {
+        //                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
+        //                    $doUpdate = true;
+        //                    $logPrefix .= ", v4, id = $id";
+        //                } elseif (isIPV6($ip) && isIPV6($queries['ip'])) {
+        //                    $update['ip'] = DB::raw("if(id = $id,'$ip', ip)");
+        //                    $doUpdate = true;
+        //                    $logPrefix .= ", v6, id = $id";
+        //                }
+        //            }
+        //            if ($doUpdate) {
+        //                $affected = Peer::query()->where('torrent', $peer->torrent)->where('peer_id', $queries['peer_id'])->update($update);
+        //                do_log("$logPrefix, [UPDATE], affected: $affected");
+        //            } else {
+        //                Peer::query()->insert($update);
+        //                do_log("$logPrefix, [INSERT]");
+        //            }
+        //        } else {
+        //            $logPrefix .= ", [NOT_EXISTS]";
+        //            Peer::query()->insert($update);
+        //            do_log("$logPrefix, [INSERT]");
+        //        }
     }
 
     private function getConnectable($ip, $port, $agent)
@@ -942,41 +954,38 @@ class TrackerRepository extends BaseRepository
                 $connectable = Peer::CONNECTABLE_NO;
             }
             Cache::put($cacheKey, $connectable, 3600);
-            $log .= ", do check, connectable: " . $connectable;
+            $log .= ', do check, connectable: '.$connectable;
         } else {
             $log .= ", don't do check";
         }
         do_log($log);
+
         return $connectable;
     }
 
     /**
      * Update snatch, uploaded & downloaded, use the increment value  to do increment
-     *
-     * @param Peer $peer
-     * @param $queries
-     * @param $dataTraffic
      */
     private function updateSnatch(Peer $peer, $queries, $dataTraffic, $snatch)
     {
         $nowStr = Carbon::now()->toDateTimeString();
 
-        //torrentid, userid, ip, port, uploaded, downloaded, to_go, ,seedtime, leechtime, last_action, startdat, completedat, finished
-        if (!$snatch) {
-            $snatch = new Snatch();
-            //initial, use report uploaded + downloaded
+        // torrentid, userid, ip, port, uploaded, downloaded, to_go, ,seedtime, leechtime, last_action, startdat, completedat, finished
+        if (! $snatch) {
+            $snatch = new Snatch;
+            // initial, use report uploaded + downloaded
             $snatch->torrentid = $peer->torrent;
             $snatch->userid = $peer->userid;
             $snatch->uploaded = $queries['uploaded'];
             $snatch->downloaded = $queries['downloaded'];
             $snatch->startdat = $nowStr;
         } elseif ($peer->exists) {
-            //increase, use the increment value
-            $snatch->uploaded = DB::raw("uploaded + " .  $dataTraffic['uploaded_increment']);
-            $snatch->downloaded = DB::raw("downloaded + " .  $dataTraffic['downloaded_increment']);
+            // increase, use the increment value
+            $snatch->uploaded = DB::raw('uploaded + '.$dataTraffic['uploaded_increment']);
+            $snatch->downloaded = DB::raw('downloaded + '.$dataTraffic['downloaded_increment']);
             $timeIncrease = Carbon::now()->diffInSeconds($peer->last_action);
             if ($queries['left'] == 0) {
-                //seeder
+                // seeder
                 $timeField = 'seedtime';
             } else {
                 $timeField = 'leechtime';
@@ -988,7 +997,7 @@ class TrackerRepository extends BaseRepository
             }
         }
 
-        //always update
+        // always update
         $snatch->ip = $queries['ip'];
         $snatch->port = $queries['port'];
         $snatch->to_go = $queries['left'];
@@ -1000,15 +1009,16 @@ class TrackerRepository extends BaseRepository
         return $snatch;
     }
 
-    public function scrape(Request $request): \Illuminate\Http\Response
+    public function scrape(Request $request): Response
     {
-        do_log("queryString: " . $request->getQueryString());
+        do_log('queryString: '.$request->getQueryString());
         /**
          * Note: In Octane this class will be reused, use variable is better !!!
          */
         $userUpdates = [];
+        $user = null;
         try {
-            throw new TrackerException("Deprecated! Please announce to: " . getSchemeAndHttpHost() . DEFAULT_TRACKER_URI);
+            throw new TrackerException('Deprecated! Please announce to: '.getSchemeAndHttpHost().DEFAULT_TRACKER_URI);
             $infoHashArr = $this->checkScrapeFields($request);
             $user = $this->checkUser($request);
             $clientAllow = $this->checkClient($request);
@@ -1021,7 +1031,7 @@ class TrackerRepository extends BaseRepository
             }
             $repDict = $this->generateScrapeResponse($infoHashArr);
         } catch (ClientNotAllowedException $exception) {
-            do_log("[ClientNotAllowedException] " . $exception->getMessage());
+            do_log('[ClientNotAllowedException] '.$exception->getMessage());
             if (isset($user) && $user->showclienterror == 'no') {
                 $userUpdates['showclienterror'] = 'yes';
             }
@@ -1029,13 +1039,14 @@ class TrackerRepository extends BaseRepository
         } catch (TrackerException $exception) {
             $repDict = $this->generateFailedAnnounceResponse($exception->getMessage());
         } catch (\Throwable $exception) {
-            //other system exception
-            do_log("[" . get_class($exception) . "] " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
-            $repDict = $this->generateFailedAnnounceResponse("system error, report to sysop please, hint: " . nexus()->getRequestId());
+            // other system exception
+            do_log('['.get_class($exception).'] '.$exception->getMessage().$exception->getTraceAsString(), 'error');
+            $repDict = $this->generateFailedAnnounceResponse('system error, report to sysop please, hint: '.nexus()->getRequestId());
         } finally {
             if (isset($user)) {
                 $this->updateUser($user, $userUpdates);
             }
+
             return $this->sendFinalAnnounceResponse($repDict);
         }
     }
@@ -1047,7 +1058,7 @@ class TrackerRepository extends BaseRepository
         $info_hash_array = $info_hash_match[1];
         $info_hash_original = [];
         if (count($info_hash_array) < 1) {
-            throw new TrackerException("key: info_hash is Missing !");
+            throw new TrackerException('key: info_hash is Missing !');
         } else {
             foreach ($info_hash_array as $item) {
                 $item = urldecode($item);
@@ -1057,12 +1068,13 @@ class TrackerRepository extends BaseRepository
                 $info_hash_original[] = $item;
             }
         }
+
         return $info_hash_original;
     }
 
     /**
-     * @param $info_hash_array
      * @return array[]
+     *
      * @see http://www.bittorrent.org/beps/bep_0048.html
      */
     private function generateScrapeResponse($info_hash_array)
@@ -1072,9 +1084,9 @@ class TrackerRepository extends BaseRepository
             $torrent = $this->getTorrentByInfoHash($item);
             if ($torrent) {
                 $torrent_details[$item] = [
-                    'complete' => (int)$torrent->seeders,
-                    'downloaded' => (int)$torrent->times_completed,
-                    'incomplete' => (int)$torrent->leechers,
+                    'complete' => (int) $torrent->seeders,
+                    'downloaded' => (int) $torrent->times_completed,
+                    'incomplete' => (int) $torrent->leechers,
                 ];
             }
         }
@@ -1084,11 +1096,13 @@ class TrackerRepository extends BaseRepository
 
     private function getTorrentByInfoHash($infoHash)
     {
-        $cacheKey = __METHOD__ . bin2hex($infoHash);
+        $cacheKey = __METHOD__.bin2hex($infoHash);
+
         return Cache::remember($cacheKey, 60, function () use ($infoHash, $cacheKey) {
             $fieldRaw = 'id, owner, sp_state, seeders, leechers, added, banned, hr, visible, last_action, times_completed, approval_status';
             $torrent = Torrent::query()->where('info_hash', $infoHash)->selectRaw($fieldRaw)->first();
-            do_log("[getTorrentByInfoHash] cache miss [$cacheKey], from database, and get: " . ($torrent->id ?? ''));
+            do_log("[getTorrentByInfoHash] cache miss [$cacheKey], from database, and get: ".($torrent->id ?? ''));
+
             return $torrent;
         });
     }
@@ -1096,16 +1110,17 @@ class TrackerRepository extends BaseRepository
     private function handleHitAndRun(User $user, Torrent $torrent, Snatch $snatch)
     {
         $now = Carbon::now();
-        if ($user->class >= \App\Models\HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
+        if ($user->class >= HitAndRun::MINIMUM_IGNORE_USER_CLASS) {
             return;
         }
         if ($user->isDonating()) {
             return;
         }
-//        $hrMode = Setting::get('hr.mode');
+        //        $hrMode = Setting::get('hr.mode');
         $searchBoxId = $torrent->basic_category->mode ?? 0;
         if ($searchBoxId == 0) {
             do_log(sprintf('[INVALID_CATEGORY], Torrent: %s', $torrent->id), 'error');
+
             return;
         }
         $hrMode = HitAndRun::getConfig('mode', $searchBoxId);
@@ -1124,14 +1139,13 @@ class TrackerRepository extends BaseRepository
 
     private function updateUser(User $user, array $update)
     {
-        $log = "update: " . json_encode($update);
+        $log = 'update: '.json_encode($update);
         if (empty($update)) {
-            $log .= ", no update...";
+            $log .= ', no update...';
         } else {
             $user->update($update);
-            $log .= ", query: " . last_query();
+            $log .= ', query: '.last_query();
         }
         do_log($log, 'info');
     }
-
 }

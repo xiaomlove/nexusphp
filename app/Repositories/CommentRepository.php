@@ -1,14 +1,13 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Comment;
 use App\Models\Message;
 use App\Models\NexusModel;
 use App\Models\Setting;
-use App\Models\Torrent;
 use App\Models\User;
 use Carbon\Carbon;
-use Hamcrest\Core\Set;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,16 +18,17 @@ class CommentRepository extends BaseRepository
     public function getList(Request $request, Authenticatable $user)
     {
         $query = Comment::query()->with(['create_user', 'update_user']);
-        if (!empty($request->torrent_id)) {
+        if (! empty($request->torrent_id)) {
             $query->where('torrent', $request->torrent_id);
         }
-        if (!empty($request->offer_id)) {
+        if (! empty($request->offer_id)) {
             $query->where('offer', $request->offer_id);
         }
-        if (!empty($request->request_id)) {
+        if (! empty($request->request_id)) {
             $query->where('request', $request->request_id);
         }
         $query->orderBy('id', 'asc');
+
         return $query->paginate($this->getPerPageFromRequest($request));
     }
 
@@ -40,7 +40,9 @@ class CommentRepository extends BaseRepository
          * @var NexusModel $model
          */
         $model = new $modelName;
+        // @phpstan-ignore-next-line larastan.relationExistence
         $target = $model->newQuery()->with('user')->find($params[$type]);
+
         return DB::transaction(function () use ($params, $user, $target) {
             $params['added'] = Carbon::now();
             $comment = $user->comments()->create($params);
@@ -49,12 +51,12 @@ class CommentRepository extends BaseRepository
             $target->save();
 
             $userUpdate = [
-                'seedbonus' => NexusDB::raw('seedbonus + ' . Setting::get('bonus.addcomment')),
+                'seedbonus' => NexusDB::raw('seedbonus + '.Setting::get('bonus.addcomment')),
                 'last_comment' => Carbon::now(),
             ];
             $user->update($userUpdate);
 
-            //message
+            // message
             if ($target->user->commentpm == 'yes' && $user->id != $target->user->id) {
                 $messageInfo = $this->getNoticeMessage($target, $params['type']);
                 $insert = [
@@ -77,12 +79,14 @@ class CommentRepository extends BaseRepository
     {
         $model = Comment::query()->findOrFail($id);
         $model->update($params);
+
         return $model;
     }
 
     public function getDetail($id)
     {
         $model = Comment::query()->findOrFail($id);
+
         return $model;
     }
 
@@ -90,6 +94,7 @@ class CommentRepository extends BaseRepository
     {
         $model = Comment::query()->findOrFail($id);
         $result = $model->delete();
+
         return $result;
     }
 
@@ -107,6 +112,7 @@ class CommentRepository extends BaseRepository
             sprintf($targetScript, $target->id),
             $target->{$targetNameField}
         );
+
         return compact('subject', 'body');
     }
 }
