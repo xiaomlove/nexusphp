@@ -164,9 +164,10 @@ class Install
             throw new \RuntimeException('Invalid DB_CONNECTION');
         }
         $sql =  "SELECT table_name FROM information_schema.tables WHERE table_schema = '$schema'";
-        $res = sql_query($sql);
+        $rows = NexusDB::select($sql);
         $data = [];
-        while ($row = mysql_fetch_assoc($res)) {
+        foreach ($rows as $row) {
+            $row = (array) $row;
             $data[] = $row['table_name'];
         }
         return $data;
@@ -503,7 +504,7 @@ class Install
     public function createAdministrator($username, $email, $password, $confirmPassword)
     {
         $class = User::CLASS_STAFF_LEADER;
-        $count = get_row_count('users', 'where class = ' . $class);
+        $count = (int) NexusDB::table('users')->where('class', $class)->count();
         if ($count > 0) {
             throw new \InvalidArgumentException("Administrator already exists");
         }
@@ -562,7 +563,7 @@ class Install
         $this->doLog("[CREATE ENV] final newData: " . json_encode($newData));
         unset($key, $value);
         //check
-        mysql_connect($newData['DB_HOST'], $newData['DB_USERNAME'], $newData['DB_PASSWORD'], $newData['DB_DATABASE'], (int)$newData['DB_PORT'], $newData['DB_CONNECTION']);
+        NexusDB::getInstance()->connect($newData['DB_HOST'], $newData['DB_USERNAME'], $newData['DB_PASSWORD'], $newData['DB_DATABASE'], (int)$newData['DB_PORT'], $newData['DB_CONNECTION']);
         $redis = new \Redis();
         $redis->connect($newData['REDIS_HOST'], $newData['REDIS_PORT'] ?: 6379);
         if (!empty($data['REDIS_PASSWORD'])) {
@@ -606,7 +607,7 @@ class Install
     {
         foreach ($createTable as $table => $sql) {
             $this->doLog("[CREATE TABLE] $table \n $sql");
-            sql_query($sql);
+            NexusDB::statement($sql);
         }
         return true;
     }
@@ -667,14 +668,14 @@ class Install
                 continue;
             }
             //if table not empty, skip
-            $count = get_row_count($table);
+            $count = (int) NexusDB::table($table)->count();
             if ($count > 0) {
                 $this->doLog("[IMPORT DATA] $table, not empty, skip");
                 continue;
             }
             $this->doLog("[IMPORT DATA] $table, $sql");
-            sql_query("truncate table $table");
-            sql_query($sql);
+            NexusDB::statement("truncate table $table");
+            NexusDB::statement($sql);
         }
         return true;
     }
