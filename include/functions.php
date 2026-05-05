@@ -1661,27 +1661,30 @@ function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation
 function failedloginscheck ($type = 'Login') {
 	global $lang_functions;
 	global $maxloginattempts;
-	$total = 0;
-	$ip = sqlesc(getip());
-	$Query = sql_query("SELECT SUM(attempts) FROM loginattempts WHERE ip=$ip") or sqlerr(__FILE__, __LINE__);
-	list($total) = mysql_fetch_array($Query);
+	$ip = getip();
+	$total = (int) \Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->sum('attempts');
 	if ($total >= $maxloginattempts) {
-		sql_query("UPDATE loginattempts SET banned = 'yes' WHERE ip=$ip") or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->update(['banned' => 'yes']);
 		stderr($type.$lang_functions['std_locked'].$maxloginattempts.$lang_functions['std_attempts_reached'], $lang_functions['std_your_ip_banned'], true, true);
 	}
 }
 function failedlogins ($type = 'login', $recover = false, $head = true)
 {
 	global $lang_functions;
-	$ip = sqlesc(getip());
-	$added = sqlesc(date("Y-m-d H:i:s"));
-	$a = (@mysql_fetch_row(@sql_query("select count(*) from loginattempts where ip=$ip"))) or sqlerr(__FILE__, __LINE__);
-	if ($a[0] == 0)
-	sql_query("INSERT INTO loginattempts (ip, added, attempts) VALUES ($ip, $added, 1)") or sqlerr(__FILE__, __LINE__);
-	else
-	sql_query("UPDATE loginattempts SET attempts = attempts + 1 where ip=$ip") or sqlerr(__FILE__, __LINE__);
-	if ($recover)
-	sql_query("UPDATE loginattempts SET type = 'recover' WHERE ip = $ip") or sqlerr(__FILE__, __LINE__);
+	$ip = getip();
+	$count = (int) \Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->count();
+	if ($count == 0) {
+		\Nexus\Database\NexusDB::insert('loginattempts', [
+			'ip' => $ip,
+			'added' => date("Y-m-d H:i:s"),
+			'attempts' => 1,
+		]);
+	} else {
+		\Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->update(['attempts' => \Nexus\Database\NexusDB::raw('attempts + 1')]);
+	}
+	if ($recover) {
+		\Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->update(['type' => 'recover']);
+	}
 	if ($type == 'silent')
 	return;
 	elseif ($type == 'login')
@@ -1696,15 +1699,20 @@ function failedlogins ($type = 'login', $recover = false, $head = true)
 function login_failedlogins($type = 'login', $recover = false, $head = true)
 {
 	global $lang_functions;
-	$ip = sqlesc(getip());
-	$added = sqlesc(date("Y-m-d H:i:s"));
-	$a = (@mysql_fetch_row(@sql_query("select count(*) from loginattempts where ip=$ip"))) or sqlerr(__FILE__, __LINE__);
-	if ($a[0] == 0)
-	sql_query("INSERT INTO loginattempts (ip, added, attempts) VALUES ($ip, $added, 1)") or sqlerr(__FILE__, __LINE__);
-	else
-	sql_query("UPDATE loginattempts SET attempts = attempts + 1 where ip=$ip") or sqlerr(__FILE__, __LINE__);
-	if ($recover)
-	sql_query("UPDATE loginattempts SET type = 'recover' WHERE ip = $ip") or sqlerr(__FILE__, __LINE__);
+	$ip = getip();
+	$count = (int) \Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->count();
+	if ($count == 0) {
+		\Nexus\Database\NexusDB::insert('loginattempts', [
+			'ip' => $ip,
+			'added' => date("Y-m-d H:i:s"),
+			'attempts' => 1,
+		]);
+	} else {
+		\Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->update(['attempts' => \Nexus\Database\NexusDB::raw('attempts + 1')]);
+	}
+	if ($recover) {
+		\Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->update(['type' => 'recover']);
+	}
 	if ($type == 'silent')
 	return;
 	elseif ($type == 'login')
@@ -1717,10 +1725,8 @@ function login_failedlogins($type = 'login', $recover = false, $head = true)
 
 function remaining ($type = 'login') {
 	global $maxloginattempts;
-	$total = 0;
-	$ip = sqlesc(getip());
-	$Query = sql_query("SELECT SUM(attempts) FROM loginattempts WHERE ip=$ip") or sqlerr(__FILE__, __LINE__);
-	list($total) = mysql_fetch_array($Query);
+	$ip = getip();
+	$total = (int) \Nexus\Database\NexusDB::table('loginattempts')->where('ip', $ip)->sum('attempts');
 	$remaining = $maxloginattempts - $total;
 	if ($remaining <= 2 )
 	$remaining = "<font color=\"red\" size=\"2\">[".$remaining."]</font>";
@@ -1746,16 +1752,15 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 	}
 
 	if ($maxuserscheck) {
-		$res = sql_query("SELECT COUNT(*) FROM users") or sqlerr(__FILE__, __LINE__);
-		$arr = mysql_fetch_row($res);
-		if ($arr[0] >= $maxusers)
+		$userCount = (int) \Nexus\Database\NexusDB::table('users')->count();
+		if ($userCount >= $maxusers)
 		stderr($lang_functions['std_sorry'], $lang_functions['std_account_limit_reached'], 0, true);
 	}
 
 	if ($ipcheck) {
 		$ip = getip () ;
-		$a = (@mysql_fetch_row(@sql_query("select count(*) from users where ip='" . mysql_real_escape_string($ip) . "'"))) or sqlerr(__FILE__, __LINE__);
-		if ($a[0] > $maxip)
+		$ipCount = (int) \Nexus\Database\NexusDB::table('users')->where('ip', $ip)->count();
+		if ($ipCount > $maxip)
 		stderr($lang_functions['std_sorry'], $lang_functions['std_the_ip']."<b>" . htmlspecialchars($ip) ."</b>". sprintf($lang_functions['std_used_many_times'], \App\Models\Setting::getSiteName()),false, true);
 	}
 	return true;
@@ -2065,8 +2070,11 @@ function userlogin() {
 	$nip = ip2long($ip);
 	if ($nip) //$nip would be false for IPv6 address
 	{
-		$res = sql_query("SELECT * FROM bans WHERE first <= $nip AND last >= $nip") or sqlerr(__FILE__, __LINE__);
-        if (mysql_num_rows($res) > 0)
+		$banExists = \Nexus\Database\NexusDB::table('bans')
+			->where('first', '<=', $nip)
+			->where('last', '>=', $nip)
+			->exists();
+        if ($banExists)
 		{
 			header("HTTP/1.1 403 Forbidden");
 			print("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body>".$lang_functions['text_unauthorized_ip']."</body></html>\n");
@@ -2080,7 +2088,7 @@ function userlogin() {
     }
 	if (!$row["passkey"]){
 		$passkey = md5($row['username'].date("Y-m-d H:i:s").$row['passhash']);
-		sql_query("UPDATE users SET passkey = ".sqlesc($passkey)." WHERE id=" . sqlesc($row["id"]));
+		\Nexus\Database\NexusDB::table('users')->where('id', (int) $row["id"])->update(['passkey' => $passkey]);
 	}
 
 	$oldip = $row['ip'];
@@ -2104,20 +2112,22 @@ function userlogin() {
 function autoclean($printProgress = false) {
 	global $autoclean_interval_one, $rootpath;
 	$now = TIMENOW;
-	$res = sql_query("SELECT value_u FROM avps WHERE arg = 'lastcleantime'");
-	$row = mysql_fetch_array($res);
+	$row = \Nexus\Database\NexusDB::table('avps')->where('arg', 'lastcleantime')->first();
 	if (!$row) {
 	    do_log("SELECT value_u FROM avps WHERE arg = 'lastcleantime', empty");
-		sql_query("INSERT INTO avps (arg, value_u) VALUES ('lastcleantime',$now)") or sqlerr(__FILE__, __LINE__);
+		\Nexus\Database\NexusDB::insert('avps', ['arg' => 'lastcleantime', 'value_u' => (int) $now]);
 		return false;
 	}
-	$ts = $row[0];
+	$ts = (int) ((array) $row)['value_u'];
 	if ($ts + $autoclean_interval_one > $now) {
 	    do_log("ts: {$ts} + autoclean_interval_one: $autoclean_interval_one > now: $now");
 		return false;
 	}
-	sql_query("UPDATE avps SET value_u=$now WHERE arg='lastcleantime' AND value_u = $ts") or sqlerr(__FILE__, __LINE__);
-	if (!mysql_affected_rows()) {
+	$affected = \Nexus\Database\NexusDB::table('avps')
+		->where('arg', 'lastcleantime')
+		->where('value_u', $ts)
+		->update(['value_u' => (int) $now]);
+	if ($affected == 0) {
 	    do_log("UPDATE avps SET value_u=$now WHERE arg='lastcleantime' AND value_u = $ts, affectedRows = 0");
 		return false;
 	}
