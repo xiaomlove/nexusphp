@@ -130,4 +130,9 @@ class DBPdo implements DBInterface
         return $this->lastStmt = $this->pdo->prepare($sql);
     }
 
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
+
 }

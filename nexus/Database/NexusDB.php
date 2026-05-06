@@ -334,6 +334,20 @@ class NexusDB
         return DB::table($table);
     }
 
+    public static function getPdo(): \PDO
+    {
+        if (IN_NEXUS) {
+            $instance = self::getInstance();
+            $instance->autoConnect();
+            $driver = $instance->getDriver();
+            if (!$driver instanceof DBPdo) {
+                throw new DatabaseException('NexusDB::getPdo() requires the PDO driver');
+            }
+            return $driver->getPdo();
+        }
+        return Capsule::connection(self::getConnectionName())->getPdo();
+    }
+
     public static function raw($value): \Illuminate\Database\Query\Expression
     {
         if (IN_NEXUS) {
