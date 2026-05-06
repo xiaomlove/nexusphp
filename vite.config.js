@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/echo.js',
+                'resources/js/pwa.js',
             ],
             refresh: true,
         }),

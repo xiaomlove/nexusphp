@@ -108,4 +108,17 @@ return [
      */
     'browse_default_modern' => filter_var(nexus_env('BROWSE_DEFAULT_MODERN', true), FILTER_VALIDATE_BOOLEAN),
 
+    /*
+     * Web Push (PWA) VAPID keys. The public key is also exposed to the
+     * frontend via VITE_VAPID_PUBLIC_KEY so the service worker can
+     * subscribe. If VAPID_PUBLIC_KEY is empty, the subscribe pipeline
+     * is effectively disabled (the frontend throws and no rows are
+     * created).
+     */
+    'webpush' => [
+        'vapid_public_key' => (string) nexus_env('VAPID_PUBLIC_KEY', ''),
+        'vapid_private_key' => (string) nexus_env('VAPID_PRIVATE_KEY', ''),
+        'vapid_subject' => (string) nexus_env('VAPID_SUBJECT', 'mailto:admin@example.com'),
+    ],
+
 ];
