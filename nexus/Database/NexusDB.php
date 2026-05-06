@@ -170,10 +170,10 @@ class NexusDB
             return DB::table($table)->insertGetId($data);
         }
         $fields = array_map(function ($value) {return "$value";}, array_keys($data));
-        $values = array_map(function ($value) {return sqlesc($value);}, array_values($data));
+        $values = array_map(function ($value) {return self::escape($value);}, array_values($data));
         $sql = sprintf("insert into %s (%s) values (%s)", $table, implode(', ', $fields), implode(', ', $values));
-        sql_query($sql);
-        return mysql_insert_id();
+        self::executeSql($sql);
+        return self::getInstance()->lastInsertId();
     }
 
     public static function update($table, $data, $whereStr)
@@ -183,11 +183,11 @@ class NexusDB
         }
         $updateArr = [];
         foreach ($data as $field => $value) {
-            $updateArr[] = "`$field` = " . sqlesc($value);
+            $updateArr[] = "`$field` = " . self::escape($value);
         }
         $sql = sprintf("update `%s` set %s where %s", $table, implode(', ', $updateArr), $whereStr);
-        sql_query($sql);
-        return mysql_affected_rows();
+        self::executeSql($sql);
+        return self::getInstance()->affectedRows();
     }
 
     public static function delete($table, $whereStr, $limit = null)
@@ -203,8 +203,8 @@ class NexusDB
         if (!is_null($limit)) {
             $sql .= " limit $limit";
         }
-        sql_query($sql);
-        return mysql_affected_rows();
+        self::executeSql($sql);
+        return self::getInstance()->affectedRows();
     }
 
     public static function getOne($table, $whereStr, $fields = '*')
@@ -223,8 +223,8 @@ class NexusDB
             throw new DatabaseException("empty fields.");
         }
         $sql = "select $fields from $table where $whereStr limit 1";
-        $res = sql_query($sql);
-        return mysql_fetch_assoc($res);
+        $res = self::executeSql($sql);
+        return self::getInstance()->fetchAssoc($res);
     }
 
     public static function getAll($table, $whereStr, $fields = '*')
@@ -255,10 +255,37 @@ class NexusDB
             $result = DB::select($sql);
             return json_decode(json_encode($result), true);
         }
-        $res = sql_query($sql);
+        $res = self::executeSql($sql);
         $result = [];
-        while ($row = mysql_fetch_assoc($res)) {
+        $instance = self::getInstance();
+        while ($row = $instance->fetchAssoc($res)) {
             $result[] = $row;
+        }
+        return $result;
+    }
+
+    public static function escape($value): string
+    {
+        if (is_null($value)) {
+            return 'null';
+        }
+        return "'" . self::getInstance()->escapeString((string) $value) . "'";
+    }
+
+    private static function executeSql(string $sql)
+    {
+        $begin = microtime(true);
+        $result = self::getInstance()->query($sql);
+        if (IN_NEXUS) {
+            global $query_name;
+            if (!is_array($query_name)) {
+                $query_name = [];
+            }
+            $end = microtime(true);
+            $query_name[] = [
+                'query' => $sql,
+                'time' => sprintf('%.2f ms', ($end - $begin) * 1000),
+            ];
         }
         return $result;
     }
@@ -318,7 +345,7 @@ class NexusDB
     public static function statement($value)
     {
         if (IN_NEXUS) {
-            return sql_query($value);
+            return self::executeSql($value);
         }
         return DB::statement($value);
     }
