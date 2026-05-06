@@ -12,6 +12,7 @@ RUN apk add --no-cache \
     libwebp-dev \
     gmp-dev \
     oniguruma-dev \
+    postgresql-dev \
     linux-headers
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
@@ -19,6 +20,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 RUN docker-php-ext-install -j$(nproc) \
     bcmath \
     pdo_mysql \
+    pdo_pgsql \
     mysqli \
     gd \
     pcntl \
@@ -60,7 +62,8 @@ RUN apk add --no-cache \
     oniguruma \
     git \
     mysql-client \
-    mariadb-connector-c
+    mariadb-connector-c \
+    libpq
 
 # 配置 www.conf
 RUN sed -i \

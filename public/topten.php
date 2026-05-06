@@ -487,7 +487,7 @@ if ($type == 1)
     if (\Nexus\Database\NexusDB::isMysql()) {
         $speedStr = "uploaded / (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(added)) AS upspeed, downloaded / (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(added)) AS downspeed";
     } else if (\Nexus\Database\NexusDB::isPgsql()) {
-        $speedStr = "uploaded::numeric / (EXTRACT(EPOCH FROM NOW()) - EXTRACT(EPOCH FROM added)) AS upspeed";
+        $speedStr = "uploaded::numeric / (EXTRACT(EPOCH FROM NOW()) - EXTRACT(EPOCH FROM added)) AS upspeed, downloaded::numeric / (EXTRACT(EPOCH FROM NOW()) - EXTRACT(EPOCH FROM added)) AS downspeed";
     } else {
         throw new \RuntimeException('Not supported database.');
     }
