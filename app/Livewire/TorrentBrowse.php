@@ -35,6 +35,12 @@ class TorrentBrowse extends Component
     #[Url(as: 'free', except: false)]
     public bool $onlyFree = false;
 
+    #[Url(as: 'bm', except: false)]
+    public bool $onlyBookmarked = false;
+
+    #[Url(as: 'hd', except: false)]
+    public bool $hideDead = false;
+
     /** @var array<int, int> */
     #[Url(as: 'src', except: [])]
     public array $sources = [];
@@ -113,6 +119,16 @@ class TorrentBrowse extends Component
         $this->resetPaging();
     }
 
+    public function updatingOnlyBookmarked(): void
+    {
+        $this->resetPaging();
+    }
+
+    public function updatingHideDead(): void
+    {
+        $this->resetPaging();
+    }
+
     public function updatingSources(): void
     {
         $this->resetPaging();
@@ -156,7 +172,7 @@ class TorrentBrowse extends Component
     public function clearFilters(): void
     {
         $this->reset([
-            'search', 'category', 'sort', 'onlyFree',
+            'search', 'category', 'sort', 'onlyFree', 'onlyBookmarked', 'hideDead',
             'sources', 'media', 'codecs', 'standards',
             'processings', 'teams', 'audiocodecs',
         ]);
@@ -375,6 +391,24 @@ class TorrentBrowse extends Component
                 Torrent::PROMOTION_FREE,
                 Torrent::PROMOTION_FREE_TWO_TIMES_UP,
             ]);
+        }
+
+        if ($this->onlyBookmarked) {
+            $userId = (int) (auth('nexus-web')->id() ?? 0);
+            if ($userId > 0) {
+                $query->whereIn('id', function ($q) use ($userId) {
+                    $q->from('bookmarks')->select('torrentid')->where('userid', $userId);
+                });
+            } else {
+                // Logged out (defensive — route is auth-gated): show nothing.
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        if ($this->hideDead) {
+            $query->where(function (Builder $sub) {
+                $sub->where('seeders', '>', 0)->orWhere('leechers', '>', 0);
+            });
         }
 
         foreach (self::FACETS as $property => [$modelClass, $column]) {

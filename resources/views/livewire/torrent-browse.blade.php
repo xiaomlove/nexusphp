@@ -9,18 +9,18 @@
         <a
             href="/torrents.php"
             class="inline-flex items-center gap-1 self-start rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-            title="Open the legacy torrent listing (bookmarks, dead-only filter, advanced search)"
+            title="Open the legacy torrent listing (advanced numeric ranges, allsec, dead-only)"
         >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 14L21 3m0 0v7m0-7h-7M5 5h6v6"/>
             </svg>
-            Legacy listing
+            Advanced search
         </a>
     </div>
 
     <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="grid gap-3 md:grid-cols-12">
-            <div class="md:col-span-5">
+            <div class="md:col-span-4">
                 <label for="search" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Search
                 </label>
@@ -47,7 +47,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="md:col-span-3">
+            <div class="md:col-span-2">
                 <label for="sort" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Sort by
                 </label>
@@ -61,7 +61,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex items-end md:col-span-1">
+            <div class="flex flex-wrap items-end gap-x-4 gap-y-2 md:col-span-3">
                 <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                     <input
                         type="checkbox"
@@ -69,6 +69,22 @@
                         class="h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500 dark:border-zinc-600 dark:bg-zinc-800"
                     >
                     Free
+                </label>
+                <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300" title="Show only torrents you have bookmarked">
+                    <input
+                        type="checkbox"
+                        wire:model.live="onlyBookmarked"
+                        class="h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500 dark:border-zinc-600 dark:bg-zinc-800"
+                    >
+                    Bookmarks
+                </label>
+                <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300" title="Hide torrents with no seeders and no leechers">
+                    <input
+                        type="checkbox"
+                        wire:model.live="hideDead"
+                        class="h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500 dark:border-zinc-600 dark:bg-zinc-800"
+                    >
+                    Hide dead
                 </label>
             </div>
         </div>
@@ -88,6 +104,7 @@
                 </button>
             @endif
             @if ($search !== '' || $category !== '' || $sort !== 'newest' || $onlyFree
+                || $onlyBookmarked || $hideDead
                 || $this->hasActiveFacets())
                 <button
                     type="button"
