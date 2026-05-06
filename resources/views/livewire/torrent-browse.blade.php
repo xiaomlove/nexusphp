@@ -135,7 +135,10 @@
             @else
                 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     @foreach ($torrents as $torrent)
-                        @include('livewire.partials.torrent-card', ['torrent' => $torrent])
+                        @include('livewire.partials.torrent-card', [
+                            'torrent' => $torrent,
+                            'cover' => $covers[$torrent->id] ?? '',
+                        ])
                     @endforeach
                 </div>
 

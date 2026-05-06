@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Codec;
 use App\Models\Media;
 use App\Models\Processing;
+use App\Models\Setting;
 use App\Models\Source;
 use App\Models\Standard;
 use App\Models\Team;
@@ -18,6 +19,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Nexus\Imdb\Imdb;
 
 class TorrentBrowse extends Component
 {
@@ -280,15 +282,73 @@ class TorrentBrowse extends Component
         }
 
         $torrents = $items->take($this->perPage)->get();
+        $covers = $this->resolveCovers($torrents);
 
         return view('livewire.torrent-browse', [
             'torrents' => $torrents,
+            'covers' => $covers,
             'total' => $total,
             'hasMore' => $torrents->count() < $total,
             'currentSortLabel' => $sortConfig['label'],
         ])->layout('layouts.livewire-app', [
             'title' => 'Browse Torrents',
         ]);
+    }
+
+    /**
+     * Build a map of torrent.id → poster URL string.
+     *
+     * Resolution order, mirroring legacy `torrents.php`:
+     * 1. `torrents.cover` column if non-empty (admin/uploader override)
+     * 2. IMDB cover via `Imdb::getMovieCover(parse_imdb_id(torrents.url))`
+     *    when the IMDB integration is enabled (cached 10d in Redis).
+     * 3. Empty string → card renders the placeholder.
+     *
+     * @param  Collection<int, Torrent>  $torrents
+     * @return array<int, string>
+     */
+    private function resolveCovers($torrents): array
+    {
+        $covers = [];
+        $imdb = null;
+        $imdbEnabled = null;
+        foreach ($torrents as $torrent) {
+            $cover = (string) ($torrent->cover ?? '');
+            if ($cover !== '') {
+                $covers[(int) $torrent->id] = $cover;
+
+                continue;
+            }
+            $url = (string) ($torrent->url ?? '');
+            if ($url === '') {
+                $covers[(int) $torrent->id] = '';
+
+                continue;
+            }
+            if ($imdbEnabled === null) {
+                $imdbEnabled = Setting::getIsImdbEnabled();
+            }
+            if (! $imdbEnabled) {
+                $covers[(int) $torrent->id] = '';
+
+                continue;
+            }
+            $imdbId = parse_imdb_id($url);
+            if (! $imdbId) {
+                $covers[(int) $torrent->id] = '';
+
+                continue;
+            }
+            try {
+                $imdb ??= new Imdb;
+                $covers[(int) $torrent->id] = (string) $imdb->getMovieCover($imdbId);
+            } catch (\Throwable $e) {
+                do_log('imdb cover lookup failed: '.$e->getMessage(), 'error');
+                $covers[(int) $torrent->id] = '';
+            }
+        }
+
+        return $covers;
     }
 
     private function buildQuery(): Builder
