@@ -553,6 +553,29 @@ class NexusDB
         }
     }
 
+    /**
+     * Returns a SQL expression that converts a hex-encoded value to binary.
+     * The caller is expected to supply a hex string (typically via bin2hex()
+     * of the original binary payload) either as an inline literal or as a
+     * bound parameter placeholder.
+     *
+     * Usage:
+     *   $stmt = NexusDB::getInstance()->prepare(
+     *       "SELECT ... WHERE info_hash = " . NexusDB::fromHex(':info_hash')
+     *   );
+     *   $stmt->execute(['info_hash' => bin2hex($rawInfoHash)]);
+     */
+    public static function fromHex(string $hexExpression): string
+    {
+        if (self::isMysql()) {
+            return sprintf("UNHEX(%s)", $hexExpression);
+        } elseif (self::isPgsql()) {
+            return sprintf("decode(%s, 'hex')", $hexExpression);
+        } else {
+            throw new \RuntimeException('Not supported database.');
+        }
+    }
+
     public static function fromUnixTimestampField(int $timestamp): string
     {
         if (self::isMysql()) {

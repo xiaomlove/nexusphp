@@ -219,15 +219,10 @@ class Torrent extends NexusModel
 
     public function scopeWhereInfoHash($query, string $binaryHash)
     {
-        if (NexusDB::isPgsql()) {
-            return $query->whereRaw(
-                "info_hash = decode(?, 'hex')",
-                [bin2hex($binaryHash)]
-            );
-        } elseif (NexusDB::isMysql()) {
-            return $query->where('info_hash', $binaryHash);
-        }
-        throw new \RuntimeException('Not supported database');
+        return $query->whereRaw(
+            'info_hash = '.NexusDB::fromHex('?'),
+            [bin2hex($binaryHash)]
+        );
     }
 
     /**
