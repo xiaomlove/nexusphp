@@ -5,7 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Browse' }} | {{ \App\Models\Setting::getSiteName() }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @php
+        $reverbCfg = [
+            'key' => (string) (env('REVERB_APP_KEY') ?: ''),
+            'host' => (string) (env('REVERB_HOST') ?: ($_SERVER['HTTP_HOST'] ?? '')),
+            'port' => (int) (env('REVERB_PORT') ?: 8080),
+            'scheme' => (string) (env('REVERB_SCHEME') ?: 'http'),
+        ];
+    @endphp
+    <script>window.__REVERB__ = @json($reverbCfg);</script>
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/echo.js'])
     @livewireStyles
     <script>
         (function () {

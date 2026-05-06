@@ -8,6 +8,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -63,6 +64,25 @@ class TorrentBrowse extends Component
         $this->reset(['search', 'category', 'sort', 'onlyFree']);
         $this->sort = 'newest';
         $this->resetPage();
+    }
+
+    /**
+     * Reverb listener: when a torrent's promotion (sp_state) is changed
+     * by an admin via setSpState() OR a global freeleech action is taken,
+     * re-render the grid so the badge on the affected card (or all cards
+     * for the global case) reflects the new state without a page reload.
+     *
+     * The method body is intentionally empty: any Livewire listener
+     * invocation triggers a re-render, which re-runs render() and
+     * re-evaluates each card's promotion badge from the freshly-fetched
+     * Torrent rows. No diff is required.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    #[On('echo:torrents.promotion,TorrentPromotionChanged')]
+    public function refreshOnPromotionChange(array $payload = []): void
+    {
+        // No-op — Livewire will re-render automatically.
     }
 
     /**
