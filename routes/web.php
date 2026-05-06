@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\AuthenticateController;
+use App\Http\Controllers\OauthController;
+use App\Http\Controllers\TokenController;
+use App\Http\Controllers\ToolController;
+use App\Http\Controllers\TorrentController;
+use App\Livewire\TorrentBrowse;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,25 +23,29 @@ Route::get('/', function () {
     return redirect('index.php');
 });
 
-Route::get("/error", [\App\Http\Controllers\ToolController::class, "error"]);
+Route::get('/error', [ToolController::class, 'error']);
 
-Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
-    Route::get('torrent-approval-page', [\App\Http\Controllers\TorrentController::class, 'approvalPage']);
-    Route::get('torrent-approval-logs', [\App\Http\Controllers\TorrentController::class, 'approvalLogs']);
-    Route::post('torrent-approval', [\App\Http\Controllers\TorrentController::class, 'approval']);
-    Route::post('token/add', [\App\Http\Controllers\TokenController::class, 'addToken']);
-    Route::post('token/del', [\App\Http\Controllers\TokenController::class, 'delToken']);
+Route::middleware(['auth.nexus:nexus-web'])->group(function () {
+    Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
 });
 
-if (!isRunningInConsole()) {
+Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
+    Route::get('torrent-approval-page', [TorrentController::class, 'approvalPage']);
+    Route::get('torrent-approval-logs', [TorrentController::class, 'approvalLogs']);
+    Route::post('torrent-approval', [TorrentController::class, 'approval']);
+    Route::post('token/add', [TokenController::class, 'addToken']);
+    Route::post('token/del', [TokenController::class, 'delToken']);
+});
+
+if (! isRunningInConsole()) {
     $passkeyLoginUri = get_setting('security.login_secret');
-    if (!empty($passkeyLoginUri) && get_setting('security.login_type') == 'passkey') {
-        Route::get("$passkeyLoginUri/{passkey}", [\App\Http\Controllers\AuthenticateController::class, 'passkeyLogin']);
+    if (! empty($passkeyLoginUri) && get_setting('security.login_type') == 'passkey') {
+        Route::get("$passkeyLoginUri/{passkey}", [AuthenticateController::class, 'passkeyLogin']);
     }
 }
 
 Route::group(['prefix' => 'oauth'], function () {
-    Route::get("user-info", [\App\Http\Controllers\OauthController::class, 'userInfo'])->name("oauth.user_info")->middleware('auth:api');
-    Route::get('redirect/{uuid}', [\App\Http\Controllers\OauthController::class, 'redirect']);
-    Route::get('callback/{uuid}', [\App\Http\Controllers\OauthController::class, 'callback']);
+    Route::get('user-info', [OauthController::class, 'userInfo'])->name('oauth.user_info')->middleware('auth:api');
+    Route::get('redirect/{uuid}', [OauthController::class, 'redirect']);
+    Route::get('callback/{uuid}', [OauthController::class, 'callback']);
 });
