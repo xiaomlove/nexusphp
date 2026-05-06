@@ -2,11 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Setting;
-use App\Models\User;
-use App\Repositories\CleanupRepository;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -65,60 +61,61 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
     {
         $beginTimestamp = time();
         $logPrefix = sprintf(
-            "[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_JOB], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s, idStr: %s, idRedisKey: %s",
+            '[CLEANUP_CLI_UPDATE_TORRENT_SEEDERS_ETC_HANDLE_JOB], commonRequestId: %s, beginTorrentId: %s, endTorrentId: %s, idStr: %s, idRedisKey: %s',
             $this->requestId, $this->beginTorrentId, $this->endTorrentId, $this->idStr, $this->idRedisKey
         );
         do_log("$logPrefix, job start ...");
 
         $idStr = $this->idStr;
         $delIdRedisKey = false;
-        if (empty($idStr) && !empty($this->idRedisKey)) {
+        if (empty($idStr) && ! empty($this->idRedisKey)) {
             $delIdRedisKey = true;
             $idStr = NexusDB::cache_get($this->idRedisKey);
         }
         if (empty($idStr)) {
-            do_log("$logPrefix, no idStr or idRedisKey", "error");
+            do_log("$logPrefix, no idStr or idRedisKey", 'error');
+
             return;
         }
-        $torrentIdArr = explode(",", $idStr);
-        //批量取，简单化
-        $torrents = array();
-//        $res = sql_query("SELECT torrent, seeder, COUNT(*) AS c FROM peers GROUP BY torrent, seeder where torrent in ($idStr)");
-        $res = NexusDB::table("peers")
-            ->selectRaw("torrent, seeder, COUNT(*) AS c")
+        $torrentIdArr = explode(',', $idStr);
+        // 批量取，简单化
+        $torrents = [];
+        $res = NexusDB::table('peers')
+            ->selectRaw('torrent, seeder, COUNT(*) AS c')
             ->whereRaw("torrent in ($idStr)")
             ->groupBy(['torrent', 'seeder'])
             ->get();
         if ($res->isEmpty()) {
-            do_log("$logPrefix, no data from idStr: $idStr", "error");
+            do_log("$logPrefix, no data from idStr: $idStr", 'error');
+
             return;
         }
         foreach ($res as $row) {
-            if ($row->seeder == "yes")
-            $key = "seeders";
-            else
-            $key = "leechers";
+            if ($row->seeder == 'yes') {
+                $key = 'seeders';
+            } else {
+                $key = 'leechers';
+            }
             $torrents[$row->torrent][$key] = $row->c;
         }
 
-//        $res = sql_query("SELECT torrent, COUNT(*) AS c FROM comments GROUP BY torrent where torrent in ($idStr)");
-        $res = NexusDB::table("comments")
-            ->selectRaw("torrent, COUNT(*) AS c")
+        $res = NexusDB::table('comments')
+            ->selectRaw('torrent, COUNT(*) AS c')
             ->whereRaw("torrent in ($idStr)")
             ->groupBy(['torrent'])
             ->get();
-       foreach ($res as $row) {
-            $torrents[$row->torrent]["comments"] = $row->c;
+        foreach ($res as $row) {
+            $torrents[$row->torrent]['comments'] = $row->c;
         }
         $seedersUpdates = $leechersUpdates = $commentsUpdates = [];
         foreach ($torrentIdArr as $id) {
-            $seedersUpdates[] = sprintf("when %d then %d", $id, $torrents[$id]["seeders"] ?? 0);
-            $leechersUpdates[] = sprintf("when %d then %d", $id, $torrents[$id]["leechers"] ?? 0);
-            $commentsUpdates[] = sprintf("when %d then %d", $id, $torrents[$id]["comments"] ?? 0);
+            $seedersUpdates[] = sprintf('when %d then %d', $id, $torrents[$id]['seeders'] ?? 0);
+            $leechersUpdates[] = sprintf('when %d then %d', $id, $torrents[$id]['leechers'] ?? 0);
+            $commentsUpdates[] = sprintf('when %d then %d', $id, $torrents[$id]['comments'] ?? 0);
         }
         $sql = sprintf(
-            "update torrents set seeders = case id %s end, leechers = case id %s end, comments = case id %s end where id in (%s)",
-            implode(" ", $seedersUpdates), implode(" ", $leechersUpdates), implode(" ", $commentsUpdates), $idStr
+            'update torrents set seeders = case id %s end, leechers = case id %s end, comments = case id %s end where id in (%s)',
+            implode(' ', $seedersUpdates), implode(' ', $leechersUpdates), implode(' ', $commentsUpdates), $idStr
         );
         $result = NexusDB::statement($sql);
         if ($delIdRedisKey) {
@@ -129,17 +126,16 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
             "$logPrefix, [DONE], update torrent count: %s, result: %s, cost time: %s seconds",
             count($torrentIdArr), var_export($result, true), $costTime
         ));
-        do_log("$logPrefix, sql: $sql", "debug");
+        do_log("$logPrefix, sql: $sql", 'debug');
     }
 
     /**
      * Handle a job failure.
      *
-     * @param  \Throwable  $exception
      * @return void
      */
     public function failed(\Throwable $exception)
     {
-        do_log("failed: " . $exception->getMessage() . $exception->getTraceAsString(), 'error');
+        do_log('failed: '.$exception->getMessage().$exception->getTraceAsString(), 'error');
     }
 }
