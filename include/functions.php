@@ -2382,8 +2382,9 @@ function menu ($selected = "home") {
         $specialSectionName = get_searchbox_value(get_setting('main.specialcat'), 'section_name');
         print ("<ul id=\"mainmenu\" class=\"menu\">");
         print ("<li" . ($selected == "home" ? " class=\"selected\"" : "") . "><a href=\"index.php\">" . $lang_functions['text_home'] . "</a></li>");
+        $forumsHref = config('nexus.browse_default_modern', true) ? 'forum' : 'forums.php';
         if ($enableextforum != 'yes')
-            print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"forums.php\">".$lang_functions['text_forums']."</a></li>");
+            print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"" . htmlspecialchars($forumsHref, ENT_QUOTES) . "\">".$lang_functions['text_forums']."</a></li>");
         else
             print ("<li" . ($selected == "forums" ? " class=\"selected\"" : "") . "><a href=\"" . $extforumurl."\" target=\"_blank\">".$lang_functions['text_forums']."</a></li>");
         $torrentsHref = config('nexus.browse_default_modern', true) ? 'browse' : 'torrents.php';

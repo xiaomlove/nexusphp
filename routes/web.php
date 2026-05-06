@@ -5,6 +5,7 @@ use App\Http\Controllers\OauthController;
 use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
+use App\Livewire\ForumIndex;
 use App\Livewire\TorrentBrowse;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,7 @@ Route::get('/error', [ToolController::class, 'error']);
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
+    Route::get('/forum', ForumIndex::class)->name('forum.index');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
