@@ -345,7 +345,7 @@ class NexusDB
             }
             return $driver->getPdo();
         }
-        return Capsule::connection(self::getConnectionName())->getPdo();
+        return DB::connection()->getPdo();
     }
 
     public static function raw($value): \Illuminate\Database\Query\Expression
