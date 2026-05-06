@@ -1,9 +1,21 @@
 <div class="space-y-6" x-data="{ filtersOpen: false }">
-    <div class="flex flex-col gap-2">
-        <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Browse torrents</h1>
-        <p class="text-sm text-zinc-500 dark:text-zinc-400">
-            Modern Livewire-powered browse. Filters update instantly; URL is shareable.
-        </p>
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Browse torrents</h1>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                Modern Livewire-powered browse. Filters update instantly; URL is shareable.
+            </p>
+        </div>
+        <a
+            href="/torrents.php"
+            class="inline-flex items-center gap-1 self-start rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            title="Open the legacy torrent listing (bookmarks, dead-only filter, advanced search)"
+        >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14L21 3m0 0v7m0-7h-7M5 5h6v6"/>
+            </svg>
+            Legacy listing
+        </a>
     </div>
 
     <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">

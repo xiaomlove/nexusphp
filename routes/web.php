@@ -27,6 +27,7 @@ Route::get('/error', [ToolController::class, 'error']);
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
+    Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
