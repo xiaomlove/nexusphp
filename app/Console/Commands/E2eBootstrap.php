@@ -221,5 +221,42 @@ class E2eBootstrap extends Command
         } catch (\Throwable $e) {
             $this->warn(sprintf('  redis flush failed: %s (continuing)', $e->getMessage()));
         }
+
+        $this->flushE2eUserRowCaches();
+    }
+
+    /**
+     * `get_user_row($id)` caches `user_{id}_content` in Redis for an hour.
+     * After we seed fresh `uploaded` / `downloaded` values for the e2e
+     * users, the topbar / userdetails ratio would still render the cached
+     * `0 / 0 -> ---` until that key expires.
+     *
+     * Drop the keys belonging to the deterministic e2e users so the next
+     * page load reads the freshly-written stats.
+     */
+    private function flushE2eUserRowCaches(): void
+    {
+        $usernames = array_map(
+            static fn (array $user): string => $user['username'],
+            E2eUsersSeeder::USERS,
+        );
+
+        $ids = DB::table('users')
+            ->whereIn('username', $usernames)
+            ->pluck('id')
+            ->all();
+
+        if ($ids === []) {
+            return;
+        }
+
+        $keys = array_map(static fn (int $id): string => 'user_'.$id.'_content', $ids);
+
+        try {
+            Redis::del(...$keys);
+            $this->line('  flushed redis user-row caches: '.implode(', ', $keys));
+        } catch (\Throwable $e) {
+            $this->warn(sprintf('  user-row cache flush failed: %s (continuing)', $e->getMessage()));
+        }
     }
 }
