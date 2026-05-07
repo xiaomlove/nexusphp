@@ -305,14 +305,18 @@ jobs:
 
       - name: Start application server
         run: |
-          php -S 127.0.0.1:8000 -t public > /tmp/php-server.log 2>&1 &
+          # Use tests/e2e/server-router.php to seed REQUEST_SCHEME / HTTPS
+          # which the built-in webserver does not set (NexusPHP needs them).
+          php -S 127.0.0.1:8000 -t public tests/e2e/server-router.php > /tmp/php-server.log 2>&1 &
           echo $! > /tmp/php-server.pid
-          # Wait for the server to come up.
+          # Wait for the server to come up. Probe `/` (the page Playwright
+          # globalSetup checks) rather than only `/login.php`.
           for i in $(seq 1 20); do
-            if curl -fsSI http://127.0.0.1:8000/login.php >/dev/null 2>&1; then
-              echo "server is up"; exit 0
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/ || echo 000)
+            if [ "$code" = "200" ] || [ "$code" = "302" ] || [ "$code" = "301" ]; then
+              echo "server is up (GET / -> $code)"; exit 0
             fi
-            echo "Waiting for server ($i)..."; sleep 1
+            echo "Waiting for server ($i)... last code=$code"; sleep 1
           done
           echo "server did not start"; cat /tmp/php-server.log; exit 1
 
