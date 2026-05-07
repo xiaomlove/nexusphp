@@ -1311,7 +1311,12 @@ if ($allTags->isNotEmpty()) {
 	</form>
 <?php
 }
-	if ($Advertisement->enable_ad()){
+	// $Advertisement is initialised inside stdhead(); the live-search
+	// ?ajax=1 path skips stdhead() (and the searchbox above), so the
+	// ad block must skip in lockstep — otherwise rendering the
+	// fragment dies with "Call to a member function enable_ad() on null"
+	// (regression in PR #59 / a515b89b, caught by the Phase 3 e2e suite).
+	if (!$isAjax && isset($Advertisement) && $Advertisement->enable_ad()){
         $belowsearchboxad = $Advertisement->get_ad('belowsearchbox');
         if (!empty($belowsearchboxad[0])) {
             echo "<div align=\"center\" style=\"margin-top: 10px\" id=\"\">".$belowsearchboxad[0]."</div>";
