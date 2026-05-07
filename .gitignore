@@ -17,6 +17,9 @@ npm-debug.log
 .project
 .env.backup
 .phpunit.result.cache
+/playwright-report
+/test-results
+/playwright/.cache
 docker-compose.override.yml
 Homestead.json
 Homestead.yaml
