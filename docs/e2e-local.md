@@ -46,8 +46,33 @@ creates three deterministic users (idempotently) via the same
 | `e2euser`  | `E2eUser2026`    | `CLASS_USER` (1)            | auto  |
 
 If you change a password here, also update
-`tests/e2e/fixtures/auth.ts` and `database/seeders/E2eUsersSeeder.php`
+`tests/e2e/fixtures/users.ts` and `database/seeders/E2eUsersSeeder.php`
 in the same commit.
+
+## Running Playwright
+
+After the stack is up, run the Playwright suite directly:
+
+```bash
+# one-time install of headless Chromium (~150 MB)
+npm run e2e:install
+
+# run all specs against http://localhost
+npm run e2e
+
+# point at a different port (e.g. NP_PORT=8000)
+E2E_BASE_URL=http://localhost:8000 npm run e2e
+
+# interactive UI mode for debugging a single spec
+npm run e2e:ui
+```
+
+`tests/e2e/global-setup.ts` verifies the stack is reachable and that
+`POST /takelogin.php` issues a `c_secure_pass` cookie before any spec
+runs, so a misconfigured stack fails fast with a clear error.
+
+Reports land in `playwright-report/` and traces in `test-results/`,
+both git-ignored.
 
 ## How `e2e:bootstrap` differs from production install
 

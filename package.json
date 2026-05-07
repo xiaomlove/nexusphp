@@ -3,9 +3,13 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "e2e": "playwright test --config=tests/e2e/playwright.config.ts",
+        "e2e:ui": "playwright test --config=tests/e2e/playwright.config.ts --ui",
+        "e2e:install": "playwright install --with-deps chromium"
     },
     "devDependencies": {
+        "@playwright/test": "^1.59.1",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.7.9",
         "laravel-vite-plugin": "^1.2.0",
