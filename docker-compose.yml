@@ -81,6 +81,28 @@ services:
       - appnet
     restart: always
 
+  reverb:
+    image: nexusphp_php
+    container_name: nexusphp-reverb
+    environment:
+      SERVICE_NAME: reverb
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - php
+      - redis
+      - mysql
+    ports:
+      - "${NP_REVERB_PORT:-8080}:8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1024m"
+        max-file: "3"
+    networks:
+      - appnet
+    restart: always
+
   openresty:
     build:
       dockerfile: .docker/openresty/Dockerfile
