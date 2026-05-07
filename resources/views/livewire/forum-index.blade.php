@@ -47,7 +47,7 @@
                         @endphp
                         <li>
                             <a
-                                href="/forums.php?action=viewforum&forumid={{ $forum->id }}"
+                                href="/forum/{{ $forum->id }}"
                                 class="grid grid-cols-12 items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800"
                             >
                                 <div class="col-span-12 sm:col-span-6">

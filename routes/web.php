@@ -7,6 +7,7 @@ use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
 use App\Livewire\ForumIndex;
+use App\Livewire\ForumView;
 use App\Livewire\TorrentBrowse;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
+    Route::get('/forum/{forum}', ForumView::class)
+        ->whereNumber('forum')
+        ->name('forum.view');
 
     Route::post('/api/push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/api/push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
