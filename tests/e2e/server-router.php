@@ -27,7 +27,7 @@ $_SERVER['REQUEST_SCHEME'] = $_SERVER['REQUEST_SCHEME'] ?? 'http';
 $_SERVER['HTTPS'] = $_SERVER['HTTPS'] ?? 'off';
 $_SERVER['HTTP_X_FORWARDED_PROTO'] = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'http';
 
-$publicDir = realpath(__DIR__ . '/../../public');
+$publicDir = realpath(__DIR__.'/../../public');
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
 // Legacy NexusPHP scripts use relative `require '../include/bittorrent.php'`
@@ -41,15 +41,15 @@ chdir($publicDir);
 // in the openresty server block).
 if ($uri === '/' || $uri === '' || $uri === null) {
     $_SERVER['SCRIPT_NAME'] = '/index.php';
-    $_SERVER['SCRIPT_FILENAME'] = $publicDir . '/index.php';
-    require $publicDir . '/index.php';
+    $_SERVER['SCRIPT_FILENAME'] = $publicDir.'/index.php';
+    require $publicDir.'/index.php';
 
     return true;
 }
 
 // Existing file in public/ — let the built-in server serve it directly
 // (covers /login.php, /usercp.php, /torrents.php, /build/assets/*, /favicon.ico, ...).
-$candidate = $publicDir . $uri;
+$candidate = $publicDir.$uri;
 if (is_file($candidate)) {
     return false;
 }
@@ -58,7 +58,7 @@ if (is_file($candidate)) {
 // Livewire (`/browse`, `/livewire/update`), Filament (`/nexusphp/...`) and
 // any other route registered in `routes/web.php`.
 $_SERVER['SCRIPT_NAME'] = '/nexus.php';
-$_SERVER['SCRIPT_FILENAME'] = $publicDir . '/nexus.php';
-require $publicDir . '/nexus.php';
+$_SERVER['SCRIPT_FILENAME'] = $publicDir.'/nexus.php';
+require $publicDir.'/nexus.php';
 
 return true;
