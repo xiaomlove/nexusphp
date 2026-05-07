@@ -33,6 +33,7 @@ auth.json
 /public/dev.php
 crowdin.yml
 install.lock
+dont_delete_install.lock
 update.lock
 .env.bak
 attachments

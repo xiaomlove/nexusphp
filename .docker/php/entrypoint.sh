@@ -122,6 +122,19 @@ elif [ "$SERVICE_NAME" = "cleanup" ]; then
         sleep 5;
       fi
     done
+elif [ "$SERVICE_NAME" = "reverb" ]; then
+    echo_info "Start Reverb websocket server ...";
+    while true; do
+      if [ -f "$ENV_FILE" ] && [ -f "$VENDOR_AUTOLOAD_FILE" ]; then
+        echo_success "[Reverb] env: $ENV_FILE and vendor autoload file: $VENDOR_AUTOLOAD_FILE exists, starting reverb:start at $(date '+%Y-%m-%d %H:%M:%S')";
+        php artisan reverb:start --host=0.0.0.0 --port=8080;
+        echo_warn "[Reverb] reverb:start exited with code $?, restarting in 5 seconds...";
+        sleep 5;
+      else
+        echo_info "[Reverb] .env or vendor not exists，wait 5 seconds...";
+        sleep 5;
+      fi
+    done
 else
     echo_error "Unknown SERVICE_NAME: $SERVICE_NAME, exiting."
     exit 1
