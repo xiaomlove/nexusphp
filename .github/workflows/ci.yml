@@ -271,6 +271,13 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Build frontend assets
+        # Vite manifest is required by Laravel's @vite directive; without it
+        # `/browse` (Livewire), `/nexusphp` (Filament) and any other Blade
+        # view that references @vite throws a "Vite manifest not found"
+        # exception.
+        run: npm run build
+
       - name: Cache Playwright browsers
         id: playwright-cache
         uses: actions/cache@v4

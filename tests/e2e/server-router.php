@@ -1,25 +1,64 @@
 <?php
 
 /**
- * Minimal router for PHP's built-in webserver (`php -S`) so legacy NexusPHP
- * pages can be served without an upstream proxy.
+ * Router for PHP's built-in webserver (`php -S`) that mirrors the openresty
+ * routing rules in `.docker/openresty/sites/app.conf.template` closely enough
+ * for the Playwright e2e suite to run against the same code paths.
  *
- * `php -S` does NOT populate `$_SERVER['REQUEST_SCHEME']`, `$_SERVER['HTTPS']`,
- * or `$_SERVER['HTTP_X_FORWARDED_PROTO']`. NexusPHP's `Nexus::getRequestSchema()`
- * derefences whichever of those is set first, then passes it through a typed
- * `string` argument; an unset value crashes the request with `TypeError`.
+ * Two reasons we cannot use `php -S` without a router:
  *
- * In production NexusPHP runs behind nginx/openresty (see docker-compose.yml),
- * which sets these via fastcgi_param. Browser-driven Playwright tests against
- * `php -S` need this router so the page can boot and call `header('Location: ...')`
- * without crashing.
+ * 1. `php -S` does NOT populate `$_SERVER['REQUEST_SCHEME']`,
+ *    `$_SERVER['HTTPS']`, or `$_SERVER['HTTP_X_FORWARDED_PROTO']`.
+ *    `Nexus::getRequestSchema()` reads them and crashes with `TypeError`
+ *    when all three are unset (production sets them via fastcgi_param).
  *
- * The router seeds the missing $_SERVER keys for every request and then returns
- * `false`, which tells the built-in server to serve the requested file from the
- * document root as if no router were configured.
+ * 2. `php -S` only serves files that exist in the document root. SPA-style
+ *    URLs (Livewire `/browse`, Filament `/nexusphp/...`) need to fall
+ *    through to `public/nexus.php`, the Laravel front controller.
+ *    The openresty config implements this via:
+ *
+ *        location / {
+ *            try_files $uri $uri/ /nexus.php?$query_string;
+ *        }
+ *
+ *    This router replicates that fallback.
  */
 $_SERVER['REQUEST_SCHEME'] = $_SERVER['REQUEST_SCHEME'] ?? 'http';
 $_SERVER['HTTPS'] = $_SERVER['HTTPS'] ?? 'off';
 $_SERVER['HTTP_X_FORWARDED_PROTO'] = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'http';
 
-return false;
+$publicDir = realpath(__DIR__ . '/../../public');
+$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+
+// Legacy NexusPHP scripts use relative `require '../include/bittorrent.php'`
+// from inside `public/`. That only resolves correctly when the current
+// working directory is the document root. `php -S` keeps cwd at the
+// directory it was launched from (the repo root in CI), so any `require`
+// or `include` we issue from this router needs to chdir first.
+chdir($publicDir);
+
+// "/" -> public/index.php (NexusPHP legacy home; matches `index index.php`
+// in the openresty server block).
+if ($uri === '/' || $uri === '' || $uri === null) {
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    $_SERVER['SCRIPT_FILENAME'] = $publicDir . '/index.php';
+    require $publicDir . '/index.php';
+
+    return true;
+}
+
+// Existing file in public/ — let the built-in server serve it directly
+// (covers /login.php, /usercp.php, /torrents.php, /build/assets/*, /favicon.ico, ...).
+$candidate = $publicDir . $uri;
+if (is_file($candidate)) {
+    return false;
+}
+
+// Anything else falls through to the Laravel front controller. This handles
+// Livewire (`/browse`, `/livewire/update`), Filament (`/nexusphp/...`) and
+// any other route registered in `routes/web.php`.
+$_SERVER['SCRIPT_NAME'] = '/nexus.php';
+$_SERVER['SCRIPT_FILENAME'] = $publicDir . '/nexus.php';
+require $publicDir . '/nexus.php';
+
+return true;
