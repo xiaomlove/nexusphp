@@ -1,0 +1,145 @@
+name: Legacy freeze
+
+# Phase 0 — freeze the procedural PHP layer.
+#
+# Rule: no new files may be added under
+#   - public/*.php  (top-level legacy entry points)
+#   - include/**/*.php
+#   - classes/**/*.php
+#
+# Modifications and deletions are still allowed; only ADD (A) is
+# blocked. The legacy LOC count must shrink over time. See
+# CONTRIBUTING.md and docs/legacy-strategy.md.
+#
+# To intentionally bypass on a single PR (e.g. a security patch that
+# has to live in the legacy bootstrap), add the `legacy-allowed` label
+# to the PR and explain the reason in a comment.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - php8
+      - main
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-new-legacy:
+    name: No new legacy code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect newly added legacy files
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels) }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${BASE_SHA:-}" ] || \
+             [ "${BASE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            echo "No base SHA available (initial push?). Skipping diff check."
+            echo "files=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Only look at ADD (A) operations on PHP files; rename/move
+          # within the legacy tree is allowed (it does not increase
+          # the legacy footprint).
+          NEW=$(git diff --diff-filter=A --name-only "$BASE_SHA"...HEAD -- '*.php' \
+            | { grep -E '^(public/[^/]+\.php|include/.+\.php|classes/.+\.php)$' || true; })
+
+          # Print to log for debugging.
+          echo "Newly added legacy files:"
+          if [ -z "$NEW" ]; then
+            echo "  (none)"
+          else
+            echo "$NEW" | sed 's/^/  /'
+          fi
+
+          {
+            echo "files<<__EOF__"
+            echo "$NEW"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fail on new legacy files (unless `legacy-allowed` label is set)
+        if: steps.detect.outputs.files != ''
+        env:
+          NEW_FILES: ${{ steps.detect.outputs.files }}
+          LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+
+          # Check for `legacy-allowed` label (only available on
+          # pull_request events; on push events there are no labels and
+          # any new legacy file blocks the push).
+          if echo "$LABELS" | grep -q '"legacy-allowed"'; then
+            echo "::warning::PR carries the 'legacy-allowed' label; bypassing freeze guard."
+            echo "Bypassed files:"
+            echo "$NEW_FILES" | sed 's/^/  /'
+            exit 0
+          fi
+
+          echo "::error::Phase 0 freeze: new legacy files are not allowed."
+          echo "$NEW_FILES" | while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            echo "::error file=${f}::New legacy file added"
+          done
+
+          cat <<'MSG'
+
+          ============================================================
+          Phase 0 — legacy freeze
+          ============================================================
+
+          New code MUST live in the Laravel layer:
+            - app/                (controllers, models, services)
+            - routes/             (web.php / api.php)
+            - resources/views/    (Blade templates)
+            - database/           (migrations, seeders, factories)
+            - tests/              (Pest / PHPUnit / Playwright)
+
+          The following paths are FROZEN — no new files:
+            - public/*.php        (top-level legacy entry points)
+            - include/**/*.php
+            - classes/**/*.php
+
+          Modifications to existing files are still allowed; the rule
+          is only on additions. See:
+            - CONTRIBUTING.md
+            - docs/legacy-strategy.md
+
+          To bypass on this PR (e.g. an emergency security patch),
+          add the `legacy-allowed` label and justify in a comment.
+          ============================================================
+          MSG
+          exit 1
+
+      - name: Legacy LOC summary
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo '## Legacy LOC watermark'
+            echo
+            echo '```'
+            bash scripts/legacy-loc.sh
+            echo '```'
+            echo
+            echo 'The total above must decrease over time. New files in'
+            echo '`public/*.php`, `include/**/*.php`, `classes/**/*.php`'
+            echo 'will fail this workflow. See `docs/legacy-strategy.md`.'
+          } >> "$GITHUB_STEP_SUMMARY"

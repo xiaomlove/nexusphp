@@ -4,6 +4,12 @@ Complete PT website building solution. Based on NexusPHP + Laravel + FilamentPHP
 
 Welcome to participate in internationalization work, click [here](https://github.com/xiaomlove/nexusphp/discussions/193) for more information
 
+> **Contributors: read [`CONTRIBUTING.md`](CONTRIBUTING.md) first.** This
+> repo is in Phase 0 — legacy freeze: no new files may be added to
+> `public/*.php`, `include/**/*.php`, or `classes/**/*.php`. All new
+> code goes into the Laravel layer. The full migration plan lives in
+> [`docs/legacy-strategy.md`](docs/legacy-strategy.md).
+
 ## Functional Features
 
 - Upload torrent
@@ -59,4 +65,4 @@ docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:late
 ## More information
 Blog：[https://nexusphp.org](https://nexusphp.org/)  
 Documentation：[https://doc.nexusphp.org](https://doc.nexusphp.org/en/)  
-Telegram: [https://t.me/nexusphp_dev](https://t.me/nexusphp_dev)  
+Telegram: [https://t.me/nexusphp_dev](https://t.me/nexusphp_dev)    
