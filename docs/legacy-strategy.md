@@ -1,0 +1,228 @@
+# Legacy migration strategy (Strangler Fig, 5 phases)
+
+> Reference: this is the long-form companion to the `legacy-allowed`
+> label and the `Legacy freeze` CI workflow. Read
+> [`CONTRIBUTING.md`](../CONTRIBUTING.md) first for the day-to-day
+> rule; come back here for the migration plan.
+
+## Size of the problem (current measurements)
+
+Run `bash scripts/legacy-loc.sh` to refresh these numbers. As of the
+freeze:
+
+- **158 PHP files** in `public/` (`32 901` LOC) — top-level pages.
+- `include/functions.php` — **6 943 LOC** (the main god-file).
+- `include/globalfunctions.php` — **1 811 LOC**.
+- `include/{bittorrent,bittorrent_announce,cleanup,core,functions_announce}.php` — ~2 000 LOC together.
+- `classes/` — **5 files / 1 025 LOC**.
+- Heaviest pages: `forums.php` 1 721, `torrents.php` 1 436, `usercp.php` 1 328, `settings.php` 973, `offers.php` 917, `catmanage.php` 885, `index.php` 862, `mybonus.php` 832, `usersearch.php` 803, `topten.php` 767, `details.php` 708, `messages.php` 701, `announce.php` 640.
+- Trivial files (≤ 30 LOC, redirects / tiny AJAX endpoints): ~15. **Free wins for the first migration PRs.**
+
+Total: **~175 files / ~45 000 LOC** of legacy. Roughly 2–3 person-years
+solo or 6–9 months for a team of 3, if disciplined.
+
+## Bad news / good news
+
+**Bad.** Legacy is not just procedural PHP, it's a global-state
+machine: `$CURUSER`, `$Cache`, `$BASEURL`, `$lang_*`, `$showXxx_main`,
+`dbconn()`, `stdhead()`, `stdmsg()`, `KPS()`, `user_can()`,
+`get_setting()`, `apply_filter()`. Plus a custom plugin system on top
+of Laravel.
+
+**Good.** Half the migration runway is already laid:
+
+1. [`include/eloquent.php`](../include/eloquent.php) — 6 lines —
+   bootstraps Eloquent inside legacy scripts. Already today
+   `public/index.php` uses `App\Models\Torrent`, `NexusDB::select()`,
+   `Carbon` next to `$Cache->get_value()`. The bridge works.
+2. `mysql_*` / `sqlesc()` is steadily being replaced by
+   `NexusDB::escape()` and Eloquent.
+3. E2E smoke covers `public/*.php` (Phase 1–4 in `tests/e2e/smoke/`) —
+   a real safety net.
+4. Filament 5 already owns the admin panel.
+5. Livewire 3 already powers `TorrentBrowse` (`/browse`) — there is a
+   working template for migrating a page.
+
+## The five phases
+
+### Phase 0 — freeze (1 week, **active now**)
+
+1. **Rule in `CONTRIBUTING.md`**: no new pages or functions in
+   `public/*.php`, `include/**/*.php`, `classes/**/*.php`. Every new
+   feature lands as a Laravel controller, Livewire component, or
+   Filament resource.
+2. **CI guard** in `.github/workflows/legacy-freeze.yml`:
+   `git diff --diff-filter=A` against the legacy paths fails the
+   build. Bypass via `legacy-allowed` label only.
+3. **Freeze additions to `include/functions.php`**: PRs that grow the
+   god-file are rejected; only deletions are accepted.
+
+Without Phase 0 the migration is infinite — legacy grows faster than
+you can shrink it.
+
+### Phase 1 — straighten the seams (2–4 weeks)
+
+Make every legacy page run through a Laravel route, not the legacy
+front controller.
+
+1. **`LegacyPageController` adapter:**
+   ```php
+   Route::get('/torrents.php', [LegacyPageController::class, 'invoke'])
+       ->where('script', 'torrents');
+   ```
+   The controller `require`s `public/{$script}.php`, wraps globals
+   in a `LegacyContext`, and returns a `Response`. Legacy code now
+   runs through Laravel middleware (CSRF, rate limit, locale,
+   Sentry, structured logs).
+2. **Shim `$_GET` / `$_POST`** from `request()`. Lets us later
+   replace `$_GET['x']` with `$request->input('x')` page by page.
+3. **Shim `$CURUSER`** as `Auth::user()->toLegacyArray()`. One method
+   on the `User` model.
+4. **Shim `$Cache`** through `Cache::store('redis')`. The 352-line
+   `class_cache_redis.php` collapses to ~50 lines.
+5. **Shim `stdhead()` / `begin_main_frame()`** as a Blade layout
+   `legacy.blade.php`. Each legacy page does `@extends('legacy')`,
+   the rest stays `ob_start()`-driven.
+
+After Phase 1, legacy code already runs **inside the Laravel
+pipeline**. That alone gives you CSRF, rate limiting, real logs, and
+observability — without a single page rewrite.
+
+### Phase 2 — strip the trivials (3–4 weeks)
+
+Take every `public/*.php` ≤ 100 LOC and rewrite it as a Laravel
+controller. About 40 files, average half a day each.
+
+For each file:
+
+1. New controller in `app/Http/Controllers/Legacy/`.
+2. New `FormRequest` with explicit validation.
+3. Route in `routes/web.php` keeping the **old** URL (`Route::post('/thanks.php', …)`).
+4. The existing E2E smoke spec for that URL stays green.
+5. **Delete the old file in the same PR.**
+
+Net: −3 000 LOC legacy, +purpose-built tests, +validation.
+
+### Phase 3 — big user pages (3–6 months)
+
+In descending order of value:
+
+1. `index.php` (862) → Livewire `Home` (news, shoutbox, latest torrents).
+2. `details.php` (708) → `TorrentDetails` Livewire.
+3. `torrents.php` (1 436) → extend the existing `TorrentBrowse` Livewire.
+4. `usercp.php` (1 328) → Filament-style page split into tabs (`UserCp\Profile`, `UserCp\Security`, `UserCp\Notifications`).
+5. `settings.php` (973), `mybonus.php` (832), `topten.php` (767), `userdetails.php` (610) — analogous.
+
+Per-page rule:
+
+- Migration = new Laravel route + Livewire/Blade + delete legacy in
+  the **same PR**.
+- Don't keep "double truth" longer than a week — behavior drifts.
+- A 2–3 day feature-flag canary (`?legacy=1`) is fine for rollback.
+
+### Phase 4 — hot path (announce / scrape) — separately (1–2 months)
+
+**Do NOT migrate `announce.php` to a Laravel controller.** Booting
+Laravel costs 30–50 ms per cold request; an announce must be < 5 ms.
+
+Options, weakest to strongest:
+
+1. **Minimum.** Leave `announce.php` as a single file; stop pulling
+   in `include/functions.php` (6 943 LOC for ~50 functions).
+   Extract the 50 needed functions into `nexus/Tracker/`, leave
+   `announce.php` as the lone consumer of `bittorrent_announce.php`.
+2. **Middle.** Laravel Octane + a dedicated `/announce` route. The
+   bootstrap pays once, then Octane workers serve in nanoseconds.
+3. **Best.** Split the tracker into a separate microservice — Go
+   (`chihaya`, `crystal`) or Rust (`opentracker-rs`). PHP serves
+   pages, the tracker is its own process. The right shape for any
+   PT with > 50 k peers.
+
+Regardless of option:
+
+- Drop `ORDER BY RAND()` for peer sampling — the single largest
+  win on the hot path.
+- Move peer lists to a Redis ZSET (TTL = `2 × announce_interval`).
+- Update `seeders` / `leechers` only in Redis; reconcile to MySQL
+  every N minutes via the scheduler.
+
+### Phase 5 — drain `include/functions.php` (3–6 months, background)
+
+6 943 LOC ≈ ~150 functions. Approach:
+
+1. Bucket each function into a domain: `Bonus`, `Auth`, `Torrent`,
+   `User`, `Format`, `Mail`, …
+2. Create `app/Services/{Domain}Service.php` per domain.
+3. Convert the legacy function into a **proxy**:
+   ```php
+   function get_user_class() {
+       return app(\App\Services\UserService::class)->getCurrentUserClass();
+   }
+   ```
+4. Once every call site uses the service, delete the proxy.
+5. This work runs **in parallel with Phase 3** — every page you
+   migrate naturally drains 5–10 functions.
+
+End state: `include/functions.php` shrinks to a few hundred lines of
+proxies, then disappears.
+
+## Picking the first page
+
+Ideal candidate for the first migration PR:
+
+- ≤ 100 LOC.
+- No `$Cache->new_page()` / `$Cache->add_part()` (HTML caching is its
+  own boss fight).
+- Has an existing Phase 4 E2E smoke spec.
+- Not on the announce hot path.
+
+Candidates from `wc -l`:
+
+| File | LOC | Why |
+|---|---|---|
+| `logout.php` | 8 | Pure redirect, `Auth::logout()` in 5 minutes. |
+| `cron.php` | 13 | Likely a thin wrapper around the scheduler — fold into `Console\Kernel::schedule()`. |
+| `contactstaff.php` | 14 | Contact form, perfect "first full pattern" page. |
+| `image.php` | 22 | Avatar proxy → `ImageController`. |
+| `thanks.php` | 25 | Single POST handler. |
+| `getextinfoajax.php` | 27 | Single AJAX endpoint. |
+
+`contactstaff.php` or `thanks.php` give the full pattern (route +
+FormRequest + controller + view + test) on the smallest surface.
+
+## What NOT to do
+
+1. **No "big rewrite branch"** running for 3 months. It will not
+   merge — guaranteed.
+2. **No automated rewriter** via regex/AST. Each page is its own
+   story; manual is faster overall.
+3. **No "double truth"** longer than a week. Once a page is migrated,
+   its legacy file is deleted in the same PR.
+4. **Don't touch `include/functions.php` before Phase 5.** It is
+   imported by everything; any change is a regression vector.
+5. **Don't move the tracker to a Laravel controller.** Performance
+   deal-breaker.
+
+## Progress metric
+
+`bash scripts/legacy-loc.sh` is the watermark. The
+`Legacy freeze` workflow prints it to every CI run's step summary.
+
+Targets:
+
+| Quarter | Legacy LOC delta |
+|---|---|
+| Q1 | −20% |
+| Q2 | −40% |
+| Q3 | −60% |
+| Q4 | −80% |
+
+## In one paragraph
+
+Set the rule "new code goes only into Laravel"; wrap legacy pages in
+a Laravel route with shims for the globals; start with trivial files
+(≤ 100 LOC) to get the process in muscle memory; migrate one page at
+a time to Livewire/Blade and delete the legacy file in the same PR;
+in parallel drain `include/functions.php` through service-proxy
+adapters; and keep the tracker (`announce.php`) on a separate path —
+Octane or a microservice, not a Laravel controller.

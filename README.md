@@ -4,6 +4,11 @@
 
 欢迎参与国际化工作，点击 [这里](https://github.com/xiaomlove/nexusphp/discussions/193) 了解详情
 
+> **贡献者请先阅读 [`CONTRIBUTING.md`](CONTRIBUTING.md)。** 本仓库正处于
+> Phase 0 — legacy freeze：禁止在 `public/*.php`、`include/**/*.php`、
+> `classes/**/*.php` 中新增文件，新代码全部进入 Laravel 层。完整迁移路线
+> 参见 [`docs/legacy-strategy.md`](docs/legacy-strategy.md)。
+
 ## 功能特性
 - 发种
 - 特别区  
@@ -64,4 +69,4 @@ docker run --name my-nexusphp -e DOMAIN=xxx.com -p 80:80 xiaomlove/nexusphp:late
 ## 更多信息
 博客：[https://nexusphp.org](http://nexusphp.org/)  
 文档：[https://doc.nexusphp.org](http://doc.nexusphp.org/)  
-Telegram: [https://t.me/nexusphp_dev](https://t.me/nexusphp_dev)  
+Telegram: [https://t.me/nexusphp_dev](https://t.me/nexusphp_dev)    
