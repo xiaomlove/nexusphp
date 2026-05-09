@@ -38,7 +38,10 @@ the new layer.
 ### Migration roadmap
 
 See [`docs/legacy-strategy.md`](docs/legacy-strategy.md) for the
-5-phase plan that this freeze unlocks.
+5-phase plan that this freeze unlocks. When you actually migrate a
+legacy file, follow the step-by-step recipe in
+[`docs/migration-recipe.md`](docs/migration-recipe.md) — copy its
+PR checklist into your PR description.
 
 ## 2. CI must be green
 

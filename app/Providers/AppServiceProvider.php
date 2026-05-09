@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Legacy\LegacyContext;
 use Filament\Facades\Filament;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
@@ -22,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         do_action('nexus_register');
+
+        // Phase 1 of the legacy migration — see docs/legacy-strategy.md.
+        // LegacyContext is the typed read-only API new Laravel code uses
+        // when it needs to read legacy-domain state (current $CURUSER,
+        // settings, ...).
+        $this->app->singleton(LegacyContext::class);
 
         // Telescope is only registered when explicitly enabled, since it
         // captures every request/query/job and is intended for local and

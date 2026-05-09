@@ -88,6 +88,30 @@ After Phase 1, legacy code already runs **inside the Laravel
 pipeline**. That alone gives you CSRF, rate limiting, real logs, and
 observability — without a single page rewrite.
 
+#### Phase 1 status — landed so far
+
+- ✅ `App\Models\User::toLegacyArray()` — typed bridge from the
+  Eloquent `User` to the `$CURUSER`-shaped array legacy pages read.
+- ✅ `App\Legacy\LegacyContext` — singleton, the read-only typed API
+  modern Laravel code uses to read legacy state (current user,
+  settings). Hangs off the existing `nexus-web` guard, no changes to
+  `include/`.
+- ✅ Feature tests pin the contract (guest → null, authenticated →
+  real model, legacy keys present, credential fields redacted).
+- ✅ [`docs/migration-recipe.md`](migration-recipe.md) — concrete
+  step-by-step recipe with `logout.php` as the worked example, plus
+  a sketch of the in-between `LegacyPageController` wrap pattern.
+
+Still to land in Phase 1 (separate PRs, in this order):
+
+- ⏳ `LegacyPageController` itself — invokable controller that wraps
+  one allowlisted legacy page. Gated on a process-isolation review
+  for `die()` / `exit` behaviour (see `LegacyHttpFeatureTestCase`).
+- ⏳ Per-shim Blade layout (`stdhead()` / `stdfoot()` extraction).
+- ⏳ `class_cache_redis` collapse onto `Cache::store('redis')`.
+
+The rest of the strategy doc continues to apply unchanged.
+
 ### Phase 2 — strip the trivials (3–4 weeks)
 
 Take every `public/*.php` ≤ 100 LOC and rewrite it as a Laravel
