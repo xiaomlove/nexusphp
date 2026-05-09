@@ -325,6 +325,36 @@ class User extends Authenticatable implements FilamentUser, HasName
         return true;
     }
 
+    /**
+     * Render this User in the shape that legacy procedural code expects
+     * for the global `$CURUSER` array (see `userlogin()` /
+     * `get_user_from_cookie()` in `include/`).
+     *
+     * Mirrors the legacy contract: every column from the `users` row,
+     * minus the credential fields (`auth_key`, `passhash`) that legacy
+     * code never reads off `$CURUSER`. `seedbonus` is forced to float
+     * because the legacy code (e.g. `KPS()`) assumes numeric.
+     *
+     * Modern Laravel callers should use the `User` model directly. This
+     * method exists for migration adapters: a Laravel route that proxies
+     * to a legacy include can populate `$GLOBALS['CURUSER']` without
+     * round-tripping through `dbconn()` / `userlogin()`.
+     *
+     * Phase 1 of the legacy migration. See `docs/migration-recipe.md`.
+     *
+     * @return array<string,mixed>
+     */
+    public function toLegacyArray(): array
+    {
+        $row = $this->makeVisible(['passkey', 'secret', 'editsecret'])->toArray();
+        unset($row['auth_key'], $row['passhash']);
+        if (array_key_exists('seedbonus', $row)) {
+            $row['seedbonus'] = (float) $row['seedbonus'];
+        }
+
+        return $row;
+    }
+
     public function getLocaleAttribute()
     {
         $locale = null;
