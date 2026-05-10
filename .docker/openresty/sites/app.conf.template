@@ -25,6 +25,18 @@ server {
         try_files $uri $uri/ /nexus.php$is_args$args;
     }
 
+    # Phase 2 migration of `public/thanks.php` (deleted) — route the
+    # legacy URL through Laravel instead of fastcgi'ing a missing
+    # file. This must come BEFORE the catch-all `location ~ \.php$`
+    # because regex locations are evaluated in source order.
+    location = /thanks.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location @nexus_app {
+        rewrite ^ /nexus.php last;
+    }
+
     location = /announce.php {
         access_by_lua_block {
             local filter = require("tracker_filter")
