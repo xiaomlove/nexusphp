@@ -9,6 +9,7 @@ use App\Support\BbcodeRenderer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -68,6 +69,22 @@ class TopicView extends Component
     {
         $this->authorFilter = 0;
         $this->resetPage();
+    }
+
+    /**
+     * Live update: when a new post is added to *this* topic, re-render
+     * so the post list picks up the reply. Posts in other topics are
+     * ignored. Empty body — Livewire re-runs render() on listener
+     * invocation.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    #[On('echo:forums.activity,ForumPostAdded')]
+    public function refreshOnForumPost(array $payload = []): void
+    {
+        if ((int) ($payload['topicId'] ?? 0) !== $this->topicId) {
+            $this->skipRender();
+        }
     }
 
     public function render(): View

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -22,6 +23,19 @@ use Livewire\Component;
  */
 class ForumIndex extends Component
 {
+    /**
+     * Live update: when any forum gets a new post, re-render so the
+     * last-post column refreshes without a page reload. Empty body —
+     * Livewire re-runs render() on listener invocation.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    #[On('echo:forums.activity,ForumPostAdded')]
+    public function refreshOnForumPost(array $payload = []): void
+    {
+        // No-op — Livewire will re-render automatically.
+    }
+
     public function render(): View
     {
         return view('livewire.forum-index', [

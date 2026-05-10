@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -66,6 +67,22 @@ class ForumView extends Component
         $this->reset(['search', 'sort']);
         $this->sort = 'lastpost-desc';
         $this->resetPage();
+    }
+
+    /**
+     * Live update: when this forum gets a new post or topic, re-render
+     * so the topic list (and its last-post column) refreshes without a
+     * page reload. Posts in *other* forums are ignored. Empty body —
+     * Livewire re-runs render() on listener invocation.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    #[On('echo:forums.activity,ForumPostAdded')]
+    public function refreshOnForumPost(array $payload = []): void
+    {
+        if ((int) ($payload['forumId'] ?? 0) !== $this->forumId) {
+            $this->skipRender();
+        }
     }
 
     public function render(): View

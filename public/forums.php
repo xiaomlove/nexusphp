@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\ForumPostAdded;
 use App\Models\Message;
 use App\Models\Post;
 use App\Models\Topic;
@@ -572,6 +573,18 @@ if ($action == 'post') {
         NexusDB::table('users')
             ->where('id', (int) $CURUSER['id'])
             ->update(['last_post' => (string) $date]);
+
+        try {
+            ForumPostAdded::dispatch(
+                (int) $forumid,
+                (int) $topicid,
+                (int) $postid,
+                (int) $CURUSER['id'],
+                $type === 'new',
+            );
+        } catch (Throwable $e) {
+            do_log('[forum] ForumPostAdded broadcast failed: '.$e->getMessage(), 'error');
+        }
     }
 
     // ------ All done, redirect user to the post
