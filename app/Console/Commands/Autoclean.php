@@ -49,6 +49,26 @@ class Autoclean extends Command
             return Command::FAILURE;
         }
 
+        // The legacy `autoclean()` reads two pieces of state that
+        // are normally set up by `include/core.php` in the HTTP
+        // entry path — but `core.php` is NOT required by
+        // `bootstrap/app.php` (it loads the framework, not the
+        // legacy chrome). When run from the scheduler / artisan
+        // those bindings are missing:
+        //
+        //  - `TIMENOW` constant (defined at `include/core.php:35`)
+        //  - `$autoclean_interval_one` global (set at
+        //    `include/config.php:101` to `$MAIN['...']`).
+        //
+        // We mirror just those two definitions here. Re-`require`ing
+        // the whole of `core.php` would drag in `class_cache_redis`,
+        // `Hook::start()`, language loading, and a `checkGuestVisit`
+        // call — too many side-effects for a console command.
+        defined('TIMENOW') || define('TIMENOW', time());
+        if (! isset($GLOBALS['autoclean_interval_one'])) {
+            $GLOBALS['autoclean_interval_one'] = (int) get_setting('main.autoclean_interval_one');
+        }
+
         $output = autoclean();
 
         // `autoclean()` returns either the result of `docleanup()`

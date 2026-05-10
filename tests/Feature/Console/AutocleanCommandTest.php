@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Console;
 
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 /**
@@ -26,8 +27,15 @@ class AutocleanCommandTest extends TestCase
     {
         // The command is auto-loaded via `Kernel::commands()` which
         // calls `$this->load(__DIR__.'/Commands')` — pin that.
-        $this->artisan('list', ['--format' => 'raw'])
-            ->expectsOutputToContain('cron:autoclean');
+        // We don't use `$this->artisan('list', ['--format' => 'raw'])`
+        // because Symfony Console 7 dropped the `raw` format. Asking
+        // the registry directly is also faster — it avoids running
+        // `ListCommand` end-to-end.
+        $this->assertArrayHasKey(
+            'cron:autoclean',
+            Artisan::all(),
+            'cron:autoclean must be auto-loaded via App\\Console\\Kernel::commands().',
+        );
     }
 
     public function test_command_emits_legacy_no_op_message_when_autoclean_returns_falsy(): void
