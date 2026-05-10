@@ -59,7 +59,17 @@ TARGET_DIR="${ROOT_PATH}/public"
 ENV_FILE="${ROOT_PATH}/.env"
 VENDOR_AUTOLOAD_FILE="${ROOT_PATH}/vendor/autoload.php"
 
-chown -R www-data:www-data $ROOT_PATH
+# PHP-FPM runs as `www-data` and only needs write access to the two
+# directories Laravel actually writes at runtime — the storage tree
+# (logs, framework views/cache/sessions, app/) and bootstrap/cache
+# (compiled config, routes, services). The repo is bind-mounted from
+# the host (`./:/var/www/html`), so a recursive chown of $ROOT_PATH
+# would also chown the host's working tree to UID 82, breaking the
+# host-side `npm install` / `composer install` / IDE workflow until
+# the user manually `sudo chown -R`s it back. Scoping the chown to
+# the two write-required subtrees keeps both ends happy.
+mkdir -p "$ROOT_PATH/storage" "$ROOT_PATH/bootstrap/cache"
+chown -R www-data:www-data "$ROOT_PATH/storage" "$ROOT_PATH/bootstrap/cache"
 
 if [ "$SERVICE_NAME" = "php" ]; then
     if [ ! -f "$ENV_FILE" ] || [ ! -f "$VENDOR_AUTOLOAD_FILE" ]; then
