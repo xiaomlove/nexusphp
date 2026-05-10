@@ -87,6 +87,22 @@ class TopicView extends Component
         }
     }
 
+    /**
+     * Local update: ReplyForm dispatched 'forum-reply-submitted' after
+     * a successful submit. Jump to the last page so the new post is
+     * visible without scrolling.
+     */
+    #[On('forum-reply-submitted')]
+    public function onReplySubmitted(int $topicId): void
+    {
+        if ($topicId !== $this->topicId) {
+            $this->skipRender();
+
+            return;
+        }
+        $this->gotoPage($this->posts->lastPage());
+    }
+
     public function render(): View
     {
         return view('livewire.topic-view', [

@@ -98,4 +98,6 @@
             {{ $posts->links() }}
         </div>
     @endif
+
+    <livewire:reply-form :forum-id="$forum->id" :topic-id="$topic->id" :key="'reply-form-'.$topic->id" />
 </div>
