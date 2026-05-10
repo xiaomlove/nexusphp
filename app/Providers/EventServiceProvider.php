@@ -17,6 +17,7 @@ use App\Listeners\RemoveOauthTokens;
 use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SendEmailNotificationWhenTorrentCreated;
 use App\Listeners\SendPushOnForumPost;
+use App\Listeners\SendPushOnMention;
 use App\Listeners\SendPushOnMessage;
 use App\Listeners\SyncTorrentToElasticsearch;
 use App\Listeners\SyncTorrentToMeilisearch;
@@ -61,9 +62,11 @@ class EventServiceProvider extends ServiceProvider
         ],
         MessageCreated::class => [
             SendPushOnMessage::class,
+            [SendPushOnMention::class, 'handleMessage'],
         ],
         ForumPostAdded::class => [
             SendPushOnForumPost::class,
+            [SendPushOnMention::class, 'handleForumPost'],
         ],
     ];
 
