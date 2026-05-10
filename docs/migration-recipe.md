@@ -181,6 +181,178 @@ whole point of keeping the URL stable. If the spec breaks, you've
 changed user-visible behaviour and the diff needs review, not a
 spec edit.
 
+## Common test pitfalls (Phase 2 lessons)
+
+Six trip-wires we hit while migrating `thanks.php` (Phase 2.2). Read
+this *before* writing your Feature test, not while debugging it.
+
+### Pitfall 1 — `Carbon::setLocale(null)` from the Locale middleware
+
+**Symptom:** Test fails with `Carbon\Carbon::setLocale(): Argument
+#1 ($locale) must be of type string, null given` — usually before
+your controller is even reached.
+
+**Cause:** `App\Http\Middleware\Locale` reads
+`$user->language->site_lang_folder` and forwards it to
+`Carbon::setLocale()`. The `User::language` relation is keyed off
+`users.lang`. Stock `createLegacyUser()` does not set `lang`, so
+the relation comes back null and Carbon rejects the null arg.
+
+**Fix:** Pin `lang` to the English row (`id = 6` in the seeded
+`language` table) on every test user.
+
+```php
+private const ENGLISH_LANGUAGE_ID = 6;
+
+private function createUser(array $overrides = []): User
+{
+    return $this->createLegacyUser(
+        overrides: array_merge(['lang' => self::ENGLISH_LANGUAGE_ID], $overrides),
+    );
+}
+```
+
+This was the single biggest false positive we chased — it looks
+like a controller bug because `quote() on null` from
+`last_query()` shows up in the response, but the real failure
+already happened in middleware.
+
+### Pitfall 2 — `$_SERVER['REQUEST_URI']` is empty in the test client
+
+**Symptom:** `Undefined array key "REQUEST_URI"` from
+`include/IpLogRepository::saveToCache()`, fired by the
+`LogUserIp` global middleware, before your controller runs.
+
+**Cause:** Laravel's TestResponse populates the `Request` object
+but does not write to PHP superglobals. Legacy code reads
+`$_SERVER` directly.
+
+**Fix:** Seed it in `setUp()`.
+
+```php
+protected function setUp(): void
+{
+    parent::setUp();
+    $_SERVER['REQUEST_URI'] = '/your-route.php';
+    // ...
+}
+```
+
+### Pitfall 3 — `get_setting()` is process-static
+
+**Symptom:** You `seedSetting('bonus.saythanks', '1.0')` in
+`setUp()`, then assert `assertEquals(11.0, $newBalance)`, and
+get `12.5` back. Restarting `vendor/bin/phpunit` fixes it
+locally but CI still fails.
+
+**Cause:** `include/globalfunctions.php#get_setting()` keeps a
+function-level `static` map. The first call in the PHP process
+locks the values for the rest of the run; later writes to the
+`settings` table do not invalidate the cache. In CI, an earlier
+Feature test (e.g. `LoginFlowTest`) primes the cache with the
+installer defaults *before* your `setUp()` writes its values.
+
+**Fix:** Read what `get_setting()` will actually return, then
+assert the exact arithmetic against that — not against your
+seeded value.
+
+```php
+$expectedSayBonus = (float) get_setting('bonus.saythanks', self::SAYTHANKS_BONUS);
+$response = $this->postJson('/thanks.php', ['id' => $torrentId]);
+$this->assertEqualsWithDelta(
+    10.00 + $expectedSayBonus,
+    (float) NexusDB::table('users')->where('id', $thanker->id)->value('seedbonus'),
+    0.05,
+);
+```
+
+Phase 5 should drain the static — until then, work around it.
+
+### Pitfall 4 — `decimal(20, 1)` columns and `assertEquals`
+
+**Symptom:** `Failed asserting that 11.0 matches expected 11.000`
+or `5.3 matches expected 5.25`.
+
+**Cause:** `users.seedbonus` is `decimal(20, 1)` — MySQL rounds to
+one decimal place on write. `5.00 + 0.25` lands on disk as `5.3`,
+which `(float)` reads back as `5.3`, not `5.25`.
+
+**Fix:** `assertEqualsWithDelta($expected, $actual, 0.05)` for any
+column whose schema is `decimal(_, 1)`. Pick test values that
+round cleanly (`1.0`, `2.0`) where you can.
+
+### Pitfall 5 — `Handler::getHttpStatusCode` collapses `RuntimeException` to 200
+
+**Symptom:** `assertStatus(405)` fails with `Expected 405, got 200`,
+or `assertStatus(500)` fails with `Expected 500, got 200`. Body of
+the 200 response has `ret = -1`.
+
+**Cause:** `App\Exceptions\Handler::getHttpStatusCode()` rewrites
+the HTTP status of every `\RuntimeException` (which Symfony's
+`MethodNotAllowedHttpException` and most `HttpException`s extend)
+to **200**, encoding the actual failure into the body as a
+legacy `stderr()`-style payload. This is intentional — legacy AJAX
+helpers ignore the HTTP status and only read `ret = -1` from the
+body — but it makes status-based assertions unusable for any
+exception path.
+
+**Fix:** Two options.
+
+1. Assert on the body, not the status:
+   ```php
+   $response->assertJson(['ret' => -1]);
+   ```
+2. For validation errors specifically, override `failedValidation`
+   in your `FormRequest` to throw `HttpResponseException` directly
+   — this short-circuits the global render pipeline, so the 422
+   you wanted actually arrives:
+   ```php
+   protected function failedValidation(Validator $validator): void
+   {
+       throw new HttpResponseException(response()->json([
+           'message' => $validator->errors()->first(),
+           'errors' => $validator->errors()->toArray(),
+       ], 422));
+   }
+   ```
+   This is what `App\Http\Requests\Legacy\SayThanksRequest` does.
+
+Phase 5 should fix `getHttpStatusCode` — until then, the
+`ret = -1` body assertion is the canonical workaround.
+
+### Pitfall 6 — `last_query()` and `quote() on null`
+
+**Symptom:** `Call to a member function quote() on null` in
+`Nexus\Database\NexusDB::last_query()`, raised from inside your
+404/500 response. The actual failure was something else entirely.
+
+**Cause:** When *any* exception bubbles up un-handled, Laravel
+calls `App\Exceptions\Handler::report()`, which calls
+`last_query()` for context. `last_query()` reaches into the active
+DB connection's grammar to quote the bound parameters, and the
+grammar is sometimes null in the test environment for the legacy
+connection.
+
+**Fix:** Don't try to fix `last_query()` — fix whatever exception
+is actually being thrown. The `quote() on null` is a *symptom*,
+not the cause. Walk up the stack to find the original throw site.
+In Phase 2.2 the original was Pitfall 1 (`Carbon::setLocale(null)`).
+
+### Schema reminder
+
+Drop migrations like
+`2025_01_18_235757_drop_torrents_table_text_column.php` quietly
+remove columns. If your test fixture inserts into `torrents`,
+`users`, or `peers` directly, run:
+
+```bash
+php artisan migrate:fresh --pretend
+```
+
+…against your test DB and grep the output for the columns you're
+inserting. Better: `Schema::getColumnListing('torrents')` in a
+throwaway test method to print the live column set.
+
 ## Recipe for an "in-between" wrap (no rewrite yet)
 
 Sometimes you want the Laravel pipeline (rate-limit middleware,
