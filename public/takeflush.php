@@ -8,6 +8,7 @@ require_once get_langfile_path();
 loggedinorreturn();
 function bark($msg)
 {
+    global $lang_takeflush;
     stdhead();
     stdmsg($lang_takeflush['std_failed'], $msg);
     stdfoot();

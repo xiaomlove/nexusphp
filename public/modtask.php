@@ -14,6 +14,7 @@ loggedinorreturn();
 
 function puke()
 {
+    global $CURUSER;
     $msg = 'User '.$CURUSER['username'].' (id: '.$CURUSER['id'].") is hacking user's profile. IP : ".getip();
     write_log($msg, 'mod');
     stderr('Error', 'Permission denied. For security reason, we logged this action');
