@@ -33,6 +33,12 @@
         </a>
     </div>
 
+    @if ($deleteError)
+        <div role="alert" class="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200">
+            {{ $deleteError }}
+        </div>
+    @endif
+
     @if ($authorFilter > 0)
         <div class="flex items-center gap-2 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 text-xs dark:border-primary-900/50 dark:bg-primary-900/20">
             <span class="text-primary-800 dark:text-primary-300">Showing posts by user #{{ $authorFilter }} only.</span>
@@ -75,20 +81,51 @@
                         </div>
                     </aside>
                     <article class="min-w-0 flex-1 p-4">
-                        <header class="mb-3 flex flex-wrap items-baseline gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                            <a href="#post-{{ $post->id }}" class="font-mono hover:text-zinc-700 dark:hover:text-zinc-200">#{{ $post->id }}</a>
-                            @if ($post->added)
-                                <time datetime="{{ $post->added }}" title="{{ $post->added }}">
-                                    {{ \Carbon\Carbon::parse($post->added)->diffForHumans() }}
-                                </time>
-                            @endif
-                            @if ($post->editdate && $post->editedby)
-                                <span class="italic">(edited {{ \Carbon\Carbon::parse($post->editdate)->diffForHumans() }})</span>
-                            @endif
+                        <header class="mb-3 flex flex-wrap items-baseline justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                            <div class="flex flex-wrap items-baseline gap-2">
+                                <a href="#post-{{ $post->id }}" class="font-mono hover:text-zinc-700 dark:hover:text-zinc-200">#{{ $post->id }}</a>
+                                @if ($post->added)
+                                    <time datetime="{{ $post->added }}" title="{{ $post->added }}">
+                                        {{ \Carbon\Carbon::parse($post->added)->diffForHumans() }}
+                                    </time>
+                                @endif
+                                @if ($post->editdate && $post->editedby)
+                                    <span class="italic">(edited {{ \Carbon\Carbon::parse($post->editdate)->diffForHumans() }})</span>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    wire:click="quote({{ (int) $post->id }})"
+                                    class="rounded border border-zinc-200 bg-white px-2 py-0.5 text-[11px] text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                    title="Quote this post in your reply"
+                                >Quote</button>
+                                @if ($editable[(int) $post->id] ?? false)
+                                    <button
+                                        type="button"
+                                        wire:click="startEditing({{ (int) $post->id }})"
+                                        class="rounded border border-zinc-200 bg-white px-2 py-0.5 text-[11px] text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                        title="Edit this post"
+                                    >Edit</button>
+                                @endif
+                                @if ($deletable[(int) $post->id] ?? false)
+                                    <button
+                                        type="button"
+                                        wire:click="deletePost({{ (int) $post->id }})"
+                                        wire:confirm="Delete this post? This cannot be undone."
+                                        class="rounded border border-rose-200 bg-white px-2 py-0.5 text-[11px] text-rose-600 hover:bg-rose-50 dark:border-rose-800 dark:bg-zinc-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
+                                        title="Delete this post"
+                                    >Delete</button>
+                                @endif
+                            </div>
                         </header>
-                        <div class="prose prose-sm max-w-none break-words text-zinc-800 dark:prose-invert dark:text-zinc-200">
-                            {!! \App\Livewire\TopicView::renderBody($post->body) !!}
-                        </div>
+                        @if ($editingPostId === (int) $post->id)
+                            <livewire:edit-post-form :post-id="(int) $post->id" :key="'edit-post-'.$post->id" />
+                        @else
+                            <div class="prose prose-sm max-w-none break-words text-zinc-800 dark:prose-invert dark:text-zinc-200">
+                                {!! \App\Livewire\TopicView::renderBody($post->body) !!}
+                            </div>
+                        @endif
                     </article>
                 </li>
             @endforeach

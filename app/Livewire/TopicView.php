@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Models\Forum;
 use App\Models\Post;
 use App\Models\Topic;
+use App\Services\Exceptions\ForumReplyException;
+use App\Services\ForumPostService;
 use App\Support\BbcodeRenderer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -36,6 +38,10 @@ class TopicView extends Component
     public int $authorFilter = 0;
 
     public int $perPage = 20;
+
+    public int $editingPostId = 0;
+
+    public ?string $deleteError = null;
 
     public function mount(int $forum, int $topic): void
     {
@@ -103,12 +109,103 @@ class TopicView extends Component
         $this->gotoPage($this->posts->lastPage());
     }
 
+    /**
+     * Local update: EditPostForm finished a successful edit. Close the
+     * inline edit panel and re-render so the post body refreshes.
+     */
+    #[On('post-edited')]
+    public function onPostEdited(int $postId): void
+    {
+        if ($this->editingPostId === $postId) {
+            $this->editingPostId = 0;
+        }
+    }
+
+    /**
+     * Local update: EditPostForm cancel button clicked.
+     */
+    #[On('post-edit-cancelled')]
+    public function onPostEditCancelled(int $postId): void
+    {
+        if ($this->editingPostId === $postId) {
+            $this->editingPostId = 0;
+        }
+    }
+
+    public function startEditing(int $postId): void
+    {
+        $service = app(ForumPostService::class);
+        $user = auth('nexus-web')->user();
+        if ($user === null || ! $service->canEditPost($postId, (int) $user->id)) {
+            return;
+        }
+        $this->editingPostId = $postId;
+    }
+
+    public function cancelEditing(): void
+    {
+        $this->editingPostId = 0;
+    }
+
+    public function quote(int $postId): void
+    {
+        $post = Post::query()->find($postId);
+        if (! $post || (int) $post->topicid !== $this->topicId) {
+            return;
+        }
+        $author = $post->user?->username ?? '';
+        $body = (string) $post->body;
+        $quoted = $author !== ''
+            ? "[quote={$author}]\n{$body}\n[/quote]\n\n"
+            : "[quote]\n{$body}\n[/quote]\n\n";
+
+        $this->dispatch('quote-prefill', body: $quoted);
+    }
+
+    public function deletePost(int $postId, ForumPostService $service): void
+    {
+        $this->deleteError = null;
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            $this->deleteError = 'Please log in to delete posts.';
+
+            return;
+        }
+
+        try {
+            $service->deletePost($postId, (int) $user->id);
+        } catch (ForumReplyException $e) {
+            $this->deleteError = $e->getMessage();
+
+            return;
+        }
+
+        // Re-render via computed properties; current page may have shrunk.
+        if ($this->editingPostId === $postId) {
+            $this->editingPostId = 0;
+        }
+    }
+
     public function render(): View
     {
+        $service = app(ForumPostService::class);
+        $userId = (int) (auth('nexus-web')->user()?->id ?? 0);
+        $editable = [];
+        $deletable = [];
+        if ($userId > 0) {
+            foreach ($this->posts as $post) {
+                $pid = (int) $post->id;
+                $editable[$pid] = $service->canEditPost($pid, $userId);
+                $deletable[$pid] = $service->canDeletePost($pid, $userId);
+            }
+        }
+
         return view('livewire.topic-view', [
             'forum' => $this->forum,
             'topic' => $this->topic,
             'posts' => $this->posts,
+            'editable' => $editable,
+            'deletable' => $deletable,
         ])->layout('layouts.livewire-app', [
             'title' => $this->topic->subject,
         ]);

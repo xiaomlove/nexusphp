@@ -7,6 +7,7 @@ use App\Models\Topic;
 use App\Services\Exceptions\ForumReplyException;
 use App\Services\ForumPostService;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -59,6 +60,18 @@ class ReplyForm extends Component
 
         $this->reset('body');
         $this->dispatch('forum-reply-submitted', topicId: $this->topicId);
+    }
+
+    /**
+     * Append a [quote=…]…[/quote] block dispatched from a parent
+     * TopicView post action ('Quote' button). The body is appended to
+     * any existing draft so users can quote multiple posts before
+     * submitting.
+     */
+    #[On('quote-prefill')]
+    public function prefillFromQuote(string $body): void
+    {
+        $this->body = trim($this->body."\n".$body);
     }
 
     public function render(): View
