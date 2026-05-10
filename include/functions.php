@@ -5245,6 +5245,7 @@ function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 }
 
 function get_ratio($userid, $html = true){
+    global $lang_functions;
 	$row = get_user_row($userid);
     if (empty($row)) {
         return "---";
@@ -5798,7 +5799,7 @@ function canDoLogin()
 
 function displayHotAndClassic()
 {
-    global $showextinfo, $showmovies, $Cache, $lang_functions, $browsecatmode, $specialcatmode;
+    global $showextinfo, $showmovies, $Cache, $lang_functions, $browsecatmode, $specialcatmode, $CURUSER;
 
     if ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes")
     {

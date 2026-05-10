@@ -72,7 +72,7 @@ $nfoaction = $_POST['nfoaction'];
 if ($nfoaction == "update")
 {
 	$nfofile = $_FILES['nfo'];
-	if (!$nfofile) die("No data " . var_dump($_FILES));
+	if (!$nfofile) die("No data " . print_r($_FILES, true));
 	if ($nfofile['size'] > 65535)
 		bark($lang_takeedit['std_nfo_too_big']);
 	$nfofilename = $nfofile['tmp_name'];

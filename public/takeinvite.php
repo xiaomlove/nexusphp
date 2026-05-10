@@ -18,6 +18,7 @@ try {
     stderr($lang_takeinvite['std_error'], $exception->getMessage());
 }
 function bark($msg) {
+  global $lang_takeinvite;
   stdhead();
 	stdmsg($lang_takeinvite['head_invitation_failed'], $msg);
   stdfoot();

@@ -700,9 +700,9 @@ if ($action == 'viewtopic') {
         }
         $dotted = 0;
         if ($i != $page) {
-            $pagerarr[] .= '<a href="'.htmlspecialchars('?'.$addparam.'&page='.$i).'"><b>'.($i + 1)."</b></a>\n";
+            $pagerarr[] = '<a href="'.htmlspecialchars('?'.$addparam.'&page='.$i).'"><b>'.($i + 1)."</b></a>\n";
         } else {
-            $pagerarr[] .= '<font class="gray"><b>'.($i + 1)."</b></font>\n";
+            $pagerarr[] = '<font class="gray"><b>'.($i + 1)."</b></font>\n";
         }
     }
     if ($page == 0) {

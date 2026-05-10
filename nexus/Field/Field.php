@@ -495,9 +495,9 @@ JS;
         return $result;
     }
 
-    public function prepareTorrents(array $torrentIdArr)
+    public function prepareTorrents(array $torrentIdArr, $searchBoxId)
     {
-        $customFieldValues = $this->listTorrentCustomField($torrentIdArr);
+        $customFieldValues = $this->listTorrentCustomField($torrentIdArr, $searchBoxId);
         $result = [];
         foreach ($customFieldValues as $tid => &$customFields) {
             foreach ($customFields as &$field) {

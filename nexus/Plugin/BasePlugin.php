@@ -59,12 +59,32 @@ abstract class BasePlugin extends BaseRepository
 
     public function getTransKey($name): string
     {
-        return sprintf("%s::%s", static::ID, $name);
+        return sprintf("%s::%s", self::resolveId(), $name);
     }
 
     public static function getInstance(): static
     {
-        return Plugin::getById(static::ID);
+        return Plugin::getById(self::resolveId());
+    }
+
+    /**
+     * Resolve the plugin ID constant on the concrete subclass.
+     *
+     * Mirrors the lookup pattern used by getVersion() for VERSION:
+     * checks defined() first so a missing const surfaces a clear
+     * error rather than the misleading "Undefined constant" PHP
+     * fatal.
+     */
+    private static function resolveId(): string
+    {
+        $constantName = static::class . '::ID';
+        if (! defined($constantName)) {
+            throw new \LogicException(sprintf(
+                'Plugin %s must declare a public ID constant.',
+                static::class
+            ));
+        }
+        return (string) constant($constantName);
     }
 
     public function getVersion(): string
