@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Events\ForumPostAdded;
+use App\Events\HitAndRunCreated;
+use App\Events\HitAndRunUpdated;
 use App\Events\MessageCreated;
 use App\Events\SeedBoxRecordUpdated;
 use App\Events\TorrentCreated;
@@ -19,6 +21,7 @@ use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SendEmailNotificationWhenTorrentCreated;
 use App\Listeners\SendPushOnForumPost;
 use App\Listeners\SendPushOnFreeEvent;
+use App\Listeners\SendPushOnHitAndRun;
 use App\Listeners\SendPushOnMention;
 use App\Listeners\SendPushOnMessage;
 use App\Listeners\SyncTorrentToElasticsearch;
@@ -72,6 +75,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         TorrentPromotionChanged::class => [
             SendPushOnFreeEvent::class,
+        ],
+        HitAndRunCreated::class => [
+            [SendPushOnHitAndRun::class, 'handleCreated'],
+        ],
+        HitAndRunUpdated::class => [
+            [SendPushOnHitAndRun::class, 'handleUpdated'],
         ],
     ];
 
