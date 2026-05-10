@@ -30,6 +30,8 @@ class EditPostForm extends Component
 
     public ?string $errorMessage = null;
 
+    public bool $showHistory = false;
+
     public function mount(int $postId): void
     {
         $post = Post::query()->findOrFail($postId);
@@ -82,8 +84,18 @@ class EditPostForm extends Component
         $this->dispatch('post-edit-cancelled', postId: $this->postId);
     }
 
+    public function toggleHistory(): void
+    {
+        $this->showHistory = ! $this->showHistory;
+    }
+
     public function render(): View
     {
-        return view('livewire.edit-post-form');
+        $service = app(ForumPostService::class);
+        $history = $this->showHistory ? $service->getPostHistory($this->postId) : collect();
+
+        return view('livewire.edit-post-form', [
+            'history' => $history,
+        ]);
     }
 }

@@ -6,10 +6,12 @@ use App\Events\ForumPostAdded;
 use App\Models\Forum;
 use App\Models\Message;
 use App\Models\Post;
+use App\Models\PostEdit;
 use App\Models\Topic;
 use App\Models\User;
 use App\Services\Exceptions\ForumReplyException;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -310,13 +312,27 @@ final class ForumPostService
             }
         }
 
-        DB::transaction(function () use ($post, $topic, $editor, $body, $newSubject, $now) {
+        $previousBody = (string) ($post->body ?? '');
+        $previousSubject = $isFirstPost ? (string) ($topic->subject ?? '') : null;
+        $bodyChanged = $previousBody !== $body;
+        $subjectChanged = $newSubject !== null && $newSubject !== (string) $topic->subject;
+
+        DB::transaction(function () use ($post, $topic, $editor, $body, $newSubject, $now, $previousBody, $previousSubject, $bodyChanged, $subjectChanged) {
+            if ($bodyChanged || $subjectChanged) {
+                PostEdit::query()->insert([
+                    'postid' => $post->id,
+                    'editor_userid' => $editor->id,
+                    'body_before' => $previousBody,
+                    'subject_before' => $previousSubject,
+                    'edited_at' => $now,
+                ]);
+            }
             Post::query()->where('id', $post->id)->update([
                 'body' => $body,
                 'editdate' => $now,
                 'editedby' => $editor->id,
             ]);
-            if ($newSubject !== null && $newSubject !== (string) $topic->subject) {
+            if ($subjectChanged && $newSubject !== null) {
                 Topic::query()->where('id', $topic->id)->update(['subject' => $newSubject]);
             }
         });
@@ -531,6 +547,23 @@ final class ForumPostService
         $this->bustForumLastReplied((int) $newForum->id);
 
         return $topic->fresh() ?? $topic;
+    }
+
+    /**
+     * Return the edit history for a post, newest first. Visible to
+     * anyone who can view the post — the snapshots are pre-edit
+     * bodies that were already public at the moment of the edit.
+     *
+     * @return Collection<int, PostEdit>
+     */
+    public function getPostHistory(int $postId): Collection
+    {
+        return PostEdit::query()
+            ->with('editor:id,username,class')
+            ->where('postid', $postId)
+            ->orderByDesc('edited_at')
+            ->orderByDesc('id')
+            ->get();
     }
 
     /**

@@ -35,21 +35,60 @@
             @enderror
         </div>
 
-        <div class="flex items-center justify-end gap-2">
+        <div class="flex items-center justify-between gap-2">
             <button
                 type="button"
-                wire:click="cancel"
+                wire:click="toggleHistory"
                 class="rounded border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >Cancel</button>
-            <button
-                type="submit"
-                class="inline-flex items-center rounded bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-slate-900"
-                wire:loading.attr="disabled"
-                wire:target="submit"
-            >
-                <span wire:loading.remove wire:target="submit">Save changes</span>
-                <span wire:loading wire:target="submit">Saving…</span>
-            </button>
+            >{{ $showHistory ? 'Hide history' : 'Edit history' }}</button>
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    wire:click="cancel"
+                    class="rounded border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                >Cancel</button>
+                <button
+                    type="submit"
+                    class="inline-flex items-center rounded bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-slate-900"
+                    wire:loading.attr="disabled"
+                    wire:target="submit"
+                >
+                    <span wire:loading.remove wire:target="submit">Save changes</span>
+                    <span wire:loading wire:target="submit">Saving…</span>
+                </button>
+            </div>
         </div>
     </form>
+
+    @if ($showHistory)
+        <section class="mt-4 border-t border-amber-200 pt-3 dark:border-amber-800">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">Edit history</h3>
+            @if ($history->isEmpty())
+                <p class="mt-2 text-xs text-zinc-600 dark:text-zinc-400">No edits recorded for this post yet.</p>
+            @else
+                <ol class="mt-2 space-y-3">
+                    @foreach ($history as $entry)
+                        <li class="rounded border border-amber-200 bg-white p-3 text-sm dark:border-amber-800 dark:bg-zinc-900/40">
+                            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                                <span>
+                                    Edited by
+                                    <span class="font-semibold text-zinc-800 dark:text-zinc-200">{{ $entry->editor?->username ?? 'unknown' }}</span>
+                                </span>
+                                <span title="{{ optional($entry->edited_at)->toDateTimeString() }}">
+                                    {{ optional($entry->edited_at)->diffForHumans() ?? '—' }}
+                                </span>
+                            </div>
+                            @if ($entry->subject_before !== null)
+                                <p class="mt-2 text-xs">
+                                    <span class="font-semibold text-zinc-700 dark:text-zinc-300">Previous subject:</span>
+                                    <span class="text-zinc-800 dark:text-zinc-200">{{ $entry->subject_before }}</span>
+                                </p>
+                            @endif
+                            <pre class="mt-2 whitespace-pre-wrap break-words rounded bg-amber-50 p-2 text-xs text-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-200">{{ $entry->body_before }}</pre>
+                        </li>
+                    @endforeach
+                </ol>
+            @endif
+        </section>
+    @endif
 </div>
