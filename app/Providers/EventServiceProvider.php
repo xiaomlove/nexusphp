@@ -6,6 +6,8 @@ use App\Events\ForumPostAdded;
 use App\Events\HitAndRunCreated;
 use App\Events\HitAndRunUpdated;
 use App\Events\MessageCreated;
+use App\Events\RequestFulfilled;
+use App\Events\RequestSupplied;
 use App\Events\SeedBoxRecordUpdated;
 use App\Events\TorrentCreated;
 use App\Events\TorrentDeleted;
@@ -24,6 +26,7 @@ use App\Listeners\SendPushOnFreeEvent;
 use App\Listeners\SendPushOnHitAndRun;
 use App\Listeners\SendPushOnMention;
 use App\Listeners\SendPushOnMessage;
+use App\Listeners\SendPushOnRequest;
 use App\Listeners\SyncTorrentToElasticsearch;
 use App\Listeners\SyncTorrentToMeilisearch;
 use Illuminate\Auth\Events\Registered;
@@ -81,6 +84,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         HitAndRunUpdated::class => [
             [SendPushOnHitAndRun::class, 'handleUpdated'],
+        ],
+        RequestSupplied::class => [
+            [SendPushOnRequest::class, 'handleSupplied'],
+        ],
+        RequestFulfilled::class => [
+            [SendPushOnRequest::class, 'handleFulfilled'],
         ],
     ];
 
