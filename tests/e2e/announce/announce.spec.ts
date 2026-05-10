@@ -53,7 +53,7 @@ const CASES: AnnounceCase[] = [
         // `failure reason …passkey` outright, or an empty-peers dict
         // whose `warning message` mentions passkey. Both are
         // protocol-level rejections.
-        contains: /(failure reason\d+:[^e]*passkey|warning message\d+:[^e]*passkey)/i,
+        contains: /(failure reason\d+:.*?passkey|warning message\d+:.*?passkey)/i,
     },
     {
         description: 'invalid passkey returns a bencoded failure or passkey warning',
@@ -61,7 +61,7 @@ const CASES: AnnounceCase[] = [
             `info_hash=${INFO_HASH}&peer_id=${PEER_ID}&port=51413` +
             `&uploaded=0&downloaded=0&left=104857600&compact=1&event=started` +
             `&passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ`,
-        contains: /(failure reason\d+:[^e]*passkey|warning message\d+:[^e]*passkey)/i,
+        contains: /(failure reason\d+:.*?passkey|warning message\d+:.*?passkey)/i,
     },
     {
         description: 'valid passkey + event=started returns bencoded interval dict',

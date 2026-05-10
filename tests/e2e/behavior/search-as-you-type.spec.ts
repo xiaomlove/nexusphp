@@ -33,11 +33,20 @@ test.describe('@behavior search-as-you-type (#59)', () => {
     }) => {
         await loginAs(context, 'admin');
 
-        const response = await page.goto('/torrents.php');
-        expect(response, 'no response for /torrents.php').not.toBeNull();
-        expect(response!.status(), 'unexpected status for /torrents.php').toBe(200);
+        // We deliberately use `request.get` instead of `page.goto` +
+        // `page.content()` here. The browser-driven path proved flaky
+        // on PHP's built-in single-threaded webserver (CI): when
+        // multiple workers share the server, dependent assets (CSS,
+        // JS) can serialise behind the parent HTML response and the
+        // page `load` event fires while the body is still streaming —
+        // `page.content()` then sees a partial DOM that has the
+        // `<head>` but never reached the search-form `<input>` deeper
+        // in `<body>`. The raw HTTP response is captured fully on
+        // navigation, so this is deterministic.
+        const response = await page.request.get('/torrents.php');
+        expect(response.status(), 'unexpected status for /torrents.php').toBe(200);
 
-        const html = await page.content();
+        const html = await response.text();
 
         expect(html, 'expected #searchinput on /torrents.php').toMatch(
             /id=["']searchinput["']/,
