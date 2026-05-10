@@ -25,11 +25,33 @@ server {
         try_files $uri $uri/ /nexus.php$is_args$args;
     }
 
-    # Phase 2 migration of `public/thanks.php` (deleted) — route the
-    # legacy URL through Laravel instead of fastcgi'ing a missing
-    # file. This must come BEFORE the catch-all `location ~ \.php$`
-    # because regex locations are evaluated in source order.
+    # Phase 2 legacy-migration routes — each URL listed here was a
+    # `public/<page>.php` file that has been deleted in favour of a
+    # Laravel controller (see `routes/web.php`). The exact-match
+    # `location =` rules win against the catch-all `location ~
+    # \.php$` below, so these URLs go to nexus.php instead of
+    # fastcgi'ing the (now missing) file.
     location = /thanks.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /special.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /preview.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /searchsuggest.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /suggest.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takeupdate.php {
         try_files /nonexistent @nexus_app;
     }
 
