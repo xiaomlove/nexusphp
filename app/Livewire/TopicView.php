@@ -43,6 +43,12 @@ class TopicView extends Component
 
     public ?string $deleteError = null;
 
+    public ?string $modError = null;
+
+    public bool $showMoveDialog = false;
+
+    public int $moveTargetForumId = 0;
+
     public function mount(int $forum, int $topic): void
     {
         $forumRow = Forum::query()->findOrFail($forum);
@@ -162,6 +168,79 @@ class TopicView extends Component
         $this->dispatch('quote-prefill', body: $quoted);
     }
 
+    public function toggleSticky(ForumPostService $service): void
+    {
+        $this->modError = null;
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            return;
+        }
+        try {
+            $service->setSticky($this->topicId, (int) $user->id, (string) $this->topic->sticky !== 'yes');
+            unset($this->topic);
+        } catch (ForumReplyException $e) {
+            $this->modError = $e->getMessage();
+        }
+    }
+
+    public function toggleLocked(ForumPostService $service): void
+    {
+        $this->modError = null;
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            return;
+        }
+        try {
+            $service->setLocked($this->topicId, (int) $user->id, (string) $this->topic->locked !== 'yes');
+            unset($this->topic);
+        } catch (ForumReplyException $e) {
+            $this->modError = $e->getMessage();
+        }
+    }
+
+    public function setHlColor(int $color, ForumPostService $service): void
+    {
+        $this->modError = null;
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            return;
+        }
+        try {
+            $service->setHlColor($this->topicId, (int) $user->id, $color);
+            unset($this->topic);
+        } catch (ForumReplyException $e) {
+            $this->modError = $e->getMessage();
+        }
+    }
+
+    public function moveTopic(ForumPostService $service): void
+    {
+        $this->modError = null;
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            return;
+        }
+        $target = $this->moveTargetForumId;
+        if ($target <= 0 || $target === $this->forumId) {
+            $this->modError = 'Pick a different destination forum.';
+
+            return;
+        }
+        try {
+            $service->moveTopic($this->topicId, (int) $user->id, $target);
+        } catch (ForumReplyException $e) {
+            $this->modError = $e->getMessage();
+
+            return;
+        }
+        $this->showMoveDialog = false;
+        $this->redirectRoute(
+            'forum.topic',
+            ['forum' => $target, 'topic' => $this->topicId],
+            navigate: true,
+        );
+    }
+
     public function deletePost(int $postId, ForumPostService $service): void
     {
         $this->deleteError = null;
@@ -199,6 +278,14 @@ class TopicView extends Component
                 $deletable[$pid] = $service->canDeletePost($pid, $userId);
             }
         }
+        $canModerate = $userId > 0 && $service->canModerateTopic($this->topicId, $userId);
+        $availableForums = $canModerate
+            ? Forum::query()
+                ->where('id', '!=', $this->forumId)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+            : collect();
+        $hlColors = self::HL_COLOR_OPTIONS;
 
         return view('livewire.topic-view', [
             'forum' => $this->forum,
@@ -206,10 +293,54 @@ class TopicView extends Component
             'posts' => $this->posts,
             'editable' => $editable,
             'deletable' => $deletable,
+            'canModerate' => $canModerate,
+            'availableForums' => $availableForums,
+            'hlColors' => $hlColors,
         ])->layout('layouts.livewire-app', [
             'title' => $this->topic->subject,
         ]);
     }
+
+    /** @var array<int, string> */
+    public const HL_COLOR_OPTIONS = [
+        0 => 'No highlight',
+        1 => 'Black',
+        2 => 'Sienna',
+        3 => 'DarkOliveGreen',
+        4 => 'DarkGreen',
+        5 => 'DarkSlateBlue',
+        6 => 'Navy',
+        7 => 'Indigo',
+        8 => 'DarkSlateGray',
+        9 => 'DarkRed',
+        10 => 'DarkOrange',
+        11 => 'Olive',
+        12 => 'Green',
+        13 => 'Teal',
+        14 => 'Blue',
+        15 => 'SlateGray',
+        16 => 'DimGray',
+        17 => 'Red',
+        18 => 'SandyBrown',
+        19 => 'YellowGreen',
+        20 => 'SeaGreen',
+        21 => 'MediumTurquoise',
+        22 => 'RoyalBlue',
+        23 => 'Purple',
+        24 => 'Gray',
+        25 => 'Magenta',
+        26 => 'Orange',
+        27 => 'Yellow',
+        28 => 'Lime',
+        29 => 'Cyan',
+        30 => 'DeepSkyBlue',
+        31 => 'DarkOrchid',
+        32 => 'Silver',
+        33 => 'Pink',
+        34 => 'Wheat',
+        35 => 'LemonChiffon',
+        36 => 'PaleGreen',
+    ];
 
     #[Computed]
     public function forum(): Forum

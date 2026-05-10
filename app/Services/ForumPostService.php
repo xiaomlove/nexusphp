@@ -429,6 +429,168 @@ final class ForumPostService
     }
 
     /**
+     * Toggle the sticky flag on a topic. Requires forum moderator or
+     * postmanage. Returns the fresh topic.
+     *
+     * @throws ForumReplyException
+     */
+    public function setSticky(int $topicId, int $editorId, bool $sticky): Topic
+    {
+        [$topic, $forum] = $this->ensureTopicMod($topicId, $editorId);
+        Topic::query()->where('id', $topic->id)->update(['sticky' => $sticky ? 'yes' : 'no']);
+        $this->bustForumLastReplied($forum->id);
+
+        return $topic->fresh() ?? $topic;
+    }
+
+    /**
+     * Toggle the locked flag on a topic. Requires forum moderator or
+     * postmanage. Returns the fresh topic.
+     *
+     * @throws ForumReplyException
+     */
+    public function setLocked(int $topicId, int $editorId, bool $locked): Topic
+    {
+        [$topic, $forum] = $this->ensureTopicMod($topicId, $editorId);
+        Topic::query()->where('id', $topic->id)->update(['locked' => $locked ? 'yes' : 'no']);
+        $this->bustForumLastReplied($forum->id);
+
+        return $topic->fresh() ?? $topic;
+    }
+
+    /**
+     * Set the topic title highlight colour (0 = clear). Requires forum
+     * moderator or postmanage. Colour must be 0..40 — if the legacy
+     * get_hl_color() helper is loaded, additionally validates against
+     * its switch table (returns a name or false).
+     *
+     * @throws ForumReplyException
+     */
+    public function setHlColor(int $topicId, int $editorId, int $color): Topic
+    {
+        [$topic, $forum] = $this->ensureTopicMod($topicId, $editorId);
+        if ($color < 0 || $color > 40) {
+            throw new ForumReplyException('Invalid highlight colour.');
+        }
+        if ($color !== 0 && function_exists('get_hl_color')) {
+            $name = get_hl_color($color);
+            if (! is_string($name) || $name === '') {
+                throw new ForumReplyException('Invalid highlight colour.');
+            }
+        }
+        Topic::query()->where('id', $topic->id)->update(['hlcolor' => $color]);
+        $this->bustForumLastReplied($forum->id);
+
+        return $topic->fresh() ?? $topic;
+    }
+
+    /**
+     * Move the topic to another forum. Requires forum moderator (on the
+     * source) or postmanage; the editor must additionally have
+     * minclasswrite on the destination forum (mirrors legacy
+     * /forums.php?action=movetopic). Updates topiccount / postcount on
+     * both forums and busts the relevant cache keys.
+     *
+     * @throws ForumReplyException
+     */
+    public function moveTopic(int $topicId, int $editorId, int $newForumId): Topic
+    {
+        [$topic, $oldForum] = $this->ensureTopicMod($topicId, $editorId);
+        $newForum = Forum::query()->find($newForumId);
+        if (! $newForum) {
+            throw new ForumReplyException('Destination forum not found.');
+        }
+        if ((int) $newForum->id === (int) $oldForum->id) {
+            return $topic;
+        }
+
+        $editor = User::query()->find($editorId);
+        if (! $editor) {
+            throw new ForumReplyException('Unknown user.');
+        }
+        $editorClass = (int) ($editor->class ?? 0);
+        if ($editorClass < (int) $newForum->minclasswrite) {
+            throw new ForumReplyException('You do not have permission to move topics into that forum.');
+        }
+
+        $postCount = (int) Post::query()->where('topicid', $topic->id)->count();
+
+        DB::transaction(function () use ($topic, $oldForum, $newForum, $postCount) {
+            Topic::query()->where('id', $topic->id)->update(['forumid' => $newForum->id]);
+            Forum::query()->where('id', $oldForum->id)->update([
+                'topiccount' => DB::raw('GREATEST(topiccount - 1, 0)'),
+                'postcount' => DB::raw('GREATEST(postcount - '.$postCount.', 0)'),
+            ]);
+            Forum::query()->where('id', $newForum->id)->update([
+                'topiccount' => DB::raw('topiccount + 1'),
+                'postcount' => DB::raw('postcount + '.$postCount),
+            ]);
+        });
+
+        $this->bustForumLastReplied((int) $oldForum->id);
+        $this->bustForumLastReplied((int) $newForum->id);
+
+        return $topic->fresh() ?? $topic;
+    }
+
+    /**
+     * Public predicate: can $userId moderate $topicId (sticky / lock /
+     * color / move)? True for forum moderators and postmanage holders.
+     */
+    public function canModerateTopic(int $topicId, int $userId): bool
+    {
+        $topic = Topic::query()->find($topicId);
+        if (! $topic) {
+            return false;
+        }
+        $user = User::query()->find($userId);
+        if (! $user) {
+            return false;
+        }
+
+        return $this->isForumModerator((int) $topic->forumid, (int) $user->id)
+            || $this->userCan($user, 'postmanage');
+    }
+
+    /**
+     * @return array{0: Topic, 1: Forum}
+     *
+     * @throws ForumReplyException
+     */
+    private function ensureTopicMod(int $topicId, int $editorId): array
+    {
+        $topic = Topic::query()->find($topicId);
+        if (! $topic) {
+            throw new ForumReplyException('Unknown topic.');
+        }
+        $forum = Forum::query()->find((int) $topic->forumid);
+        if (! $forum) {
+            throw new ForumReplyException('Unknown forum.');
+        }
+        $editor = User::query()->find($editorId);
+        if (! $editor) {
+            throw new ForumReplyException('Unknown user.');
+        }
+        $isMod = $this->isForumModerator((int) $forum->id, (int) $editor->id);
+        $canManage = $this->userCan($editor, 'postmanage');
+        if (! $isMod && ! $canManage) {
+            throw new ForumReplyException('You do not have permission to moderate this topic.');
+        }
+
+        return [$topic, $forum];
+    }
+
+    private function bustForumLastReplied(int $forumId): void
+    {
+        try {
+            Cache::forget('forum_'.$forumId.'_last_replied_topic_content');
+            Cache::forget('forums_list');
+        } catch (\Throwable) {
+            // Cache backend can be unreachable; ignore.
+        }
+    }
+
+    /**
      * Public permission check: can $userId edit $postId? Used by Livewire
      * UI to decide whether to render an Edit button. Returns true for
      * the post author (when topic is unlocked), forum moderators, and

@@ -33,6 +33,75 @@
         </a>
     </div>
 
+    @if ($canModerate ?? false)
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">Topic actions</span>
+                <button
+                    type="button"
+                    wire:click="toggleSticky"
+                    class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                    title="{{ $topic->sticky === 'yes' ? 'Unpin this topic' : 'Pin this topic to the top of the forum' }}"
+                >{{ $topic->sticky === 'yes' ? 'Unpin' : 'Pin' }}</button>
+                <button
+                    type="button"
+                    wire:click="toggleLocked"
+                    class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                    title="{{ $topic->locked === 'yes' ? 'Unlock this topic' : 'Lock this topic from new replies' }}"
+                >{{ $topic->locked === 'yes' ? 'Unlock' : 'Lock' }}</button>
+
+                <label class="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-200">
+                    Highlight
+                    <select
+                        wire:change="setHlColor($event.target.value)"
+                        class="rounded border border-amber-300 bg-white px-1.5 py-1 text-xs text-amber-900 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-100"
+                    >
+                        @foreach ($hlColors as $value => $label)
+                            <option value="{{ $value }}" @selected((int) $topic->hlcolor === (int) $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+
+                <button
+                    type="button"
+                    wire:click="$toggle('showMoveDialog')"
+                    class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                >Move…</button>
+            </div>
+
+            @if ($showMoveDialog)
+                <div class="mt-3 flex flex-wrap items-end gap-2">
+                    <label class="text-xs text-amber-800 dark:text-amber-200">
+                        <span class="block mb-1">Destination forum</span>
+                        <select
+                            wire:model="moveTargetForumId"
+                            class="block rounded border border-amber-300 bg-white px-2 py-1 text-xs text-amber-900 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-100"
+                        >
+                            <option value="0">— pick a forum —</option>
+                            @foreach ($availableForums as $f)
+                                <option value="{{ $f->id }}">{{ $f->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <button
+                        type="button"
+                        wire:click="moveTopic"
+                        class="rounded bg-amber-600 px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-amber-700"
+                    >Move topic</button>
+                    <button
+                        type="button"
+                        wire:click="$set('showMoveDialog', false)"
+                        class="rounded border border-amber-300 px-2 py-1 text-xs text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900/40"
+                    >Cancel</button>
+                </div>
+            @endif
+
+            @if ($modError)
+                <p class="mt-2 text-xs text-rose-700 dark:text-rose-300">{{ $modError }}</p>
+            @endif
+        </div>
+    @endif
+
     @if ($deleteError)
         <div role="alert" class="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200">
             {{ $deleteError }}
