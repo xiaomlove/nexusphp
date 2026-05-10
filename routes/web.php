@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthenticateController;
+use App\Http\Controllers\Legacy\PreviewController;
+use App\Http\Controllers\Legacy\SearchSuggestController;
+use App\Http\Controllers\Legacy\SpecialController;
+use App\Http\Controllers\Legacy\SuggestController;
+use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\TokenController;
@@ -26,23 +31,38 @@ Route::get('/', function () {
 
 Route::get('/error', [ToolController::class, 'error']);
 
+/*
+ * Phase 2 of the legacy migration — see `docs/legacy-strategy.md`.
+ * Each route here replaces a legacy `public/<page>.php` file that is
+ * deleted in the same PR. The URLs are kept stable so the existing
+ * front-end (templates, AJAX helpers, browser OpenSearch metadata)
+ * keeps working without template/JS changes.
+ *
+ * The matching nginx rules that route these URLs to Laravel live in
+ * `.docker/openresty/sites/app.conf.template` — without them, the
+ * catch-all `location ~ \.php$` would `fastcgi_pass` to a file that
+ * no longer exists and return a fastcgi 404.
+ *
+ * POST endpoints exempt from CSRF (because their callers are legacy
+ * forms / XHRs that do not send a token) are listed in
+ * `App\Http\Middleware\VerifyCsrfToken::$except`.
+ */
+
+// Public, no auth required.
+Route::get('/searchsuggest.php', SearchSuggestController::class)->name('legacy.searchsuggest');
+Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
+
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
 
-    /*
-     * Phase 2 of the legacy migration — replaces `public/thanks.php`,
-     * which is deleted in this PR. The URL stays `/thanks.php` so the
-     * AJAX call in `public/js/common.js` (`saythanks(torrentid)`)
-     * keeps working without a template/JS change. The same path is
-     * also added to `App\Http\Middleware\VerifyCsrfToken::$except`
-     * (see the comment there for why).
-     *
-     * The matching nginx rule that routes `/thanks.php` to Laravel
-     * lives in `.docker/openresty/sites/app.conf.template` — without
-     * it, the catch-all `location ~ \.php$` would `fastcgi_pass` to
-     * the (now missing) file and return a fastcgi 404.
-     */
     Route::post('/thanks.php', ThanksController::class)->name('legacy.thanks');
+
+    Route::get('/special.php', SpecialController::class)->name('legacy.special');
+
+    Route::match(['get', 'post'], '/preview.php', PreviewController::class)
+        ->name('legacy.preview');
+
+    Route::post('/takeupdate.php', TakeUpdateController::class)->name('legacy.takeupdate');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
