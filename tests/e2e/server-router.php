@@ -47,10 +47,24 @@ if ($uri === '/' || $uri === '' || $uri === null) {
     return true;
 }
 
-// Existing file in public/ — let the built-in server serve it directly
-// (covers /login.php, /usercp.php, /torrents.php, /build/assets/*, /favicon.ico, ...).
+// Existing file in public/. We do NOT `return false` to let the built-in
+// server serve directly: that path bypasses the `$_SERVER` schema/HTTPS
+// shim above and re-spawns the script with a fresh `$_SERVER` that still
+// has no `REQUEST_SCHEME`. NexusPHP's `Nexus::getRequestSchema()` then
+// crashes with `TypeError: getFirst() argument must be of type string,
+// null given`. Instead we serve PHP files via `require` (so the shim is
+// preserved) and only fall back to the built-in static-file handler for
+// non-PHP assets.
 $candidate = $publicDir.$uri;
 if (is_file($candidate)) {
+    if (str_ends_with(strtolower($candidate), '.php')) {
+        $_SERVER['SCRIPT_NAME'] = $uri;
+        $_SERVER['SCRIPT_FILENAME'] = $candidate;
+        require $candidate;
+
+        return true;
+    }
+
     return false;
 }
 

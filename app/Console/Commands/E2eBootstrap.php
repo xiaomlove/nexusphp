@@ -90,6 +90,7 @@ class E2eBootstrap extends Command
         $this->seedE2eUsers();
         $this->createInstallLock();
         $this->flushSettingsCache();
+        $this->resetLoginAttempts();
 
         $this->info('==> done. ready for Playwright.');
 
@@ -257,6 +258,23 @@ class E2eBootstrap extends Command
             $this->line('  flushed redis user-row caches: '.implode(', ', $keys));
         } catch (\Throwable $e) {
             $this->warn(sprintf('  user-row cache flush failed: %s (continuing)', $e->getMessage()));
+        }
+    }
+
+    /**
+     * Empty the `loginattempts` table so a re-bootstrap after many
+     * failed test runs does not leave the IP banned. The legacy
+     * `takelogin.php` rejects further requests from the same client
+     * IP after `maxloginattempts` failures (default 7-10) — that
+     * threshold is trivially exceeded by Playwright workers if the
+     * suite is re-run on a hot stack.
+     */
+    private function resetLoginAttempts(): void
+    {
+        $deleted = DB::table('loginattempts')->delete();
+
+        if ($deleted > 0) {
+            $this->line(sprintf('  cleared %d row(s) from loginattempts', $deleted));
         }
     }
 }

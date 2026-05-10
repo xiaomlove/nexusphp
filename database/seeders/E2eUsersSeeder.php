@@ -38,7 +38,7 @@ class E2eUsersSeeder extends Seeder
      *   staff: 10 GB / 8 GB  -> 1.25  (yellow/green)
      *   user:  10 GB / 20 GB -> 0.5   (red)
      *
-     * @var list<array{username: string, email: string, password: string, class: string, id?: int, uploaded?: int, downloaded?: int}>
+     * @var list<array{username: string, email: string, password: string, class: string, id?: int, uploaded?: int, downloaded?: int, passkey?: string}>
      */
     public const USERS = [
         [
@@ -49,6 +49,8 @@ class E2eUsersSeeder extends Seeder
             'id' => 1,
             'uploaded' => 10737418240,
             'downloaded' => 5368709120,
+            // 32-char hex; consumed by tests/e2e/announce/announce.spec.ts.
+            'passkey' => 'e2eadmine2eadmine2eadmine2eadm00',
         ],
         [
             'username' => 'e2estaff',
@@ -57,6 +59,7 @@ class E2eUsersSeeder extends Seeder
             'class' => User::CLASS_MODERATOR,
             'uploaded' => 10737418240,
             'downloaded' => 8589934592,
+            'passkey' => 'e2estaffe2estaffe2estaffe2est000',
         ],
         [
             'username' => 'e2euser',
@@ -65,6 +68,7 @@ class E2eUsersSeeder extends Seeder
             'class' => User::CLASS_USER,
             'uploaded' => 10737418240,
             'downloaded' => 21474836480,
+            'passkey' => 'e2eusere2eusere2eusere2euser0000',
         ],
     ];
 
@@ -116,11 +120,12 @@ class E2eUsersSeeder extends Seeder
     }
 
     /**
-     * Write `uploaded`/`downloaded` directly to the row. We bypass
-     * `UserRepository::store()` because that helper does not accept
-     * stat fields and seeded ratios are an E2E concern only.
+     * Write `uploaded`/`downloaded` and (optionally) a deterministic
+     * `passkey` directly to the row. We bypass `UserRepository::store()`
+     * because that helper does not accept stat fields and seeded
+     * passkeys are an E2E concern only.
      *
-     * @param  array{username: string, uploaded?: int, downloaded?: int}  $fixture
+     * @param  array{username: string, uploaded?: int, downloaded?: int, passkey?: string}  $fixture
      */
     private function applyStats(int $userId, array $fixture): void
     {
@@ -134,6 +139,10 @@ class E2eUsersSeeder extends Seeder
             $update['downloaded'] = $fixture['downloaded'];
         }
 
+        if (isset($fixture['passkey'])) {
+            $update['passkey'] = $fixture['passkey'];
+        }
+
         if ($update === []) {
             return;
         }
@@ -141,10 +150,11 @@ class E2eUsersSeeder extends Seeder
         DB::table('users')->where('id', $userId)->update($update);
 
         $this->command?->info(sprintf(
-            '    set %s stats: uploaded=%d, downloaded=%d',
+            '    set %s stats: uploaded=%d, downloaded=%d, passkey=%s',
             $fixture['username'],
             $update['uploaded'] ?? 0,
             $update['downloaded'] ?? 0,
+            isset($update['passkey']) ? '(set)' : '(unchanged)',
         ));
     }
 }
