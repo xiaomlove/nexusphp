@@ -1,0 +1,175 @@
+name: E2E nightly (cross-browser)
+
+# Phase 7 — runs the chromium project specs against Firefox and WebKit
+# in addition to Chromium itself, in a separate nightly workflow.
+#
+# Why nightly and not on every PR:
+#
+#   - Firefox + WebKit add ~6–8 minutes per browser to the run wall-time
+#     (browser bootstrap, OS deps, plus the specs themselves). On every
+#     PR that would triple the E2E feedback loop and hide CI capacity
+#     from human-driven work.
+#
+#   - The user-visible UI surface in NexusPHP is mostly server-rendered
+#     legacy PHP and Filament-rendered admin SPA. Cross-browser
+#     regressions in those areas are rare; the chromium project on
+#     every PR catches 99% of them. Firefox + WebKit nightly is for
+#     catching the remaining 1% (CSS quirks, fetch() differences,
+#     cookie-jar edge cases) before a release.
+#
+# Schedule: 04:00 UTC daily (mid-day Beijing, late-evening Pacific —
+# the rough sweet spot for not stepping on human PRs).
+#
+# Manual trigger via workflow_dispatch is supported so a maintainer
+# can re-run after a fix without waiting for the next nightly slot.
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-cross-browser:
+    name: E2E (Playwright, ${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One browser breaking should NOT mask another browser breaking.
+      fail-fast: false
+      matrix:
+        # Chromium is included as a sanity check that a green nightly
+        # implies a green PR run on the same commit.
+        browser: [chromium, firefox, webkit]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: nexus_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      E2E_BASE_URL: http://127.0.0.1:8000
+      # The chromium config has a serial `critical` project that runs
+      # AFTER `chromium`. For the firefox / webkit matrix entries we
+      # only run the parallel suite — the critical project is excluded
+      # by playwright.config.ts when the requested browser doesn't
+      # include `chromium`. (See playwright.config.ts comment block.)
+      E2E_BROWSERS: ${{ matrix.browser }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: gmp, intl, bcmath, gd, mbstring, redis, pdo_mysql, mysqli, pdo_pgsql, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.3-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: playwright-${{ runner.os }}-${{ matrix.browser }}-
+
+      - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Install Playwright OS deps (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ matrix.browser }}
+
+      - name: Prepare environment
+        run: |
+          cp .env.testing .env
+          php artisan key:generate --ansi
+          sed -i 's|^DB_HOST=.*|DB_HOST=127.0.0.1|' .env
+          sed -i 's|^REDIS_HOST=.*|REDIS_HOST=127.0.0.1|' .env
+
+      - name: Run migrations
+        run: php artisan migrate:fresh --force --no-interaction
+
+      - name: Bootstrap E2E state (settings, users, install lock)
+        run: php artisan e2e:bootstrap --force
+
+      - name: Start application server
+        run: |
+          php -S 127.0.0.1:8000 -t public tests/e2e/server-router.php > /tmp/php-server.log 2>&1 &
+          echo $! > /tmp/php-server.pid
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/ || echo 000)
+            if [ "$code" = "200" ] || [ "$code" = "302" ] || [ "$code" = "301" ]; then
+              echo "server is up (GET / -> $code)"; exit 0
+            fi
+            echo "Waiting for server ($i)... last code=$code"; sleep 1
+          done
+          echo "server did not start"; cat /tmp/php-server.log; exit 1
+
+      - name: Run Playwright tests
+        run: npm run e2e
+
+      - name: Stop application server
+        if: always()
+        run: |
+          if [ -f /tmp/php-server.pid ]; then
+            kill "$(cat /tmp/php-server.pid)" || true
+          fi
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-${{ matrix.browser }}
+          path: test-results
+          retention-days: 7

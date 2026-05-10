@@ -1,0 +1,112 @@
+name: Feature suite nightly (PostgreSQL)
+
+# Phase 7 (#78) — runs the PHPUnit Feature suite against PostgreSQL
+# in addition to the MySQL run that lives on every PR.
+#
+# Why nightly and not on every PR:
+#
+#   - PR #78 made NexusPHP's modern Laravel layer (Models /
+#     Repositories / Filament resources) DB-agnostic. The legacy
+#     procedural layer (`include/`, `nexus/Database/DBMysqli.php`)
+#     still uses `mysqli` directly and is NOT DB-agnostic. Running
+#     the Feature suite against PostgreSQL exercises the Eloquent /
+#     DB-facade code paths that #78 made portable; it does NOT
+#     exercise the legacy `nexus/Database/DBMysqli.php` paths, which
+#     are MySQL-only by design.
+#
+#   - We do not run the E2E suite on PostgreSQL — the legacy front
+#     controller (`public/*.php`) still issues `mysqli_*`-style
+#     queries via NexusDB, which won't connect to a Postgres backend.
+#     Cross-DB E2E coverage would require porting the legacy layer
+#     first; that is out of scope for #78.
+#
+# Schedule: 04:30 UTC daily (right after the cross-browser nightly
+# at 04:00, so they don't share runner capacity).
+
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit-feature-pgsql:
+    name: PHPUnit Feature (PHP 8.3 / PostgreSQL 16)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: nexus_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U nexus -d nexus_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          # mysqli is still installed because the Feature bootstrap
+          # touches `include/functions.php` which references it. It is
+          # NOT used at runtime when DB_CONNECTION=pgsql.
+          extensions: gmp, intl, bcmath, gd, mbstring, redis, pdo_mysql, mysqli, pdo_pgsql, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.3-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Prepare environment
+        run: |
+          cp .env.testing .env
+          php artisan key:generate --ansi
+          # Override the MySQL defaults for the Postgres run.
+          sed -i 's|^DB_CONNECTION=.*|DB_CONNECTION=pgsql|' .env
+          sed -i 's|^DB_HOST=.*|DB_HOST=127.0.0.1|' .env
+          sed -i 's|^DB_PORT=.*|DB_PORT=5432|' .env
+          sed -i 's|^DB_DATABASE=.*|DB_DATABASE=nexus_test|' .env
+          sed -i 's|^DB_USERNAME=.*|DB_USERNAME=nexus|' .env
+          sed -i 's|^DB_PASSWORD=.*|DB_PASSWORD=password|' .env
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if PGPASSWORD=password psql -h 127.0.0.1 -U nexus -d nexus_test -c '\q' 2>/dev/null; then
+              echo "PostgreSQL is up"; exit 0
+            fi
+            echo "Waiting for PostgreSQL ($i)..."; sleep 2
+          done
+          echo "PostgreSQL did not become ready"; exit 1
+
+      - name: Run migrations
+        run: php artisan migrate --force --no-interaction
+
+      - name: Run PHPUnit (Feature suite)
+        run: vendor/bin/phpunit --testsuite=Feature
