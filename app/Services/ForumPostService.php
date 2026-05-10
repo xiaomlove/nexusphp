@@ -127,7 +127,102 @@ final class ForumPostService
         return ['post' => $post, 'topic' => $topic, 'forum' => $forum];
     }
 
-    private function awardBonus(int $userId): void
+    /**
+     * Create a new topic in a forum + first post in a single transaction.
+     *
+     * @return array{post:Post,topic:Topic,forum:Forum}
+     *
+     * @throws ForumReplyException
+     */
+    public function createTopic(int $forumId, int $userId, string $subject, string $body): array
+    {
+        $subject = trim($subject);
+        $body = trim($body);
+
+        if ($subject === '') {
+            throw new ForumReplyException('Topic subject is required.');
+        }
+        if (mb_strlen($subject) > 255) {
+            throw new ForumReplyException('Topic subject is too long.');
+        }
+        if ($body === '') {
+            throw new ForumReplyException('Topic body is required.');
+        }
+
+        $forum = Forum::query()->find($forumId);
+        if (! $forum) {
+            throw new ForumReplyException('Unknown forum.');
+        }
+        $user = User::query()->find($userId);
+        if (! $user) {
+            throw new ForumReplyException('Unknown user.');
+        }
+        $userClass = (int) ($user->class ?? 0);
+        if (
+            $userClass < (int) $forum->minclassread
+            || $userClass < (int) $forum->minclasswrite
+            || $userClass < (int) $forum->minclasscreate
+        ) {
+            throw new ForumReplyException('You do not have permission to start a topic in this forum.');
+        }
+
+        $lastPost = $user->last_post ? Carbon::parse((string) $user->last_post) : null;
+        if ($lastPost !== null) {
+            $diff = now()->getTimestamp() - $lastPost->getTimestamp();
+            if ($diff >= 0 && $diff < self::FLOOD_SECONDS) {
+                throw new ForumReplyException(sprintf('Please wait %d seconds before posting again.', self::FLOOD_SECONDS - $diff));
+            }
+        }
+
+        $now = now();
+        [$topic, $post] = DB::transaction(function () use ($forum, $user, $subject, $body, $now) {
+            $topic = Topic::query()->create([
+                'userid' => $user->id,
+                'forumid' => $forum->id,
+                'subject' => $subject,
+            ]);
+            $post = Post::query()->create([
+                'topicid' => $topic->id,
+                'userid' => $user->id,
+                'added' => $now,
+                'body' => $body,
+                'ori_body' => $body,
+            ]);
+            Topic::query()->where('id', $topic->id)->update([
+                'firstpost' => $post->id,
+                'lastpost' => $post->id,
+            ]);
+            Forum::query()->where('id', $forum->id)->update([
+                'topiccount' => DB::raw('topiccount + 1'),
+                'postcount' => DB::raw('postcount + 1'),
+            ]);
+            User::query()->where('id', $user->id)->update(['last_post' => $now]);
+
+            return [$topic->fresh() ?? $topic, $post];
+        });
+
+        $this->awardBonus($user->id, 'starttopic');
+        $this->bustCaches((int) $forum->id, (int) $topic->id, (int) $user->id);
+
+        try {
+            ForumPostAdded::dispatch(
+                (int) $forum->id,
+                (int) $topic->id,
+                (int) $post->id,
+                (int) $user->id,
+                true,
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[forum] ForumPostAdded broadcast failed: '.$e->getMessage());
+        }
+
+        return ['post' => $post, 'topic' => $topic, 'forum' => $forum];
+    }
+
+    /**
+     * Award the makepost / starttopic bonus when the bonus tweak is enabled.
+     */
+    private function awardBonus(int $userId, string $kind = 'makepost'): void
     {
         if (! function_exists('get_setting')) {
             return;
@@ -136,7 +231,8 @@ final class ForumPostService
         if ($tweak !== 'enable' && $tweak !== 'disablesave') {
             return;
         }
-        $points = (float) get_setting('bonus.makepost', 0);
+        $key = $kind === 'starttopic' ? 'bonus.starttopic' : 'bonus.makepost';
+        $points = (float) get_setting($key, 0);
         if ($points === 0.0) {
             return;
         }
@@ -146,7 +242,7 @@ final class ForumPostService
                 'seedbonus' => DB::raw('seedbonus + '.$points),
             ]);
         } catch (\Throwable $e) {
-            Log::warning('[forum] makepost bonus failed: '.$e->getMessage());
+            Log::warning('[forum] '.$kind.' bonus failed: '.$e->getMessage());
         }
     }
 

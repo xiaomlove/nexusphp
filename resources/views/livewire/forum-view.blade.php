@@ -11,16 +11,32 @@
                 <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $forum->description }}</p>
             @endif
         </div>
-        <a
-            href="/forums.php?action=viewforum&forumid={{ $forum->id }}"
-            class="inline-flex items-center gap-1 self-start rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-            title="Open the legacy forum page (post, reply, edit)"
-        >
-            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14L21 3m0 0v7m0-7h-7M5 5h6v6"/>
-            </svg>
-            Post / reply
-        </a>
+        <div class="flex flex-col gap-2 self-start sm:flex-row">
+            @php($_user = auth('nexus-web')->user())
+            @php($_canCreate = $_user && (int) ($_user->class ?? 0) >= max((int) $forum->minclassread, (int) $forum->minclasswrite, (int) $forum->minclasscreate))
+            @if ($_canCreate)
+                <a
+                    href="/forum/{{ $forum->id }}/new"
+                    class="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    title="Start a new topic in this forum"
+                >
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    New topic
+                </a>
+            @endif
+            <a
+                href="/forums.php?action=viewforum&forumid={{ $forum->id }}"
+                class="inline-flex items-center gap-1 rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                title="Open the legacy forum page (edit, moderation tools)"
+            >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14L21 3m0 0v7m0-7h-7M5 5h6v6"/>
+                </svg>
+                Legacy view
+            </a>
+        </div>
     </div>
 
     <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
