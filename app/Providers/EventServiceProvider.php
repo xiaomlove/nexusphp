@@ -2,11 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\ForumPostAdded;
+use App\Events\MessageCreated;
 use App\Events\SeedBoxRecordUpdated;
 use App\Events\TorrentCreated;
 use App\Events\TorrentDeleted;
 use App\Events\TorrentUpdated;
-use App\Events\UserDeleted;
 use App\Events\UserDisabled;
 use App\Listeners\ClearTorrentCache;
 use App\Listeners\DeductUserBonusWhenTorrentDeleted;
@@ -15,9 +16,10 @@ use App\Listeners\FetchTorrentPTGen;
 use App\Listeners\RemoveOauthTokens;
 use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SendEmailNotificationWhenTorrentCreated;
+use App\Listeners\SendPushOnForumPost;
+use App\Listeners\SendPushOnMessage;
 use App\Listeners\SyncTorrentToElasticsearch;
 use App\Listeners\SyncTorrentToMeilisearch;
-use App\Listeners\TestTorrentUpdated;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -56,6 +58,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserDisabled::class => [
             RemoveOauthTokens::class,
+        ],
+        MessageCreated::class => [
+            SendPushOnMessage::class,
+        ],
+        ForumPostAdded::class => [
+            SendPushOnForumPost::class,
         ],
     ];
 
