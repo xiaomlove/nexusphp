@@ -212,10 +212,10 @@ jobs:
   e2e:
     name: E2E (Playwright, Chromium)
     runs-on: ubuntu-latest
-    # Phase 1 lands the foundation + first 2 smoke specs. Tracker config
-    # for legacy/Livewire pages still has rough edges, so the job is
-    # advisory until the full smoke suite is green.
-    continue-on-error: true
+    # The job is required to pass — Phase 6 closed out the suite at
+    # 63 specs all green on this single-threaded php -S setup. The
+    # `continue-on-error: true` flag from the Phase 1 priming days has
+    # been removed.
     services:
       mysql:
         image: mysql:8.0
