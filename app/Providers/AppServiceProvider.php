@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\Legacy\LegacyPageController;
 use App\Legacy\LegacyContext;
 use Filament\Facades\Filament;
 use Filament\Support\Assets\Css;
@@ -29,6 +30,16 @@ class AppServiceProvider extends ServiceProvider
         // when it needs to read legacy-domain state (current $CURUSER,
         // settings, ...).
         $this->app->singleton(LegacyContext::class);
+
+        // The "wrap" half of the Phase 1 seam — runs a legacy
+        // public/<page>.php through the Laravel pipeline. Constructor
+        // injection picks up `LegacyContext` automatically; the
+        // `legacyRoot` argument is the only piece the container can't
+        // resolve on its own, so we bind it here once.
+        $this->app->bind(LegacyPageController::class, fn ($app) => new LegacyPageController(
+            $app->make(LegacyContext::class),
+            base_path('public'),
+        ));
 
         // Telescope is only registered when explicitly enabled, since it
         // captures every request/query/job and is intended for local and
