@@ -81,6 +81,60 @@
         @endif
     </div>
 
+    @if ($canModerate ?? false)
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
+            <div class="flex flex-wrap items-end gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">Bulk actions</span>
+                <span class="text-xs text-amber-800 dark:text-amber-200">{{ count($selectedTopicIds) }} selected</span>
+                <label class="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-200">
+                    Action
+                    <select wire:model.live="bulkAction" class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-zinc-900 shadow-sm dark:border-amber-700 dark:bg-zinc-900 dark:text-zinc-100">
+                        <option value="">— pick —</option>
+                        <option value="sticky-on">Pin</option>
+                        <option value="sticky-off">Unpin</option>
+                        <option value="lock-on">Lock</option>
+                        <option value="lock-off">Unlock</option>
+                        <option value="hlcolor">Set highlight…</option>
+                        <option value="move">Move to forum…</option>
+                    </select>
+                </label>
+                @if ($bulkAction === 'hlcolor')
+                    <label class="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-200">
+                        Highlight
+                        <select wire:model="bulkHlColor" class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-zinc-900 shadow-sm dark:border-amber-700 dark:bg-zinc-900 dark:text-zinc-100">
+                            @foreach ($hlColors as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
+                @if ($bulkAction === 'move')
+                    <label class="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-200">
+                        Destination
+                        <select wire:model="bulkTargetForumId" class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-zinc-900 shadow-sm dark:border-amber-700 dark:bg-zinc-900 dark:text-zinc-100">
+                            <option value="0">— pick a forum —</option>
+                            @foreach ($availableForums as $f)
+                                <option value="{{ $f->id }}">{{ $f->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
+                <button
+                    type="button"
+                    wire:click="applyBulkAction"
+                    class="rounded bg-amber-600 px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    @disabled(empty($selectedTopicIds) || $bulkAction === '')
+                >Apply</button>
+            </div>
+            @if ($bulkNotice)
+                <p class="mt-2 text-xs text-emerald-700 dark:text-emerald-300">{{ $bulkNotice }}</p>
+            @endif
+            @if ($bulkError)
+                <p class="mt-2 text-xs text-rose-700 dark:text-rose-300">{{ $bulkError }}</p>
+            @endif
+        </div>
+    @endif
+
     @if ($topics->isEmpty())
         <div class="rounded-xl border border-dashed border-zinc-300 bg-white p-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
             <p class="text-base font-medium text-zinc-700 dark:text-zinc-300">No topics found.</p>
@@ -102,6 +156,15 @@
                     <li class="grid grid-cols-12 items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                         <div class="col-span-12 sm:col-span-6">
                             <div class="flex items-start gap-2">
+                                @if ($canModerate ?? false)
+                                    <input
+                                        type="checkbox"
+                                        wire:model.live="selectedTopicIds"
+                                        value="{{ $topic->id }}"
+                                        class="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                                        title="Select for bulk moderation"
+                                    >
+                                @endif
                                 @if ($isSticky)
                                     <span class="mt-0.5 inline-flex shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" title="Pinned">Pin</span>
                                 @endif

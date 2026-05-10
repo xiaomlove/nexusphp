@@ -567,6 +567,22 @@ final class ForumPostService
     }
 
     /**
+     * Public predicate: can $userId moderate any topic in $forumId
+     * (sticky / lock / color / move on the whole forum)? True for
+     * forum moderators and postmanage holders.
+     */
+    public function canModerateForum(int $forumId, int $userId): bool
+    {
+        $user = User::query()->find($userId);
+        if (! $user) {
+            return false;
+        }
+
+        return $this->isForumModerator($forumId, (int) $user->id)
+            || $this->userCan($user, 'postmanage');
+    }
+
+    /**
      * Public predicate: can $userId moderate $topicId (sticky / lock /
      * color / move)? True for forum moderators and postmanage holders.
      */
