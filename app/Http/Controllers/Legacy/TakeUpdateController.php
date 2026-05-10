@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Legacy;
 
 use App\Http\Controllers\Controller;
 use App\Legacy\LegacyContext;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Nexus\Database\NexusDB;
@@ -25,9 +26,12 @@ use Nexus\Database\NexusDB;
  *   - Guest → middleware `auth.nexus:nexus-web` redirects to
  *     `login.php?returnto=...`.
  *   - Authenticated but lacking `staffmem` permission → 403 (the
- *     `user_can('staffmem', true)` call throws
- *     `InsufficientPermissionException` outside the legacy
- *     stderr-die flow; Laravel's exception handler renders the 403).
+ *     legacy `user_can('staffmem', true)` chain raised
+ *     `InsufficientPermissionException`, which the JSON-aware
+ *     exception handler does not always render as a 403; we replace
+ *     the gate with a direct `abort(403)` to keep the contract
+ *     simple and avoid coupling the Phase 2 controller to the
+ *     handler's render registration order).
  *   - Empty / non-array `delreport` → redirect back to `/reports.php`
  *     with a flash error (preserves the legacy "go back" behaviour
  *     without rendering the legacy stderr template).
@@ -48,12 +52,16 @@ class TakeUpdateController extends Controller
             return redirect('/login.php');
         }
 
-        // `user_can()` reads the global $CURUSER for `get_user_id()`.
-        // The Laravel auth middleware does not populate it; mirror
-        // what the legacy `dbconn()` / `loggedinorreturn()` chain
-        // would have done so the permission check sees the right id.
+        // `user_can('staffmem', false)` returns a bool without
+        // throwing the legacy stderr-die exception, so we keep the
+        // permission lookup logic (sysop / staff-member auth + tool
+        // grants) but render the failure case as a plain 403 here.
+        // Setting $CURUSER mirrors what the legacy bootstrap would
+        // have done so `get_user_id()` resolves to the right id.
         $GLOBALS['CURUSER'] = $user->toLegacyArray();
-        user_can('staffmem', true);
+        if ((int) $user->class < User::CLASS_STAFF_LEADER && ! user_can('staffmem')) {
+            abort(403);
+        }
 
         $reports = $request->input('delreport');
         if (! is_array($reports) || $reports === []) {

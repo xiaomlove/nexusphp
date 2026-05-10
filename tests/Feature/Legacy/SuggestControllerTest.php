@@ -62,7 +62,15 @@ class SuggestControllerTest extends FeatureTestCase
         $response = $this->get('/suggest.php?q=anything');
 
         $response->assertOk();
-        $response->assertHeader('Cache-Control', 'no-cache, must-revalidate');
+        // Symfony's `Response` rebuilds `Cache-Control` from the
+        // header bag and may add `private` plus reorder directives;
+        // assert the directives we care about rather than an exact
+        // string match (the legacy script just sent
+        // `no-cache, must-revalidate`, the directive set is what
+        // matters for client-side cache busting).
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-cache', $cacheControl);
+        $this->assertStringContainsString('must-revalidate', $cacheControl);
         $response->assertHeader('Pragma', 'no-cache');
     }
 

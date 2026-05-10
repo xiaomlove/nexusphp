@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Legacy;
 
+use App\Models\User;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
@@ -17,6 +18,20 @@ class PreviewControllerTest extends FeatureTestCase
 {
     use CreatesLegacyTestUsers;
 
+    /** `language.id` for English in the seeded `language` table. */
+    private const ENGLISH_LANGUAGE_ID = 6;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // `LogUserIp` middleware reads `$_SERVER['REQUEST_URI']` directly
+        // (not from the Laravel Request object). The test HTTP client does
+        // not populate it, so we seed it manually — same pattern as
+        // ThanksControllerTest.
+        $_SERVER['REQUEST_URI'] = '/preview.php';
+    }
+
     public function test_guest_request_redirects_to_login(): void
     {
         $response = $this->post('/preview.php', ['body' => 'hello']);
@@ -27,7 +42,7 @@ class PreviewControllerTest extends FeatureTestCase
 
     public function test_post_with_body_returns_formatted_comment_table(): void
     {
-        $user = $this->createLegacyUser();
+        $user = $this->createTestUser();
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->post('/preview.php', ['body' => 'hello world']);
@@ -41,7 +56,7 @@ class PreviewControllerTest extends FeatureTestCase
 
     public function test_post_with_empty_body_still_returns_table(): void
     {
-        $user = $this->createLegacyUser();
+        $user = $this->createTestUser();
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->post('/preview.php', ['body' => '']);
@@ -61,7 +76,7 @@ class PreviewControllerTest extends FeatureTestCase
         // accepts both methods because some templates render the
         // preview iframe via GET; in that case the body is read from
         // the query string so the JS is symmetric.
-        $user = $this->createLegacyUser();
+        $user = $this->createTestUser();
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->get('/preview.php?body=greetings');
@@ -69,5 +84,19 @@ class PreviewControllerTest extends FeatureTestCase
         $response->assertOk();
         $body = (string) $response->getContent();
         $this->assertStringContainsString('greetings', $body);
+    }
+
+    /**
+     * The default `createLegacyUser` does not set `lang`, but the
+     * `Locale` middleware that runs after `auth.nexus` reads
+     * `$user->language?->site_lang_folder`; without an English row,
+     * `Carbon::setLocale(null)` crashes the request. Pin a known
+     * language row id so the middleware stack stays happy.
+     */
+    private function createTestUser(): User
+    {
+        return $this->createLegacyUser(
+            overrides: ['lang' => self::ENGLISH_LANGUAGE_ID],
+        );
     }
 }

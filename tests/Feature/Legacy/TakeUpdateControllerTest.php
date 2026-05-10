@@ -63,6 +63,11 @@ class TakeUpdateControllerTest extends FeatureTestCase
 
     public function test_regular_user_gets_403(): void
     {
+        // Pinned `class` overrides the staff default but keeps the
+        // English `lang` from `createStaffUser` so the middleware
+        // stack still resolves the user's locale (if `lang` is null
+        // the `Locale` middleware bails on `Carbon::setLocale(null)`
+        // and we never reach the controller's permission gate).
         $user = $this->createStaffUser(['class' => User::CLASS_USER]);
         $this->actingAs($user, 'nexus-web');
 

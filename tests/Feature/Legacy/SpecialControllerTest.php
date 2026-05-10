@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Legacy;
 
+use App\Models\User;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
@@ -16,6 +17,20 @@ class SpecialControllerTest extends FeatureTestCase
 {
     use CreatesLegacyTestUsers;
 
+    /** `language.id` for English in the seeded `language` table. */
+    private const ENGLISH_LANGUAGE_ID = 6;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // `LogUserIp` middleware reads `$_SERVER['REQUEST_URI']` directly
+        // (not from the Laravel Request object). The test HTTP client does
+        // not populate it, so we seed it manually — same pattern as
+        // ThanksControllerTest.
+        $_SERVER['REQUEST_URI'] = '/special.php';
+    }
+
     public function test_guest_request_redirects_to_login(): void
     {
         $response = $this->get('/special.php');
@@ -26,7 +41,7 @@ class SpecialControllerTest extends FeatureTestCase
 
     public function test_authenticated_request_redirects_to_torrents_special(): void
     {
-        $user = $this->createLegacyUser();
+        $user = $this->createTestUser();
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->get('/special.php');
@@ -36,7 +51,7 @@ class SpecialControllerTest extends FeatureTestCase
 
     public function test_authenticated_request_preserves_extra_query_string(): void
     {
-        $user = $this->createLegacyUser();
+        $user = $this->createTestUser();
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->get('/special.php?cat=1&search=foo');
@@ -47,5 +62,19 @@ class SpecialControllerTest extends FeatureTestCase
         $this->assertStringContainsString('special=1', $location);
         $this->assertStringContainsString('cat=1', $location);
         $this->assertStringContainsString('search=foo', $location);
+    }
+
+    /**
+     * The default `createLegacyUser` does not set `lang`, but the
+     * `Locale` middleware that runs after `auth.nexus` reads
+     * `$user->language?->site_lang_folder`; without an English row,
+     * `Carbon::setLocale(null)` crashes the request. Pin a known
+     * language row id so the middleware stack stays happy.
+     */
+    private function createTestUser(): User
+    {
+        return $this->createLegacyUser(
+            overrides: ['lang' => self::ENGLISH_LANGUAGE_ID],
+        );
     }
 }
