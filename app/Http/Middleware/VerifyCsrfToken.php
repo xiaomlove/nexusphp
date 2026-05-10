@@ -26,6 +26,7 @@ class VerifyCsrfToken extends Middleware
         // PHP-FPM scripts.
         'thanks.php',
         'preview.php',
+        'takecontact.php',
         'takeupdate.php',
     ];
 }

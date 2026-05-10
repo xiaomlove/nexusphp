@@ -51,6 +51,10 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    location = /takecontact.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /takeupdate.php {
         try_files /nonexistent @nexus_app;
     }
