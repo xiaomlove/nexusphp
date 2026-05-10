@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Forum;
 use App\Models\Post;
 use App\Models\Topic;
+use App\Support\BbcodeRenderer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -125,16 +126,13 @@ class TopicView extends Component
     }
 
     /**
-     * Render a post body as escaped HTML with preserved line breaks.
-     * Full BBCode rendering is the next PR's responsibility.
+     * Render a post body as safe HTML through {@see BbcodeRenderer}.
+     * Unsupported tags (hide, spoiler, attach, youtube, video) are left
+     * as escaped literal text — users can click the legacy chip in the
+     * header to see the full server-side render.
      */
     public static function renderBody(?string $body): string
     {
-        $body = (string) ($body ?? '');
-        if ($body === '') {
-            return '';
-        }
-
-        return nl2br(e($body), false);
+        return BbcodeRenderer::toHtml($body);
     }
 }
