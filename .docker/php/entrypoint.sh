@@ -85,6 +85,24 @@ if [ "$SERVICE_NAME" = "php" ]; then
       echo_success "vendor autoload file: $VENDOR_AUTOLOAD_FILE already exists, skip run composer install ..."
     fi
 
+    # Bump PHP-FPM worker pool for the local/E2E stack. The upstream
+    # default `pm.max_children = 5` saturates under 2-worker Playwright
+    # runs (each browser context fires 5+ concurrent asset requests),
+    # which surfaces as truncated HTML responses on /login.php and
+    # /usercp.php. 20 children is overkill for one developer but keeps
+    # parallel E2E suites reliable. Production deployments override
+    # this image / config and are unaffected.
+    FPM_CONF="/usr/local/etc/php-fpm.d/www.conf"
+    if [ -f "$FPM_CONF" ]; then
+      sed -i \
+        -e 's|^pm.max_children\s*=.*|pm.max_children = 20|' \
+        -e 's|^pm.start_servers\s*=.*|pm.start_servers = 4|' \
+        -e 's|^pm.min_spare_servers\s*=.*|pm.min_spare_servers = 2|' \
+        -e 's|^pm.max_spare_servers\s*=.*|pm.max_spare_servers = 8|' \
+        "$FPM_CONF"
+      echo_info "PHP-FPM pool tuned: max_children=20 start=4 spare=2..8"
+    fi
+
     # 最后启动 PHP-FPM
     exec php-fpm
 elif [ "$SERVICE_NAME" = "queue" ]; then
