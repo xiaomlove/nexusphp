@@ -550,6 +550,33 @@ final class ForumPostService
     }
 
     /**
+     * Revert a post to a previous snapshot. The current state is
+     * captured into a new {@see PostEdit} row first (so revert is
+     * itself reversible), then the snapshot's body / subject is
+     * written back via the regular {@see editPost()} pathway —
+     * permission checks, cache busts, and the edited-by PM all
+     * fire normally.
+     *
+     * @return array{post:Post,topic:Topic,forum:Forum}
+     *
+     * @throws ForumReplyException
+     */
+    public function revertPost(int $postId, int $editorId, int $editId): array
+    {
+        $snapshot = PostEdit::query()->where('id', $editId)->where('postid', $postId)->first();
+        if (! $snapshot) {
+            throw new ForumReplyException('Unknown edit history entry.');
+        }
+        $body = (string) ($snapshot->body_before ?? '');
+        $subject = $snapshot->subject_before !== null ? (string) $snapshot->subject_before : null;
+        if ($body === '') {
+            throw new ForumReplyException('Snapshot has no body to revert to.');
+        }
+
+        return $this->editPost($postId, $editorId, $body, $subject);
+    }
+
+    /**
      * Return the edit history for a post, newest first. Visible to
      * anyone who can view the post — the snapshots are pre-edit
      * bodies that were already public at the moment of the edit.
