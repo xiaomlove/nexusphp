@@ -94,7 +94,7 @@
                                 @endif
                                 <div class="min-w-0">
                                     <a
-                                        href="/forums.php?action=viewtopic&topicid={{ $topic->id }}"
+                                        href="/forum/{{ $forum->id }}/topic/{{ $topic->id }}"
                                         class="block text-sm font-semibold text-zinc-900 hover:text-primary-600 dark:text-zinc-100 dark:hover:text-primary-400"
                                     >
                                         <span class="line-clamp-2">{{ $topic->subject }}</span>

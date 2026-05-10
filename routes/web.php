@@ -8,6 +8,7 @@ use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
 use App\Livewire\ForumIndex;
 use App\Livewire\ForumView;
+use App\Livewire\TopicView;
 use App\Livewire\TorrentBrowse;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,10 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/forum/{forum}', ForumView::class)
         ->whereNumber('forum')
         ->name('forum.view');
+    Route::get('/forum/{forum}/topic/{topic}', TopicView::class)
+        ->whereNumber('forum')
+        ->whereNumber('topic')
+        ->name('forum.topic');
 
     Route::post('/api/push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/api/push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
