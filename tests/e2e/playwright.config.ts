@@ -44,21 +44,43 @@ export default defineConfig({
 
     projects: [
         {
-            // Default project — every spec except `destructive`-tagged
-            // ones (currently only the rate-limit spec, which bans the
-            // requesting IP and would knock out parallel /login.php
-            // smokes). Tests run with `fullyParallel: true` here.
+            // Default project — every spec EXCEPT the `tests/e2e/critical/`
+            // suite. Runs `fullyParallel: true` and is where 95% of the
+            // suite lives (smoke + behavior + admin + announce).
             name: 'chromium',
-            testIgnore: ['**/critical/rate-limit.spec.ts'],
+            testIgnore: ['**/critical/**'],
             use: { ...devices['Desktop Chrome'] },
         },
         {
-            // Destructive project — runs after `chromium` finishes with
-            // a single worker. Specs in here can leave global state
-            // dirty (e.g. fill the loginattempts table) as long as they
-            // clean up in their own `afterAll` hooks.
-            name: 'destructive',
-            testMatch: ['**/critical/rate-limit.spec.ts'],
+            // Critical project — runs every `tests/e2e/critical/*.spec.ts`
+            // serially (1 worker) AFTER `chromium` finishes.
+            //
+            // Two reasons to isolate critical specs from parallel
+            // execution:
+            //
+            //   1. `rate-limit.spec.ts` deliberately fills the
+            //      `loginattempts` table for the runner's IP. If a
+            //      `/login.php` smoke spec races with it on the same IP
+            //      the smoke observes a "Login Locked!" banner and
+            //      fails. Project dependencies ensure chromium has
+            //      already finished its login traffic.
+            //
+            //   2. `install-locked.spec.ts` and
+            //      `passkey-webauthn.spec.ts` exercise heavy legacy
+            //      pages (`/install/install.php` and
+            //      `/usercp.php?action=security`) that the CI php -S
+            //      single-threaded webserver struggles to serve under
+            //      Playwright's 2-worker concurrent load — responses
+            //      get truncated mid-stream and the assertions about
+            //      late-rendered DOM (`id="passkey_create"`,
+            //      "Locked!" banner) flake. Serialising them
+            //      sidesteps the contention.
+            //
+            // Specs in here can leave global state dirty (e.g. fill the
+            // `loginattempts` table) as long as they clean up in their
+            // own `afterAll` hooks.
+            name: 'critical',
+            testMatch: ['**/critical/**/*.spec.ts'],
             dependencies: ['chromium'],
             fullyParallel: false,
             workers: 1,
