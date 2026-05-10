@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Tiny "legacy page" fixture used by LegacyPageControllerTest.
  *

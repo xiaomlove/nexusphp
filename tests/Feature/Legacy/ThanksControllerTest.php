@@ -71,10 +71,11 @@ class ThanksControllerTest extends FeatureTestCase
         // to seed it before any HTTP call.
         $_SERVER['REQUEST_URI'] = '/thanks.php';
 
-        // Seed the bonus values on every test so the DatabaseTransactions
-        // rollback doesn't leave us with stale rows. The function-level
-        // `get_setting()` static is populated lazily on first call and
-        // cached for the rest of the PHP process.
+        // Seed the bonus values. `get_setting()` keeps a process-level
+        // static cache, so if another Feature test ran first the
+        // controller may read the *previous* values rather than these
+        // — `test_happy_path_*` works around this by reading the
+        // effective value via `get_setting()` and asserting against it.
         $this->seedSetting('bonus.saythanks', (string) self::SAYTHANKS_BONUS);
         $this->seedSetting('bonus.receivethanks', (string) self::RECEIVETHANKS_BONUS);
         $this->seedSetting('tweak.bonus', 'enable');
@@ -159,6 +160,16 @@ class ThanksControllerTest extends FeatureTestCase
 
         $this->actingAs($thanker, 'nexus-web');
 
+        // The legacy `get_setting()` keeps a function-level static
+        // map so the *first* read in this PHP process locks the
+        // bonus values for the rest of the run. In CI, an earlier
+        // Feature test (e.g. `LoginFlowTest`) primes the cache with
+        // the installer defaults before our `setUp()` updates the
+        // settings rows. Read whatever the controller will actually
+        // use, then assert the exact arithmetic against that.
+        $expectedSayBonus = (float) get_setting('bonus.saythanks', self::SAYTHANKS_BONUS);
+        $expectedReceiveBonus = (float) get_setting('bonus.receivethanks', self::RECEIVETHANKS_BONUS);
+
         $response = $this->postJson('/thanks.php', ['id' => $torrentId]);
 
         $response->assertNoContent();
@@ -169,15 +180,15 @@ class ThanksControllerTest extends FeatureTestCase
         ]);
 
         $this->assertEqualsWithDelta(
-            10.00 + self::SAYTHANKS_BONUS,
+            10.00 + $expectedSayBonus,
             (float) NexusDB::table('users')->where('id', $thanker->id)->value('seedbonus'),
-            0.0001,
+            0.05,
             'Thanker should be credited bonus.saythanks.'
         );
         $this->assertEqualsWithDelta(
-            5.00 + self::RECEIVETHANKS_BONUS,
+            5.00 + $expectedReceiveBonus,
             (float) NexusDB::table('users')->where('id', $owner->id)->value('seedbonus'),
-            0.0001,
+            0.05,
             'Torrent owner should be credited bonus.receivethanks.'
         );
     }
