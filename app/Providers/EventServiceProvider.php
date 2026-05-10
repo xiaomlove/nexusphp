@@ -7,6 +7,7 @@ use App\Events\MessageCreated;
 use App\Events\SeedBoxRecordUpdated;
 use App\Events\TorrentCreated;
 use App\Events\TorrentDeleted;
+use App\Events\TorrentPromotionChanged;
 use App\Events\TorrentUpdated;
 use App\Events\UserDisabled;
 use App\Listeners\ClearTorrentCache;
@@ -17,6 +18,7 @@ use App\Listeners\RemoveOauthTokens;
 use App\Listeners\RemoveSeedBoxRecordCache;
 use App\Listeners\SendEmailNotificationWhenTorrentCreated;
 use App\Listeners\SendPushOnForumPost;
+use App\Listeners\SendPushOnFreeEvent;
 use App\Listeners\SendPushOnMention;
 use App\Listeners\SendPushOnMessage;
 use App\Listeners\SyncTorrentToElasticsearch;
@@ -67,6 +69,9 @@ class EventServiceProvider extends ServiceProvider
         ForumPostAdded::class => [
             SendPushOnForumPost::class,
             [SendPushOnMention::class, 'handleForumPost'],
+        ],
+        TorrentPromotionChanged::class => [
+            SendPushOnFreeEvent::class,
         ],
     ];
 
