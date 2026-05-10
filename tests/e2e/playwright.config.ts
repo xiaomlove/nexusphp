@@ -44,7 +44,24 @@ export default defineConfig({
 
     projects: [
         {
+            // Default project — every spec except `destructive`-tagged
+            // ones (currently only the rate-limit spec, which bans the
+            // requesting IP and would knock out parallel /login.php
+            // smokes). Tests run with `fullyParallel: true` here.
             name: 'chromium',
+            testIgnore: ['**/critical/rate-limit.spec.ts'],
+            use: { ...devices['Desktop Chrome'] },
+        },
+        {
+            // Destructive project — runs after `chromium` finishes with
+            // a single worker. Specs in here can leave global state
+            // dirty (e.g. fill the loginattempts table) as long as they
+            // clean up in their own `afterAll` hooks.
+            name: 'destructive',
+            testMatch: ['**/critical/rate-limit.spec.ts'],
+            dependencies: ['chromium'],
+            fullyParallel: false,
+            workers: 1,
             use: { ...devices['Desktop Chrome'] },
         },
     ],
