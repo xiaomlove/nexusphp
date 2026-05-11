@@ -154,7 +154,7 @@
 
         </div>
 
-        <details class="mt-4 group" @if ($advancedOpen) open @endif data-testid="advanced-filters">
+        <details data-testid="advanced-filters" class="mt-4 group" @if ($advancedOpen) open @endif>
             <summary class="cursor-pointer select-none text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                 <span class="inline-flex items-center gap-1">
                     <span class="transition-transform group-open:rotate-90">▸</span>

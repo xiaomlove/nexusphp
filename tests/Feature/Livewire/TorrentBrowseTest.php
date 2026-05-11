@@ -439,6 +439,23 @@ class TorrentBrowseTest extends FeatureTestCase
         $this->assertNotContains($wrongMediumId, $ids);
     }
 
+    public function test_range_filter_hydrates_from_query_string_on_mount(): void
+    {
+        $user = $this->createUser();
+
+        $component = Livewire::actingAs($user, 'nexus-web')
+            ->withQueryParams([
+                'size_begin' => '4',
+                'seeders_end' => '0',
+                'source' => '7',
+            ])
+            ->test(TorrentBrowse::class);
+
+        $this->assertSame(4, $component->get('sizeMin'));
+        $this->assertSame(0, $component->get('seedersMax'));
+        $this->assertSame(7, $component->get('source'));
+    }
+
     public function test_subcategory_options_are_mode_aware(): void
     {
         $user = $this->createUser();
