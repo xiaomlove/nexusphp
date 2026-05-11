@@ -1,4 +1,56 @@
 <?php
+/*
+ * Strangler Fig flip (Phase 3.3 / Modern UI plan A2) — the canonical
+ * browse URL is now the Livewire `/browse` page. Plain `/torrents.php`
+ * hits are 302-bounced there, preserving the rest of the query string
+ * so existing bookmarks / external links keep working with no manual
+ * edits (`TorrentBrowse` hydrates `search`, `category`, `sort`,
+ * `spstate`, `incldead`, `tag_id` etc. directly from #[Url] params).
+ *
+ * Three escape hatches keep the legacy page reachable:
+ *
+ *   - `?legacy=1` — explicit opt-out, mirrors `/browse?legacy=1`
+ *     which already bounces back here. This is the rollback canary
+ *     documented in `docs/legacy-strategy.md`.
+ *   - `?ajax=1`   — the search-as-you-type fragment endpoint (PR #59).
+ *     The inline live-search JS at the bottom of this file builds
+ *     URLs as `?ajax=1&search=…` and `innerHTML='…'`s the result
+ *     into `#torrents-results`; redirecting would break that swap.
+ *   - `?bookmarks=1` — the bookmark-list tab (PR #25). The new
+ *     /browse component exposes the equivalent via
+ *     `?bookmarked=only` but the legacy URL contract is widely
+ *     linked from `usercp.php` and is kept verbatim until the next
+ *     migration step rewires those links.
+ */
+if (!isset($_GET['legacy']) && !isset($_GET['ajax']) && !isset($_GET['bookmarks'])) {
+    $params = $_GET;
+
+    // Legacy `cat=N` → TorrentBrowse `category=N`.
+    if (isset($params['cat'])) {
+        $params['category'] = $params['cat'];
+        unset($params['cat']);
+    }
+
+    // Legacy `incldead` is 0/1/2 (int); TorrentBrowse uses strings.
+    if (isset($params['incldead'])) {
+        $map = ['0' => null, '1' => 'dead', '2' => 'all'];
+        $val = (string) $params['incldead'];
+        $params['incldead'] = $map[$val] ?? null;
+        if ($params['incldead'] === null) {
+            unset($params['incldead']);
+        }
+    }
+
+    // Legacy `spstate=0` means "all" (the default) — drop it.
+    if (isset($params['spstate']) && $params['spstate'] === '0') {
+        unset($params['spstate']);
+    }
+
+    $qs = http_build_query($params);
+    $location = '/browse' . ($qs !== '' ? '?' . $qs : '');
+    header('Location: ' . $location, true, 302);
+    exit;
+}
 require_once("../include/bittorrent.php");
 dbconn(true);
 require_once(get_langfile_path('torrents.php'));

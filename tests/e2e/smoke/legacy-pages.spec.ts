@@ -33,9 +33,9 @@ const PAGES: LegacyPageCase[] = [
         contains: /NexusPHP\s*::\s*Home/i,
     },
     {
-        description: 'torrents.php (legacy torrent list)',
+        description: 'torrents.php now 302→/browse (Strangler Fig flip)',
         url: '/torrents.php',
-        contains: /NexusPHP\s*::\s*Torrents/i,
+        contains: /Browse torrents/i,
     },
     {
         description: 'details.php (no-torrent error path)',
