@@ -2,13 +2,12 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Exam;
-use App\Models\User;
-use Carbon\Carbon;
+use App\Models\ExamUser;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\ExamUser
+ * @mixin ExamUser
  */
 class ExamUserResource extends JsonResource
 {
@@ -17,7 +16,7 @@ class ExamUserResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -39,6 +38,4 @@ class ExamUserResource extends JsonResource
             'exam' => new ExamResource($this->whenLoaded('exam')),
         ];
     }
-
-
 }

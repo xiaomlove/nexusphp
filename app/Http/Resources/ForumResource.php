@@ -2,17 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Forum;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Forum
+ * @mixin Forum
  */
 class ForumResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -23,7 +25,7 @@ class ForumResource extends JsonResource
             'description' => $this->description,
             'postcount' => $this->postcount,
             'topiccount' => $this->topiccount,
-            'moderators' => UserResource::collection($this->whenLoaded("moderators")),
+            'moderators' => UserResource::collection($this->whenLoaded('moderators')),
         ];
     }
 }

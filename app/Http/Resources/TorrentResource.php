@@ -2,15 +2,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Attachment;
 use App\Models\SearchBox;
-use App\Models\Torrent;
 use App\Repositories\TorrentRepository;
-use Carbon\CarbonInterface;
-use Elasticsearch\Endpoints\Search;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
-use Nexus\Nexus;
 use Illuminate\Http\Request;
 
 class TorrentResource extends BaseResource
@@ -22,7 +15,7 @@ class TorrentResource extends BaseResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -31,7 +24,7 @@ class TorrentResource extends BaseResource
             'id' => $this->id,
             'name' => $this->name,
             'filename' => $this->filename,
-            'hash' => preg_replace_callback('/./s', [$this, "hex_esc"], $this->info_hash),
+            'hash' => preg_replace_callback('/./s', [$this, 'hex_esc'], $this->info_hash),
             'cover' => $this->cover,
             'small_descr' => $this->small_descr,
             'category' => $this->category,
@@ -88,18 +81,18 @@ class TorrentResource extends BaseResource
             }
         }
         $out['sub_categories'] = empty($subCategories) ? null : $subCategories;
+
         return $out;
 
     }
-
 
     protected function getResourceName(): string
     {
         return self::NAME;
     }
 
-    protected function hex_esc($matches) {
-        return sprintf("%02x", ord($matches[0]));
+    protected function hex_esc($matches)
+    {
+        return sprintf('%02x', ord($matches[0]));
     }
-
 }
