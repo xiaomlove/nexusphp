@@ -2607,8 +2607,44 @@ foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
     }
 </script>
 <script type="text/javascript" src="vendor/layer-v3.5.1/layer/layer.js<?php echo $cssupdatedate?>"></script>
+<?php
+// Reverb / Echo bootstrap. Renders only when REVERB_APP_KEY is set so
+// pages keep working unchanged when websockets aren't configured. echo.js
+// itself is a no-op without window.__REVERB__.key + .host. Same pattern
+// as public/shoutbox.php.
+$reverbKey = (string) (env('REVERB_APP_KEY') ?: '');
+if ($reverbKey !== '') {
+    $reverbConfig = [
+        'key' => $reverbKey,
+        'host' => (string) (env('REVERB_HOST') ?: ($_SERVER['HTTP_HOST'] ?? '')),
+        'port' => (int) (env('REVERB_PORT') ?: 8080),
+        'scheme' => (string) (env('REVERB_SCHEME') ?: 'http'),
+    ];
+    $reverbBundleUrl = '';
+    $manifestPath = dirname(__DIR__).'/public/build/manifest.json';
+    if (is_file($manifestPath)) {
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+        if (isset($manifest['resources/js/echo.js']['file'])) {
+            $reverbBundleUrl = '/build/'.$manifest['resources/js/echo.js']['file'];
+        }
+    }
+    ?>
+    <script>window.__REVERB__ = <?php echo json_encode($reverbConfig); ?>;</script>
+    <?php if ($reverbBundleUrl !== '') { ?>
+    <script type="module" src="<?php echo htmlspecialchars($reverbBundleUrl); ?>"></script>
+    <?php } ?>
+<?php } ?>
 </head>
-<body>
+<body<?php
+$bodyAttrs = '';
+if (!empty($CURUSER['id'])) {
+    $bodyAttrs .= ' data-notify-user-id="'.(int) $CURUSER['id'].'"';
+}
+if (!empty($GLOBALS['REVERB_TORRENT_PEERS_ID'])) {
+    $bodyAttrs .= ' data-torrent-peers-id="'.(int) $GLOBALS['REVERB_TORRENT_PEERS_ID'].'"';
+}
+echo $bodyAttrs;
+?>>
 <table class="head" cellspacing="0" cellpadding="0" align="center" style="width: <?php echo isset($GLOBALS['CURUSER']) ? CONTENT_WIDTH + 28.66 : CONTENT_WIDTH ?>px">
 	<tr>
 		<td class="clear">

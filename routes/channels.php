@@ -16,3 +16,11 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+/*
+ * Per-user notification stream. Used by App\Events\NotificationReceived
+ * to push new-PM badges / toasts to a single user's open tabs.
+ */
+Broadcast::channel('notifications.user.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
