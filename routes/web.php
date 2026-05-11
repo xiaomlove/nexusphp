@@ -15,9 +15,14 @@ use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\OauthController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
+use App\Livewire\ForumIndex;
+use App\Livewire\ForumView;
+use App\Livewire\NewTopicForm;
+use App\Livewire\TopicView;
 use App\Livewire\TorrentBrowse;
 use Illuminate\Support\Facades\Route;
 
@@ -119,6 +124,22 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * default `location ~* \.php$` → `@nexus_app` rewrite).
      */
     Route::get('/moresmilies.php', MoreSmiliesController::class)->name('legacy.moresmilies');
+
+    Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
+    Route::get('/forum', ForumIndex::class)->name('forum.index');
+    Route::get('/forum/{forum}', ForumView::class)
+        ->whereNumber('forum')
+        ->name('forum.view');
+    Route::get('/forum/{forum}/new', NewTopicForm::class)
+        ->whereNumber('forum')
+        ->name('forum.topic.new');
+    Route::get('/forum/{forum}/topic/{topic}', TopicView::class)
+        ->whereNumber('forum')
+        ->whereNumber('topic')
+        ->name('forum.topic');
+
+    Route::post('/api/push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('/api/push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {

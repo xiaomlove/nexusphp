@@ -60,6 +60,7 @@
         "lbuchs/webauthn": "^2.2",
         "league/flysystem-sftp-v3": "^3.0",
         "meilisearch/meilisearch-php": "^1.0",
+        "minishlink/web-push": "^10.0",
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",
         "rhilip/bencode": "^2.5.0",
