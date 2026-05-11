@@ -5,6 +5,9 @@ namespace App\Http\Resources;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\Comment
+ */
 class CommentResource extends JsonResource
 {
     /**

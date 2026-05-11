@@ -7,6 +7,9 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\ExamUser
+ */
 class ExamUserResource extends JsonResource
 {
     public $preserveKeys = true;

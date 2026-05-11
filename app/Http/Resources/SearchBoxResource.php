@@ -6,6 +6,9 @@ use App\Models\SearchBox;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\SearchBox
+ */
 class SearchBoxResource extends JsonResource
 {
     /**

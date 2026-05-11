@@ -6,6 +6,9 @@ use App\Auth\Permission;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @mixin \App\Models\User
+ */
 class UserResource extends JsonResource
 {
     const NAME = 'user';
