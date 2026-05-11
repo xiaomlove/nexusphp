@@ -1,0 +1,77 @@
+name: PHPUnit nightly (PHP version matrix)
+
+# Runs the PHPUnit Unit suite against the supported PHP versions
+# OTHER than the per-PR pin (PHP 8.3). composer.json declares
+# `"php": ">=8.2 <8.6"` so we exercise 8.2 and 8.4 on a nightly
+# cadence to catch language-level regressions without paying the
+# matrix cost on every PR.
+#
+# Why nightly and not on every PR:
+#
+#   - The Unit suite is pure-PHP logic with no DB/Redis services
+#     attached, and historically the per-version matrix has been a
+#     bring-your-own-noise tier — no Unit test has ever caught a
+#     PHP-version-specific regression that wasn't also caught by
+#     phpstan on the per-PR run.
+#
+#   - PR feedback is faster (2 fewer required checks, 2 fewer
+#     runners spun up) and CI capacity is freed for the slower
+#     Feature / E2E jobs that actually need it.
+#
+#   - PHP 8.3 is still the per-PR pin in
+#     .github/workflows/ci.yml::phpunit, so a green PR run already
+#     proves the Unit suite passes on the version we deploy.
+#
+# Schedule: 04:15 UTC daily — between the cross-browser nightly
+# (04:00) and the Postgres feature nightly (04:30), to spread
+# runner load across the early-morning slot.
+
+on:
+  schedule:
+    - cron: '15 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit-matrix:
+    name: PHPUnit (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One version breaking should NOT mask another version breaking.
+      fail-fast: false
+      matrix:
+        # 8.3 is intentionally omitted — it runs on every PR/push via
+        # .github/workflows/ci.yml::phpunit. This workflow covers the
+        # OTHER supported versions from composer.json.
+        php: ['8.2', '8.4']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: gmp, intl, bcmath, gd, mbstring, redis, pdo_mysql, pdo_pgsql, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php${{ matrix.php }}-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Run PHPUnit (Unit suite)
+        run: vendor/bin/phpunit --testsuite=Unit
