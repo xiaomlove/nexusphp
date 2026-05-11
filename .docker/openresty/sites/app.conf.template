@@ -59,6 +59,26 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #2 — legacy migration routes.
+    location = /logout.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /image.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /bookmark.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    # `confirmemail.php` carries three positional path segments (id /
+    # md5 / email). A prefix match is needed because `location =` only
+    # matches exact URIs.
+    location ^~ /confirmemail.php/ {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }

@@ -28,5 +28,9 @@ class VerifyCsrfToken extends Middleware
         'preview.php',
         'takecontact.php',
         'takeupdate.php',
+        // Phase 2 batch #2: `/logout.php` is `Route::any(...)` so POST
+        // callers (some legacy XHRs) reach it without a CSRF token.
+        // The other batch #2 endpoints are GET-only and not listed.
+        'logout.php',
     ];
 }

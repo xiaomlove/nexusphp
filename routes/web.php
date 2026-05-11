@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthenticateController;
+use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\ConfirmEmailController;
+use App\Http\Controllers\Legacy\ImageCaptchaController;
+use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SpecialController;
@@ -52,6 +56,23 @@ Route::get('/error', [ToolController::class, 'error']);
 // Public, no auth required.
 Route::get('/searchsuggest.php', SearchSuggestController::class)->name('legacy.searchsuggest');
 Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
+
+// Phase 2 batch #2 — public legacy routes (no auth).
+//
+// `/logout.php`: clearing the legacy auth cookie is a guest-safe op.
+// `/image.php`: signup-form CAPTCHA image, served before login.
+// `/bookmark.php`: returns a `failed` token for guests rather than
+//   redirecting — the front-end JS expects a plain-text response.
+// `/confirmemail.php/{id}/{md5}/{email}`: the signed URL is the auth
+//   token; no session cookie is required.
+Route::any('/logout.php', LogoutController::class)->name('legacy.logout');
+Route::get('/image.php', ImageCaptchaController::class)->name('legacy.image');
+Route::get('/bookmark.php', BookmarkController::class)->name('legacy.bookmark');
+Route::get('/confirmemail.php/{id}/{md5}/{email}', ConfirmEmailController::class)
+    ->where('id', '[0-9]+')
+    ->where('md5', '[a-fA-F0-9]{32}')
+    ->where('email', '.*')
+    ->name('legacy.confirmemail');
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
