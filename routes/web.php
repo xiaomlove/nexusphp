@@ -124,7 +124,7 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * default `location ~* \.php$` → `@nexus_app` rewrite).
      */
     Route::get('/moresmilies.php', MoreSmiliesController::class)->name('legacy.moresmilies');
-||||||| c6f42113
+
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
     Route::get('/forum/{forum}', ForumView::class)
