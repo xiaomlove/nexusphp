@@ -6,6 +6,7 @@ use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
+use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SpecialController;
@@ -107,6 +108,17 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::post('/takecontact.php', TakeContactController::class)->name('legacy.takecontact');
 
     Route::post('/takeupdate.php', TakeUpdateController::class)->name('legacy.takeupdate');
+
+    /*
+     * Phase 2 batch #3 — replaces `public/moresmilies.php` (deleted
+     * in this PR). The URL stays `/moresmilies.php` so the legacy
+     * compose helper in `include/functions.php:985` (which calls
+     * `window.open("moresmilies.php?form=...&text=...", ...)`)
+     * keeps opening the popup without template changes. Chrome-less
+     * popup; no companion nginx rule needed (covered by the
+     * default `location ~* \.php$` → `@nexus_app` rewrite).
+     */
+    Route::get('/moresmilies.php', MoreSmiliesController::class)->name('legacy.moresmilies');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
