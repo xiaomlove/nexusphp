@@ -101,6 +101,15 @@ observability — without a single page rewrite.
 - ✅ [`docs/migration-recipe.md`](migration-recipe.md) — concrete
   step-by-step recipe with `logout.php` as the worked example, plus
   a sketch of the in-between `LegacyPageController` wrap pattern.
+- ✅ Phase 2.1.b — `public/cron.php` (13 LOC) deleted, replaced by
+  the `cron:autoclean` Artisan command scheduled `everyMinute()` in
+  `App\Console\Kernel`. The command keeps calling legacy
+  `autoclean()` (so DB-side semantics are identical) but moves the
+  trigger off the public HTTP surface, where any unauthenticated
+  visitor could fire it. This is the pattern for `public/*.php`
+  files that are really *scheduled jobs* hiding behind an HTTP
+  shape — replace with Artisan + schedule, no nginx forward, no
+  Laravel route.
 
 Still to land in Phase 1 (separate PRs, in this order):
 
