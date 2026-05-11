@@ -16,7 +16,13 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         },
-        "files": []
+        "classmap": [
+            "classes/"
+        ],
+        "files": [],
+        "exclude-from-classmap": [
+            "classes/class_cache.php"
+        ]
     },
     "require": {
         "php": ">=8.2 <8.6",
