@@ -83,6 +83,23 @@ class TakeContactControllerTest extends FeatureTestCase
 
     public function test_get_method_is_not_allowed(): void
     {
+        // The legacy `api()` helper (globalfunctions.php:646) ends with
+        // `if (! IN_NEXUS && config('app.debug')) { $results['queries'] = last_query(true); }`,
+        // and `last_query()` caches its `$connection` in a function-level
+        // `static`. The first call across the whole PHPUnit process locks
+        // that static to the *current* test's Laravel `DB::connection()`
+        // instance — which is destroyed and rebuilt between tests, so
+        // every subsequent test that calls Handler with logged queries
+        // hits `quote() on null` when Grammar tries to format the stale
+        // bindings (Pitfall 6 in `docs/migration-recipe.md`).
+        //
+        // We don't need the `queries` field to assert `ret = -1`, so
+        // toggle `app.debug` off for this one test. That short-circuits
+        // the `last_query()` branch in `api()`, leaves the static
+        // uninitialized, and keeps the downstream `ThanksControllerTest`
+        // free to initialize it in its own (fresh) test context.
+        config(['app.debug' => false]);
+
         $user = $this->createUser();
         $this->actingAs($user, 'nexus-web');
 
@@ -212,10 +229,8 @@ class TakeContactControllerTest extends FeatureTestCase
 
     public function test_non_staff_within_flood_window_returns_429(): void
     {
-        $user = $this->createUser([
-            'class' => User::CLASS_USER,
-            'last_staffmsg' => Carbon::now()->subSeconds(10)->toDateTimeString(),
-        ]);
+        $user = $this->createUser(['class' => User::CLASS_USER]);
+        $this->stampLastStaffMsg($user->id, Carbon::now()->subSeconds(10));
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->postJson('/takecontact.php', [
@@ -235,10 +250,8 @@ class TakeContactControllerTest extends FeatureTestCase
 
     public function test_non_staff_outside_flood_window_succeeds(): void
     {
-        $user = $this->createUser([
-            'class' => User::CLASS_USER,
-            'last_staffmsg' => Carbon::now()->subSeconds(120)->toDateTimeString(),
-        ]);
+        $user = $this->createUser(['class' => User::CLASS_USER]);
+        $this->stampLastStaffMsg($user->id, Carbon::now()->subSeconds(120));
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->post('/takecontact.php', [
@@ -255,10 +268,8 @@ class TakeContactControllerTest extends FeatureTestCase
 
     public function test_staff_user_bypasses_flood_window(): void
     {
-        $user = $this->createUser([
-            'class' => (string) self::STAFF_CLASS,
-            'last_staffmsg' => Carbon::now()->subSeconds(2)->toDateTimeString(),
-        ]);
+        $user = $this->createUser(['class' => (string) self::STAFF_CLASS]);
+        $this->stampLastStaffMsg($user->id, Carbon::now()->subSeconds(2));
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->post('/takecontact.php', [
@@ -288,5 +299,20 @@ class TakeContactControllerTest extends FeatureTestCase
         return $this->createLegacyUser(
             overrides: array_merge(['lang' => self::ENGLISH_LANGUAGE_ID], $overrides),
         );
+    }
+
+    /**
+     * Stamp `users.last_staffmsg` directly via the query builder.
+     * `last_staffmsg` is intentionally NOT in `User::$fillable`
+     * (only the cast list), so `User::create([..., 'last_staffmsg' => ...])`
+     * silently drops it. Going through the query builder mirrors how
+     * the controller writes it and keeps the test independent of the
+     * model's mass-assignment guard.
+     */
+    private function stampLastStaffMsg(int $userId, Carbon $when): void
+    {
+        NexusDB::table('users')
+            ->where('id', $userId)
+            ->update(['last_staffmsg' => $when->toDateTimeString()]);
     }
 }
