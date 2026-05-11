@@ -1086,6 +1086,12 @@ if (!$isAjax) {
 	else stdhead($lang_torrents['head_special']);
 	print("<table width=\"97%\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
 
+	if (config('nexus.browse_default_modern', true)) {
+		print('<div style="margin: 0 0 12px; padding: 8px 12px; background: #eef6ff; border-left: 4px solid #2b8aef; font-size: 12px;">');
+		print('Try the new <a href="/browse" style="font-weight: bold;">modern browse</a> &mdash; live filters, IMDB posters, infinite scroll. This legacy page remains available for bookmarks, advanced search, and dead-only filtering.');
+		print('</div>');
+	}
+
 	displayHotAndClassic();
 }
 $searchBoxRightTdStyle = 'padding: 1px;padding-left: 10px;white-space: nowrap';

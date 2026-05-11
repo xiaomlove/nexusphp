@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Auth\Permission;
 use App\Enums\ModelEventEnum;
+use App\Events\TorrentPromotionChanged;
 use App\Exceptions\InsufficientPermissionException;
 use App\Exceptions\NexusException;
 use App\Http\Resources\TorrentResource;
@@ -854,7 +855,13 @@ class TorrentRepository extends BaseRepository
         ];
         $idArr = Arr::wrap($id);
 
-        return Torrent::query()->whereIn('id', $idArr)->update($update);
+        $affected = Torrent::query()->whereIn('id', $idArr)->update($update);
+
+        foreach ($idArr as $tid) {
+            TorrentPromotionChanged::dispatch((int) $tid, (int) $spState);
+        }
+
+        return $affected;
     }
 
     public function buildUploadFieldInput($name, $value, $noteText, $btnText): string

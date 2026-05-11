@@ -194,6 +194,19 @@ elseif ($action == "edit")
 			if ($text == "")
 				stderr($lang_comment['std_error'], $lang_comment['std_comment_body_empty']);
 
+			$previousBody = (string) ($arr['text'] ?? '');
+			if ($previousBody !== (string) $text) {
+				try {
+					\App\Models\CommentEdit::query()->insert([
+						'commentid' => (int) $commentid,
+						'editor_userid' => (int) $CURUSER['id'],
+						'body_before' => $previousBody,
+						'edited_at' => date("Y-m-d H:i:s"),
+					]);
+				} catch (\Throwable $e) {
+					do_log('[comment] edit snapshot failed: '.$e->getMessage(), 'error');
+				}
+			}
 			\Nexus\Database\NexusDB::table('comments')
 				->where('id', (int) $commentid)
 				->update([
@@ -224,6 +237,10 @@ elseif ($action == "edit")
 		begin_compose($title, "edit", htmlspecialchars(unesc($arr["text"])), false);
 		end_compose();
 		print("</form>");
+		$historyCount = (int) \App\Models\CommentEdit::query()->where('commentid', (int) $commentid)->count();
+		if ($historyCount > 0) {
+			print('<p><font size="small">(<a href="comment.php?action=history&cid='.(int) $commentid.'&type='.htmlspecialchars($type).'">View edit history ('.$historyCount.')</a>)</font></p>');
+		}
 		end_main_frame();
 		stdfoot();
 		die;
@@ -321,6 +338,58 @@ elseif ($action == "vieworiginal")
 		stdfoot();
 
 		die;
+}
+elseif ($action == "history")
+{
+	$commentid = intval($_GET["cid"] ?? 0);
+	int_check($commentid, true);
+
+	if ($type == "torrent") {
+		$rows = \Nexus\Database\NexusDB::select("SELECT c.*, t.name FROM comments AS c JOIN torrents AS t ON c.torrent = t.id WHERE c.id=$commentid");
+	} elseif ($type == "offer") {
+		$rows = \Nexus\Database\NexusDB::select("SELECT c.*, o.name FROM comments AS c JOIN offers AS o ON c.offer = o.id WHERE c.id=$commentid");
+	} elseif ($type == "request") {
+		$rows = \Nexus\Database\NexusDB::select("SELECT c.*, r.request as name FROM comments AS c JOIN requests AS r ON c.request = r.id WHERE c.id=$commentid");
+	} else {
+		$rows = [];
+	}
+
+	$arr = $rows[0] ?? null;
+	if (!$arr) {
+		stderr($lang_comment['std_error'], $lang_comment['std_invalid_id']);
+	}
+	if ($arr['user'] != $CURUSER['id'] && !user_can('commanage')) {
+		stderr($lang_comment['std_error'], $lang_comment['std_permission_denied']);
+	}
+
+	$history = \App\Models\CommentEdit::query()
+		->with('editor:id,username')
+		->where('commentid', (int) $commentid)
+		->orderByDesc('edited_at')
+		->orderByDesc('id')
+		->get();
+
+	stdhead("Comment edit history");
+	print('<h1>Edit history of comment #'.(int) $commentid.'</h1>');
+	if ($history->isEmpty()) {
+		print('<p>No edits recorded for this comment yet.</p>');
+	} else {
+		print('<table border="1" cellspacing="0" cellpadding="5" width="737">');
+		foreach ($history as $entry) {
+			$editorName = htmlspecialchars((string) ($entry->editor?->username ?? 'unknown'));
+			$at = $entry->edited_at ? $entry->edited_at->format('Y-m-d H:i:s').' ('.$entry->edited_at->diffForHumans().')' : '-';
+			print('<tr><td class="colhead"><b>'.$editorName.'</b> &middot; '.$at.'</td></tr>');
+			print('<tr><td class="text">'.format_comment((string) $entry->body_before).'</td></tr>');
+		}
+		print('</table>');
+	}
+
+	$returnto = htmlspecialchars((string) ($_SERVER["HTTP_REFERER"] ?? ''));
+	if ($returnto) {
+		print('<p><font size="small">(<a href="'.$returnto.'">'.$lang_comment['text_back'].'</a>)</font></p>');
+	}
+	stdfoot();
+	die;
 }
 else
 stderr($lang_comment['std_error'], $lang_comment['std_unknown_action']);

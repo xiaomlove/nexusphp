@@ -1,5 +1,7 @@
 <?php
 
+use App\Events\RequestFulfilled;
+use App\Events\RequestSupplied;
 use App\Models\Message;
 use Nexus\Database\NexusDB;
 
@@ -212,8 +214,7 @@ if (! in_array($action, $allowed_actions)) {
             }
             if ($arr['userid'] == $CURUSER['id'] || get_user_class() >= UC_UPLOADER) {
                 stdhead($lang_functions['title_edit'].$lang_viewrequests['request']);
-                echo
-                    "<form id=edit method=post name=edit action=viewrequests.php >\n
+                echo "<form id=edit method=post name=edit action=viewrequests.php >\n
 		<input type=hidden name=action  value=takeedit >
 		<input type=hidden name=reqid  value=".intval($_GET['id'] ?? 0).' >
 		';
@@ -233,8 +234,7 @@ if (! in_array($action, $allowed_actions)) {
 
             if (get_user_class() >= 1) {
                 stdhead($lang_viewrequests['add_request']);
-                echo
-                "<form id=edit method=post name=edit action=viewrequests.php >\n<input type=hidden name=action  value=takeadded >\n";
+                echo "<form id=edit method=post name=edit action=viewrequests.php >\n<input type=hidden name=action  value=takeadded >\n";
                 echo "<table width=100% cellspacing=0 cellpadding=3><tr><td class=colhead align=center colspan=2>{$lang_viewrequests['add_request']}</td></tr>\n";
                 tr("{$lang_functions['col_name']}：", '<input name=request size=134><br/>', 1);
                 tr("{$lang_viewrequests['reward']}：", "<input name=amount size=11 value=2000>{$lang_viewrequests['add_request_desc']}<br/>", 1);
@@ -259,8 +259,7 @@ if (! in_array($action, $allowed_actions)) {
 
             $ruserid = 0 + $_GET['userid'];
 
-            echo
-                "<form id=reply name=reply method=post action=viewrequests.php >\n<input type=hidden name=action value=message ><input type=hidden name=id value=".intval($_GET['id'] ?? 0)." >\n";
+            echo "<form id=reply name=reply method=post action=viewrequests.php >\n<input type=hidden name=action value=message ><input type=hidden name=id value=".intval($_GET['id'] ?? 0)." >\n";
             echo "<table width=100% cellspacing=0 cellpadding=3>\n";
 
             echo '<tr><td class=rowfollow align=left>';
@@ -421,6 +420,18 @@ if (! in_array($action, $allowed_actions)) {
                 'added' => now(),
             ]);
 
+            try {
+                RequestSupplied::dispatch(
+                    (int) $arr['id'],
+                    (int) $arr['userid'],
+                    (int) $_POST['torrentid'],
+                    (int) ($CURUSER['id'] ?? 0),
+                    (string) ($arr['request'] ?? ''),
+                );
+            } catch (Throwable $e) {
+                do_log('[viewrequests] RequestSupplied dispatch failed: '.$e->getMessage(), 'error');
+            }
+
             stderr($lang_functions['std_success'], "{$lang_viewrequests['supply_success']}，<a href='viewrequests.php?action=view&id=".$_POST['reqid']."'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
             exit;
             break;
@@ -523,6 +534,17 @@ if (! in_array($action, $allowed_actions)) {
                 if ($ownerList !== '') {
                     NexusDB::statement('UPDATE users SET seedbonus = seedbonus + '.(float) $amount." WHERE id IN ($ownerList)");
                 }
+                try {
+                    RequestFulfilled::dispatch(
+                        (int) $arr['id'],
+                        (int) $arr['userid'],
+                        array_values(array_unique(array_map('intval', $owner))),
+                        (string) ($arr['request'] ?? ''),
+                        (float) $amount,
+                    );
+                } catch (Throwable $e) {
+                    do_log('[viewrequests] RequestFulfilled dispatch failed: '.$e->getMessage(), 'error');
+                }
                 stderr($lang_functions['std_success'], "{$lang_viewrequests['confirm_request_success']}，<a href='viewrequests.php?action=view&id=".$_POST['id']."'>{$lang_functions['std_click_here_to_goback']}</a>", 0);
 
             }
@@ -542,7 +564,6 @@ if (! in_array($action, $allowed_actions)) {
             $arr = $reqRows[0];
             $message = $arr['message'];
             $message .= "<tr><td width=240>{$lang_functions['std_by']}".$CURUSER['username'].$lang_viewrequests['request_created_at'].date('Y-m-d H:i:s').'</td><td>'.$_POST['message'].'</td></tr>';
-
 
             NexusDB::insert('comments', [
                 'user' => $CURUSER['id'],
