@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
 use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
@@ -80,6 +81,15 @@ Route::get('/confirmemail.php/{id}/{md5}/{email}', ConfirmEmailController::class
     ->where('md5', '[a-fA-F0-9]{32}')
     ->where('email', '.*')
     ->name('legacy.confirmemail');
+
+/*
+ * Phase 2 — replaces `public/confirm.php` (deleted in the same PR).
+ * The signed `?id=<int>&secret=<md5>` URL is the only auth token, so
+ * the route stays outside `auth.nexus` middleware. The URL itself is
+ * unchanged — every signup-confirmation email in the wild points at
+ * `/confirm.php?id=...&secret=...`.
+ */
+Route::get('/confirm.php', ConfirmController::class)->name('legacy.confirm');
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
