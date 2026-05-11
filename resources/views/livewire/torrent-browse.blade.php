@@ -3,7 +3,27 @@
     $spStateOptions = \App\Livewire\TorrentBrowse::spStateOptions();
     $includeDeadOptions = \App\Livewire\TorrentBrowse::includeDeadOptions();
     $bookmarkOptions = \App\Livewire\TorrentBrowse::bookmarkOptions();
+    $subcategoryOptions = $this->subcategoryOptions;
     $authenticated = auth('nexus-web')->check();
+
+    $rangesDirty = $sizeMin !== null
+        || $sizeMax !== null
+        || $seedersMin !== null
+        || $seedersMax !== null
+        || $leechersMin !== null
+        || $leechersMax !== null
+        || $snatchesMin !== null
+        || $snatchesMax !== null;
+
+    $subcatsDirty = $source !== 0
+        || $medium !== 0
+        || $codec !== 0
+        || $standard !== 0
+        || $processing !== 0
+        || $team !== 0
+        || $audiocodec !== 0;
+
+    $advancedOpen = $rangesDirty || $subcatsDirty;
 
     $filtersDirty = $search !== ''
         || $category !== ''
@@ -12,7 +32,9 @@
         || $includeDead !== \App\Livewire\TorrentBrowse::INCLUDE_DEAD_ACTIVE
         || $bookmarked !== \App\Livewire\TorrentBrowse::BOOKMARK_ALL
         || $tagId !== 0
-        || $mode !== \App\Livewire\TorrentBrowse::MODE_TORRENTS;
+        || $mode !== \App\Livewire\TorrentBrowse::MODE_TORRENTS
+        || $rangesDirty
+        || $subcatsDirty;
 @endphp
 
 <div class="space-y-6">
@@ -131,6 +153,135 @@
             </div>
 
         </div>
+
+        <details data-testid="advanced-filters" class="mt-4 group" @if ($advancedOpen) open @endif>
+            <summary class="cursor-pointer select-none text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                <span class="inline-flex items-center gap-1">
+                    <span class="transition-transform group-open:rotate-90">▸</span>
+                    Advanced filters
+                    @if ($advancedOpen)
+                        <span class="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:bg-primary-900/40 dark:text-primary-200">active</span>
+                    @endif
+                </span>
+            </summary>
+
+            <div class="mt-3 space-y-4">
+                <div>
+                    <div class="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Ranges</div>
+                    <div class="grid gap-3 md:grid-cols-12">
+                        <div class="md:col-span-3">
+                            <label for="size_begin" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Size ≥ (GB)</label>
+                            <input
+                                id="size_begin"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="sizeMin"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="size_end" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Size ≤ (GB)</label>
+                            <input
+                                id="size_end"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="sizeMax"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="seeders_begin" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Seeders ≥</label>
+                            <input
+                                id="seeders_begin"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="seedersMin"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="seeders_end" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Seeders ≤</label>
+                            <input
+                                id="seeders_end"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="seedersMax"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="leechers_begin" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Leechers ≥</label>
+                            <input
+                                id="leechers_begin"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="leechersMin"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="leechers_end" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Leechers ≤</label>
+                            <input
+                                id="leechers_end"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="leechersMax"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="times_completed_begin" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Snatches ≥</label>
+                            <input
+                                id="times_completed_begin"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="snatchesMin"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="times_completed_end" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Snatches ≤</label>
+                            <input
+                                id="times_completed_end"
+                                type="number"
+                                min="0"
+                                inputmode="numeric"
+                                wire:model.live.debounce.400ms="snatchesMax"
+                                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Sub-categories</div>
+                    <div class="grid gap-3 md:grid-cols-12">
+                        @foreach ($subcategoryOptions as $property => $entry)
+                            <div class="md:col-span-3" data-testid="subcat-{{ $property }}">
+                                <label for="subcat_{{ $property }}" class="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">{{ $entry['label'] }}</label>
+                                <select
+                                    id="subcat_{{ $property }}"
+                                    wire:model.live="{{ $property }}"
+                                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                                >
+                                    <option value="0">Any</option>
+                                    @foreach ($entry['options'] as $opt)
+                                        <option value="{{ $opt['id'] }}">{{ $opt['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </details>
 
         @if ($filtersDirty)
             <div class="mt-3 flex items-center gap-2 text-xs">
