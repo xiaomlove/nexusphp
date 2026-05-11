@@ -2,15 +2,19 @@
 
 namespace App\Http\Resources;
 
-use Carbon\CarbonInterface;
+use App\Models\Comment;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Comment
+ */
 class CommentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)

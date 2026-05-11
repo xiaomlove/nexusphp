@@ -2,14 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Models\TorrentOperationLog;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin TorrentOperationLog
+ */
 class TorrentOperationLogResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -21,7 +26,7 @@ class TorrentOperationLogResource extends JsonResource
             'uid' => $this->uid,
             'username' => $this->user->username,
             'comment' => $this->comment,
-            'created_at' => format_datetime($this->created_at)
+            'created_at' => format_datetime($this->created_at),
         ];
     }
 }

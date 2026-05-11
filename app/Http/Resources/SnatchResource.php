@@ -2,15 +2,21 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Snatch;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Snatch
+ */
 class SnatchResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
+     *
      * @see viewsnatches.php
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)

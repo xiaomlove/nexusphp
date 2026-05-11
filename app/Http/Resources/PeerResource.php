@@ -2,14 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Peer;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Peer
+ */
 class PeerResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -28,5 +33,4 @@ class PeerResource extends JsonResource
 
         ];
     }
-
 }

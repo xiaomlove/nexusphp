@@ -6,6 +6,9 @@ use App\Models\SearchBox;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin SearchBox
+ */
 class SearchBoxResource extends JsonResource
 {
     /**
@@ -37,10 +40,11 @@ class SearchBoxResource extends JsonResource
                     ];
                 }
             }
-            if (!empty($subCategories)) {
+            if (! empty($subCategories)) {
                 $out['sub_categories'] = $subCategories;
             }
         }
+
         return $out;
     }
 }

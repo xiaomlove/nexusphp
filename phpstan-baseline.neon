@@ -1,2 +1,427 @@
 parameters:
-	ignoreErrors: []
+	ignoreErrors:
+		-
+			message: '#^Variable \$user in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Auth/NexusWebGuard.php
+
+		-
+			message: '#^Variable \$var might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Console/Commands/TranslateLang.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\HitAndRunResource\:\:\$inspectTimeLeft\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/HitAndRunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\HitAndRunResource\:\:\$seedTimeRequired\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/HitAndRunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\MedalResource\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Resources/MedalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$agent_human\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$connect_time_total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$download_progress\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$download_text\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$last_action_human\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$share_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PeerResource\:\:\$upload_text\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PeerResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PollResource\:\:\$answers_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PollResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PollResource\:\:\$options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PollResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SnatchResource\:\:\$download_text\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SnatchResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SnatchResource\:\:\$share_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SnatchResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SnatchResource\:\:\$upload_text\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SnatchResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$added\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$anonymous\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$category\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$comments\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$cover\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$filename\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$hits\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$hr\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$info_hash\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$last_action\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$leechers\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$numfiles\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$pickInfo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$picktime\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$picktype\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$pos_state\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$pos_state_until\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$promotionInfo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$seeders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$size\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$small_descr\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$sp_state\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$sp_state_real\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$times_completed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TorrentResource\:\:\$views\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TorrentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\ForumIndex\:\:\$forumsByOverforum\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/ForumIndex.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\ForumIndex\:\:\$lastPosts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/ForumIndex.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\ForumIndex\:\:\$overforums\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/ForumIndex.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\ForumView\:\:\$forum\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/ForumView.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\ForumView\:\:\$topics\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/ForumView.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\TopicView\:\:\$forum\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/TopicView.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\TopicView\:\:\$posts\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Livewire/TopicView.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\TopicView\:\:\$topic\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Livewire/TopicView.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PluginStore\:\:\$installed_version\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/PluginStore.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PluginStore\:\:\$plugin_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PluginStore.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PluginStore\:\:\$post_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Models/PluginStore.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PluginStore\:\:\$version\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/PluginStore.php
+
+		-
+			message: '#^Anonymous function has an unused use \$exam\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Repositories/ExamRepository.php
+
+		-
+			message: '#^Variable \$begin in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Repositories/ExamRepository.php
+
+		-
+			message: '#^Variable \$end in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Repositories/ExamRepository.php
+
+		-
+			message: '#^Variable \$values in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Repositories/MeiliSearchRepository.php
+
+		-
+			message: '#^Variable \$torrents in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 2
+			path: app/Repositories/RequireSeedTorrentRepository.php
+
+		-
+			message: '#^Function clear_search_box_cache invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Repositories/SearchBoxRepository.php
+
+		-
+			message: '#^Static method Nexus\\Database\\NexusDB\:\:cache_del\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 3
+			path: app/Repositories/TorrentRepository.php
+
+		-
+			message: '#^Variable \$torrentUpdate in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Repositories/TorrentRepository.php
+
+		-
+			message: '#^Variable \$validCategoryId in empty\(\) is never defined\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Repositories/TorrentRepository.php
+
+		-
+			message: '#^Variable \$repDict might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: app/Repositories/TrackerRepository.php
+
+		-
+			message: '#^Variable \$user in isset\(\) always exists and is always null\.$#'
+			identifier: isset.variable
+			count: 4
+			path: app/Repositories/TrackerRepository.php
+
+		-
+			message: '#^Anonymous function has an unused use \$changeType\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Repositories/UserRepository.php
+
+		-
+			message: '#^Anonymous function has an unused use \$new\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Repositories/UserRepository.php
+
+		-
+			message: '#^Anonymous function has an unused use \$operator\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Repositories/UserRepository.php
+
+		-
+			message: '#^Variable \$secret on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Services/Captcha/Drivers/ImageCaptchaDriver.php

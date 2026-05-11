@@ -2,14 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Medal;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Medal
+ */
 class MedalResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -25,11 +30,17 @@ class MedalResource extends JsonResource
             'price_human' => number_format($this->price),
             'duration' => $this->duration,
             'description' => $this->description,
-            'expire_at' => $this->whenPivotLoaded('user_medals', function () {return $this->pivot->expire_at;}),
-            'user_medal_id' => $this->whenPivotLoaded('user_medals', function () {return $this->pivot->id;}),
-            'wearing_status' => $this->whenPivotLoaded('user_medals', function () {return $this->pivot->status;}),
+            'expire_at' => $this->whenPivotLoaded('user_medals', function () {
+                return $this->pivot->expire_at;
+            }),
+            'user_medal_id' => $this->whenPivotLoaded('user_medals', function () {
+                return $this->pivot->id;
+            }),
+            'wearing_status' => $this->whenPivotLoaded('user_medals', function () {
+                return $this->pivot->status;
+            }),
             'wearing_status_text' => $this->whenPivotLoaded('user_medals', function () {
-                return nexus_trans("medal.wearing_status_text." . $this->pivot->status);
+                return nexus_trans('medal.wearing_status_text.'.$this->pivot->status);
             }),
         ];
     }

@@ -2,14 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Models\HitAndRun;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin HitAndRun
+ */
 class HitAndRunResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array
      */
     public function toArray($request)
@@ -33,6 +38,7 @@ class HitAndRunResource extends JsonResource
         if (nexus()->isPlatformAdmin()) {
             $out['comment'] = nl2br(trim($out['comment']));
         }
+
         return $out;
     }
 }

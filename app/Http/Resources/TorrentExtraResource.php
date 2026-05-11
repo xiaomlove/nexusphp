@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\TorrentExtra;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin TorrentExtra
+ */
 class TorrentExtraResource extends JsonResource
 {
     /**
