@@ -3310,15 +3310,20 @@ function cover_thumb_url($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
 }
 
 /**
- * Like cover_thumb_url() but also writes a sibling WebP next to the
- * JPEG and returns both public URLs. Reuses cover_thumb_url() for the
- * resize step so any future quality tweak there is picked up here for
- * free; the WebP is encoded from the freshly written JPEG so we avoid
- * decoding the source image twice.
+ * Like cover_thumb_url() but also writes sibling AVIF + WebP variants
+ * next to the JPEG and returns all available public URLs. Reuses
+ * cover_thumb_url() for the resize step so any future quality tweak
+ * there is picked up here for free; the AVIF / WebP siblings are
+ * encoded from the freshly written JPEG so we decode the source image
+ * exactly once for both modern formats.
  *
- * Return shape: ['jpg' => 'https://.../foo.jpg', 'webp' => '.../foo.webp']
- * If WebP can't be produced (no imagewebp(), upstream resize failed,
- * etc.) the 'webp' key is omitted and callers fall back to plain JPEG.
+ * Return shape:
+ *   ['jpg' => 'https://.../foo.jpg',
+ *    'webp' => '.../foo.webp',   // omitted if imagewebp() is missing or encode fails
+ *    'avif' => '.../foo.avif']  // omitted if imageavif() is missing or encode fails
+ *
+ * Callers fall back to plain JPEG when a key is missing — see
+ * cover_thumb_picture() for the <picture> wrapper that consumes this.
  */
 function cover_thumb_set($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
 {
@@ -3326,11 +3331,14 @@ function cover_thumb_set($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
 	$jpgUrl = cover_thumb_url($url, $maxWidth, $maxHeight, $quality);
 	if ($jpgUrl === '' || $jpgUrl === $url) {
 		// Empty input or upstream returned the original URL untouched
-		// (resize failed). No point trying to derive a WebP from it.
+		// (resize failed). No point trying to derive sibling formats.
 		return ['jpg' => $jpgUrl];
 	}
-	if (!function_exists('imagewebp')) {
-		return ['jpg' => $jpgUrl];
+	$result = ['jpg' => $jpgUrl];
+	$hasWebp = function_exists('imagewebp');
+	$hasAvif = function_exists('imageavif');
+	if (!$hasWebp && !$hasAvif) {
+		return $result;
 	}
 	$saveDir = $savedirectory_attachment ?: 'attachments';
 	$httpDir = $httpdirectory_attachment ?: 'attachments';
@@ -3339,31 +3347,55 @@ function cover_thumb_set($url, $maxWidth = 240, $maxHeight = 360, $quality = 82)
 	$absJpg  = rtrim($saveDir, '/') . '/' . $relativeDir . '/' . $key . '.jpg';
 	$absWebp = rtrim($saveDir, '/') . '/' . $relativeDir . '/' . $key . '.webp';
 	$pubWebp = $httpDir . '/' . $relativeDir . '/' . $key . '.webp';
-	if (is_file($absWebp) && filesize($absWebp) > 0) {
-		return ['jpg' => $jpgUrl, 'webp' => $pubWebp];
+	$absAvif = rtrim($saveDir, '/') . '/' . $relativeDir . '/' . $key . '.avif';
+	$pubAvif = $httpDir . '/' . $relativeDir . '/' . $key . '.avif';
+	$needWebp = $hasWebp && !(is_file($absWebp) && filesize($absWebp) > 0);
+	$needAvif = $hasAvif && !(is_file($absAvif) && filesize($absAvif) > 0);
+	// Already-cached siblings — pick them up without redecoding.
+	if ($hasWebp && !$needWebp) {
+		$result['webp'] = $pubWebp;
+	}
+	if ($hasAvif && !$needAvif) {
+		$result['avif'] = $pubAvif;
+	}
+	if (!$needWebp && !$needAvif) {
+		return $result;
 	}
 	if (!is_file($absJpg)) {
-		return ['jpg' => $jpgUrl];
+		return $result;
 	}
 	$img = @imagecreatefromjpeg($absJpg);
 	if (!$img) {
-		return ['jpg' => $jpgUrl];
+		return $result;
 	}
-	// WebP at q-2 typically yields ~25-35% smaller files than JPEG at
-	// equivalent visual quality. -2 keeps it visually indistinguishable
-	// while still saving bandwidth on every WebP-capable browser.
-	$ok = @imagewebp($img, $absWebp, max(1, min(100, (int)$quality - 2)));
+	if ($needWebp) {
+		// WebP at q-2 typically yields ~25-35% smaller files than JPEG at
+		// equivalent visual quality. -2 keeps it visually indistinguishable
+		// while still saving bandwidth on every WebP-capable browser.
+		if (@imagewebp($img, $absWebp, max(1, min(100, (int)$quality - 2)))) {
+			$result['webp'] = $pubWebp;
+		}
+	}
+	if ($needAvif) {
+		// AVIF at q-30 typically yields ~40-55% smaller files than JPEG at
+		// equivalent visual quality. Speed 6 is the libavif default and a
+		// sensible balance between encoding time and compression ratio for
+		// batch-generated cover thumbnails.
+		if (@imageavif($img, $absAvif, max(1, min(100, (int)$quality - 30)), 6)) {
+			$result['avif'] = $pubAvif;
+		}
+	}
 	imagedestroy($img);
-	if (!$ok) {
-		return ['jpg' => $jpgUrl];
-	}
-	return ['jpg' => $jpgUrl, 'webp' => $pubWebp];
+	return $result;
 }
 
 /**
  * Convenience helper that wraps cover_thumb_set() in a <picture>
- * element with WebP <source> + JPEG <img> fallback. When WebP is
- * unavailable, returns the bare <img> tag so callers stay agnostic.
+ * element with AVIF + WebP <source>s and a JPEG <img> fallback. Sources
+ * are listed in most-efficient-first order (AVIF, then WebP) so
+ * browsers pick the smallest format they support; the <img> stays as
+ * the JPEG-everywhere safety net. When no modern format could be
+ * produced, returns the bare <img> tag so callers stay agnostic.
  *
  * $imgAttr is rendered onto the <img>; pass loading="lazy",
  * decoding="async", alt, onerror, etc. through here.
@@ -3380,13 +3412,17 @@ function cover_thumb_picture($url, $maxWidth = 240, $maxHeight = 360, array $img
 		$attrs .= ' ' . $name . '="' . htmlspecialchars((string)$value, ENT_QUOTES) . '"';
 	}
 	$imgTag = '<img src="' . htmlspecialchars($jpg, ENT_QUOTES) . '"' . $attrs . ' />';
-	if (!empty($set['webp'])) {
-		return '<picture>'
-			. '<source type="image/webp" srcset="' . htmlspecialchars($set['webp'], ENT_QUOTES) . '" />'
-			. $imgTag
-			. '</picture>';
+	if (empty($set['avif']) && empty($set['webp'])) {
+		return $imgTag;
 	}
-	return $imgTag;
+	$sources = '';
+	if (!empty($set['avif'])) {
+		$sources .= '<source type="image/avif" srcset="' . htmlspecialchars($set['avif'], ENT_QUOTES) . '" />';
+	}
+	if (!empty($set['webp'])) {
+		$sources .= '<source type="image/webp" srcset="' . htmlspecialchars($set['webp'], ENT_QUOTES) . '" />';
+	}
+	return '<picture>' . $sources . $imgTag . '</picture>';
 }
 
 function logoutcookie() {
