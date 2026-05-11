@@ -1,21 +1,21 @@
 <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
     @if ($errorMessage)
-        <div role="alert" class="mb-3 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200">
-            {{ $errorMessage }}
+        <div class="mb-3">
+            <x-ui.alert variant="danger">{{ $errorMessage }}</x-ui.alert>
         </div>
     @endif
 
     <form wire:submit="submit" class="space-y-3">
         @if ($isFirstPost)
             <div>
-                <label for="edit-subject-{{ $postId }}" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Subject</label>
-                <input
+                <x-ui.form-label for="edit-subject-{{ $postId }}">Subject</x-ui.form-label>
+                <x-ui.form-input
                     id="edit-subject-{{ $postId }}"
                     type="text"
                     wire:model="subject"
                     maxlength="255"
-                    class="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                >
+                    :invalid="$errors->has('subject')"
+                />
                 @error('subject')
                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                 @enderror
@@ -23,12 +23,12 @@
         @endif
 
         <div>
-            <label for="edit-body-{{ $postId }}" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Body</label>
+            <x-ui.form-label for="edit-body-{{ $postId }}">Body</x-ui.form-label>
             <textarea
                 id="edit-body-{{ $postId }}"
                 wire:model="body"
                 rows="8"
-                class="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 @error('body') border-rose-400 dark:border-rose-600 @enderror"
             ></textarea>
             @error('body')
                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -36,26 +36,20 @@
         </div>
 
         <div class="flex items-center justify-between gap-2">
-            <button
-                type="button"
-                wire:click="toggleHistory"
-                class="rounded border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >{{ $showHistory ? 'Hide history' : 'Edit history' }}</button>
+            <x-ui.button type="button" wire:click="toggleHistory" variant="secondary" size="sm">
+                {{ $showHistory ? 'Hide history' : 'Edit history' }}
+            </x-ui.button>
             <div class="flex items-center gap-2">
-                <button
-                    type="button"
-                    wire:click="cancel"
-                    class="rounded border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                >Cancel</button>
-                <button
+                <x-ui.button type="button" wire:click="cancel" variant="secondary" size="sm">Cancel</x-ui.button>
+                <x-ui.button
                     type="submit"
-                    class="inline-flex items-center rounded bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-slate-900"
+                    size="sm"
                     wire:loading.attr="disabled"
                     wire:target="submit"
                 >
                     <span wire:loading.remove wire:target="submit">Save changes</span>
                     <span wire:loading wire:target="submit">Saving…</span>
-                </button>
+                </x-ui.button>
             </div>
         </div>
     </form>
@@ -79,13 +73,14 @@
                                     <span title="{{ optional($entry->edited_at)->toDateTimeString() }}">
                                         {{ optional($entry->edited_at)->diffForHumans() ?? '—' }}
                                     </span>
-                                    <button
+                                    <x-ui.button
                                         type="button"
                                         wire:click="revertTo({{ (int) $entry->id }})"
                                         wire:confirm="Replace the current body with this snapshot? The current state will be saved as a new history entry."
-                                        class="rounded border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                                        variant="secondary"
+                                        size="sm"
                                         title="Restore the post body / subject from this snapshot"
-                                    >Revert to this</button>
+                                    >Revert to this</x-ui.button>
                                 </span>
                             </div>
                             @if ($entry->subject_before !== null)
