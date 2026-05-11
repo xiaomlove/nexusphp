@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-2AzyNoXA.css",
+    "file": "assets/app-DxsDU6yG.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -11,7 +11,7 @@
     "isEntry": true
   },
   "resources/js/echo.js": {
-    "file": "assets/echo-DQ45AdBN.js",
+    "file": "assets/echo-mCQxIvMK.js",
     "name": "echo",
     "src": "resources/js/echo.js",
     "isEntry": true

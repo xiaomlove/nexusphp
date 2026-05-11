@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\TorrentPeersUpdated;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -120,6 +121,30 @@ class UpdateTorrentSeedersEtc implements ShouldQueue
         $result = NexusDB::statement($sql);
         if ($delIdRedisKey) {
             NexusDB::cache_del($this->idRedisKey);
+        }
+
+        // Broadcast per-torrent peer count refresh (Reverb). Best-effort —
+        // failures must not block the cleanup job, which is the source of
+        // truth for these counters.
+        foreach ($torrentIdArr as $id) {
+            try {
+                $torrentId = (int) $id;
+                if ($torrentId <= 0) {
+                    continue;
+                }
+                $seeders = (int) ($torrents[$id]['seeders'] ?? 0);
+                $leechers = (int) ($torrents[$id]['leechers'] ?? 0);
+                $comments = (int) ($torrents[$id]['comments'] ?? 0);
+                event(new TorrentPeersUpdated(
+                    torrent_id: $torrentId,
+                    seeders: $seeders,
+                    leechers: $leechers,
+                    comments: $comments,
+                    html: '',
+                ));
+            } catch (\Throwable $e) {
+                do_log('TorrentPeersUpdated broadcast failed: '.$e->getMessage(), 'error');
+            }
         }
         $costTime = time() - $beginTimestamp;
         do_log(sprintf(

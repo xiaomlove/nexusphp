@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\ModelEventEnum;
+use App\Events\NotificationReceived;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Nexus\Database\NexusDB;
 
 class Message extends NexusModel
 {
@@ -32,6 +34,29 @@ class Message extends NexusModel
         clear_inbox_count_cache($data['receiver']);
         $message = self::query()->create($data);
         fire_event(ModelEventEnum::MESSAGE_CREATED, $message);
+
+        // Broadcast a per-user notification (Reverb). Best-effort — failures
+        // here must never break the actual PM send. Same pattern as
+        // ShoutSent in public/shoutbox.php.
+        try {
+            $receiverId = (int) $data['receiver'];
+            if ($receiverId > 0) {
+                $unreadCount = (int) NexusDB::table('messages')
+                    ->where('receiver', $receiverId)
+                    ->where('unread', 'yes')
+                    ->count();
+                event(new NotificationReceived(
+                    user_id: $receiverId,
+                    message_id: (int) $message->id,
+                    sender_id: (int) ($data['sender'] ?? 0),
+                    subject: (string) ($data['subject'] ?? ''),
+                    unread_count: $unreadCount,
+                    html: '',
+                ));
+            }
+        } catch (\Throwable $e) {
+            do_log('NotificationReceived broadcast failed: '.$e->getMessage(), 'error');
+        }
 
         return $message;
     }

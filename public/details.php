@@ -10,6 +10,11 @@ int_check($id, true);
 if (!isset($id) || !$id)
 die();
 
+// Tell stdhead to wire <body data-torrent-peers-id="..."> so echo.js can
+// subscribe to the torrent.{id}.peers Reverb channel and live-refresh
+// the seeders / leechers cell on this page.
+$GLOBALS['REVERB_TORRENT_PEERS_ID'] = $id;
+
 $taxonomyFields = "sources.name AS source_name, media.name AS medium_name, codecs.name AS codec_name, standards.name AS standard_name, processings.name AS processing_name, teams.name AS team_name, audiocodecs.name AS audiocodec_name";
 $extraFields = "torrent_extras.descr, torrent_extras.nfo, LENGTH(torrent_extras.nfo) AS nfosz, torrent_extras.media_info as technical_info";
 $detailsRows = \Nexus\Database\NexusDB::select("SELECT torrents.cache_stamp, torrents.sp_state, torrents.url, torrents.small_descr, torrents.seeders, torrents.banned, torrents.leechers, torrents.info_hash, torrents.filename, torrents.last_action, torrents.name, torrents.owner, torrents.save_as, torrents.visible, torrents.size, torrents.added, torrents.views, torrents.hits, torrents.times_completed, torrents.id, torrents.type, torrents.numfiles, torrents.anonymous, torrents.hr, torrents.promotion_until, torrents.promotion_time_type, torrents.approval_status, torrents.price,
