@@ -5,6 +5,7 @@ use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\SuggestController;
+use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\OauthController;
@@ -61,6 +62,18 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::match(['get', 'post'], '/preview.php', PreviewController::class)
         ->name('legacy.preview');
+
+    /*
+     * Phase 2.3 — replaces `public/takecontact.php` (deleted in this
+     * PR). The URL stays `/takecontact.php` so the legacy
+     * `<form action="takecontact.php">` in `public/contactstaff.php`
+     * keeps posting to the same endpoint without template changes.
+     * Same CSRF carve-out as `/thanks.php` (the legacy form has no
+     * `@csrf` token and adding one is a separate change touching every
+     * legacy form helper). Same nginx companion rule in
+     * `.docker/openresty/sites/app.conf.template`.
+     */
+    Route::post('/takecontact.php', TakeContactController::class)->name('legacy.takecontact');
 
     Route::post('/takeupdate.php', TakeUpdateController::class)->name('legacy.takeupdate');
 });
