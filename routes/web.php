@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthenticateController;
+use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\ConfirmEmailController;
+use App\Http\Controllers\Legacy\DeleteMessageController;
+use App\Http\Controllers\Legacy\ImageCaptchaController;
+use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SpecialController;
@@ -53,6 +58,23 @@ Route::get('/error', [ToolController::class, 'error']);
 Route::get('/searchsuggest.php', SearchSuggestController::class)->name('legacy.searchsuggest');
 Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
 
+// Phase 2 batch #2 — public legacy routes (no auth).
+//
+// `/logout.php`: clearing the legacy auth cookie is a guest-safe op.
+// `/image.php`: signup-form CAPTCHA image, served before login.
+// `/bookmark.php`: returns a `failed` token for guests rather than
+//   redirecting — the front-end JS expects a plain-text response.
+// `/confirmemail.php/{id}/{md5}/{email}`: the signed URL is the auth
+//   token; no session cookie is required.
+Route::any('/logout.php', LogoutController::class)->name('legacy.logout');
+Route::get('/image.php', ImageCaptchaController::class)->name('legacy.image');
+Route::get('/bookmark.php', BookmarkController::class)->name('legacy.bookmark');
+Route::get('/confirmemail.php/{id}/{md5}/{email}', ConfirmEmailController::class)
+    ->where('id', '[0-9]+')
+    ->where('md5', '[a-fA-F0-9]{32}')
+    ->where('email', '.*')
+    ->name('legacy.confirmemail');
+
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
 
@@ -76,6 +98,15 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::post('/takecontact.php', TakeContactController::class)->name('legacy.takecontact');
 
     Route::post('/takeupdate.php', TakeUpdateController::class)->name('legacy.takeupdate');
+
+    /*
+     * Phase 2 batch #2 — `/deletemessage.php` ships the legacy PM
+     * delete behaviour. GET-only because the legacy callers are
+     * `<a href="deletemessage.php?id=...&type=in">` links in the
+     * inbox / sentbox UI; switching them to POST would require a
+     * template change in the same PR and is out of scope here.
+     */
+    Route::get('/deletemessage.php', DeleteMessageController::class)->name('legacy.deletemessage');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
