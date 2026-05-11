@@ -518,7 +518,7 @@ if (count($shoutRows) === 0) {
     $groupWindowSec = 120;
     $prevUserId = 0;
     $prevDate = 0;
-    echo "<table id=\"shoutbox-table\" data-shout-limit=\"".(int) $limit."\" border='0' cellspacing='0' cellpadding='2' width='100%' align='left'>\n";
+    echo '<table id="shoutbox-table" data-shout-limit="'.(int) $limit."\" border='0' cellspacing='0' cellpadding='2' width='100%' align='left'>\n";
 
     foreach ($shoutRows as $arr) {
         $currUserId = (int) $arr['userid'];
