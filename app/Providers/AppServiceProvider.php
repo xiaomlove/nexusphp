@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Controllers\Legacy\LegacyPageController;
+use App\Legacy\LegacyChrome;
 use App\Legacy\LegacyContext;
 use Filament\Facades\Filament;
 use Filament\Support\Assets\Css;
@@ -40,6 +41,15 @@ class AppServiceProvider extends ServiceProvider
             $app->make(LegacyContext::class),
             base_path('public'),
         ));
+
+        // Phase 1.3 of the legacy migration — see docs/legacy-strategy.md.
+        // Renders the legacy site chrome (the HTML envelope produced by
+        // `stdhead()` / `stdfoot()` in `include/functions.php`) as plain
+        // strings, so modern controllers can wrap their output in the
+        // legacy look-and-feel via `view('layouts.legacy', ...)` without
+        // `require`-ing the legacy include chain themselves. Singleton
+        // because the bootstrap step is intentionally one-shot per process.
+        $this->app->singleton(LegacyChrome::class);
 
         // Telescope is only registered when explicitly enabled, since it
         // captures every request/query/job and is intended for local and
