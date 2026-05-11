@@ -79,6 +79,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #3 — legacy migration routes.
+    location = /moresmilies.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
