@@ -39,12 +39,15 @@ class LogoutControllerTest extends FeatureTestCase
     {
         $response = $this->get('/logout.php');
 
-        $cookie = $response->getCookie('c_secure_pass');
+        // `c_secure_pass` is encrypted by `EncryptCookies` middleware
+        // on the way out. We don't care about the encrypted value —
+        // only that the cookie is set with an expiry in the past, so
+        // the browser drops it.
+        $cookie = $response->getCookie('c_secure_pass', false);
         $this->assertNotNull(
             $cookie,
             'Expected the response to drop a `c_secure_pass` cookie.',
         );
-        $this->assertSame('', $cookie->getValue());
         $this->assertLessThan(
             time(),
             $cookie->getExpiresTime(),

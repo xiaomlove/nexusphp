@@ -38,7 +38,13 @@ class BookmarkControllerTest extends FeatureTestCase
         $response->assertOk();
         $this->assertSame('failed', $response->getContent());
         $response->assertHeader('Content-Type', 'text/xml; charset=utf-8');
-        $response->assertHeader('Cache-Control', 'no-cache, must-revalidate');
+        // Laravel's `SetCacheHeaders`/Symfony normalises the
+        // `Cache-Control` value (sorts directives alphabetically and
+        // injects `private`). Check the directives we set are present
+        // rather than pinning the exact value string.
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-cache', $cacheControl);
+        $this->assertStringContainsString('must-revalidate', $cacheControl);
         $response->assertHeader('Pragma', 'no-cache');
     }
 

@@ -3,7 +3,6 @@
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
-use App\Http\Controllers\Legacy\DeleteMessageController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\PreviewController;
@@ -98,15 +97,6 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::post('/takecontact.php', TakeContactController::class)->name('legacy.takecontact');
 
     Route::post('/takeupdate.php', TakeUpdateController::class)->name('legacy.takeupdate');
-
-    /*
-     * Phase 2 batch #2 — `/deletemessage.php` ships the legacy PM
-     * delete behaviour. GET-only because the legacy callers are
-     * `<a href="deletemessage.php?id=...&type=in">` links in the
-     * inbox / sentbox UI; switching them to POST would require a
-     * template change in the same PR and is out of scope here.
-     */
-    Route::get('/deletemessage.php', DeleteMessageController::class)->name('legacy.deletemessage');
 });
 
 Route::group(['prefix' => 'web', 'middleware' => ['auth.nexus:nexus-web']], function () {
