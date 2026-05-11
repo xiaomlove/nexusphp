@@ -11,6 +11,10 @@ $lang_shoutbox = array
 	'text_helpbox_disabled' => "В настоящее время Helpbox отключен. Как ад вы получаете здесь?",
 	'text_no_permission_to_shoutbox' => "У вас нет разрешения на отправку сообщений на чат. Как ад вы получаете здесь?",
     "speaking_too_often" => "Говорят слишком часто!",
+	'tooltip_avatar' => "Открыть профиль",
+	'tooltip_nick_reply' => "Ответить через @",
+	'shout_show_more' => "ещё",
+	'shout_show_less' => "свернуть",
 );
 
 ?>

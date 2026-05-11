@@ -11,6 +11,10 @@ $lang_shoutbox = array
 	'text_helpbox_disabled' => "Helpbox is currently disabled. How the hell do you get here?",
 	'text_no_permission_to_shoutbox' => "You have no permission to send messages to shoutbox. How the hell do you get here?",
     "speaking_too_often" => "Speaking too often!",
+	'tooltip_avatar' => "Open profile",
+	'tooltip_nick_reply' => "Reply via @",
+	'shout_show_more' => "more",
+	'shout_show_less' => "less",
 );
 
 ?>
