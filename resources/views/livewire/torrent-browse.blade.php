@@ -38,120 +38,79 @@
 @endphp
 
 <div class="space-y-6">
-    <div class="flex flex-col gap-2">
-        <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Browse torrents</h1>
-        <p class="text-sm text-zinc-500 dark:text-zinc-400">
+    <x-ui.page-header title="Browse torrents">
+        <x-slot:description>
             Modern Livewire-powered browse. Filters update instantly; URL is shareable.
             <a href="/browse?legacy=1" class="ml-1 text-primary-600 hover:underline dark:text-primary-400">
                 Switch to legacy /torrents.php
             </a>
-        </p>
-    </div>
+        </x-slot:description>
+    </x-ui.page-header>
 
-    <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <x-ui.card>
         <div class="grid gap-3 md:grid-cols-12">
             <div class="md:col-span-5">
-                <label for="search" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Search
-                </label>
-                <input
+                <x-ui.form-label for="search">Search</x-ui.form-label>
+                <x-ui.form-input
                     id="search"
                     type="search"
                     wire:model.live.debounce.300ms="search"
                     placeholder="Title or description…"
-                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                >
+                />
             </div>
             <div class="md:col-span-3">
-                <label for="category" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Category
-                </label>
-                <select
-                    id="category"
-                    wire:model.live="category"
-                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                >
+                <x-ui.form-label for="category">Category</x-ui.form-label>
+                <x-ui.form-select id="category" wire:model.live="category">
                     <option value="">All categories</option>
                     @foreach ($this->categories as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                     @endforeach
-                </select>
+                </x-ui.form-select>
             </div>
             <div class="md:col-span-4">
-                <label for="sort" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Sort by
-                </label>
-                <select
-                    id="sort"
-                    wire:model.live="sort"
-                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                >
+                <x-ui.form-label for="sort">Sort by</x-ui.form-label>
+                <x-ui.form-select id="sort" wire:model.live="sort">
                     @foreach ($this->sortOptions as $option)
                         <option value="{{ $option['key'] }}">{{ $option['label'] }}</option>
                     @endforeach
-                </select>
+                </x-ui.form-select>
             </div>
 
             <div class="md:col-span-3">
-                <label for="spstate" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Promotion
-                </label>
-                <select
-                    id="spstate"
-                    wire:model.live="spState"
-                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                >
+                <x-ui.form-label for="spstate">Promotion</x-ui.form-label>
+                <x-ui.form-select id="spstate" wire:model.live="spState">
                     @foreach ($spStateOptions as $key => $label)
                         <option value="{{ $key }}">{{ $label }}</option>
                     @endforeach
-                </select>
+                </x-ui.form-select>
             </div>
             <div class="md:col-span-3">
-                <label for="incldead" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Visibility
-                </label>
-                <select
-                    id="incldead"
-                    wire:model.live="includeDead"
-                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                >
+                <x-ui.form-label for="incldead">Visibility</x-ui.form-label>
+                <x-ui.form-select id="incldead" wire:model.live="includeDead">
                     @foreach ($includeDeadOptions as $key => $label)
                         <option value="{{ $key }}">{{ $label }}</option>
                     @endforeach
-                </select>
+                </x-ui.form-select>
             </div>
             @if ($authenticated)
                 <div class="md:col-span-3">
-                    <label for="inclbookmarked" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                        Bookmarks
-                    </label>
-                    <select
-                        id="inclbookmarked"
-                        wire:model.live="bookmarked"
-                        class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                    >
+                    <x-ui.form-label for="inclbookmarked">Bookmarks</x-ui.form-label>
+                    <x-ui.form-select id="inclbookmarked" wire:model.live="bookmarked">
                         @foreach ($bookmarkOptions as $key => $label)
                             <option value="{{ $key }}">{{ $label }}</option>
                         @endforeach
-                    </select>
+                    </x-ui.form-select>
                 </div>
             @endif
             <div class="md:col-span-3">
-                <label for="tag_id" class="mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Tag
-                </label>
-                <select
-                    id="tag_id"
-                    wire:model.live="tagId"
-                    class="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                >
+                <x-ui.form-label for="tag_id">Tag</x-ui.form-label>
+                <x-ui.form-select id="tag_id" wire:model.live="tagId">
                     <option value="0">All tags</option>
                     @foreach ($this->tags as $tag)
                         <option value="{{ $tag->id }}">{{ $tag->name }}</option>
                     @endforeach
-                </select>
+                </x-ui.form-select>
             </div>
-
         </div>
 
         <details data-testid="advanced-filters" class="mt-4 group" @if ($advancedOpen) open @endif>
@@ -288,22 +247,17 @@
                 <span class="text-zinc-500 dark:text-zinc-400">
                     {{ $torrents->total() }} {{ Str::plural('result', $torrents->total()) }}
                 </span>
-                <button
-                    type="button"
-                    wire:click="clearFilters"
-                    class="rounded-md border border-zinc-200 px-2 py-1 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                >
+                <x-ui.button variant="secondary" size="sm" wire:click="clearFilters">
                     Clear filters
-                </button>
+                </x-ui.button>
             </div>
         @endif
-    </div>
+    </x-ui.card>
 
     @if ($torrents->isEmpty())
-        <div class="rounded-xl border border-dashed border-zinc-300 bg-white p-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <p class="text-base font-medium text-zinc-700 dark:text-zinc-300">No torrents match your filters.</p>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Try clearing filters or broadening the search.</p>
-        </div>
+        <x-ui.empty-state title="No torrents match your filters.">
+            Try clearing filters or broadening the search.
+        </x-ui.empty-state>
     @else
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($torrents as $torrent)

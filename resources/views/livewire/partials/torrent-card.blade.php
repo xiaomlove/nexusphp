@@ -3,12 +3,12 @@
     $spState = (int) ($torrent->getRawOriginal('sp_state') ?? \App\Models\Torrent::PROMOTION_NORMAL);
 
     $promotionBadge = match ($spState) {
-        \App\Models\Torrent::PROMOTION_FREE => ['Free', 'bg-success-100 text-success-800 dark:bg-success-900/40 dark:text-success-200'],
-        \App\Models\Torrent::PROMOTION_TWO_TIMES_UP => ['2× Up', 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200'],
-        \App\Models\Torrent::PROMOTION_FREE_TWO_TIMES_UP => ['Free / 2× Up', 'bg-success-100 text-success-800 dark:bg-success-900/40 dark:text-success-200'],
-        \App\Models\Torrent::PROMOTION_HALF_DOWN => ['50%', 'bg-warning-100 text-warning-800 dark:bg-warning-900/40 dark:text-warning-200'],
-        \App\Models\Torrent::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['50% / 2× Up', 'bg-warning-100 text-warning-800 dark:bg-warning-900/40 dark:text-warning-200'],
-        \App\Models\Torrent::PROMOTION_ONE_THIRD_DOWN => ['30%', 'bg-warning-100 text-warning-800 dark:bg-warning-900/40 dark:text-warning-200'],
+        \App\Models\Torrent::PROMOTION_FREE => ['Free', 'success'],
+        \App\Models\Torrent::PROMOTION_TWO_TIMES_UP => ['2× Up', 'primary'],
+        \App\Models\Torrent::PROMOTION_FREE_TWO_TIMES_UP => ['Free / 2× Up', 'success'],
+        \App\Models\Torrent::PROMOTION_HALF_DOWN => ['50%', 'warning'],
+        \App\Models\Torrent::PROMOTION_HALF_DOWN_TWO_TIMES_UP => ['50% / 2× Up', 'warning'],
+        \App\Models\Torrent::PROMOTION_ONE_THIRD_DOWN => ['30%', 'warning'],
         default => null,
     };
 @endphp
@@ -28,17 +28,17 @@
             @endif
         </div>
         @if ($promotionBadge)
-            <span class="shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider {{ $promotionBadge[1] }}">
+            <x-ui.badge :variant="$promotionBadge[1]" size="sm" class="shrink-0">
                 {{ $promotionBadge[0] }}
-            </span>
+            </x-ui.badge>
         @endif
     </div>
 
     <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
         @if ($torrent->basic_category)
-            <span class="rounded-md bg-zinc-100 px-2 py-0.5 font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <x-ui.badge variant="neutral" size="sm" class="!tracking-normal !normal-case">
                 {{ $torrent->basic_category->name }}
-            </span>
+            </x-ui.badge>
         @endif
         <span>{{ \App\Livewire\TorrentBrowse::formatBytes((int) $torrent->size) }}</span>
         <span>•</span>

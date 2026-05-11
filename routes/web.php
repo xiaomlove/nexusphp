@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticateController;
+use App\Http\Controllers\Dev\ComponentGalleryController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
@@ -76,6 +77,15 @@ Route::get('/confirmemail.php/{id}/{md5}/{email}', ConfirmEmailController::class
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
+
+    /*
+     * Internal Modern-UI component gallery (admin-only).
+     * Renders every `<x-ui.*>` Blade component under
+     * `resources/views/components/ui/`. See the controller doc-block
+     * for the rationale; the route is staff-gated so it's never
+     * surfaced through public navigation.
+     */
+    Route::get('/dev/components', ComponentGalleryController::class)->name('dev.components');
 
     Route::post('/thanks.php', ThanksController::class)->name('legacy.thanks');
 
