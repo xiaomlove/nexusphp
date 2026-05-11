@@ -33,6 +33,46 @@ test.describe('@smoke /browse (Phase 3 spike)', () => {
         expect(html).toMatch(/href="[^"]*\/browse\?legacy=1"/);
     });
 
+    test('renders Phase 3.2 range inputs and sub-category dropdowns', async ({ page, context }) => {
+        await loginAs(context, 'admin');
+        const { html } = await smokeCheckPage(page, '/browse');
+
+        // The advanced-filters disclosure container is present.
+        expect(html).toMatch(/data-testid="advanced-filters"/);
+
+        // Range inputs (size, seeders, leechers, snatches — min + max).
+        expect(html).toMatch(/id="size_begin"/);
+        expect(html).toMatch(/id="size_end"/);
+        expect(html).toMatch(/id="seeders_begin"/);
+        expect(html).toMatch(/id="seeders_end"/);
+        expect(html).toMatch(/id="leechers_begin"/);
+        expect(html).toMatch(/id="leechers_end"/);
+        expect(html).toMatch(/id="times_completed_begin"/);
+        expect(html).toMatch(/id="times_completed_end"/);
+
+        // Sub-category dropdowns.
+        expect(html).toMatch(/id="subcat_source"/);
+        expect(html).toMatch(/id="subcat_medium"/);
+        expect(html).toMatch(/id="subcat_codec"/);
+        expect(html).toMatch(/id="subcat_standard"/);
+        expect(html).toMatch(/id="subcat_processing"/);
+        expect(html).toMatch(/id="subcat_team"/);
+        expect(html).toMatch(/id="subcat_audiocodec"/);
+    });
+
+    test('range filter ?size_begin survives a reload via URL binding', async ({ page, context }) => {
+        await loginAs(context, 'admin');
+        const response = await page.goto('/browse?size_begin=4');
+        expect(response, 'no response for /browse?size_begin=4').not.toBeNull();
+
+        // URL is preserved (Livewire's #[Url] binding round-trips on mount).
+        expect(page.url()).toMatch(/size_begin=4/);
+
+        // Advanced filters are auto-opened because a range value is set.
+        const html = await page.content();
+        expect(html).toMatch(/data-testid="advanced-filters"[^>]*\bopen\b/);
+    });
+
     test('?legacy=1 redirects to torrents.php', async ({ page, context }) => {
         await loginAs(context, 'admin');
         const response = await page.goto('/browse?legacy=1&sort=newest');

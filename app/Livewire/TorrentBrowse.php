@@ -8,6 +8,7 @@ use App\Models\Torrent;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -45,12 +46,30 @@ use Livewire\WithPagination;
  *    flag exists so the next Phase 3 PR that flips the URLs has
  *    the rollback path already wired (and tested).
  *
- * The legacy page kept very granular sub-category filters (sources
- * / media / codecs / standards / processings / teams / audiocodecs)
- * and numeric range filters (size / seeders / leechers / added).
- * These are intentionally **out of scope** for this spike — they
- * will land in follow-up Phase 3 PRs as separate, reviewable units.
- * The list of deferred filters is documented in the PR description.
+ * Phase 3.2 adds the rest of the filter surface that the legacy
+ * page exposed:
+ *
+ *  - Range filters (`size_begin` / `size_end` in GB,
+ *    `seeders_begin` / `seeders_end`, `leechers_begin` /
+ *    `leechers_end`, `times_completed_begin` /
+ *    `times_completed_end`). Empty values are dropped from the
+ *    URL and skipped from the query, matching legacy behaviour.
+ *
+ *  - Sub-category dropdowns (`source`, `medium`, `codec`,
+ *    `standard`, `processing`, `team`, `audiocodec`). Each maps
+ *    to a single tinyint column on `torrents`; option lists are
+ *    mode-aware so e.g. picking a movie section narrows
+ *    `codec` to movie codecs.
+ *
+ * Still out of scope (Phase 3.3+):
+ *  - `showsubcat` / `showsource` / `showcodec` … gates per
+ *    `SearchBox` (always render the dropdown for now; mode-aware
+ *    option list returns empty when the section doesn't use it).
+ *  - Multi-select sub-categories (legacy SQL supports
+ *    `source IN(…)`; UI is single-pick everywhere except the
+ *    legacy form builder, so we match the URL contract).
+ *  - `added_begin` / `added_end` date-range filter.
+ *  - `search_area` switches (description, owner, file list).
  */
 class TorrentBrowse extends Component
 {
@@ -140,6 +159,85 @@ class TorrentBrowse extends Component
      */
     #[Url(as: 'free', except: false)]
     public bool $onlyFree = false;
+
+    /**
+     * Size lower bound, in **gigabytes**. `null` means "no lower
+     * bound" and is dropped from the URL. Matches the legacy
+     * `size_begin` GET parameter, which `public/torrents.php`
+     * multiplies by `1024 ** 3` before comparing against
+     * `torrents.size` (bytes).
+     */
+    #[Url(as: 'size_begin', except: null)]
+    public ?int $sizeMin = null;
+
+    #[Url(as: 'size_end', except: null)]
+    public ?int $sizeMax = null;
+
+    #[Url(as: 'seeders_begin', except: null)]
+    public ?int $seedersMin = null;
+
+    #[Url(as: 'seeders_end', except: null)]
+    public ?int $seedersMax = null;
+
+    #[Url(as: 'leechers_begin', except: null)]
+    public ?int $leechersMin = null;
+
+    #[Url(as: 'leechers_end', except: null)]
+    public ?int $leechersMax = null;
+
+    /**
+     * "Snatches" = `times_completed`. Legacy URL parameter is
+     * `times_completed_begin` / `_end`.
+     */
+    #[Url(as: 'times_completed_begin', except: null)]
+    public ?int $snatchesMin = null;
+
+    #[Url(as: 'times_completed_end', except: null)]
+    public ?int $snatchesMax = null;
+
+    /**
+     * Sub-category filters — each is a single tinyint id picked from
+     * the corresponding lookup table. 0 means "no filter" and is
+     * elided from the URL. Mirrors `public/torrents.php`'s `source`,
+     * `medium`, `codec`, `standard`, `processing`, `team`,
+     * `audiocodec` GET params.
+     */
+    #[Url(as: 'source', except: 0)]
+    public int $source = 0;
+
+    #[Url(as: 'medium', except: 0)]
+    public int $medium = 0;
+
+    #[Url(as: 'codec', except: 0)]
+    public int $codec = 0;
+
+    #[Url(as: 'standard', except: 0)]
+    public int $standard = 0;
+
+    #[Url(as: 'processing', except: 0)]
+    public int $processing = 0;
+
+    #[Url(as: 'team', except: 0)]
+    public int $team = 0;
+
+    #[Url(as: 'audiocodec', except: 0)]
+    public int $audiocodec = 0;
+
+    /**
+     * Legacy column ↔ option-table map for the sub-category
+     * filters. Keys are the property name on this component; the
+     * value's `column` is the `torrents` column to filter on and
+     * `table` is the lookup table used to populate the dropdown.
+     */
+    private const SUBCATEGORIES = [
+        'source' => ['column' => 'source', 'table' => 'sources', 'label' => 'Source'],
+        'medium' => ['column' => 'medium', 'table' => 'media', 'label' => 'Medium'],
+        'codec' => ['column' => 'codec', 'table' => 'codecs', 'label' => 'Codec'],
+        'standard' => ['column' => 'standard', 'table' => 'standards', 'label' => 'Standard'],
+        'processing' => ['column' => 'processing', 'table' => 'processings', 'label' => 'Processing'],
+        'team' => ['column' => 'team', 'table' => 'teams', 'label' => 'Team'],
+        'audiocodec' => ['column' => 'audiocodec', 'table' => 'audiocodecs', 'label' => 'Audio codec'],
+    ];
 
     private const SORTS = [
         'newest' => ['column' => 'added', 'direction' => 'desc', 'label' => 'Newest'],
@@ -245,6 +343,81 @@ class TorrentBrowse extends Component
         $this->resetPage();
     }
 
+    public function updatingSizeMin(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSizeMax(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSeedersMin(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSeedersMax(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingLeechersMin(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingLeechersMax(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSnatchesMin(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSnatchesMax(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSource(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMedium(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCodec(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStandard(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingProcessing(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTeam(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingAudiocodec(): void
+    {
+        $this->resetPage();
+    }
+
     public function clearFilters(): void
     {
         $this->reset([
@@ -256,6 +429,21 @@ class TorrentBrowse extends Component
             'bookmarked',
             'tagId',
             'onlyFree',
+            'sizeMin',
+            'sizeMax',
+            'seedersMin',
+            'seedersMax',
+            'leechersMin',
+            'leechersMax',
+            'snatchesMin',
+            'snatchesMax',
+            'source',
+            'medium',
+            'codec',
+            'standard',
+            'processing',
+            'team',
+            'audiocodec',
         ]);
         $this->sort = 'newest';
         $this->spState = self::SPSTATE_ALL;
@@ -326,6 +514,43 @@ class TorrentBrowse extends Component
         return $query->get(['id', 'name', 'mode']);
     }
 
+    /**
+     * Per-property dropdown options for every sub-category filter,
+     * keyed by the public property name on this component
+     * (`source`, `medium`, …). Each entry's `options` is an array
+     * of `{id, name}` rows already ordered by `sort_index, id`,
+     * matching `searchbox_item_list()` in `include/functions.php`.
+     * When the user has picked a specific section (`mode > 0`)
+     * the lookup is narrowed to rows where `mode = 0` (global)
+     * or `mode = $this->mode` (section-specific) — same shape as
+     * the legacy `searchbox_item_list($table, $sectiontype)` call.
+     *
+     * @return array<string, array{label: string, options: array<int, array{id: int, name: string}>}>
+     */
+    #[Computed]
+    public function subcategoryOptions(): array
+    {
+        $out = [];
+        foreach (self::SUBCATEGORIES as $property => $cfg) {
+            $query = DB::table($cfg['table'])
+                ->select(['id', 'name'])
+                ->orderBy('sort_index')
+                ->orderBy('id');
+            if ($this->mode > 0) {
+                $query->whereIn('mode', [0, $this->mode]);
+            }
+            $rows = $query->get()
+                ->map(fn ($row) => ['id' => (int) $row->id, 'name' => (string) $row->name])
+                ->all();
+            $out[$property] = [
+                'label' => $cfg['label'],
+                'options' => $rows,
+            ];
+        }
+
+        return $out;
+    }
+
     public function render(): View
     {
         $sortConfig = self::SORTS[$this->sort] ?? self::SORTS['newest'];
@@ -338,6 +563,46 @@ class TorrentBrowse extends Component
             $query->where('visible', Torrent::VISIBLE_YES);
         } elseif ($this->includeDead === self::INCLUDE_DEAD_DEAD) {
             $query->where('visible', Torrent::VISIBLE_NO);
+        }
+
+        // Range filters — `null` ↔ "no bound", matching the legacy
+        // `isset() && ctype_digit()` guard in `public/torrents.php`.
+        // Size bounds arrive in GB; convert to bytes here so the
+        // comparison can use the existing `torrents.size` column.
+        $gb = 1024 ** 3;
+        if ($this->sizeMin !== null && $this->sizeMin > 0) {
+            $query->where('size', '>=', $this->sizeMin * $gb);
+        }
+        if ($this->sizeMax !== null && $this->sizeMax > 0) {
+            $query->where('size', '<=', $this->sizeMax * $gb);
+        }
+        if ($this->seedersMin !== null && $this->seedersMin >= 0) {
+            $query->where('seeders', '>=', $this->seedersMin);
+        }
+        if ($this->seedersMax !== null && $this->seedersMax >= 0) {
+            $query->where('seeders', '<=', $this->seedersMax);
+        }
+        if ($this->leechersMin !== null && $this->leechersMin >= 0) {
+            $query->where('leechers', '>=', $this->leechersMin);
+        }
+        if ($this->leechersMax !== null && $this->leechersMax >= 0) {
+            $query->where('leechers', '<=', $this->leechersMax);
+        }
+        if ($this->snatchesMin !== null && $this->snatchesMin >= 0) {
+            $query->where('times_completed', '>=', $this->snatchesMin);
+        }
+        if ($this->snatchesMax !== null && $this->snatchesMax >= 0) {
+            $query->where('times_completed', '<=', $this->snatchesMax);
+        }
+
+        // Sub-category filters — each property is a single tinyint
+        // id (0 = "no filter"). Iterate the static map so each
+        // filter is applied identically.
+        foreach (self::SUBCATEGORIES as $property => $cfg) {
+            $value = $this->{$property};
+            if (is_int($value) && $value > 0) {
+                $query->where($cfg['column'], $value);
+            }
         }
 
         if ($this->search !== '') {
