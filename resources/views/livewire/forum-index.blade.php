@@ -1,35 +1,30 @@
 <div class="space-y-6">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Forum</h1>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                Modern Livewire view of the discussion forums. Posting and topic discussion still happen on the legacy page.
-            </p>
-        </div>
-        <a
-            href="/forums.php"
-            class="inline-flex items-center gap-1 self-start rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-            title="Open the legacy forum page (post, reply, edit)"
-        >
+    <x-ui.page-header title="Forum">
+        <x-slot:description>
+            Modern Livewire view of the discussion forums. Posting and topic discussion still happen on the legacy page.
+        </x-slot:description>
+    </x-ui.page-header>
+
+    <div class="flex justify-end">
+        <x-ui.button href="/forums.php" variant="secondary" size="sm" title="Open the legacy forum page (post, reply, edit)">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 14L21 3m0 0v7m0-7h-7M5 5h6v6"/>
             </svg>
             Open legacy forum
-        </a>
+        </x-ui.button>
     </div>
 
     @if ($overforums->isEmpty())
-        <div class="rounded-xl border border-dashed border-zinc-300 bg-white p-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <p class="text-base font-medium text-zinc-700 dark:text-zinc-300">No forums available.</p>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">You may not have permission to view any sections.</p>
-        </div>
+        <x-ui.empty-state title="No forums available.">
+            You may not have permission to view any sections.
+        </x-ui.empty-state>
     @endif
 
     @foreach ($overforums as $over)
         @php
             $forums = $forumsByOverforum->get($over->id, collect());
         @endphp
-        <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <x-ui.card padding="none" class="overflow-hidden">
             <header class="flex items-baseline justify-between border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">{{ $over->name }}</h2>
                 @if (! empty($over->description))
@@ -88,6 +83,6 @@
                     @endforeach
                 </ul>
             @endif
-        </section>
+        </x-ui.card>
     @endforeach
 </div>
