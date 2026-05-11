@@ -27,31 +27,33 @@ import { loginAs } from '../helpers/api-login';
  *      contains rows".)
  */
 test.describe('@behavior search-as-you-type (#59)', () => {
-    test('GET /torrents.php exposes #searchinput, #torrents-results and the live-search JS', async ({
+    test('GET /torrents.php?legacy=1 exposes #searchinput, #torrents-results and the live-search JS', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
-        // We deliberately use `request.get` instead of `page.goto` +
-        // `page.content()` here. The browser-driven path proved flaky
-        // on PHP's built-in single-threaded webserver (CI): when
-        // multiple workers share the server, dependent assets (CSS,
+        // After the Strangler Fig flip, plain /torrents.php 302→/browse.
+        // The legacy rendering (with live-search wiring) is accessible
+        // via ?legacy=1. We deliberately use `request.get` instead of
+        // `page.goto` + `page.content()` here. The browser-driven path
+        // proved flaky on PHP's built-in single-threaded webserver (CI):
+        // when multiple workers share the server, dependent assets (CSS,
         // JS) can serialise behind the parent HTML response and the
         // page `load` event fires while the body is still streaming —
         // `page.content()` then sees a partial DOM that has the
         // `<head>` but never reached the search-form `<input>` deeper
         // in `<body>`. The raw HTTP response is captured fully on
         // navigation, so this is deterministic.
-        const response = await page.request.get('/torrents.php');
-        expect(response.status(), 'unexpected status for /torrents.php').toBe(200);
+        const response = await page.request.get('/torrents.php?legacy=1');
+        expect(response.status(), 'unexpected status for /torrents.php?legacy=1').toBe(200);
 
         const html = await response.text();
 
-        expect(html, 'expected #searchinput on /torrents.php').toMatch(
+        expect(html, 'expected #searchinput on /torrents.php?legacy=1').toMatch(
             /id=["']searchinput["']/,
         );
-        expect(html, 'expected #torrents-results wrapper on /torrents.php').toMatch(
+        expect(html, 'expected #torrents-results wrapper on /torrents.php?legacy=1').toMatch(
             /id=["']torrents-results["']/,
         );
         expect(html, 'expected live-search handler wired to #searchinput').toMatch(
@@ -65,15 +67,15 @@ test.describe('@behavior search-as-you-type (#59)', () => {
         );
     });
 
-    test('GET /torrents.php?ajax=1 returns a results FRAGMENT (no <html>/<head>)', async ({
+    test('GET /torrents.php?ajax=1 returns a results FRAGMENT (no <html>/<head>) — bypass redirect', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
-        // request.get goes through the same auth context but doesn't run
-        // the page lifecycle / asset loads, so we get the raw bytes the
-        // live-search handler would `fetch()` and `innerHTML=`.
+        // ?ajax=1 is one of the legacy escape hatches and must NOT be
+        // redirected to /browse. request.get goes through the same auth
+        // context but doesn't run the page lifecycle / asset loads.
         const response = await page.request.get('/torrents.php?ajax=1');
         expect(response.status(), 'unexpected status for ?ajax=1').toBe(200);
 

@@ -59,7 +59,9 @@ class TorrentBrowseTest extends FeatureTestCase
         $location = (string) $response->headers->get('Location');
         $this->assertStringContainsString('/torrents.php', $location);
         $this->assertStringContainsString('sort=newest', $location);
-        $this->assertStringNotContainsString('legacy=', $location);
+        // After the Strangler Fig flip, legacy=1 must survive the hop
+        // so /torrents.php's guard sees it and stays on legacy.
+        $this->assertStringContainsString('legacy=1', $location);
     }
 
     public function test_spstate_free_filter_keeps_only_free_torrents(): void

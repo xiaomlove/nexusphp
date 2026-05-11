@@ -276,10 +276,12 @@ class TorrentBrowse extends Component
                 ->except('legacy')
                 ->all();
 
-            $url = '/torrents.php';
-            if (! empty($query)) {
-                $url .= '?'.http_build_query($query);
-            }
+            // Pass `legacy=1` through so the Strangler Fig redirect at
+            // the top of `public/torrents.php` keeps the user on legacy
+            // instead of bouncing them back to `/browse`.
+            $query['legacy'] = '1';
+
+            $url = '/torrents.php?'.http_build_query($query);
 
             return redirect($url);
         }

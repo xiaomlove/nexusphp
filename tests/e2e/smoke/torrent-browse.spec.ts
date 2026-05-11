@@ -77,18 +77,17 @@ test.describe('@smoke /browse (Phase 3 spike)', () => {
         expect(html).toMatch(/data-testid="advanced-filters"/);
     });
 
-    test('?legacy=1 redirects to torrents.php', async ({ page, context }) => {
+    test('?legacy=1 redirects to torrents.php?legacy=1 (stays on legacy)', async ({ page, context }) => {
         await loginAs(context, 'admin');
         const response = await page.goto('/browse?legacy=1&sort=newest');
 
         expect(response, 'no response for /browse?legacy=1').not.toBeNull();
 
-        // Either the browser already followed the redirect into
-        // torrents.php (final URL contains /torrents.php) or we received
-        // a real 30x with the redirect target. Both are valid because
-        // Playwright follows redirects by default.
+        // After the Strangler Fig flip, /browse?legacy=1 must land on
+        // /torrents.php?legacy=1 (the escape hatch that keeps the user
+        // on legacy — without it, /torrents.php 302→/browse would loop).
         expect(page.url(), 'expected to land on /torrents.php').toMatch(/\/torrents\.php/);
         expect(page.url(), 'expected sort=newest to survive the hop').toMatch(/sort=newest/);
-        expect(page.url(), 'expected legacy= to be stripped from URL').not.toMatch(/legacy=/);
+        expect(page.url(), 'expected legacy=1 to survive so the flip does not bounce back').toMatch(/legacy=1/);
     });
 });
