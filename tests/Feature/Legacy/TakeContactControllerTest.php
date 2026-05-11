@@ -231,7 +231,10 @@ class TakeContactControllerTest extends FeatureTestCase
     {
         $user = $this->createUser(['class' => User::CLASS_USER]);
         $this->stampLastStaffMsg($user->id, Carbon::now()->subSeconds(10));
-        $this->actingAs($user, 'nexus-web');
+        // `actingAs()` puts the *in-memory* model instance in the guard,
+        // so the controller reads `$user->last_staffmsg` from there, not
+        // from the DB. Refresh it after the query-builder stamp.
+        $this->actingAs($user->refresh(), 'nexus-web');
 
         $response = $this->postJson('/takecontact.php', [
             'subject' => 'help',
@@ -252,7 +255,7 @@ class TakeContactControllerTest extends FeatureTestCase
     {
         $user = $this->createUser(['class' => User::CLASS_USER]);
         $this->stampLastStaffMsg($user->id, Carbon::now()->subSeconds(120));
-        $this->actingAs($user, 'nexus-web');
+        $this->actingAs($user->refresh(), 'nexus-web');
 
         $response = $this->post('/takecontact.php', [
             'subject' => 'help',
@@ -270,7 +273,7 @@ class TakeContactControllerTest extends FeatureTestCase
     {
         $user = $this->createUser(['class' => (string) self::STAFF_CLASS]);
         $this->stampLastStaffMsg($user->id, Carbon::now()->subSeconds(2));
-        $this->actingAs($user, 'nexus-web');
+        $this->actingAs($user->refresh(), 'nexus-web');
 
         $response = $this->post('/takecontact.php', [
             'subject' => 'staff-internal',
