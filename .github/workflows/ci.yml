@@ -100,12 +100,15 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=2G --no-progress
 
   phpunit:
-    name: PHPUnit (PHP ${{ matrix.php }})
+    name: PHPUnit (PHP 8.3)
+    # Per-PR run is pinned to PHP 8.3 to match the rest of CI
+    # (pint / phpstan / phpunit-feature / e2e all use 8.3). The
+    # other supported versions (PHP 8.2 and 8.4 — see composer.json
+    # `"php": ">=8.2 <8.6"`) are covered by the nightly matrix at
+    # .github/workflows/phpunit-php-matrix-nightly.yml so a per-PR
+    # green run still implies the Unit suite passes everywhere we
+    # ship.
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['8.2', '8.3', '8.4']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -113,7 +116,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '8.3'
           extensions: gmp, intl, bcmath, gd, mbstring, redis, pdo_mysql, pdo_pgsql, sqlite3
           coverage: none
           tools: composer:v2
@@ -122,8 +125,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vendor
-          key: composer-${{ runner.os }}-php${{ matrix.php }}-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-${{ runner.os }}-php${{ matrix.php }}-
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.3-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
