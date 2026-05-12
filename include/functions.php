@@ -2932,10 +2932,20 @@ if ($msgalert)
 	{
 		$new_news = $Cache->get_value('user_'.$CURUSER["id"].'_unread_news_count');
 		if ($new_news == ""){
-			$new_news = (int) \Nexus\Database\NexusDB::table('news')
-				->where('notify', 'yes')
-				->where('added', '>', $CURUSER['last_home'])
-				->count();
+			// Users who have never visited /index.php carry a NULL `last_home`
+			// (the column allows NULL and is only populated by index.php on
+			// each home-page hit). The legacy `get_row_count(... added > sqlesc($CURUSER['last_home']))`
+			// rendered as `added > null` and returned 0 rows; the Query
+			// Builder rejects the same expression with InvalidArgumentException.
+			// Preserve the legacy semantics by short-circuiting to 0.
+			if (empty($CURUSER['last_home'])) {
+				$new_news = 0;
+			} else {
+				$new_news = (int) \Nexus\Database\NexusDB::table('news')
+					->where('notify', 'yes')
+					->where('added', '>', $CURUSER['last_home'])
+					->count();
+			}
 			$Cache->cache_value('user_'.$CURUSER["id"].'_unread_news_count', $new_news, 300);
 		}
 		if ($new_news > 0)
