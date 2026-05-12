@@ -51,14 +51,26 @@ class Kernel extends ConsoleKernel
         });
         $schedule->command('meilisearch:import')->weeklyOn(1, '03:00');
         $schedule->command('torrent:load_pieces_hash')->dailyAt('01:00');
-        $schedule->job(new CheckQueueFailedJobs)->everySixHours();
-        $schedule->job(new MaintainPluginState)->everyMinute();
-        $schedule->job(new UpdateIsSeedBoxFromUserRecordsCache)->everySixHours();
-        $schedule->job(new CheckCleanup)->everyFifteenMinutes();
-        $schedule->job(new SaveIpLogCacheToDB)->hourly();
-        $schedule->job(new RemoveUserWarning)->everyTwentySeconds();
-        $schedule->job(new RemoveUserVipStatus)->everyMinute();
-        $schedule->job(new RemoveUserDonorStatus)->everyMinute();
+        // Scheduler-level `withoutOverlapping()` complements the queue-side
+        // `WithoutOverlapping` middleware on the `ShouldQueue` jobs below:
+        //   * For non-`ShouldQueue` jobs (RemoveUser{Warning,VipStatus,
+        //     DonorStatus}, MaintainPluginState, CheckCleanup) the job
+        //     handler runs synchronously inside `schedule:run`, so the
+        //     scheduler lock is the only defence against a slow run
+        //     overrunning the next cadence tick.
+        //   * For `ShouldQueue` jobs (CheckQueueFailedJobs,
+        //     UpdateIsSeedBoxFromUserRecordsCache, SaveIpLogCacheToDB)
+        //     this prevents the scheduler from re-dispatching the same
+        //     job while a previous dispatch is still in the queue but
+        //     not yet picked up by a worker.
+        $schedule->job(new CheckQueueFailedJobs)->everySixHours()->withoutOverlapping();
+        $schedule->job(new MaintainPluginState)->everyMinute()->withoutOverlapping();
+        $schedule->job(new UpdateIsSeedBoxFromUserRecordsCache)->everySixHours()->withoutOverlapping();
+        $schedule->job(new CheckCleanup)->everyFifteenMinutes()->withoutOverlapping();
+        $schedule->job(new SaveIpLogCacheToDB)->hourly()->withoutOverlapping();
+        $schedule->job(new RemoveUserWarning)->everyTwentySeconds()->withoutOverlapping();
+        $schedule->job(new RemoveUserVipStatus)->everyMinute()->withoutOverlapping();
+        $schedule->job(new RemoveUserDonorStatus)->everyMinute()->withoutOverlapping();
 
     }
 
