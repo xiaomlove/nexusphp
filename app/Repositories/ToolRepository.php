@@ -454,8 +454,19 @@ class ToolRepository extends BaseRepository
         $result['attendance'] = $attendance ? 0 : 1;
 
         // unread news
-        $count = News::query()->where('added', '>', $user->last_home)->count();
-        $result['news'] = $count;
+        // Users who have never visited /index.php carry a NULL `last_home`
+        // (the column is nullable; `public/index.php` populates it on each
+        // home-page hit, and `NewsController@markAsRead` mirrors that for
+        // the API). Laravel's Query Builder rejects `where('added', '>', null)`
+        // with `InvalidArgumentException: Illegal operator and value combination`.
+        // Preserve the legacy semantics (which rendered SQL `added > null`
+        // and returned 0 rows under 3-valued logic) by short-circuiting to 0.
+        // Sibling of the include/functions.php:2941 guard added in PR #150.
+        if (empty($user->last_home)) {
+            $result['news'] = 0;
+        } else {
+            $result['news'] = News::query()->where('added', '>', $user->last_home)->count();
+        }
 
         // unread messages
         $count = Message::query()->where('receiver', $user->id)->where('unread', 'yes')->count();
