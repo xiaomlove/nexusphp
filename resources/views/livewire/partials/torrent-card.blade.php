@@ -14,7 +14,7 @@
 @endphp
 
 <a
-    href="/details.php?id={{ $torrent->id }}"
+    href="/torrent/{{ $torrent->id }}"
     wire:key="torrent-{{ $torrent->id }}"
     class="group flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-primary-700"
 >

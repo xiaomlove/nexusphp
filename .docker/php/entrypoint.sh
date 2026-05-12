@@ -71,6 +71,17 @@ VENDOR_AUTOLOAD_FILE="${ROOT_PATH}/vendor/autoload.php"
 mkdir -p "$ROOT_PATH/storage" "$ROOT_PATH/bootstrap/cache"
 chown -R www-data:www-data "$ROOT_PATH/storage" "$ROOT_PATH/bootstrap/cache"
 
+# `torrenttable()` in `include/functions.php` unconditionally instantiates
+# `\Nexus\Imdb\Imdb` whenever the torrent listing has at least one row,
+# which `mkdir`s `imdb/cache/` and `imdb/images/` if they don't exist
+# yet. Both directories live under the bind-mounted repo root so the
+# host owner survives across rebuilds, but the FPM workers run as
+# `www-data` and can't create them. Pre-creating them with the right
+# owner avoids a `Fatal error: Uncaught Nexus\Imdb\ImdbException: imdb
+# cache dir can not create` half-way through `/torrents.php` rendering.
+mkdir -p "$ROOT_PATH/imdb/cache" "$ROOT_PATH/imdb/images"
+chown www-data:www-data "$ROOT_PATH/imdb/cache" "$ROOT_PATH/imdb/images" 2>/dev/null || true
+
 if [ "$SERVICE_NAME" = "php" ]; then
     if [ ! -f "$ENV_FILE" ] || [ ! -f "$VENDOR_AUTOLOAD_FILE" ]; then
       echo_info ".env file: $ENV_FILE or vendor autoload file: $VENDOR_AUTOLOAD_FILE not exists, copy $SOURCE_DIR to $TARGET_DIR ..."

@@ -18,6 +18,7 @@ use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
 use App\Livewire\TorrentBrowse;
+use App\Livewire\TorrentDetail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -77,6 +78,19 @@ Route::get('/confirmemail.php/{id}/{md5}/{email}', ConfirmEmailController::class
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
+
+    /*
+     * Phase 3.4 / Modern UI A3 — `App\Livewire\TorrentDetail` is the
+     * Modern UI shell for the legacy `public/details.php` page. Only
+     * the core metadata + download CTA is rendered here; the
+     * "View full legacy page" link in the page header is the escape
+     * hatch back to the still-canonical detail page. `?legacy=1`
+     * also redirects to `/details.php?id={id}&legacy=1` so the
+     * canary rollback flag works the same way it does on `/browse`.
+     */
+    Route::get('/torrent/{id}', TorrentDetail::class)
+        ->where('id', '[0-9]+')
+        ->name('torrents.detail');
 
     /*
      * Internal Modern-UI component gallery (admin-only).

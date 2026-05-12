@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\E2eTorrentsSeeder;
 use Database\Seeders\E2eUsersSeeder;
 use Database\Seeders\SettingsTableSeeder;
 use Illuminate\Console\Command;
@@ -88,7 +89,9 @@ class E2eBootstrap extends Command
         $this->seedSettingsIfMissing();
         $this->applyE2eSettings();
         $this->seedE2eUsers();
+        $this->seedE2eTorrents();
         $this->createInstallLock();
+        $this->ensureImdbCacheDirs();
         $this->flushSettingsCache();
         $this->resetLoginAttempts();
 
@@ -200,6 +203,21 @@ class E2eBootstrap extends Command
         }
     }
 
+    private function seedE2eTorrents(): void
+    {
+        $this->line('  running E2eTorrentsSeeder');
+        Artisan::call('db:seed', [
+            '--class' => E2eTorrentsSeeder::class,
+            '--force' => true,
+        ]);
+
+        foreach (preg_split("/\r?\n/", trim((string) Artisan::output())) as $line) {
+            if ($line !== '') {
+                $this->line('    '.$line);
+            }
+        }
+    }
+
     private function createInstallLock(): void
     {
         $path = base_path(Install::INSTALL_LOCK_FILE);
@@ -212,6 +230,38 @@ class E2eBootstrap extends Command
 
         file_put_contents($path, 'Created by artisan e2e:bootstrap at '.now()->toIso8601String().PHP_EOL);
         $this->line(sprintf('  install lock %s created', Install::INSTALL_LOCK_FILE));
+    }
+
+    /**
+     * `torrenttable()` in `include/functions.php` unconditionally
+     * instantiates `\Nexus\Imdb\Imdb` when the listing has at least
+     * one row. The IMDb constructor `mkdir`s `imdb/cache/` and
+     * `imdb/images/` if they don't exist, and an FPM worker running
+     * as `www-data` can't create directories under the host-owned
+     * repo. Pre-creating them here (`0755` is enough because the dir
+     * is then written from the same PHP process) avoids a
+     * `Fatal error: Uncaught Nexus\Imdb\ImdbException: imdb cache
+     * dir can not create` mid-render of `/torrents.php?legacy=1`
+     * once `E2eTorrentsSeeder` has populated a torrent.
+     */
+    private function ensureImdbCacheDirs(): void
+    {
+        foreach (['imdb/cache', 'imdb/images'] as $relative) {
+            $path = base_path($relative);
+            if (is_dir($path)) {
+                $this->line(sprintf('  imdb dir %s already exists', $relative));
+
+                continue;
+            }
+
+            if (! @mkdir($path, 0o777, true) && ! is_dir($path)) {
+                $this->warn(sprintf('  imdb dir %s could not be created', $relative));
+
+                continue;
+            }
+
+            $this->line(sprintf('  imdb dir %s created', $relative));
+        }
     }
 
     private function flushSettingsCache(): void
