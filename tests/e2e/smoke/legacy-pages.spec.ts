@@ -14,10 +14,9 @@ import { smokeCheckPage } from '../helpers/smoke';
  *   - no non-noise JS console errors
  *   - a page-specific substring (title or heading) is present
  *
- * The "details torrent" case intentionally uses id=1 even though no torrent
- * is seeded; legacy NexusPHP renders "Error: No torrent with this ID" through
- * its standard layout, which is still a green-path render of the error
- * branch and exercises the same NexusDB code paths the refactor touches.
+ * `E2eTorrentsSeeder` seeds a deterministic torrent with `id=1`, so the
+ * `/details.php?id=1` case exercises the legacy happy-path render
+ * (the same query path the `mysql_*`-→-NexusDB refactor wave touched).
  */
 interface LegacyPageCase {
     description: string;
@@ -38,11 +37,11 @@ const PAGES: LegacyPageCase[] = [
         contains: /Browse torrents/i,
     },
     {
-        description: 'details.php (no-torrent error path)',
+        description: 'details.php (seeded torrent happy path)',
         url: '/details.php?id=1',
-        // legacy error template renders "Error" inside <h2>; we want at least
-        // the standard chrome ("Powered by NexusPHP") so we know the layout
-        // booted instead of crashing midway through.
+        // E2eTorrentsSeeder inserts the "E2E Test Torrent" row at id=1
+        // and the standard NexusPHP chrome ("Powered by NexusPHP")
+        // appears in both the happy-path and error templates.
         contains: /Powered by NexusPHP/i,
     },
     {
