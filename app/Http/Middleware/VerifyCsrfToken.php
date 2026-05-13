@@ -32,5 +32,9 @@ class VerifyCsrfToken extends Middleware
         // callers (some legacy XHRs) reach it without a CSRF token.
         // The other batch #2 endpoints are GET-only and not listed.
         'logout.php',
+        // Phase 2 batch #4: `/clearcache.php` accepts POST without a
+        // CSRF token (the legacy moderator form has no `@csrf` field).
+        // `/smilies.php` and `/allagents.php` are GET-only.
+        'clearcache.php',
     ];
 }

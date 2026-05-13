@@ -84,6 +84,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #4 — legacy migration routes.
+    location = /smilies.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /allagents.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /clearcache.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }

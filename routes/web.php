@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
+use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
+use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeContactController;
@@ -148,6 +151,33 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * default `location ~* \.php$` → `@nexus_app` rewrite).
      */
     Route::get('/moresmilies.php', MoreSmiliesController::class)->name('legacy.moresmilies');
+
+    /*
+     * Phase 2 batch #4 — replaces `public/smilies.php` (deleted in
+     * this PR). The URL stays `/smilies.php` so legacy compose-helper
+     * links keep working without template changes. Authed-only, same
+     * `auth.nexus:nexus-web` guard as the rest of this group.
+     */
+    Route::get('/smilies.php', SmiliesController::class)->name('legacy.smilies');
+
+    /*
+     * Phase 2 batch #4 — replaces `public/allagents.php` (deleted in
+     * this PR). Moderator-only listing of BitTorrent peer agents and
+     * their connection counts; the class check lives inside the
+     * controller (returns 403 below the threshold).
+     */
+    Route::get('/allagents.php', AllAgentsController::class)->name('legacy.allagents');
+
+    /*
+     * Phase 2 batch #4 — replaces `public/clearcache.php` (deleted in
+     * this PR). Moderator-only tool that issues `Cache::forget()` for
+     * a single Redis key (with optional per-language-folder fan-out
+     * via the `multilang=yes` checkbox). Same `auth.nexus:nexus-web`
+     * guard + in-controller class gate as `/allagents.php`. The POST
+     * verb is CSRF-exempt — see `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::match(['get', 'post'], '/clearcache.php', ClearCacheController::class)
+        ->name('legacy.clearcache');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
