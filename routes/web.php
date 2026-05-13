@@ -10,7 +10,10 @@ use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ContactStaffController;
+use App\Http\Controllers\Legacy\DelAcctAdminController;
+use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DonatedController;
+use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
@@ -242,6 +245,36 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * GET branch); CSRF-exempt.
      */
     Route::post('/nowarn.php', NoWarnController::class)->name('legacy.nowarn');
+
+    /*
+     * Phase 2 batch #7 — replaces `public/freeleech.php` (deleted
+     * in this PR). Administrator-only global promotion-state
+     * editor: `?action=...` flips `torrents_state.global_sp_state`,
+     * flushes the `global_promotion_state` cache, and dispatches
+     * `TorrentPromotionChanged`. POST verb is CSRF-exempt — the
+     * legacy admin UI uses GET links from the menu, but POST is
+     * accepted as well to match the legacy script's
+     * `$_POST['action'] ?? $_GET['action']` precedence.
+     */
+    Route::match(['get', 'post'], '/freeleech.php', FreeleechController::class)
+        ->name('legacy.freeleech');
+
+    /*
+     * Phase 2 batch #7 — replaces `public/deletedisabled.php`
+     * (deleted in this PR). Sysop-only bulk delete of users with
+     * `enabled='no'`. POST `sure=1` triggers the delete; CSRF-exempt.
+     */
+    Route::match(['get', 'post'], '/deletedisabled.php', DeleteDisabledController::class)
+        ->name('legacy.deletedisabled');
+
+    /*
+     * Phase 2 batch #7 — replaces `public/delacctadmin.php` (deleted
+     * in this PR). Permission `user-delete` (admin+) form that
+     * deletes a single account via `UserRepository::destroy`.
+     * CSRF-exempt.
+     */
+    Route::match(['get', 'post'], '/delacctadmin.php', DelAcctAdminController::class)
+        ->name('legacy.delacctadmin');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
