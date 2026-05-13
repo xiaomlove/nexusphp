@@ -43,7 +43,7 @@
         "ext-zend-opcache": "*",
         "ext-zip": "*",
         "calebporzio/sushi": "^2.5",
-        "cybercog/laravel-clickhouse": "dev-master",
+        "cybercog/laravel-clickhouse": "^0.2.1",
         "elasticsearch/elasticsearch": "^7.16",
         "filament/filament": "~5.0",
         "flowframe/laravel-trend": "^0.4",
@@ -62,7 +62,7 @@
         "meilisearch/meilisearch-php": "^1.0",
         "minishlink/web-push": "^10.0",
         "orangehill/iseed": "^3.0",
-        "phpgangsta/googleauthenticator": "dev-master",
+        "phpgangsta/googleauthenticator": "dev-master#505c2af8337b559b33557f37cda38e5f843f3768",
         "rhilip/bencode": "^2.5.0",
         "rlanvin/php-ip": "^3.0",
         "sentry/sentry-laravel": "^4.0",
@@ -118,7 +118,6 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
-        "secure-http": false,
         "allow-plugins": {
             "php-http/discovery": true
         },
