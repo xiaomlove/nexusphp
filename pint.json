@@ -4,7 +4,6 @@
         "bootstrap/cache",
         "imdb",
         "include",
-        "nexus",
         "plugins",
         "public",
         "storage"

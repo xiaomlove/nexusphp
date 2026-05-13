@@ -8,16 +8,17 @@ use Illuminate\Cache\RedisLock;
 
 class NexusLock extends RedisLock
 {
-
     /**
      * @var \Redis
      */
     protected $redis;
+
     /**
      * NexusLock constructor.
-     * @param string $name
-     * @param int $seconds
-     * @param null $owner
+     *
+     * @param  string  $name
+     * @param  int  $seconds
+     * @param  null  $owner
      */
     public function __construct($name, $seconds, $owner = null)
     {
@@ -54,11 +55,11 @@ class NexusLock extends RedisLock
     public static function lockOrFail($name, $seconds, $owner = null): NexusLock
     {
         $lock = new self($name, $seconds, $owner);
-        if (!$lock->acquire()) {
+        if (! $lock->acquire()) {
             do_log("$name failed to acquire lock", 'error');
             throw new LockFailException($name, $lock->owner());
         }
+
         return $lock;
     }
-
 }

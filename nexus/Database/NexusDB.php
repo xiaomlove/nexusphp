@@ -5,12 +5,14 @@ namespace Nexus\Database;
 use App\Models\OauthClient;
 use App\Models\PersonalAccessToken;
 use Illuminate\Container\Container;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Passport\Passport;
 use Laravel\Sanctum\Sanctum;
 
@@ -21,21 +23,15 @@ class NexusDB
     private static $instance;
 
     /**
-     * @var \Illuminate\Database\Connection
+     * @var Connection
      */
     private static $eloquentConnection;
 
     private $isConnected = false;
 
-    private function __construct()
-    {
+    private function __construct() {}
 
-    }
-
-    private function __clone()
-    {
-
-    }
+    private function __clone() {}
 
     const ELOQUENT_CONNECTION_NAME = 'mysql';
 
@@ -57,19 +53,21 @@ class NexusDB
             return self::$instance;
         }
         $instance = new self;
-//        $driver = new DBMysqli();
-        $driver = new DBPdo();
+        //        $driver = new DBMysqli();
+        $driver = new DBPdo;
         $instance->setDriver($driver);
+
         return self::$instance = $instance;
     }
 
     public function connect($host, $username, $password, $database, $port, $driver = 'mysql')
     {
         $result = $this->driver->connect($host, $username, $password, $database, $port, $driver);
-        if (!$result) {
+        if (! $result) {
             throw new DatabaseException(sprintf('[%s]: %s', $this->errno(), $this->error()));
         }
         $this->isConnected = true;
+
         return true;
     }
 
@@ -79,7 +77,8 @@ class NexusDB
             return null;
         }
         $dbType = self::getConnectionName();
-        $config = nexus_config('nexus.database.connections.' . $dbType);
+        $config = nexus_config('nexus.database.connections.'.$dbType);
+
         return $this->connect($config['host'], $config['username'], $config['password'], $config['database'], $config['port'], $dbType);
     }
 
@@ -87,9 +86,10 @@ class NexusDB
     {
         try {
             $this->autoConnect();
+
             return $this->driver->query($sql);
         } catch (\Exception $e) {
-            do_log(sprintf("%s [%s] %s", $e->getMessage(), $sql, $e->getTraceAsString()));
+            do_log(sprintf('%s [%s] %s', $e->getMessage(), $sql, $e->getTraceAsString()));
             throw new DatabaseException($e->getMessage(), $sql);
         }
 
@@ -138,6 +138,7 @@ class NexusDB
     public function escapeString(string $string)
     {
         $this->autoConnect();
+
         return $this->driver->escapeString($string);
     }
 
@@ -163,54 +164,63 @@ class NexusDB
 
     public static function insert($table, $data)
     {
-        if (empty($table) || empty($data) || !is_array($data)) {
-            throw new DatabaseException("require table and data(array).");
+        if (empty($table) || empty($data) || ! is_array($data)) {
+            throw new DatabaseException('require table and data(array).');
         }
-        if (!IN_NEXUS) {
+        if (! IN_NEXUS) {
             return DB::table($table)->insertGetId($data);
         }
-        $fields = array_map(function ($value) {return "$value";}, array_keys($data));
-        $values = array_map(function ($value) {return self::escape($value);}, array_values($data));
-        $sql = sprintf("insert into %s (%s) values (%s)", $table, implode(', ', $fields), implode(', ', $values));
+        $fields = array_map(function ($value) {
+            return "$value";
+        }, array_keys($data));
+        $values = array_map(function ($value) {
+            return self::escape($value);
+        }, array_values($data));
+        $sql = sprintf('insert into %s (%s) values (%s)', $table, implode(', ', $fields), implode(', ', $values));
         self::executeSql($sql);
+
         return self::getInstance()->lastInsertId();
     }
 
     public static function update($table, $data, $whereStr)
     {
-        if (!IN_NEXUS) {
+        if (! IN_NEXUS) {
             return DB::table($table)->whereRaw($whereStr)->update($data);
         }
         $updateArr = [];
         foreach ($data as $field => $value) {
-            $updateArr[] = "`$field` = " . self::escape($value);
+            $updateArr[] = "`$field` = ".self::escape($value);
         }
-        $sql = sprintf("update `%s` set %s where %s", $table, implode(', ', $updateArr), $whereStr);
+        $sql = sprintf('update `%s` set %s where %s', $table, implode(', ', $updateArr), $whereStr);
         self::executeSql($sql);
+
         return self::getInstance()->affectedRows();
     }
 
     public static function delete($table, $whereStr, $limit = null)
     {
-        if (!IN_NEXUS) {
+        if (! IN_NEXUS) {
             $query = DB::table($table)->whereRaw($whereStr);
             if ($limit !== null) {
                 $query->limit($limit);
             }
+
             return $query->delete();
         }
         $sql = "delete from $table where $whereStr";
-        if (!is_null($limit)) {
+        if (! is_null($limit)) {
             $sql .= " limit $limit";
         }
         self::executeSql($sql);
+
         return self::getInstance()->affectedRows();
     }
 
     public static function getOne($table, $whereStr, $fields = '*')
     {
-        if (!IN_NEXUS) {
+        if (! IN_NEXUS) {
             $result = DB::table($table)->whereRaw($whereStr)->selectRaw($fields)->first();
+
             return $result ? json_decode(json_encode($result), true) : null;
         }
         if ($fields != '*') {
@@ -219,21 +229,23 @@ class NexusDB
             }
         }
         if (empty($fields)) {
-            do_log("args: " . json_encode(func_get_args()));
-            throw new DatabaseException("empty fields.");
+            do_log('args: '.json_encode(func_get_args()));
+            throw new DatabaseException('empty fields.');
         }
         $sql = "select $fields from $table where $whereStr limit 1";
         $res = self::executeSql($sql);
+
         return self::getInstance()->fetchAssoc($res);
     }
 
     public static function getAll($table, $whereStr, $fields = '*')
     {
-        if (!IN_NEXUS) {
+        if (! IN_NEXUS) {
             $result = DB::table($table)->whereRaw($whereStr)->selectRaw($fields)->get();
             if ($result->isEmpty()) {
                 return [];
             }
+
             return json_decode(json_encode($result), true);
         }
         if ($fields != '*') {
@@ -242,17 +254,19 @@ class NexusDB
             }
         }
         if (empty($fields)) {
-            do_log("args: " . json_encode(func_get_args()));
-            throw new DatabaseException("empty fields.");
+            do_log('args: '.json_encode(func_get_args()));
+            throw new DatabaseException('empty fields.');
         }
         $sql = "select $fields from $table where $whereStr";
+
         return self::select($sql);
     }
 
     public static function select(string $sql)
     {
-        if (!IN_NEXUS) {
+        if (! IN_NEXUS) {
             $result = DB::select($sql);
+
             return json_decode(json_encode($result), true);
         }
         $res = self::executeSql($sql);
@@ -261,6 +275,7 @@ class NexusDB
         while ($row = $instance->fetchAssoc($res)) {
             $result[] = $row;
         }
+
         return $result;
     }
 
@@ -269,7 +284,8 @@ class NexusDB
         if (is_null($value)) {
             return 'null';
         }
-        return "'" . self::getInstance()->escapeString((string) $value) . "'";
+
+        return "'".self::getInstance()->escapeString((string) $value)."'";
     }
 
     private static function executeSql(string $sql)
@@ -278,7 +294,7 @@ class NexusDB
         $result = self::getInstance()->query($sql);
         if (IN_NEXUS) {
             global $query_name;
-            if (!is_array($query_name)) {
+            if (! is_array($query_name)) {
                 $query_name = [];
             }
             $end = microtime(true);
@@ -287,6 +303,7 @@ class NexusDB
                 'time' => sprintf('%.2f ms', ($end - $begin) * 1000),
             ];
         }
+
         return $result;
     }
 
@@ -302,7 +319,7 @@ class NexusDB
         self::customModel();
     }
 
-    private static function schema(): \Illuminate\Database\Schema\Builder
+    private static function schema(): Builder
     {
         if (IN_NEXUS) {
             return Capsule::schema(self::getConnectionName());
@@ -315,6 +332,7 @@ class NexusDB
         if (IN_NEXUS) {
             return self::schema()->hasTable($table);
         }
+
         return Schema::hasTable($table);
     }
 
@@ -323,6 +341,7 @@ class NexusDB
         if (IN_NEXUS) {
             return self::schema()->hasColumn($table, $column);
         }
+
         return Schema::hasColumn($table, $column);
     }
 
@@ -331,6 +350,7 @@ class NexusDB
         if (IN_NEXUS) {
             return Capsule::table($table, null, self::getConnectionName());
         }
+
         return DB::table($table);
     }
 
@@ -340,19 +360,22 @@ class NexusDB
             $instance = self::getInstance();
             $instance->autoConnect();
             $driver = $instance->getDriver();
-            if (!$driver instanceof DBPdo) {
+            if (! $driver instanceof DBPdo) {
                 throw new DatabaseException('NexusDB::getPdo() requires the PDO driver');
             }
+
             return $driver->getPdo();
         }
+
         return DB::connection()->getPdo();
     }
 
-    public static function raw($value): \Illuminate\Database\Query\Expression
+    public static function raw($value): Expression
     {
         if (IN_NEXUS) {
             return new Expression($value);
         }
+
         return DB::raw($value);
     }
 
@@ -361,6 +384,7 @@ class NexusDB
         if (IN_NEXUS) {
             return self::executeSql($value);
         }
+
         return DB::statement($value);
     }
 
@@ -369,6 +393,7 @@ class NexusDB
         if (IN_NEXUS) {
             return Capsule::connection(self::getConnectionName())->transaction($callback, $attempts);
         }
+
         return DB::transaction($callback, $attempts);
     }
 
@@ -384,6 +409,7 @@ class NexusDB
             } else {
                 do_log("cache hit [$key]", 'debug');
             }
+
             return $result;
         } else {
             return Cache::remember($key, $ttl, $callback);
@@ -394,6 +420,7 @@ class NexusDB
     {
         if (IN_NEXUS) {
             global $Cache;
+
             return $Cache->cache_value($key, $value, $ttl);
         } else {
             return Cache::put($key, $value, $ttl);
@@ -404,6 +431,7 @@ class NexusDB
     {
         if (IN_NEXUS) {
             global $Cache;
+
             return $Cache->get_value($key);
         } else {
             return Cache::get($key);
@@ -419,7 +447,7 @@ class NexusDB
             Cache::forget($key);
             $langList = get_langfolder_list();
             foreach ($langList as $lf) {
-                Cache::forget($lf . '_' . $key);
+                Cache::forget($lf.'_'.$key);
             }
         }
     }
@@ -427,14 +455,14 @@ class NexusDB
     public static function cache_del_by_pattern($pattern)
     {
         $redis = self::redis();
-        $it = NULL;
+        $it = null;
         do {
             // Scan for some keys
             $arr_keys = $redis->scan($it, $pattern);
 
             // Redis may return empty results, so protect against that
-            if ($arr_keys !== FALSE) {
-                foreach($arr_keys as $str_key) {
+            if ($arr_keys !== false) {
+                foreach ($arr_keys as $str_key) {
                     do_log("[SCAN_KEY] $str_key");
                     self::cache_del($str_key);
                 }
@@ -449,6 +477,7 @@ class NexusDB
     {
         if (IN_NEXUS) {
             global $Cache;
+
             return $Cache->getRedis();
         } else {
             return Redis::connection()->client();
@@ -460,7 +489,7 @@ class NexusDB
         static $driver;
         $config = nexus_config('nexus.mysql');
         if (is_null($driver)) {
-            $driver = new DBMysqli();
+            $driver = new DBMysqli;
             $driver->connect($config['host'], $config['username'], $config['password'], 'information_schema', $config['port']);
         }
         $sql = sprintf(
@@ -478,6 +507,7 @@ class NexusDB
         while ($row = $driver->fetchAssoc($res)) {
             $results[$row['COLUMN_NAME']] = $row;
         }
+
         return $results;
 
     }
@@ -490,6 +520,7 @@ class NexusDB
                 return true;
             }
         }
+
         return false;
     }
 
@@ -543,7 +574,7 @@ class NexusDB
             $result = NexusDB::select($sql);
             $version = $result[0]['v'];
             $minVersion = '5.7.8';
-        } else if (self::isPgsql()) {
+        } elseif (self::isPgsql()) {
             $sql = 'SHOW server_version;';
             $result = NexusDB::select($sql);
             $version = $result[0]['server_version'];
@@ -553,15 +584,16 @@ class NexusDB
         }
         $dbType = self::getConnectionName();
         $match = version_compare($version, $minVersion, '>=');
+
         return compact('version', 'match', 'minVersion', 'dbType');
     }
 
     public static function unixTimestampField(string $field): string
     {
         if (self::isMysql()) {
-            return sprintf("UNIX_TIMESTAMP(%s)", $field);
+            return sprintf('UNIX_TIMESTAMP(%s)', $field);
         } elseif (self::isPgsql()) {
-            return sprintf("EXTRACT(EPOCH FROM %s)", $field);
+            return sprintf('EXTRACT(EPOCH FROM %s)', $field);
         } else {
             throw new \RuntimeException('Not supported database.');
         }
@@ -582,7 +614,7 @@ class NexusDB
     public static function fromHex(string $hexExpression): string
     {
         if (self::isMysql()) {
-            return sprintf("UNHEX(%s)", $hexExpression);
+            return sprintf('UNHEX(%s)', $hexExpression);
         } elseif (self::isPgsql()) {
             return sprintf("decode(%s, 'hex')", $hexExpression);
         } else {
@@ -593,9 +625,9 @@ class NexusDB
     public static function fromUnixTimestampField(int $timestamp): string
     {
         if (self::isMysql()) {
-            return sprintf("FROM_UNIXTIME(%d)", $timestamp);
+            return sprintf('FROM_UNIXTIME(%d)', $timestamp);
         } elseif (self::isPgsql()) {
-            return sprintf("to_timestamp(%d)", $timestamp);
+            return sprintf('to_timestamp(%d)', $timestamp);
         } else {
             throw new \RuntimeException('Not supported database.');
         }
@@ -608,18 +640,20 @@ class NexusDB
             foreach ($updateFields ?: ['id'] as $field) {
                 $updates[] = "`$field` = VALUES(`$field`)";
             }
-            return sprintf("ON DUPLICATE KEY UPDATE %s", implode(', ', $updates));
+
+            return sprintf('ON DUPLICATE KEY UPDATE %s', implode(', ', $updates));
         } elseif (self::isPgsql()) {
             if (empty($updateFields)) {
-                $updateStr = "NOTHING";
+                $updateStr = 'NOTHING';
             } else {
                 $updates = [];
                 foreach ($updateFields as $field) {
                     $updates[] = "$field = EXCLUDED.$field";
                 }
-                $updateStr = "UPDATE SET " . implode(', ', $updates);
+                $updateStr = 'UPDATE SET '.implode(', ', $updates);
             }
-            return sprintf("ON CONFLICT (%s) DO %s", implode(', ', $uniqueFields), $updateStr);
+
+            return sprintf('ON CONFLICT (%s) DO %s', implode(', ', $uniqueFields), $updateStr);
         } else {
             throw new \RuntimeException('Not supported database.');
         }
@@ -628,12 +662,11 @@ class NexusDB
     public static function groupConcatField(string $field): string
     {
         if (self::isMysql()) {
-            return sprintf("group_concat(%s)", $field);
+            return sprintf('group_concat(%s)', $field);
         } elseif (self::isPgsql()) {
             return sprintf("string_agg(%s::text, ',')", $field);
         } else {
             throw new \RuntimeException('Not supported database.');
         }
     }
-
 }

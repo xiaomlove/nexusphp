@@ -1,4 +1,5 @@
 <?php
+
 namespace Nexus;
 
 use App\Http\Middleware\Locale;
@@ -40,19 +41,16 @@ final class Nexus
     const QUEUE_CONNECTION_NAME = 'my_queue_connection';
 
     const PLATFORM_USER = 'user';
+
     const PLATFORM_ADMIN = 'admin';
+
     const PLATFORM_TRACKER = 'tracker';
+
     const PLATFORMS = [self::PLATFORM_USER, self::PLATFORM_ADMIN, self::PLATFORM_TRACKER];
 
-    private function __construct()
-    {
+    private function __construct() {}
 
-    }
-
-    private function __clone()
-    {
-
-    }
+    private function __clone() {}
 
     public static function instance()
     {
@@ -68,7 +66,6 @@ final class Nexus
     {
         return $this->startTimestamp;
     }
-
 
     public function getPlatform(): string
     {
@@ -112,9 +109,10 @@ final class Nexus
 
     private function getFirst(string $result): string
     {
-        if (str_contains($result, ",")) {
-            return strstr($result, ",", true);
+        if (str_contains($result, ',')) {
+            return strstr($result, ',', true);
         }
+
         return $result;
     }
 
@@ -127,18 +125,21 @@ final class Nexus
                 $schema = 'https';
             }
         }
+
         return $this->getFirst($schema);
     }
 
     public function getRequestHost(): string
     {
         $host = $this->retrieveFromServer(['HTTP_X_FORWARDED_HOST', 'HTTP_HOST', 'host'], true);
+
         return $this->getFirst(strval($host));
     }
 
     public function getRequestIp(): string
     {
         $ip = $this->retrieveFromServer(['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'x-forwarded-for', 'HTTP_REMOTE_ADDR', 'REMOTE_ADDR'], true);
+
         return $this->getFirst($ip);
     }
 
@@ -173,6 +174,7 @@ final class Nexus
         if (defined('RUNNING_IN_OCTANE') && RUNNING_IN_OCTANE) {
             return true;
         }
+
         return false;
     }
 
@@ -182,34 +184,36 @@ final class Nexus
             return true;
         }
         $ajax = $this->retrieveFromServer(['HTTP_X_REQUESTED_WITH'], true);
-        if (!empty($ajax) && strtolower($ajax) == 'xmlhttprequest') {
+        if (! empty($ajax) && strtolower($ajax) == 'xmlhttprequest') {
             return true;
         }
-        $json =  $this->retrieveFromServer(['HTTP_ACCEPT'], true);
-        if (!empty($json) && strtolower($json) == 'application/json') {
+        $json = $this->retrieveFromServer(['HTTP_ACCEPT'], true);
+        if (! empty($json) && strtolower($json) == 'application/json') {
             return true;
         }
+
         return false;
     }
 
     private function generateRequestId(): string
     {
-        $prefix = ($_SERVER['SCRIPT_FILENAME'] ?? '') . implode('', $_SERVER['argv'] ?? []);
+        $prefix = ($_SERVER['SCRIPT_FILENAME'] ?? '').implode('', $_SERVER['argv'] ?? []);
         $prefix = substr(md5($prefix), 0, 4);
         // 4 + 23 = 27 characters, after replace '.', 26
         $requestId = str_replace('.', '', uniqid($prefix, true));
         $requestId .= bin2hex(random_bytes(3));
+
         return $requestId;
     }
 
     public static function boot()
     {
         if (self::$booted) {
-//            file_put_contents('/tmp/reset.log', "booted\n",FILE_APPEND);
+            //            file_put_contents('/tmp/reset.log', "booted\n",FILE_APPEND);
             return;
         }
-//        file_put_contents('/tmp/reset.log', "booting\n",FILE_APPEND);
-        $instance = new self();
+        //        file_put_contents('/tmp/reset.log', "booting\n",FILE_APPEND);
+        $instance = new self;
         $instance->setStartTimestamp();
         $instance->setRequestId();
         $instance->setScript();
@@ -229,7 +233,7 @@ final class Nexus
         if (empty($requestId)) {
             $requestId = $this->generateRequestId();
         }
-        $this->requestId = (string)$requestId;
+        $this->requestId = (string) $requestId;
     }
 
     private function setScript()
@@ -238,7 +242,7 @@ final class Nexus
         if (str_contains($script, '.')) {
             $script = strstr(basename($script), '.', true);
         }
-        $this->script = (string)$script;
+        $this->script = (string) $script;
     }
 
     private function setStartTimestamp()
@@ -248,7 +252,7 @@ final class Nexus
 
     private function setPlatform()
     {
-        $this->platform = (string)$this->retrieveFromServer(['HTTP_PLATFORM', 'Platform', 'platform'], true);
+        $this->platform = (string) $this->retrieveFromServer(['HTTP_PLATFORM', 'Platform', 'platform'], true);
     }
 
     public static function js(string $js, string $position, bool $isFile, $key = null)
@@ -279,13 +283,13 @@ final class Nexus
             $log .= ", md5 key: $key";
         }
         if ($position == 'header') {
-            if (!isset(self::$appendHeaders[$key])) {
+            if (! isset(self::$appendHeaders[$key])) {
                 self::$appendHeaders[$key] = $append;
             } else {
                 do_log("$log, [DUPLICATE]");
             }
         } elseif ($position == 'footer') {
-            if (!isset(self::$appendFooters[$key])) {
+            if (! isset(self::$appendFooters[$key])) {
                 self::$appendFooters[$key] = $append;
             } else {
                 do_log("$log, [DUPLICATE]");
@@ -308,11 +312,11 @@ final class Nexus
     public static function addTranslationNamespace($path, $namespace): void
     {
         if (empty($namespace)) {
-            throw new \InvalidArgumentException("namespace can not be empty");
+            throw new \InvalidArgumentException('namespace can not be empty');
         }
-        self::$translationNamespaces[$namespace] = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        self::$translationNamespaces[$namespace] = rtrim($path, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
         if (IN_NEXUS) {
-            //只有 Nexus 下需要，Laravel 下是通过 configurePackage 中 hasTranslations() 加载的
+            // 只有 Nexus 下需要，Laravel 下是通过 configurePackage 中 hasTranslations() 加载的
             self::getTranslator()->addNamespace($namespace, $path);
         }
     }
@@ -327,28 +331,29 @@ final class Nexus
         } else {
             return trans($key, $replace, $locale);
         }
-//        if (empty(self::$translations)) {
-//            //load from default lang dir
-//            $langDir = ROOT_PATH . 'resources/lang/';
-//            self::loadTranslations($langDir);
-//            //load from namespace
-//            foreach (self::$translationNamespaces as $namespace => $path) {
-//                self::loadTranslations($path, $namespace);
-//            }
-//        }
-//        return self::getTranslation($key, $replace, $locale ?? get_langfolder_cookie(true));
+        //        if (empty(self::$translations)) {
+        //            //load from default lang dir
+        //            $langDir = ROOT_PATH . 'resources/lang/';
+        //            self::loadTranslations($langDir);
+        //            //load from namespace
+        //            foreach (self::$translationNamespaces as $namespace => $path) {
+        //                self::loadTranslations($path, $namespace);
+        //            }
+        //        }
+        //        return self::getTranslation($key, $replace, $locale ?? get_langfolder_cookie(true));
     }
 
     private static function loadTranslations($path, $namespace = null)
     {
         do_log("path: $path, namespace: $namespace", 'debug');
-        $files = glob($path . '*/*');
+        $files = glob($path.'*/*');
         foreach ($files as $file) {
-            if (!is_file($file)) {
+            if (! is_file($file)) {
                 do_log("file: $file, is not file", 'debug');
+
                 continue;
             }
-            if (!is_readable($file)) {
+            if (! is_readable($file)) {
                 do_log("[TRANSLATION_FILE_NOT_READABLE], $file");
             }
             $values = require $file;
@@ -367,9 +372,9 @@ final class Nexus
 
     private static function getTranslation($key, $replace = [], $locale = null)
     {
-        if (!$locale) {
+        if (! $locale) {
             $lang = get_langfolder_cookie();
-            $locale = \App\Http\Middleware\Locale::$languageMaps[$lang] ?? 'en';
+            $locale = Locale::$languageMaps[$lang] ?? 'en';
         }
         $getKey = self::getTranslationGetKey($key, $locale);
         $result = arr_get(self::$translations, $getKey);
@@ -378,11 +383,14 @@ final class Nexus
             $getKey = self::getTranslationGetKey($key, 'en');
             $result = arr_get(self::$translations, $getKey);
         }
-        if (!empty($replace)) {
-            $search = array_map(function ($value) {return ":$value";}, array_keys($replace));
+        if (! empty($replace)) {
+            $search = array_map(function ($value) {
+                return ":$value";
+            }, array_keys($replace));
             $result = str_replace($search, array_values($replace), $result);
         }
-        do_log("key: $key, replace: " . nexus_json_encode($replace) . ", locale: $locale, getKey: $getKey, result: $result", 'debug');
+        do_log("key: $key, replace: ".nexus_json_encode($replace).", locale: $locale, getKey: $getKey, result: $result", 'debug');
+
         return $result;
     }
 
@@ -392,9 +400,10 @@ final class Nexus
         if ($namespace !== false) {
             $getKey = sprintf('%s.%s.%s', $namespace, $locale, substr($key, strlen($namespace) + 2));
         } else {
-            $getKey = $locale . "." . $key;
+            $getKey = $locale.'.'.$key;
         }
-//        do_log("key: $key, locale: $locale, namespace: $namespace, getKey: $getKey", 'debug');
+
+        //        do_log("key: $key, locale: $locale, namespace: $namespace, getKey: $getKey", 'debug');
         return $getKey;
     }
 
@@ -403,6 +412,7 @@ final class Nexus
         if (is_null(self::$translator)) {
             self::$translator = new NexusTranslator(Locale::getDefault());
         }
+
         return self::$translator;
     }
 
@@ -411,14 +421,15 @@ final class Nexus
         if (is_null(self::$queueManager)) {
             $container = Container::getInstance();
             $redisConfig = nexus_config('nexus.redis');
-            $redisConnectionName = "my_redis_connection";
-            $container->singleton('redis', function ($app) use ($redisConfig, $redisConnectionName)  {
-                $redisDriver = "phpredis";
+            $redisConnectionName = 'my_redis_connection';
+            $container->singleton('redis', function ($app) use ($redisConfig, $redisConnectionName) {
+                $redisDriver = 'phpredis';
                 // 这里的配置应该匹配 redis.php 配置文件中的 default 连接
                 $connectionConfig = [
                     'client' => $redisDriver,
-                    $redisConnectionName => $redisConfig
+                    $redisConnectionName => $redisConfig,
                 ];
+
                 return new RedisManager($app, $redisDriver, $connectionConfig);
             });
             $queueManager = new Manager($container);
@@ -432,16 +443,13 @@ final class Nexus
             $queueManager->setAsGlobal();
             self::$queueManager = $queueManager;
         }
+
         return self::$queueManager;
     }
 
     public static function dispatchQueueJob(ShouldQueue $job): void
     {
         self::getQueueManager()->connection(self::QUEUE_CONNECTION_NAME)->push($job);
-        do_log("dispatchQueueJob: " . nexus_json_encode($job));
+        do_log('dispatchQueueJob: '.nexus_json_encode($job));
     }
-
-
-
-
 }

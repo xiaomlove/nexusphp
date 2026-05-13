@@ -3,11 +3,7 @@
 namespace Nexus\Install;
 
 use App\Models\Attendance;
-use App\Models\BonusLogs;
 use App\Models\Category;
-use App\Models\Exam;
-use App\Models\ExamUser;
-use App\Models\HitAndRun;
 use App\Models\Icon;
 use App\Models\Language;
 use App\Models\SearchBox;
@@ -15,20 +11,13 @@ use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Torrent;
 use App\Models\TorrentTag;
-use App\Models\TrackerUrl;
 use App\Models\User;
-use App\Models\UserBanLog;
 use App\Repositories\AttendanceRepository;
-use App\Repositories\BonusRepository;
-use App\Repositories\ExamRepository;
-use App\Repositories\SearchBoxRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\TokenRepository;
 use App\Repositories\ToolRepository;
-use App\Repositories\TorrentRepository;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -36,20 +25,18 @@ use Nexus\Database\NexusDB;
 
 class Update extends Install
 {
-
     protected $steps = ['Env check', 'Get files', 'Update .env',  'Perform updates'];
 
     protected string $lockFile = 'update.lock';
 
-
     public function getLogFile()
     {
-        return getLogFile("update");
+        return getLogFile('update');
     }
 
     public function getUpdateDirectory()
     {
-        return ROOT_PATH . 'public/update';
+        return ROOT_PATH.'public/update';
     }
 
     public function listTableFieldsFromCreateTable($createTableSql)
@@ -65,6 +52,7 @@ class Update extends Install
             $field = substr($value, 1, $pos - 1);
             $result[$field] = rtrim($value, ',');
         }
+
         return $result;
     }
 
@@ -76,6 +64,7 @@ class Update extends Install
             $row = (array) $row;
             $data[$row['Field']] = $row;
         }
+
         return $data;
     }
 
@@ -90,6 +79,7 @@ class Update extends Install
             'created_at' => $now,
             'updated_at' => $now,
         ];
+
         return Setting::query()->firstOrCreate($attributes, $values);
     }
 
@@ -102,8 +92,8 @@ class Update extends Install
         $this->runMigrate('database/migrations/2025_10_05_030401_add_event_column_to_activity_log_table.php');
         $this->runMigrate('database/migrations/2025_10_05_030402_add_batch_uuid_column_to_activity_log_table.php');
 
-        $toolRep = new ToolRepository();
-        $redis = NExusDB::redis();
+        $toolRep = new ToolRepository;
+        $redis = NexusDB::redis();
         /**
          * @since 1.7.13
          */
@@ -114,7 +104,7 @@ class Update extends Install
             }
         }
 
-        //custom field menu
+        // custom field menu
         $url = 'fields.php';
         $table = 'adminpanel';
         $count = NexusDB::table($table)->where('url', $url)->count();
@@ -125,10 +115,10 @@ class Update extends Install
                 'info' => 'Manage custom fields',
             ];
             $id = NexusDB::insert($table, $insert);
-            $this->doLog("[ADD CUSTOM FIELD MENU] insert: " . json_encode($insert) . " to table: $table, id: $id");
+            $this->doLog('[ADD CUSTOM FIELD MENU] insert: '.json_encode($insert)." to table: $table, id: $id");
         }
-        //since beta8
-        if (WITH_LARAVEL && !NexusDB::hasColumn('categories', 'icon_id')) {
+        // since beta8
+        if (WITH_LARAVEL && ! NexusDB::hasColumn('categories', 'icon_id')) {
             $this->doLog('[INIT CATEGORY ICON_ID]');
             $this->runMigrate('database/migrations/2022_03_08_040415_add_icon_id_to_categories_table.php');
             $icon = Icon::query()->orderBy('id', 'asc')->first();
@@ -136,7 +126,7 @@ class Update extends Install
                 Category::query()->where('icon_id', 0)->update(['icon_id' => $icon->id]);
             }
         }
-        //fix base url, since beta8
+        // fix base url, since beta8
         if (WITH_LARAVEL && NexusDB::hasTable('settings')) {
             $settingBasic = get_setting('basic');
             if (isset($settingBasic['BASEURL']) && Str::startsWith($settingBasic['BASEURL'], 'localhost')) {
@@ -149,10 +139,10 @@ class Update extends Install
             }
         }
 
-        //torrent support sticky second level
+        // torrent support sticky second level
         if (WITH_LARAVEL) {
             $columnInfo = NexusDB::getMysqlColumnInfo('torrents', 'pos_state');
-            $this->doLog("[TORRENT POS_STATE], column info: " . json_encode($columnInfo));
+            $this->doLog('[TORRENT POS_STATE], column info: '.json_encode($columnInfo));
             if ($columnInfo['DATA_TYPE'] == 'enum') {
                 $sql = "alter table torrents modify `pos_state` varchar(32) NOT NULL DEFAULT 'normal'";
                 $this->doLog("[ALTER TORRENT POS_STATE TYPE TO VARCHAR], $sql");
@@ -166,13 +156,13 @@ class Update extends Install
          * attendance change, do migrate
          */
         if (WITH_LARAVEL) {
-            if (!NexusDB::hasTable('attendance')) {
-                //no table yet, no need to migrate
+            if (! NexusDB::hasTable('attendance')) {
+                // no table yet, no need to migrate
                 $this->runMigrate('database/migrations/2021_06_08_113437_create_attendance_table.php');
             }
-            if (!NexusDB::hasColumn('attendance', 'total_days')) {
+            if (! NexusDB::hasColumn('attendance', 'total_days')) {
                 $this->runMigrate('database/migrations/2021_06_13_215440_add_total_days_to_attendance_table.php');
-                $attendanceRep = new AttendanceRepository();
+                $attendanceRep = new AttendanceRepository;
                 $count = $attendanceRep->migrateAttendance();
                 $this->doLog("[MIGRATE_ATTENDANCE] $count");
             }
@@ -183,11 +173,11 @@ class Update extends Install
          *
          * add seed points to user
          */
-        if (WITH_LARAVEL && !NexusDB::hasColumn('users', 'seed_points')) {
+        if (WITH_LARAVEL && ! NexusDB::hasColumn('users', 'seed_points')) {
             $this->runMigrate('database/migrations/2021_06_24_013107_add_seed_points_to_users_table.php');
-            //Don't do this, initial seed points = 0;
-//            $result = $this->initSeedPoints();
-            $this->doLog("[INIT SEED POINTS]");
+            // Don't do this, initial seed points = 0;
+            //            $result = $this->initSeedPoints();
+            $this->doLog('[INIT SEED POINTS]');
         }
 
         /**
@@ -195,9 +185,9 @@ class Update extends Install
          *
          * add id to agent_allowed_exception
          */
-        if (WITH_LARAVEL && !NexusDB::hasColumn('agent_allowed_exception', 'id')) {
+        if (WITH_LARAVEL && ! NexusDB::hasColumn('agent_allowed_exception', 'id')) {
             $this->runMigrate('database/migrations/2022_02_25_021356_add_id_to_agent_allowed_exception_table.php');
-            $this->doLog("[ADD_ID_TO_AGENT_ALLOWED_EXCEPTION]");
+            $this->doLog('[ADD_ID_TO_AGENT_ALLOWED_EXCEPTION]');
         }
 
         /**
@@ -205,10 +195,10 @@ class Update extends Install
          *
          * init tag
          */
-        if (WITH_LARAVEL && !NexusDB::hasTable('tags')) {
+        if (WITH_LARAVEL && ! NexusDB::hasTable('tags')) {
             $this->runMigrate('database/migrations/2022_03_07_012545_create_tags_table.php');
             $this->initTag();
-            $this->doLog("[INIT_TAG]");
+            $this->doLog('[INIT_TAG]');
         }
 
         /**
@@ -225,7 +215,7 @@ class Update extends Install
             $count = NexusDB::table($table)->where('url', $menu['url'])->count();
             if ($count == 0) {
                 $id = NexusDB::insert($table, $menu);
-                $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
+                $this->doLog('[ADD MENU] insert: '.json_encode($menu)." to table: $table, id: $id");
             }
         }
 
@@ -234,10 +224,10 @@ class Update extends Install
          *
          * add attendance_card to users
          */
-        if (WITH_LARAVEL && !NexusDB::hasColumn('users', 'attendance_card')) {
+        if (WITH_LARAVEL && ! NexusDB::hasColumn('users', 'attendance_card')) {
             $this->runMigrate('database/migrations/2022_04_02_163930_create_attendance_logs_table.php');
             $this->runMigrate('database/migrations/2022_04_03_041642_add_attendance_card_to_users_table.php');
-            $rep = new AttendanceRepository();
+            $rep = new AttendanceRepository;
             $count = $rep->migrateAttendanceLogs();
             $this->doLog("[ADD_ATTENDANCE_CARD_TO_USERS], migrateAttendanceLogs: $count");
         }
@@ -263,7 +253,7 @@ class Update extends Install
         /**
          * @since 1.7.24
          */
-        if (!NexusDB::hasColumn('searchbox', 'extra')) {
+        if (! NexusDB::hasColumn('searchbox', 'extra')) {
             $this->runMigrate('database/migrations/2022_09_02_031539_add_extra_to_searchbox_table.php');
             SearchBox::query()->update(['extra' => [
                 SearchBox::EXTRA_DISPLAY_COVER_ON_TORRENT_LIST => 1,
@@ -275,14 +265,14 @@ class Update extends Install
          * @since 1.8.0
          */
         $shouldMigrateSearchBox = false;
-        if (!NexusDB::hasColumn('searchbox', 'section_name')) {
+        if (! NexusDB::hasColumn('searchbox', 'section_name')) {
             $shouldMigrateSearchBox = true;
-            $searchBoxLog = "no section_name field";
+            $searchBoxLog = 'no section_name field';
         } else {
             $columnInfo = NexusDB::getMysqlColumnInfo('searchbox', 'section_name');
-            $searchBoxLog = "has section_name, searchbox.section DATA_TYPE: " . $columnInfo['DATA_TYPE'];
+            $searchBoxLog = 'has section_name, searchbox.section DATA_TYPE: '.$columnInfo['DATA_TYPE'];
             if ($columnInfo['DATA_TYPE'] != 'json') {
-                $searchBoxLog .= ", not json";
+                $searchBoxLog .= ', not json';
                 $shouldMigrateSearchBox = true;
             }
         }
@@ -295,11 +285,11 @@ class Update extends Install
             $this->runMigrate('database/migrations/2022_09_06_004318_add_section_name_to_searchbox_table.php');
             $this->runMigrate('database/migrations/2022_09_06_030324_change_searchbox_field_extra_to_json.php');
             $this->migrateSearchBoxModeRelated();
-            $this->doLog("[MIGRATE_TAXONOMY_TO_MODE_RELATED]");
+            $this->doLog('[MIGRATE_TAXONOMY_TO_MODE_RELATED]');
         }
         $this->removeMenu(['catmanage.php']);
 
-        if (!NexusDB::hasColumn('users', 'seed_points_updated_at')) {
+        if (! NexusDB::hasColumn('users', 'seed_points_updated_at')) {
             $this->runMigrate('database/migrations/2022_11_23_042152_add_seed_points_seed_times_update_time_to_users_table.php');
             foreach (User::$notificationOptions as $option) {
                 $sql = "update users set notifs = concat(notifs, '[$option]') where instr(notifs, '[$option]') = 0";
@@ -307,16 +297,16 @@ class Update extends Install
             }
         }
 
-        if (!$this->isSnatchedTableTorrentUserUnique()) {
+        if (! $this->isSnatchedTableTorrentUserUnique()) {
             $toolRep->removeDuplicateSnatch();
             $this->runMigrate('database/migrations/2023_03_29_021950_handle_snatched_user_torrent_unique.php');
-            $this->doLog("removeDuplicateSnatch and migrate 2023_03_29_021950_handle_snatched_user_torrent_unique");
+            $this->doLog('removeDuplicateSnatch and migrate 2023_03_29_021950_handle_snatched_user_torrent_unique');
         }
 
-        if (!NexusDB::hasIndex("peers", "unique_torrent_peer_user")) {
+        if (! NexusDB::hasIndex('peers', 'unique_torrent_peer_user')) {
             $toolRep->removeDuplicatePeer();
             $this->runMigrate('database/migrations/2023_04_01_005409_add_unique_torrent_peer_user_to_peers_table.php');
-            $this->doLog("removeDuplicatePeer and migrate 2023_04_01_005409_add_unique_torrent_peer_user_to_peers_table");
+            $this->doLog('removeDuplicatePeer and migrate 2023_04_01_005409_add_unique_torrent_peer_user_to_peers_table');
         }
 
         /**
@@ -325,13 +315,13 @@ class Update extends Install
         $hasTableSetting = NexusDB::hasTable('settings');
         if ($hasTableSetting) {
             $updateSettings = [];
-            if (get_setting("system.meilisearch_enabled") == 'yes') {
-                $updateSettings["enabled"] = "yes";
+            if (get_setting('system.meilisearch_enabled') == 'yes') {
+                $updateSettings['enabled'] = 'yes';
             }
-            if (get_setting("system.meilisearch_search_description") == 'yes') {
-                $updateSettings["search_description"] = "yes";
+            if (get_setting('system.meilisearch_search_description') == 'yes') {
+                $updateSettings['search_description'] = 'yes';
             }
-            if (!empty($updateSettings)) {
+            if (! empty($updateSettings)) {
                 $this->saveSettings(['meilisearch' => $updateSettings]);
             }
         }
@@ -341,59 +331,60 @@ class Update extends Install
          */
         if ($hasTableSetting) {
             Setting::query()->firstOrCreate(
-                ["name" => "system.alarm_email_receiver"],
-                ["value" => User::query()->where("class", User::CLASS_STAFF_LEADER)->first(["id"])->id]
+                ['name' => 'system.alarm_email_receiver'],
+                ['value' => User::query()->where('class', User::CLASS_STAFF_LEADER)->first(['id'])->id]
             );
         }
 
         /**
          * @since 1.9.0
          */
-        if (!Schema::hasTable("torrent_extras")) {
-            $this->runMigrate("database/migrations/2025_01_08_133552_create_torrent_extra_table.php");
-            Artisan::call("upgrade:migrate_torrents_table_text_column");
+        if (! Schema::hasTable('torrent_extras')) {
+            $this->runMigrate('database/migrations/2025_01_08_133552_create_torrent_extra_table.php');
+            Artisan::call('upgrade:migrate_torrents_table_text_column');
             Language::updateTransStatus();
             $this->addSetting('main.complain_enabled', 'yes');
             $this->addSetting('image_hosting.driver', 'local');
             $this->addSetting('permission.user_token_allowed', json_encode(TokenRepository::listUserTokenPermissions(false)));
         }
-        if (!$redis->exists(Setting::USER_TOKEN_PERMISSION_ALLOWED_CACHE_KRY)) {
+        if (! $redis->exists(Setting::USER_TOKEN_PERMISSION_ALLOWED_CACHE_KRY)) {
             Setting::updateUserTokenPermissionAllowedCache(TokenRepository::listUserTokenPermissions(false));
         }
 
         /**
          * @since 1.9.5
          */
-        if (!Schema::hasColumn("snatched", "hit_and_run_id")) {
-            $this->runMigrate("database/migrations/2025_06_09_222012_add_hr_and_buy_id_to_snatched_table.php");
-            Artisan::call("upgrade:migrate_snatched_hr_id");
-            Artisan::call("upgrade:migrate_snatched_buy_log_id");
+        if (! Schema::hasColumn('snatched', 'hit_and_run_id')) {
+            $this->runMigrate('database/migrations/2025_06_09_222012_add_hr_and_buy_id_to_snatched_table.php');
+            Artisan::call('upgrade:migrate_snatched_hr_id');
+            Artisan::call('upgrade:migrate_snatched_buy_log_id');
         }
-        if (!Schema::hasTable("tracker_urls")) {
-            $this->runMigrate("database/migrations/2025_06_19_194137_create_tracker_urls_table.php");
+        if (! Schema::hasTable('tracker_urls')) {
+            $this->runMigrate('database/migrations/2025_06_19_194137_create_tracker_urls_table.php');
             $this->initTrackerUrl('update');
-            NexusDB::cache_del("nexus_plugin_store_all");
+            NexusDB::cache_del('nexus_plugin_store_all');
         }
     }
 
     public function runExtraMigrate()
     {
-        if (!WITH_LARAVEL) {
-            $this->doLog(__METHOD__ . ", laravel is not available");
+        if (! WITH_LARAVEL) {
+            $this->doLog(__METHOD__.', laravel is not available');
+
             return;
         }
         if (NexusDB::hasColumn('torrents', 'tags')) {
             if (Torrent::query()->where('tags', '>', 0)->count() > 0 && TorrentTag::query()->count() == 0) {
-                $this->doLog("[MIGRATE_TORRENT_TAG]...");
-                $tagRep = new TagRepository();
+                $this->doLog('[MIGRATE_TORRENT_TAG]...');
+                $tagRep = new TagRepository;
                 $tagRep->migrateTorrentTag();
-                $this->doLog("[MIGRATE_TORRENT_TAG] done!");
+                $this->doLog('[MIGRATE_TORRENT_TAG] done!');
             }
             $sql = 'alter table torrents drop column tags';
             NexusDB::statement($sql);
             $this->doLog($sql);
         } else {
-            $this->doLog("torrents table does not has column: tags");
+            $this->doLog('torrents table does not has column: tags');
         }
 
         clear_setting_cache();
@@ -406,14 +397,14 @@ class Update extends Install
             $count = NexusDB::table($table)->where('url', $menu['url'])->count();
             if ($count == 0) {
                 $id = NexusDB::insert($table, $menu);
-                $this->doLog("[ADD MENU] insert: " . json_encode($menu) . " to table: $table, id: $id");
+                $this->doLog('[ADD MENU] insert: '.json_encode($menu)." to table: $table, id: $id");
             }
         }
     }
 
     private function removeMenu(array $menus, array $tables = ['sysoppanel', 'adminpanel', 'modpanel'])
     {
-        $this->doLog("[REMOVE MENU]: " . json_encode($menus));
+        $this->doLog('[REMOVE MENU]: '.json_encode($menus));
         if (empty($menus)) {
             return;
         }
@@ -422,25 +413,26 @@ class Update extends Install
         }
     }
 
-
     public function listVersions()
     {
-        $url = "https://api.github.com/repos/xiaomlove/nexusphp/releases";
+        $url = 'https://api.github.com/repos/xiaomlove/nexusphp/releases';
         $versions = $this->requestGithub($url);
+
         return array_reverse($versions);
     }
 
     public function getLatestCommit()
     {
-        $url = "https://api.github.com/repos/xiaomlove/nexusphp/commits/php8";
+        $url = 'https://api.github.com/repos/xiaomlove/nexusphp/commits/php8';
+
         return $this->requestGithub($url);
     }
 
     public function requestGithub($url)
     {
-        $client = new Client();
+        $client = new Client;
         $logPrefix = "Request github: $url";
-        $response = $client->get($url, ['timeout' => 10,]);
+        $response = $client->get($url, ['timeout' => 10]);
         if (($statusCode = $response->getStatusCode()) != 200) {
             throw new \RuntimeException("$logPrefix fail, status code：$statusCode");
         }
@@ -450,31 +442,32 @@ class Update extends Install
         $bodyString = $response->getBody()->getContents();
         $this->doLog("[REQUEST_GITHUB_RESPONSE]: $bodyString");
         $results = json_decode($bodyString, true);
-        if (empty($results) || !is_array($results)) {
+        if (empty($results) || ! is_array($results)) {
             throw new \RuntimeException("$logPrefix response invalid");
         }
+
         return $results;
     }
 
     public function downAndExtractCode($url, array $includes = []): string
     {
         $requireCommand = 'rsync';
-        if (!command_exists($requireCommand)) {
+        if (! command_exists($requireCommand)) {
             throw new \RuntimeException("command: $requireCommand not exists!");
         }
         $arr = explode('/', $url);
         $basename = last($arr);
         $isZip = false;
-        if (Str::contains($basename,'.zip')) {
+        if (Str::contains($basename, '.zip')) {
             $isZip = true;
             $basename = strstr($basename, '.zip', true);
-            $suffix = ".zip";
+            $suffix = '.zip';
         } else {
             $suffix = '.tar.gz';
         }
         $filename = sprintf('%s/nexusphp-%s-%s%s', sys_get_temp_dir(), $basename, date('YmdHis'), $suffix);
         $this->doLog("download from: $url, save to filename: $filename");
-        $client = new Client();
+        $client = new Client;
         $response = $client->request('GET', $url, ['sink' => $filename]);
         if (($statusCode = $response->getStatusCode()) != 200) {
             throw new \RuntimeException("Download fail, status code：$statusCode");
@@ -482,14 +475,14 @@ class Update extends Install
         if (($bodySize = $response->getBody()->getSize()) <= 0) {
             throw new \RuntimeException("Download fail, file size：$bodySize");
         }
-        if (!file_exists($filename)) {
+        if (! file_exists($filename)) {
             throw new \RuntimeException("Download fail, file not exists：$filename");
         }
         if (filesize($filename) <= 0) {
             throw new \RuntimeException("Download fail, file: $filename size = 0");
         }
         $this->doLog('SUCCESS_DOWNLOAD');
-        $extractDir = str_replace($suffix, "", $filename);
+        $extractDir = str_replace($suffix, '', $filename);
         $command = "mkdir -p $extractDir";
         $this->executeCommand($command);
 
@@ -503,40 +496,41 @@ class Update extends Install
         foreach (glob("$extractDir/*") as $path) {
             if (is_dir($path)) {
                 $excludes = array_merge(ToolRepository::BACKUP_EXCLUDES, ['public/favicon.ico', '.env', 'public/pic/category/chd/*']);
-                if (!in_array('composer', $includes)) {
+                if (! in_array('composer', $includes)) {
                     $excludes[] = 'composer.lock';
                     $excludes[] = 'composer.json';
                 }
-//                $command = sprintf('cp -raf %s/. %s', $path, ROOT_PATH);
-                $command = "rsync -rvq $path/ " . ROOT_PATH;
-                $command .= " --include=public/vendor";
+                //                $command = sprintf('cp -raf %s/. %s', $path, ROOT_PATH);
+                $command = "rsync -rvq $path/ ".ROOT_PATH;
+                $command .= ' --include=public/vendor';
                 foreach ($excludes as $exclude) {
                     $command .= " --exclude=$exclude";
                 }
                 $this->executeCommand($command);
-                //remove original file
+                // remove original file
                 unlink($filename);
                 break;
             }
         }
         $this->doLog('SUCCESS_EXTRACT');
+
         return $extractDir;
     }
 
     public function initSeedPoints(): int
     {
         $size = 10000;
-        $tableName = (new User())->getTable();
+        $tableName = (new User)->getTable();
         $result = 0;
         do {
             $affectedRows = NexusDB::table($tableName)
                 ->whereNull('seed_points')
                 ->limit($size)
                 ->update([
-                    'seed_points' => NexusDB::raw('seedbonus')
+                    'seed_points' => NexusDB::raw('seedbonus'),
                 ]);
             $result += $affectedRows;
-            $this->doLog("affectedRows: $affectedRows, query: " . last_query());
+            $this->doLog("affectedRows: $affectedRows, query: ".last_query());
         } while ($affectedRows > 0);
 
         return $result;
@@ -544,9 +538,9 @@ class Update extends Install
 
     public function updateDependencies()
     {
-        $command = "composer install -d " . ROOT_PATH;
+        $command = 'composer install -d '.ROOT_PATH;
         $this->executeCommand($command);
-        $this->doLog("[COMPOSER INSTALL] SUCCESS");
+        $this->doLog('[COMPOSER INSTALL] SUCCESS');
     }
 
     public function initTag()
@@ -571,39 +565,36 @@ class Update extends Install
     private function isSnatchedTableTorrentUserUnique(): bool
     {
         $tableName = 'snatched';
-        $result = NexusDB::select('show index from ' . $tableName);
+        $result = NexusDB::select('show index from '.$tableName);
         foreach ($result as $item) {
             if (in_array($item['Column_name'], ['torrentid', 'userid']) && $item['Non_unique'] == 0) {
                 return true;
             }
         }
+
         return false;
     }
 
     public function updateEnvFile()
     {
-        $envFile = ROOT_PATH . '.env';
-        $envExample = ROOT_PATH . '.env.example';
+        $envFile = ROOT_PATH.'.env';
+        $envExample = ROOT_PATH.'.env.example';
         $envData = readEnvFile($envFile);
         $envExampleData = readEnvFile($envExample);
         foreach ($envExampleData as $key => $value) {
-            if (!isset($envData[$key])) {
+            if (! isset($envData[$key])) {
                 $envData[$key] = $value;
             }
         }
         $fp = @fopen($envFile, 'w');
         if ($fp === false) {
-            throw new \RuntimeException("can't create env file, make sure php has permission to create file at: " . ROOT_PATH);
+            throw new \RuntimeException("can't create env file, make sure php has permission to create file at: ".ROOT_PATH);
         }
-        $content = "";
+        $content = '';
         foreach ($envData as $key => $value) {
             $content .= "{$key}={$value}\n";
         }
         fwrite($fp, $content);
         fclose($fp);
     }
-
-
-
-
 }

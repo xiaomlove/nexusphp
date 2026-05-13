@@ -1,4 +1,5 @@
 <?php
+
 namespace Nexus\Plugin;
 
 use App\Repositories\BaseRepository;
@@ -6,17 +7,17 @@ use Illuminate\Support\Facades\Artisan;
 
 abstract class BasePlugin extends BaseRepository
 {
-    abstract function install();
+    abstract public function install();
 
-    abstract function boot();
+    abstract public function boot();
 
     public function runMigrations($dir, $rollback = false)
     {
-        $command = "migrate";
+        $command = 'migrate';
         if ($rollback) {
-            $command .= ":rollback";
+            $command .= ':rollback';
         }
-        $command .= " --realpath --force";
+        $command .= ' --realpath --force';
         foreach (glob("$dir/*.php") as $file) {
             $file = str_replace('\\', '/', $file);
             $toExecute = "$command --path=$file";
@@ -28,8 +29,8 @@ abstract class BasePlugin extends BaseRepository
     public static function checkMainApplicationVersion($silent = true): bool
     {
         $constantNameArr = [
-            "static::COMPATIBLE_NP_VERSION",
-            "static::COMPATIBLE_VERSION", //before use
+            'static::COMPATIBLE_NP_VERSION',
+            'static::COMPATIBLE_VERSION', // before use
         ];
         foreach ($constantNameArr as $constantName) {
             if (defined($constantName) && version_compare(VERSION_NUMBER, constant($constantName), '<')) {
@@ -37,11 +38,12 @@ abstract class BasePlugin extends BaseRepository
                     return false;
                 }
                 throw new \RuntimeException(sprintf(
-                    "NexusPHP version: %s is too low, this plugin require: %s",
+                    'NexusPHP version: %s is too low, this plugin require: %s',
                     VERSION_NUMBER, constant($constantName)
                 ));
             }
         }
+
         return true;
     }
 
@@ -49,7 +51,8 @@ abstract class BasePlugin extends BaseRepository
     {
         $reflection = new \ReflectionClass(get_called_class());
         $pluginRoot = dirname($reflection->getFileName(), 2);
-        return $pluginRoot . "/resources/views/" . trim($name, "/");
+
+        return $pluginRoot.'/resources/views/'.trim($name, '/');
     }
 
     public function trans($name): string
@@ -59,7 +62,7 @@ abstract class BasePlugin extends BaseRepository
 
     public function getTransKey($name): string
     {
-        return sprintf("%s::%s", self::resolveId(), $name);
+        return sprintf('%s::%s', self::resolveId(), $name);
     }
 
     public static function getInstance(): static
@@ -77,26 +80,29 @@ abstract class BasePlugin extends BaseRepository
      */
     private static function resolveId(): string
     {
-        $constantName = static::class . '::ID';
+        $constantName = static::class.'::ID';
         if (! defined($constantName)) {
             throw new \LogicException(sprintf(
                 'Plugin %s must declare a public ID constant.',
                 static::class
             ));
         }
+
         return (string) constant($constantName);
     }
 
     public function getVersion(): string
     {
-        $constantName = "static::VERSION";
+        $constantName = 'static::VERSION';
+
         return defined($constantName) ? constant($constantName) : '';
     }
 
     public function getId(): string
     {
-        $className = str_replace("Repository", "", get_called_class());
-        $plugin = call_user_func([$className, "make"]);
+        $className = str_replace('Repository', '', get_called_class());
+        $plugin = call_user_func([$className, 'make']);
+
         return $plugin->getId();
     }
 }

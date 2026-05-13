@@ -17,7 +17,7 @@ class Hook
         if (is_string($function)) {
             return $function;
         } elseif (is_object($function) && ($function instanceof \Closure)) {
-            //Closure
+            // Closure
             return spl_object_hash($function);
         } elseif (is_array($function)) {
             if (is_object($function[0])) {
@@ -26,28 +26,29 @@ class Hook
                 return $function[0].'::'.$function[1];
             }
         }
-        throw new \InvalidArgumentException("Invalid function, type: " . gettype($function));
+        throw new \InvalidArgumentException('Invalid function, type: '.gettype($function));
     }
 
     public function applyFilter($name, $value = '')
     {
-        if (!isset(self::$callbacks[$name])) {
+        if (! isset(self::$callbacks[$name])) {
             do_log("No this hook: $name", 'debug');
+
             return $value;
         }
         $args = func_get_args();
         ksort(self::$callbacks[$name]);
         reset(self::$callbacks[$name]);
-//        do_log("name: $name, argc: " . (func_num_args() - 1));
+        //        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
-            foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
+            foreach ((array) current(self::$callbacks[$name]) as $id => $callback) {
                 $args[1] = $value;
-//                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));
+                //                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));
                 $value = call_user_func_array($callback['function'], array_slice($args, 1, $callback['argc']));
-//                do_log("name: $name, id: $id, after, value: " . nexus_json_encode($value));
+                //                do_log("name: $name, id: $id, after, value: " . nexus_json_encode($value));
             }
-        }
-        while (next(self::$callbacks[$name]) !== false);
+        } while (next(self::$callbacks[$name]) !== false);
+
         return $value;
     }
 
@@ -58,21 +59,21 @@ class Hook
 
     public function doAction($name, $value = '')
     {
-        if (!isset(self::$callbacks[$name])) {
+        if (! isset(self::$callbacks[$name])) {
             do_log("No this hook: $name", 'debug');
+
             return;
         }
         $args = func_get_args();
         ksort(self::$callbacks[$name]);
         reset(self::$callbacks[$name]);
-//        do_log("name: $name, argc: " . (func_num_args() - 1));
+        //        do_log("name: $name, argc: " . (func_num_args() - 1));
         do {
-            foreach ((array)current(self::$callbacks[$name]) as $id => $callback) {
-//                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));
+            foreach ((array) current(self::$callbacks[$name]) as $id => $callback) {
+                //                do_log("name: $name, id: $id, before, params: " . nexus_json_encode(array_slice($args, 1, $callback['argc'])));
                 call_user_func_array($callback['function'], array_slice($args, 1, $callback['argc']));
             }
-        }
-        while (next(self::$callbacks[$name]) !== false);
+        } while (next(self::$callbacks[$name]) !== false);
     }
 
     public function dump()

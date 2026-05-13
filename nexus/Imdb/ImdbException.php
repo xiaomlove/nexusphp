@@ -2,7 +2,4 @@
 
 namespace Nexus\Imdb;
 
-class ImdbException extends \Exception
-{
-
-}
+class ImdbException extends \Exception {}

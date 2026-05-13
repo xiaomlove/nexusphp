@@ -2,10 +2,8 @@
 
 namespace Nexus\Torrent;
 
-use App\Models\Setting;
-use App\Models\TorrentExtra;
+use Nexus\Database\DatabaseException;
 use Nexus\Database\NexusDB;
-use Nexus\Imdb\Imdb;
 use Nexus\PTGen\PTGen;
 
 class Torrent
@@ -13,10 +11,9 @@ class Torrent
     /**
      * get torrent seeding or leeching status, download progress of someone
      *
-     * @param int $uid
-     * @param array $torrentIdArr
      * @return array
-     * @throws \Nexus\Database\DatabaseException
+     *
+     * @throws DatabaseException
      */
     public function listLeechingSeedingStatus(int $uid, array $torrentIdArr)
     {
@@ -24,13 +21,13 @@ class Torrent
             return [];
         }
         $torrentIdStr = implode(',', $torrentIdArr);
-        //seeding or leeching, from peers
-        $whereStr = sprintf("userid = %s and torrent in (%s)", $uid, $torrentIdStr);
+        // seeding or leeching, from peers
+        $whereStr = sprintf('userid = %s and torrent in (%s)', $uid, $torrentIdStr);
         $peerList = NexusDB::getAll('peers', $whereStr, 'torrent, to_go');
-        $peerList = array_column($peerList,'to_go', 'torrent');
-        //download progress, from snatched
+        $peerList = array_column($peerList, 'to_go', 'torrent');
+        // download progress, from snatched
         $sql = sprintf(
-            "select snatched.to_go, snatched.torrentid, torrents.size from snatched inner join torrents on snatched.torrentid = torrents.id where snatched.userid = %s and snatched.torrentid in (%s)",
+            'select snatched.to_go, snatched.torrentid, torrents.size from snatched inner join torrents on snatched.torrentid = torrents.id where snatched.userid = %s and snatched.torrentid in (%s)',
             $uid, $torrentIdStr
         );
         $snatchedList = [];
@@ -53,6 +50,7 @@ class Torrent
                 'active_status' => $activeStatus,
             ];
         }
+
         return $snatchedList;
     }
 
@@ -64,11 +62,12 @@ class Torrent
         } elseif ($activeStatus == 'leeching') {
             $color = 'blue';
         }
-        $progress = ($progress * 100) . '%';
+        $progress = ($progress * 100).'%';
         $result = sprintf(
             '<div style="padding: 1px;margin-top: 2px;border: 1px solid #838383" title="%s"><div style="width: %s;background-color: %s;height: 2px"></div></div>',
-            $activeStatus . " $progress", $progress, $color
+            $activeStatus." $progress", $progress, $color
         );
+
         return $result;
     }
 
@@ -76,13 +75,13 @@ class Torrent
     {
         static $ptGen;
         if (is_null($ptGen)) {
-            $ptGen = new PTGen();
+            $ptGen = new PTGen;
         }
-        $log = "torrent: " . $torrentInfo['id'];
+        $log = 'torrent: '.$torrentInfo['id'];
         $siteIdAndRating = $ptGen->listRatings(is_array($ptGenInfo) && count($ptGenInfo) ? $ptGenInfo : [], $torrentInfo['url']);
-        $log .= ", siteIdAndRating: " . json_encode($siteIdAndRating);
+        $log .= ', siteIdAndRating: '.json_encode($siteIdAndRating);
         do_log($log);
+
         return $ptGen->buildRatingSpan($siteIdAndRating);
     }
-
 }
