@@ -32,9 +32,10 @@ class RulesControllerTest extends FeatureTestCase
 
     /**
      * `language.id` for Simplified Chinese in the seeded language
-     * table — used to verify cookie-driven language selection.
+     * table — `id = 25, site_lang_folder = 'chs', rule_lang = 1`.
+     * Used to verify cookie-driven language selection.
      */
-    private const CHINESE_LANGUAGE_ID = 1;
+    private const CHINESE_LANGUAGE_ID = 25;
 
     protected function setUp(): void
     {
