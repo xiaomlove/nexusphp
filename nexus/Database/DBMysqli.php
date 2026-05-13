@@ -1,4 +1,5 @@
 <?php
+
 namespace Nexus\Database;
 
 /**
@@ -17,13 +18,13 @@ class DBMysqli implements DBInterface
         if (mysqli_connect_errno()) {
             throw new DatabaseException(mysqli_connect_error());
         }
-        $mysqli->set_charset("utf8mb4");
+        $mysqli->set_charset('utf8mb4');
         $mysqli->query("SET collation_connection = 'utf8mb4_unicode_ci'");
         $mysqli->query("SET sql_mode=''");
         $mysqli->query("SET time_zone='".date('P')."'");
 
         /* activate reporting */
-        $driver = new \mysqli_driver();
+        $driver = new \mysqli_driver;
         $driver->report_mode = MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX;
 
         return $this->mysqli = $mysqli;
@@ -69,6 +70,7 @@ class DBMysqli implements DBInterface
         if (is_null($type)) {
             $type = MYSQLI_BOTH;
         }
+
         return $mysqliResult->fetch_array($type);
     }
 
@@ -94,7 +96,6 @@ class DBMysqli implements DBInterface
 
     public function prepare(string $sql): \PDOStatement
     {
-        throw new \RuntimeException("mysqli not supported");
+        throw new \RuntimeException('mysqli not supported');
     }
-
 }

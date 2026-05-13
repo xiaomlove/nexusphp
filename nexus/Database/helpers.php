@@ -1,4 +1,5 @@
 <?php
+
 use Nexus\Database\NexusDB;
 
 function mysql_connect($host, $username, $password, $database, $port, $driver = 'mysql')
@@ -66,7 +67,7 @@ function mysql_free_result($result)
     return NexusDB::getInstance()->freeResult($result);
 }
 
-function mysql_prepare(string $sql): \PDOStatement
+function mysql_prepare(string $sql): PDOStatement
 {
     return NexusDB::getInstance()->prepare($sql);
 }

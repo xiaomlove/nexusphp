@@ -3,19 +3,22 @@
 namespace Nexus\Field;
 
 use App\Models\SearchBox;
-use App\Models\Tag;
 use App\Models\TorrentCustomField;
 use App\Models\TorrentCustomFieldValue;
-use Elasticsearch\Endpoints\Search;
 use Nexus\Database\NexusDB;
 
 class Field
 {
     const TYPE_TEXT = 'text';
+
     const TYPE_TEXTAREA = 'textarea';
+
     const TYPE_RADIO = 'radio';
+
     const TYPE_CHECKBOX = 'checkbox';
+
     const TYPE_SELECT = 'select';
+
     const TYPE_IMAGE = 'image';
 
     public static $types = [
@@ -63,6 +66,7 @@ class Field
             self::TYPE_SELECT => nexus_trans('field.type.select'),
             self::TYPE_IMAGE => nexus_trans('field.type.image'),
         ];
+
         return $map[$type] ?? '';
     }
 
@@ -72,9 +76,9 @@ class Field
         foreach (self::$types as $key => $value) {
             $out[$key] = sprintf('%s(%s)', $value['text'], $this->getTypeHuman($key));
         }
+
         return $out;
     }
-
 
     public function radio($name, $options, $current = null)
     {
@@ -82,24 +86,25 @@ class Field
         foreach ($options as $value => $label) {
             $arr[] = sprintf(
                 '<label style="margin-right: 4px;"><input type="radio" name="%s" value="%s"%s />%s</label>',
-                $name, $value, (string)$current === (string)$value ? ' checked' : '', $label
+                $name, $value, (string) $current === (string) $value ? ' checked' : '', $label
             );
         }
+
         return implode('', $arr);
     }
 
-    function buildFieldForm(array $row = [])
+    public function buildFieldForm(array $row = [])
     {
         global $lang_fields, $lang_functions, $lang_catmanage;
-        $trName = tr($lang_fields['col_name'] . '<font color="red">*</font>', '<input type="text" name="name" value="' . ($row['name'] ?? '') . '" style="width: 300px" />&nbsp;&nbsp;' . $lang_fields['col_name_help'], 1, '', true);
-        $trLabel = tr($lang_fields['col_label'] . '<font color="red">*</font>', '<input type="text" name="label" value="' . ($row['label'] ?? '') . '"  style="width: 300px" />', 1, '', true);
-        $trType = tr($lang_fields['col_type'] . '<font color="red">*</font>', $this->radio('type', $this->getTypeRadioOptions(), $row['type'] ?? null), 1, '', true);
-        $trRequired = tr($lang_fields['col_required'] . '<font color="red">*</font>', $this->radio('required', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['required'] ?? null), 1, '', true);
-        $trHelp = tr($lang_fields['col_help'], '<textarea name="help" rows="4" cols="80">' . ($row['help'] ?? '') . '</textarea>', 1, '', true);
-        $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">' . ($row['options'] ?? '') . '</textarea><br/>' . $lang_fields['col_options_help'], 1, '', true);
-        $trIsSingleRow = tr($lang_fields['col_is_single_row'] . '<font color="red">*</font>', $this->radio('is_single_row', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['is_single_row'] ?? null), 1, '', true);
-        $trPriority = tr(nexus_trans('label.priority') . '<font color="red">*</font>', '<input type="number" name="priority" value="' . ($row['priority'] ?? '0') . '" style="width: 300px" />', 1, '', true);
-        $trDisplay = tr($lang_fields['col_display'], '<textarea name="display" rows="4" cols="80">' . ($row['display'] ?? '') . '</textarea><br/>' . $lang_catmanage['row_custom_field_display_help'], 1, '', true);
+        $trName = tr($lang_fields['col_name'].'<font color="red">*</font>', '<input type="text" name="name" value="'.($row['name'] ?? '').'" style="width: 300px" />&nbsp;&nbsp;'.$lang_fields['col_name_help'], 1, '', true);
+        $trLabel = tr($lang_fields['col_label'].'<font color="red">*</font>', '<input type="text" name="label" value="'.($row['label'] ?? '').'"  style="width: 300px" />', 1, '', true);
+        $trType = tr($lang_fields['col_type'].'<font color="red">*</font>', $this->radio('type', $this->getTypeRadioOptions(), $row['type'] ?? null), 1, '', true);
+        $trRequired = tr($lang_fields['col_required'].'<font color="red">*</font>', $this->radio('required', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['required'] ?? null), 1, '', true);
+        $trHelp = tr($lang_fields['col_help'], '<textarea name="help" rows="4" cols="80">'.($row['help'] ?? '').'</textarea>', 1, '', true);
+        $trOptions = tr($lang_fields['col_options'], '<textarea name="options" rows="6" cols="80">'.($row['options'] ?? '').'</textarea><br/>'.$lang_fields['col_options_help'], 1, '', true);
+        $trIsSingleRow = tr($lang_fields['col_is_single_row'].'<font color="red">*</font>', $this->radio('is_single_row', ['0' => $lang_functions['text_no'], '1' => $lang_functions['text_yes']], $row['is_single_row'] ?? null), 1, '', true);
+        $trPriority = tr(nexus_trans('label.priority').'<font color="red">*</font>', '<input type="number" name="priority" value="'.($row['priority'] ?? '0').'" style="width: 300px" />', 1, '', true);
+        $trDisplay = tr($lang_fields['col_display'], '<textarea name="display" rows="4" cols="80">'.($row['display'] ?? '').'</textarea><br/>'.$lang_catmanage['row_custom_field_display_help'], 1, '', true);
 
         $id = $row['id'] ?? 0;
         $form = <<<HTML
@@ -126,15 +131,16 @@ class Field
 </form>
 </div>
 HTML;
+
         return $form;
     }
 
-    function buildFieldTable()
+    public function buildFieldTable()
     {
         global $lang_fields, $lang_functions;
         $perPage = 10;
         $total = NexusDB::table('torrents_custom_fields')->count();
-        list($paginationTop, $paginationBottom, $limit) = pager($perPage, $total, "?");
+        [$paginationTop, $paginationBottom, $limit] = pager($perPage, $total, '?');
         $res = NexusDB::select("select * from torrents_custom_fields order by priority desc $limit");
         $header = [
             'id' => $lang_fields['col_id'],
@@ -167,7 +173,8 @@ HTML;
 </div>
 HEAD;
         $table = $this->buildTable($header, $rows);
-        return $head . $table . $paginationBottom;
+
+        return $head.$table.$paginationBottom;
     }
 
     public function save($data)
@@ -177,7 +184,7 @@ HEAD;
         if (empty($data['name'])) {
             throw new \InvalidArgumentException("{$lang_fields['col_name']} {$lang_functions['text_required']}");
         }
-        if (!preg_match('/^\w+$/', $data['name'])) {
+        if (! preg_match('/^\w+$/', $data['name'])) {
             throw new \InvalidArgumentException("{$lang_fields['col_name']} {$lang_functions['text_invalid']}");
         }
         $attributes['name'] = $data['name'];
@@ -190,23 +197,23 @@ HEAD;
         if (empty($data['type'])) {
             throw new \InvalidArgumentException("{$lang_fields['col_type']} {$lang_functions['text_required']}");
         }
-        if (!isset(self::$types[$data['type']])) {
+        if (! isset(self::$types[$data['type']])) {
             throw new \InvalidArgumentException("{$lang_fields['col_type']} {$lang_functions['text_invalid']}");
         }
         $attributes['type'] = $data['type'];
 
-        if (!isset($data['required'])) {
+        if (! isset($data['required'])) {
             throw new \InvalidArgumentException("{$lang_fields['col_required']} {$lang_functions['text_required']}");
         }
-        if (!in_array($data['required'], ["0", "1"], true)) {
+        if (! in_array($data['required'], ['0', '1'], true)) {
             throw new \InvalidArgumentException("{$lang_fields['col_name']} {$lang_functions['text_invalid']}");
         }
         $attributes['required'] = $data['required'];
 
-        if (!isset($data['is_single_row'])) {
+        if (! isset($data['is_single_row'])) {
             throw new \InvalidArgumentException("{$lang_fields['col_is_single_row']} {$lang_functions['text_required']}");
         }
-        if (!in_array($data['is_single_row'], ["0", "1"], true)) {
+        if (! in_array($data['is_single_row'], ['0', '1'], true)) {
             throw new \InvalidArgumentException("{$lang_fields['col_is_single_row']} {$lang_functions['text_invalid']}");
         }
         $attributes['is_single_row'] = $data['is_single_row'];
@@ -218,12 +225,13 @@ HEAD;
         $now = date('Y-m-d H:i:s');
         $attributes['updated_at'] = $now;
         $table = 'torrents_custom_fields';
-        if (!empty($data['id'])) {
+        if (! empty($data['id'])) {
             $result = NexusDB::table($table)->where('id', $data['id'])->update($attributes);
         } else {
             $attributes['created_at'] = $now;
             $result = NexusDB::insert($table, $attributes);
         }
+
         return $result;
     }
 
@@ -242,13 +250,14 @@ HEAD;
             $table .= '</tr>';
         }
         $table .= '</tbody></table>';
+
         return $table;
     }
 
     public function buildFieldCheckbox($name, $current = [])
     {
         $res = NexusDB::select('select * from torrents_custom_fields');
-        if (!is_array($current)) {
+        if (! is_array($current)) {
             $current = explode(',', $current);
         }
         $checkbox = '';
@@ -260,6 +269,7 @@ HEAD;
             );
         }
         $checkbox .= '';
+
         return $checkbox;
 
     }
@@ -280,9 +290,9 @@ HEAD;
             $currentValue = $customValues[$row['id']]['custom_field_value'] ?? '';
             $requireText = '';
             if ($row['required']) {
-                $requireText = "<font color=\"red\">*</font>";
+                $requireText = '<font color="red">*</font>';
             }
-            $trLabel = $row['label'] . $requireText;
+            $trLabel = $row['label'].$requireText;
             $trRelation = "mode_$searchBoxId";
             if ($row['type'] == self::TYPE_TEXT) {
                 $html .= tr($trLabel, sprintf('<input type="text" name="%s" value="%s" style="width: %s"/>', $name, $currentValue, '99%'), 1, $trRelation);
@@ -292,19 +302,19 @@ HEAD;
                 if ($row['type'] == self::TYPE_CHECKBOX) {
                     $name .= '[]';
                 }
-                $part = "";
+                $part = '';
                 foreach (preg_split('/[\r\n]+/', trim($row['options'])) as $option) {
                     if (empty($option) || ($pos = strpos($option, '|')) === false) {
                         continue;
                     }
                     $value = substr($option, 0, $pos);
                     $label = substr($option, $pos + 1);
-                    $checked = "";
-                    if ($row['type'] == self::TYPE_RADIO && (string)$currentValue === (string)$value) {
-                        $checked = " checked";
+                    $checked = '';
+                    if ($row['type'] == self::TYPE_RADIO && (string) $currentValue === (string) $value) {
+                        $checked = ' checked';
                     }
-                    if ($row['type'] == self::TYPE_CHECKBOX && in_array($value, (array)$currentValue)) {
-                        $checked = " checked";
+                    if ($row['type'] == self::TYPE_CHECKBOX && in_array($value, (array) $currentValue)) {
+                        $checked = ' checked';
                     }
                     $part .= sprintf(
                         '<label style="margin-right: 4px"><input type="%s" name="%s" value="%s"%s />%s</label>',
@@ -313,16 +323,16 @@ HEAD;
                 }
                 $html .= tr($trLabel, $part, 1, $trRelation);
             } elseif ($row['type'] == self::TYPE_SELECT) {
-                $part = '<select name="' . $name . '">';
+                $part = '<select name="'.$name.'">';
                 foreach (preg_split('/[\r\n]+/', trim($row['options'])) as $option) {
                     if (empty($option) || ($pos = strpos($option, '|')) === false) {
                         continue;
                     }
                     $value = substr($option, 0, $pos);
                     $label = substr($option, $pos + 1);
-                    $selected = "";
-                    if (in_array($value, (array)$currentValue)) {
-                        $selected = " selected";
+                    $selected = '';
+                    if (in_array($value, (array) $currentValue)) {
+                        $selected = ' selected';
                     }
                     $part .= sprintf(
                         '<option value="%s"%s>%s</option>',
@@ -332,15 +342,15 @@ HEAD;
                 $part .= '</select>';
                 $html .= tr($trLabel, $part, 1, $trRelation);
             } elseif ($row['type'] == self::TYPE_IMAGE) {
-                $callbackFunc = "preview_custom_field_image_" . $row['id'];
+                $callbackFunc = 'preview_custom_field_image_'.$row['id'];
                 $iframeId = "iframe_$callbackFunc";
                 $inputId = "input_$callbackFunc";
-                $imgId = "attach" . $row['id'];
+                $imgId = 'attach'.$row['id'];
                 $previewBoxId = "preview_$callbackFunc";
-                $y = '<iframe id="' . $iframeId . '" src="' . getSchemeAndHttpHost() . '/attachment.php?callback_func=' . $callbackFunc . '" width="100%" height="24" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>';
+                $y = '<iframe id="'.$iframeId.'" src="'.getSchemeAndHttpHost().'/attachment.php?callback_func='.$callbackFunc.'" width="100%" height="24" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>';
                 $y .= sprintf('<input id="%s" type="text" name="%s" value="%s" style="width: %s;margin: 10px 0">', $inputId, $name, $currentValue, '99%');
-                $y .= '<div id="' . $previewBoxId . '">';
-                if (!empty($currentValue)) {
+                $y .= '<div id="'.$previewBoxId.'">';
+                if (! empty($currentValue)) {
                     if (substr($currentValue, 0, 4) == 'http') {
                         $y .= formatImg($currentValue, true, 700, 0, $imgId);
                     } else {
@@ -372,25 +382,26 @@ JS;
                 $html .= tr($trLabel, $y, 1, $trRelation, true);
             }
         }
+
         return $html;
     }
 
     public function listTorrentCustomField($torrentId, $searchBoxId)
     {
-        //suppose torrentId is array
+        // suppose torrentId is array
         $isArray = true;
         $torrentIdArr = $torrentId;
-        if (!is_array($torrentId)) {
+        if (! is_array($torrentId)) {
             $isArray = false;
             $torrentIdArr = [$torrentId];
         }
         $torrentIdStr = implode(',', $torrentIdArr);
         if (NexusDB::isMysql()) {
-            $customFieldStr = "find_in_set(f.id, box.custom_fields)";
+            $customFieldStr = 'find_in_set(f.id, box.custom_fields)';
         } elseif (NexusDB::isPgsql()) {
             $customFieldStr = "f.id = ANY(string_to_array(box.custom_fields, ',')::int[])";
         } else {
-            throw new \RuntimeException("Not supported database");
+            throw new \RuntimeException('Not supported database');
         }
         $res = NexusDB::select("select f.*, v.custom_field_value, v.torrent_id from torrents_custom_field_values v inner join torrents_custom_fields f on v.custom_field_id = f.id inner join searchbox box on box.id = $searchBoxId and $customFieldStr where torrent_id in ($torrentIdStr) order by f.priority desc");
         $values = [];
@@ -421,6 +432,7 @@ JS;
                 $field['custom_field_value'] = $values[$tid][$field['id']];
             }
         }
+
         return $isArray ? $result : ($result[$torrentId] ?? []);
     }
 
@@ -433,9 +445,10 @@ JS;
         $shouldRenderMixRow = false;
         foreach ($customFields as $field) {
             if (empty($field['custom_field_value'])) {
-                //No value, remove special tags
+                // No value, remove special tags
                 $mixedRowContent = str_replace("<%{$field['name']}.label%>", '', $mixedRowContent);
                 $mixedRowContent = str_replace("<%{$field['name']}.value%>", '', $mixedRowContent);
+
                 continue;
             }
             $shouldRenderMixRow = true;
@@ -443,7 +456,7 @@ JS;
             $mixedRowContent = str_replace("<%{$field['name']}.label%>", $field['label'], $mixedRowContent);
             $mixedRowContent = str_replace("<%{$field['name']}.value%>", $contentNotFormatted, $mixedRowContent);
             if ($field['is_single_row']) {
-                if (!empty($field['display'])) {
+                if (! empty($field['display'])) {
                     $customFieldDisplay = $field['display'];
                     $customFieldDisplay = str_replace("<%{$field['name']}.label%>", $field['label'], $customFieldDisplay);
                     $customFieldDisplay = str_replace("<%{$field['name']}.value%>", $contentNotFormatted, $customFieldDisplay);
@@ -459,10 +472,9 @@ JS;
         if ($shouldRenderMixRow && $mixedRowContent) {
             $result .= tr($displayName, format_comment($mixedRowContent), 1);
         }
+
         return $result;
     }
-
-
 
     protected function formatCustomFieldValue(array $customFieldWithValue, $doFormatComment = false): string
     {
@@ -482,9 +494,9 @@ JS;
                 break;
             case self::TYPE_RADIO:
             case self::TYPE_CHECKBOX:
-            case self::TYPE_SELECT;
+            case self::TYPE_SELECT:
                 $fieldContent = [];
-                foreach ((array)$fieldValue as $item) {
+                foreach ((array) $fieldValue as $item) {
                     $fieldContent[] = $customFieldWithValue['options'][$item] ?? '';
                 }
                 $result .= implode(' ', $fieldContent);
@@ -492,6 +504,7 @@ JS;
             default:
                 break;
         }
+
         return $result;
     }
 
@@ -516,9 +529,9 @@ JS;
         if (is_null($fieldName)) {
             return $this->preparedTorrentCustomFieldValues[$torrentId] ?? [];
         }
+
         return $this->preparedTorrentCustomFieldValues[$torrentId][$fieldName] ?? '';
     }
-
 
     public function saveFieldValues($searchBoxId, $torrentId, array $data)
     {
@@ -529,9 +542,10 @@ JS;
         foreach ($enabledFields as $field) {
             if (empty($data[$field->id])) {
                 if ($field->required) {
-//                    throw new \InvalidArgumentException(nexus_trans("nexus.require_argument", ['argument' => $field->label]));
+                    //                    throw new \InvalidArgumentException(nexus_trans("nexus.require_argument", ['argument' => $field->label]));
                     do_log("Field: {$field->label} required, but empty");
                 }
+
                 continue;
             }
             $insert[] = [
@@ -545,7 +559,4 @@ JS;
         TorrentCustomFieldValue::query()->where('torrent_id', $torrentId)->delete();
         TorrentCustomFieldValue::query()->insert($insert);
     }
-
-
-
 }

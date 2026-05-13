@@ -1,4 +1,5 @@
 <?php
+
 namespace Nexus\Database;
 
 use PDOStatement;
@@ -32,5 +33,4 @@ interface DBInterface
     public function freeResult($result);
 
     public function prepare(string $sql): PDOStatement;
-
 }

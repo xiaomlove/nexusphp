@@ -2,7 +2,4 @@
 
 namespace Nexus\PTGen;
 
-class PTGenException extends \Exception
-{
-
-}
+class PTGenException extends \Exception {}

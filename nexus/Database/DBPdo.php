@@ -1,11 +1,15 @@
 <?php
+
 namespace Nexus\Database;
+
 use PDO;
 
 class DBPdo implements DBInterface
 {
     private PDO $pdo;
+
     private $driver;
+
     private $lastStmt;
 
     public function connect($host, $username, $password, $database, $port, $driver = 'mysql')
@@ -16,7 +20,7 @@ class DBPdo implements DBInterface
         } elseif ($driver === 'pgsql') {
             $dsn = "pgsql:host={$host};port={$port};dbname={$database}";
         } else {
-            throw new DatabaseException("Unsupported driver");
+            throw new DatabaseException('Unsupported driver');
         }
 
         $pdo = new PDO($dsn, $username, $password, [
@@ -26,7 +30,7 @@ class DBPdo implements DBInterface
 
         // ===== MySQL 专属 =====
         if ($driver === 'mysql') {
-            $pdo->exec("SET NAMES utf8mb4");
+            $pdo->exec('SET NAMES utf8mb4');
             $pdo->exec("SET collation_connection = 'utf8mb4_unicode_ci'");
             $pdo->exec("SET sql_mode=''");
             $pdo->exec("SET time_zone='".date('P')."'");
@@ -43,19 +47,22 @@ class DBPdo implements DBInterface
     public function query(string $sql)
     {
         $this->lastStmt = $this->pdo->query($sql);
+
         return $this->lastStmt;
     }
 
     public function error(): string
     {
         $error = $this->pdo->errorInfo();
+
         return $error[2] ?? '';
     }
 
     public function errno(): int
     {
         $error = $this->pdo->errorInfo();
-        return (int)($error[1] ?? 0);
+
+        return (int) ($error[1] ?? 0);
     }
 
     public function numRows($stmt): int
@@ -72,7 +79,7 @@ class DBPdo implements DBInterface
 
         if ($this->driver === 'pgsql') {
             // PostgreSQL 不能切数据库，只能重连
-            throw new DatabaseException("PostgreSQL does not support selectDb()");
+            throw new DatabaseException('PostgreSQL does not support selectDb()');
         }
 
         return false;
@@ -117,7 +124,7 @@ class DBPdo implements DBInterface
 
     public function lastInsertId(): int
     {
-        return (int)$this->pdo->lastInsertId();
+        return (int) $this->pdo->lastInsertId();
     }
 
     public function freeResult($stmt)
@@ -134,5 +141,4 @@ class DBPdo implements DBInterface
     {
         return $this->pdo;
     }
-
 }
