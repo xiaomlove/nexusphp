@@ -7,6 +7,66 @@ use App\Models\Topic;
 use App\Models\User;
 use Nexus\Database\NexusDB;
 
+/*
+ * Strangler Fig flip (Phase 3.x) — the canonical forum URLs are now
+ * the Livewire `ForumIndex` (/forum), `ForumView` (/forum/{forumid}),
+ * and `NewTopicForm` (/forum/{forumid}/new). Read-only and compose
+ * GET requests for those three shapes are 302-bounced to the new
+ * routes; everything else (reply / quotepost / editpost, the POST
+ * submit handler, viewunread, search, and the admin actions
+ * movetopic / deletetopic / deletepost / setlocked / hltopic /
+ * setsticky) falls through to the legacy code below.
+ *
+ * Escape hatches:
+ *
+ *   - `?legacy=1` — explicit opt-out, the rollback canary documented
+ *     in docs/legacy-strategy.md. Mirrors the torrents.php pattern.
+ *   - `?action=viewtopic` — intentionally left on legacy for now.
+ *     `TopicView` needs (forumid, topicid) and the legacy URL only
+ *     carries topicid, so the redirect would require a topics-table
+ *     DB lookup before Laravel boots. That is its own migration
+ *     step — see docs/legacy-strategy.md § "Phase 3.x: forums.php
+ *     flip".
+ *
+ * The redirect runs BEFORE require'ing include/bittorrent.php so
+ * the fast path never pays for legacy bootstrap / `dbconn()`.
+ */
+$forumsFlipAction = isset($_GET['action']) ? trim((string) $_GET['action']) : '';
+$forumsFlipLegacy = isset($_GET['legacy']);
+$forumsFlipLocation = null;
+
+if (! $forumsFlipLegacy) {
+    if ($forumsFlipAction === '') {
+        // /forums.php — plain index. Preserve any extra query params
+        // even though /forum (ForumIndex) ignores them; this keeps
+        // bookmark-with-extra-params URLs from losing data on the
+        // first hop.
+        $forumsFlipParams = $_GET;
+        $forumsFlipQs = http_build_query($forumsFlipParams);
+        $forumsFlipLocation = '/forum'.($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
+    } elseif ($forumsFlipAction === 'viewforum' || $forumsFlipAction === 'newtopic') {
+        $forumsFlipForumId = isset($_GET['forumid']) ? (int) $_GET['forumid'] : 0;
+        if ($forumsFlipForumId > 0) {
+            $forumsFlipParams = $_GET;
+            unset($forumsFlipParams['action'], $forumsFlipParams['forumid']);
+            $forumsFlipQs = http_build_query($forumsFlipParams);
+            $forumsFlipSuffix = $forumsFlipAction === 'newtopic' ? '/new' : '';
+            $forumsFlipLocation = '/forum/'.$forumsFlipForumId.$forumsFlipSuffix
+                .($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
+        }
+        // If forumid is missing/invalid, fall through to legacy — the
+        // legacy code emits a user-visible "forum not found" error,
+        // which is more informative than a 404 from Laravel route
+        // model binding on a malformed URL.
+    }
+}
+
+if ($forumsFlipLocation !== null) {
+    header('Location: '.$forumsFlipLocation, true, 302);
+    exit;
+}
+unset($forumsFlipAction, $forumsFlipLegacy, $forumsFlipLocation);
+
 require '../include/bittorrent.php';
 dbconn();
 require_once get_langfile_path();

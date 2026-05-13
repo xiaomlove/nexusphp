@@ -41,8 +41,11 @@ interface LegacyPageCase {
 
 const PAGES: LegacyPageCase[] = [
     {
-        description: 'forums.php (PR #22, #41 forums refactor)',
-        url: '/forums.php',
+        // /forums.php now 302→/forum by default (Strangler Fig flip).
+        // ?legacy=1 keeps the legacy view reachable as the rollback
+        // canary — that's the surface this smoke covers.
+        description: 'forums.php?legacy=1 (PR #22, #41 forums refactor; canary post-flip)',
+        url: '/forums.php?legacy=1',
         contains: /NexusPHP\s*::\s*Forums/i,
     },
     {

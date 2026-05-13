@@ -166,6 +166,43 @@ Per-page rule:
 - Don't keep "double truth" longer than a week — behavior drifts.
 - A 2–3 day feature-flag canary (`?legacy=1`) is fine for rollback.
 
+#### Phase 3.x: forums.php flip
+
+The Livewire replacements (`ForumIndex` / `ForumView` / `TopicView` /
+`NewTopicForm` / `EditPostForm`) were merged in earlier PRs but
+`public/forums.php` (1 734 LOC) kept owning the canonical URL.
+
+Strangler flip applied at the head of `public/forums.php`:
+
+| Legacy URL | Flipped to | Livewire component |
+|---|---|---|
+| `/forums.php` | `/forum` | `ForumIndex` |
+| `/forums.php?action=viewforum&forumid=N` | `/forum/N` | `ForumView` |
+| `/forums.php?action=newtopic&forumid=N` | `/forum/N/new` | `NewTopicForm` |
+
+Escape hatches that stay on legacy:
+
+- `?legacy=1` — explicit canary opt-out.
+- `?action=viewtopic` — needs a `topics → forumid` lookup before the
+  pre-Laravel-boot redirect can fire. Migrating viewtopic is a
+  separate PR: it will either (a) add a slim PDO lookup ahead of the
+  redirect, or (b) introduce a `/forum/topic/{topic}` route that
+  resolves `forumid` from the topic at controller time.
+- `?action=reply` / `?action=quotepost` / `?action=editpost` / the
+  POST `?action=post` submit handler — compose flows. Need form-side
+  rewiring (the existing Livewire components are mounted on Livewire
+  routes, not on the legacy URL); separate PR per action.
+- Admin actions (`movetopic`, `deletetopic`, `deletepost`,
+  `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent yet,
+  blocked on a Filament/Livewire admin moderation surface.
+- `?action=viewunread` / `?action=search` — no Livewire equivalent;
+  candidates for inline-into-`ForumIndex` (unread filter) and a
+  dedicated `ForumSearch` Livewire respectively.
+
+Contract is covered by `tests/e2e/behavior/forums-flip.spec.ts`.
+After every escape hatch has been retired the file goes to a single
+`require '/forum';` shim and then to `git rm`.
+
 ### Phase 4 — hot path (announce / scrape) — separately (1–2 months)
 
 **Do NOT migrate `announce.php` to a Laravel controller.** Booting
