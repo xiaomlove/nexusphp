@@ -56,5 +56,12 @@ class VerifyCsrfToken extends Middleware
         // have no `@csrf` field). `/donorlist.php` is GET-only.
         'mailtest.php',
         'adduser.php',
+        // Phase 3 magic.php rewrite: `/magic.php` accepts POST
+        // without a CSRF token — the legacy XHR helper
+        // `saveMagicValue` in `public/js/common.js` posts a bare
+        // `application/x-www-form-urlencoded` payload, same as
+        // `saythanks`. Bolting CSRF onto the existing JS helpers is
+        // a separate, larger change tracked in the Phase 1 sweep.
+        'magic.php',
     ];
 }
