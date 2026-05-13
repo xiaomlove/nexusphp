@@ -19,6 +19,7 @@ use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\PreviewController;
+use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
@@ -77,6 +78,17 @@ Route::get('/error', [ToolController::class, 'error']);
 // Public, no auth required.
 Route::get('/searchsuggest.php', SearchSuggestController::class)->name('legacy.searchsuggest');
 Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
+
+/*
+ * Phase 2 batch #8 — replaces `public/rules.php` (deleted in the
+ * same PR). The legacy script had `loggedinorreturn()` commented out
+ * and was reachable as a guest, so the route stays outside the
+ * `auth.nexus` middleware. The URL stays `/rules.php` so existing
+ * navigation, the E2E smoke spec, and external links keep working
+ * without template changes. The matching nginx exact-location entry
+ * lives in `.docker/openresty/sites/app.conf.template`.
+ */
+Route::get('/rules.php', RulesController::class)->name('legacy.rules');
 
 // Phase 2 batch #2 — public legacy routes (no auth).
 //
