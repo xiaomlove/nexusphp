@@ -18,6 +18,7 @@ use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
+use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
@@ -145,6 +146,17 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/dev/components', ComponentGalleryController::class)->name('dev.components');
 
     Route::post('/thanks.php', ThanksController::class)->name('legacy.thanks');
+
+    /*
+     * Phase 3 — replaces `public/magic.php` (deleted in this PR).
+     * "Give magic" XHR endpoint that
+     * `public/js/common.js#saveMagicValue` POSTs to with `id`
+     * (torrent id) + `value` (bonus amount). Same CSRF carve-out
+     * and nginx exact-location companion rule as `/thanks.php`.
+     * Response is the legacy `{ret, msg, data}` JSON envelope at
+     * HTTP 200 — the JS only inspects `res.ret`.
+     */
+    Route::post('/magic.php', MagicController::class)->name('legacy.magic');
 
     Route::get('/special.php', SpecialController::class)->name('legacy.special');
 
