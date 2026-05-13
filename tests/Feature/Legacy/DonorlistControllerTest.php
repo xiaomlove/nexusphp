@@ -3,6 +3,7 @@
 namespace Tests\Feature\Legacy;
 
 use App\Models\User;
+use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
@@ -54,10 +55,9 @@ class DonorlistControllerTest extends FeatureTestCase
         $this->actingAs($admin, 'nexus-web');
 
         $donor = $this->createTestUser([
-            'donor' => 'yes',
-            'donated' => '42.50',
             'email' => 'donor-'.bin2hex(random_bytes(4)).'@example.test',
         ]);
+        $this->markAsDonor($donor->id, '42.50');
 
         $response = $this->get('/donorlist.php');
 
@@ -82,7 +82,9 @@ class DonorlistControllerTest extends FeatureTestCase
         $admin = $this->createTestUser(['class' => User::CLASS_ADMINISTRATOR]);
         $this->actingAs($admin, 'nexus-web');
 
-        $nonDonor = $this->createTestUser(['donor' => 'no']);
+        // `donor` defaults to `'no'` in the schema, so we just need a
+        // user row that we never flip to `'yes'`.
+        $nonDonor = $this->createTestUser();
 
         $response = $this->get('/donorlist.php');
 
@@ -96,16 +98,34 @@ class DonorlistControllerTest extends FeatureTestCase
         $admin = $this->createTestUser(['class' => User::CLASS_ADMINISTRATOR]);
         $this->actingAs($admin, 'nexus-web');
 
-        $this->createTestUser([
-            'donor' => 'yes',
+        $donor = $this->createTestUser([
             'username' => 'xss_'.bin2hex(random_bytes(3)).'<script>alert(1)</script>',
         ]);
+        $this->markAsDonor($donor->id, '0.00');
 
         $response = $this->get('/donorlist.php');
 
         $body = (string) $response->getContent();
         $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $body);
+    }
+
+    /**
+     * Flip `users.donor` / `users.donated` directly via the query
+     * builder. Neither column is in `User::$fillable` (see the model
+     * around line 217), so `User::create([..., 'donor' => 'yes'])`
+     * silently drops them — the same pattern the
+     * `TakeContactControllerTest::stampLastStaffMsg` helper uses for
+     * `last_staffmsg`.
+     */
+    private function markAsDonor(int $userId, string $donated): void
+    {
+        NexusDB::table('users')
+            ->where('id', $userId)
+            ->update([
+                'donor' => 'yes',
+                'donated' => $donated,
+            ]);
     }
 
     /**
