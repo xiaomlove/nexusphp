@@ -99,22 +99,50 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
         expect(body).toMatch(/NexusPHP\s*::\s*Forums/i);
     });
 
-    test('/forums.php?action=viewtopic&topicid=1 stays on legacy', async ({ context, page }) => {
+    test('/forums.php?action=viewtopic&topicid=N → /forum/topic/N (Laravel resolver)', async ({
+        context,
+        page,
+    }) => {
         await loginAs(context, 'admin');
 
-        // viewtopic intentionally not flipped — TopicView needs forumid
-        // and a DB lookup is too expensive for the pre-Laravel-boot
-        // fast path. Documented in forums.php's header.
         const response = await page.request.get('/forums.php?action=viewtopic&topicid=1', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        // First hop: legacy → bare-topic-ID shortcut route. The
+        // shortcut route then looks up `forumid` and re-redirects to
+        // /forum/{forumid}/topic/{topic} (validated below).
+        expect(location).toMatch(/\/forum\/topic\/1$/);
+    });
+
+    test('/forum/topic/N → /forum/{forumid}/topic/N', async ({ context, page }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get('/forum/topic/1', { maxRedirects: 0 });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        // The exact forumid depends on seed data — we only assert the
+        // shape, not the specific forum.
+        expect(location).toMatch(/^\/forum\/\d+\/topic\/1$/);
+    });
+
+    test('/forums.php?action=viewtopic without topicid stays on legacy', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // No topicid → the redirect cannot construct a clean
+        // `/forum/topic/{N}` URL, so the request must fall through to
+        // the legacy "topic not found" handler.
+        const response = await page.request.get('/forums.php?action=viewtopic', {
             maxRedirects: 0,
         });
         expect(response.status()).toBeGreaterThanOrEqual(200);
         expect(response.status()).toBeLessThan(400);
         if (response.status() === 302) {
             const location = response.headers()['location'] ?? '';
-            // If legacy code DOES emit a redirect (e.g. for not-logged-in),
-            // it must NOT be pointing to /forum/* — that would mean we
-            // accidentally flipped viewtopic.
             expect(location).not.toMatch(/^\/forum\//);
         }
     });

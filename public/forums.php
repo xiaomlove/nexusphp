@@ -10,23 +10,41 @@ use Nexus\Database\NexusDB;
 /*
  * Strangler Fig flip (Phase 3.x) — the canonical forum URLs are now
  * the Livewire `ForumIndex` (/forum), `ForumView` (/forum/{forumid}),
- * and `NewTopicForm` (/forum/{forumid}/new). Read-only and compose
- * GET requests for those three shapes are 302-bounced to the new
- * routes; everything else (reply / quotepost / editpost, the POST
- * submit handler, viewunread, search, and the admin actions
- * movetopic / deletetopic / deletepost / setlocked / hltopic /
- * setsticky) falls through to the legacy code below.
+ * `NewTopicForm` (/forum/{forumid}/new), and `TopicView`
+ * (/forum/{forumid}/topic/{topic}). Read-only and compose-GET
+ * requests for those shapes are 302-bounced to the new routes;
+ * everything else (reply / quotepost / editpost, the POST submit
+ * handler, viewunread, search, and the admin actions movetopic /
+ * deletetopic / deletepost / setlocked / hltopic / setsticky) falls
+ * through to the legacy code below.
+ *
+ * `?action=viewtopic` is special: `TopicView` needs both `forumid`
+ * and `topicid`, but the legacy URL only carries `topicid`. We
+ * deliberately do not run a DB query before Laravel boots (the
+ * legacy entry point would have to parse `.env` or load
+ * `dbconn.php` to learn the credentials, which defeats the
+ * fast-path goal of the redirect). Instead the redirect targets a
+ * Laravel route `/forum/topic/{topic}` that performs the
+ * `topics → forumid` lookup server-side and re-redirects to the
+ * canonical `/forum/{forumid}/topic/{topic}` URL. Two-hop redirect
+ * is acceptable because the legacy URL is hit only by bookmarks /
+ * RSS / cross-site links; first-party navigation already uses the
+ * canonical URL directly.
  *
  * Escape hatches:
  *
  *   - `?legacy=1` — explicit opt-out, the rollback canary documented
  *     in docs/legacy-strategy.md. Mirrors the torrents.php pattern.
- *   - `?action=viewtopic` — intentionally left on legacy for now.
- *     `TopicView` needs (forumid, topicid) and the legacy URL only
- *     carries topicid, so the redirect would require a topics-table
- *     DB lookup before Laravel boots. That is its own migration
- *     step — see docs/legacy-strategy.md § "Phase 3.x: forums.php
- *     flip".
+ *   - `?action=reply` / `?action=quotepost` / `?action=editpost` —
+ *     compose flows. Need form-side rewiring (the existing Livewire
+ *     forms are mounted on Livewire routes, not on the legacy URL);
+ *     separate PR per action.
+ *   - `?action=post` — the form-submit handler. Same.
+ *   - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
+ *     `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent
+ *     yet, blocked on a Filament/Livewire admin moderation surface.
+ *   - `?action=viewunread` / `?action=search` — no Livewire
+ *     equivalent yet.
  *
  * The redirect runs BEFORE require'ing include/bittorrent.php so
  * the fast path never pays for legacy bootstrap / `dbconn()`.
@@ -58,6 +76,17 @@ if (! $forumsFlipLegacy) {
         // legacy code emits a user-visible "forum not found" error,
         // which is more informative than a 404 from Laravel route
         // model binding on a malformed URL.
+    } elseif ($forumsFlipAction === 'viewtopic') {
+        $forumsFlipTopicId = isset($_GET['topicid']) ? (int) $_GET['topicid'] : 0;
+        if ($forumsFlipTopicId > 0) {
+            $forumsFlipParams = $_GET;
+            unset($forumsFlipParams['action'], $forumsFlipParams['topicid']);
+            $forumsFlipQs = http_build_query($forumsFlipParams);
+            $forumsFlipLocation = '/forum/topic/'.$forumsFlipTopicId
+                .($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
+        }
+        // Same fall-through reasoning as viewforum: a missing topicid
+        // keeps the user on the legacy "topic not found" error.
     }
 }
 
