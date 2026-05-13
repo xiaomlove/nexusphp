@@ -2,12 +2,15 @@
 
 完整的 PT 建站解决方案。基于 NexusPHP + Laravel + FilamentPHP。
 
+[![legacy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/maximuml/nexus-test1/legacy-loc-data/badge.json)](https://github.com/maximuml/nexus-test1/blob/legacy-loc-data/history.csv)
+
 欢迎参与国际化工作，点击 [这里](https://github.com/xiaomlove/nexusphp/discussions/193) 了解详情
 
 > **贡献者请先阅读 [`CONTRIBUTING.md`](CONTRIBUTING.md)。** 本仓库正处于
 > Phase 0 — legacy freeze：禁止在 `public/*.php`、`include/**/*.php`、
 > `classes/**/*.php` 中新增文件，新代码全部进入 Laravel 层。完整迁移路线
-> 参见 [`docs/legacy-strategy.md`](docs/legacy-strategy.md)。
+> 参见 [`docs/legacy-strategy.md`](docs/legacy-strategy.md)。徽章显示当前
+> 遗留代码总行数，点击可查看完整历史 CSV。
 
 ## 功能特性
 - 发种

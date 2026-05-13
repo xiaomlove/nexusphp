@@ -2,13 +2,17 @@ English | [中文](/)
 
 Complete PT website building solution. Based on NexusPHP + Laravel + FilamentPHP.
 
+[![legacy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/maximuml/nexus-test1/legacy-loc-data/badge.json)](https://github.com/maximuml/nexus-test1/blob/legacy-loc-data/history.csv)
+
 Welcome to participate in internationalization work, click [here](https://github.com/xiaomlove/nexusphp/discussions/193) for more information
 
 > **Contributors: read [`CONTRIBUTING.md`](CONTRIBUTING.md) first.** This
 > repo is in Phase 0 — legacy freeze: no new files may be added to
 > `public/*.php`, `include/**/*.php`, or `classes/**/*.php`. All new
 > code goes into the Laravel layer. The full migration plan lives in
-> [`docs/legacy-strategy.md`](docs/legacy-strategy.md).
+> [`docs/legacy-strategy.md`](docs/legacy-strategy.md). The badge above
+> shows the current legacy LOC count — click it to view the full CSV
+> history on the `legacy-loc-data` branch.
 
 ## Functional Features
 
