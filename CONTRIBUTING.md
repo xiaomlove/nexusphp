@@ -107,6 +107,26 @@ docker exec nexusphp-php php artisan e2e:bootstrap --force
 
 App: <http://localhost> · Filament admin: <http://localhost/nexusphp> · login: `e2eadmin / E2eAdmin2026`
 
+### Database schema dump
+
+`database/schema/mysql-schema.sql` is a committed snapshot of the current
+MySQL schema. Laravel's `migrate` command loads it on a fresh database and
+then runs only the migrations created *after* the dump, which keeps CI's
+PHPUnit Feature job and `migrate:fresh` for local installs fast even as
+`database/migrations/` continues to grow.
+
+After landing a migration that changes a table, regenerate the snapshot:
+
+```bash
+bash scripts/dump-schema.sh
+git add database/schema/mysql-schema.sql
+git commit -m "chore(schema): refresh mysql-schema.sql"
+```
+
+The script wraps `php artisan migrate:fresh` + `php artisan schema:dump`
+and never passes `--prune`, so existing migration files stay on disk for
+contributors upgrading an old local database.
+
 ## 4. Branch & PR conventions
 
 - Branch off `php8`. Don't push directly to `php8` / `main` / `master`.
