@@ -110,13 +110,26 @@ observability — without a single page rewrite.
   files that are really *scheduled jobs* hiding behind an HTTP
   shape — replace with Artisan + schedule, no nginx forward, no
   Laravel route.
+- ✅ `App\Http\Controllers\Legacy\LegacyPageController` — invokable
+  controller that wraps a single allowlisted legacy `public/*.php`
+  page in the Laravel pipeline. Ships with an intentionally empty
+  `ALLOWED` constant; each entry needs a manual process-isolation
+  review (legacy code that calls `die()` mid-render kills the FPM
+  worker) and is added by a follow-up PR. Populates
+  `$GLOBALS['CURUSER']` from `LegacyContext`, buffers the legacy
+  `echo` output via `ob_start()` / `ob_get_clean()`, and returns
+  the result as a Symfony `Response` so Laravel middleware can
+  still observe and rewrite headers/body.
+- ✅ `App\Legacy\LegacyChrome` + `resources/views/layouts/legacy.blade.php`
+  — Blade layout shim for `stdhead()` / `stdfoot()`. Captures the
+  legacy site chrome as plain strings so a modern Laravel
+  controller can render its body inside the legacy header/footer
+  without `require`-ing `include/bittorrent.php` at the call site.
+  Chrome function names are overridable via `config('legacy.chrome')`
+  so tests don't need to redeclare globals.
 
-Still to land in Phase 1 (separate PRs, in this order):
+Still to land in Phase 1:
 
-- ⏳ `LegacyPageController` itself — invokable controller that wraps
-  one allowlisted legacy page. Gated on a process-isolation review
-  for `die()` / `exit` behaviour (see `LegacyHttpFeatureTestCase`).
-- ⏳ Per-shim Blade layout (`stdhead()` / `stdfoot()` extraction).
 - ⏳ `class_cache_redis` collapse onto `Cache::store('redis')`.
 
 The rest of the strategy doc continues to apply unchanged.
