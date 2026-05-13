@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
+use App\Http\Controllers\Legacy\AddUserController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
@@ -13,9 +14,11 @@ use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DonatedController;
+use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
+use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\PreviewController;
@@ -287,6 +290,32 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/delacctadmin.php', DelAcctAdminController::class)
         ->name('legacy.delacctadmin');
+
+    /*
+     * Phase 2 batch #9 — replaces `public/donorlist.php` (deleted in
+     * this PR). Admin+ listing of users with `donor='yes'`, paginated
+     * via `?page=<n>` (50 rows per page).
+     */
+    Route::get('/donorlist.php', DonorlistController::class)
+        ->name('legacy.donorlist');
+
+    /*
+     * Phase 2 batch #9 — replaces `public/mailtest.php` (deleted in
+     * this PR). Sysop-only SMTP test page. GET shows the form, POST
+     * `action=sendmail` triggers `ToolRepository::sendMail`.
+     * CSRF-exempt.
+     */
+    Route::match(['get', 'post'], '/mailtest.php', MailtestController::class)
+        ->name('legacy.mailtest');
+
+    /*
+     * Phase 2 batch #9 — replaces `public/adduser.php` (deleted in
+     * this PR). Administrator+ user creation form. GET shows the
+     * form, POST proxies to `UserRepository::store` and redirects to
+     * `/userdetails.php?id={new_id}` on success. CSRF-exempt.
+     */
+    Route::match(['get', 'post'], '/adduser.php', AddUserController::class)
+        ->name('legacy.adduser');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
