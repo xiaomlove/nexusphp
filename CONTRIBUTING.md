@@ -56,7 +56,20 @@ Every PR runs:
 | E2E smoke | `npm run e2e -- --project=chromium` | Playwright against the docker stack |
 | Legacy freeze | `bash scripts/legacy-loc.sh` (locally) | the rule above |
 
-Run them locally before pushing — CI feedback loops are slow.
+Run them locally before pushing — CI feedback loops are slow. To catch
+the first two of those checks **before** push, install the tracked git
+hooks once per clone:
+
+```bash
+bash scripts/install-hooks.sh
+# or, equivalently:
+composer install-hooks
+```
+
+This points `core.hooksPath` at `.githooks/`. The `pre-commit` hook
+then runs `vendor/bin/pint --test` and `vendor/bin/phpstan analyse` —
+but scoped to the files you have staged, so the loop is < 5 s on a
+normal commit. Bypass for a single commit with `git commit --no-verify`.
 
 ## 3. Local development
 
