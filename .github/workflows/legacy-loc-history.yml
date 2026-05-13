@@ -1,0 +1,128 @@
+name: Legacy LOC history
+
+# Records one legacy-LOC sample per push to php8 to a dedicated orphan
+# branch (`legacy-loc-data`). That branch holds two files:
+#   * history.csv  — one row per recorded commit
+#   * badge.json   — shields.io endpoint payload, always reflects HEAD
+#
+# Why an orphan branch and not `.github/` on php8?
+#   * Avoids polluting php8 history with a metric commit per merge.
+#   * Sidesteps branch-protection rules on php8 — the orphan branch is
+#     intentionally a CI-only artefact branch and can be force-updated.
+#   * Lets shields.io fetch a stable raw URL without query parameters
+#     pinning a SHA.
+#
+# To render the badge in README:
+#   ![legacy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<owner>/<repo>/legacy-loc-data/badge.json)
+#
+# To inspect history locally:
+#   git fetch origin legacy-loc-data && git show origin/legacy-loc-data:history.csv
+
+on:
+  push:
+    branches:
+      - php8
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: legacy-loc-history
+  cancel-in-progress: false  # never drop a sample
+
+jobs:
+  record:
+    name: Append legacy LOC sample
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout php8 (full history — needed for short SHA in CSV)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute current legacy LOC
+        id: compute
+        run: |
+          set -euo pipefail
+          CSV_ROW="$(bash scripts/legacy-loc.sh --csv)"
+          BADGE_JSON="$(bash scripts/legacy-loc.sh --badge)"
+          echo "csv_row=$CSV_ROW" >> "$GITHUB_OUTPUT"
+          # Multi-line outputs need the heredoc form.
+          {
+            echo 'badge_json<<__EOF__'
+            echo "$BADGE_JSON"
+            echo '__EOF__'
+          } >> "$GITHUB_OUTPUT"
+          echo
+          echo "Current sample:"
+          echo "  $CSV_ROW"
+          echo "  $BADGE_JSON"
+
+      - name: Checkout legacy-loc-data orphan branch into a worktree
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          mkdir -p .git-data-worktree
+          if git ls-remote --exit-code --heads origin legacy-loc-data >/dev/null 2>&1; then
+            git fetch origin legacy-loc-data
+            git worktree add .git-data-worktree origin/legacy-loc-data
+            cd .git-data-worktree
+            git checkout -B legacy-loc-data
+          else
+            # First-ever run: synthesise the orphan branch.
+            git worktree add --detach .git-data-worktree
+            cd .git-data-worktree
+            git checkout --orphan legacy-loc-data
+            git rm -rf . >/dev/null 2>&1 || true
+            echo 'date,sha,files,loc' > history.csv
+            cat > README.md <<'EOF'
+          # legacy-loc-data
+
+          CI-managed branch holding the legacy-LOC trend for this repo.
+          See `.github/workflows/legacy-loc-history.yml`.
+
+          Files:
+          - `history.csv` — one row per recorded php8 commit (`date,sha,files,loc`)
+          - `badge.json` — shields.io endpoint payload reflecting the latest sample
+
+          Render in any README via:
+
+          ```
+          ![legacy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<owner>/<repo>/legacy-loc-data/badge.json)
+          ```
+          EOF
+            git add history.csv README.md
+            git commit -m "chore(legacy-loc): seed orphan branch"
+          fi
+
+      - name: Append CSV row + refresh badge
+        env:
+          CSV_ROW: ${{ steps.compute.outputs.csv_row }}
+          BADGE_JSON: ${{ steps.compute.outputs.badge_json }}
+        run: |
+          set -euo pipefail
+          cd .git-data-worktree
+          # Idempotency: if the most recent row already records this SHA
+          # (e.g. workflow_dispatch on an unchanged commit), do nothing.
+          NEW_SHA="$(echo "$CSV_ROW" | cut -d',' -f2)"
+          LAST_SHA="$(tail -n1 history.csv | cut -d',' -f2)"
+          if [ "$NEW_SHA" = "$LAST_SHA" ]; then
+            echo "Sample for $NEW_SHA already recorded — nothing to do."
+          else
+            printf '%s\n' "$CSV_ROW" >> history.csv
+          fi
+          printf '%s\n' "$BADGE_JSON" > badge.json
+
+      - name: Commit and push if changed
+        run: |
+          set -euo pipefail
+          cd .git-data-worktree
+          if git diff --quiet -- history.csv badge.json; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git add history.csv badge.json
+          git commit -m "chore(legacy-loc): record sample for ${GITHUB_SHA::7}"
+          git push origin legacy-loc-data
