@@ -130,7 +130,10 @@ jobs:
         with:
           php-version: '8.3'
           extensions: gmp, intl, bcmath, gd, mbstring, redis, pdo_mysql, pdo_pgsql, sqlite3
-          coverage: none
+          # pcov is the cheapest coverage driver — ~10 % overhead vs.
+          # Xdebug's 2–3x. The Unit suite takes ~3.5 s with pcov on,
+          # well within the existing per-PR budget.
+          coverage: pcov
           tools: composer:v2
 
       - name: Cache Composer dependencies
@@ -148,8 +151,30 @@ jobs:
           cp .env.example .env
           php artisan key:generate --ansi
 
-      - name: Run PHPUnit (Unit suite)
-        run: vendor/bin/phpunit --testsuite=Unit
+      - name: Run PHPUnit (Unit suite) with coverage
+        run: |
+          mkdir -p coverage
+          vendor/bin/phpunit --testsuite=Unit \
+            --coverage-clover=coverage/clover.xml \
+            --coverage-text=coverage/coverage.txt \
+            --log-junit=coverage/junit.xml
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage.txt ]; then
+            sed -n '/^ Summary:/,/^$/p' coverage/coverage.txt
+          else
+            echo "::warning ::No coverage/coverage.txt produced — PHPUnit likely failed before the report stage."
+          fi
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-coverage
+          path: coverage/
+          retention-days: 14
 
   phpunit-feature:
     name: PHPUnit Feature (PHP 8.3)
