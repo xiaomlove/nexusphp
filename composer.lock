@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0388528df0983c5074162bd9fc7d77db",
+    "content-hash": "b89f5162ee621ef178dd38356db81194",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -768,31 +768,30 @@
         },
         {
             "name": "cybercog/laravel-clickhouse",
-            "version": "dev-master",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cybercog/laravel-clickhouse.git",
-                "reference": "7b7aa5eb856c9d94ca450b7c7ff45d7a8a1381c5"
+                "reference": "d327cbbfbf56be002c4b0840db7a0c66299ad0dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cybercog/laravel-clickhouse/zipball/7b7aa5eb856c9d94ca450b7c7ff45d7a8a1381c5",
-                "reference": "7b7aa5eb856c9d94ca450b7c7ff45d7a8a1381c5",
+                "url": "https://api.github.com/repos/cybercog/laravel-clickhouse/zipball/d327cbbfbf56be002c4b0840db7a0c66299ad0dd",
+                "reference": "d327cbbfbf56be002c4b0840db7a0c66299ad0dd",
                 "shasum": ""
             },
             "require": {
-                "illuminate/console": "^11.0|^12.0",
-                "illuminate/contracts": "^11.0|^12.0",
-                "illuminate/filesystem": "^11.0|^12.0",
-                "illuminate/support": "^11.0|^12.0",
+                "illuminate/console": "^11.0|^12.0|^13.0",
+                "illuminate/contracts": "^11.0|^12.0|^13.0",
+                "illuminate/filesystem": "^11.0|^12.0|^13.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
                 "php": "^8.2",
                 "smi2/phpclickhouse": "^1.5.3"
             },
             "require-dev": {
-                "orchestra/testbench": "^9.0|^10.0",
+                "orchestra/testbench": "^9.0|^10.0|^11.0",
                 "phpunit/phpunit": "^11.5"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -842,7 +841,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2025-11-23T12:00:05+00:00"
+            "time": "2026-03-01T08:45:16+00:00"
         },
         {
             "name": "danharrin/date-format-converter",
@@ -15963,7 +15962,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "cybercog/laravel-clickhouse": 20,
         "phpgangsta/googleauthenticator": 20
     },
     "prefer-stable": true,
