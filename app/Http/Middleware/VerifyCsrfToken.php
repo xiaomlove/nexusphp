@@ -40,5 +40,11 @@ class VerifyCsrfToken extends Middleware
         // CSRF token (the legacy sysop form has no `@csrf` field).
         // `/contactstaff.php` and `/takeflush.php` are GET-only.
         'donated.php',
+        // Phase 2 batch #6: `/bannedemails.php`, `/allowedemails.php`,
+        // and `/nowarn.php` accept POST without a CSRF token (their
+        // legacy admin/moderator forms have no `@csrf` field).
+        'bannedemails.php',
+        'allowedemails.php',
+        'nowarn.php',
     ];
 }

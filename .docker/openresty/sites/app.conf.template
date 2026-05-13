@@ -110,6 +110,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #6 — legacy migration routes.
+    location = /bannedemails.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /allowedemails.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /nowarn.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }

@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
 use App\Http\Controllers\Legacy\AllAgentsController;
+use App\Http\Controllers\Legacy\AllowedEmailsController;
+use App\Http\Controllers\Legacy\BannedEmailsController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
+use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SmiliesController;
@@ -212,6 +215,33 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * userdetails.php); preserved here.
      */
     Route::get('/takeflush.php', TakeFlushController::class)->name('legacy.takeflush');
+
+    /*
+     * Phase 2 batch #6 — replaces `public/bannedemails.php` (deleted
+     * in this PR). Sysop-only single-row key-value editor for the
+     * registration blacklist (`bannedemails.value`). The POST verb
+     * is CSRF-exempt — see `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::match(['get', 'post'], '/bannedemails.php', BannedEmailsController::class)
+        ->name('legacy.bannedemails');
+
+    /*
+     * Phase 2 batch #6 — replaces `public/allowedemails.php`
+     * (deleted in this PR). Mirror of `/bannedemails.php` for the
+     * registration whitelist (`allowedemails.value`). Same CSRF
+     * carve-out.
+     */
+    Route::match(['get', 'post'], '/allowedemails.php', AllowedEmailsController::class)
+        ->name('legacy.allowedemails');
+
+    /*
+     * Phase 2 batch #6 — replaces `public/nowarn.php` (deleted in
+     * this PR). Moderator-only bulk action that removes warnings
+     * (`usernw[]`) and/or disables accounts (`desact[]`) and 302s
+     * to `/warned.php`. POST-only (the legacy script never had a
+     * GET branch); CSRF-exempt.
+     */
+    Route::post('/nowarn.php', NoWarnController::class)->name('legacy.nowarn');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
