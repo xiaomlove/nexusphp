@@ -7,6 +7,8 @@ use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
+use App\Http\Controllers\Legacy\ContactStaffController;
+use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeContactController;
+use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\OauthController;
@@ -178,6 +181,37 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/clearcache.php', ClearCacheController::class)
         ->name('legacy.clearcache');
+
+    /*
+     * Phase 2 batch #5 — replaces `public/contactstaff.php` (deleted
+     * in this PR). Authed-only "Contact Staff" form that posts to
+     * the already-migrated `/takecontact.php`. Chrome-less envelope;
+     * the BBCode editor / smilies panel from the legacy
+     * `begin_compose()` helper are not reproduced — users can paste
+     * `[emN]` tokens directly. No companion nginx rule needed
+     * (covered by the default `location ~* \.php$` → `@nexus_app`
+     * rewrite).
+     */
+    Route::get('/contactstaff.php', ContactStaffController::class)->name('legacy.contactstaff');
+
+    /*
+     * Phase 2 batch #5 — replaces `public/donated.php` (deleted in
+     * this PR). Sysop-only tool for setting `users.donated` for a
+     * given username. GET renders the form; POST updates the row
+     * and 302s to `/userdetails.php?id=<id>`. The POST verb is
+     * CSRF-exempt — see `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::match(['get', 'post'], '/donated.php', DonatedController::class)
+        ->name('legacy.donated');
+
+    /*
+     * Phase 2 batch #5 — replaces `public/takeflush.php` (deleted in
+     * this PR). Self-flush / moderator-only action that deletes a
+     * user's "ghost" peers (peers with `last_action` older than
+     * `deadtime()`). Legacy verb was GET (the link comes from
+     * userdetails.php); preserved here.
+     */
+    Route::get('/takeflush.php', TakeFlushController::class)->name('legacy.takeflush');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
