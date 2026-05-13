@@ -123,6 +123,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #7 — legacy migration routes.
+    location = /freeleech.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /deletedisabled.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /delacctadmin.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }

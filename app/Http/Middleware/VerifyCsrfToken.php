@@ -46,5 +46,10 @@ class VerifyCsrfToken extends Middleware
         'bannedemails.php',
         'allowedemails.php',
         'nowarn.php',
+        // Phase 2 batch #7: `/freeleech.php`, `/deletedisabled.php`,
+        // `/delacctadmin.php` accept POST without a CSRF token.
+        'freeleech.php',
+        'deletedisabled.php',
+        'delacctadmin.php',
     ];
 }
