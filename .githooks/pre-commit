@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+#
+# .githooks/pre-commit
+#
+# Runs the same code-style + static-analysis checks the CI workflow
+# `Code style (Pint)` and `Static analysis (PHPStan / Larastan)` run,
+# but scoped to the files staged for the current commit. This catches
+# the obvious "PR is red" cases locally — before push — without
+# running the full 2-3 minute CI cycle.
+#
+# Activation:
+#   bash scripts/install-hooks.sh
+#
+# Bypass for a single commit (e.g. WIP commit you intentionally want
+# to push for CI feedback):
+#   git commit --no-verify
+#
+# See CONTRIBUTING.md § "Local development".
+
+set -euo pipefail
+
+# ----------------------------------------------------------------------
+# Resolve repo root and chdir there. Required because git invokes hooks
+# with the cwd of the caller, which can be a subdirectory.
+# ----------------------------------------------------------------------
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# ----------------------------------------------------------------------
+# Collect staged PHP files. Filter ACMR (Added, Copied, Modified,
+# Renamed) — pre-commit should not block on deletions.
+# ----------------------------------------------------------------------
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACMR -- '*.php' || true)
+
+if [ -z "$STAGED_PHP" ]; then
+    exit 0
+fi
+
+# ----------------------------------------------------------------------
+# Helper: print a banner so the dev knows which check failed.
+# ----------------------------------------------------------------------
+fail() {
+    echo
+    echo "============================================================"
+    echo "  pre-commit: $1 failed"
+    echo "============================================================"
+    echo
+    echo "  Bypass for a single commit:  git commit --no-verify"
+    echo "  Disable hooks entirely:      git config --unset core.hooksPath"
+    echo
+    exit 1
+}
+
+# ----------------------------------------------------------------------
+# 1. Pint (code style)
+#
+# pint.json excludes bootstrap/cache, imdb, include, nexus, plugins,
+# public, storage, and the _ide_helper*.php files. Pint honours these
+# when scanning directories, but ignores them when paths are passed
+# explicitly — so we mirror the same filter here, identical to the
+# `pint` job in .github/workflows/ci.yml.
+# ----------------------------------------------------------------------
+PINT_FILES=$(echo "$STAGED_PHP" \
+    | { grep -Ev '^(bootstrap/cache|imdb|include|nexus|plugins|public|storage)/' || true; } \
+    | { grep -Ev '(^|/)(_ide_helper(_models)?\.php)$' || true; })
+
+if [ -n "$PINT_FILES" ]; then
+    if [ ! -x vendor/bin/pint ]; then
+        echo "pre-commit: vendor/bin/pint not found — run \`composer install\` first."
+        echo "pre-commit: skipping Pint check."
+    else
+        echo "pre-commit: Pint (--test) on $(echo "$PINT_FILES" | wc -l | tr -d ' ') staged file(s)..."
+        # shellcheck disable=SC2086
+        vendor/bin/pint --test $PINT_FILES || fail "Pint"
+    fi
+fi
+
+# ----------------------------------------------------------------------
+# 2. PHPStan / Larastan (static analysis)
+#
+# phpstan.neon only scans the `app/` path, so passing files outside
+# that path would either be a no-op or trip PHPStan's path-validation.
+# Restrict to staged `app/` files. Skip the directories phpstan.neon
+# excludes (`app/Console/Commands/Demo`, `app/Filament`,
+# `app/Listeners/Toolbox`) to match CI exactly.
+# ----------------------------------------------------------------------
+PHPSTAN_FILES=$(echo "$STAGED_PHP" \
+    | { grep -E '^app/' || true; } \
+    | { grep -Ev '^app/(Console/Commands/Demo|Filament|Listeners/Toolbox)/' || true; })
+
+if [ -n "$PHPSTAN_FILES" ]; then
+    if [ ! -x vendor/bin/phpstan ]; then
+        echo "pre-commit: vendor/bin/phpstan not found — run \`composer install\` first."
+        echo "pre-commit: skipping PHPStan check."
+    else
+        echo "pre-commit: PHPStan on $(echo "$PHPSTAN_FILES" | wc -l | tr -d ' ') staged file(s)..."
+        # shellcheck disable=SC2086
+        vendor/bin/phpstan analyse --memory-limit=2G --no-progress $PHPSTAN_FILES || fail "PHPStan"
+    fi
+fi
+
+exit 0

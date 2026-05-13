@@ -106,7 +106,8 @@
         "lint": "vendor/bin/pint --test",
         "lint:fix": "vendor/bin/pint",
         "analyse": "vendor/bin/phpstan analyse --memory-limit=2G",
-        "test": "vendor/bin/phpunit --testsuite=Unit"
+        "test": "vendor/bin/phpunit --testsuite=Unit",
+        "install-hooks": "bash scripts/install-hooks.sh"
     },
     "extra": {
         "laravel": {
