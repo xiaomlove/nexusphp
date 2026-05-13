@@ -51,5 +51,10 @@ class VerifyCsrfToken extends Middleware
         'freeleech.php',
         'deletedisabled.php',
         'delacctadmin.php',
+        // Phase 2 batch #9: `/mailtest.php` and `/adduser.php` accept
+        // POST without a CSRF token (their legacy sysop/admin forms
+        // have no `@csrf` field). `/donorlist.php` is GET-only.
+        'mailtest.php',
+        'adduser.php',
     ];
 }
