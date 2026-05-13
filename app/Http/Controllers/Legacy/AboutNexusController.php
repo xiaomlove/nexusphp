@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Legacy;
 
 use App\Http\Controllers\Controller;
 use App\Services\AboutNexusService;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Replacement for `public/aboutnexus.php` (deleted in the same PR).
@@ -20,7 +20,7 @@ use Illuminate\Http\Request;
  *   - a Blade view at `resources/views/legacy/aboutnexus.blade.php`
  *     that owns rendering,
  *   - this controller, which is only responsible for wiring data
- *     into the template and the legacy chrome.
+ *     into the template and the surrounding HTML envelope.
  *
  * The original legacy flow was:
  *
@@ -37,14 +37,19 @@ use Illuminate\Http\Request;
  * MUST be able to click it before logging in. The new controller
  * preserves that contract: no `auth.nexus` middleware on the route.
  *
- * The replacement uses `view('layouts.legacy', ...)` (rather than the
- * chrome-less envelope picked by every Phase 2 controller so far) to
- * keep visual parity with the rest of the site for guest visitors —
- * an `aboutnexus.php` page without site header/footer would look
- * broken when reached from the footer link. Phase 5 will replace the
- * legacy chrome with native Blade partials, at which point only
- * `resources/views/layouts/legacy.blade.php` changes; this controller
- * and its view stay the same.
+ * The replacement returns a chrome-less, self-contained HTML envelope
+ * wrapping the rendered body — the same precedent every Phase 2
+ * controller already follows (see `RulesController` /
+ * `MoreSmiliesController` / `AllAgentsController`). The legacy
+ * `stdhead()` / `stdfoot()` chrome relies on a pile of globals
+ * (`$Cache`, `$SITENAME`, `$CURUSER`, …) which `include/core.php`
+ * only declares as locals when the include chain is `require`-d from
+ * a top-level script. That is the contract a `public/*.php` entry
+ * point honours and a Laravel-pipeline controller cannot — the
+ * include happens inside a method scope, so the "globals" become
+ * locals and `stdhead()` crashes when it dereferences `$Cache`. The
+ * legacy chrome will come back in Phase 5 once it has native Blade
+ * partials that don't depend on top-level-script-only globals.
  *
  * Output charset and HTML escaping are handled by Blade (`{{ }}`
  * autoescaping); the legacy script relied on the surrounding chrome
@@ -57,7 +62,7 @@ class AboutNexusController extends Controller
 {
     public function __construct(private readonly AboutNexusService $service) {}
 
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request): Response
     {
         $folder = $this->service->resolveLanguageFolder(
             $request->cookie('c_lang_folder'),
@@ -68,9 +73,6 @@ class AboutNexusController extends Controller
         $languages = $this->service->languages();
         $stylesheets = $this->service->stylesheets();
 
-        // Pre-render the body so `layouts.legacy` (which expects a
-        // string `content` slot) can wrap it without recursing into
-        // another Blade compile inside the chrome layout.
         $body = view('legacy.aboutnexus', [
             'labels' => $labels,
             'version' => $version,
@@ -78,9 +80,24 @@ class AboutNexusController extends Controller
             'stylesheets' => $stylesheets,
         ])->render();
 
-        return view('layouts.legacy', [
-            'title' => $version['project_name'],
-            'content' => $body,
-        ]);
+        $title = htmlspecialchars(
+            $version['project_name'].' :: About',
+            ENT_QUOTES | ENT_HTML5,
+            'UTF-8',
+        );
+
+        $html = <<<HTML
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>{$title}</title>
+</head>
+<body>
+{$body}</body>
+</html>
+HTML;
+
+        return new Response($html);
     }
 }
