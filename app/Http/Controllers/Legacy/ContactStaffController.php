@@ -44,6 +44,7 @@ class ContactStaffController extends Controller
     {
         $body = '<h1>Contact Staff</h1>'."\n"
             .'<form id="compose" method="post" name="compose" action="takecontact.php">'."\n"
+            .'<h2>Send message to Staff</h2>'."\n"
             .'<table border="1" cellspacing="0" cellpadding="5">'."\n"
             .'<tr><td class="rowhead">Subject</td><td>'
             .'<input type="text" name="subject" maxlength="100" size="60"></td></tr>'."\n"

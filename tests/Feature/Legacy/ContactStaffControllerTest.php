@@ -51,6 +51,9 @@ class ContactStaffControllerTest extends FeatureTestCase
         $body = (string) $response->getContent();
 
         $this->assertStringContainsString('Contact Staff', $body);
+        // E2E smoke test (`tests/e2e/smoke/legacy-pages-extra.spec.ts`)
+        // pins this exact string — keep it stable.
+        $this->assertStringContainsString('Send message to Staff', $body);
         $this->assertStringContainsString('action="takecontact.php"', $body);
         // Subject + body fields are the contract `TakeContactController`
         // reads from the POST request.
