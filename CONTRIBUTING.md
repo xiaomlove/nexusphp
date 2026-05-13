@@ -51,6 +51,7 @@ Every PR runs:
 |---|---|---|
 | Code style | `vendor/bin/pint --test` | Laravel Pint |
 | Static analysis | `vendor/bin/phpstan analyse` | Larastan, level set in `phpstan.neon` |
+| PHPStan baseline guard | `bash scripts/phpstan-baseline-guard.sh` | `phpstan-baseline.neon` must not grow vs. the PR base |
 | Unit tests | `vendor/bin/phpunit --testsuite=Unit` | runs across PHP 8.2 / 8.3 / 8.4 |
 | Feature tests | `vendor/bin/phpunit --testsuite=Feature` | needs MySQL + Redis services |
 | E2E smoke | `npm run e2e -- --project=chromium` | Playwright against the docker stack |
@@ -70,6 +71,16 @@ This points `core.hooksPath` at `.githooks/`. The `pre-commit` hook
 then runs `vendor/bin/pint --test` and `vendor/bin/phpstan analyse` —
 but scoped to the files you have staged, so the loop is < 5 s on a
 normal commit. Bypass for a single commit with `git commit --no-verify`.
+
+### PHPStan baseline policy
+
+`phpstan-baseline.neon` is an append-only list of *known* type-system
+violations. Each entry is an explicit "we'll fix this later" marker. CI
+fails any PR that adds entries on top of the base branch's count — fix
+the new violation in-place rather than suppressing it. If the violation
+is genuinely intractable in your PR (e.g. third-party trait emitting a
+false positive), call out the rationale in the PR description so the
+reviewer can make an informed waiver and merge with admin override.
 
 ## 3. Local development
 
