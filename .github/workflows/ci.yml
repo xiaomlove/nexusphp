@@ -77,6 +77,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # phpstan-baseline-guard.sh needs the base ref so it can `git show`
+          # phpstan-baseline.neon at origin/<base>. Full history is overkill
+          # but the shallow default (depth 1) breaks the comparison entirely.
+          fetch-depth: 0
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -98,6 +103,13 @@ jobs:
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=2G --no-progress
+
+      - name: Guard PHPStan baseline (no growth)
+        # Only runs on pull_request — on push to php8/main/master there is no
+        # well-defined "base" to compare against (the push IS the base for
+        # the next round of PRs).
+        if: github.event_name == 'pull_request'
+        run: bash scripts/phpstan-baseline-guard.sh "origin/${{ github.base_ref }}"
 
   phpunit:
     name: PHPUnit (PHP 8.3)
