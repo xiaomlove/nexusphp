@@ -42,12 +42,12 @@ class SysoppanelTableSeeder extends Seeder
                 'url' => 'massmail.php',
                 'info' => 'Send e-mail to all users on the tracker',
             ],
-            4 => [
-                'id' => 5,
-                'name' => 'Do cleanup',
-                'url' => 'docleanup.php',
-                'info' => 'Do cleanup functions',
-            ],
+            //            4 => [
+            //                'id' => 5,
+            //                'name' => 'Do cleanup',
+            //                'url' => 'docleanup.php',
+            //                'info' => 'Do cleanup functions',
+            //            ],
             5 => [
                 'id' => 6,
                 'name' => 'Ban System',

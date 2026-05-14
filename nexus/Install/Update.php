@@ -364,6 +364,18 @@ class Update extends Install
             $this->initTrackerUrl('update');
             NexusDB::cache_del('nexus_plugin_store_all');
         }
+
+        /**
+         * @since 1.10.3
+         * `public/docleanup.php` was removed in Phase 2 (replaced by the
+         * `cleanup:full` Artisan command). The sysop panel still ships
+         * the dead menu row pointing at that URL on every install that
+         * pre-dates the deletion — clicking it now 404s. Same pattern
+         * as the `@since 1.7.12` (deletedisabled / amountupload / ...)
+         * and `@since 1.7.19` (freeleech) cleanups above. `removeMenu`
+         * is idempotent: safe to keep running on every update.
+         */
+        $this->removeMenu(['docleanup.php']);
     }
 
     public function runExtraMigrate()
