@@ -17,6 +17,7 @@ use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\FreeleechController;
+use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
@@ -94,6 +95,17 @@ Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
  * lives in `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/rules.php', RulesController::class)->name('legacy.rules');
+
+/*
+ * Phase 2 batch #10 — replaces `public/getextinfoajax.php` (deleted
+ * in the same PR). The legacy script was the XML AJAX endpoint
+ * called from `public/js/common.js:371` (`get_ext_info_ajax(...)`).
+ * It is loaded by torrent-details pages before any session check,
+ * so the route stays outside the `auth.nexus` middleware. The
+ * matching nginx exact-location entry lives in
+ * `.docker/openresty/sites/app.conf.template`.
+ */
+Route::get('/getextinfoajax.php', GetExtInfoAjaxController::class)->name('legacy.getextinfoajax');
 
 // Phase 2 batch #2 — public legacy routes (no auth).
 //
