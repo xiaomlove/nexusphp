@@ -33,10 +33,13 @@ use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\SuggestController;
+use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
+use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\TokenController;
@@ -368,6 +371,43 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/adduser.php', AddUserController::class)
         ->name('legacy.adduser');
+
+    /*
+     * Phase 2 batch #11 — replaces `public/user-ban-log.php`
+     * (deleted in this PR). Administrator+ listing of
+     * `user_ban_logs` entries, paginated via `?page=<n>` (50 rows
+     * per page) and filtered by an optional `?q=<username>`
+     * substring. Linked from `public/complains.php:170` (a
+     * staff-only "view ban log" deep link); the URL is unchanged
+     * so the existing complain form keeps working without template
+     * changes.
+     */
+    Route::get('/user-ban-log.php', UserBanLogController::class)
+        ->name('legacy.userbanlog');
+
+    /*
+     * Phase 2 batch #11 — replaces `public/takereseed.php` (deleted
+     * in this PR). The "Ask for Reseed" GET endpoint linked from
+     * `public/details.php:191` for dead torrents. Power-user+ only
+     * (gated by the legacy `$AUTHORITY['askreseed']` knob). Fans
+     * out a PM to every finished snatcher, stamps
+     * `torrents.last_reseed = NOW()`, and renders a chrome-less
+     * success page.
+     */
+    Route::get('/takereseed.php', TakeReseedController::class)
+        ->name('legacy.takereseed');
+
+    /*
+     * Phase 2 batch #11 — replaces `public/takeconfirm.php` (deleted
+     * in this PR). Authed POST endpoint that confirms one or more
+     * pending invitees (`users.status='pending'` →
+     * `'confirmed'`). The legacy contract is `$CURUSER['id'] == $id
+     * || user_can('viewinvite')`; reproduced verbatim in the
+     * controller. CSRF-exempt — see
+     * `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::post('/takeconfirm.php', TakeConfirmController::class)
+        ->name('legacy.takeconfirm');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
