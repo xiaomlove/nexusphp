@@ -1277,18 +1277,12 @@ function get_torrent_extinfo_identifier($torrentid)
 
 function parse_imdb_id($url)
 {
-    if ($url && is_numeric($url) && strlen($url) < 7) {
-        $url = str_pad($url, 7, '0', STR_PAD_LEFT);
-    }
-	if ($url != "" && preg_match("/[0-9]+/i", $url, $matches)) {
-		return intval($matches[0]);
-	}
-	return null;
+    return \App\Support\Imdb::parseId($url);
 }
 
 function build_imdb_url($imdb_id)
 {
-	return $imdb_id == "" ? "" : "https://www.imdb.com/title/tt" . $imdb_id . "/";
+    return \App\Support\Imdb::buildUrl($imdb_id);
 }
 
 // it's a stub implemetation here, we need more acurate regression analysis to complete our algorithm
