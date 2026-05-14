@@ -1,4 +1,4 @@
-<x-ui.card padding="none" class="mt-6 overflow-hidden">
+<x-ui.card id="reply" padding="none" class="mt-6 overflow-hidden">
     <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Quick reply

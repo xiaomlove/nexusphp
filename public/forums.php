@@ -35,10 +35,16 @@ use Nexus\Database\NexusDB;
  *
  *   - `?legacy=1` — explicit opt-out, the rollback canary documented
  *     in docs/legacy-strategy.md. Mirrors the torrents.php pattern.
- *   - `?action=reply` / `?action=quotepost` / `?action=editpost` —
- *     compose flows. Need form-side rewiring (the existing Livewire
- *     forms are mounted on Livewire routes, not on the legacy URL);
- *     separate PR per action.
+ *   - `?action=reply&topicid=N` flips to `/forum/topic/N?compose=reply`,
+ *     which the `/forum/topic/{topic}` shortcut translates to
+ *     `/forum/{forumid}/topic/{topicid}#reply`. The Livewire
+ *     `ReplyForm` is rendered inline at the bottom of TopicView, so the
+ *     `#reply` anchor scrolls the user straight to the compose box.
+ *   - `?action=quotepost` / `?action=editpost` — compose flows that
+ *     need a `post → topic → forum` lookup (post id is the URL param,
+ *     not topic id). Need a Laravel `/forum/post/{post}` resolver plus
+ *     TopicView query-param handling to auto-prefill the quote /
+ *     auto-open the editor; separate PR per action.
  *   - `?action=post` — the form-submit handler. Same.
  *   - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
  *     `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent
@@ -87,6 +93,23 @@ if (! $forumsFlipLegacy) {
         }
         // Same fall-through reasoning as viewforum: a missing topicid
         // keeps the user on the legacy "topic not found" error.
+    } elseif ($forumsFlipAction === 'reply') {
+        // `?action=reply&topicid=N` opens a dedicated compose page on
+        // legacy. The Livewire equivalent is the inline `ReplyForm`
+        // already rendered at the bottom of TopicView, so we reuse the
+        // `/forum/topic/{topic}` shortcut and ask the resolver to add a
+        // `#reply` fragment to the final location header (so the
+        // browser scrolls straight to the compose box).
+        $forumsFlipTopicId = isset($_GET['topicid']) ? (int) $_GET['topicid'] : 0;
+        if ($forumsFlipTopicId > 0) {
+            $forumsFlipParams = $_GET;
+            unset($forumsFlipParams['action'], $forumsFlipParams['topicid']);
+            $forumsFlipParams['compose'] = 'reply';
+            $forumsFlipQs = http_build_query($forumsFlipParams);
+            $forumsFlipLocation = '/forum/topic/'.$forumsFlipTopicId.'?'.$forumsFlipQs;
+        }
+        // Missing topicid falls through to legacy — the legacy code
+        // emits "topic not found" which is more informative than a 404.
     }
 }
 

@@ -172,13 +172,52 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
         }
     });
 
-    test('/forums.php?action=reply stays on legacy (compose-form escape hatch)', async ({
+    test('/forums.php?action=reply&topicid=N → /forum/topic/N?compose=reply (legacy hop)', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
         const response = await page.request.get('/forums.php?action=reply&topicid=1', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        // First hop: legacy → bare-topic-ID shortcut with the
+        // `compose=reply` marker that the resolver turns into a
+        // `#reply` fragment on the canonical URL.
+        expect(location).toMatch(/\/forum\/topic\/1\?compose=reply$/);
+    });
+
+    test('/forum/topic/N?compose=reply → /forum/{forumid}/topic/N#reply', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // Second hop: the bare-topic-ID resolver looks up `forumid`,
+        // strips the `compose=reply` marker, and adds a `#reply` URL
+        // fragment so the browser scrolls to the inline ReplyForm.
+        const probe = await page.request.get('/forum/topic/1?compose=reply', {
+            maxRedirects: 0,
+        });
+        expect([302, 404]).toContain(probe.status());
+        if (probe.status() === 302) {
+            const location = probe.headers()['location'] ?? '';
+            expect(location).toMatch(/^\/forum\/\d+\/topic\/1#reply$/);
+        }
+    });
+
+    test('/forums.php?action=reply without topicid stays on legacy', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // No topicid → the redirect cannot construct a clean target
+        // URL, so the request must fall through to the legacy "topic
+        // not found" handler.
+        const response = await page.request.get('/forums.php?action=reply', {
             maxRedirects: 0,
         });
         expect(response.status()).toBeGreaterThanOrEqual(200);
