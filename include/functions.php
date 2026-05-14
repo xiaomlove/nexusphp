@@ -2117,62 +2117,23 @@ function getsize_int($amount, $unit = "G")
 
 function mksize_compact($bytes)
 {
-	if ($bytes < 1000 * 1024)
-	return number_format($bytes / 1024, 2) . "<br />KB";
-	elseif ($bytes < 1000 * 1048576)
-	return number_format($bytes / 1048576, 2) . "<br />MB";
-	elseif ($bytes < 1000 * 1073741824)
-	return number_format($bytes / 1073741824, 2) . "<br />GB";
-	elseif ($bytes < 1000 * 1099511627776)
-	return number_format($bytes / 1099511627776, 3) . "<br />TB";
-	else
-	return number_format($bytes / 1125899906842624, 3) . "<br />PB";
+    return \App\Support\Format::sizeCompact((float) $bytes);
 }
 
 function mksize_loose($bytes)
 {
-	if ($bytes < 1000 * 1024)
-	return number_format($bytes / 1024, 2) . "&nbsp;KB";
-	elseif ($bytes < 1000 * 1048576)
-	return number_format($bytes / 1048576, 2) . "&nbsp;MB";
-	elseif ($bytes < 1000 * 1073741824)
-	return number_format($bytes / 1073741824, 2) . "&nbsp;GB";
-	elseif ($bytes < 1000 * 1099511627776)
-	return number_format($bytes / 1099511627776, 3) . "&nbsp;TB";
-	else
-	return number_format($bytes / 1125899906842624, 3) . "&nbsp;PB";
+    return \App\Support\Format::sizeLoose((float) $bytes);
 }
 
 function mksize($bytes)
 {
-	if ($bytes < 1000 * 1024)
-	return number_format($bytes / 1024, 2) . " KB";
-	elseif ($bytes < 1000 * 1048576)
-	return number_format($bytes / 1048576, 2) . " MB";
-	elseif ($bytes < 1000 * 1073741824)
-	return number_format($bytes / 1073741824, 2) . " GB";
-	elseif ($bytes < 1000 * 1099511627776)
-	return number_format($bytes / 1099511627776, 3) . " TB";
-	else
-	return number_format($bytes / 1125899906842624, 3) . " PB";
+    return \App\Support\Format::size((float) $bytes);
 }
 
 
 function mksizeint($bytes)
 {
-	$bytes = max(0, $bytes);
-	if ($bytes < 1000)
-	return floor($bytes) . " B";
-	elseif ($bytes < 1000 * 1024)
-	return floor($bytes / 1024) . " kB";
-	elseif ($bytes < 1000 * 1048576)
-	return floor($bytes / 1048576) . " MB";
-	elseif ($bytes < 1000 * 1073741824)
-	return floor($bytes / 1073741824) . " GB";
-	elseif ($bytes < 1000 * 1099511627776)
-	return floor($bytes / 1099511627776) . " TB";
-	else
-	return floor($bytes / 1125899906842624) . " PB";
+    return \App\Support\Format::sizeInt((float) $bytes);
 }
 
 function deadtime() {
@@ -2181,29 +2142,8 @@ function deadtime() {
 }
 
 function mkprettytime($s) {
-	global $lang_functions;
-	if ($s < 0)
-	$s = 0;
-	$t = array();
-    $s = round($s);
-	foreach (array("60:sec","60:min","24:hour","0:day") as $x) {
-		$y = explode(":", $x);
-		if ($y[0] > 1) {
-			$v = $s % $y[0];
-			$s = floor($s / $y[0]);
-		}
-		else
-		$v = $s;
-		$t[$y[1]] = $v;
-	}
-
-	if ($t["day"])
-	return $t["day"] . ($lang_functions['text_day'] ?? 'day(s)') . sprintf("%02d:%02d:%02d", $t["hour"], $t["min"], $t["sec"]);
-	if ($t["hour"])
-	return sprintf("%d:%02d:%02d", $t["hour"], $t["min"], $t["sec"]);
-	//    if ($t["min"])
-	return sprintf("%d:%02d", $t["min"], $t["sec"]);
-	//    return $t["sec"] . " secs";
+    global $lang_functions;
+    return \App\Support\Format::prettyTime((float) $s, $lang_functions['text_day'] ?? 'day(s)');
 }
 
 function mkglobal($vars) {
