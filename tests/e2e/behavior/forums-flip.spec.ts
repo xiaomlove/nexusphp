@@ -227,4 +227,113 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
             expect(location).not.toMatch(/^\/forum\//);
         }
     });
+
+    test('/forums.php?action=quotepost&postid=N → /forum/post/N?compose=quote', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // First hop: legacy → bare-post-ID shortcut with the
+        // `compose=quote` marker that the resolver turns into a
+        // `?quote=N#reply` query+fragment on the canonical URL.
+        const response = await page.request.get('/forums.php?action=quotepost&postid=1', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toMatch(/\/forum\/post\/1\?compose=quote$/);
+    });
+
+    test('/forums.php?action=editpost&postid=N → /forum/post/N?compose=edit', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // First hop: legacy → bare-post-ID shortcut with the
+        // `compose=edit` marker that the resolver turns into a
+        // `?edit=N#post-N` query+fragment on the canonical URL.
+        const response = await page.request.get('/forums.php?action=editpost&postid=1', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toMatch(/\/forum\/post\/1\?compose=edit$/);
+    });
+
+    test('/forum/post/N resolves post → topic+forum or 404 (Laravel resolver contract)', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // Second hop with compose=quote: resolver looks up
+        // `post → topic → forum`, strips the marker, and emits a
+        // `?quote=N#reply` query+fragment so the inline ReplyForm
+        // prefills with the quoted body.
+        const quoteProbe = await page.request.get('/forum/post/1?compose=quote', {
+            maxRedirects: 0,
+        });
+        expect([302, 404]).toContain(quoteProbe.status());
+        if (quoteProbe.status() === 302) {
+            const location = quoteProbe.headers()['location'] ?? '';
+            expect(location).toMatch(/^\/forum\/\d+\/topic\/\d+\?quote=1#reply$/);
+        }
+
+        // Second hop with compose=edit: resolver emits a
+        // `?edit=N#post-N` query+fragment so TopicView pre-opens the
+        // inline EditPostForm at the right post.
+        const editProbe = await page.request.get('/forum/post/1?compose=edit', {
+            maxRedirects: 0,
+        });
+        expect([302, 404]).toContain(editProbe.status());
+        if (editProbe.status() === 302) {
+            const location = editProbe.headers()['location'] ?? '';
+            expect(location).toMatch(/^\/forum\/\d+\/topic\/\d+\?edit=1#post-1$/);
+        }
+
+        // Known-missing post id → must 404.
+        const missing = await page.request.get('/forum/post/999999999', { maxRedirects: 0 });
+        expect(missing.status()).toBe(404);
+
+        // Non-numeric segment → router constraint rejects it before
+        // the controller runs.
+        const nonNumeric = await page.request.get('/forum/post/abc', { maxRedirects: 0 });
+        expect(nonNumeric.status()).toBe(404);
+    });
+
+    test('/forums.php?action=quotepost without postid stays on legacy', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get('/forums.php?action=quotepost', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBeGreaterThanOrEqual(200);
+        expect(response.status()).toBeLessThan(400);
+        if (response.status() === 302) {
+            const location = response.headers()['location'] ?? '';
+            expect(location).not.toMatch(/^\/forum\//);
+        }
+    });
+
+    test('/forums.php?action=editpost without postid stays on legacy', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get('/forums.php?action=editpost', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBeGreaterThanOrEqual(200);
+        expect(response.status()).toBeLessThan(400);
+        if (response.status() === 302) {
+            const location = response.headers()['location'] ?? '';
+            expect(location).not.toMatch(/^\/forum\//);
+        }
+    });
 });

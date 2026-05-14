@@ -40,11 +40,14 @@ use Nexus\Database\NexusDB;
  *     `/forum/{forumid}/topic/{topicid}#reply`. The Livewire
  *     `ReplyForm` is rendered inline at the bottom of TopicView, so the
  *     `#reply` anchor scrolls the user straight to the compose box.
- *   - `?action=quotepost` / `?action=editpost` — compose flows that
- *     need a `post → topic → forum` lookup (post id is the URL param,
- *     not topic id). Need a Laravel `/forum/post/{post}` resolver plus
- *     TopicView query-param handling to auto-prefill the quote /
- *     auto-open the editor; separate PR per action.
+ *   - `?action=quotepost&postid=N` / `?action=editpost&postid=N` flip
+ *     to `/forum/post/N?compose=quote|edit`. The Laravel resolver
+ *     (`ForumPostRedirectController`) looks up the post's topic and
+ *     forum, then redirects to `/forum/{forumid}/topic/{topicid}` with
+ *     a `?quote=N#reply` or `?edit=N#post-N` query string + fragment.
+ *     `TopicView::mount()` reads `?edit=N` and pre-opens the inline
+ *     `EditPostForm`; `ReplyForm::mount()` reads `?quote=N` and
+ *     pre-fills its body with the BBCode quote block.
  *   - `?action=post` — the form-submit handler. Same.
  *   - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
  *     `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent
@@ -110,6 +113,24 @@ if (! $forumsFlipLegacy) {
         }
         // Missing topicid falls through to legacy — the legacy code
         // emits "topic not found" which is more informative than a 404.
+    } elseif ($forumsFlipAction === 'quotepost' || $forumsFlipAction === 'editpost') {
+        // Both URLs carry a post id (`?postid=N`) rather than a topic
+        // id, so we cannot reuse the `/forum/topic/{topic}` shortcut.
+        // Hand off to the `/forum/post/{post}` resolver which performs
+        // the `post → topic → forum` lookup and rewrites the URL into
+        // the canonical TopicView form with a `?quote=N#reply` or
+        // `?edit=N#post-N` query+fragment that the Livewire components
+        // pick up to pre-fill the body / pre-open the editor.
+        $forumsFlipPostId = isset($_GET['postid']) ? (int) $_GET['postid'] : 0;
+        if ($forumsFlipPostId > 0) {
+            $forumsFlipParams = $_GET;
+            unset($forumsFlipParams['action'], $forumsFlipParams['postid']);
+            $forumsFlipParams['compose'] = $forumsFlipAction === 'quotepost' ? 'quote' : 'edit';
+            $forumsFlipQs = http_build_query($forumsFlipParams);
+            $forumsFlipLocation = '/forum/post/'.$forumsFlipPostId.'?'.$forumsFlipQs;
+        }
+        // Missing postid falls through to legacy — the legacy code
+        // emits "post not found" which is more informative than a 404.
     }
 }
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
+use App\Http\Controllers\ForumPostRedirectController;
 use App\Http\Controllers\ForumTopicRedirectController;
 use App\Http\Controllers\Legacy\AddUserController;
 use App\Http\Controllers\Legacy\AllAgentsController;
@@ -366,6 +367,10 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/forum/topic/{topic}', ForumTopicRedirectController::class)
         ->whereNumber('topic')
         ->name('forum.topic.shortcut');
+
+    Route::get('/forum/post/{post}', ForumPostRedirectController::class)
+        ->whereNumber('post')
+        ->name('forum.post.shortcut');
 
     Route::post('/api/push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/api/push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');

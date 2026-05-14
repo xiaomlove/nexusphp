@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Forum;
+use App\Models\Post;
 use App\Models\Topic;
 use App\Services\Exceptions\ForumReplyException;
 use App\Services\ForumPostService;
@@ -31,6 +32,31 @@ class ReplyForm extends Component
     {
         $this->forumId = $forumId;
         $this->topicId = $topicId;
+
+        // The `?quote=N` query param is set by the
+        // `/forums.php?action=quotepost&postid=N` Strangler Fig
+        // redirect (see ForumPostRedirectController). If the post
+        // belongs to this topic and is visible to the current user,
+        // prefill the body with the [quote=author]…[/quote] block so
+        // the user lands ready to type a reply.
+        $quotePostId = (int) request()->query('quote', 0);
+        if ($quotePostId > 0) {
+            $this->prefillFromQuotePostId($quotePostId);
+        }
+    }
+
+    private function prefillFromQuotePostId(int $postId): void
+    {
+        $post = Post::query()->find($postId);
+        if (! $post || (int) $post->topicid !== $this->topicId) {
+            return;
+        }
+        $author = $post->user?->username ?? '';
+        $body = (string) $post->body;
+        $quoted = $author !== ''
+            ? "[quote={$author}]\n{$body}\n[/quote]\n\n"
+            : "[quote]\n{$body}\n[/quote]\n\n";
+        $this->body = trim($this->body."\n".$quoted);
     }
 
     public function submit(ForumPostService $service): void
