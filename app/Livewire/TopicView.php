@@ -70,6 +70,27 @@ class TopicView extends Component
         // Bump the views counter, matching legacy behaviour. Skip on
         // pagination round-trips — only count the first render.
         Topic::query()->where('id', $this->topicId)->increment('views');
+
+        // The `?edit=N` query param is set by the
+        // `/forums.php?action=editpost&postid=N` Strangler Fig
+        // redirect (see ForumPostRedirectController). If the post
+        // belongs to this topic and the current user is allowed to
+        // edit it, open the inline EditPostForm on mount so the user
+        // lands ready to type.
+        $editPostId = (int) request()->query('edit', 0);
+        if ($editPostId > 0) {
+            $service = app(ForumPostService::class);
+            $editor = auth('nexus-web')->user();
+            if ($editor !== null && $service->canEditPost($editPostId, (int) $editor->id)) {
+                $belongs = Post::query()
+                    ->where('id', $editPostId)
+                    ->where('topicid', $this->topicId)
+                    ->exists();
+                if ($belongs) {
+                    $this->editingPostId = $editPostId;
+                }
+            }
+        }
     }
 
     public function updatingAuthorFilter(): void
