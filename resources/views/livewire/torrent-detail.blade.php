@@ -3,6 +3,7 @@
     /** @var \App\Models\User|null $owner */
     /** @var \App\Models\TorrentOperationLog|null $banReason */
     /** @var array{0:string,1:string}|null $promotionBadge */
+    /** @var array<string,string> $taxonomy */
     $sizeBytes = (int) $torrent->size;
     $formattedSize = \App\Livewire\TorrentBrowse::formatBytes($sizeBytes);
     $isBanned = $torrent->banned === \App\Models\Torrent::BANNED_YES;
@@ -10,6 +11,10 @@
     $isAnonymous = $torrent->anonymous === 'yes';
     $hasHr = (int) $torrent->hr === \App\Models\Torrent::HR_YES;
     $category = $torrent->basic_category;
+    $rawInfoHash = (string) ($torrent->getRawOriginal('info_hash') ?? '');
+    $infoHashHex = $rawInfoHash !== '' ? bin2hex($rawInfoHash) : '';
+    $price = (int) ($torrent->price ?? 0);
+    $numFiles = (int) ($torrent->numfiles ?? 0);
 @endphp
 
 <div class="space-y-6" data-test-id="torrent-detail" data-torrent-id="{{ $torrent->id }}">
@@ -98,8 +103,58 @@
                     {{ $isInvisible ? 'Not visible' : 'Public' }}
                 </dd>
             </div>
+            @if ($numFiles > 0)
+                <div>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Files</dt>
+                    <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="numfiles">
+                        {{ number_format($numFiles) }}
+                    </dd>
+                </div>
+            @endif
+            @if (! empty($torrent->save_as))
+                <div>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Save as</dt>
+                    <dd class="mt-1 break-all text-sm text-zinc-900 dark:text-zinc-100" data-test-id="save-as">
+                        {{ $torrent->save_as }}
+                    </dd>
+                </div>
+            @endif
+            @if ($price > 0)
+                <div>
+                    <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Price</dt>
+                    <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="price">
+                        {{ number_format($price) }}
+                    </dd>
+                </div>
+            @endif
+            @if ($infoHashHex !== '')
+                <div class="sm:col-span-2">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Info hash</dt>
+                    <dd class="mt-1 break-all font-mono text-xs text-zinc-900 dark:text-zinc-100" data-test-id="info-hash">
+                        {{ $infoHashHex }}
+                    </dd>
+                </div>
+            @endif
         </dl>
     </x-ui.card>
+
+    @if (! empty($taxonomy))
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Technical metadata
+            </h2>
+            <dl class="grid gap-4 sm:grid-cols-2" data-test-id="taxonomy">
+                @foreach ($taxonomy as $label => $value)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ $label }}</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="tax-{{ \Illuminate\Support\Str::slug($label) }}">
+                            {{ $value }}
+                        </dd>
+                    </div>
+                @endforeach
+            </dl>
+        </x-ui.card>
+    @endif
 
     @if (! empty($torrent->small_descr))
         <x-ui.card>

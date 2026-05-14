@@ -187,6 +187,99 @@ class TorrentDetailTest extends FeatureTestCase
             ->assertDontSee('data-test-id="ban-reason"', false);
     }
 
+    public function test_metadata_card_renders_numfiles_save_as_and_price(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, [
+            'numfiles' => 42,
+            'save_as' => 'My.Cool.Release.2026',
+            'price' => 1500,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="numfiles"', false)
+            ->assertSee('42')
+            ->assertSee('data-test-id="save-as"', false)
+            ->assertSee('My.Cool.Release.2026')
+            ->assertSee('data-test-id="price"', false)
+            ->assertSee('1,500');
+    }
+
+    public function test_metadata_card_skips_optional_rows_when_unset(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, [
+            'numfiles' => 0,
+            'save_as' => '',
+            'price' => 0,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="numfiles"', false)
+            ->assertDontSee('data-test-id="save-as"', false)
+            ->assertDontSee('data-test-id="price"', false);
+    }
+
+    public function test_info_hash_is_rendered_as_lowercase_hex(): void
+    {
+        $owner = $this->createUser();
+        $rawHash = hex2bin('0123456789abcdef0123456789abcdef01234567');
+        $torrentId = $this->createTorrent($owner->id, [
+            'info_hash' => $rawHash,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="info-hash"', false)
+            ->assertSee('0123456789abcdef0123456789abcdef01234567');
+    }
+
+    public function test_info_hash_row_is_absent_when_info_hash_is_empty(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, [
+            'info_hash' => null,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="info-hash"', false);
+    }
+
+    public function test_taxonomy_card_renders_resolved_taxonomy_rows(): void
+    {
+        $owner = $this->createUser();
+
+        $sourceId = (int) NexusDB::table('sources')->insertGetId(['name' => 'Blu-ray']);
+        $codecId = (int) NexusDB::table('codecs')->insertGetId(['name' => 'H.264']);
+        $audiocodecId = (int) NexusDB::table('audiocodecs')->insertGetId(['name' => 'DTS-HD MA']);
+
+        $torrentId = $this->createTorrent($owner->id, [
+            'source' => $sourceId,
+            'codec' => $codecId,
+            'audiocodec' => $audiocodecId,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="taxonomy"', false)
+            ->assertSee('Blu-ray')
+            ->assertSee('H.264')
+            ->assertSee('DTS-HD MA');
+    }
+
+    public function test_taxonomy_card_is_absent_when_no_taxonomy_is_set(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="taxonomy"', false);
+    }
+
     /**
      * @param  array<string,mixed>  $overrides
      */

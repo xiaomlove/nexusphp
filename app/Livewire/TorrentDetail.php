@@ -74,6 +74,12 @@ class TorrentDetail extends Component
 
         $this->torrentId = $id;
 
+        // Eager-load the relations that PHPStan can resolve via explicit
+        // return types on the model. The seven `basic_*` taxonomy relations
+        // (source / medium / codec / standard / processing / team /
+        // audio codec) are loaded lazily on access in `taxonomyRows()` —
+        // they are not yet typed on the legacy `Torrent` model and we do
+        // not want to spread that change across PRs.
         $torrent = Torrent::query()
             ->with(['basic_category', 'user'])
             ->find($id);
@@ -111,9 +117,38 @@ class TorrentDetail extends Component
             'owner' => $this->owner,
             'banReason' => $this->banReason,
             'promotionBadge' => $this->promotionBadge(),
+            'taxonomy' => $this->taxonomyRows(),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
+    }
+
+    /**
+     * Resolve the seven taxonomy fields shown on `public/details.php`
+     * (source / medium / codec / standard / processing / team / audio
+     * codec) into a label-keyed list of strings. Only fields with a
+     * resolved name are returned — mirroring the legacy behaviour of
+     * silently skipping empty taxonomy slots.
+     *
+     * @return array<string,string>
+     */
+    private function taxonomyRows(): array
+    {
+        if ($this->torrent === null) {
+            return [];
+        }
+
+        $candidates = [
+            'Source' => $this->torrent->basic_source?->name,
+            'Medium' => $this->torrent->basic_medium?->name,
+            'Codec' => $this->torrent->basic_codec?->name,
+            'Standard' => $this->torrent->basic_standard?->name,
+            'Processing' => $this->torrent->basic_processing?->name,
+            'Team' => $this->torrent->basic_team?->name,
+            'Audio codec' => $this->torrent->basic_audiocodec?->name,
+        ];
+
+        return array_filter($candidates, fn ($name) => ! empty($name));
     }
 
     /**
