@@ -130,10 +130,16 @@ class AboutNexusControllerTest extends FeatureTestCase
             $this->markTestSkipped('No lang/chs/lang_aboutnexus.php to test cookie override.');
         }
 
-        // Diagnostic: surface the real exception in CI logs.
-        $this->withoutExceptionHandling();
-
-        $response = $this->withCookie('c_lang_folder', 'chs')->get('/aboutnexus.php');
+        // `c_lang_folder` is in `EncryptCookies::$except`, so the browser
+        // sends it as a raw plaintext value. `withCookie()` would
+        // encrypt the value (the Laravel test helper assumes the cookie
+        // pipeline mirrors a `Cookie::make()` response) and the
+        // middleware would then skip decryption because the cookie is
+        // whitelisted — the controller would see the encrypted blob.
+        // `withUnencryptedCookie()` matches the production wire shape.
+        $response = $this
+            ->withUnencryptedCookie('c_lang_folder', 'chs')
+            ->get('/aboutnexus.php');
 
         $response->assertOk();
         // Don't assert on specific translated text — just that the
@@ -142,12 +148,14 @@ class AboutNexusControllerTest extends FeatureTestCase
         $this->assertStringContainsString('id="version"', (string) $response->getContent());
     }
 
-    public function test_invalid_cookie_falls_back_to_english(): void
+    public function test_unknown_locale_cookie_falls_back_to_english(): void
     {
-        // Diagnostic: surface the real exception in CI logs.
-        $this->withoutExceptionHandling();
-
-        $response = $this->withCookie('c_lang_folder', 'en')
+        // `xx` passes Symfony's locale-name regex (so the `Locale`
+        // middleware will not reject it upstream of the controller)
+        // but has no `lang/xx/lang_aboutnexus.php` file, so the
+        // service falls back to the English defaults.
+        $response = $this
+            ->withUnencryptedCookie('c_lang_folder', 'xx')
             ->get('/aboutnexus.php');
 
         $response->assertOk();
