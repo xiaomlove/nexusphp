@@ -145,6 +145,20 @@ observability — without a single page rewrite.
   `get_value`, `delete_value`, `new_page` / `get_page` / `cache_page`,
   `add_row` / `next_row` / `break_loop`, `lock` / `unlock`, `getRedis`,
   metadata getters) is unchanged.
+- ✅ `public/adredir.php` (40 LOC) → `AdRedirectController`. The
+  rewrite also closes a long-standing open-redirect bug: the legacy
+  script passed `?url=` straight to `header("Location: ...")` with
+  no whitelist, so an attacker who knew any valid `advertisements.id`
+  could land `adredir.php?id=<known>&url=<evil>` and have the
+  trusted host redirect to `<evil>`. The controller now extracts
+  the SYSOP-embedded URLs from `advertisements.code` (written
+  exclusively by `public/admanage.php`) with a regex matching the
+  `<a href="adredir.php?id=ID&amp;url=URL_RAWURLENCODED">` shape
+  `admanage.php` writes for text/image ad types, and only accepts
+  `?url=` values that decode to one of those whitelisted URLs.
+  Production ads keep working without any data migration — the
+  redirect target is the same URL the legacy script would have
+  redirected to.
 
 Phase 1 infrastructure is complete; future work belongs to Phase 2
 (per-file `public/*.php` migrations) and beyond.

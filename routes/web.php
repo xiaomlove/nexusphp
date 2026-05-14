@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
 use App\Http\Controllers\ForumTopicRedirectController;
 use App\Http\Controllers\Legacy\AddUserController;
+use App\Http\Controllers\Legacy\AdRedirectController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
@@ -246,6 +247,19 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * userdetails.php); preserved here.
      */
     Route::get('/takeflush.php', TakeFlushController::class)->name('legacy.takeflush');
+
+    /*
+     * Phase 2 — replaces `public/adredir.php` (deleted in this PR).
+     * Authed-only ad click tracker that records the click in
+     * `adclicks`, optionally awards `users.seedbonus +=
+     * advertisement.adclickbonus` on first click per user/ad,
+     * and 302s to the click target URL. The migrated controller
+     * closes the original open-redirect by accepting `?url=` only
+     * when it matches a URL embedded in `advertisements.code` by
+     * `public/admanage.php` (the SYSOP-only admin tool that owns the
+     * ad lifecycle); see `AdRedirectController` PHPDoc.
+     */
+    Route::get('/adredir.php', AdRedirectController::class)->name('legacy.adredir');
 
     /*
      * Phase 2 batch #6 — replaces `public/bannedemails.php` (deleted
