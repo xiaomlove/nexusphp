@@ -748,28 +748,25 @@ function write_log($text, $security = "normal")
 
 function get_elapsed_time($ts,$shortunit = false)
 {
-	global $lang_functions;
-	$mins = floor(abs(TIMENOW - $ts) / 60);
-	$hours = floor($mins / 60);
-	$mins -= $hours * 60;
-	$days = floor($hours / 24);
-	$hours -= $days * 24;
-	$months = floor($days / 30);
-	$days2 = $days - $months * 30;
-	$years = floor($days / 365);
-	$months -= $years * 12;
-	$t = "";
-	if ($years > 0)
-	return $years.($shortunit ? $lang_functions['text_short_year'] : $lang_functions['text_year'] . add_s($years)) ."&nbsp;".$months.($shortunit ? $lang_functions['text_short_month'] : $lang_functions['text_month'] . add_s($months));
-	if ($months > 0)
-	return $months.($shortunit ?  $lang_functions['text_short_month'] : $lang_functions['text_month'] . add_s($months)) ."&nbsp;".$days2.($shortunit ? $lang_functions['text_short_day'] : $lang_functions['text_day'] . add_s($days2));
-	if ($days > 0)
-	return $days.($shortunit ? $lang_functions['text_short_day'] : $lang_functions['text_day'] . add_s($days))."&nbsp;".$hours.($shortunit ? $lang_functions['text_short_hour'] : $lang_functions['text_hour'] . add_s($hours));
-	if ($hours > 0)
-	return $hours.($shortunit ? $lang_functions['text_short_hour'] : $lang_functions['text_hour'] . add_s($hours))."&nbsp;".$mins.($shortunit ? $lang_functions['text_short_min'] : $lang_functions['text_min'] . add_s($mins));
-	if ($mins > 0)
-	return $mins.($shortunit ? $lang_functions['text_short_min'] : $lang_functions['text_min'] . add_s($mins));
-	return "&lt; 1".($shortunit ? $lang_functions['text_short_min'] : $lang_functions['text_min']);
+    global $lang_functions;
+    return \App\Support\Time::elapsedSince(
+        (int) $ts,
+        TIMENOW,
+        [
+            'year' => $lang_functions['text_year'] ?? '',
+            'year_short' => $lang_functions['text_short_year'] ?? '',
+            'month' => $lang_functions['text_month'] ?? '',
+            'month_short' => $lang_functions['text_short_month'] ?? '',
+            'day' => $lang_functions['text_day'] ?? '',
+            'day_short' => $lang_functions['text_short_day'] ?? '',
+            'hour' => $lang_functions['text_hour'] ?? '',
+            'hour_short' => $lang_functions['text_short_hour'] ?? '',
+            'min' => $lang_functions['text_min'] ?? '',
+            'min_short' => $lang_functions['text_short_min'] ?? '',
+            'plural_suffix' => $lang_functions['text_s'] ?? '',
+        ],
+        (bool) $shortunit,
+    );
 }
 
 function textbbcode($form,$text,$content="",$hastitle=false, $col_num = 130, $withPreview = false)
@@ -2130,8 +2127,7 @@ function mksizeint($bytes)
 }
 
 function deadtime() {
-    $anninterthree = (int)get_setting("main.anninterthree");
-	return time() - floor($anninterthree * 1.3);
+    return \App\Support\Time::deadThreshold((int) get_setting("main.anninterthree"));
 }
 
 function mkprettytime($s) {
@@ -5255,8 +5251,7 @@ function is_or_are($num)
 }
 
 function getmicrotime(){
-	list($usec, $sec) = explode(" ",microtime());
-	return ((float)$usec + (float)$sec);
+    return \App\Support\Time::microtimeFloat();
 }
 
 function get_user_class_image($class){
