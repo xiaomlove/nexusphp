@@ -61,26 +61,6 @@ services:
       - appnet
     restart: always
 
-  cleanup:
-    image: nexusphp_php
-    container_name: nexusphp-cleanup
-    environment:
-      SERVICE_NAME: cleanup
-    volumes:
-      - .:/var/www/html
-    depends_on:
-      - php
-      - redis
-      - mysql
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1024m"
-        max-file: "3"
-    networks:
-      - appnet
-    restart: always
-
   reverb:
     image: nexusphp_php
     container_name: nexusphp-reverb

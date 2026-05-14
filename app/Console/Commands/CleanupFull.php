@@ -49,12 +49,11 @@ class CleanupFull extends Command
         // `docleanup()` lives in `include/cleanup.php`, which (unlike
         // `include/functions.php` containing `autoclean()`) is NOT
         // required by `bootstrap/app.php`. Load it lazily — the
-        // legacy `public/docleanup.php` and `include/cleanup_cli.php`
-        // did the same thing. The `IN_TRACKER` guard at the top of
-        // `cleanup.php` is satisfied because `include/constants.php`
-        // (required by `bootstrap/app.php`) defines `IN_TRACKER` as
-        // `false`, and the guard only fails when the constant is
-        // *undefined*.
+        // legacy `public/docleanup.php` did the same thing. The
+        // `IN_TRACKER` guard at the top of `cleanup.php` is satisfied
+        // because `include/constants.php` (required by
+        // `bootstrap/app.php`) defines `IN_TRACKER` as `false`, and
+        // the guard only fails when the constant is *undefined*.
         if (! function_exists('docleanup')) {
             require_once base_path('include/cleanup.php');
         }
