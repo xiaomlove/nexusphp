@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Torrent;
+use App\Models\TorrentOperationLog;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -31,15 +32,25 @@ use Livewire\Component;
  * When set, the component redirects to `/details.php?id={id}&legacy=1`
  * so the legacy detail page is reachable with one keystroke.
  *
- * Visibility model (intentionally narrower than legacy):
+ * Visibility model — parity with `public/details.php`:
  *
- *   - missing torrent  → 404
- *   - `visible = 'no'` → 404, unless the viewer owns the row
- *   - `banned  = 'yes'` → 404, unless the viewer owns the row
+ *   - missing torrent                                          → 404
+ *   - `visible = 'no'` and viewer is not the owner             → 404
+ *     (legacy is silent on this; we keep the tighter check to
+ *     avoid regressing hidden-torrent privacy.)
+ *   - `banned  = 'yes'`:
+ *       owner                                                  → 200
+ *       viewer has `seebanned` permission                      → 200
+ *       otherwise                                              → 403
+ *   - `can_access_torrent()` denies access (special category)
+ *     and viewer is not the owner                              → 403
  *
- * The full legacy `can_access_torrent()` / `permissiondenied()` matrix
- * lives in `public/details.php` and is left to the escape-hatch link
- * until parity work catches up.
+ * `App\Models\TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY` ties a
+ * staff comment to a torrent with `approval_status = APPROVAL_STATUS_DENY`.
+ * `TorrentDetail` surfaces the most recent such comment as a danger
+ * banner above the hero so the uploader sees the rejection reason at
+ * the canonical detail URL (legacy renders the same banner inline at
+ * `public/details.php:73`).
  */
 class TorrentDetail extends Component
 {
@@ -48,6 +59,12 @@ class TorrentDetail extends Component
     public ?Torrent $torrent = null;
 
     public ?User $owner = null;
+
+    /**
+     * Most recent `approval_deny` operation log for the current torrent
+     * when `approval_status` is `APPROVAL_STATUS_DENY`. `null` otherwise.
+     */
+    public ?TorrentOperationLog $banReason = null;
 
     public function mount(int $id): mixed
     {
@@ -72,12 +89,17 @@ class TorrentDetail extends Component
             abort(404);
         }
 
-        if ($torrent->banned === Torrent::BANNED_YES && ! $isOwner) {
-            abort(404);
+        if ($torrent->banned === Torrent::BANNED_YES && ! $isOwner && ! $this->viewerCan('seebanned', $viewerId)) {
+            abort(403);
+        }
+
+        if (! $isOwner && ! $this->viewerCanAccessTorrent($torrent, $viewerId)) {
+            abort(403);
         }
 
         $this->torrent = $torrent;
         $this->owner = $torrent->user;
+        $this->banReason = $this->loadBanReason($torrent);
 
         return null;
     }
@@ -87,6 +109,7 @@ class TorrentDetail extends Component
         return view('livewire.torrent-detail', [
             'torrent' => $this->torrent,
             'owner' => $this->owner,
+            'banReason' => $this->banReason,
             'promotionBadge' => $this->promotionBadge(),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
@@ -117,5 +140,58 @@ class TorrentDetail extends Component
             Torrent::PROMOTION_ONE_THIRD_DOWN => ['30%', 'warning'],
             default => null,
         };
+    }
+
+    /**
+     * Bridge to the global legacy `user_can()` permission helper. Guests
+     * (uid 0) always fail. When the helper is missing — e.g. someone
+     * boots the component outside the legacy autoload — we err on the
+     * side of denying so the access matrix doesn't silently widen.
+     */
+    private function viewerCan(string $permission, int $uid): bool
+    {
+        if ($uid <= 0 || ! function_exists('user_can')) {
+            return false;
+        }
+
+        return (bool) user_can($permission, false, $uid);
+    }
+
+    /**
+     * Bridge to the legacy `can_access_torrent()` helper that gates
+     * the "special category" (`main.spsct = yes`) flag. Defaults to
+     * "allowed" if the helper is missing, matching the legacy short-
+     * circuit when `main.spsct != 'yes'`.
+     */
+    private function viewerCanAccessTorrent(Torrent $torrent, int $uid): bool
+    {
+        if (! function_exists('can_access_torrent')) {
+            return true;
+        }
+
+        $payload = [
+            'id' => (int) $torrent->id,
+            'search_box_id' => (int) ($torrent->basic_category->mode ?? 0),
+        ];
+
+        return (bool) can_access_torrent($payload, $uid);
+    }
+
+    /**
+     * Pull the most recent `approval_deny` log row for a torrent whose
+     * `approval_status` is `APPROVAL_STATUS_DENY`. Returns `null` for
+     * every other state, mirroring the legacy banner condition.
+     */
+    private function loadBanReason(Torrent $torrent): ?TorrentOperationLog
+    {
+        if ((int) $torrent->approval_status !== Torrent::APPROVAL_STATUS_DENY) {
+            return null;
+        }
+
+        return TorrentOperationLog::query()
+            ->where('torrent_id', $torrent->id)
+            ->where('action_type', TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY)
+            ->orderByDesc('id')
+            ->first();
     }
 }
