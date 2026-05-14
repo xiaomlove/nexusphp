@@ -78,8 +78,14 @@ front controller.
    replace `$_GET['x']` with `$request->input('x')` page by page.
 3. **Shim `$CURUSER`** as `Auth::user()->toLegacyArray()`. One method
    on the `User` model.
-4. **Shim `$Cache`** through `Cache::store('redis')`. The 352-line
-   `class_cache_redis.php` collapses to ~50 lines.
+4. **Shim `$Cache`** through `app('cache')->store()` (the default
+   Laravel cache store, `redis` in production). `class_cache_redis.php`
+   becomes a thin adapter that preserves the legacy `cache_value` /
+   `get_value` / `delete_value` / page-cache / `getRedis` surface so
+   ~440 legacy call sites keep working unchanged. `Illuminate\Cache\RedisStore`
+   is byte-for-byte wire-compatible (numerics raw, everything else PHP-
+   serialized, empty prefix) so cached keys survive the swap with zero
+   invalidation.
 5. **Shim `stdhead()` / `begin_main_frame()`** as a Blade layout
    `legacy.blade.php`. Each legacy page does `@extends('legacy')`,
    the rest stays `ob_start()`-driven.
@@ -127,10 +133,21 @@ observability — without a single page rewrite.
   without `require`-ing `include/bittorrent.php` at the call site.
   Chrome function names are overridable via `config('legacy.chrome')`
   so tests don't need to redeclare globals.
+- ✅ `classes/class_cache_redis.php` collapse onto `app('cache')->store()`.
+  The hand-rolled phpredis client / `serialize` / `unserialize` are
+  gone; every Redis hit now goes through `Illuminate\Cache\Repository`,
+  which uses the same wire format. The default store (not `Cache::store('redis')`)
+  is used so Feature tests that swap `cache.default` to `array` run
+  without a live Redis. In the legacy fastcgi path (where Laravel's
+  full Application is not booted) the class lazily registers `redis`
+  / `config` / `cache` on `Container::getInstance()`, mirroring
+  `Nexus\Nexus::getQueueManager()`. Public API (`cache_value`,
+  `get_value`, `delete_value`, `new_page` / `get_page` / `cache_page`,
+  `add_row` / `next_row` / `break_loop`, `lock` / `unlock`, `getRedis`,
+  metadata getters) is unchanged.
 
-Still to land in Phase 1:
-
-- ⏳ `class_cache_redis` collapse onto `Cache::store('redis')`.
+Phase 1 infrastructure is complete; future work belongs to Phase 2
+(per-file `public/*.php` migrations) and beyond.
 
 The rest of the strategy doc continues to apply unchanged.
 
