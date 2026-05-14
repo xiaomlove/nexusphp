@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
 use App\Http\Controllers\ForumPostRedirectController;
 use App\Http\Controllers\ForumTopicRedirectController;
+use App\Http\Controllers\Legacy\AboutNexusController;
 use App\Http\Controllers\Legacy\AddUserController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
@@ -107,6 +108,16 @@ Route::get('/rules.php', RulesController::class)->name('legacy.rules');
  * `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/getextinfoajax.php', GetExtInfoAjaxController::class)->name('legacy.getextinfoajax');
+
+/*
+ * Phase 3 — replaces `public/aboutnexus.php` (deleted in the same PR).
+ * The legacy page never gated on `loggedinorreturn()` and is linked
+ * from the global `Powered by NexusPHP` footer, so the route stays
+ * outside the `auth.nexus` middleware. The URL is unchanged so the
+ * footer link, anchored "#version" / "#stylesheet" / etc. links, and
+ * the existing E2E smoke probe keep working without template changes.
+ */
+Route::get('/aboutnexus.php', AboutNexusController::class)->name('legacy.aboutnexus');
 
 // Phase 2 batch #2 — public legacy routes (no auth).
 //
