@@ -726,37 +726,12 @@ function insert_smilies_frame()
 
 function get_ratio_color($ratio)
 {
-	if ($ratio < 0.1) return "#ff0000";
-	if ($ratio < 0.2) return "#ee0000";
-	if ($ratio < 0.3) return "#dd0000";
-	if ($ratio < 0.4) return "#cc0000";
-	if ($ratio < 0.5) return "#bb0000";
-	if ($ratio < 0.6) return "#aa0000";
-	if ($ratio < 0.7) return "#990000";
-	if ($ratio < 0.8) return "#880000";
-	if ($ratio < 0.9) return "#770000";
-	if ($ratio < 1) return "#660000";
-	return "";
+    return \App\Support\Ratio::color($ratio);
 }
 
 function get_slr_color($ratio)
 {
-	if ($ratio < 0.025) return "#ff0000";
-	if ($ratio < 0.05) return "#ee0000";
-	if ($ratio < 0.075) return "#dd0000";
-	if ($ratio < 0.1) return "#cc0000";
-	if ($ratio < 0.125) return "#bb0000";
-	if ($ratio < 0.15) return "#aa0000";
-	if ($ratio < 0.175) return "#990000";
-	if ($ratio < 0.2) return "#880000";
-	if ($ratio < 0.225) return "#770000";
-	if ($ratio < 0.25) return "#660000";
-	if ($ratio < 0.275) return "#550000";
-	if ($ratio < 0.3) return "#440000";
-	if ($ratio < 0.325) return "#330000";
-	if ($ratio < 0.35) return "#220000";
-	if ($ratio < 0.375) return "#110000";
-	return "";
+    return \App\Support\Ratio::seedLeechColor($ratio);
 }
 
 function write_log($text, $security = "normal")
@@ -4281,24 +4256,7 @@ function get_percent_completed_image($p) {
 
 function get_ratio_img($ratio)
 {
-	if ($ratio >= 16)
-	$s = "163";
-	else if ($ratio >= 8)
-	$s = "117";
-	else if ($ratio >= 4)
-	$s = "5";
-	else if ($ratio >= 2)
-	$s = "3";
-	else if ($ratio >= 1)
-	$s = "2";
-	else if ($ratio >= 0.5)
-	$s = "34";
-	else if ($ratio >= 0.25)
-	$s = "10";
-	else
-	$s = "52";
-
-	return "<img src=\"pic/smilies/".$s.".gif\" alt=\"\" />";
+    return \App\Support\Ratio::image($ratio);
 }
 
 function GetVar ($name) {
@@ -6221,15 +6179,7 @@ function resize_image($url, $with = null, $height = null, $fit = "cover")
 
 function get_share_ratio($uploaded, $downloaded)
 {
-    if ($downloaded) {
-        $ratio = floor(($uploaded / $downloaded) * 1000) / 1000;
-    } elseif ($uploaded) {
-        //@todo 读语言文件
-        $ratio = 'Infinity';
-    } else {
-        $ratio = '---';
-    }
-    return $ratio;
+    return \App\Support\Ratio::share($uploaded, $downloaded);
 }
 
 function EchoRow($class = ''){
