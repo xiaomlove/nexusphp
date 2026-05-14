@@ -85,6 +85,16 @@ class GetExtInfoAjaxController extends Controller
         $response->headers->replace([
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT',
             'Last-Modified' => gmdate('D, d M Y H:i:s').'GMT',
+            // Symfony's Response::prepare() (called by the kernel
+            // after the controller returns) re-renders this header by
+            // sorting directives alphabetically and appending
+            // `private` when neither `public` nor `private` is
+            // explicit, so the wire value ends up
+            // `must-revalidate, no-cache, private` instead of the
+            // legacy `no-cache, must-revalidate`. The two are
+            // semantically identical (browsers and CDNs both treat
+            // this as "do not cache"); the added `private` is
+            // strictly more conservative than the legacy value.
             'Cache-Control' => 'no-cache, must-revalidate',
             'Pragma' => 'no-cache',
             'Content-Type' => 'text/xml; charset=utf-8',

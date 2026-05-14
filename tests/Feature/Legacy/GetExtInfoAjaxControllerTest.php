@@ -50,7 +50,22 @@ class GetExtInfoAjaxControllerTest extends FeatureTestCase
             'text/xml; charset=utf-8',
             $response->headers->get('Content-Type'),
         );
-        $this->assertSame('no-cache, must-revalidate', $response->headers->get('Cache-Control'));
+
+        // The legacy script emitted `Cache-Control: no-cache,
+        // must-revalidate` verbatim. Symfony's `Response::prepare()`
+        // (called by the HTTP kernel after the controller returns)
+        // re-renders the Cache-Control header by sorting directives
+        // and appending `private` when neither `public` nor `private`
+        // is explicit on a non-cacheable response. The resulting wire
+        // value is `must-revalidate, no-cache, private` — semantically
+        // identical (and strictly more conservative) than the legacy
+        // header, but not a byte-for-byte match. We assert on the
+        // directives that matter for browser / CDN caching behaviour
+        // rather than the exact rendering.
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-cache', $cacheControl);
+        $this->assertStringContainsString('must-revalidate', $cacheControl);
+
         $this->assertSame('no-cache', $response->headers->get('Pragma'));
         $this->assertSame(
             'Mon, 26 Jul 1997 05:00:00 GMT',
