@@ -63,5 +63,11 @@ class VerifyCsrfToken extends Middleware
         // `saythanks`. Bolting CSRF onto the existing JS helpers is
         // a separate, larger change tracked in the Phase 1 sweep.
         'magic.php',
+        // Phase 2 batch #11: `/takeconfirm.php` accepts POST without
+        // a CSRF token (the legacy `<form method=post>` in
+        // `public/invite.php:173` / `public/checkuser.php:59` has
+        // no `@csrf` field). `/user-ban-log.php` and
+        // `/takereseed.php` are GET-only.
+        'takeconfirm.php',
     ];
 }

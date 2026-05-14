@@ -159,6 +159,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #11 — legacy migration routes.
+    location = /user-ban-log.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takereseed.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takeconfirm.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     # Phase 3 — legacy migration routes (full rewrites).
     location = /magic.php {
         try_files /nonexistent @nexus_app;
