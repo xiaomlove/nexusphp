@@ -48,12 +48,14 @@ use Nexus\Database\NexusDB;
  *     `TopicView::mount()` reads `?edit=N` and pre-opens the inline
  *     `EditPostForm`; `ReplyForm::mount()` reads `?quote=N` and
  *     pre-fills its body with the BBCode quote block.
+ *   - `?action=viewunread` flips to `/forum/unread` (Livewire
+ *     `ForumUnread`). The `beforepostid` cursor used by the legacy
+ *     "Show more" link is preserved verbatim on the query string.
  *   - `?action=post` — the form-submit handler. Same.
  *   - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
  *     `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent
  *     yet, blocked on a Filament/Livewire admin moderation surface.
- *   - `?action=viewunread` / `?action=search` — no Livewire
- *     equivalent yet.
+ *   - `?action=search` — no Livewire equivalent yet.
  *
  * The redirect runs BEFORE require'ing include/bittorrent.php so
  * the fast path never pays for legacy bootstrap / `dbconn()`.
@@ -131,6 +133,18 @@ if (! $forumsFlipLegacy) {
         }
         // Missing postid falls through to legacy — the legacy code
         // emits "post not found" which is more informative than a 404.
+    } elseif ($forumsFlipAction === 'viewunread') {
+        // `?action=viewunread` lists topics with unread posts. The
+        // Livewire equivalent is `/forum/unread` (ForumUnread). The
+        // legacy "Show more" link uses a `beforepostid=N` cursor that
+        // the new component honours directly, so the redirect is a
+        // straight one-hop. Other extra query params are preserved
+        // verbatim (e.g. a future `?author=N` filter).
+        $forumsFlipParams = $_GET;
+        unset($forumsFlipParams['action']);
+        $forumsFlipQs = http_build_query($forumsFlipParams);
+        $forumsFlipLocation = '/forum/unread'
+            .($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
     }
 }
 

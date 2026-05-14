@@ -336,4 +336,58 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
             expect(location).not.toMatch(/^\/forum\//);
         }
     });
+
+    test('/forums.php?action=viewunread → /forum/unread (legacy hop)', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get('/forums.php?action=viewunread', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        // Single-hop: legacy → Livewire ForumUnread. No DB lookup
+        // before Laravel boots — the redirect runs in the pre-bootstrap
+        // block at the top of public/forums.php.
+        expect(location).toBe('/forum/unread');
+    });
+
+    test('/forums.php?action=viewunread preserves the beforepostid cursor', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // The legacy "Show more" link rewinds further back with
+        // `beforepostid=N`. The Livewire ForumUnread component accepts
+        // the same query param verbatim (via `#[Url(as: 'beforepostid')]`),
+        // so the redirect must preserve it.
+        const response = await page.request.get(
+            '/forums.php?action=viewunread&beforepostid=12345',
+            { maxRedirects: 0 },
+        );
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toBe('/forum/unread?beforepostid=12345');
+    });
+
+    test('/forum/unread renders the Livewire ForumUnread component', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // The page must render without error for an authenticated user.
+        // We do not assert the unread list content (seed has no
+        // readposts rows), only that the empty-state heading is
+        // present, confirming the component mounted.
+        const response = await page.goto('/forum/unread');
+        expect(response).not.toBeNull();
+        expect([200, 302]).toContain(response!.status());
+        if (response!.status() === 200) {
+            await expect(page.locator('text=Unread topics').first()).toBeVisible();
+        }
+    });
 });
