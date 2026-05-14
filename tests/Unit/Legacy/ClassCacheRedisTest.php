@@ -60,9 +60,12 @@ class ClassCacheRedisTest extends TestCase
         $this->assertSame($value, $this->cache->get_value('cls_cache_arr'));
     }
 
-    public function test_get_value_returns_null_on_miss(): void
+    public function test_get_value_returns_false_on_miss(): void
     {
-        $this->assertNull($this->cache->get_value('cls_cache_missing'));
+        // Matches the pre-collapse phpredis contract that
+        // `NexusDB::remember()` and `class_attendance::pre()` rely on
+        // via strict `=== false` checks.
+        $this->assertFalse($this->cache->get_value('cls_cache_missing'));
     }
 
     public function test_delete_value_removes_single_key(): void
@@ -72,7 +75,7 @@ class ClassCacheRedisTest extends TestCase
 
         $this->cache->delete_value('cls_cache_del');
 
-        $this->assertNull($this->cache->get_value('cls_cache_del'));
+        $this->assertFalse($this->cache->get_value('cls_cache_del'));
     }
 
     public function test_delete_value_clears_language_folder_variants(): void
@@ -84,9 +87,9 @@ class ClassCacheRedisTest extends TestCase
 
         $this->cache->delete_value('cls_cache_thing', true);
 
-        $this->assertNull($this->cache->get_value('cls_cache_thing'));
-        $this->assertNull($this->cache->get_value('en_cls_cache_thing'));
-        $this->assertNull($this->cache->get_value('chs_cls_cache_thing'));
+        $this->assertFalse($this->cache->get_value('cls_cache_thing'));
+        $this->assertFalse($this->cache->get_value('en_cls_cache_thing'));
+        $this->assertFalse($this->cache->get_value('chs_cls_cache_thing'));
     }
 
     public function test_clear_cache_flag_short_circuits_reads_and_evicts_key(): void
@@ -100,7 +103,7 @@ class ClassCacheRedisTest extends TestCase
 
         // And the key is gone afterwards.
         $this->cache->setClearCache(false);
-        $this->assertNull($this->cache->get_value('cls_cache_clrflag'));
+        $this->assertFalse($this->cache->get_value('cls_cache_clrflag'));
     }
 
     public function test_page_cache_roundtrip_via_whole_row_idiom(): void
@@ -226,7 +229,7 @@ class ClassCacheRedisTest extends TestCase
 
         $this->cache->unlock('my_resource');
 
-        $this->assertNull($this->cache->get_value('lock_my_resource'));
+        $this->assertFalse($this->cache->get_value('lock_my_resource'));
     }
 
     public function test_setup_page_resets_iteration_cursors_without_writing_cache(): void

@@ -327,10 +327,14 @@ class class_cache_redis
     }
 
     /**
-     * Legacy contract: returns `false` when disabled or actively clearing,
-     * the stored value on a hit, or `null` when the key is absent (`null`
-     * is falsy, so the `if (!$x = $Cache->get_value(..))` idiom callers
-     * use still short-circuits).
+     * Legacy contract: returns `false` when disabled, actively clearing,
+     * or the key is absent; otherwise returns the stored value. Matches
+     * the pre-collapse phpredis behaviour where `$this->redis->get($k)`
+     * returned `false` on a miss and the subsequent `unserialize(false)`
+     * also returned `false`. Several callers (`NexusDB::remember`,
+     * `class_attendance::pre`) rely on strict `=== false` checks to
+     * distinguish miss from a falsy stored value — returning `null`
+     * here breaks them (the cache then silently caches `null`).
      *
      * @return mixed
      */
@@ -344,7 +348,7 @@ class class_cache_redis
 
             return false;
         }
-        $result = $this->store->get($Key);
+        $result = $this->store->get($Key, false);
         $this->cacheReadTimes++;
         $this->keyHits['read'][$Key] = ($this->keyHits['read'][$Key] ?? 0) + 1;
 
