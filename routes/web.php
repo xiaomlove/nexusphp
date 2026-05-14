@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\Dev\ComponentGalleryController;
+use App\Http\Controllers\ForumTopicRedirectController;
 use App\Http\Controllers\Legacy\AddUserController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
@@ -341,6 +342,18 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->whereNumber('forum')
         ->whereNumber('topic')
         ->name('forum.topic');
+
+    /*
+     * Bare-topic-ID shortcut: resolves to `/forum/{forumid}/topic/{topic}`
+     * after a `topics` table lookup. Used by the
+     * `/forums.php?action=viewtopic&topicid=N` Strangler Fig redirect
+     * (which deliberately does not run any DB query before Laravel
+     * boots). See `docs/legacy-strategy.md` § "Phase 3.x: forums.php
+     * flip" for the full migration plan.
+     */
+    Route::get('/forum/topic/{topic}', ForumTopicRedirectController::class)
+        ->whereNumber('topic')
+        ->name('forum.topic.shortcut');
 
     Route::post('/api/push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/api/push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');

@@ -99,22 +99,75 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
         expect(body).toMatch(/NexusPHP\s*::\s*Forums/i);
     });
 
-    test('/forums.php?action=viewtopic&topicid=1 stays on legacy', async ({ context, page }) => {
+    test('/forums.php?action=viewtopic&topicid=N → /forum/topic/N (Laravel resolver)', async ({
+        context,
+        page,
+    }) => {
         await loginAs(context, 'admin');
 
-        // viewtopic intentionally not flipped — TopicView needs forumid
-        // and a DB lookup is too expensive for the pre-Laravel-boot
-        // fast path. Documented in forums.php's header.
         const response = await page.request.get('/forums.php?action=viewtopic&topicid=1', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        // First hop: legacy → bare-topic-ID shortcut route. The
+        // shortcut route then looks up `forumid` and re-redirects to
+        // /forum/{forumid}/topic/{topic} (validated below).
+        expect(location).toMatch(/\/forum\/topic\/1$/);
+    });
+
+    test('/forum/topic/N resolves topic → forum or 404 (Laravel resolver contract)', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // The CI seed only creates forums (via E2eBootstrap), not
+        // topics. The resolver contract is: existing topic → 302 to
+        // /forum/{forumid}/topic/{id}; missing topic → 404. We exercise
+        // the route with both an "id likely to exist if any topics
+        // exist" and an "id we know cannot exist", and accept either
+        // outcome for the first probe — what matters is that the route
+        // never 500s and produces a canonical-shaped location header
+        // when it redirects.
+        const probe = await page.request.get('/forum/topic/1', { maxRedirects: 0 });
+        expect([302, 404]).toContain(probe.status());
+        if (probe.status() === 302) {
+            const location = probe.headers()['location'] ?? '';
+            expect(location).toMatch(/^\/forum\/\d+\/topic\/1(\?.*)?$/);
+        }
+
+        // Known-missing id must always 404 (never 500, never silently
+        // redirect to a bogus forum).
+        const missing = await page.request.get('/forum/topic/999999999', {
+            maxRedirects: 0,
+        });
+        expect(missing.status()).toBe(404);
+
+        // Non-numeric segment must be rejected by `->whereNumber('topic')`
+        // before reaching the controller.
+        const nonNumeric = await page.request.get('/forum/topic/abc', {
+            maxRedirects: 0,
+        });
+        expect(nonNumeric.status()).toBe(404);
+    });
+
+    test('/forums.php?action=viewtopic without topicid stays on legacy', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        // No topicid → the redirect cannot construct a clean
+        // `/forum/topic/{N}` URL, so the request must fall through to
+        // the legacy "topic not found" handler.
+        const response = await page.request.get('/forums.php?action=viewtopic', {
             maxRedirects: 0,
         });
         expect(response.status()).toBeGreaterThanOrEqual(200);
         expect(response.status()).toBeLessThan(400);
         if (response.status() === 302) {
             const location = response.headers()['location'] ?? '';
-            // If legacy code DOES emit a redirect (e.g. for not-logged-in),
-            // it must NOT be pointing to /forum/* — that would mean we
-            // accidentally flipped viewtopic.
             expect(location).not.toMatch(/^\/forum\//);
         }
     });

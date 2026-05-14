@@ -179,15 +179,22 @@ Strangler flip applied at the head of `public/forums.php`:
 | `/forums.php` | `/forum` | `ForumIndex` |
 | `/forums.php?action=viewforum&forumid=N` | `/forum/N` | `ForumView` |
 | `/forums.php?action=newtopic&forumid=N` | `/forum/N/new` | `NewTopicForm` |
+| `/forums.php?action=viewtopic&topicid=N` | `/forum/topic/N` → `/forum/{forumid}/topic/N` | `TopicView` |
+
+`viewtopic` is a two-hop redirect because `TopicView` needs both
+`forumid` and `topicid`, but the legacy URL only carries `topicid`.
+We deliberately do not run a DB query before Laravel boots (the
+legacy entry point would have to parse `.env` or load `dbconn.php`
+to learn the credentials), so the first hop targets
+`/forum/topic/{topic}` — a Laravel route that performs the
+`topics → forumid` lookup and re-redirects to the canonical URL.
+The second hop is acceptable because the legacy URL is hit only by
+bookmarks / RSS / cross-site links; first-party navigation already
+uses the canonical URL directly.
 
 Escape hatches that stay on legacy:
 
 - `?legacy=1` — explicit canary opt-out.
-- `?action=viewtopic` — needs a `topics → forumid` lookup before the
-  pre-Laravel-boot redirect can fire. Migrating viewtopic is a
-  separate PR: it will either (a) add a slim PDO lookup ahead of the
-  redirect, or (b) introduce a `/forum/topic/{topic}` route that
-  resolves `forumid` from the topic at controller time.
 - `?action=reply` / `?action=quotepost` / `?action=editpost` / the
   POST `?action=post` submit handler — compose flows. Need form-side
   rewiring (the existing Livewire components are mounted on Livewire
