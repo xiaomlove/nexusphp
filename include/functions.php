@@ -1736,14 +1736,7 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 
 function random_str($length="6")
 {
-	$set = array("A","B","C","D","E","F","G","H","P","R","M","N","1","2","3","4","5","6","7","8","9");
-	$str = '';
-	for($i=1;$i<=$length;$i++)
-	{
-		$ch = rand(0, count($set)-1);
-		$str .= $set[$ch];
-	}
-	return $str;
+    return \App\Support\Strings::randomCode((int) $length);
 }
 function captcha_manager(): \App\Services\Captcha\CaptchaManager
 {
@@ -5246,14 +5239,19 @@ function get_ratio($userid, $html = true){
 
 function add_s($num, $es = false)
 {
-	global $lang_functions;
-	return ($num > 1 ? ($es ? ($lang_functions['text_es'] ?? '') : $lang_functions['text_s']) : "");
+    global $lang_functions;
+    $plural = $es ? ($lang_functions['text_es'] ?? '') : ($lang_functions['text_s'] ?? '');
+    return \App\Support\Strings::pluralize($num, '', $plural);
 }
 
 function is_or_are($num)
 {
-	global $lang_functions;
-	return ($num > 1 ? $lang_functions['text_are'] : $lang_functions['text_is']);
+    global $lang_functions;
+    return \App\Support\Strings::pluralize(
+        $num,
+        $lang_functions['text_is'] ?? '',
+        $lang_functions['text_are'] ?? '',
+    );
 }
 
 function getmicrotime(){
@@ -6835,7 +6833,7 @@ function can_view_post($uid, $post)
 }
 
 function hide_text($text) {
-    return '<span class="hidden-text">' . $text . '</span>';
+    return \App\Support\Strings::hidden((string) $text);
 }
 
 function make_content_disposition(string $filename, string $disposition = 'attachment'): string {

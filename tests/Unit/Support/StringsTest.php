@@ -1,0 +1,108 @@
+<?php
+
+namespace Tests\Unit\Support;
+
+use App\Support\Strings;
+use PHPUnit\Framework\TestCase;
+
+class StringsTest extends TestCase
+{
+    // ---------- pluralize() ----------
+
+    public function test_pluralize_returns_singular_for_zero_or_one(): void
+    {
+        $this->assertSame('', Strings::pluralize(0, '', 's'));
+        $this->assertSame('', Strings::pluralize(1, '', 's'));
+        // Negative counts are also "singular" in the legacy contract
+        // — the comparison is `> 1`, so -5 returns the singular form.
+        $this->assertSame('', Strings::pluralize(-5, '', 's'));
+    }
+
+    public function test_pluralize_returns_plural_for_count_greater_than_one(): void
+    {
+        $this->assertSame('s', Strings::pluralize(2, '', 's'));
+        $this->assertSame('s', Strings::pluralize(100, '', 's'));
+    }
+
+    public function test_pluralize_uses_strict_greater_than_threshold(): void
+    {
+        // Pinned legacy quirk: the threshold is `> 1`, not `>= 2`,
+        // so fractional 1.5 already triggers the plural form. The
+        // legacy `add_s()` is occasionally called with float ratios
+        // (e.g. `add_s($mins)` where $mins is `floor(...) - hours*60`,
+        // which is always integer in practice but the type isn't).
+        $this->assertSame('s', Strings::pluralize(1.5, '', 's'));
+        $this->assertSame('', Strings::pluralize(1.0, '', 's'));
+    }
+
+    public function test_pluralize_threads_language_aware_strings(): void
+    {
+        // The proxies for add_s() and is_or_are() pass language-aware
+        // strings here. Verifies that we don't accidentally trim,
+        // escape, or otherwise mutate the operator-supplied labels.
+        $this->assertSame('are', Strings::pluralize(5, 'is', 'are'));
+        $this->assertSame('is', Strings::pluralize(1, 'is', 'are'));
+        $this->assertSame('ов', Strings::pluralize(5, 'а', 'ов'));
+    }
+
+    // ---------- randomCode() ----------
+
+    public function test_random_code_length_matches_request(): void
+    {
+        $this->assertSame(0, strlen(Strings::randomCode(0)));
+        $this->assertSame(1, strlen(Strings::randomCode(1)));
+        $this->assertSame(6, strlen(Strings::randomCode(6)));
+        $this->assertSame(32, strlen(Strings::randomCode(32)));
+    }
+
+    public function test_random_code_draws_only_from_unambiguous_alphabet(): void
+    {
+        // 21 chars: ABCDEFGH + PRMN + 1-9. NO 0, I, J, K, L, O, Q,
+        // S, T, U, V, W, X, Y, Z, no lowercase. Pinned because a
+        // future refactor that introduces lowercase or `0`/`O` would
+        // silently break confirm-code readability for operators.
+        $alphabet = 'ABCDEFGHPRMN123456789';
+        $code = Strings::randomCode(200);
+        $this->assertSame(200, strlen($code));
+        for ($i = 0, $n = strlen($code); $i < $n; $i++) {
+            $this->assertTrue(
+                strpos($alphabet, $code[$i]) !== false,
+                "Code contains disallowed character '{$code[$i]}' at index {$i}"
+            );
+        }
+    }
+
+    public function test_random_code_is_deterministic_under_srand(): void
+    {
+        // Pins the legacy `rand()` (not `random_int()`) source. If a
+        // future refactor swaps to `random_int()` this test will fail
+        // — re-seeding `random_int()` is not possible, so the new
+        // helper must keep using `rand()` for backward compatibility.
+        srand(12345);
+        $a = Strings::randomCode(16);
+        srand(12345);
+        $b = Strings::randomCode(16);
+        $this->assertSame($a, $b);
+    }
+
+    // ---------- hidden() ----------
+
+    public function test_hidden_wraps_in_span(): void
+    {
+        $this->assertSame('<span class="hidden-text">1.2.3.4</span>', Strings::hidden('1.2.3.4'));
+        $this->assertSame('<span class="hidden-text"></span>', Strings::hidden(''));
+    }
+
+    public function test_hidden_does_not_escape_input(): void
+    {
+        // Pinned legacy contract: hide_text() does not escape — every
+        // existing call site already passes pre-escaped or
+        // application-controlled text. A "safe" refactor that
+        // wraps the input in htmlspecialchars() would double-escape
+        // every existing call site.
+        $this->assertSame(
+            '<span class="hidden-text"><b>raw</b></span>',
+            Strings::hidden('<b>raw</b>'),
+        );
+    }
+}
