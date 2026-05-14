@@ -651,7 +651,7 @@ function int_check($value,$stdhead = false, $stdfood = true, $die = true, $log =
 
 function is_valid_id($id)
 {
-	return is_numeric($id) && ($id > 0) && (floor($id) == $id);
+    return \App\Support\Validators::isId($id);
 }
 
 
@@ -1924,13 +1924,7 @@ function in_ip_range($long, $targetip, $ip_one, $ip_two=false)
 
 function validip_format($ip)
 {
-	$ipPattern =
-	'/\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.' .
-	'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.' .
-	'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.' .
-	'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/';
-
-	return preg_match($ipPattern, $ip);
+    return \App\Support\Validators::isIpv4Format((string) $ip);
 }
 
 function maxslots () {
@@ -2274,7 +2268,7 @@ function validfilename($name) {
 }
 
 function validemail($email) {
-    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    return \App\Support\Validators::isEmail((string) $email);
 }
 
 function validlang($langid) {
@@ -4291,21 +4285,7 @@ function parked()
 
 function validusername($username)
 {
-	if ($username == "")
-	return false;
-
-	// The following characters are allowed in user names
-	$allowedchars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    $length = strlen($username);
-	for ($i = 0; $i < $length; ++$i)
-	if (strpos($allowedchars, $username[$i]) === false)
-	return false;
-
-	if ($length < 3 || $length > 20) {
-	    return false;
-    }
-
-	return true;
+    return \App\Support\Validators::isUsername((string) $username);
 }
 
 //Code for Viewing NFO file
@@ -5588,27 +5568,12 @@ function get_isp_row($id)
 
 function valid_file_name($filename)
 {
-	$allowedchars = "abcdefghijklmnopqrstuvwxyz0123456789_./";
-
-	$total=strlen($filename);
-	for ($i = 0; $i < $total; ++$i)
-	if (strpos($allowedchars, $filename[$i]) === false)
-		return false;
-	return true;
+    return \App\Support\Validators::isFileName((string) $filename);
 }
 
 function valid_class_name($filename)
 {
-	$allowedfirstchars = "abcdefghijklmnopqrstuvwxyz";
-	$allowedchars = "abcdefghijklmnopqrstuvwxyz0123456789_";
-
-	if(strpos($allowedfirstchars, $filename[0]) === false)
-		return false;
-	$total=strlen($filename);
-	for ($i = 1; $i < $total; ++$i)
-	if (strpos($allowedchars, $filename[$i]) === false)
-		return false;
-	return true;
+    return \App\Support\Validators::isClassName((string) $filename);
 }
 
 function return_avatar_image($url)
