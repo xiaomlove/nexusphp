@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Livewire;
 
+use App\Livewire\TorrentDetail;
 use App\Models\Torrent;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Livewire\Livewire;
 use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
@@ -104,10 +106,9 @@ class TorrentDetailTest extends FeatureTestCase
             'visible' => Torrent::VISIBLE_NO,
         ]);
 
-        $this->actingAs($owner, 'nexus-web');
-
-        $this->get('/torrent/'.$torrentId)
-            ->assertOk()
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSet('torrentId', $torrentId)
             ->assertSee('data-test-id="torrent-detail"', false);
     }
 
@@ -132,10 +133,9 @@ class TorrentDetailTest extends FeatureTestCase
             'banned' => Torrent::BANNED_YES,
         ]);
 
-        $this->actingAs($staff, 'nexus-web');
-
-        $this->get('/torrent/'.$torrentId)
-            ->assertOk()
+        Livewire::actingAs($staff, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSet('torrentId', $torrentId)
             ->assertSee('data-test-id="torrent-detail"', false);
     }
 
@@ -146,10 +146,9 @@ class TorrentDetailTest extends FeatureTestCase
             'banned' => Torrent::BANNED_YES,
         ]);
 
-        $this->actingAs($owner, 'nexus-web');
-
-        $this->get('/torrent/'.$torrentId)
-            ->assertOk()
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSet('torrentId', $torrentId)
             ->assertSee('data-test-id="torrent-detail"', false);
     }
 
@@ -168,12 +167,11 @@ class TorrentDetailTest extends FeatureTestCase
             'comment' => 'Wrong category, please re-upload.',
         ]);
 
-        $this->actingAs($owner, 'nexus-web');
-
-        $response = $this->get('/torrent/'.$torrentId);
-        $response->assertOk();
-        $response->assertSee('data-test-id="ban-reason"', false);
-        $response->assertSee('Wrong category, please re-upload.');
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSet('torrentId', $torrentId)
+            ->assertSee('data-test-id="ban-reason"', false)
+            ->assertSee('Wrong category, please re-upload.');
     }
 
     public function test_ban_reason_banner_is_absent_when_approval_status_is_normal(): void
@@ -183,11 +181,10 @@ class TorrentDetailTest extends FeatureTestCase
             'approval_status' => Torrent::APPROVAL_STATUS_ALLOW,
         ]);
 
-        $this->actingAs($owner, 'nexus-web');
-
-        $response = $this->get('/torrent/'.$torrentId);
-        $response->assertOk();
-        $response->assertDontSee('data-test-id="ban-reason"', false);
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSet('torrentId', $torrentId)
+            ->assertDontSee('data-test-id="ban-reason"', false);
     }
 
     /**
