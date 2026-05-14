@@ -4,6 +4,7 @@ namespace Tests\Feature\Legacy;
 
 use App\Models\User;
 use App\Repositories\ToolRepository;
+use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
@@ -97,12 +98,14 @@ class TakeConfirmControllerTest extends FeatureTestCase
         $this->actingAs($inviter, 'nexus-web');
 
         // A pending user, but invited by someone else — `WHERE
-        // invited_by = $id` filters them out.
+        // invited_by = $id` filters them out. `invited_by` is in
+        // `User::$commonFields` but not `User::$fillable`, so we have
+        // to flip it manually via the query builder after `User::create()`.
         $someoneElse = $this->createTestUser();
         $pending = $this->createPendingUser(overrides: [
-            'invited_by' => $someoneElse->id,
             'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
+        $this->stampInvitedBy($pending->id, $someoneElse->id);
 
         $stub = $this->createMock(ToolRepository::class);
         $stub->expects($this->never())->method('sendMail');
@@ -132,16 +135,20 @@ class TakeConfirmControllerTest extends FeatureTestCase
         $inviter = $this->createTestUser();
         $this->actingAs($inviter, 'nexus-web');
 
+        // `invited_by` is not in `User::$fillable` (see `User::$commonFields`),
+        // so `User::create([... 'invited_by' => ...])` silently drops it.
+        // Flip the column manually so the controller's
+        // `WHERE invited_by = $id` predicate matches.
         $pendingOne = $this->createPendingUser(overrides: [
-            'invited_by' => $inviter->id,
             'editsecret' => 'pending-secret-1',
             'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
         $pendingTwo = $this->createPendingUser(overrides: [
-            'invited_by' => $inviter->id,
             'editsecret' => 'pending-secret-2',
             'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
+        $this->stampInvitedBy($pendingOne->id, $inviter->id);
+        $this->stampInvitedBy($pendingTwo->id, $inviter->id);
 
         $stub = $this->createMock(ToolRepository::class);
         $stub->expects($this->once())
@@ -176,9 +183,9 @@ class TakeConfirmControllerTest extends FeatureTestCase
         $this->actingAs($inviter, 'nexus-web');
 
         $pending = $this->createPendingUser(overrides: [
-            'invited_by' => $inviter->id,
             'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
+        $this->stampInvitedBy($pending->id, $inviter->id);
 
         $stub = $this->createMock(ToolRepository::class);
         $stub->expects($this->once())
@@ -208,9 +215,9 @@ class TakeConfirmControllerTest extends FeatureTestCase
 
         $inviter = $this->createTestUser();
         $pending = $this->createPendingUser(overrides: [
-            'invited_by' => $inviter->id,
             'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
+        $this->stampInvitedBy($pending->id, $inviter->id);
 
         $stub = $this->createMock(ToolRepository::class);
         $stub->expects($this->once())
@@ -243,5 +250,21 @@ class TakeConfirmControllerTest extends FeatureTestCase
                 $overrides,
             ),
         );
+    }
+
+    /**
+     * Set `users.invited_by` directly via the query builder.
+     *
+     * `invited_by` lives in {@see User::$commonFields} but not in
+     * {@see User::$fillable}, so `User::create([... 'invited_by' => ...])`
+     * silently drops it. The controller's
+     * `WHERE invited_by = $id` predicate then never matches and the
+     * happy path returns the "no buddy" notice instead of redirecting.
+     */
+    private function stampInvitedBy(int $userId, int $inviterId): void
+    {
+        NexusDB::table('users')
+            ->where('id', $userId)
+            ->update(['invited_by' => $inviterId]);
     }
 }

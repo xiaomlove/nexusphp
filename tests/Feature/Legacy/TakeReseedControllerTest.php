@@ -245,8 +245,6 @@ class TakeReseedControllerTest extends FeatureTestCase
             'connectable' => 'yes',
             'uploadoffset' => 0,
             'downloadoffset' => 0,
-            'prev_amount_uploaded' => 0,
-            'prev_amount_downloaded' => 0,
         ]);
     }
 
