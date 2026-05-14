@@ -200,6 +200,7 @@ Strangler flip applied at the head of `public/forums.php`:
 | `/forums.php?action=reply&topicid=N` | `/forum/topic/N?compose=reply` → `/forum/{forumid}/topic/N#reply` | `TopicView` + inline `ReplyForm` |
 | `/forums.php?action=quotepost&postid=N` | `/forum/post/N?compose=quote` → `/forum/{forumid}/topic/{topicid}?quote=N#reply` | `TopicView` + inline `ReplyForm` (prefilled) |
 | `/forums.php?action=editpost&postid=N` | `/forum/post/N?compose=edit` → `/forum/{forumid}/topic/{topicid}?edit=N#post-N` | `TopicView` + inline `EditPostForm` (pre-opened) |
+| `/forums.php?action=viewunread` | `/forum/unread` (cursor `?beforepostid=N` preserved) | `ForumUnread` |
 
 `viewtopic` is a two-hop redirect because `TopicView` needs both
 `forumid` and `topicid`, but the legacy URL only carries `topicid`.
@@ -223,9 +224,14 @@ Escape hatches that stay on legacy:
 - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
   `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent yet,
   blocked on a Filament/Livewire admin moderation surface.
-- `?action=viewunread` / `?action=search` — no Livewire equivalent;
-  candidates for inline-into-`ForumIndex` (unread filter) and a
-  dedicated `ForumSearch` Livewire respectively.
+- `?action=search` — no Livewire equivalent yet; candidate for a
+  dedicated `ForumSearch` Livewire component.
+- `?catchup=1` — the write-side companion to `viewunread`. It
+  clears the user's `readposts` rows and pins
+  `users.last_catchup` to the latest post id. The Livewire
+  `ForumUnread` component links to the legacy handler verbatim;
+  migrating the write action will follow once a dedicated
+  `forum.catchup` POST route exists.
 
 Contract is covered by `tests/e2e/behavior/forums-flip.spec.ts`.
 After every escape hatch has been retired the file goes to a single
