@@ -1,6 +1,7 @@
 @php
     /** @var \App\Models\Torrent $torrent */
     /** @var \App\Models\User|null $owner */
+    /** @var \App\Models\TorrentOperationLog|null $banReason */
     /** @var array{0:string,1:string}|null $promotionBadge */
     $sizeBytes = (int) $torrent->size;
     $formattedSize = \App\Livewire\TorrentBrowse::formatBytes($sizeBytes);
@@ -12,6 +13,15 @@
 @endphp
 
 <div class="space-y-6" data-test-id="torrent-detail" data-torrent-id="{{ $torrent->id }}">
+    @if ($banReason)
+        <div data-test-id="ban-reason"
+             class="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-100">
+            <p class="font-semibold">
+                {{ nexus_trans('torrent.approval.deny_comment_show', ['reason' => (string) ($banReason->comment ?? '')]) }}
+            </p>
+        </div>
+    @endif
+
     <x-ui.page-header :title="$torrent->name">
         <x-slot:description>
             @if (! empty($torrent->small_descr))
