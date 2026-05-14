@@ -197,6 +197,7 @@ Strangler flip applied at the head of `public/forums.php`:
 | `/forums.php?action=viewforum&forumid=N` | `/forum/N` | `ForumView` |
 | `/forums.php?action=newtopic&forumid=N` | `/forum/N/new` | `NewTopicForm` |
 | `/forums.php?action=viewtopic&topicid=N` | `/forum/topic/N` → `/forum/{forumid}/topic/N` | `TopicView` |
+| `/forums.php?action=reply&topicid=N` | `/forum/topic/N?compose=reply` → `/forum/{forumid}/topic/N#reply` | `TopicView` + inline `ReplyForm` |
 
 `viewtopic` is a two-hop redirect because `TopicView` needs both
 `forumid` and `topicid`, but the legacy URL only carries `topicid`.
@@ -212,10 +213,17 @@ uses the canonical URL directly.
 Escape hatches that stay on legacy:
 
 - `?legacy=1` — explicit canary opt-out.
-- `?action=reply` / `?action=quotepost` / `?action=editpost` / the
-  POST `?action=post` submit handler — compose flows. Need form-side
-  rewiring (the existing Livewire components are mounted on Livewire
-  routes, not on the legacy URL); separate PR per action.
+- `?action=quotepost&postid=N` / `?action=editpost&postid=N` —
+  compose flows where the URL carries a *post* id rather than a topic
+  id. Migrating these needs a `/forum/post/{post}` Laravel resolver
+  (post → topic → forum lookup) plus TopicView query-param handling
+  to auto-prefill the quoted body / auto-open the inline editor;
+  separate PR per action.
+- POST `?action=post` — the form-submit handler. The Livewire
+  ReplyForm / EditPostForm / NewTopicForm components submit via
+  Livewire HMR, not via a form POST to this endpoint, so a redirect
+  cannot help; the legacy handler stays until no template path
+  generates a `forum.php?action=post` POST any more.
 - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
   `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent yet,
   blocked on a Filament/Livewire admin moderation surface.
