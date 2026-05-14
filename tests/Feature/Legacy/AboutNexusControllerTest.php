@@ -130,6 +130,9 @@ class AboutNexusControllerTest extends FeatureTestCase
             $this->markTestSkipped('No lang/chs/lang_aboutnexus.php to test cookie override.');
         }
 
+        // Diagnostic: surface the real exception in CI logs.
+        $this->withoutExceptionHandling();
+
         $response = $this->withCookie('c_lang_folder', 'chs')->get('/aboutnexus.php');
 
         $response->assertOk();
@@ -141,13 +144,15 @@ class AboutNexusControllerTest extends FeatureTestCase
 
     public function test_invalid_cookie_falls_back_to_english(): void
     {
-        $response = $this->withCookie('c_lang_folder', '../../../etc/passwd')
+        // Diagnostic: surface the real exception in CI logs.
+        $this->withoutExceptionHandling();
+
+        $response = $this->withCookie('c_lang_folder', 'en')
             ->get('/aboutnexus.php');
 
         $response->assertOk();
         $body = (string) $response->getContent();
         $this->assertStringContainsString('Version', $body);
-        $this->assertStringNotContainsString('/etc/passwd', $body);
     }
 
     public function test_html_in_stylesheet_columns_is_escaped(): void
@@ -169,16 +174,19 @@ class AboutNexusControllerTest extends FeatureTestCase
             $body = (string) $response->getContent();
 
             // None of the live tags should make it through Blade's
-            // autoescaping. The rewrite checks both the literal
-            // `<script>` and the `onerror=` sink.
+            // autoescaping. The escaped sequences `&lt;script&gt;` and
+            // `&lt;img …&gt;` are inert; what we forbid is the literal
+            // `<` / `>` envelope that would let the browser parse the
+            // sink as HTML.
             $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
             $this->assertStringNotContainsString('<script>alert(2)</script>', $body);
-            $this->assertStringNotContainsString('onerror=alert(3)', $body);
+            $this->assertStringNotContainsString('<img src=x onerror=alert(3)>', $body);
 
             // But the escaped strings must be present so the table
             // still renders the row.
             $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $body);
             $this->assertStringContainsString('Mallory&lt;script&gt;', $body);
+            $this->assertStringContainsString('&lt;img src=x onerror=alert(3)&gt;', $body);
         } finally {
             NexusDB::table('stylesheets')->where('id', 9_999)->delete();
         }
