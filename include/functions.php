@@ -223,129 +223,52 @@ function addTempCode($value) {
 
 function formatAdUrl($adid, $url, $content, $newWindow=true)
 {
-	return formatUrl("adredir.php?id=".$adid."&amp;url=".rawurlencode($url), $newWindow, $content);
+	return addTempCode(\App\Support\BBCode::adUrl($adid, (string) $url, (string) $content, (bool) $newWindow));
 }
 function formatUrl($url, $newWindow = false, $text = '', $linkClass = '') {
-	if (!$text) {
-		$text = $url;
-	}
-	return addTempCode("<a".($linkClass ? " class=\"$linkClass\"" : '')." href=\"$url\"" . ($newWindow==true? " target=\"_blank\"" : "").">$text</a>");
+	return addTempCode(\App\Support\BBCode::url((string) $url, (bool) $newWindow, (string) $text, (string) $linkClass));
 }
 function formatCode($text) {
-    $textCode = nexus_trans("label.text_code");
-	return addTempCode("<br /><div class=\"codetop\">".$textCode."</div><div class=\"codemain\"><pre><code>$text</code></pre></div><br />");
+	return addTempCode(\App\Support\BBCode::code((string) $text, (string) nexus_trans('label.text_code')));
 }
 
 function formatImg($src, $enableImageResizer, $image_max_width, $image_max_height, $imgId = "") {
-    $src = filter_src($src);
-    if (empty($src)) {
-        return "";
-    }
-    return addTempCode("<img style=\"max-width: 100%\" id=\"$imgId\" alt=\"image\" src=\"$src\"" .
-        ($enableImageResizer ?
-            " onload=\"Scale(this, $image_max_width, $image_max_height);\" data-zoomable " : "") .
-        " onerror=\"handleImageError(this, '$src');\" />");
+    return addTempCode(\App\Support\BBCode::img((string) filter_src($src), (bool) $enableImageResizer, (int) $image_max_width, (int) $image_max_height, (string) $imgId));
 }
 
 function formatFlash($src, $width, $height) {
-    $src = filter_src($src);
-    if (empty($src)) {
-        return "";
-    }
-	if (!$width) {
-		$width = 500;
-	}
-	if (!$height) {
-		$height = 300;
-	}
-	return addTempCode("<object width=\"$width\" height=\"$height\"><param name=\"movie\" value=\"$src\" /><embed src=\"$src\" width=\"$width\" height=\"$height\" type=\"application/x-shockwave-flash\"></embed></object>");
+	return addTempCode(\App\Support\BBCode::flash((string) filter_src($src), $width ?: 0, $height ?: 0));
 }
 function formatFlv($src, $width, $height) {
-    $src = filter_src($src);
-    if (empty($src)) {
-        return "";
-    }
-	if (!$width) {
-		$width = 320;
-	}
-	if (!$height) {
-		$height = 240;
-	}
-	return addTempCode("<object width=\"$width\" height=\"$height\"><param name=\"movie\" value=\"flvplayer.swf?file=$src\" /><param name=\"allowFullScreen\" value=\"true\" /><embed src=\"flvplayer.swf?file=$src\" type=\"application/x-shockwave-flash\" allowfullscreen=\"true\" width=\"$width\" height=\"$height\"></embed></object>");
+	return addTempCode(\App\Support\BBCode::flv((string) filter_src($src), $width ?: 0, $height ?: 0));
 }
 function formatYoutube($src, $width = '', $height = ''): string
 {
-    $src = filter_src($src);
-    if (empty($src)) {
-        return "";
-    }
-    if (!$width) {
-        $width = 560;
-    }
-    if (!$height) {
-        $height = 315;
-    }
-    $queryString = parse_url($src, PHP_URL_QUERY);
-    parse_str($queryString, $parameters);
-    if (empty($parameters['v'])) {
-        $videoId = '';
-    } else {
-        $videoId = $parameters['v'];
-    }
-    return addTempCode(sprintf(
-        '<iframe width="%s" height="%s" src="https://www.youtube.com/embed/%s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
-        $width, $height, $videoId
-    ));
+    return addTempCode(\App\Support\BBCode::youtube((string) filter_src($src), $width ?: 0, $height ?: 0));
 }
 
 function formatVideo($src, $width, $height) {
-    $src = filter_src($src);
-    if (empty($src)) {
-        return "";
-    }
-    if (!$width) {
-        $width = 560;
-    }
-    if (!$height) {
-        $height = 315;
-    }
-    return addTempCode("<video controls width=\"$width\" height=\"$height\"><source src=\"$src\" /><a href=\"$src\">$src</a></video>");
+    return addTempCode(\App\Support\BBCode::video((string) filter_src($src), $width ?: 0, $height ?: 0));
 }
 
 function formatAudio($src) {
-    $src = filter_src($src);
-    if (empty($src)) {
-        return "";
-    }
-    return addTempCode("<audio controls><source src=\"$src\" /><a href=\"$src\">$src</a></audio>");
+    return addTempCode(\App\Support\BBCode::audio((string) filter_src($src)));
 }
 
 function formatSpoiler($content, $title = '', $defaultCollapsed = true): string
 {
     global $lang_functions;
-    if (!$title) {
-        $title = $lang_functions['spoiler_default_title'];
-    }
-//    $content = str_replace(['<br>', '<br />'], '', $content);
-    $contentClass = "";
-    if (!$defaultCollapsed) {
-        $contentClass .= " open";
-    }
-    $HTML = sprintf(
-        '<details%s><summary>%s</summary>%s</details>',
-        $contentClass, $title, $content
-    );
-    return addTempCode($HTML);
+    return addTempCode(\App\Support\BBCode::spoiler((string) $content, (string) $title, (string) ($lang_functions['spoiler_default_title'] ?? ''), (bool) $defaultCollapsed));
 }
 
 function formatHidden($content): string
 {
-    return addTempCode(sprintf('<span class="hidden-text">%s</span>', $content));
+    return addTempCode(\App\Support\BBCode::hidden((string) $content));
 }
 
 function formatTextAlign($text, $align): string
 {
-    return addTempCode(sprintf('<div style="text-align: %s">%s</div>', $align, $text));
+    return addTempCode(\App\Support\BBCode::textAlign((string) $text, (string) $align));
 }
 
 function format_urls($text, $newWindow = false) {
