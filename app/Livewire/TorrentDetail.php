@@ -5,9 +5,12 @@ namespace App\Livewire;
 use App\Models\File;
 use App\Models\Peer;
 use App\Models\Torrent;
+use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
+use App\Support\BbcodeRenderer;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
@@ -26,10 +29,15 @@ use Livewire\Component;
  * Out of scope (planned for subsequent A3.x PRs):
  *
  *   - comments listing + posting
- *   - peer / snatch / file-list tabs
+ *   - snatched list tab
  *   - IMDb / pt-gen rich hero
  *   - bookmark + thanks + vote + report buttons (currently fall back
  *     to the legacy detail page through the "Full legacy view" link).
+ *
+ * Subsequent A3.x PRs already shipped on top of this one expand the
+ * page with file list, peers, taxonomy table, hot meter, full
+ * description (rendered through {@see BbcodeRenderer}). The legacy
+ * `users.showdescription = 'no'` opt-out is honoured.
  *
  * `?legacy=1` is the canary rollback flag, mirroring `TorrentBrowse`.
  * When set, the component redirects to `/details.php?id={id}&legacy=1`
@@ -125,10 +133,117 @@ class TorrentDetail extends Component
             'taxonomy' => $this->taxonomyRows(),
             'files' => $this->loadFiles(),
             'peerGroups' => $this->loadPeerGroups($viewerId),
+            'hotMeter' => $this->hotMeterRows(),
+            'descriptionHtml' => $this->descriptionHtml($viewerId),
             'viewerId' => $viewerId,
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
+    }
+
+    /**
+     * Render the four "hot meter" cells the legacy details page shows
+     * just below the torrent-info block (legacy `details.php:505`):
+     *
+     *   - views (column: `torrents.views`)
+     *   - hits  (column: `torrents.hits`)
+     *   - snatched count (column: `torrents.times_completed`)
+     *   - last seeder activity (column: `torrents.last_action`)
+     *
+     * Returns a label → display-value list rather than a raw object so
+     * the view does not have to repeat any formatting decisions.
+     *
+     * @return array<string,string>
+     */
+    private function hotMeterRows(): array
+    {
+        if ($this->torrent === null) {
+            return [];
+        }
+
+        $lastAction = $this->torrent->last_action;
+        $lastSeen = $lastAction instanceof Carbon
+            ? $lastAction->diffForHumans()
+            : '—';
+
+        return [
+            'Views' => number_format((int) ($this->torrent->views ?? 0)),
+            'Hits' => number_format((int) ($this->torrent->hits ?? 0)),
+            'Snatched' => number_format((int) ($this->torrent->times_completed ?? 0)),
+            'Last seeder' => $lastSeen,
+        ];
+    }
+
+    /**
+     * Resolve the safe-HTML body of the torrent's full description
+     * (legacy column: `torrent_extras.descr`, rendered through
+     * `format_comment()` at `details.php:344`). The Modern UI uses
+     * {@see BbcodeRenderer::toHtml()} — the dependency-free renderer
+     * already used by `TopicView` — instead of the legacy global
+     * helper.
+     *
+     * Legacy parity rules pinned here:
+     *
+     *   - returns the empty string when the viewer has opted out via
+     *     `users.showdescription = 'no'`. Default value `'yes'` keeps
+     *     the block visible for everyone else, matching
+     *     `details.php:342`.
+     *   - returns the empty string when `torrent_extras.descr` is
+     *     missing or empty, so the Blade can short-circuit on
+     *     `! empty($descriptionHtml)`.
+     */
+    private function descriptionHtml(int $viewerId): string
+    {
+        if ($this->torrent === null) {
+            return '';
+        }
+
+        if ($viewerId > 0 && $this->viewerShowDescription($viewerId) === 'no') {
+            return '';
+        }
+
+        $extra = $this->loadExtra();
+        if ($extra === null) {
+            return '';
+        }
+
+        $descr = (string) ($extra->descr ?? '');
+        if ($descr === '') {
+            return '';
+        }
+
+        return BbcodeRenderer::toHtml($descr);
+    }
+
+    /**
+     * Look up the viewer's `users.showdescription` enum. Defaults to
+     * `'yes'` when the column is unset / the viewer record is missing
+     * — matching the column default in `database/schema/mysql-schema.sql`.
+     */
+    private function viewerShowDescription(int $viewerId): string
+    {
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('showdescription');
+
+        return $value === 'no' ? 'no' : 'yes';
+    }
+
+    /**
+     * Hydrate the `torrent_extras` row (`descr` / `nfo` / `media_info` /
+     * `pt_gen`). Returns `null` when no row exists — legacy
+     * `details.php` mirrors this by falling back to empty values via
+     * the `LEFT JOIN torrent_extras` in its big SELECT.
+     */
+    private function loadExtra(): ?TorrentExtra
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        return TorrentExtra::query()
+            ->where('torrent_id', $this->torrent->id)
+            ->first();
     }
 
     /**

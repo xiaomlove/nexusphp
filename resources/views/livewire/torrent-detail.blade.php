@@ -6,6 +6,8 @@
     /** @var array<string,string> $taxonomy */
     /** @var \Illuminate\Support\Collection<int,\App\Models\File> $files */
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
+    /** @var array<string,string> $hotMeter */
+    /** @var string $descriptionHtml */
     /** @var int $viewerId */
     $sizeBytes = (int) $torrent->size;
     $formattedSize = \App\Livewire\TorrentBrowse::formatBytes($sizeBytes);
@@ -175,12 +177,49 @@
         </x-ui.card>
     @endif
 
+    @if (! empty($hotMeter))
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Hot meter
+            </h2>
+            <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4" data-test-id="hot-meter">
+                @foreach ($hotMeter as $label => $value)
+                    @php
+                        $slug = \Illuminate\Support\Str::slug($label);
+                    @endphp
+                    <div data-test-id="hot-meter-{{ $slug }}">
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                            {{ $label }}
+                        </dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
+                            {{ $value }}
+                        </dd>
+                    </div>
+                @endforeach
+            </dl>
+        </x-ui.card>
+    @endif
+
     @if (! empty($torrent->small_descr))
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Small description
+            </h2>
+            <p class="text-sm text-zinc-700 dark:text-zinc-200">{{ $torrent->small_descr }}</p>
+        </x-ui.card>
+    @endif
+
+    @if ($descriptionHtml !== '')
         <x-ui.card>
             <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Description
             </h2>
-            <p class="text-sm text-zinc-700 dark:text-zinc-200">{{ $torrent->small_descr }}</p>
+            {{-- $descriptionHtml is already HTML-escaped by BbcodeRenderer::toHtml(); the
+                 only HTML tags it emits are the safe subset documented on the renderer. --}}
+            <div class="prose prose-sm max-w-none text-zinc-700 dark:prose-invert dark:text-zinc-200"
+                 data-test-id="torrent-description">
+                {!! $descriptionHtml !!}
+            </div>
         </x-ui.card>
     @endif
 
