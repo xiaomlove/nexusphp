@@ -37,6 +37,7 @@ use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeReseedController;
+use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UserBanLogController;
@@ -204,6 +205,24 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * `.docker/openresty/sites/app.conf.template`.
      */
     Route::post('/takecontact.php', TakeContactController::class)->name('legacy.takecontact');
+
+    /*
+     * Phase 2 batch — replaces `public/takestaffmess.php` (deleted in
+     * this PR). The URL stays `/takestaffmess.php` so the legacy
+     * `<form action="takestaffmess.php">` rendered by
+     * `public/staffmess.php` keeps posting to the same endpoint
+     * without a template change. Same CSRF carve-out as
+     * `/takecontact.php` (the legacy form has no `@csrf` token).
+     * Inside the controller the actual fan-out runs as a
+     * `SendStaffMassMessage` queue job — the legacy script ran the
+     * `while (true) { LIMIT ?,10000 }` loop inline and blocked the
+     * browser; the migrated endpoint dispatches and returns a 302
+     * to `/staffmess.php?sent=1` (same redirect target as the
+     * legacy script, so the form-render page's "?sent=1" branch
+     * still shows the "The message has been sent." confirmation
+     * without a template change).
+     */
+    Route::post('/takestaffmess.php', TakeStaffMessController::class)->name('legacy.takestaffmess');
 
     Route::post('/takeupdate.php', TakeUpdateController::class)->name('legacy.takeupdate');
 
