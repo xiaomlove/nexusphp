@@ -181,9 +181,13 @@ class GetAttachmentControllerTest extends FeatureTestCase
         $id = $this->seedAttachment($user->id, $dlkey, 'sample.bin', $body);
 
         // Prime the legacy cache key so we can confirm the controller
-        // invalidates it on the happy path.
+        // invalidates it on the happy path. `NexusDB::cache_*` proxies
+        // to Laravel's `Cache::` facade outside of the IN_NEXUS
+        // bootstrap, so `cache_get` returns `null` on miss (not
+        // `false` like `$Cache->get_value()` would in legacy mode).
         NexusDB::cache_put('attachment_'.$dlkey.'_content', ['stale' => true], 60);
-        $this->assertNotFalse(
+        $this->assertSame(
+            ['stale' => true],
             NexusDB::cache_get('attachment_'.$dlkey.'_content'),
             'sanity: cache key should be primed before request',
         );
@@ -209,7 +213,7 @@ class GetAttachmentControllerTest extends FeatureTestCase
             ->value('downloads');
         $this->assertSame(1, $downloads);
 
-        $this->assertFalse(
+        $this->assertNull(
             NexusDB::cache_get('attachment_'.$dlkey.'_content'),
             'cache key should be invalidated after successful download',
         );
