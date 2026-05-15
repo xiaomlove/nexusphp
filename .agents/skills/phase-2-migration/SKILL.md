@@ -139,6 +139,14 @@ grep -n "<page>" docker-compose.yml .docker/php/entrypoint.sh
 # 5. Live href / Location: / nexus_redirect references in legacy templates
 grep -rn "<page>\.php" --include="*.php" .             \
   | grep -v vendor/ | grep -v "^./public/<page>.php"
+
+# 6. Regex / config-array references — known location is
+#    include/globalfunctions.php::filter_src() $dangerScriptsPattern.
+#    Artisan-shape migrations leave these dead; controller-shape
+#    keep them alive because the Route::any('/<page>.php', ...)
+#    line preserves the URL.
+grep -rln "<page>" --include="*.php" .                 \
+  | grep -vE '(/lang/|/docs/|legacy-strategy.md|migration-recipe.md|SKILL.md)'
 ```
 
 If hits in (2) appear, you'll need the **two-commit pattern**

@@ -1480,7 +1480,7 @@ function filter_src($src)
         return $src;
     }
     // log danger, deny directly
-    $dangerScriptsPattern = "/(logout|login|ajax|announce|scrape|adduser|modtask|docleanup|freeleech|take.*)\.php/i";
+    $dangerScriptsPattern = "/(logout|login|ajax|announce|scrape|adduser|modtask|freeleech|take.*)\.php/i";
     if (preg_match($dangerScriptsPattern, $path)) {
         $msg = sprintf("[DANGER_URL]: $src [%s]", nexus()->getRequestId());
         do_log($msg, 'alert');

@@ -239,8 +239,27 @@ The full sweep list, in roughly the order each one bites:
    ops-team's responsibility), document the new Artisan command
    in the PR description so ops can flip their runbook.
 
-If a page has zero hits across all six, you're done. If a page
-has hits in (1) but not (2)-(6), it's still a one-PR migration
+7. **Regex patterns / config arrays / allow-deny lists** — grep
+   for the page name as a substring of regex alternation or
+   array entries elsewhere in the codebase. The known place in
+   this repo is `include/globalfunctions.php::filter_src()`,
+   which carries a `$dangerScriptsPattern` alternation listing
+   page-names that should be logged as `[DANGER_URL]` when
+   referenced. Confirm dead:
+   ```bash
+   grep -rln "<page>" --include="*.php" .                    \
+     | grep -vE '(/lang/|/docs/|legacy-strategy.md|migration-recipe.md|SKILL.md)'
+   ```
+   **Artisan-shape only.** For controller-shape migrations the
+   page URL stays alive (via the `Route::any('/<page>.php', ...)`
+   line you wrote in Step 3) — regex entries are still useful.
+   For Artisan-shape migrations the URL becomes a hard 404, so
+   any regex/config entry citing the page name becomes dead.
+   docleanup is the worked precedent: PR #198 cleaned up the
+   `docleanup` alternation branch in `filter_src()` post-#193.
+
+If a page has zero hits across all seven, you're done. If a page
+has hits in (1) but not (2)-(7), it's still a one-PR migration
 plus a "drop dead langfiles" follow-up — that ratio is normal,
 splitting reduces review burden.
 
@@ -554,4 +573,6 @@ before tackling 800-LOC pages.
       [ ] nexus/Install/Update.php::runExtraQueries() — removeMenu() added
       [ ] include/<page>_cli.php + docker container — checked / dropped
       [ ] No live link / href / Location: / nexus_redirect to <page>.php
+      [ ] Regex / config-array references to <page> (Artisan-shape only:
+          filter_src $dangerScriptsPattern, allow-lists, etc.) — pruned
 ```
