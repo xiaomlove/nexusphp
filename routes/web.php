@@ -20,6 +20,7 @@ use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\FreeleechController;
+use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\LogoutController;
@@ -427,6 +428,20 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::post('/takeconfirm.php', TakeConfirmController::class)
         ->name('legacy.takeconfirm');
+
+    /*
+     * Phase 2 — replaces `public/getattachment.php` (deleted in the
+     * same PR). The attachment-download endpoint linked from
+     * `include/functions.php:210` (the `<a href="getattachment.php?
+     * id=N&dlkey=K">` block rendered inside attachment-bearing
+     * posts/comments). The URL is unchanged so the existing hrefs
+     * keep working without any template edits. Lives inside the
+     * `auth.nexus:nexus-web` group because the legacy script called
+     * `loggedinorreturn(); parked();` — guests redirect to login,
+     * parked users get a 403.
+     */
+    Route::get('/getattachment.php', GetAttachmentController::class)
+        ->name('legacy.getattachment');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
