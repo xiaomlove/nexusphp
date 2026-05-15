@@ -2,10 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Models\File;
+use App\Models\Peer;
 use App\Models\Torrent;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 
 /**
@@ -112,12 +115,17 @@ class TorrentDetail extends Component
 
     public function render(): View
     {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+
         return view('livewire.torrent-detail', [
             'torrent' => $this->torrent,
             'owner' => $this->owner,
             'banReason' => $this->banReason,
             'promotionBadge' => $this->promotionBadge(),
             'taxonomy' => $this->taxonomyRows(),
+            'files' => $this->loadFiles(),
+            'peerGroups' => $this->loadPeerGroups($viewerId),
+            'viewerId' => $viewerId,
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
@@ -228,5 +236,82 @@ class TorrentDetail extends Component
             ->where('action_type', TorrentOperationLog::ACTION_TYPE_APPROVAL_DENY)
             ->orderByDesc('id')
             ->first();
+    }
+
+    /**
+     * Resolve the `.torrent` file list rows shown on `public/viewfilelist.php`.
+     * Returns an empty collection when the torrent has no `files` rows,
+     * mirroring the legacy short-circuit at the top of the helper page.
+     *
+     * The list is intentionally NOT eager-loaded in `mount()`: many torrents
+     * have hundreds of rows and the legacy page also lazy-loaded them behind a
+     * "see full list" toggle. Re-querying on each render is acceptable for the
+     * read-only view; caching can be layered in later.
+     *
+     * @return Collection<int,File>
+     */
+    private function loadFiles(): Collection
+    {
+        if ($this->torrent === null) {
+            return new Collection;
+        }
+
+        /** @var Collection<int,File> $rows */
+        $rows = File::query()
+            ->where('torrent', $this->torrent->id)
+            ->orderBy('id')
+            ->get();
+
+        return $rows;
+    }
+
+    /**
+     * Resolve the seeder + leecher rows shown on `public/viewpeerlist.php`
+     * and split them into two collections.
+     *
+     * Each peer is decorated with a `display_username` attribute so the view
+     * can render "Anonymous" for users whose `privacy = 'strong'` (or for the
+     * torrent uploader when `torrent.anonymous = 'yes'`) without having to
+     * repeat the privacy rule per template branch. Viewers with the
+     * `viewanonymous` permission — plus the user looking at their own row —
+     * always see the real username.
+     *
+     * @return array{seeders:Collection<int,Peer>,leechers:Collection<int,Peer>}
+     */
+    private function loadPeerGroups(int $viewerId): array
+    {
+        if ($this->torrent === null) {
+            return ['seeders' => new Collection, 'leechers' => new Collection];
+        }
+
+        /** @var Collection<int,Peer> $peers */
+        $peers = Peer::query()
+            ->with(['user:id,username,privacy'])
+            ->where('torrent', $this->torrent->id)
+            ->orderByDesc('seeder')
+            ->orderBy('id')
+            ->get();
+
+        $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
+        $ownerId = (int) $this->torrent->owner;
+        $torrentIsAnonymous = $this->torrent->anonymous === 'yes';
+
+        $peers->each(function (Peer $peer) use ($canViewAnonymous, $ownerId, $torrentIsAnonymous, $viewerId): void {
+            $peerUserId = (int) $peer->userid;
+            $isOwnRow = $viewerId !== 0 && $viewerId === $peerUserId;
+            $isStrongPrivacy = ($peer->user?->privacy === 'strong')
+                || ($torrentIsAnonymous && $peerUserId === $ownerId);
+
+            if ($isStrongPrivacy && ! $canViewAnonymous && ! $isOwnRow) {
+                $peer->setAttribute('display_username', null);
+            } else {
+                $peer->setAttribute('display_username', $peer->user?->username);
+            }
+        });
+
+        return [
+            'seeders' => $peers->where('seeder', Peer::SEEDER_YES)->values(),
+            'leechers' => $peers->where('seeder', Peer::SEEDER_NO)->values(),
+        ];
     }
 }
