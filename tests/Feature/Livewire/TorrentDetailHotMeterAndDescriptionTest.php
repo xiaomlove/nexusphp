@@ -211,7 +211,6 @@ class TorrentDetailHotMeterAndDescriptionTest extends FeatureTestCase
         return (int) NexusDB::table('torrent_extras')->insertGetId(array_merge([
             'torrent_id' => $torrentId,
             'descr' => '',
-            'ori_descr' => '',
             'media_info' => '',
             'nfo' => '',
             'pt_gen' => '',
