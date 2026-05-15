@@ -151,7 +151,15 @@ class GetAttachmentControllerTest extends FeatureTestCase
 
     public function test_parked_user_returns_403(): void
     {
-        $user = $this->createTestUser(['parked' => 'yes']);
+        // `parked` isn't in `User::$fillable`, so mass assignment via
+        // `User::create()` silently drops it. Set it through the
+        // query builder after the row exists — same trick as the
+        // `AdRedirectControllerTest::test_parked_user_returns_403`.
+        $user = $this->createTestUser();
+        NexusDB::table('users')
+            ->where('id', $user->id)
+            ->update(['parked' => 'yes']);
+        $user->refresh();
         $this->actingAs($user, 'nexus-web');
 
         $dlkey = bin2hex(random_bytes(8));
@@ -187,7 +195,13 @@ class GetAttachmentControllerTest extends FeatureTestCase
         $this->assertSame((string) strlen($body), $response->headers->get('Content-Length'));
         $disposition = (string) $response->headers->get('Content-Disposition');
         $this->assertStringStartsWith('attachment;', $disposition);
-        $this->assertStringContainsString('filename="sample.bin"', $disposition);
+        // `sample.bin` matches Symfony's RFC 7230 token regex, so
+        // `HeaderUtils::quote()` returns it unquoted. The full header
+        // is therefore `attachment; filename=sample.bin` (no
+        // `filename*=` extended parameter since the filename is
+        // already ASCII and equal to the fallback).
+        $this->assertStringContainsString('filename=sample.bin', $disposition);
+        $this->assertStringNotContainsString('filename*=', $disposition);
         $this->assertSame($body, $response->streamedContent());
 
         $downloads = (int) NexusDB::table('attachments')
@@ -218,10 +232,15 @@ class GetAttachmentControllerTest extends FeatureTestCase
 
         $response->assertOk();
         $disposition = (string) $response->headers->get('Content-Disposition');
-        // ASCII fallback (the inner `filename=` parameter).
-        $this->assertStringContainsString('filename="_____.pdf"', $disposition);
+        // ASCII fallback: a single underscore collapses the run of
+        // five Cyrillic characters (= 10 UTF-8 bytes); the `.pdf`
+        // suffix stays intact. Symfony's `quote()` leaves the
+        // fallback unquoted because `_.pdf` is still a valid
+        // RFC 7230 token.
+        $this->assertStringContainsString('filename=_.pdf', $disposition);
         // RFC 5987 extended parameter with UTF-8 percent encoding.
         $this->assertStringContainsString("filename*=utf-8''", $disposition);
+        $this->assertStringContainsString('%D0%BE%D1%82%D1%87%D1%91%D1%82.pdf', $disposition);
     }
 
     /**

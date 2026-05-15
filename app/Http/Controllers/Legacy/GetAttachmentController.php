@@ -175,15 +175,23 @@ class GetAttachmentController extends Controller
     }
 
     /**
-     * Build an ASCII-only fallback for the RFC 6266 `filename="..."`
-     * parameter. `HeaderUtils::makeDisposition()` validates that the
-     * fallback contains no non-ASCII chars, so we replace anything
-     * outside `printable ASCII` with `_` and strip the few characters
-     * that have meaning inside a quoted-string (`"`, `\`, `%`).
+     * Build an ASCII-only fallback for the RFC 6266 `filename` /
+     * `filename*` parameter pair. `HeaderUtils::makeDisposition()`
+     * validates that the fallback contains no non-ASCII chars and
+     * no `%` (since that has special meaning in the `filename*`
+     * extended-parameter encoding), so we collapse runs of bytes
+     * outside printable ASCII to a single underscore and strip the
+     * characters that have special meaning in `Content-Disposition`
+     * tokens / quoted-strings.
+     *
+     * Runs of multi-byte characters collapse to one underscore (as
+     * opposed to one underscore per UTF-8 byte) so the fallback for
+     * `отчёт.pdf` (10 UTF-8 bytes) is the readable `_.pdf`, not
+     * `__________.pdf`.
      */
     private function asciiFallback(string $filename): string
     {
-        $ascii = (string) preg_replace('/[^\x20-\x7e]/', '_', $filename);
+        $ascii = (string) preg_replace('/[^\x20-\x7e]+/', '_', $filename);
         $ascii = str_replace(['"', '\\', '%'], '_', $ascii);
 
         return $ascii === '' ? 'attachment' : $ascii;
