@@ -1396,29 +1396,22 @@ function cache_save ($file = 'cachefile') {
 
 function get_email_encode($lang)
 {
-	if($lang == 'chs' || $lang == 'cht')
-	return "gbk";
-	else
-	return "utf-8";
+    return \App\Support\Email::charsetFor((string) $lang);
 }
 
 function change_email_encode($lang, $content)
 {
-	return iconv("utf-8", get_email_encode($lang) . "//IGNORE", $content);
+    return \App\Support\Email::convertCharset((string) $lang, (string) $content);
 }
 
-function safe_email($email) {
-	$email = str_replace("<","",$email);
-	$email = str_replace(">","",$email);
-	$email = str_replace("\'","",$email);
-	$email = str_replace('\"',"",$email);
-	$email = str_replace("\\\\","",$email);
-
-	return $email;
+function safe_email($email)
+{
+    return \App\Support\Email::sanitizeForDisplay((string) $email);
 }
 
-function check_email ($email) {
-	if(!preg_match('/^[A-Za-z0-9][A-Za-z0-9_.+\-]*@[A-Za-z0-9][A-Za-z0-9_+\-]*(\.[A-Za-z0-9][A-Za-z0-9_+\-]*)+$/', $email)) {
+function check_email($email)
+{
+    if (! \App\Support\Email::isWellFormed((string) $email)) {
         return false;
     }
     $bannedEmails = \Nexus\Database\NexusDB::select('select * from bannedemails');
@@ -1429,10 +1422,12 @@ function check_email ($email) {
     foreach ($bannedEmailsArr as $ban) {
         if (str_ends_with($email, $ban)) {
             do_log("[BANNED_EMAIL] email: $email is banned by record: $ban");
+
             return false;
         }
     }
-	return true;
+
+    return true;
 }
 
 function sent_mail($to,$fromname,$fromemail,$subject,$body,$type = "confirmation",$showmsg=true,$multiple=false,$multiplemail='',$hdr_encoding = 'UTF-8', $specialcase = '') {
