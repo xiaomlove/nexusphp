@@ -7,6 +7,7 @@ use App\Legacy\LegacyContext;
 use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\ToolRepository;
+use App\Support\Email;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -86,8 +87,14 @@ class MailtestController extends Controller
 
     private function sendTestMail(string $email): Response
     {
-        $email = $this->sanitiseEmail($email);
-        if (! $this->isValidEmail($email)) {
+        // `App\Support\Email::sanitizeForDisplay` and `isWellFormed` are
+        // the Phase-5 drains of the legacy `safe_email()` /
+        // `check_email()` regex check. The test mail flow deliberately
+        // skips the `bannedemails` DB lookup that the legacy
+        // `check_email()` does — admin-only tooling accepts any
+        // well-formed address.
+        $email = Email::sanitizeForDisplay($email);
+        if (! Email::isWellFormed($email)) {
             return new Response($this->wrap(
                 'Mail Test',
                 $this->renderForm($email, 'Invalid email address!'),
@@ -112,29 +119,6 @@ class MailtestController extends Controller
                 "\n".'<code>'.htmlspecialchars($e->getMessage()).'</code>',
             ));
         }
-    }
-
-    /**
-     * Equivalent of legacy `safe_email()` — strips a small set of
-     * characters that would otherwise let the address smuggle MIME
-     * header injection or shell-escape sequences into the transport.
-     */
-    private function sanitiseEmail(string $email): string
-    {
-        return str_replace(['<', '>', '\\\'', '\\"', '\\\\'], '', $email);
-    }
-
-    /**
-     * Equivalent of legacy `check_email()` minus the `bannedemails`
-     * lookup — the test mail flow accepts any well-formed RFC 5322
-     * address; the banned-list check is registration-only.
-     */
-    private function isValidEmail(string $email): bool
-    {
-        return (bool) preg_match(
-            '/^[A-Za-z0-9][A-Za-z0-9_.+\-]*@[A-Za-z0-9][A-Za-z0-9_+\-]*(\.[A-Za-z0-9][A-Za-z0-9_+\-]*)+$/',
-            $email,
-        );
     }
 
     private function renderForm(string $email, ?string $error): string
