@@ -173,6 +173,114 @@ weeks while the team forgets which is canonical.
 The CI `Legacy freeze` workflow notices the deletion and prints the
 new watermark. Expect Q1 to land at roughly −20% legacy LOC.
 
+### Step 5.5 — post-deletion sweep (don't skip)
+
+Deleting `public/<page>.php` only removes the entry point. A real
+legacy page in this codebase usually has 3-5 satellite references
+that keep pointing at it after deletion — broken links, dead
+fixtures, dead language strings. Sweep them in the same PR (or in
+clearly-named follow-up PRs, one satellite at a time — see the
+docleanup migration sequence #193 → #194 → #195 → #196 for the
+worked precedent).
+
+The full sweep list, in roughly the order each one bites:
+
+1. **`lang/<locale>/lang_<page>.php`** (~19 locales × ~5-30 LOC
+   each). Per-page language dictionaries the legacy template
+   loaded via `get_langfile_path(['"]?<page>`. After the entry
+   point is gone, nothing loads them. Confirm dead:
+   ```bash
+   grep -rln "get_langfile_path(['\"]\?<page>" . | grep -v vendor/
+   grep -rln "lang_<page>" --include="*.php" .            \
+     | grep -v vendor/ | grep -v "^./lang/.*/lang_<page>.php$"
+   ```
+   Only doc-comments / archaeological references should remain
+   after the deletion; live `require_once` paths must be zero.
+
+2. **`database/seeders/<…>TableSeeder.php`** — menu / panel rows
+   that point at the deleted URL. The seeders are auto-generated
+   2021-era files (`array (...)` syntax, extra blank lines), and
+   Pint will block the seeder edit on pre-existing violations.
+   Two-commit pattern:
+   - Commit (a): `vendor/bin/pint database/seeders/<...>.php`,
+     pure reformat, no functional change.
+   - Commit (b): comment out the dead row in the new short-array
+     syntax, matching the existing commented-out style above it.
+   Seeders only run on fresh installs; existing installs need (3).
+
+3. **`nexus/Install/Update.php::runExtraQueries()`** — add a
+   `$this->removeMenu(['<page>.php']);` call inside a new `@since
+   <next-version>` block at the end of the function. Same pattern
+   as the existing `@since 1.7.12` (deletedisabled / amountupload),
+   `@since 1.7.19` (freeleech), and `catmanage.php` blocks.
+   `removeMenu` is idempotent (`whereIn('url', $menus)->delete()`),
+   safe to keep running on every update. This is the **only** way
+   existing prod installs lose their dead menu rows — the seeder
+   from (2) only fires for fresh installs.
+
+4. **`include/<page>_cli.php`** and **`docker-compose.yml` /
+   `.docker/php/entrypoint.sh`** — for "scheduled job hiding behind
+   HTTP" migrations (where you turned `public/<page>.php` into an
+   Artisan command), check whether the same logic is also wrapped
+   in a `<page>_cli.php` invoked by a dedicated docker container.
+   This was the docleanup precedent: `cleanup_cli.php` + a
+   `nexusphp-cleanup` container that ran every 60 seconds in
+   parallel with the new `cron:autoclean` schedule. One of them
+   has to die.
+
+5. **Routes / links inside legacy templates** — `grep -rn
+   "['\"]\?<page>\.php" .` should return zero hits outside the
+   reference itself and any archaeological docstrings. Live
+   `<a href>` / `Location: ` / `nexus_redirect(...)` references
+   are bugs that 404 after the deletion.
+
+6. **Cron / `app/Console/Kernel.php`** — if the page was being
+   poked by an external cron-like mechanism (rare; usually
+   ops-team's responsibility), document the new Artisan command
+   in the PR description so ops can flip their runbook.
+
+If a page has zero hits across all six, you're done. If a page
+has hits in (1) but not (2)-(6), it's still a one-PR migration
+plus a "drop dead langfiles" follow-up — that ratio is normal,
+splitting reduces review burden.
+
+### Phase 2 sub-pattern: scheduled job hiding behind HTTP
+
+Some `public/*.php` files are not user-facing pages at all — they
+are scheduled jobs that someone exposed as HTTP so a sysop could
+`curl` them to force-run. Common shapes:
+- The whole file is gated on a sysop-class check (`if
+  ($CURUSER['class'] < UC_SYSOP) { stderr(...); }`).
+- It calls one ops function (`docleanup()`, `autoclean()`, etc.)
+  and exits.
+- Optional `?forceall=1` query string maps to a CLI flag.
+
+For these, the migration target is **not** a Laravel route — it
+is an Artisan command. Precedent: `public/cron.php` → `cron:autoclean`
+(Phase 2.1.b), `public/docleanup.php` → `cleanup:full --force-all`
+(Phase 2.1.c, PR #193).
+
+The recipe is a different shape from the controller migration:
+
+1. New `app/Console/Commands/<Name>.php` extending
+   `Illuminate\Console\Command` with a `$signature` of `<area>:<verb>
+   {--flag : description}` and a `handle()` that calls the same
+   legacy function the HTTP page called.
+2. New `tests/Feature/Console/<Name>CommandTest.php` pinning the
+   signature + flag declaration (full behavioural coverage of the
+   legacy function is deferred to Phase 5).
+3. **Don't register in `app/Console/Kernel::schedule()`** unless
+   the operator wants it on a schedule — most ops-toggles should
+   stay manual (`docker exec ... php artisan <signature>`).
+4. `git rm public/<page>.php` in the same PR.
+5. Run the post-deletion sweep above. For docleanup, the sweep
+   uncovered 134 LOC of dead code in 3 follow-up PRs (#194 / #195 /
+   #196) — bigger than the migration itself.
+
+The CSRF middleware / route allowlist / FormRequest / view bits
+from the regular Phase 2 recipe **do not apply** to Artisan
+migrations — there is no HTTP surface.
+
 ### Step 6 — let the existing E2E spec pin the URL
 
 `tests/e2e/smoke/logout.spec.ts` (or whichever file covers
@@ -429,11 +537,21 @@ before tackling 800-LOC pages.
 
 ```
 - [ ] New Laravel controller in app/Http/Controllers/Legacy/
+      (or app/Console/Commands/ for "scheduled job hiding behind HTTP")
 - [ ] FormRequest with explicit validation (where applicable)
 - [ ] Route in routes/web.php keeping the *.php URL
+      (skip for Artisan migrations)
 - [ ] Feature test under tests/Feature/Legacy/
+      (or tests/Feature/Console/ for Artisan migrations)
 - [ ] Existing E2E smoke spec for the URL stays green
 - [ ] public/<page>.php deleted in this PR
 - [ ] scripts/legacy-loc.sh shows the watermark dropping
 - [ ] No new file added under public/, include/, classes/ (CI enforces)
+- [ ] Post-deletion sweep (Step 5.5):
+      [ ] grep -rln 'get_langfile_path' for <page> → zero live hits
+      [ ] lang/<locale>/lang_<page>.php — followup PR planned/done
+      [ ] database/seeders/*TableSeeder.php — dead menu row found/commented
+      [ ] nexus/Install/Update.php::runExtraQueries() — removeMenu() added
+      [ ] include/<page>_cli.php + docker container — checked / dropped
+      [ ] No live link / href / Location: / nexus_redirect to <page>.php
 ```
