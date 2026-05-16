@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\ThanksController;
 use App\Models\File;
 use App\Models\Peer;
 use App\Models\Setting;
@@ -9,12 +11,14 @@ use App\Models\Torrent;
 use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
+use App\Repositories\SearchRepository;
 use App\Support\BbcodeRenderer;
 use App\Support\Codec;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
+use Nexus\Database\NexusDB;
 use Nexus\Torrent\BdInfoExtra;
 use Nexus\Torrent\TechnicalInformation;
 
@@ -128,6 +132,7 @@ class TorrentDetail extends Component
     public function render(): View
     {
         $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        $thanksList = $this->thanksList();
 
         return view('livewire.torrent-detail', [
             'torrent' => $this->torrent,
@@ -142,9 +147,209 @@ class TorrentDetail extends Component
             'technicalInfoHtml' => $this->technicalInfoHtml(),
             'nfoBlock' => $this->nfoBlock($viewerId),
             'viewerId' => $viewerId,
+            'isAuthed' => $viewerId > 0,
+            'isBookmarked' => $this->isBookmarked($viewerId),
+            'hasThanked' => $thanksList['hasThanked'],
+            'thanksRecent' => $thanksList['recent'],
+            'thanksTotal' => $thanksList['total'],
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
+    }
+
+    /**
+     * Toggle the current viewer's bookmark row for this torrent. The
+     * implementation is a near-line-for-line copy of the production
+     * legacy {@see BookmarkController}
+     * (which `public/bookmark.php` was replaced with in Phase 2) — we
+     * keep the SearchRepository call and the per-user cache key so the
+     * `bookmark_array` cache and Elasticsearch index stay coherent
+     * across both the legacy and Modern UI surfaces.
+     *
+     * Guests fall through silently — the Blade view does not render
+     * the button for an anonymous viewer, but we re-check `$viewerId`
+     * here to keep the action safe even if the front-end is bypassed.
+     */
+    public function toggleBookmark(): void
+    {
+        if ($this->torrent === null) {
+            return;
+        }
+
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if ($viewerId <= 0) {
+            return;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+
+        $existing = NexusDB::table('bookmarks')
+            ->where('torrentid', $torrentId)
+            ->where('userid', $viewerId)
+            ->first();
+
+        $repository = app(SearchRepository::class);
+
+        if ($existing !== null) {
+            $existing = (array) $existing;
+            $repository->deleteBookmark((int) $existing['id']);
+            NexusDB::table('bookmarks')
+                ->where('torrentid', $torrentId)
+                ->where('userid', $viewerId)
+                ->delete();
+            NexusDB::cache_del('user_'.$viewerId.'_bookmark_array');
+
+            return;
+        }
+
+        $newId = (int) NexusDB::insert('bookmarks', [
+            'torrentid' => $torrentId,
+            'userid' => $viewerId,
+        ]);
+        NexusDB::cache_del('user_'.$viewerId.'_bookmark_array');
+        $repository->addBookmark($newId);
+    }
+
+    /**
+     * Record the current viewer's "thanks" for this torrent and credit
+     * the seedbonus on both sides. Mirrors the contract pinned by
+     * {@see ThanksController}:
+     *
+     *   - Guests are silently ignored (the button is not rendered for
+     *     anonymous viewers, but the action defends in depth).
+     *   - Already-thanked viewers are a no-op (the UNIQUE KEY on the
+     *     `thanks` table would 1062 otherwise).
+     *   - Bonus crediting is gated on the `tweak.bonus` setting, with
+     *     the same `enable` / `disablesave` set the controller honours.
+     *   - Settings are read through {@see Setting::getByName()} rather
+     *     than `get_setting()` — the latter caches the whole settings
+     *     tree in a static var, which prevents test-time mutations
+     *     from being visible. See the matching PR-2 comment on
+     *     {@see TorrentDetail::technicalInfoHtml()}.
+     */
+    public function sayThanks(): void
+    {
+        if ($this->torrent === null) {
+            return;
+        }
+
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if ($viewerId <= 0) {
+            return;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+
+        $alreadyThanked = NexusDB::table('thanks')
+            ->where('torrentid', $torrentId)
+            ->where('userid', $viewerId)
+            ->exists();
+        if ($alreadyThanked) {
+            return;
+        }
+
+        NexusDB::table('thanks')->insert([
+            'torrentid' => $torrentId,
+            'userid' => $viewerId,
+        ]);
+
+        $tweak = (string) Setting::getByName('tweak.bonus', 'enable');
+        if ($tweak !== 'enable' && $tweak !== 'disablesave') {
+            return;
+        }
+
+        $sayBonus = (float) Setting::getByName('bonus.saythanks', 0);
+        if ($sayBonus > 0.0) {
+            NexusDB::table('users')
+                ->where('id', $viewerId)
+                ->update(['seedbonus' => NexusDB::raw('seedbonus + '.$sayBonus)]);
+        }
+
+        $receiveBonus = (float) Setting::getByName('bonus.receivethanks', 0);
+        $ownerId = (int) $this->torrent->owner;
+        if ($ownerId > 0 && $receiveBonus > 0.0) {
+            NexusDB::table('users')
+                ->where('id', $ownerId)
+                ->update(['seedbonus' => NexusDB::raw('seedbonus + '.$receiveBonus)]);
+        }
+    }
+
+    /**
+     * Whether the viewer has bookmarked this torrent. Guests always
+     * return `false` so the view renders the "log in to bookmark"
+     * variant rather than the toggle button.
+     */
+    private function isBookmarked(int $viewerId): bool
+    {
+        if ($viewerId <= 0 || $this->torrent === null) {
+            return false;
+        }
+
+        return NexusDB::table('bookmarks')
+            ->where('torrentid', (int) $this->torrent->id)
+            ->where('userid', $viewerId)
+            ->exists();
+    }
+
+    /**
+     * Resolve the "thanks-by" panel data: the 20 most recent thanker
+     * usernames (matches the legacy `LIMIT 20` query at
+     * `details.php:649`), the total count, and whether the current
+     * viewer has already thanked.
+     *
+     * @return array{recent:Collection<int,string>,total:int,hasThanked:bool}
+     */
+    private function thanksList(): array
+    {
+        if ($this->torrent === null) {
+            return [
+                'recent' => new Collection,
+                'total' => 0,
+                'hasThanked' => false,
+            ];
+        }
+
+        $torrentId = (int) $this->torrent->id;
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+
+        $total = (int) NexusDB::table('thanks')
+            ->where('torrentid', $torrentId)
+            ->count();
+
+        $hasThanked = $viewerId > 0 && NexusDB::table('thanks')
+            ->where('torrentid', $torrentId)
+            ->where('userid', $viewerId)
+            ->exists();
+
+        /** @var Collection<int,string> $recent */
+        $recent = NexusDB::table('thanks')
+            ->where('torrentid', $torrentId)
+            ->orderByDesc('id')
+            ->limit(20)
+            ->pluck('userid')
+            ->pipe(function (Collection $userIds): Collection {
+                if ($userIds->isEmpty()) {
+                    /** @var Collection<int,string> $empty */
+                    $empty = new Collection;
+
+                    return $empty;
+                }
+
+                $usernamesByid = User::query()
+                    ->whereIn('id', $userIds->all())
+                    ->pluck('username', 'id');
+
+                return $userIds
+                    ->map(fn ($id) => (string) ($usernamesByid[(int) $id] ?? ''))
+                    ->filter(fn (string $name): bool => $name !== '')
+                    ->values();
+            });
+
+        return [
+            'recent' => $recent,
+            'total' => $total,
+            'hasThanked' => $hasThanked,
+        ];
     }
 
     /**
