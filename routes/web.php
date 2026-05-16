@@ -28,6 +28,7 @@ use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
+use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
@@ -93,6 +94,16 @@ Route::get('/error', [ToolController::class, 'error']);
 // Public, no auth required.
 Route::get('/searchsuggest.php', SearchSuggestController::class)->name('legacy.searchsuggest');
 Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
+
+/*
+ * Phase 2 — replaces `public/opensearch.php` (deleted in the same
+ * PR). Static-ish OpenSearch description XML discovered by every
+ * `stdhead()` page through the `<link rel="search">` element in
+ * `include/functions.php:2367`. Reachable as a guest (legacy script
+ * had no auth check), URL stays `/opensearch.php` so browsers'
+ * cached search-engine registrations keep working.
+ */
+Route::get('/opensearch.php', OpensearchController::class)->name('legacy.opensearch');
 
 /*
  * Phase 2 batch #8 — replaces `public/rules.php` (deleted in the
