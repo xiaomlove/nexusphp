@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Legacy;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Database\Seeders\TestingDataSeeder;
 use Illuminate\Support\Facades\DB;
@@ -199,7 +200,7 @@ class OkControllerTest extends FeatureTestCase
      * typed `setLocale(string)` throws inside the middleware before
      * the request even reaches the controller.
      */
-    private function createAuthenticatableUser(): \App\Models\User
+    private function createAuthenticatableUser(): User
     {
         $user = $this->createLegacyUser();
         NexusDB::table('users')
