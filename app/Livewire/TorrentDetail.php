@@ -334,7 +334,12 @@ class TorrentDetail extends Component
      *     (legacy guard: `nfosz > 0`).
      *   - decodes the IBM-437 blob through
      *     {@see Codec::ibm437ToEntities()} — the same helper the legacy
-     *     `code_new()` proxy delegates to.
+     *     `code_new()` proxy delegates to. The ASCII portion is run
+     *     through `htmlspecialchars()` *before* the byte-walk so embedded
+     *     HTML (e.g. `<script>...</script>`) is rendered as text instead
+     *     of being executed. The legacy `code()` does the same escape;
+     *     `code_new()` was added later for a faster byte-walk and (by
+     *     accident) dropped the escape — the Modern UI fixes that.
      *   - the view style defaults to `torrent.nfo_view_style_default`
      *     and falls back to {@see Torrent::NFO_VIEW_STYLE_DOS}.
      *
@@ -366,8 +371,15 @@ class TorrentDetail extends Component
 
         $view = $this->nfoViewStyle();
 
+        // Escape ASCII HTML metacharacters before the byte-walk so the
+        // raw `<` / `>` / `&` / `"` bytes that survive the IBM-437 decode
+        // cannot break out of the `<pre>` wrapper in the Blade view.
+        // High bytes (>= 0x7F) are still turned into numeric entities
+        // by `Codec::ibm437ToEntities()`.
+        $safe = htmlspecialchars($nfo, ENT_QUOTES, 'UTF-8');
+
         return [
-            'html' => Codec::ibm437ToEntities($nfo, $view),
+            'html' => Codec::ibm437ToEntities($safe, $view),
             'view' => $view,
         ];
     }
