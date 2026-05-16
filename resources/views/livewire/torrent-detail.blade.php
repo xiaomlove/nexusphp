@@ -11,6 +11,11 @@
     /** @var string $technicalInfoHtml */
     /** @var array{html:string,view:string}|null $nfoBlock */
     /** @var int $viewerId */
+    /** @var bool $isAuthed */
+    /** @var bool $isBookmarked */
+    /** @var bool $hasThanked */
+    /** @var \Illuminate\Support\Collection<int,string> $thanksRecent */
+    /** @var int $thanksTotal */
     $sizeBytes = (int) $torrent->size;
     $formattedSize = \App\Livewire\TorrentBrowse::formatBytes($sizeBytes);
     $now = time();
@@ -87,6 +92,51 @@
         <x-ui.stat label="Leechers" :value="number_format((int) $torrent->leechers)" variant="danger" />
         <x-ui.stat label="Snatched" :value="number_format((int) $torrent->times_completed)" />
     </div>
+
+    @if ($isAuthed)
+        <x-ui.card>
+            <div class="flex flex-wrap items-center gap-3"
+                 data-test-id="torrent-actions">
+                <button type="button"
+                        wire:click="toggleBookmark"
+                        wire:loading.attr="disabled"
+                        data-test-id="bookmark-toggle"
+                        data-bookmarked="{{ $isBookmarked ? 'yes' : 'no' }}"
+                        class="inline-flex items-center rounded border border-primary-500 bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50 dark:border-primary-400 dark:bg-primary-950/40 dark:text-primary-200 dark:hover:bg-primary-950/70">
+                    {{ $isBookmarked ? 'Bookmarked — click to remove' : 'Bookmark this torrent' }}
+                </button>
+
+                <button type="button"
+                        wire:click="sayThanks"
+                        wire:loading.attr="disabled"
+                        @disabled($hasThanked)
+                        data-test-id="thanks-button"
+                        data-thanked="{{ $hasThanked ? 'yes' : 'no' }}"
+                        class="inline-flex items-center rounded border border-zinc-300 bg-white px-3 py-1 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800">
+                    {{ $hasThanked ? 'Thanks said' : 'Say thanks' }}
+                </button>
+
+                <div class="text-sm text-zinc-600 dark:text-zinc-300"
+                     data-test-id="thanks-by"
+                     data-thanks-total="{{ $thanksTotal }}">
+                    @if ($thanksTotal === 0)
+                        <span class="italic text-zinc-500 dark:text-zinc-400">No thanks yet — be the first.</span>
+                    @else
+                        <span>Thanks by:</span>
+                        <span class="ml-1 break-all" data-test-id="thanks-recent">
+                            {{ $thanksRecent->implode(', ') }}
+                        </span>
+                        @if ($thanksTotal > $thanksRecent->count())
+                            <span class="ml-1 text-zinc-500 dark:text-zinc-400"
+                                  data-test-id="thanks-more">
+                                and {{ number_format($thanksTotal) }} users in total
+                            </span>
+                        @endif
+                    @endif
+                </div>
+            </div>
+        </x-ui.card>
+    @endif
 
     <x-ui.card>
         <dl class="grid gap-4 sm:grid-cols-2">
