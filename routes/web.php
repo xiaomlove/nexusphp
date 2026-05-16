@@ -30,6 +30,7 @@ use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
+use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
@@ -468,6 +469,20 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::post('/takeconfirm.php', TakeConfirmController::class)
         ->name('legacy.takeconfirm');
+
+    /*
+     * Phase 2 — replaces `public/polloverview.php` (deleted in this
+     * PR). Administrator+ poll-overview tool. GET-only — the legacy
+     * script had no POST branch. Two render branches: `?id=<n>`
+     * shows the poll detail (header + options + paginated voter
+     * list); no `?id` lists every poll. URL stays
+     * `/polloverview.php` so the `public/index.php:492` poll-digest
+     * deep link, the `AdminpanelTableSeeder.url='polloverview.php'`
+     * menu entry, and the `/polloverview.php` E2E smoke spec all
+     * keep working without template changes.
+     */
+    Route::get('/polloverview.php', PollOverviewController::class)
+        ->name('legacy.polloverview');
 
     /*
      * Phase 2 — replaces `public/testip.php` (deleted in this PR).
