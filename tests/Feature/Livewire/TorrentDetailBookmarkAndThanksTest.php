@@ -155,12 +155,17 @@ class TorrentDetailBookmarkAndThanksTest extends FeatureTestCase
 
     public function test_say_thanks_credits_bonus_to_thanker_and_owner_when_tweak_enabled(): void
     {
+        // `users.seedbonus` is `decimal(20,1)` in the schema — values
+        // are stored with a single decimal place, so we deliberately
+        // pick bonus increments that already fit that precision.
+        // Otherwise MySQL silently half-up-rounds (e.g. 11.25 → 11.3)
+        // and the assertion would chase a phantom 0.05 drift.
         $this->seedSetting('tweak.bonus', 'enable');
-        $this->seedSetting('bonus.saythanks', '0.50');
-        $this->seedSetting('bonus.receivethanks', '1.25');
+        $this->seedSetting('bonus.saythanks', '0.5');
+        $this->seedSetting('bonus.receivethanks', '1.5');
 
-        $owner = $this->createUser(['seedbonus' => '10.00']);
-        $viewer = $this->createUser(['seedbonus' => '2.00']);
+        $owner = $this->createUser(['seedbonus' => '10.0']);
+        $viewer = $this->createUser(['seedbonus' => '2.0']);
         $torrentId = $this->createTorrent($owner->id);
 
         Livewire::actingAs($viewer, 'nexus-web')
@@ -168,12 +173,12 @@ class TorrentDetailBookmarkAndThanksTest extends FeatureTestCase
             ->call('sayThanks');
 
         $this->assertEqualsWithDelta(
-            2.50,
+            2.5,
             (float) NexusDB::table('users')->where('id', $viewer->id)->value('seedbonus'),
             0.001,
         );
         $this->assertEqualsWithDelta(
-            11.25,
+            11.5,
             (float) NexusDB::table('users')->where('id', $owner->id)->value('seedbonus'),
             0.001,
         );
