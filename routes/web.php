@@ -43,6 +43,7 @@ use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
+use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\OauthController;
@@ -467,6 +468,17 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::post('/takeconfirm.php', TakeConfirmController::class)
         ->name('legacy.takeconfirm');
+
+    /*
+     * Phase 2 — replaces `public/testip.php` (deleted in this PR).
+     * Moderator-only IP-ban check tool. Accepts both GET (the form
+     * itself + `?ip=<addr>` deep links from `public/usersearch.php`
+     * line 737 and the modpanel "IP Test" menu entry) and POST
+     * (the legacy `<form method=post action=testip.php>` body).
+     * CSRF-exempt — see `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::match(['get', 'post'], '/testip.php', TestIpController::class)
+        ->name('legacy.testip');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
