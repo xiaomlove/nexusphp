@@ -152,9 +152,127 @@ class TorrentDetail extends Component
             'hasThanked' => $thanksList['hasThanked'],
             'thanksRecent' => $thanksList['recent'],
             'thanksTotal' => $thanksList['total'],
+            'actionRow' => $this->actionRowItems($viewerId),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
+    }
+
+    /**
+     * Build the per-viewer action-row entries shown above the bookmark
+     * / say-thanks card. Each item is a typed shape the Blade view can
+     * iterate without re-checking permissions.
+     *
+     * Visibility mirrors `public/details.php:253-295`:
+     *
+     *   - Download — `download.php?id={id}`. Hidden for guests; owners
+     *     always see the button (legacy auto-promotes
+     *     `CURUSER["downloadpos"] = "yes"` for the uploader); other
+     *     viewers must have `users.downloadpos != "no"`. The endpoint
+     *     itself is still the legacy script — Phase 4 reworks the
+     *     `.torrent`-file emission path.
+     *   - Edit — `edit.php?id={id}`. Visible for the owner and for any
+     *     staff with the `torrentmanage` permission. Label widens to
+     *     "Edit / delete" for staff.
+     *   - Re-seed — `takereseed.php?reseedid={id}`. Visible to viewers
+     *     with the `askreseed` permission, but only when
+     *     `torrents.seeders = 0` (no point re-seeding a live torrent).
+     *   - Report — `report.php?torrent={id}`. Always shown to
+     *     authenticated viewers (the legacy filter chain can suppress
+     *     it via `apply_filter('torrent_detail_actions', ...)` — the
+     *     plugin hook is Phase 5 surface; we keep the visible button
+     *     in Modern UI and revisit when the filter system is migrated).
+     *
+     * Out of scope for this PR (still surfaced through the
+     * `?legacy=1` escape hatch on `public/details.php`):
+     *
+     *   - The "approval" action — opens a Layer.js iframe popup on
+     *     `/web/torrent-approval-page`. The Modern UI does not have a
+     *     Livewire-modal equivalent yet, so the staff approval flow
+     *     stays on legacy.
+     *   - The "claim" block — separate block below the action row, has
+     *     its own AJAX `addClaim` handler. Will move with the upload /
+     *     claim wave.
+     *   - The `?returnto` carry-over to `edit.php` — only useful when
+     *     the user landed on the detail page from a context-sensitive
+     *     legacy entry point; Modern UI has no such carry-over yet.
+     *
+     * Guests get an empty list — the Blade short-circuits and skips
+     * the whole action-row block.
+     *
+     * @return list<array{id:string,label:string,title:string,url:string,variant:string}>
+     */
+    private function actionRowItems(int $viewerId): array
+    {
+        if ($this->torrent === null || $viewerId <= 0) {
+            return [];
+        }
+
+        $torrent = $this->torrent;
+        $torrentId = (int) $torrent->id;
+        $isOwner = $viewerId === (int) $torrent->owner;
+        $items = [];
+
+        if ($isOwner || $this->viewerDownloadpos($viewerId) !== 'no') {
+            $items[] = [
+                'id' => 'download',
+                'label' => 'Download .torrent',
+                'title' => 'Download this torrent',
+                'url' => '/download.php?id='.$torrentId,
+                'variant' => 'primary',
+            ];
+        }
+
+        $canManage = $this->viewerCan('torrentmanage', $viewerId);
+        if ($isOwner || $canManage) {
+            $items[] = [
+                'id' => 'edit',
+                'label' => $canManage ? 'Edit / delete' : 'Edit',
+                'title' => 'Click to edit or delete this torrent',
+                'url' => '/edit.php?id='.$torrentId,
+                'variant' => 'secondary',
+            ];
+        }
+
+        if ($this->viewerCan('askreseed', $viewerId) && (int) $torrent->seeders === 0) {
+            $items[] = [
+                'id' => 'reseed',
+                'label' => 'Ask for a reseed',
+                'title' => 'Ask snatched users for reseeding when there\'s no seeder',
+                'url' => '/takereseed.php?reseedid='.$torrentId,
+                'variant' => 'secondary',
+            ];
+        }
+
+        $items[] = [
+            'id' => 'report',
+            'label' => 'Report torrent',
+            'title' => 'Report torrent for violating rules',
+            'url' => '/report.php?torrent='.$torrentId,
+            'variant' => 'danger',
+        ];
+
+        return $items;
+    }
+
+    /**
+     * Look up the viewer's `users.downloadpos` enum, returning the raw
+     * string so the caller can apply the legacy semantics (`!= 'no'`
+     * means "may download"). The column default is `'yes'` per the
+     * schema, so a missing column / missing row defaults open — never
+     * accidentally narrows download access.
+     */
+    private function viewerDownloadpos(int $viewerId): string
+    {
+        if ($viewerId <= 0) {
+            return 'yes';
+        }
+
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('downloadpos');
+
+        return $value === 'no' ? 'no' : 'yes';
     }
 
     /**
