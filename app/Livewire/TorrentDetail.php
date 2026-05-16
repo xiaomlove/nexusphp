@@ -4,15 +4,19 @@ namespace App\Livewire;
 
 use App\Models\File;
 use App\Models\Peer;
+use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
 use App\Models\User;
 use App\Support\BbcodeRenderer;
+use App\Support\Codec;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
+use Nexus\Torrent\BdInfoExtra;
+use Nexus\Torrent\TechnicalInformation;
 
 /**
  * `/torrent/{id}` — Modern UI shell for the legacy `public/details.php`
@@ -135,6 +139,8 @@ class TorrentDetail extends Component
             'peerGroups' => $this->loadPeerGroups($viewerId),
             'hotMeter' => $this->hotMeterRows(),
             'descriptionHtml' => $this->descriptionHtml($viewerId),
+            'technicalInfoHtml' => $this->technicalInfoHtml(),
+            'nfoBlock' => $this->nfoBlock($viewerId),
             'viewerId' => $viewerId,
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
@@ -244,6 +250,169 @@ class TorrentDetail extends Component
         return TorrentExtra::query()
             ->where('torrent_id', $this->torrent->id)
             ->first();
+    }
+
+    /**
+     * Render the "Technical info" block from `torrent_extras.media_info`
+     * (legacy `details.php:314-340`). Returns the empty string when the
+     * block must be hidden — the Blade can then short-circuit on a
+     * single `if ($technicalInfoHtml !== '')` check.
+     *
+     * Legacy parity rules pinned here:
+     *
+     *   - hidden when site setting `main.enable_technical_info != 'yes'`
+     *     (default `'yes'` in `nexus/Install/settings.default.php`).
+     *   - hidden when no `torrent_extras` row exists, or when
+     *     `media_info` is the empty string.
+     *   - dispatches between BD-info and MediaInfo formats by sniffing
+     *     the first non-empty line for `DISC INFO` / `Disc Title` /
+     *     `Disc Label`, matching `details.php:319-326`.
+     *   - delegates rendering to the existing `\Nexus\Torrent\...`
+     *     classes — the legacy details page calls the same
+     *     `renderOnDetailsPage()` method, so the HTML is byte-identical.
+     */
+    private function technicalInfoHtml(): string
+    {
+        if ($this->torrent === null) {
+            return '';
+        }
+
+        // Read through `Setting::getByName()` rather than `get_setting()`
+        // — the latter caches the entire settings tree in a static var,
+        // so a runtime toggle (or a test seeding a row) is not picked up
+        // until the cache is rebuilt. `Setting::getByName()` is a tiny
+        // single-row Eloquent query and matches the read pattern used
+        // by other refactored controllers (see `AdRedirectController`).
+        $enabled = (string) Setting::getByName('main.enable_technical_info', 'yes');
+        if ($enabled !== 'yes') {
+            return '';
+        }
+
+        $extra = $this->loadExtra();
+        if ($extra === null) {
+            return '';
+        }
+
+        $mediaInfo = (string) ($extra->media_info ?? '');
+        if ($mediaInfo === '') {
+            return '';
+        }
+
+        if ($this->isBdInfoBlob($mediaInfo)) {
+            return (string) (new BdInfoExtra($mediaInfo))->renderOnDetailsPage();
+        }
+
+        return (string) (new TechnicalInformation($mediaInfo))->renderOnDetailsPage();
+    }
+
+    /**
+     * Sniff whether the technical-info payload is a Blu-ray BD-info dump
+     * (which `BdInfoExtra` knows how to parse) versus a MediaInfo dump.
+     * Mirrors `details.php:319-326`.
+     */
+    private function isBdInfoBlob(string $mediaInfo): bool
+    {
+        $firstLine = (string) strtok($mediaInfo, "\n");
+
+        return str_contains($firstLine, 'DISC INFO')
+            || str_contains($firstLine, 'Disc Title')
+            || str_contains($firstLine, 'Disc Label');
+    }
+
+    /**
+     * Render the "NFO" block from `torrent_extras.nfo`
+     * (legacy `details.php:350-356`). Returns `null` when the block must
+     * be hidden so the Blade short-circuits on a single `if ($nfoBlock)`
+     * check.
+     *
+     * Legacy parity rules pinned here:
+     *
+     *   - hidden when the viewer lacks the `viewnfo` permission.
+     *   - hidden when the viewer opted out via
+     *     `users.shownfo = 'no'` (legacy default: `'yes'`).
+     *   - hidden when `torrent_extras.nfo` is missing or empty
+     *     (legacy guard: `nfosz > 0`).
+     *   - decodes the IBM-437 blob through
+     *     {@see Codec::ibm437ToEntities()} — the same helper the legacy
+     *     `code_new()` proxy delegates to. The ASCII portion is run
+     *     through `htmlspecialchars()` *before* the byte-walk so embedded
+     *     HTML (e.g. `<script>...</script>`) is rendered as text instead
+     *     of being executed. The legacy `code()` does the same escape;
+     *     `code_new()` was added later for a faster byte-walk and (by
+     *     accident) dropped the escape — the Modern UI fixes that.
+     *   - the view style defaults to `torrent.nfo_view_style_default`
+     *     and falls back to {@see Torrent::NFO_VIEW_STYLE_DOS}.
+     *
+     * @return array{html:string,view:string}|null
+     */
+    private function nfoBlock(int $viewerId): ?array
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        if (! $this->viewerCan('viewnfo', $viewerId)) {
+            return null;
+        }
+
+        if ($this->viewerShowNfo($viewerId) === 'no') {
+            return null;
+        }
+
+        $extra = $this->loadExtra();
+        if ($extra === null) {
+            return null;
+        }
+
+        $nfo = (string) ($extra->nfo ?? '');
+        if ($nfo === '') {
+            return null;
+        }
+
+        $view = $this->nfoViewStyle();
+
+        // Escape ASCII HTML metacharacters before the byte-walk so the
+        // raw `<` / `>` / `&` / `"` bytes that survive the IBM-437 decode
+        // cannot break out of the `<pre>` wrapper in the Blade view.
+        // High bytes (>= 0x7F) are still turned into numeric entities
+        // by `Codec::ibm437ToEntities()`.
+        $safe = htmlspecialchars($nfo, ENT_QUOTES, 'UTF-8');
+
+        return [
+            'html' => Codec::ibm437ToEntities($safe, $view),
+            'view' => $view,
+        ];
+    }
+
+    /**
+     * Look up the viewer's `users.shownfo` enum. Defaults to `'yes'`
+     * when the column is unset / the viewer record is missing — matches
+     * the column default in `database/schema/mysql-schema.sql`.
+     */
+    private function viewerShowNfo(int $viewerId): string
+    {
+        if ($viewerId <= 0) {
+            return 'yes';
+        }
+
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('shownfo');
+
+        return $value === 'no' ? 'no' : 'yes';
+    }
+
+    /**
+     * Resolve the configured default NFO view style. Falls back to
+     * `Torrent::NFO_VIEW_STYLE_DOS` when no setting is registered —
+     * matching `nexus/Install/settings.default.php`.
+     */
+    private function nfoViewStyle(): string
+    {
+        $default = Torrent::NFO_VIEW_STYLE_DOS;
+        $value = Setting::getByName('torrent.nfo_view_style_default', $default);
+
+        return is_string($value) && $value !== '' ? $value : $default;
     }
 
     /**
