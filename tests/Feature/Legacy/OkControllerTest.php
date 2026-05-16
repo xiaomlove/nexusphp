@@ -3,7 +3,6 @@
 namespace Tests\Feature\Legacy;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Database\Seeders\TestingDataSeeder;
 use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
@@ -156,14 +155,14 @@ class OkControllerTest extends FeatureTestCase
 
     public function test_confirm_branch_uses_login_hint_and_substitutes_site_name(): void
     {
-        // Pin SITENAME so the test asserts a stable value (the
-        // controller reads it through `Setting::getSiteName()`).
-        $now = Carbon::now()->toDateTimeString();
-        NexusDB::table('settings')->updateOrInsert(
-            ['name' => 'basic.SITENAME'],
-            ['value' => 'TestTracker', 'autoload' => 'yes', 'updated_at' => $now, 'created_at' => $now],
-        );
-
+        // `basic.SITENAME` is seeded by `SettingsTableSeeder`
+        // straight from `nexus/Install/settings.default.php`,
+        // which fixes it at `NexusPHP`. `Setting::getSiteName()`
+        // uses a static-in-function cache (`Setting::get`) keyed
+        // on the process, so a per-test `updateOrInsert` would
+        // not be observable here even though the row in the DB
+        // would change. We assert against the seeded default,
+        // which is the same string the controller will see.
         $user = $this->createAuthenticatableUser();
         $response = $this->actingAs($user, 'nexus-web')->get('/ok.php?type=confirm');
 
@@ -173,7 +172,10 @@ class OkControllerTest extends FeatureTestCase
         $this->assertStringContainsString('Account successfully confirmed', $body);
         $this->assertStringContainsString('automatically logged in', $body);
         // `std_read_rules_faq` is "Before you start using %s we urge you ...".
-        $this->assertStringContainsString('Before you start using TestTracker', $body);
+        // The `%s` substitution proves the controller actually
+        // sprintf'd `Setting::getSiteName()` (default "NexusPHP")
+        // into the line, not just emitted the raw key.
+        $this->assertStringContainsString('Before you start using NexusPHP', $body);
         $this->assertStringContainsString('rules.php', $body);
         $this->assertStringContainsString('faq.php', $body);
     }
