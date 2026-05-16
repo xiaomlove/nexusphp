@@ -28,6 +28,7 @@ use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
+use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\RulesController;
@@ -96,14 +97,26 @@ Route::get('/searchsuggest.php', SearchSuggestController::class)->name('legacy.s
 Route::get('/suggest.php', SuggestController::class)->name('legacy.suggest');
 
 /*
- * Phase 2 — replaces `public/opensearch.php` (deleted in the same
- * PR). Static-ish OpenSearch description XML discovered by every
+ * Phase 2 — replaces `public/opensearch.php` (deleted in PR #210).
+ * Static-ish OpenSearch description XML discovered by every
  * `stdhead()` page through the `<link rel="search">` element in
  * `include/functions.php:2367`. Reachable as a guest (legacy script
  * had no auth check), URL stays `/opensearch.php` so browsers'
  * cached search-engine registrations keep working.
  */
 Route::get('/opensearch.php', OpensearchController::class)->name('legacy.opensearch');
+
+/*
+ * Phase 2 — replaces `public/ok.php` (deleted in the same PR).
+ * Generic post-signup / post-confirmation message page that
+ * legacy signup/confirm flows redirect users onto. Guests must be
+ * able to land here unauthenticated (e.g. directly after the
+ * confirmation email link), so the route stays outside any auth
+ * middleware. URL stays `/ok.php` so the existing redirects in
+ * `takesignup.php`, `confirm_resend.php`, and `ConfirmController`
+ * keep working without further changes.
+ */
+Route::get('/ok.php', OkController::class)->name('legacy.ok');
 
 /*
  * Phase 2 batch #8 — replaces `public/rules.php` (deleted in the
