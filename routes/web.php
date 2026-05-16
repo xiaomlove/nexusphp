@@ -35,6 +35,7 @@ use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
+use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
@@ -232,10 +233,24 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::post('/takecontact.php', TakeContactController::class)->name('legacy.takecontact');
 
     /*
+     * Phase 2 batch — replaces `public/staffmess.php` (deleted in
+     * this PR). The URL stays `/staffmess.php` so existing admin
+     * bookmarks and the `TakeStaffMessController` post-success
+     * redirect to `/staffmess.php?sent=1` keep working without a
+     * template change. The rendered `<form action="takestaffmess.php">`
+     * still posts to `/takestaffmess.php` so the existing
+     * `TakeStaffMessController` write-handler keeps receiving
+     * POSTs without a URL change. Admin-only (the controller checks
+     * `User::CLASS_ADMINISTRATOR` and `abort(403)`s on lower
+     * classes).
+     */
+    Route::get('/staffmess.php', StaffMessController::class)->name('legacy.staffmess');
+
+    /*
      * Phase 2 batch — replaces `public/takestaffmess.php` (deleted in
      * this PR). The URL stays `/takestaffmess.php` so the legacy
      * `<form action="takestaffmess.php">` rendered by
-     * `public/staffmess.php` keeps posting to the same endpoint
+     * `StaffMessController` keeps posting to the same endpoint
      * without a template change. Same CSRF carve-out as
      * `/takecontact.php` (the legacy form has no `@csrf` token).
      * Inside the controller the actual fan-out runs as a
