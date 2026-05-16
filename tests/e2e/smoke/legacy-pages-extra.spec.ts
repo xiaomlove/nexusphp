@@ -24,10 +24,17 @@ import { smokeCheckPage } from '../helpers/smoke';
  *     indirectly by `/torrents.php?bookmarks=1` which renders the user's
  *     bookmarks tab, and the invite refactor (PR #28) is covered by the
  *     existing PHPUnit Feature suite.
- *   - `/report.php` and `/polloverview.php` and `/userhistory.php?id=1`
- *     render the standard error template when no `id`/`type` matches
- *     real data; the smoke check still exercises the bootstrap + DB-init
- *     paths that the refactor wave touched.
+ *   - `/report.php` and `/userhistory.php?id=1` render the standard
+ *     error template when no `id`/`type` matches real data; the smoke
+ *     check still exercises the bootstrap + DB-init paths that the
+ *     refactor wave touched.
+ *   - `/polloverview.php` was migrated to the Laravel
+ *     `PollOverviewController` (Phase 2). The legacy `stdfoot()`
+ *     footer (and therefore the "Powered by NexusPHP" marker) is no
+ *     longer rendered for that route; the smoke check now asserts
+ *     the chrome-less envelope's `<title>Polls Overview</title>`
+ *     marker instead. Same trade-off the `DonorlistController` /
+ *     `UserBanLogController` migrations made.
  *   - `/polls.php` does not exist in this NexusPHP install (the codebase
  *     uses `/makepoll.php` + `/polloverview.php` instead), so it is not
  *     covered here.
@@ -84,9 +91,14 @@ const PAGES: LegacyPageCase[] = [
         contains: /Make poll/i,
     },
     {
-        description: 'polloverview.php (PR #33 polls refactor, error template)',
+        // Phase 2 migration: PollOverviewController renders a
+        // chrome-less envelope (no legacy `stdfoot()`); marker
+        // updated from "Powered by NexusPHP" to the controller's
+        // `<title>` so the smoke probe still asserts the new
+        // contract booted instead of returning a blank 200.
+        description: 'polloverview.php (PR #33 polls refactor; Phase 2 migration)',
         url: '/polloverview.php',
-        contains: /Powered by NexusPHP/i,
+        contains: /<title>Polls Overview<\/title>/i,
     },
     {
         description: 'fun.php (PR #34 fun page)',
