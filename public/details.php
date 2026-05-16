@@ -1,5 +1,85 @@
 <?php
 ob_start(); //Do not delete this line
+
+/*
+ * Strangler Fig flip (Phase 3.x) — the canonical torrent-detail URL is
+ * now the Livewire `App\Livewire\TorrentDetail` at `/torrent/{id}`.
+ * Read-only GETs that carry only `?id=N` are 302-bounced to the new
+ * route; anything else (the canary `?legacy=1` opt-out, the legacy
+ * view-counter `?hit=1`, the comments pagination `?cmtpage=N`, the
+ * auto-open peer-list `?dllist=1`, the post-write "you just did X"
+ * banners `?uploaded` / `?edited` / `?existed` with their optional
+ * `?returnto` companion, and every non-GET request — i.e. the inline
+ * action POST handlers like ?subtitleupload) falls through to the
+ * legacy code below.
+ *
+ * Escape hatches:
+ *
+ *   - `?legacy=1` — explicit canary opt-out, the rollback flag
+ *     documented in docs/legacy-strategy.md. Mirrors forums.php.
+ *   - `?hit=1` — first-party "open from listing" link that increments
+ *     the view counter on details.php (see public/index.php,
+ *     userhistory.php, myhr.php). The view-counter side effect is not
+ *     wired into TorrentDetail yet, so these stay on legacy.
+ *   - `?cmtpage=N` — comments pagination. The comments listing has not
+ *     been migrated to Livewire yet, so paged URLs must stay on legacy.
+ *   - `?dllist=1` — auto-open the legacy peer-list dialog. The Modern
+ *     UI peers tab is built differently, so the auto-open hint stays on
+ *     legacy until the dialog is retired.
+ *   - `?uploaded` / `?edited` / `?existed` (+ `?returnto`) — post-write
+ *     success banners shown after the legacy upload / edit flows.
+ *     Modern UI has no equivalent banner yet; legacy keeps owning them.
+ *   - non-GET requests — the inline action POSTs (subtitle upload etc.)
+ *     are still served by this file.
+ *
+ * The redirect runs BEFORE require'ing include/bittorrent.php so the
+ * fast path never pays for legacy bootstrap / dbconn() / session load.
+ * Contract is covered by tests/e2e/behavior/details-flip.spec.ts.
+ * Once every escape hatch has been retired, this block plus the rest
+ * of the file are deleted in a single follow-up `git rm` PR.
+ */
+$detailsFlipId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$detailsFlipMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$detailsFlipEscapeHatches = [
+    'legacy', 'cmtpage', 'hit', 'dllist',
+    'uploaded', 'edited', 'existed', 'returnto',
+];
+$detailsFlipHasEscapeHatch = false;
+foreach ($detailsFlipEscapeHatches as $detailsFlipKey) {
+    if (isset($_GET[$detailsFlipKey])) {
+        $detailsFlipHasEscapeHatch = true;
+        break;
+    }
+}
+$detailsFlipLocation = null;
+if ($detailsFlipMethod === 'GET' && $detailsFlipId > 0 && ! $detailsFlipHasEscapeHatch) {
+    // Drop the legacy `id=` key (consumed by the route path) and
+    // forward any remaining query params verbatim. TorrentDetail
+    // ignores unknown keys, so this is a safe no-op for canonical
+    // URLs and keeps bookmark-with-extra-params from losing data on
+    // the first hop.
+    $detailsFlipParams = $_GET;
+    unset($detailsFlipParams['id']);
+    $detailsFlipQs = http_build_query($detailsFlipParams);
+    $detailsFlipLocation = '/torrent/'.$detailsFlipId
+        .($detailsFlipQs !== '' ? '?'.$detailsFlipQs : '');
+}
+
+if ($detailsFlipLocation !== null) {
+    header('Location: '.$detailsFlipLocation, true, 302);
+    exit;
+}
+unset(
+    $detailsFlipId,
+    $detailsFlipMethod,
+    $detailsFlipEscapeHatches,
+    $detailsFlipKey,
+    $detailsFlipHasEscapeHatch,
+    $detailsFlipLocation,
+    $detailsFlipParams,
+    $detailsFlipQs,
+);
+
 require_once("../include/bittorrent.php");
 dbconn();
 require_once(get_langfile_path());

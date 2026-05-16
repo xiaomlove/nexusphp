@@ -15,8 +15,12 @@ import { smokeCheckPage } from '../helpers/smoke';
  *   - a page-specific substring (title or heading) is present
  *
  * `E2eTorrentsSeeder` seeds a deterministic torrent with `id=1`, so the
- * `/details.php?id=1` case exercises the legacy happy-path render
- * (the same query path the `mysql_*`-→-NexusDB refactor wave touched).
+ * `/details.php?id=1&legacy=1` case exercises the legacy happy-path
+ * render (the same query path the `mysql_*`-→-NexusDB refactor wave
+ * touched). The `legacy=1` escape hatch is required because the
+ * canonical URL was strangler-flipped to the Livewire `/torrent/{id}`
+ * route (see `docs/legacy-strategy.md` § "Phase 3.x: details.php flip"
+ * and `tests/e2e/behavior/details-flip.spec.ts`).
  */
 interface LegacyPageCase {
     description: string;
@@ -37,8 +41,14 @@ const PAGES: LegacyPageCase[] = [
         contains: /Browse torrents/i,
     },
     {
-        description: 'details.php (seeded torrent happy path)',
-        url: '/details.php?id=1',
+        description: 'details.php?legacy=1 (seeded torrent happy path, legacy escape hatch)',
+        // `?legacy=1` opts out of the Phase 3.x strangler flip that
+        // 302-bounces `/details.php?id=N` to `/torrent/{id}` — without
+        // it the smoke check would receive the Livewire TorrentDetail
+        // shell, which has its own dedicated spec in
+        // `tests/e2e/smoke/torrent-detail.spec.ts`. The redirect contract
+        // is covered by `tests/e2e/behavior/details-flip.spec.ts`.
+        url: '/details.php?id=1&legacy=1',
         // E2eTorrentsSeeder inserts the "E2E Test Torrent" row at id=1
         // and the standard NexusPHP chrome ("Powered by NexusPHP")
         // appears in both the happy-path and error templates.
