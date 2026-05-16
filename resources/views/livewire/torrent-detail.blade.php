@@ -8,6 +8,8 @@
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
     /** @var array<string,string> $hotMeter */
     /** @var string $descriptionHtml */
+    /** @var string $technicalInfoHtml */
+    /** @var array{html:string,view:string}|null $nfoBlock */
     /** @var int $viewerId */
     $sizeBytes = (int) $torrent->size;
     $formattedSize = \App\Livewire\TorrentBrowse::formatBytes($sizeBytes);
@@ -220,6 +222,41 @@
                  data-test-id="torrent-description">
                 {!! $descriptionHtml !!}
             </div>
+        </x-ui.card>
+    @endif
+
+    @if ($technicalInfoHtml !== '')
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Technical info
+            </h2>
+            {{-- $technicalInfoHtml is produced by the same legacy renderers the
+                 legacy details.php page calls (TechnicalInformation /
+                 BdInfoExtra::renderOnDetailsPage). Self-contained styling
+                 inside its own .nti-* / .bdinfo-* class namespace. --}}
+            <div class="overflow-x-auto text-sm text-zinc-700 dark:text-zinc-200"
+                 data-test-id="torrent-technical-info">
+                {!! $technicalInfoHtml !!}
+            </div>
+        </x-ui.card>
+    @endif
+
+    @if ($nfoBlock !== null)
+        <x-ui.card>
+            <div class="mb-2 flex items-center justify-between gap-2">
+                <h2 class="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    NFO
+                </h2>
+                <span class="text-xs text-zinc-500 dark:text-zinc-400">
+                    {{ $nfoBlock['view'] }}-vy
+                </span>
+            </div>
+            {{-- $nfoBlock['html'] is the IBM-437 → numeric-entity decoded blob
+                 produced by App\Support\Codec::ibm437ToEntities. The legacy
+                 details page wraps the same output in <pre>. --}}
+            <pre data-test-id="torrent-nfo"
+                 class="overflow-x-auto whitespace-pre rounded bg-zinc-100 p-3 text-xs leading-snug text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+                 style="font-family: 'Courier New', monospace;">{!! $nfoBlock['html'] !!}</pre>
         </x-ui.card>
     @endif
 
