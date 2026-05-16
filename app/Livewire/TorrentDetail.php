@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\File;
 use App\Models\Peer;
+use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
@@ -276,7 +277,14 @@ class TorrentDetail extends Component
             return '';
         }
 
-        if (! function_exists('get_setting') || get_setting('main.enable_technical_info') !== 'yes') {
+        // Read through `Setting::getByName()` rather than `get_setting()`
+        // — the latter caches the entire settings tree in a static var,
+        // so a runtime toggle (or a test seeding a row) is not picked up
+        // until the cache is rebuilt. `Setting::getByName()` is a tiny
+        // single-row Eloquent query and matches the read pattern used
+        // by other refactored controllers (see `AdRedirectController`).
+        $enabled = (string) Setting::getByName('main.enable_technical_info', 'yes');
+        if ($enabled !== 'yes') {
             return '';
         }
 
@@ -390,11 +398,7 @@ class TorrentDetail extends Component
     private function nfoViewStyle(): string
     {
         $default = Torrent::NFO_VIEW_STYLE_DOS;
-        if (! function_exists('get_setting')) {
-            return $default;
-        }
-
-        $value = get_setting('torrent.nfo_view_style_default', $default);
+        $value = Setting::getByName('torrent.nfo_view_style_default', $default);
 
         return is_string($value) && $value !== '' ? $value : $default;
     }

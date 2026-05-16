@@ -182,9 +182,30 @@ class TorrentDetailTechnicalInfoAndNfoTest extends FeatureTestCase
         $owner = $this->createUser();
         $viewer = $this->createUser();
 
+        // `users.shownfo` is an enum; the column default is `'yes'`,
+        // so we have to explicitly flip the row to `'no'` to exercise
+        // the opt-out branch.
         NexusDB::table('users')
             ->where('id', $viewer->id)
             ->update(['shownfo' => 'no']);
+
+        $torrentId = $this->createTorrent($owner->id);
+        $this->insertExtra($torrentId, [
+            'nfo' => "Plain ASCII NFO body\n",
+        ]);
+
+        Livewire::actingAs($viewer, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-nfo"', false);
+    }
+
+    public function test_nfo_card_is_hidden_when_viewer_lacks_permission(): void
+    {
+        $owner = $this->createUser();
+        // `CLASS_PEASANT` is below the `viewnfo` default of `'2'`
+        // (`nexus/Install/settings.default.php`) and is *not*
+        // special-cased by `user_can()`, so the helper returns false.
+        $viewer = $this->createUser(['class' => User::CLASS_PEASANT]);
 
         $torrentId = $this->createTorrent($owner->id);
         $this->insertExtra($torrentId, [
@@ -230,10 +251,25 @@ class TorrentDetailTechnicalInfoAndNfoTest extends FeatureTestCase
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $rendered);
     }
 
-    private function createUser(): User
+    /**
+     * @param  array<string,mixed>  $overrides
+     */
+    private function createUser(array $overrides = []): User
     {
+        // `viewnfo` is class-gated through the legacy `user_can()`
+        // helper, which in turn reads `Setting::get('authority')`
+        // through a process-static cache that gets populated once per
+        // test-runner process — before the per-test `DatabaseTransactions`
+        // seeds anything. To get a viewer that is reliably allowed to see
+        // the NFO block we use `CLASS_STAFF_LEADER`, which the helper
+        // special-cases as "can do anything". Tests that specifically
+        // exercise the *denied* branch override the class via the
+        // `$overrides` argument.
         return $this->createLegacyUser(
-            overrides: ['lang' => self::ENGLISH_LANGUAGE_ID],
+            overrides: array_merge([
+                'lang' => self::ENGLISH_LANGUAGE_ID,
+                'class' => User::CLASS_STAFF_LEADER,
+            ], $overrides),
         );
     }
 
