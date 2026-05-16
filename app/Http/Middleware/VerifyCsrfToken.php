@@ -70,5 +70,13 @@ class VerifyCsrfToken extends Middleware
         // no `@csrf` field). `/user-ban-log.php` and
         // `/takereseed.php` are GET-only.
         'takeconfirm.php',
+        // Phase 2 testip rewrite: `/testip.php` accepts POST without
+        // a CSRF token — the legacy `<form method=post action=testip.php>`
+        // in `public/testip.php` (deleted in this PR) had no `@csrf`
+        // field, and links from `public/usersearch.php` /
+        // ModpanelTableSeeder use `?ip=<addr>` GET. Accepting both
+        // verbs keeps existing UI flows working without a template
+        // change.
+        'testip.php',
     ];
 }
