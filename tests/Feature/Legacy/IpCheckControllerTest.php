@@ -23,12 +23,21 @@ class IpCheckControllerTest extends FeatureTestCase
 
     private function createTestUser(array $overrides = []): User
     {
-        return $this->createLegacyUser(
+        $ip = $overrides['ip'] ?? null;
+        unset($overrides['ip']);
+
+        $user = $this->createLegacyUser(
             overrides: array_merge(
                 ['lang' => self::ENGLISH_LANGUAGE_ID],
                 $overrides,
             ),
         );
+
+        if ($ip !== null) {
+            NexusDB::table('users')->where('id', $user->id)->update(['ip' => $ip]);
+        }
+
+        return $user;
     }
 
     public function test_guest_request_redirects_to_login(): void
