@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Models\Comment;
+use App\Models\CommentEdit;
 use App\Models\DownloadSpeed;
 use App\Models\File;
 use App\Models\Isp;
@@ -91,6 +92,14 @@ class TorrentDetail extends Component
      */
     public ?TorrentOperationLog $banReason = null;
 
+    public string $newCommentBody = '';
+
+    public ?int $editingCommentId = null;
+
+    public string $editingBody = '';
+
+    private const COMMENT_FLOOD_SECONDS = 10;
+
     public function mount(int $id): mixed
     {
         if (request()->query('legacy') === '1') {
@@ -153,6 +162,9 @@ class TorrentDetail extends Component
             'peerGroups' => $this->loadPeerGroups($viewerId),
             'snatches' => $this->loadSnatches($viewerId),
             'comments' => $this->loadComments($viewerId),
+            'canPostComment' => $this->canPostComment($viewerId),
+            'commentCooldownSeconds' => $this->commentCooldownSeconds($viewerId),
+            'viewerCanCommanage' => $this->viewerCan('commanage', $viewerId),
             'hotMeter' => $this->hotMeterRows(),
             'descriptionHtml' => $this->descriptionHtml($viewerId),
             'technicalInfoHtml' => $this->technicalInfoHtml(),
@@ -967,6 +979,236 @@ class TorrentDetail extends Component
             'seeders' => $peers->where('seeder', Peer::SEEDER_YES)->values(),
             'leechers' => $peers->where('seeder', Peer::SEEDER_NO)->values(),
         ];
+    }
+
+    public function postComment(): void
+    {
+        if ($this->torrent === null) {
+            return;
+        }
+
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if ($viewerId <= 0) {
+            return;
+        }
+
+        $viewer = User::query()->select(['id', 'parked', 'last_comment'])->find($viewerId);
+        if ($viewer === null || $viewer->parked === 'yes') {
+            $this->addError('newCommentBody', __('comment.std_your_account_parked', [], 'en'));
+
+            return;
+        }
+
+        $remaining = $this->commentCooldownSeconds($viewerId);
+        if ($remaining > 0) {
+            $this->addError('newCommentBody', __('comment.std_comment_flooding_denied').$remaining);
+
+            return;
+        }
+
+        $body = trim($this->newCommentBody);
+        if ($body === '') {
+            $this->addError('newCommentBody', __('comment.std_comment_body_empty'));
+
+            return;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+        $now = Carbon::now()->toDateTimeString();
+
+        $newId = (int) NexusDB::table('comments')->insertGetId([
+            'user' => $viewerId,
+            'torrent' => $torrentId,
+            'added' => $now,
+            'text' => $body,
+            'ori_text' => $body,
+            'editedby' => 0,
+            'editdate' => null,
+            'offer' => 0,
+            'request' => 0,
+            'anonymous' => 'no',
+        ]);
+
+        NexusDB::table('torrents')
+            ->where('id', $torrentId)
+            ->update(['comments' => NexusDB::raw('comments + 1')]);
+
+        NexusDB::table('users')
+            ->where('id', $viewerId)
+            ->update(['last_comment' => $now]);
+
+        $tweak = (string) Setting::getByName('tweak.bonus', 'enable');
+        if ($tweak === 'enable' || $tweak === 'disablesave') {
+            $bonus = (float) Setting::getByName('bonus.addcomment', 0);
+            if ($bonus > 0.0) {
+                NexusDB::table('users')
+                    ->where('id', $viewerId)
+                    ->update(['seedbonus' => NexusDB::raw('seedbonus + '.$bonus)]);
+            }
+        }
+
+        NexusDB::cache_del('torrent_'.$torrentId.'_last_comment_content');
+
+        $this->newCommentBody = '';
+        $this->dispatch('comment-posted', commentId: $newId);
+    }
+
+    public function startEditComment(int $commentId): void
+    {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        $comment = $this->fetchOwnTorrentComment($commentId);
+        if ($comment === null || ! $this->viewerCanEditComment($comment, $viewerId)) {
+            return;
+        }
+
+        $this->editingCommentId = $commentId;
+        $this->editingBody = (string) $comment->text;
+    }
+
+    public function cancelEditComment(): void
+    {
+        $this->editingCommentId = null;
+        $this->editingBody = '';
+    }
+
+    public function updateComment(int $commentId): void
+    {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        $comment = $this->fetchOwnTorrentComment($commentId);
+        if ($comment === null || ! $this->viewerCanEditComment($comment, $viewerId)) {
+            return;
+        }
+
+        $body = trim($this->editingBody);
+        if ($body === '') {
+            $this->addError('editingBody', __('comment.std_comment_body_empty'));
+
+            return;
+        }
+
+        $previousBody = (string) $comment->text;
+        $now = Carbon::now()->toDateTimeString();
+
+        if ($previousBody !== $body) {
+            CommentEdit::query()->insert([
+                'commentid' => $commentId,
+                'editor_userid' => $viewerId,
+                'body_before' => $previousBody,
+                'edited_at' => $now,
+            ]);
+        }
+
+        NexusDB::table('comments')
+            ->where('id', $commentId)
+            ->update([
+                'text' => $body,
+                'editdate' => $now,
+                'editedby' => $viewerId,
+            ]);
+
+        NexusDB::cache_del('torrent_'.(int) $this->torrent->id.'_last_comment_content');
+
+        $this->cancelEditComment();
+    }
+
+    public function deleteComment(int $commentId): void
+    {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if (! $this->viewerCan('commanage', $viewerId)) {
+            return;
+        }
+
+        $comment = $this->fetchOwnTorrentComment($commentId);
+        if ($comment === null) {
+            return;
+        }
+
+        $authorId = (int) $comment->user;
+        $torrentId = (int) $this->torrent->id;
+
+        $deleted = NexusDB::table('comments')->where('id', $commentId)->delete();
+        if ($deleted <= 0) {
+            return;
+        }
+
+        NexusDB::table('torrents')
+            ->where('id', $torrentId)
+            ->update(['comments' => NexusDB::raw('GREATEST(0, comments - 1)')]);
+
+        $tweak = (string) Setting::getByName('tweak.bonus', 'enable');
+        if ($tweak === 'enable' || $tweak === 'disablesave') {
+            $bonus = (float) Setting::getByName('bonus.addcomment', 0);
+            if ($bonus > 0.0 && $authorId > 0) {
+                NexusDB::table('users')
+                    ->where('id', $authorId)
+                    ->update(['seedbonus' => NexusDB::raw('seedbonus - '.$bonus)]);
+            }
+        }
+
+        NexusDB::cache_del('torrent_'.$torrentId.'_last_comment_content');
+
+        if ($this->editingCommentId === $commentId) {
+            $this->cancelEditComment();
+        }
+    }
+
+    private function fetchOwnTorrentComment(int $commentId): ?Comment
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        /** @var Comment|null $row */
+        $row = Comment::query()
+            ->where('id', $commentId)
+            ->where('torrent', (int) $this->torrent->id)
+            ->first();
+
+        return $row;
+    }
+
+    private function viewerCanEditComment(Comment $comment, int $viewerId): bool
+    {
+        if ($viewerId <= 0) {
+            return false;
+        }
+
+        if ((int) $comment->user === $viewerId) {
+            return true;
+        }
+
+        return $this->viewerCan('commanage', $viewerId);
+    }
+
+    private function canPostComment(int $viewerId): bool
+    {
+        if ($viewerId <= 0) {
+            return false;
+        }
+
+        $viewer = User::query()->select(['parked'])->find($viewerId);
+
+        return $viewer !== null && $viewer->parked !== 'yes';
+    }
+
+    private function commentCooldownSeconds(int $viewerId): int
+    {
+        if ($viewerId <= 0) {
+            return 0;
+        }
+
+        if ($this->viewerCan('commanage', $viewerId)) {
+            return 0;
+        }
+
+        $viewer = User::query()->select(['last_comment'])->find($viewerId);
+        if ($viewer === null || $viewer->last_comment === null) {
+            return 0;
+        }
+
+        $elapsed = Carbon::now()->getTimestamp() - $viewer->last_comment->getTimestamp();
+
+        return max(0, self::COMMENT_FLOOD_SECONDS - $elapsed);
     }
 
     /**

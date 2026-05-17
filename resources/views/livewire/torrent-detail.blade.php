@@ -11,6 +11,9 @@
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
     /** @var \Illuminate\Support\Collection<int,\App\Models\Snatch> $snatches */
     /** @var \Illuminate\Support\Collection<int,\App\Models\Comment> $comments */
+    /** @var bool $canPostComment */
+    /** @var int $commentCooldownSeconds */
+    /** @var bool $viewerCanCommanage */
     /** @var array<string,string> $hotMeter */
     /** @var string $descriptionHtml */
     /** @var string $technicalInfoHtml */
@@ -610,6 +613,11 @@
                         $addedTs = $comment->added ? $comment->added->timestamp : null;
                         $editedTs = $comment->editdate ? $comment->editdate->timestamp : null;
                     @endphp
+                    @php
+                        $canEdit = $isAuthed && ($isOwnComment || $viewerCanCommanage);
+                        $canDelete = $viewerCanCommanage;
+                        $isEditing = $editingCommentId === (int) $comment->id;
+                    @endphp
                     <li data-test-id="comment-row"
                         data-comment-id="{{ $comment->id }}"
                         data-user-id="{{ (int) $comment->user }}"
@@ -629,17 +637,108 @@
                                 {{ $addedTs !== null ? date('Y-m-d H:i', $addedTs) : '—' }}
                             </p>
                         </div>
-                        <div class="mt-2 break-words text-sm text-zinc-800 dark:text-zinc-100" data-test-id="comment-body">
-                            {!! \App\Support\BbcodeRenderer::toHtml((string) $comment->text) !!}
-                        </div>
-                        @if ($editedTs !== null)
-                            <p class="mt-2 text-xs italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-edited">
-                                Edited {{ date('Y-m-d H:i', $editedTs) }}
-                            </p>
+                        @if ($isEditing)
+                            <div class="mt-2" data-test-id="comment-edit-form" data-comment-id="{{ $comment->id }}">
+                                <textarea
+                                    wire:model="editingBody"
+                                    rows="3"
+                                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                                    data-test-id="comment-edit-body"></textarea>
+                                @error('editingBody')
+                                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400" data-test-id="comment-edit-error">{{ $message }}</p>
+                                @enderror
+                                <div class="mt-2 flex flex-wrap items-center gap-2">
+                                    <x-ui.button
+                                        wire:click="updateComment({{ (int) $comment->id }})"
+                                        variant="primary"
+                                        size="sm"
+                                        data-test-id="comment-edit-save">
+                                        Save
+                                    </x-ui.button>
+                                    <x-ui.button
+                                        wire:click="cancelEditComment"
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        data-test-id="comment-edit-cancel">
+                                        Cancel
+                                    </x-ui.button>
+                                </div>
+                            </div>
+                        @else
+                            <div class="mt-2 break-words text-sm text-zinc-800 dark:text-zinc-100" data-test-id="comment-body">
+                                {!! \App\Support\BbcodeRenderer::toHtml((string) $comment->text) !!}
+                            </div>
+                            @if ($editedTs !== null)
+                                <p class="mt-2 text-xs italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-edited">
+                                    Edited {{ date('Y-m-d H:i', $editedTs) }}
+                                </p>
+                            @endif
+                            @if ($canEdit || $canDelete)
+                                <div class="mt-2 flex flex-wrap items-center gap-2" data-test-id="comment-actions">
+                                    @if ($canEdit)
+                                        <button
+                                            type="button"
+                                            wire:click="startEditComment({{ (int) $comment->id }})"
+                                            class="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
+                                            data-test-id="comment-edit-btn">
+                                            Edit
+                                        </button>
+                                    @endif
+                                    @if ($canDelete)
+                                        <button
+                                            type="button"
+                                            wire:click="deleteComment({{ (int) $comment->id }})"
+                                            wire:confirm="Delete this comment?"
+                                            class="text-xs font-medium text-rose-600 hover:underline dark:text-rose-400"
+                                            data-test-id="comment-delete-btn">
+                                            Delete
+                                        </button>
+                                    @endif
+                                </div>
+                            @endif
                         @endif
                     </li>
                 @endforeach
             </ul>
+        @endif
+
+        @if ($isAuthed)
+            <div class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-800" data-test-id="comment-reply">
+                @if (! $canPostComment)
+                    <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-reply-disabled">
+                        Your account is parked. Comments are disabled.
+                    </p>
+                @else
+                    <label for="new-comment-body" class="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                        Reply
+                    </label>
+                    <textarea
+                        id="new-comment-body"
+                        wire:model="newCommentBody"
+                        rows="3"
+                        placeholder="Write a comment…"
+                        class="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                        data-test-id="comment-reply-body"></textarea>
+                    @error('newCommentBody')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400" data-test-id="comment-reply-error">{{ $message }}</p>
+                    @enderror
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <x-ui.button
+                            wire:click="postComment"
+                            variant="primary"
+                            size="sm"
+                            data-test-id="comment-reply-submit">
+                            Post comment
+                        </x-ui.button>
+                        @if ($commentCooldownSeconds > 0)
+                            <span class="text-xs italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-reply-cooldown">
+                                Wait {{ $commentCooldownSeconds }}s before posting again.
+                            </span>
+                        @endif
+                    </div>
+                @endif
+            </div>
         @endif
     </x-ui.card>
 
