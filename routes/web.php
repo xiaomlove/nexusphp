@@ -34,6 +34,7 @@ use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
+use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SmiliesController;
@@ -531,6 +532,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.docleanup');
 
     Route::get('/unco.php', UncoController::class)->name('legacy.unco');
+
+    Route::match(['get', 'post'], '/reset.php', ResetController::class)
+        ->name('legacy.reset');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
