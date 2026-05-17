@@ -12,12 +12,12 @@ import { loginAs } from '../helpers/api-login';
  *   - `?legacy=1` — explicit canary opt-out
  *   - `?cmtpage=N` — comments pagination (no Livewire equivalent yet)
  *   - `?dllist=1`  — auto-open legacy peer-list dialog
- *   - `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) —
- *                   post-write success banners after upload / edit
  *   - non-GET methods — inline action POSTs (?subtitleupload, …)
  *
- * These tests verify the redirect contract and that the legacy
- * fall-through paths still return 2xx.
+ * `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) now
+ * flip onto Modern UI as well — TorrentDetail renders the equivalent
+ * banner inline. These tests verify the redirect contract and that the
+ * legacy fall-through paths still return 2xx.
  */
 test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', () => {
     test('/details.php?id=1 → /torrent/1', async ({ context, page }) => {
@@ -104,7 +104,7 @@ test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', ()
         expect(response.status()).toBe(200);
     });
 
-    test('/details.php?id=1&uploaded=1 stays on legacy (post-write banner hatch)', async ({
+    test('/details.php?id=1&uploaded=1 flips and Modern UI renders the banner', async ({
         context,
         page,
     }) => {
@@ -113,26 +113,41 @@ test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', ()
         const response = await page.request.get('/details.php?id=1&uploaded=1', {
             maxRedirects: 0,
         });
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toBe('/torrent/1?uploaded=1');
+
+        await page.goto(location);
+        const banner = page.locator('[data-test-id="post-write-banner"]');
+        await expect(banner).toBeVisible();
+        await expect(banner).toHaveAttribute('data-banner-type', 'uploaded');
     });
 
-    test('/details.php?id=1&edited=1&returnto=/index.php stays on legacy', async ({
+    test('/details.php?id=1&edited=1&returnto=/index.php flips and renders the go-back link', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
-        // ?edited=1 is paired with ?returnto=URL on the legacy
-        // "after edit" banner — both must stay on legacy together so
-        // the "go back" link still renders.
         const response = await page.request.get(
             '/details.php?id=1&edited=1&returnto=%2Findex.php',
             { maxRedirects: 0 },
         );
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toContain('/torrent/1?');
+        expect(location).toContain('edited=1');
+        expect(location).toContain('returnto=%2Findex.php');
+
+        await page.goto(location);
+        const banner = page.locator('[data-test-id="post-write-banner"]');
+        await expect(banner).toBeVisible();
+        await expect(banner).toHaveAttribute('data-banner-type', 'edited');
+        const returntoLink = page.locator('[data-test-id="post-write-returnto"]');
+        await expect(returntoLink).toHaveAttribute('href', '/index.php');
     });
 
-    test('/details.php?id=1&existed=1 stays on legacy (dupe-upload banner hatch)', async ({
+    test('/details.php?id=1&existed=1 flips and renders the dupe banner', async ({
         context,
         page,
     }) => {
@@ -141,7 +156,14 @@ test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', ()
         const response = await page.request.get('/details.php?id=1&existed=1', {
             maxRedirects: 0,
         });
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toBe('/torrent/1?existed=1');
+
+        await page.goto(location);
+        const banner = page.locator('[data-test-id="post-write-banner"]');
+        await expect(banner).toBeVisible();
+        await expect(banner).toHaveAttribute('data-banner-type', 'existed');
     });
 
     test('POST /details.php?id=1 stays on legacy (inline action POSTs)', async ({

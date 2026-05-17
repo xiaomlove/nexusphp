@@ -2,6 +2,8 @@
     /** @var \App\Models\Torrent $torrent */
     /** @var \App\Models\User|null $owner */
     /** @var \App\Models\TorrentOperationLog|null $banReason */
+    /** @var string|null $postWriteBanner */
+    /** @var string|null $returnto */
     /** @var array{0:string,1:string}|null $promotionBadge */
     /** @var string|null $promotionSubtext */
     /** @var string $tagsHtml */
@@ -61,6 +63,36 @@
                 {{ nexus_trans('torrent.approval.deny_comment_show', ['reason' => (string) ($banReason->comment ?? '')]) }}
             </p>
         </div>
+    @endif
+
+    @if ($postWriteBanner !== null)
+        @php
+            $bannerVariant = $postWriteBanner === 'existed' ? 'danger' : 'success';
+            $bannerTitle = match ($postWriteBanner) {
+                'uploaded' => 'Successfully uploaded.',
+                'edited' => 'Successfully edited.',
+                'existed' => 'This torrent has already been uploaded.',
+            };
+        @endphp
+        <x-ui.alert :variant="$bannerVariant"
+                    :title="$bannerTitle"
+                    data-test-id="post-write-banner"
+                    data-banner-type="{{ $postWriteBanner }}">
+            @if ($postWriteBanner === 'uploaded')
+                <p>
+                    Remember to <strong>re-download</strong> the torrent file from the link above before seeding.
+                </p>
+            @endif
+            @if ($returnto !== null && $postWriteBanner !== 'uploaded')
+                <p>
+                    <a href="{{ $returnto }}"
+                       class="font-medium underline"
+                       data-test-id="post-write-returnto">
+                        Go back to where you came from
+                    </a>
+                </p>
+            @endif
+        </x-ui.alert>
     @endif
 
     <x-ui.page-header :title="$torrent->name">

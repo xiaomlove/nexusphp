@@ -102,7 +102,13 @@ class TorrentDetail extends Component
 
     public ?string $claimFlash = null;
 
+    public ?string $postWriteBanner = null;
+
+    public ?string $returnto = null;
+
     private const COMMENT_FLOOD_SECONDS = 10;
+
+    private const POST_WRITE_BANNERS = ['uploaded', 'edited', 'existed'];
 
     public function mount(int $id): mixed
     {
@@ -149,6 +155,17 @@ class TorrentDetail extends Component
             Torrent::where('id', $id)->increment('views');
         }
 
+        foreach (self::POST_WRITE_BANNERS as $bannerKey) {
+            if ((string) request()->query($bannerKey, '') !== '') {
+                $this->postWriteBanner = $bannerKey;
+                break;
+            }
+        }
+        $returnto = (string) request()->query('returnto', '');
+        if ($returnto !== '') {
+            $this->returnto = $returnto;
+        }
+
         return null;
     }
 
@@ -161,6 +178,8 @@ class TorrentDetail extends Component
             'torrent' => $this->torrent,
             'owner' => $this->owner,
             'banReason' => $this->banReason,
+            'postWriteBanner' => $this->postWriteBanner,
+            'returnto' => $this->returnto,
             'promotionBadge' => $this->promotionBadge(),
             'promotionSubtext' => $this->promotionSubtext(),
             'tagsHtml' => $this->tagsHtml(),
@@ -222,11 +241,15 @@ class TorrentDetail extends Component
 
         $canManage = $this->viewerCan('torrentmanage', $viewerId);
         if ($isOwner || $canManage) {
+            $editUrl = '/edit.php?id='.$torrentId;
+            if ($this->returnto !== null) {
+                $editUrl .= '&returnto='.rawurlencode($this->returnto);
+            }
             $items[] = [
                 'id' => 'edit',
                 'label' => $canManage ? 'Edit / delete' : 'Edit',
                 'title' => 'Click to edit or delete this torrent',
-                'url' => '/edit.php?id='.$torrentId,
+                'url' => $editUrl,
                 'variant' => 'secondary',
             ];
         }
