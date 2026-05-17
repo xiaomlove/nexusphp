@@ -165,4 +165,26 @@ final class Validators
 
         return true;
     }
+
+    /**
+     * Validate an upload filename: reject control chars (`\0`..`\x1f`),
+     * Windows path separators (`\`, `/`), and characters illegal on
+     * NTFS (`:`, `?`, `*`, `#`, `<`, `>`, `|`) plus `\xff`. Mirrors
+     * the legacy `validfilename()` exactly — used by the upload
+     * pipeline before persisting a torrent's display name.
+     *
+     * Empty string → false (legacy `preg_match` on an unanchored
+     * blocklist returns `0` for empty input because the regex
+     * requires at least one matching byte). This differs from the
+     * other "valid name" helpers here (`isFileName` / `isClassName`)
+     * which accept empty.
+     *
+     * Note: this is a blocklist, not an allowlist — multibyte UTF-8
+     * filenames are accepted (a legacy upload feature). Use
+     * `isFileName()` instead when you need ASCII-only validation.
+     */
+    public static function isUploadFilename(string $name): bool
+    {
+        return preg_match('/^[^\0-\x1f:\\\\\/?*\xff#<>|]+$/si', $name) === 1;
+    }
 }
