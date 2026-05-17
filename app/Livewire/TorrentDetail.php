@@ -152,9 +152,92 @@ class TorrentDetail extends Component
             'hasThanked' => $thanksList['hasThanked'],
             'thanksRecent' => $thanksList['recent'],
             'thanksTotal' => $thanksList['total'],
+            'actionRow' => $this->actionRowItems($viewerId),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
+    }
+
+    /**
+     * Mirrors the visibility rules of `public/details.php:253-295`.
+     * Owner auto-promotion of `downloadpos` follows lines 204-205 of
+     * the same file. Approval (Layer.js iframe) and claim (separate
+     * AJAX block) are out of scope and stay on legacy behind
+     * `?legacy=1`.
+     *
+     * @return list<array{id:string,label:string,title:string,url:string,variant:string}>
+     */
+    private function actionRowItems(int $viewerId): array
+    {
+        if ($this->torrent === null || $viewerId <= 0) {
+            return [];
+        }
+
+        $torrent = $this->torrent;
+        $torrentId = (int) $torrent->id;
+        $isOwner = $viewerId === (int) $torrent->owner;
+        $items = [];
+
+        if ($isOwner || $this->viewerDownloadpos($viewerId) !== 'no') {
+            $items[] = [
+                'id' => 'download',
+                'label' => 'Download .torrent',
+                'title' => 'Download this torrent',
+                'url' => '/download.php?id='.$torrentId,
+                'variant' => 'primary',
+            ];
+        }
+
+        $canManage = $this->viewerCan('torrentmanage', $viewerId);
+        if ($isOwner || $canManage) {
+            $items[] = [
+                'id' => 'edit',
+                'label' => $canManage ? 'Edit / delete' : 'Edit',
+                'title' => 'Click to edit or delete this torrent',
+                'url' => '/edit.php?id='.$torrentId,
+                'variant' => 'secondary',
+            ];
+        }
+
+        if ($this->viewerCan('askreseed', $viewerId) && (int) $torrent->seeders === 0) {
+            $items[] = [
+                'id' => 'reseed',
+                'label' => 'Ask for a reseed',
+                'title' => 'Ask snatched users for reseeding when there\'s no seeder',
+                'url' => '/takereseed.php?reseedid='.$torrentId,
+                'variant' => 'secondary',
+            ];
+        }
+
+        $items[] = [
+            'id' => 'report',
+            'label' => 'Report torrent',
+            'title' => 'Report torrent for violating rules',
+            'url' => '/report.php?torrent='.$torrentId,
+            'variant' => 'danger',
+        ];
+
+        return $items;
+    }
+
+    /**
+     * Look up the viewer's `users.downloadpos` enum, returning the raw
+     * string so the caller can apply the legacy semantics (`!= 'no'`
+     * means "may download"). The column default is `'yes'` per the
+     * schema, so a missing column / missing row defaults open — never
+     * accidentally narrows download access.
+     */
+    private function viewerDownloadpos(int $viewerId): string
+    {
+        if ($viewerId <= 0) {
+            return 'yes';
+        }
+
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('downloadpos');
+
+        return $value === 'no' ? 'no' : 'yes';
     }
 
     /**

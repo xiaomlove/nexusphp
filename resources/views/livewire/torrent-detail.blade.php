@@ -93,6 +93,23 @@
         <x-ui.stat label="Snatched" :value="number_format((int) $torrent->times_completed)" />
     </div>
 
+    @if ($isAuthed && count($actionRow) > 0)
+        <x-ui.card>
+            <div class="flex flex-wrap items-center gap-2"
+                 data-test-id="torrent-action-row">
+                @foreach ($actionRow as $action)
+                    <x-ui.button :href="$action['url']"
+                                 :variant="$action['variant']"
+                                 :title="$action['title']"
+                                 data-test-id="{{ $action['id'] === 'download' ? 'download-btn' : 'action-' . $action['id'] }}"
+                                 data-action="{{ $action['id'] }}">
+                        {{ $action['label'] }}
+                    </x-ui.button>
+                @endforeach
+            </div>
+        </x-ui.card>
+    @endif
+
     @if ($isAuthed)
         <x-ui.card>
             <div class="flex flex-wrap items-center gap-3"
@@ -440,9 +457,6 @@
     </x-ui.card>
 
     <div class="flex flex-wrap items-center gap-2">
-        <x-ui.button href="/download.php?id={{ $torrent->id }}" variant="primary" data-test-id="download-btn">
-            Download .torrent
-        </x-ui.button>
         <x-ui.button href="/browse" variant="secondary">
             ← Back to browse
         </x-ui.button>
