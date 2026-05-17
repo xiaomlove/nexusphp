@@ -3,12 +3,15 @@ import { loginAs } from '../helpers/api-login';
 
 /**
  * Strangler Fig flip (Phase 3.3 / Modern UI plan A2) — `/torrents.php`
- * now 302→`/browse` by default, with three escape hatches that keep the
+ * now 302→`/browse` by default, with two escape hatches that keep the
  * legacy page reachable:
  *
  *   - `?legacy=1` — explicit opt-out
  *   - `?ajax=1`   — search-as-you-type fragment endpoint (PR #59)
- *   - `?bookmarks=1` — bookmark-list tab (PR #25)
+ *
+ * `?bookmarks=1` now flips to `/browse?inclbookmarked=only` (the
+ * Livewire `TorrentBrowse` already exposes `BOOKMARK_ONLY` via that
+ * param).
  *
  * These tests verify the redirect contract, param translation, and
  * escape-hatch paths.
@@ -67,10 +70,36 @@ test.describe('@behavior Strangler Fig flip: /torrents.php → /browse', () => {
         expect(response.status()).toBe(200);
     });
 
-    test('/torrents.php?bookmarks=1 stays on legacy (bookmark tab)', async ({ context, page }) => {
+    test('/torrents.php?bookmarks=1 → /browse?inclbookmarked=only', async ({
+        context,
+        page,
+    }) => {
         await loginAs(context, 'admin');
 
-        const response = await page.request.get('/torrents.php?bookmarks=1');
-        expect(response.status()).toBe(200);
+        const response = await page.request.get('/torrents.php?bookmarks=1', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toContain('/browse?');
+        expect(location).toContain('inclbookmarked=only');
+        expect(location).not.toContain('bookmarks=');
+    });
+
+    test('/torrents.php?bookmarks=1&search=foo preserves other params', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get(
+            '/torrents.php?bookmarks=1&search=foo',
+            { maxRedirects: 0 },
+        );
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toContain('inclbookmarked=only');
+        expect(location).toContain('search=foo');
+        expect(location).not.toContain('bookmarks=');
     });
 });

@@ -262,6 +262,43 @@ Contract is covered by `tests/e2e/behavior/forums-flip.spec.ts`.
 After every escape hatch has been retired the file goes to a single
 `require '/forum';` shim and then to `git rm`.
 
+#### Phase 3.x: torrents.php flip
+
+The Livewire `App\Livewire\TorrentBrowse` was merged in the Modern UI
+A2 series of PRs. `public/torrents.php` (1 494 LOC) flipped its
+default to a 302 redirect to `/browse` from the start, but kept a
+small number of escape hatches reachable verbatim. Those escape
+hatches are tracked here so the file can eventually go to a single
+`require '/browse';` shim and then to `git rm`.
+
+Strangler flip applied at the head of `public/torrents.php`:
+
+| Legacy URL | Flipped to | Livewire component |
+|---|---|---|
+| `/torrents.php` | `/browse` | `TorrentBrowse` |
+| `/torrents.php?cat=N` | `/browse?category=N` | `TorrentBrowse` |
+| `/torrents.php?incldead=N` | `/browse?incldead=dead\|all` (0 → drop) | `TorrentBrowse` |
+| `/torrents.php?spstate=N` | `/browse?spstate=N` (0 → drop) | `TorrentBrowse` |
+| `/torrents.php?bookmarks=1` | `/browse?inclbookmarked=only` | `TorrentBrowse` (`BOOKMARK_ONLY` mode) |
+
+All other query params (`search`, `sort`, `tag_id`, `mode`, etc.)
+are forwarded verbatim; `TorrentBrowse` hydrates state from `#[Url]`
+attributes and ignores keys it does not know.
+
+Escape hatches that stay on legacy:
+
+- `?legacy=1` — explicit canary opt-out, the rollback flag.
+- `?ajax=1` — the search-as-you-type fragment endpoint (PR #59).
+  The legacy page emits a tiny inline JS handler that builds URLs
+  as `?ajax=1&search=…` and `innerHTML`s the result fragment into
+  `#torrents-results`. The endpoint returns a results FRAGMENT (no
+  `<html>`/`<head>` wrapper). Redirecting would break the swap, so
+  this stays until the inline JS is removed (which only happens
+  when the legacy page itself is retired — modern UI uses Livewire
+  live filters and never builds `?ajax=1` URLs).
+
+Contract is covered by `tests/e2e/behavior/torrents-flip.spec.ts`.
+
 #### Phase 3.x: details.php flip
 
 The Livewire `App\Livewire\TorrentDetail` was merged in the Modern UI

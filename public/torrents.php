@@ -7,7 +7,7 @@
  * edits (`TorrentBrowse` hydrates `search`, `category`, `sort`,
  * `spstate`, `incldead`, `tag_id` etc. directly from #[Url] params).
  *
- * Three escape hatches keep the legacy page reachable:
+ * Two escape hatches keep the legacy page reachable:
  *
  *   - `?legacy=1` — explicit opt-out, mirrors `/browse?legacy=1`
  *     which already bounces back here. This is the rollback canary
@@ -16,14 +16,18 @@
  *     The inline live-search JS at the bottom of this file builds
  *     URLs as `?ajax=1&search=…` and `innerHTML='…'`s the result
  *     into `#torrents-results`; redirecting would break that swap.
- *   - `?bookmarks=1` — the bookmark-list tab (PR #25). The new
- *     /browse component exposes the equivalent via
- *     `?bookmarked=only` but the legacy URL contract is widely
- *     linked from `usercp.php` and is kept verbatim until the next
- *     migration step rewires those links.
+ *
+ * `?bookmarks=1` now flips to `/browse?inclbookmarked=only` — the
+ * Livewire `TorrentBrowse` already hydrates a `BOOKMARK_ONLY` mode
+ * from that param.
  */
-if (!isset($_GET['legacy']) && !isset($_GET['ajax']) && !isset($_GET['bookmarks'])) {
+if (!isset($_GET['legacy']) && !isset($_GET['ajax'])) {
     $params = $_GET;
+
+    if (isset($params['bookmarks']) && (string) $params['bookmarks'] === '1') {
+        unset($params['bookmarks']);
+        $params['inclbookmarked'] = 'only';
+    }
 
     // Legacy `cat=N` → TorrentBrowse `category=N`.
     if (isset($params['cat'])) {
