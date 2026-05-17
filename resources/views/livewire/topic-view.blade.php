@@ -62,6 +62,14 @@
                     wire:click="$toggle('showMoveDialog')"
                     class="rounded border border-amber-300 bg-white px-2 py-1 text-xs text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/60"
                 >Move…</button>
+
+                <button
+                    type="button"
+                    wire:click="deleteTopic"
+                    wire:confirm="Delete this entire topic and every reply in it? This cannot be undone."
+                    class="rounded border border-rose-300 bg-white px-2 py-1 text-xs text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/60"
+                    title="Delete this topic and every reply"
+                >Delete topic</button>
             </div>
 
             @if ($showMoveDialog)

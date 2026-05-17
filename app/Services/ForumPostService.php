@@ -41,9 +41,6 @@ use Illuminate\Support\Facades\Log;
  *     ForumIndex / ForumView / TopicView).
  *
  * What this service does NOT do:
- *   - Topic-level deletion (legacy ?action=deletetopic still owns full
- *     topic teardown, including readposts / subscriptions cleanup).
- *   - Topic moderation actions (sticky, lock, hlcolor, move).
  *   - Quote auto-prefill (the Livewire reply form handles prefill on
  *     the client side).
  */
@@ -357,8 +354,7 @@ final class ForumPostService
     /**
      * Delete a post. Only forum moderators or users with postmanage may
      * call this; the first post of a topic cannot be deleted via this
-     * method (legacy /forums.php?action=deletetopic still owns full-topic
-     * removal).
+     * method (use {@see deleteTopic()} for full-topic removal instead).
      *
      * @return array{topic:Topic,forum:Forum,prevPostId:int|null}
      *
@@ -547,6 +543,46 @@ final class ForumPostService
         $this->bustForumLastReplied((int) $newForum->id);
 
         return $topic->fresh() ?? $topic;
+    }
+
+    /**
+     * Delete a topic and every post / readposts row belonging to it.
+     * Mirrors legacy /forums.php?action=deletetopic: decrements
+     * `forums.topiccount` and `forums.postcount`, busts the
+     * forum-level caches, and revokes the original author's
+     * starttopic bonus (best-effort, post-transaction). Requires
+     * forum moderator or postmanage.
+     *
+     * @return array{forumId:int,authorId:int,postCount:int}
+     *
+     * @throws ForumReplyException
+     */
+    public function deleteTopic(int $topicId, int $editorId): array
+    {
+        [$topic, $forum] = $this->ensureTopicMod($topicId, $editorId);
+        $authorId = (int) $topic->userid;
+        $postCount = (int) Post::query()->where('topicid', $topic->id)->count();
+
+        DB::transaction(function () use ($topic, $forum, $postCount) {
+            Topic::query()->where('id', $topic->id)->delete();
+            Post::query()->where('topicid', $topic->id)->delete();
+            DB::table('readposts')->where('topicid', $topic->id)->delete();
+            Forum::query()->where('id', $forum->id)->update([
+                'topiccount' => DB::raw('GREATEST(topiccount - 1, 0)'),
+                'postcount' => DB::raw('GREATEST(postcount - '.$postCount.', 0)'),
+            ]);
+        });
+
+        $this->bustCaches((int) $forum->id, (int) $topic->id, $authorId);
+        if ($authorId > 0) {
+            $this->revokeBonus($authorId, 'starttopic');
+        }
+
+        return [
+            'forumId' => (int) $forum->id,
+            'authorId' => $authorId,
+            'postCount' => $postCount,
+        ];
     }
 
     /**
@@ -757,7 +793,7 @@ final class ForumPostService
         return (bool) user_can($permission, false, (int) $user->id);
     }
 
-    private function revokeBonus(int $userId): void
+    private function revokeBonus(int $userId, string $kind = 'makepost'): void
     {
         if (! function_exists('get_setting')) {
             return;
@@ -766,7 +802,8 @@ final class ForumPostService
         if ($tweak !== 'enable' && $tweak !== 'disablesave') {
             return;
         }
-        $points = (float) get_setting('bonus.makepost', 0);
+        $key = $kind === 'starttopic' ? 'bonus.starttopic' : 'bonus.makepost';
+        $points = (float) get_setting($key, 0);
         if ($points === 0.0) {
             return;
         }
@@ -776,7 +813,7 @@ final class ForumPostService
                 'seedbonus' => DB::raw('GREATEST(seedbonus - '.$points.', 0)'),
             ]);
         } catch (\Throwable $e) {
-            Log::warning('[forum] makepost bonus revoke failed: '.$e->getMessage());
+            Log::warning('[forum] '.$kind.' bonus revoke failed: '.$e->getMessage());
         }
     }
 

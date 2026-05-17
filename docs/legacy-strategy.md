@@ -216,6 +216,7 @@ Strangler flip applied at the head of `public/forums.php`:
 | `/forums.php?action=editpost&postid=N` | `/forum/post/N?compose=edit` → `/forum/{forumid}/topic/{topicid}?edit=N#post-N` | `TopicView` + inline `EditPostForm` (pre-opened) |
 | `/forums.php?action=viewunread` | `/forum/unread` (cursor `?beforepostid=N` preserved) | `ForumUnread` |
 | `/forums.php?action=search` | `/forum/search` (`?keywords=...` preserved) | `ForumSearch` |
+| `/forums.php?action=deletetopic&topicid=N` | `/forum/topic/N` → `/forum/{forumid}/topic/N` | `TopicView` + Delete-topic `wire:confirm` button |
 
 `viewtopic` is a two-hop redirect because `TopicView` needs both
 `forumid` and `topicid`, but the legacy URL only carries `topicid`.
@@ -236,9 +237,16 @@ Escape hatches that stay on legacy:
   Livewire HMR, not via a form POST to this endpoint, so a redirect
   cannot help; the legacy handler stays until no template path
   generates a `forums.php?action=post` POST any more.
-- Admin actions (`movetopic`, `deletetopic`, `deletepost`,
-  `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent yet,
-  blocked on a Filament/Livewire admin moderation surface.
+- POST admin actions (`movetopic`, `setlocked`, `hltopic`,
+  `setsticky`) — the legacy moderation forms POST to these handlers
+  and only reach them via `?legacy=1` canary opt-out (the modern
+  `TopicView` and `ForumView` Livewire components call
+  `ForumPostService::{moveTopic,setLocked,setSticky,setHlColor}`
+  directly via `wire:click`). The legacy handlers stay as escape
+  hatches until the canary phase ends.
+- `?action=deletepost` — the legacy delete-single-post handler.
+  Modern callers use `TopicView::deletePost()` (`wire:click`); the
+  legacy GET stays as an escape hatch.
 
 - `?catchup=1` — the legacy GET form of the catch-up action.
   Modern callers use the Livewire `ForumUnread::catchUp()` method
