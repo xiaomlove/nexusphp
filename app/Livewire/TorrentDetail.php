@@ -4,9 +4,11 @@ namespace App\Livewire;
 
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Models\Comment;
 use App\Models\File;
 use App\Models\Peer;
 use App\Models\Setting;
+use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
@@ -142,6 +144,8 @@ class TorrentDetail extends Component
             'taxonomy' => $this->taxonomyRows(),
             'files' => $this->loadFiles(),
             'peerGroups' => $this->loadPeerGroups($viewerId),
+            'snatches' => $this->loadSnatches($viewerId),
+            'comments' => $this->loadComments($viewerId),
             'hotMeter' => $this->hotMeterRows(),
             'descriptionHtml' => $this->descriptionHtml($viewerId),
             'technicalInfoHtml' => $this->technicalInfoHtml(),
@@ -802,5 +806,78 @@ class TorrentDetail extends Component
             'seeders' => $peers->where('seeder', Peer::SEEDER_YES)->values(),
             'leechers' => $peers->where('seeder', Peer::SEEDER_NO)->values(),
         ];
+    }
+
+    /**
+     * @return Collection<int,Snatch>
+     */
+    private function loadSnatches(int $viewerId): Collection
+    {
+        if ($this->torrent === null) {
+            return new Collection;
+        }
+
+        /** @var Collection<int,Snatch> $rows */
+        $rows = Snatch::query()
+            ->with(['user:id,username,privacy'])
+            ->where('torrentid', $this->torrent->id)
+            ->where('finished', Snatch::FINISHED_YES)
+            ->orderByDesc('completedat')
+            ->orderByDesc('id')
+            ->get();
+
+        $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
+
+        $rows->each(function (Snatch $snatch) use ($canViewAnonymous, $viewerId): void {
+            $snatchUserId = (int) $snatch->userid;
+            $isOwnRow = $viewerId !== 0 && $viewerId === $snatchUserId;
+            $isStrongPrivacy = $snatch->user?->privacy === 'strong';
+
+            if ($isStrongPrivacy && ! $canViewAnonymous && ! $isOwnRow) {
+                $snatch->setAttribute('display_username', null);
+            } else {
+                $snatch->setAttribute('display_username', $snatch->user?->username);
+            }
+        });
+
+        return $rows;
+    }
+
+    /**
+     * @return Collection<int,Comment>
+     */
+    private function loadComments(int $viewerId): Collection
+    {
+        if ($this->torrent === null) {
+            return new Collection;
+        }
+
+        /** @var Collection<int,Comment> $rows */
+        $rows = Comment::query()
+            ->with(['create_user:id,username,privacy'])
+            ->where('torrent', $this->torrent->id)
+            ->orderBy('id')
+            ->get();
+
+        $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
+
+        $rows->each(function (Comment $comment) use ($canViewAnonymous, $viewerId): void {
+            $authorId = (int) $comment->user;
+            $isOwnRow = $viewerId !== 0 && $viewerId === $authorId;
+            $isStrongPrivacy = $comment->create_user?->privacy === 'strong';
+            $isAnonymousComment = $comment->anonymous === 'yes';
+
+            $shouldHide = ($isStrongPrivacy || $isAnonymousComment)
+                && ! $canViewAnonymous
+                && ! $isOwnRow;
+
+            if ($shouldHide) {
+                $comment->setAttribute('display_username', null);
+            } else {
+                $comment->setAttribute('display_username', $comment->create_user?->username);
+            }
+        });
+
+        return $rows;
     }
 }
