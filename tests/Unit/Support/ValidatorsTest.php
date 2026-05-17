@@ -192,4 +192,53 @@ class ValidatorsTest extends TestCase
         // in practice, but the contract is preserved deliberately.
         $this->assertTrue(Validators::isClassName(''));
     }
+
+    // ---------- isUploadFilename() ----------
+
+    public function test_is_upload_filename_accepts_common_torrent_names(): void
+    {
+        $this->assertTrue(Validators::isUploadFilename('My Movie (2024) 1080p.mkv'));
+        $this->assertTrue(Validators::isUploadFilename('artist - album [FLAC]'));
+        $this->assertTrue(Validators::isUploadFilename('release.tar.gz'));
+    }
+
+    public function test_is_upload_filename_accepts_unicode_titles(): void
+    {
+        // Multibyte UTF-8 letters survive — the legacy regex is a
+        // blocklist of dangerous ASCII bytes, not an allowlist.
+        $this->assertTrue(Validators::isUploadFilename('Бэдмен 2024.mkv'));
+        $this->assertTrue(Validators::isUploadFilename('片名 - 2024 [1080p]'));
+    }
+
+    public function test_is_upload_filename_rejects_path_separators(): void
+    {
+        $this->assertFalse(Validators::isUploadFilename('foo/bar.mkv'));
+        $this->assertFalse(Validators::isUploadFilename('foo\\bar.mkv'));
+    }
+
+    public function test_is_upload_filename_rejects_ntfs_illegal_chars(): void
+    {
+        $this->assertFalse(Validators::isUploadFilename('movie:title.mkv'));
+        $this->assertFalse(Validators::isUploadFilename('movie?.mkv'));
+        $this->assertFalse(Validators::isUploadFilename('movie*.mkv'));
+        $this->assertFalse(Validators::isUploadFilename('movie<part>.mkv'));
+        $this->assertFalse(Validators::isUploadFilename('movie|part.mkv'));
+        $this->assertFalse(Validators::isUploadFilename('movie#1.mkv'));
+    }
+
+    public function test_is_upload_filename_rejects_control_chars(): void
+    {
+        $this->assertFalse(Validators::isUploadFilename("movie\0name"));
+        $this->assertFalse(Validators::isUploadFilename("movie\nname"));
+        $this->assertFalse(Validators::isUploadFilename("movie\rname"));
+        $this->assertFalse(Validators::isUploadFilename("movie\tname"));
+    }
+
+    public function test_is_upload_filename_rejects_empty_string(): void
+    {
+        // Unlike `isFileName`/`isClassName` (which accept empty), the
+        // legacy `validfilename()` rejects empty because the regex
+        // requires at least one matching byte. Pinned here.
+        $this->assertFalse(Validators::isUploadFilename(''));
+    }
 }

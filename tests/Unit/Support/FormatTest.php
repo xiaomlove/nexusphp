@@ -141,4 +141,56 @@ class FormatTest extends TestCase
         $this->assertSame('1:00', Format::prettyTime(59.5));
         $this->assertSame('0:59', Format::prettyTime(59.4));
     }
+
+    // ---------- bytesFromUnit() ----------
+
+    public function test_bytes_from_unit_recognises_each_iec_letter(): void
+    {
+        // Returns float to match legacy `floor()`. The call site casts
+        // to int explicitly.
+        $this->assertSame(0.0, Format::bytesFromUnit(0, 'B'));
+        $this->assertSame(1.0, Format::bytesFromUnit(1, 'B'));
+        $this->assertSame(1024.0, Format::bytesFromUnit(1, 'K'));
+        $this->assertSame(1048576.0, Format::bytesFromUnit(1, 'M'));
+        $this->assertSame(1073741824.0, Format::bytesFromUnit(1, 'G'));
+        $this->assertSame(1099511627776.0, Format::bytesFromUnit(1, 'T'));
+        $this->assertSame(1125899906842624.0, Format::bytesFromUnit(1, 'P'));
+    }
+
+    public function test_bytes_from_unit_defaults_to_gibibytes(): void
+    {
+        // The legacy default `$unit = "G"` is preserved so
+        // `take-increment-bulk.php` continues to interpret bare
+        // numbers as gigabytes.
+        $this->assertSame(1073741824.0, Format::bytesFromUnit(1));
+        $this->assertSame(5.0 * 1073741824, Format::bytesFromUnit(5));
+    }
+
+    public function test_bytes_from_unit_truncates_fractional_amount(): void
+    {
+        // `floor()` is applied to the final product, so 1.5 KB →
+        // 1536 bytes (not 1535.999... or 1537).
+        $this->assertSame(1536.0, Format::bytesFromUnit(1.5, 'K'));
+        $this->assertSame(536870912.0, Format::bytesFromUnit(0.5, 'G'));
+    }
+
+    public function test_bytes_from_unit_accepts_string_amount(): void
+    {
+        // Legacy call sites in `public/take-increment-bulk.php` pass
+        // a `$_POST` value, so a string `"5"` must coerce to 5.
+        $this->assertSame(5.0 * 1024, Format::bytesFromUnit('5', 'K'));
+        $this->assertSame(0.0, Format::bytesFromUnit('', 'K'));
+    }
+
+    public function test_bytes_from_unit_unrecognised_unit_returns_zero(): void
+    {
+        // Legacy `getsize_int` had no `else` branch — it implicitly
+        // returned `null` for unknown units. `(int) null === 0`,
+        // which is what every caller actually saw. The Support method
+        // returns `0.0` instead of `null` so the type-hint stays clean;
+        // the call site cast `(int) ...` collapses both to `0`.
+        $this->assertSame(0.0, Format::bytesFromUnit(10, 'X'));
+        $this->assertSame(0.0, Format::bytesFromUnit(10, 'k')); // lowercase rejected
+        $this->assertSame(0.0, Format::bytesFromUnit(10, ''));
+    }
 }

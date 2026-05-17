@@ -166,4 +166,48 @@ class StringsTest extends TestCase
             Strings::highlight('a.b', 'before a.b after'),
         );
     }
+
+    // ---------- normalizeSearchTerm() ----------
+
+    public function test_normalize_search_term_keeps_ascii_alphanumeric_intact(): void
+    {
+        $this->assertSame('hello world', Strings::normalizeSearchTerm('hello world'));
+        $this->assertSame('foo123 bar', Strings::normalizeSearchTerm('foo123 bar'));
+    }
+
+    public function test_normalize_search_term_replaces_punctuation_with_single_spaces(): void
+    {
+        // Each non-alphanumeric byte becomes one space, then runs of
+        // whitespace collapse to a single space. So `a.b!c` → `a b c`.
+        $this->assertSame('a b c', Strings::normalizeSearchTerm('a.b!c'));
+        $this->assertSame('a b c', Strings::normalizeSearchTerm('a,,b---c'));
+    }
+
+    public function test_normalize_search_term_strips_leading_and_trailing_whitespace(): void
+    {
+        $this->assertSame('foo bar', Strings::normalizeSearchTerm('   foo bar   '));
+        $this->assertSame('foo', Strings::normalizeSearchTerm("\t\nfoo\r\n"));
+    }
+
+    public function test_normalize_search_term_collapses_internal_whitespace_runs(): void
+    {
+        $this->assertSame('foo bar baz', Strings::normalizeSearchTerm("foo  \t bar\n\nbaz"));
+    }
+
+    public function test_normalize_search_term_passes_through_empty_string(): void
+    {
+        $this->assertSame('', Strings::normalizeSearchTerm(''));
+        $this->assertSame('', Strings::normalizeSearchTerm('   '));
+    }
+
+    public function test_normalize_search_term_treats_non_ascii_bytes_as_punctuation(): void
+    {
+        // Legacy contract: the regex `[^a-z0-9]` matches per-byte, not
+        // per-codepoint. A multibyte Cyrillic letter (2 bytes in UTF-8)
+        // becomes two spaces, which then collapse to one. Pinned here
+        // so a future "fix" to use `\p{L}` doesn't silently change the
+        // search index semantics.
+        $this->assertSame('', Strings::normalizeSearchTerm('тест'));
+        $this->assertSame('foo bar', Strings::normalizeSearchTerm('foo тест bar'));
+    }
 }

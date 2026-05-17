@@ -1898,18 +1898,7 @@ function unesc($x) {
 
 function getsize_int($amount, $unit = "G")
 {
-	if ($unit == "B")
-	return floor($amount);
-	elseif ($unit == "K")
-	return floor($amount * 1024);
-	elseif ($unit == "M")
-	return floor($amount * 1048576);
-	elseif ($unit == "G")
-	return floor($amount * 1073741824);
-	elseif($unit == "T")
-	return floor($amount * 1099511627776);
-	elseif($unit == "P")
-	return floor($amount * 1125899906842624);
+    return \App\Support\Format::bytesFromUnit($amount, (string) $unit);
 }
 
 function mksize_compact($bytes)
@@ -2000,7 +1989,7 @@ function twotd($x,$y,$nosec=0){
 }
 
 function validfilename($name) {
-	return preg_match('/^[^\0-\x1f:\\\\\/?*\xff#<>|]+$/si', $name);
+    return \App\Support\Validators::isUploadFilename((string) $name);
 }
 
 function validemail($email) {
@@ -3351,7 +3340,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 }
 
 function searchfield($s) {
-	return preg_replace(array('/[^a-z0-9]/si', '/^\s*/s', '/\s*$/s', '/\s+/s'), array(" ", "", "", " "), $s);
+    return \App\Support\Strings::normalizeSearchTerm((string) $s);
 }
 
 function genrelist($catmode = 1) {
