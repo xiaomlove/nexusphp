@@ -531,7 +531,6 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/unco.php', UncoController::class)->name('legacy.unco');
 
-
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
     Route::get('/forum/unread', ForumUnread::class)->name('forum.unread');
