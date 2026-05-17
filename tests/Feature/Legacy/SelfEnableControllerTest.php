@@ -44,7 +44,9 @@ class SelfEnableControllerTest extends FeatureTestCase
 
     public function test_parked_user_is_forbidden(): void
     {
-        $user = $this->createTestUser(['parked' => 'yes', 'enabled' => User::ENABLED_NO]);
+        $user = $this->createTestUser(['enabled' => User::ENABLED_NO]);
+        NexusDB::table('users')->where('id', $user->id)->update(['parked' => 'yes']);
+        $user->refresh();
         $this->actingAs($user, 'nexus-web');
 
         $response = $this->get('/self-enable.php');
@@ -263,6 +265,7 @@ class SelfEnableControllerTest extends FeatureTestCase
             'username' => $user->username,
             'operator' => 'sysop',
             'reason' => 'cheating',
+            'created_at' => Carbon::now()->subDays(3)->toDateTimeString(),
         ]);
 
         try {
