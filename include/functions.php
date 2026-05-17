@@ -1265,81 +1265,18 @@ function get_agent($peer_id, $agent)
 
 function EmailBanned($newEmail)
 {
-	$newEmail = trim(strtolower($newEmail));
 	$list = (array) (NexusDB::table('bannedemails')->first() ?: []);
-	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'] ?? '')) );
-
-	if(count($addresses) > 0)
-	{
-		foreach ( $addresses as $email )
-		{
-			$email = trim(strtolower(preg_replace('/\./', '\\.', $email)));
-			if(strstr($email, "@"))
-			{
-				if(preg_match('/^@/', $email))
-				{// Any user @host?
-					// Expand the match expression to catch hosts and
-					// sub-domains
-					$email = preg_replace('/^@/', '[@\\.]', $email);
-					if(preg_match("/".$email."$/", $newEmail))
-					return true;
-				}
-			}
-			elseif(preg_match('/@$/', $email))
-			{    // User at any host?
-				if(preg_match("/^".$email."/", $newEmail))
-				return true;
-			}
-			else
-			{                // User@host
-				if(strtolower($email) == $newEmail)
-				return true;
-			}
-		}
-	}
-
-	return false;
+	return \App\Support\Email::matchesRegexList((string) $newEmail, (string) ($list['value'] ?? ''));
 }
 
 function EmailAllowed($newEmail)
 {
-global $restrictemaildomain;
-if ($restrictemaildomain == 'yes'){
-	$newEmail = trim(strtolower($newEmail));
-	$list = (array) (NexusDB::table('allowedemails')->first() ?: []);
-	$addresses = explode(' ', preg_replace("/[[:space:]]+/", " ", trim($list['value'] ?? '')) );
-
-	if(count($addresses) > 0)
-	{
-		foreach ( $addresses as $email )
-		{
-			$email = trim(strtolower(preg_replace('/\./', '\\.', $email)));
-			if(strstr($email, "@"))
-			{
-				if(preg_match('/^@/', $email))
-				{// Any user @host?
-					// Expand the match expression to catch hosts and
-					// sub-domains
-					$email = preg_replace('/^@/', '[@\\.]', $email);
-					if(preg_match('/'.$email.'$/', $newEmail))
-					return true;
-				}
-			}
-			elseif(preg_match('/@$/', $email))
-			{    // User at any host?
-				if(preg_match("/^".$email."/", $newEmail))
-				return true;
-			}
-			else
-			{                // User@host
-				if(strtolower($email) == $newEmail)
-				return true;
-			}
-		}
+	global $restrictemaildomain;
+	if ($restrictemaildomain != 'yes') {
+		return true;
 	}
-	return false;
-}
-else return true;
+	$list = (array) (NexusDB::table('allowedemails')->first() ?: []);
+	return \App\Support\Email::matchesRegexList((string) $newEmail, (string) ($list['value'] ?? ''));
 }
 
 function allowedemails()
