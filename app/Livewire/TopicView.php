@@ -262,6 +262,23 @@ class TopicView extends Component
         );
     }
 
+    public function deleteTopic(ForumPostService $service): void
+    {
+        $this->modError = null;
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            return;
+        }
+        try {
+            $result = $service->deleteTopic($this->topicId, (int) $user->id);
+        } catch (ForumReplyException $e) {
+            $this->modError = $e->getMessage();
+
+            return;
+        }
+        $this->redirectRoute('forum.view', ['forum' => $result['forumId']], navigate: true);
+    }
+
     public function deletePost(int $postId, ForumPostService $service): void
     {
         $this->deleteError = null;

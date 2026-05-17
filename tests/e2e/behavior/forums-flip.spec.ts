@@ -16,8 +16,8 @@ import { loginAs } from '../helpers/api-login';
  * Escape hatches that stay on legacy:
  *
  *   - `?legacy=1` — explicit canary opt-out
- *   - every other `action=…` value (post / movetopic / deletetopic /
- *     deletepost / setlocked / hltopic / setsticky)
+ *   - every other `action=…` value (post / movetopic / deletepost /
+ *     setlocked / hltopic / setsticky)
  *
  * These tests verify the redirect contract and that the legacy
  * fall-through paths still return 2xx.
@@ -432,5 +432,32 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
         if (response!.status() === 200) {
             await expect(page.locator('text=Search forum posts').first()).toBeVisible();
         }
+    });
+
+    test('/forums.php?action=deletetopic&topicid=N → /forum/topic/N (legacy hop)', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get(
+            '/forums.php?action=deletetopic&topicid=1',
+            { maxRedirects: 0 },
+        );
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toBe('/forum/topic/1');
+    });
+
+    test('/forums.php?action=deletetopic without topicid stays on legacy', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get('/forums.php?action=deletetopic', {
+            maxRedirects: 0,
+        });
+        expect([200, 403, 404]).toContain(response.status());
     });
 });

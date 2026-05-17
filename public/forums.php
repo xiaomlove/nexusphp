@@ -151,6 +151,15 @@ if (! $forumsFlipLegacy) {
         $forumsFlipQs = http_build_query($forumsFlipParams);
         $forumsFlipLocation = '/forum/search'
             .($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
+    } elseif ($forumsFlipAction === 'deletetopic') {
+        // The legacy `?sure=1` confirmation interstitial is replaced
+        // by wire:confirm on the Delete-topic button inside TopicView,
+        // so the redirect just hops to the `/forum/topic/{topic}`
+        // resolver and lets the user act from the canonical URL.
+        $forumsFlipTopicId = isset($_GET['topicid']) ? (int) $_GET['topicid'] : 0;
+        if ($forumsFlipTopicId > 0) {
+            $forumsFlipLocation = '/forum/topic/'.$forumsFlipTopicId;
+        }
     }
 }
 
