@@ -5052,10 +5052,7 @@ function get_forum_moderators($forumid, $plaintext = true)
 }
 function key_shortcut($page=1,$pages=1)
 {
-	$currentpage = "var currentpage=".$page.";";
-	$maxpage = "var maxpage=".$pages.";";
-	$key_shortcut_block = "\n<script type=\"text/javascript\">\n//<![CDATA[\n".$maxpage."\n".$currentpage."\n//]]>\n</script>\n";
-	return $key_shortcut_block;
+	return \App\Support\Html::keyShortcutScript((int) $page, (int) $pages);
 }
 function promotion_selection($selected = 0, $hide = 0)
 {
@@ -5708,14 +5705,9 @@ function get_share_ratio($uploaded, $downloaded)
 }
 
 function EchoRow($class = ''){
-    if(func_num_args() < 2) return '<tr></tr>';
     $args = func_get_args();
-    $cells = array_splice($args, 1);
-    $class = empty($class) ? '' : sprintf(' class="%s"', $class);
-    $s = '<tr>';
-    foreach($cells as $cell) $s .= sprintf('<td%s>%s</td>', $class, $cell);
-    $s .= "</tr>\n";
-    return $s;
+    $cells = array_map('strval', array_slice($args, 1));
+    return \App\Support\Html::tableRow((string) $class, ...$cells);
 }
 
 function list_require_search_box_id()
