@@ -141,6 +141,10 @@ class TorrentDetail extends Component
         $this->owner = $torrent->user;
         $this->banReason = $this->loadBanReason($torrent);
 
+        if (request()->filled('hit')) {
+            Torrent::where('id', $id)->increment('views');
+        }
+
         return null;
     }
 
