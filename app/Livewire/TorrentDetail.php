@@ -6,15 +6,19 @@ use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Models\Comment;
 use App\Models\CommentEdit;
+use App\Models\DownloadSpeed;
 use App\Models\File;
+use App\Models\Isp;
 use App\Models\Peer;
 use App\Models\Setting;
 use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
+use App\Models\UploadSpeed;
 use App\Models\User;
 use App\Repositories\SearchRepository;
+use App\Repositories\TagRepository;
 use App\Support\BbcodeRenderer;
 use App\Support\Codec;
 use Illuminate\Contracts\View\View;
@@ -111,7 +115,7 @@ class TorrentDetail extends Component
         // they are not yet typed on the legacy `Torrent` model and we do
         // not want to spread that change across PRs.
         $torrent = Torrent::query()
-            ->with(['basic_category', 'user'])
+            ->with(['basic_category', 'user', 'torrent_tags'])
             ->find($id);
 
         if ($torrent === null) {
@@ -150,6 +154,9 @@ class TorrentDetail extends Component
             'owner' => $this->owner,
             'banReason' => $this->banReason,
             'promotionBadge' => $this->promotionBadge(),
+            'promotionSubtext' => $this->promotionSubtext(),
+            'tagsHtml' => $this->tagsHtml(),
+            'uploaderBandwidth' => $this->uploaderBandwidth(),
             'taxonomy' => $this->taxonomyRows(),
             'files' => $this->loadFiles(),
             'peerGroups' => $this->loadPeerGroups($viewerId),
@@ -771,6 +778,77 @@ class TorrentDetail extends Component
             Torrent::PROMOTION_ONE_THIRD_DOWN => ['30%', 'warning'],
             default => null,
         };
+    }
+
+    private function promotionSubtext(): ?string
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        $spState = (int) ($this->torrent->getRawOriginal('sp_state') ?? Torrent::PROMOTION_NORMAL);
+        if ($spState === Torrent::PROMOTION_NORMAL) {
+            return null;
+        }
+
+        $timeType = (int) ($this->torrent->getRawOriginal('promotion_time_type') ?? Torrent::PROMOTION_TIME_TYPE_GLOBAL);
+        $until = $this->torrent->promotion_until;
+
+        return match ($timeType) {
+            Torrent::PROMOTION_TIME_TYPE_PERMANENT => 'Permanent',
+            Torrent::PROMOTION_TIME_TYPE_DEADLINE => $until instanceof Carbon
+                ? 'Until '.$until->format('Y-m-d H:i')
+                : null,
+            default => null,
+        };
+    }
+
+    private function tagsHtml(): string
+    {
+        if ($this->torrent === null) {
+            return '';
+        }
+
+        $tagIds = $this->torrent->torrent_tags->pluck('tag_id')->all();
+        if ($tagIds === []) {
+            return '';
+        }
+
+        $searchBoxId = (int) ($this->torrent->basic_category?->mode ?? 0);
+
+        return (new TagRepository)->renderSpan($searchBoxId, $tagIds);
+    }
+
+    /**
+     * @return array{isp:?string,up:?string,down:?string}|null
+     */
+    private function uploaderBandwidth(): ?array
+    {
+        if ($this->torrent === null || $this->owner === null) {
+            return null;
+        }
+
+        $uploadId = (int) ($this->owner->getRawOriginal('upload') ?? 0);
+        $downloadId = (int) ($this->owner->getRawOriginal('download') ?? 0);
+        $ispId = (int) ($this->owner->getRawOriginal('isp') ?? 0);
+
+        if ($uploadId === 0 && $downloadId === 0 && $ispId === 0) {
+            return null;
+        }
+
+        $up = $uploadId > 0 ? UploadSpeed::query()->find($uploadId)?->name : null;
+        $down = $downloadId > 0 ? DownloadSpeed::query()->find($downloadId)?->name : null;
+        $isp = $ispId > 0 ? Isp::query()->find($ispId)?->name : null;
+
+        if ($up === null && $down === null && $isp === null) {
+            return null;
+        }
+
+        return [
+            'isp' => $isp,
+            'up' => $up,
+            'down' => $down,
+        ];
     }
 
     /**
