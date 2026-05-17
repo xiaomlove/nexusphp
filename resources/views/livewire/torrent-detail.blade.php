@@ -6,6 +6,8 @@
     /** @var array<string,string> $taxonomy */
     /** @var \Illuminate\Support\Collection<int,\App\Models\File> $files */
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
+    /** @var \Illuminate\Support\Collection<int,\App\Models\Snatch> $snatches */
+    /** @var \Illuminate\Support\Collection<int,\App\Models\Comment> $comments */
     /** @var array<string,string> $hotMeter */
     /** @var string $descriptionHtml */
     /** @var string $technicalInfoHtml */
@@ -454,6 +456,136 @@
                 @endif
             </section>
         @endforeach
+    </x-ui.card>
+
+    <x-ui.card>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Snatched ({{ number_format($snatches->count()) }})
+        </h2>
+        @if ($snatches->isEmpty())
+            <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="snatches-empty">
+                Nobody has finished this torrent yet.
+            </p>
+        @else
+            <div class="overflow-x-auto" data-test-id="snatches-table">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        <tr>
+                            <th class="py-2 pr-4 font-medium">User</th>
+                            <th class="py-2 pr-4 font-medium text-right">Uploaded</th>
+                            <th class="py-2 pr-4 font-medium text-right">Downloaded</th>
+                            <th class="py-2 pr-4 font-medium text-right">Ratio</th>
+                            <th class="py-2 pr-4 font-medium text-right">Seed time</th>
+                            <th class="py-2 pr-4 font-medium text-right">Leech time</th>
+                            <th class="py-2 pr-4 font-medium text-right">Completed</th>
+                            <th class="py-2 pr-4 font-medium text-right">Last action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                        @foreach ($snatches as $snatch)
+                            @php
+                                $snatchUsername = $snatch->getAttribute('display_username');
+                                $isOwnSnatchRow = $viewerId !== 0 && (int) $snatch->userid === $viewerId;
+                                $snatchUploaded = (int) $snatch->uploaded;
+                                $snatchDownloaded = (int) $snatch->downloaded;
+                                if ($snatchDownloaded > 0) {
+                                    $snatchRatio = number_format($snatchUploaded / $snatchDownloaded, 3);
+                                } elseif ($snatchUploaded > 0) {
+                                    $snatchRatio = '∞';
+                                } else {
+                                    $snatchRatio = '—';
+                                }
+                                $completedTs = $snatch->completedat ? $snatch->completedat->timestamp : null;
+                                $lastActionTs = $snatch->last_action ? $snatch->last_action->timestamp : null;
+                            @endphp
+                            <tr data-test-id="snatch-row"
+                                data-snatch-id="{{ $snatch->id }}"
+                                data-user-id="{{ (int) $snatch->userid }}"
+                                @class(['bg-amber-50 dark:bg-amber-900/20' => $isOwnSnatchRow])>
+                                <td class="py-2 pr-4 break-all text-zinc-900 dark:text-zinc-100" data-test-id="snatch-user">
+                                    @if ($snatchUsername === null)
+                                        <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
+                                    @else
+                                        {{ $snatchUsername }}
+                                    @endif
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatPeerSize($snatchUploaded) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatPeerSize($snatchDownloaded) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100" data-test-id="snatch-ratio">
+                                    {{ $snatchRatio }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatDuration((int) $snatch->seedtime) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatDuration((int) $snatch->leechtime) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right text-zinc-900 dark:text-zinc-100">
+                                    {{ $completedTs !== null ? date('Y-m-d H:i', $completedTs) : '—' }}
+                                </td>
+                                <td class="py-2 pr-4 text-right text-zinc-900 dark:text-zinc-100">
+                                    {{ $lastActionTs !== null ? date('Y-m-d H:i', $lastActionTs) : '—' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </x-ui.card>
+
+    <x-ui.card>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400" data-test-id="comments-heading">
+            Comments ({{ number_format($comments->count()) }})
+        </h2>
+        @if ($comments->isEmpty())
+            <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="comments-empty">
+                No comments yet.
+            </p>
+        @else
+            <ul class="space-y-4" data-test-id="comments-list">
+                @foreach ($comments as $comment)
+                    @php
+                        $commentUsername = $comment->getAttribute('display_username');
+                        $isOwnComment = $viewerId !== 0 && (int) $comment->user === $viewerId;
+                        $addedTs = $comment->added ? $comment->added->timestamp : null;
+                        $editedTs = $comment->editdate ? $comment->editdate->timestamp : null;
+                    @endphp
+                    <li data-test-id="comment-row"
+                        data-comment-id="{{ $comment->id }}"
+                        data-user-id="{{ (int) $comment->user }}"
+                        @class([
+                            'rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900',
+                            'ring-1 ring-amber-400/40' => $isOwnComment,
+                        ])>
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100" data-test-id="comment-author">
+                                @if ($commentUsername === null)
+                                    <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
+                                @else
+                                    {{ $commentUsername }}
+                                @endif
+                            </p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400" data-test-id="comment-added">
+                                {{ $addedTs !== null ? date('Y-m-d H:i', $addedTs) : '—' }}
+                            </p>
+                        </div>
+                        <div class="mt-2 break-words text-sm text-zinc-800 dark:text-zinc-100" data-test-id="comment-body">
+                            {!! \App\Support\BbcodeRenderer::toHtml((string) $comment->text) !!}
+                        </div>
+                        @if ($editedTs !== null)
+                            <p class="mt-2 text-xs italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-edited">
+                                Edited {{ date('Y-m-d H:i', $editedTs) }}
+                            </p>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </x-ui.card>
 
     <div class="flex flex-wrap items-center gap-2">
