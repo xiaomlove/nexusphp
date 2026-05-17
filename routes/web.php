@@ -10,6 +10,7 @@ use App\Http\Controllers\Legacy\AdRedirectController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
+use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
@@ -539,6 +540,19 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::match(['get', 'post'], '/reset.php', ResetController::class)
         ->name('legacy.reset');
+
+    /*
+     * Phase 3 — replaces `public/bonus-log.php` (deleted in this PR).
+     * Authed read-only listing of a user's bonus-log rows, paginated
+     * via `?page=<n>` (50 rows per page) and filterable by
+     * `?category=common|seeding` + `?business_type=<n>`. The legacy
+     * script defaulted `?uid` to `$CURUSER['id']`; cross-user view
+     * still requires the `viewhistory` permission (carried over via
+     * `PermissionEnum::VIEW_USER_HISTORY`). The chrome-less envelope
+     * follows the same Response pattern as `AboutNexusController`.
+     */
+    Route::get('/bonus-log.php', BonusLogController::class)
+        ->name('legacy.bonus-log');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
