@@ -20,6 +20,7 @@ use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DocleanupController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
+use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
@@ -522,6 +523,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/fastdelete.php', FastDeleteController::class)
         ->name('legacy.fastdelete');
+
+    Route::get('/downloadsubs.php', DownloadSubsController::class)
+        ->name('legacy.downloadsubs');
 
     Route::get('/docleanup.php', DocleanupController::class)
         ->name('legacy.docleanup');
