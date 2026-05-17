@@ -122,7 +122,7 @@ class TorrentDetailPostWriteBannerTest extends FeatureTestCase
         Livewire::actingAs($owner, 'nexus-web')
             ->withQueryParams(['edited' => '1', 'returnto' => '/usercp.php?action=mytorrents'])
             ->test(TorrentDetail::class, ['id' => $torrentId])
-            ->assertSeeHtml('/edit.php?id='.$torrentId.'&returnto=%2Fusercp.php%3Faction%3Dmytorrents');
+            ->assertSeeHtml('/edit.php?id='.$torrentId.'&amp;returnto=%2Fusercp.php%3Faction%3Dmytorrents');
     }
 
     public function test_uploaded_takes_priority_over_edited_when_both_present(): void
