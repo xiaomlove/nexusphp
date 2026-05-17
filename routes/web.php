@@ -54,6 +54,7 @@ use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
 use App\Livewire\ForumIndex;
+use App\Livewire\ForumSearch;
 use App\Livewire\ForumUnread;
 use App\Livewire\ForumView;
 use App\Livewire\NewTopicForm;
@@ -527,6 +528,7 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
     Route::get('/forum/unread', ForumUnread::class)->name('forum.unread');
+    Route::get('/forum/search', ForumSearch::class)->name('forum.search');
     Route::get('/forum/{forum}', ForumView::class)
         ->whereNumber('forum')
         ->name('forum.view');
