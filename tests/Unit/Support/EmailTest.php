@@ -163,4 +163,120 @@ class EmailTest extends TestCase
         $this->assertFalse(Email::isWellFormed('user@-example.com'));
         $this->assertFalse(Email::isWellFormed('user@sub.-example.com'));
     }
+
+    // ---------- matchesRegexList ----------
+
+    public function test_matches_regex_list_against_empty_list_returns_false(): void
+    {
+        $this->assertFalse(Email::matchesRegexList('user@example.com', ''));
+        $this->assertFalse(Email::matchesRegexList('user@example.com', "   \t\n  "));
+    }
+
+    public function test_matches_regex_list_at_host_pattern_matches_exact_host(): void
+    {
+        $this->assertTrue(Email::matchesRegexList('user@example.com', '@example.com'));
+    }
+
+    public function test_matches_regex_list_at_host_pattern_matches_subdomains(): void
+    {
+        // Legacy rewrite `@` -> `[@\.]` makes any subdomain a hit.
+        $this->assertTrue(Email::matchesRegexList('user@sub.example.com', '@example.com'));
+        $this->assertTrue(Email::matchesRegexList('user@deep.sub.example.com', '@example.com'));
+    }
+
+    public function test_matches_regex_list_at_host_pattern_does_not_match_unrelated_host(): void
+    {
+        $this->assertFalse(Email::matchesRegexList('user@other.com', '@example.com'));
+    }
+
+    public function test_matches_regex_list_is_case_insensitive(): void
+    {
+        $this->assertTrue(Email::matchesRegexList('USER@Example.COM', '@example.com'));
+        $this->assertTrue(Email::matchesRegexList('user@example.com', '@EXAMPLE.COM'));
+    }
+
+    public function test_matches_regex_list_user_at_host_entry_never_matches_legacy_quirk(): void
+    {
+        // strstr($entry,'@') swallows entries with `@` before the exact-match branch.
+        $this->assertFalse(Email::matchesRegexList('user@example.com', 'user@example.com'));
+    }
+
+    public function test_matches_regex_list_user_at_entry_never_matches_legacy_quirk(): void
+    {
+        // Trailing-`@` entries are unreachable in the legacy control-flow.
+        $this->assertFalse(Email::matchesRegexList('user@example.com', 'user@'));
+    }
+
+    public function test_matches_regex_list_naked_entry_only_matches_naked_input_exactly(): void
+    {
+        $this->assertTrue(Email::matchesRegexList('spam', 'spam'));
+        $this->assertFalse(Email::matchesRegexList('spam@example.com', 'spam'));
+        $this->assertFalse(Email::matchesRegexList('spammer', 'spam'));
+    }
+
+    public function test_matches_regex_list_splits_on_any_whitespace_run(): void
+    {
+        $list = "@evil.com\t\t@bad.example.net\n\n  @baz.org   ";
+        $this->assertTrue(Email::matchesRegexList('a@evil.com', $list));
+        $this->assertTrue(Email::matchesRegexList('b@bad.example.net', $list));
+        $this->assertTrue(Email::matchesRegexList('c@baz.org', $list));
+        $this->assertFalse(Email::matchesRegexList('d@good.org', $list));
+    }
+
+    public function test_matches_regex_list_escapes_dots_in_entries(): void
+    {
+        $this->assertFalse(Email::matchesRegexList('userXexample.com', '@example.com'));
+    }
+
+    public function test_matches_regex_list_returns_on_first_hit(): void
+    {
+        $this->assertTrue(Email::matchesRegexList('user@example.com', '@other.org @example.com @third.net'));
+    }
+
+    public function test_matches_regex_list_trims_input_email(): void
+    {
+        $this->assertTrue(Email::matchesRegexList('  USER@EXAMPLE.COM  ', '@example.com'));
+    }
+
+    // ---------- matchesSuffixList ----------
+
+    public function test_matches_suffix_list_matches_literal_suffix(): void
+    {
+        $this->assertTrue(Email::matchesSuffixList('user@spam.tld', '@spam.tld'));
+        $this->assertTrue(Email::matchesSuffixList('foo@spam.tld', '@spam.tld'));
+    }
+
+    public function test_matches_suffix_list_is_plain_suffix_not_subdomain_match_legacy_quirk(): void
+    {
+        // Plain str_ends_with — no subdomain expansion (diverges from matchesRegexList).
+        $this->assertFalse(Email::matchesSuffixList('foo@bar.spam.tld', '@spam.tld'));
+    }
+
+    public function test_matches_suffix_list_does_not_match_unrelated(): void
+    {
+        $this->assertFalse(Email::matchesSuffixList('user@other.tld', '@spam.tld'));
+    }
+
+    public function test_matches_suffix_list_is_case_sensitive_legacy_quirk(): void
+    {
+        // check_email() does NOT lowercase before str_ends_with — diverges from matchesRegexList.
+        $this->assertFalse(Email::matchesSuffixList('user@SPAM.TLD', '@spam.tld'));
+    }
+
+    public function test_matches_suffix_list_with_empty_list_returns_false(): void
+    {
+        $this->assertFalse(Email::matchesSuffixList('user@example.com', ''));
+        $this->assertFalse(Email::matchesSuffixList('user@example.com', "   \t\n  "));
+    }
+
+    public function test_matches_suffix_list_supports_user_at_host_entries(): void
+    {
+        // Unlike matchesRegexList(), this matcher accepts literal user@host entries.
+        $this->assertTrue(Email::matchesSuffixList('user@example.com', 'user@example.com'));
+    }
+
+    public function test_matches_suffix_list_short_circuits_on_first_hit(): void
+    {
+        $this->assertTrue(Email::matchesSuffixList('foo@target.com', '@other.org @target.com @third.net'));
+    }
 }

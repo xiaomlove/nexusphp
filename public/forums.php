@@ -145,6 +145,12 @@ if (! $forumsFlipLegacy) {
         $forumsFlipQs = http_build_query($forumsFlipParams);
         $forumsFlipLocation = '/forum/unread'
             .($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
+    } elseif ($forumsFlipAction === 'search') {
+        $forumsFlipParams = $_GET;
+        unset($forumsFlipParams['action']);
+        $forumsFlipQs = http_build_query($forumsFlipParams);
+        $forumsFlipLocation = '/forum/search'
+            .($forumsFlipQs !== '' ? '?'.$forumsFlipQs : '');
     }
 }
 

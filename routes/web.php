@@ -17,6 +17,7 @@ use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
+use App\Http\Controllers\Legacy\DocleanupController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\FastDeleteController;
@@ -47,6 +48,7 @@ use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -54,6 +56,7 @@ use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TorrentController;
 use App\Livewire\ForumIndex;
+use App\Livewire\ForumSearch;
 use App\Livewire\ForumUnread;
 use App\Livewire\ForumView;
 use App\Livewire\NewTopicForm;
@@ -523,6 +526,7 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
     Route::get('/forum/unread', ForumUnread::class)->name('forum.unread');
+    Route::get('/forum/search', ForumSearch::class)->name('forum.search');
     Route::get('/forum/{forum}', ForumView::class)
         ->whereNumber('forum')
         ->name('forum.view');

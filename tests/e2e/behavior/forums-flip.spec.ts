@@ -16,9 +16,8 @@ import { loginAs } from '../helpers/api-login';
  * Escape hatches that stay on legacy:
  *
  *   - `?legacy=1` — explicit canary opt-out
- *   - every other `action=…` value (reply / quotepost / editpost /
- *     post / viewtopic / viewunread / search / movetopic /
- *     deletetopic / deletepost / setlocked / hltopic / setsticky)
+ *   - every other `action=…` value (post / movetopic / deletetopic /
+ *     deletepost / setlocked / hltopic / setsticky)
  *
  * These tests verify the redirect contract and that the legacy
  * fall-through paths still return 2xx.
@@ -388,6 +387,50 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
         expect([200, 302]).toContain(response!.status());
         if (response!.status() === 200) {
             await expect(page.locator('text=Unread topics').first()).toBeVisible();
+        }
+    });
+
+    test('/forums.php?action=search → /forum/search (legacy hop)', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get('/forums.php?action=search', {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toBe('/forum/search');
+    });
+
+    test('/forums.php?action=search preserves the keywords query', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.request.get(
+            '/forums.php?action=search&keywords=hello+world',
+            { maxRedirects: 0 },
+        );
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toContain('/forum/search?');
+        expect(location).toMatch(/keywords=hello(\+|%20|%2B)world/);
+    });
+
+    test('/forum/search renders the Livewire ForumSearch component', async ({
+        context,
+        page,
+    }) => {
+        await loginAs(context, 'admin');
+
+        const response = await page.goto('/forum/search');
+        expect(response).not.toBeNull();
+        expect([200, 302]).toContain(response!.status());
+        if (response!.status() === 200) {
+            await expect(page.locator('text=Search forum posts').first()).toBeVisible();
         }
     });
 });

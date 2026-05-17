@@ -5,10 +5,13 @@ namespace Tests\Feature\Livewire;
 use App\Livewire\TorrentDetail;
 use App\Models\Torrent;
 use App\Models\TorrentOperationLog;
+use App\Models\TorrentTag;
 use App\Models\User;
+use App\Repositories\TagRepository;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Nexus\Database\NexusDB;
+use ReflectionClass;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
@@ -50,6 +53,8 @@ class TorrentDetailTest extends FeatureTestCase
         parent::setUp();
 
         $_SERVER['REQUEST_URI'] = '/torrent/0';
+
+        $this->resetTagRepositoryCache();
 
         $this->categoryId = (int) NexusDB::table('categories')->insertGetId([
             'mode' => 0,
@@ -278,6 +283,128 @@ class TorrentDetailTest extends FeatureTestCase
         Livewire::actingAs($owner, 'nexus-web')
             ->test(TorrentDetail::class, ['id' => $torrentId])
             ->assertDontSee('data-test-id="taxonomy"', false);
+    }
+
+    public function test_tag_pills_render_when_torrent_has_tags(): void
+    {
+        $owner = $this->createUser();
+
+        $tagId = (int) NexusDB::table('tags')->insertGetId([
+            'name' => 'TestTag-'.bin2hex(random_bytes(2)),
+            'priority' => 1,
+            'color' => '#abcdef',
+            'font_color' => '#ffffff',
+            'border_radius' => '4px',
+            'font_size' => '10pt',
+            'margin' => '2px',
+            'padding' => '4px',
+            'description' => 'fixture',
+            'mode' => 0,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        $torrentId = $this->createTorrent($owner->id);
+        TorrentTag::create([
+            'torrent_id' => $torrentId,
+            'tag_id' => $tagId,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="torrent-tags"', false)
+            ->assertSee('#abcdef');
+    }
+
+    public function test_tag_pills_section_is_absent_when_torrent_has_no_tags(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-tags"', false);
+    }
+
+    public function test_uploader_bandwidth_renders_when_owner_has_columns(): void
+    {
+        $upId = (int) NexusDB::table('uploadspeed')->insertGetId([
+            'name' => '1 Gbps Up-'.bin2hex(random_bytes(2)),
+        ]);
+        $downId = (int) NexusDB::table('downloadspeed')->insertGetId([
+            'name' => '1 Gbps Down-'.bin2hex(random_bytes(2)),
+        ]);
+        $ispId = (int) NexusDB::table('isp')->insertGetId([
+            'name' => 'Test ISP-'.bin2hex(random_bytes(2)),
+        ]);
+
+        $owner = $this->createUser();
+        NexusDB::table('users')
+            ->where('id', $owner->id)
+            ->update([
+                'upload' => $upId,
+                'download' => $downId,
+                'isp' => $ispId,
+            ]);
+        $torrentId = $this->createTorrent($owner->id);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="uploader-bandwidth"', false)
+            ->assertSee('1 Gbps Up-')
+            ->assertSee('1 Gbps Down-')
+            ->assertSee('Test ISP-');
+    }
+
+    public function test_uploader_bandwidth_card_is_absent_when_owner_has_no_columns(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="uploader-bandwidth"', false);
+    }
+
+    public function test_promotion_subtext_renders_for_deadline_promotion(): void
+    {
+        $owner = $this->createUser();
+        $until = Carbon::parse('2026-01-01 00:00:00');
+        $torrentId = $this->createTorrent($owner->id, [
+            'sp_state' => Torrent::PROMOTION_FREE,
+            'promotion_time_type' => Torrent::PROMOTION_TIME_TYPE_DEADLINE,
+            'promotion_until' => $until,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="promotion-subtext"', false)
+            ->assertSee('Until '.$until->format('Y-m-d H:i'));
+    }
+
+    public function test_promotion_subtext_is_absent_for_normal_state(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, [
+            'sp_state' => Torrent::PROMOTION_NORMAL,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="promotion-subtext"', false);
+    }
+
+    private function resetTagRepositoryCache(): void
+    {
+        $reflection = new ReflectionClass(TagRepository::class);
+        foreach (['allTags', 'orderByFieldIdString'] as $name) {
+            if (! $reflection->hasProperty($name)) {
+                continue;
+            }
+            $prop = $reflection->getProperty($name);
+            $prop->setAccessible(true);
+            $prop->setValue(null, null);
+        }
     }
 
     /**

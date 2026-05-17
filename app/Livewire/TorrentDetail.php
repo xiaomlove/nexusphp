@@ -4,14 +4,21 @@ namespace App\Livewire;
 
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Models\Comment;
+use App\Models\CommentEdit;
+use App\Models\DownloadSpeed;
 use App\Models\File;
+use App\Models\Isp;
 use App\Models\Peer;
 use App\Models\Setting;
+use App\Models\Snatch;
 use App\Models\Torrent;
 use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
+use App\Models\UploadSpeed;
 use App\Models\User;
 use App\Repositories\SearchRepository;
+use App\Repositories\TagRepository;
 use App\Support\BbcodeRenderer;
 use App\Support\Codec;
 use Illuminate\Contracts\View\View;
@@ -85,6 +92,14 @@ class TorrentDetail extends Component
      */
     public ?TorrentOperationLog $banReason = null;
 
+    public string $newCommentBody = '';
+
+    public ?int $editingCommentId = null;
+
+    public string $editingBody = '';
+
+    private const COMMENT_FLOOD_SECONDS = 10;
+
     public function mount(int $id): mixed
     {
         if (request()->query('legacy') === '1') {
@@ -100,7 +115,7 @@ class TorrentDetail extends Component
         // they are not yet typed on the legacy `Torrent` model and we do
         // not want to spread that change across PRs.
         $torrent = Torrent::query()
-            ->with(['basic_category', 'user'])
+            ->with(['basic_category', 'user', 'torrent_tags'])
             ->find($id);
 
         if ($torrent === null) {
@@ -139,9 +154,17 @@ class TorrentDetail extends Component
             'owner' => $this->owner,
             'banReason' => $this->banReason,
             'promotionBadge' => $this->promotionBadge(),
+            'promotionSubtext' => $this->promotionSubtext(),
+            'tagsHtml' => $this->tagsHtml(),
+            'uploaderBandwidth' => $this->uploaderBandwidth(),
             'taxonomy' => $this->taxonomyRows(),
             'files' => $this->loadFiles(),
             'peerGroups' => $this->loadPeerGroups($viewerId),
+            'snatches' => $this->loadSnatches($viewerId),
+            'comments' => $this->loadComments($viewerId),
+            'canPostComment' => $this->canPostComment($viewerId),
+            'commentCooldownSeconds' => $this->commentCooldownSeconds($viewerId),
+            'viewerCanCommanage' => $this->viewerCan('commanage', $viewerId),
             'hotMeter' => $this->hotMeterRows(),
             'descriptionHtml' => $this->descriptionHtml($viewerId),
             'technicalInfoHtml' => $this->technicalInfoHtml(),
@@ -152,9 +175,92 @@ class TorrentDetail extends Component
             'hasThanked' => $thanksList['hasThanked'],
             'thanksRecent' => $thanksList['recent'],
             'thanksTotal' => $thanksList['total'],
+            'actionRow' => $this->actionRowItems($viewerId),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
+    }
+
+    /**
+     * Mirrors the visibility rules of `public/details.php:253-295`.
+     * Owner auto-promotion of `downloadpos` follows lines 204-205 of
+     * the same file. Approval (Layer.js iframe) and claim (separate
+     * AJAX block) are out of scope and stay on legacy behind
+     * `?legacy=1`.
+     *
+     * @return list<array{id:string,label:string,title:string,url:string,variant:string}>
+     */
+    private function actionRowItems(int $viewerId): array
+    {
+        if ($this->torrent === null || $viewerId <= 0) {
+            return [];
+        }
+
+        $torrent = $this->torrent;
+        $torrentId = (int) $torrent->id;
+        $isOwner = $viewerId === (int) $torrent->owner;
+        $items = [];
+
+        if ($isOwner || $this->viewerDownloadpos($viewerId) !== 'no') {
+            $items[] = [
+                'id' => 'download',
+                'label' => 'Download .torrent',
+                'title' => 'Download this torrent',
+                'url' => '/download.php?id='.$torrentId,
+                'variant' => 'primary',
+            ];
+        }
+
+        $canManage = $this->viewerCan('torrentmanage', $viewerId);
+        if ($isOwner || $canManage) {
+            $items[] = [
+                'id' => 'edit',
+                'label' => $canManage ? 'Edit / delete' : 'Edit',
+                'title' => 'Click to edit or delete this torrent',
+                'url' => '/edit.php?id='.$torrentId,
+                'variant' => 'secondary',
+            ];
+        }
+
+        if ($this->viewerCan('askreseed', $viewerId) && (int) $torrent->seeders === 0) {
+            $items[] = [
+                'id' => 'reseed',
+                'label' => 'Ask for a reseed',
+                'title' => 'Ask snatched users for reseeding when there\'s no seeder',
+                'url' => '/takereseed.php?reseedid='.$torrentId,
+                'variant' => 'secondary',
+            ];
+        }
+
+        $items[] = [
+            'id' => 'report',
+            'label' => 'Report torrent',
+            'title' => 'Report torrent for violating rules',
+            'url' => '/report.php?torrent='.$torrentId,
+            'variant' => 'danger',
+        ];
+
+        return $items;
+    }
+
+    /**
+     * Look up the viewer's `users.downloadpos` enum, returning the raw
+     * string so the caller can apply the legacy semantics (`!= 'no'`
+     * means "may download"). The column default is `'yes'` per the
+     * schema, so a missing column / missing row defaults open — never
+     * accidentally narrows download access.
+     */
+    private function viewerDownloadpos(int $viewerId): string
+    {
+        if ($viewerId <= 0) {
+            return 'yes';
+        }
+
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('downloadpos');
+
+        return $value === 'no' ? 'no' : 'yes';
     }
 
     /**
@@ -674,6 +780,77 @@ class TorrentDetail extends Component
         };
     }
 
+    private function promotionSubtext(): ?string
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        $spState = (int) ($this->torrent->getRawOriginal('sp_state') ?? Torrent::PROMOTION_NORMAL);
+        if ($spState === Torrent::PROMOTION_NORMAL) {
+            return null;
+        }
+
+        $timeType = (int) ($this->torrent->getRawOriginal('promotion_time_type') ?? Torrent::PROMOTION_TIME_TYPE_GLOBAL);
+        $until = $this->torrent->promotion_until;
+
+        return match ($timeType) {
+            Torrent::PROMOTION_TIME_TYPE_PERMANENT => 'Permanent',
+            Torrent::PROMOTION_TIME_TYPE_DEADLINE => $until instanceof Carbon
+                ? 'Until '.$until->format('Y-m-d H:i')
+                : null,
+            default => null,
+        };
+    }
+
+    private function tagsHtml(): string
+    {
+        if ($this->torrent === null) {
+            return '';
+        }
+
+        $tagIds = $this->torrent->torrent_tags->pluck('tag_id')->all();
+        if ($tagIds === []) {
+            return '';
+        }
+
+        $searchBoxId = (int) ($this->torrent->basic_category?->mode ?? 0);
+
+        return (new TagRepository)->renderSpan($searchBoxId, $tagIds);
+    }
+
+    /**
+     * @return array{isp:?string,up:?string,down:?string}|null
+     */
+    private function uploaderBandwidth(): ?array
+    {
+        if ($this->torrent === null || $this->owner === null) {
+            return null;
+        }
+
+        $uploadId = (int) ($this->owner->getRawOriginal('upload') ?? 0);
+        $downloadId = (int) ($this->owner->getRawOriginal('download') ?? 0);
+        $ispId = (int) ($this->owner->getRawOriginal('isp') ?? 0);
+
+        if ($uploadId === 0 && $downloadId === 0 && $ispId === 0) {
+            return null;
+        }
+
+        $up = $uploadId > 0 ? UploadSpeed::query()->find($uploadId)?->name : null;
+        $down = $downloadId > 0 ? DownloadSpeed::query()->find($downloadId)?->name : null;
+        $isp = $ispId > 0 ? Isp::query()->find($ispId)?->name : null;
+
+        if ($up === null && $down === null && $isp === null) {
+            return null;
+        }
+
+        return [
+            'isp' => $isp,
+            'up' => $up,
+            'down' => $down,
+        ];
+    }
+
     /**
      * Bridge to the global legacy `user_can()` permission helper. Guests
      * (uid 0) always fail. When the helper is missing — e.g. someone
@@ -802,5 +979,308 @@ class TorrentDetail extends Component
             'seeders' => $peers->where('seeder', Peer::SEEDER_YES)->values(),
             'leechers' => $peers->where('seeder', Peer::SEEDER_NO)->values(),
         ];
+    }
+
+    public function postComment(): void
+    {
+        if ($this->torrent === null) {
+            return;
+        }
+
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if ($viewerId <= 0) {
+            return;
+        }
+
+        $viewer = User::query()->select(['id', 'parked', 'last_comment'])->find($viewerId);
+        if ($viewer === null || $viewer->parked === 'yes') {
+            $this->addError('newCommentBody', __('comment.std_your_account_parked', [], 'en'));
+
+            return;
+        }
+
+        $remaining = $this->commentCooldownSeconds($viewerId);
+        if ($remaining > 0) {
+            $this->addError('newCommentBody', __('comment.std_comment_flooding_denied').$remaining);
+
+            return;
+        }
+
+        $body = trim($this->newCommentBody);
+        if ($body === '') {
+            $this->addError('newCommentBody', __('comment.std_comment_body_empty'));
+
+            return;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+        $now = Carbon::now()->toDateTimeString();
+
+        $newId = (int) NexusDB::table('comments')->insertGetId([
+            'user' => $viewerId,
+            'torrent' => $torrentId,
+            'added' => $now,
+            'text' => $body,
+            'ori_text' => $body,
+            'editedby' => 0,
+            'editdate' => null,
+            'offer' => 0,
+            'request' => 0,
+            'anonymous' => 'no',
+        ]);
+
+        NexusDB::table('torrents')
+            ->where('id', $torrentId)
+            ->update(['comments' => NexusDB::raw('comments + 1')]);
+
+        NexusDB::table('users')
+            ->where('id', $viewerId)
+            ->update(['last_comment' => $now]);
+
+        $tweak = (string) Setting::getByName('tweak.bonus', 'enable');
+        if ($tweak === 'enable' || $tweak === 'disablesave') {
+            $bonus = (float) Setting::getByName('bonus.addcomment', 0);
+            if ($bonus > 0.0) {
+                NexusDB::table('users')
+                    ->where('id', $viewerId)
+                    ->update(['seedbonus' => NexusDB::raw('seedbonus + '.$bonus)]);
+            }
+        }
+
+        NexusDB::cache_del('torrent_'.$torrentId.'_last_comment_content');
+
+        $this->newCommentBody = '';
+        $this->dispatch('comment-posted', commentId: $newId);
+    }
+
+    public function startEditComment(int $commentId): void
+    {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        $comment = $this->fetchOwnTorrentComment($commentId);
+        if ($comment === null || ! $this->viewerCanEditComment($comment, $viewerId)) {
+            return;
+        }
+
+        $this->editingCommentId = $commentId;
+        $this->editingBody = (string) $comment->text;
+    }
+
+    public function cancelEditComment(): void
+    {
+        $this->editingCommentId = null;
+        $this->editingBody = '';
+    }
+
+    public function updateComment(int $commentId): void
+    {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        $comment = $this->fetchOwnTorrentComment($commentId);
+        if ($comment === null || ! $this->viewerCanEditComment($comment, $viewerId)) {
+            return;
+        }
+
+        $body = trim($this->editingBody);
+        if ($body === '') {
+            $this->addError('editingBody', __('comment.std_comment_body_empty'));
+
+            return;
+        }
+
+        $previousBody = (string) $comment->text;
+        $now = Carbon::now()->toDateTimeString();
+
+        if ($previousBody !== $body) {
+            CommentEdit::query()->insert([
+                'commentid' => $commentId,
+                'editor_userid' => $viewerId,
+                'body_before' => $previousBody,
+                'edited_at' => $now,
+            ]);
+        }
+
+        NexusDB::table('comments')
+            ->where('id', $commentId)
+            ->update([
+                'text' => $body,
+                'editdate' => $now,
+                'editedby' => $viewerId,
+            ]);
+
+        NexusDB::cache_del('torrent_'.(int) $this->torrent->id.'_last_comment_content');
+
+        $this->cancelEditComment();
+    }
+
+    public function deleteComment(int $commentId): void
+    {
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if (! $this->viewerCan('commanage', $viewerId)) {
+            return;
+        }
+
+        $comment = $this->fetchOwnTorrentComment($commentId);
+        if ($comment === null) {
+            return;
+        }
+
+        $authorId = (int) $comment->user;
+        $torrentId = (int) $this->torrent->id;
+
+        $deleted = NexusDB::table('comments')->where('id', $commentId)->delete();
+        if ($deleted <= 0) {
+            return;
+        }
+
+        NexusDB::table('torrents')
+            ->where('id', $torrentId)
+            ->update(['comments' => NexusDB::raw('GREATEST(0, comments - 1)')]);
+
+        $tweak = (string) Setting::getByName('tweak.bonus', 'enable');
+        if ($tweak === 'enable' || $tweak === 'disablesave') {
+            $bonus = (float) Setting::getByName('bonus.addcomment', 0);
+            if ($bonus > 0.0 && $authorId > 0) {
+                NexusDB::table('users')
+                    ->where('id', $authorId)
+                    ->update(['seedbonus' => NexusDB::raw('seedbonus - '.$bonus)]);
+            }
+        }
+
+        NexusDB::cache_del('torrent_'.$torrentId.'_last_comment_content');
+
+        if ($this->editingCommentId === $commentId) {
+            $this->cancelEditComment();
+        }
+    }
+
+    private function fetchOwnTorrentComment(int $commentId): ?Comment
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        /** @var Comment|null $row */
+        $row = Comment::query()
+            ->where('id', $commentId)
+            ->where('torrent', (int) $this->torrent->id)
+            ->first();
+
+        return $row;
+    }
+
+    private function viewerCanEditComment(Comment $comment, int $viewerId): bool
+    {
+        if ($viewerId <= 0) {
+            return false;
+        }
+
+        if ((int) $comment->user === $viewerId) {
+            return true;
+        }
+
+        return $this->viewerCan('commanage', $viewerId);
+    }
+
+    private function canPostComment(int $viewerId): bool
+    {
+        if ($viewerId <= 0) {
+            return false;
+        }
+
+        $viewer = User::query()->select(['parked'])->find($viewerId);
+
+        return $viewer !== null && $viewer->parked !== 'yes';
+    }
+
+    private function commentCooldownSeconds(int $viewerId): int
+    {
+        if ($viewerId <= 0) {
+            return 0;
+        }
+
+        if ($this->viewerCan('commanage', $viewerId)) {
+            return 0;
+        }
+
+        $viewer = User::query()->select(['last_comment'])->find($viewerId);
+        if ($viewer === null || $viewer->last_comment === null) {
+            return 0;
+        }
+
+        $elapsed = Carbon::now()->getTimestamp() - $viewer->last_comment->getTimestamp();
+
+        return max(0, self::COMMENT_FLOOD_SECONDS - $elapsed);
+    }
+
+    /**
+     * @return Collection<int,Snatch>
+     */
+    private function loadSnatches(int $viewerId): Collection
+    {
+        if ($this->torrent === null) {
+            return new Collection;
+        }
+
+        /** @var Collection<int,Snatch> $rows */
+        $rows = Snatch::query()
+            ->with(['user:id,username,privacy'])
+            ->where('torrentid', $this->torrent->id)
+            ->where('finished', Snatch::FINISHED_YES)
+            ->orderByDesc('completedat')
+            ->orderByDesc('id')
+            ->get();
+
+        $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
+
+        $rows->each(function (Snatch $snatch) use ($canViewAnonymous, $viewerId): void {
+            $snatchUserId = (int) $snatch->userid;
+            $isOwnRow = $viewerId !== 0 && $viewerId === $snatchUserId;
+            $isStrongPrivacy = $snatch->user?->privacy === 'strong';
+
+            if ($isStrongPrivacy && ! $canViewAnonymous && ! $isOwnRow) {
+                $snatch->setAttribute('display_username', null);
+            } else {
+                $snatch->setAttribute('display_username', $snatch->user?->username);
+            }
+        });
+
+        return $rows;
+    }
+
+    /**
+     * @return Collection<int,Comment>
+     */
+    private function loadComments(int $viewerId): Collection
+    {
+        if ($this->torrent === null) {
+            return new Collection;
+        }
+
+        /** @var Collection<int,Comment> $rows */
+        $rows = Comment::query()
+            ->with(['create_user:id,username,privacy'])
+            ->where('torrent', $this->torrent->id)
+            ->orderBy('id')
+            ->get();
+
+        $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
+
+        $rows->each(function (Comment $comment) use ($canViewAnonymous, $viewerId): void {
+            $authorId = (int) $comment->user;
+            $isOwnRow = $viewerId !== 0 && $viewerId === $authorId;
+            $isStrongPrivacy = $comment->create_user?->privacy === 'strong';
+            $isAnonymousComment = $comment->anonymous === 'yes';
+
+            $shouldHide = ($isStrongPrivacy || $isAnonymousComment)
+                && ! $canViewAnonymous
+                && ! $isOwnRow;
+
+            if ($shouldHide) {
+                $comment->setAttribute('display_username', null);
+            } else {
+                $comment->setAttribute('display_username', $comment->create_user?->username);
+            }
+        });
+
+        return $rows;
     }
 }

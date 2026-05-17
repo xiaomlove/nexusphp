@@ -152,4 +152,63 @@ final class Email
     {
         return preg_match(self::WELL_FORMED_PATTERN, $email) === 1;
     }
+
+    /**
+     * Regex matcher used by legacy `EmailBanned()` / `EmailAllowed()`.
+     * `@host` entries become subdomain-accepting regexes (`@` rewritten
+     * to `[@\.]`); naked entries match by exact equality.
+     *
+     * Two legacy branches are unreachable and intentionally preserved:
+     * entries containing `@` but not starting with one (e.g. `user@host`),
+     * and entries with a trailing `@` (e.g. `user@`) — both are pinned.
+     */
+    public static function matchesRegexList(string $email, string $listValue): bool
+    {
+        $needle = trim(strtolower($email));
+        $normalised = preg_replace('/[[:space:]]+/', ' ', trim($listValue));
+        if ($normalised === null || $normalised === '') {
+            return false;
+        }
+        foreach (explode(' ', $normalised) as $entry) {
+            $entry = trim(strtolower((string) preg_replace('/\./', '\\.', $entry)));
+
+            if (strstr($entry, '@')) {
+                if (preg_match('/^@/', $entry)) {
+                    $rewritten = preg_replace('/^@/', '[@\\.]', $entry);
+                    if (preg_match('/'.$rewritten.'$/', $needle)) {
+                        return true;
+                    }
+                }
+                // Legacy quirk: "user@host" and "user@" entries are unreachable.
+            } elseif (preg_match('/@$/', $entry)) {
+                if (preg_match('/^'.$entry.'/', $needle)) {
+                    return true;
+                }
+            } else {
+                if ($entry === $needle) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Plain case-sensitive `str_ends_with()` matcher used by legacy
+     * `check_email()`. Diverges from {@see matchesRegexList()} in case
+     * sensitivity and lack of subdomain expansion; same banlist can yield
+     * different verdicts depending on which entry point a call site uses.
+     */
+    public static function matchesSuffixList(string $email, string $listValue): bool
+    {
+        $entries = array_filter(preg_split('/[\s]+/', $listValue) ?: []);
+        foreach ($entries as $entry) {
+            if (str_ends_with($email, (string) $entry)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

@@ -3,9 +3,17 @@
     /** @var \App\Models\User|null $owner */
     /** @var \App\Models\TorrentOperationLog|null $banReason */
     /** @var array{0:string,1:string}|null $promotionBadge */
+    /** @var string|null $promotionSubtext */
+    /** @var string $tagsHtml */
+    /** @var array{isp:?string,up:?string,down:?string}|null $uploaderBandwidth */
     /** @var array<string,string> $taxonomy */
     /** @var \Illuminate\Support\Collection<int,\App\Models\File> $files */
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
+    /** @var \Illuminate\Support\Collection<int,\App\Models\Snatch> $snatches */
+    /** @var \Illuminate\Support\Collection<int,\App\Models\Comment> $comments */
+    /** @var bool $canPostComment */
+    /** @var int $commentCooldownSeconds */
+    /** @var bool $viewerCanCommanage */
     /** @var array<string,string> $hotMeter */
     /** @var string $descriptionHtml */
     /** @var string $technicalInfoHtml */
@@ -73,7 +81,14 @@
             <x-ui.badge variant="neutral" size="sm">{{ $category->name }}</x-ui.badge>
         @endif
         @if ($promotionBadge)
-            <x-ui.badge :variant="$promotionBadge[1]" size="sm">{{ $promotionBadge[0] }}</x-ui.badge>
+            <span class="inline-flex items-baseline gap-1" data-test-id="promotion-badge">
+                <x-ui.badge :variant="$promotionBadge[1]" size="sm">{{ $promotionBadge[0] }}</x-ui.badge>
+                @if ($promotionSubtext)
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400" data-test-id="promotion-subtext">
+                        {{ $promotionSubtext }}
+                    </span>
+                @endif
+            </span>
         @endif
         @if ($hasHr)
             <x-ui.badge variant="warning" size="sm">H&amp;R</x-ui.badge>
@@ -92,6 +107,23 @@
         <x-ui.stat label="Leechers" :value="number_format((int) $torrent->leechers)" variant="danger" />
         <x-ui.stat label="Snatched" :value="number_format((int) $torrent->times_completed)" />
     </div>
+
+    @if ($isAuthed && count($actionRow) > 0)
+        <x-ui.card>
+            <div class="flex flex-wrap items-center gap-2"
+                 data-test-id="torrent-action-row">
+                @foreach ($actionRow as $action)
+                    <x-ui.button :href="$action['url']"
+                                 :variant="$action['variant']"
+                                 :title="$action['title']"
+                                 data-test-id="{{ $action['id'] === 'download' ? 'download-btn' : 'action-' . $action['id'] }}"
+                                 data-action="{{ $action['id'] }}">
+                        {{ $action['label'] }}
+                    </x-ui.button>
+                @endforeach
+            </div>
+        </x-ui.card>
+    @endif
 
     @if ($isAuthed)
         <x-ui.card>
@@ -210,6 +242,51 @@
             @endif
         </dl>
     </x-ui.card>
+
+    @if ($tagsHtml !== '')
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Tags
+            </h2>
+            <div class="flex flex-wrap gap-2" data-test-id="torrent-tags">
+                {!! $tagsHtml !!}
+            </div>
+        </x-ui.card>
+    @endif
+
+    @if ($uploaderBandwidth !== null)
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Uploader bandwidth
+            </h2>
+            <dl class="grid gap-4 sm:grid-cols-3" data-test-id="uploader-bandwidth">
+                @if ($uploaderBandwidth['isp'] !== null)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">ISP</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="uploader-isp">
+                            {{ $uploaderBandwidth['isp'] }}
+                        </dd>
+                    </div>
+                @endif
+                @if ($uploaderBandwidth['up'] !== null)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Upload</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="uploader-up">
+                            {{ $uploaderBandwidth['up'] }}
+                        </dd>
+                    </div>
+                @endif
+                @if ($uploaderBandwidth['down'] !== null)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Download</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="uploader-down">
+                            {{ $uploaderBandwidth['down'] }}
+                        </dd>
+                    </div>
+                @endif
+            </dl>
+        </x-ui.card>
+    @endif
 
     @if (! empty($taxonomy))
         <x-ui.card>
@@ -439,10 +516,233 @@
         @endforeach
     </x-ui.card>
 
+    <x-ui.card>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Snatched ({{ number_format($snatches->count()) }})
+        </h2>
+        @if ($snatches->isEmpty())
+            <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="snatches-empty">
+                Nobody has finished this torrent yet.
+            </p>
+        @else
+            <div class="overflow-x-auto" data-test-id="snatches-table">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        <tr>
+                            <th class="py-2 pr-4 font-medium">User</th>
+                            <th class="py-2 pr-4 font-medium text-right">Uploaded</th>
+                            <th class="py-2 pr-4 font-medium text-right">Downloaded</th>
+                            <th class="py-2 pr-4 font-medium text-right">Ratio</th>
+                            <th class="py-2 pr-4 font-medium text-right">Seed time</th>
+                            <th class="py-2 pr-4 font-medium text-right">Leech time</th>
+                            <th class="py-2 pr-4 font-medium text-right">Completed</th>
+                            <th class="py-2 pr-4 font-medium text-right">Last action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                        @foreach ($snatches as $snatch)
+                            @php
+                                $snatchUsername = $snatch->getAttribute('display_username');
+                                $isOwnSnatchRow = $viewerId !== 0 && (int) $snatch->userid === $viewerId;
+                                $snatchUploaded = (int) $snatch->uploaded;
+                                $snatchDownloaded = (int) $snatch->downloaded;
+                                if ($snatchDownloaded > 0) {
+                                    $snatchRatio = number_format($snatchUploaded / $snatchDownloaded, 3);
+                                } elseif ($snatchUploaded > 0) {
+                                    $snatchRatio = '∞';
+                                } else {
+                                    $snatchRatio = '—';
+                                }
+                                $completedTs = $snatch->completedat ? $snatch->completedat->timestamp : null;
+                                $lastActionTs = $snatch->last_action ? $snatch->last_action->timestamp : null;
+                            @endphp
+                            <tr data-test-id="snatch-row"
+                                data-snatch-id="{{ $snatch->id }}"
+                                data-user-id="{{ (int) $snatch->userid }}"
+                                @class(['bg-amber-50 dark:bg-amber-900/20' => $isOwnSnatchRow])>
+                                <td class="py-2 pr-4 break-all text-zinc-900 dark:text-zinc-100" data-test-id="snatch-user">
+                                    @if ($snatchUsername === null)
+                                        <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
+                                    @else
+                                        {{ $snatchUsername }}
+                                    @endif
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatPeerSize($snatchUploaded) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatPeerSize($snatchDownloaded) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100" data-test-id="snatch-ratio">
+                                    {{ $snatchRatio }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatDuration((int) $snatch->seedtime) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                                    {{ $formatDuration((int) $snatch->leechtime) }}
+                                </td>
+                                <td class="py-2 pr-4 text-right text-zinc-900 dark:text-zinc-100">
+                                    {{ $completedTs !== null ? date('Y-m-d H:i', $completedTs) : '—' }}
+                                </td>
+                                <td class="py-2 pr-4 text-right text-zinc-900 dark:text-zinc-100">
+                                    {{ $lastActionTs !== null ? date('Y-m-d H:i', $lastActionTs) : '—' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </x-ui.card>
+
+    <x-ui.card>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400" data-test-id="comments-heading">
+            Comments ({{ number_format($comments->count()) }})
+        </h2>
+        @if ($comments->isEmpty())
+            <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="comments-empty">
+                No comments yet.
+            </p>
+        @else
+            <ul class="space-y-4" data-test-id="comments-list">
+                @foreach ($comments as $comment)
+                    @php
+                        $commentUsername = $comment->getAttribute('display_username');
+                        $isOwnComment = $viewerId !== 0 && (int) $comment->user === $viewerId;
+                        $addedTs = $comment->added ? $comment->added->timestamp : null;
+                        $editedTs = $comment->editdate ? $comment->editdate->timestamp : null;
+                    @endphp
+                    @php
+                        $canEdit = $isAuthed && ($isOwnComment || $viewerCanCommanage);
+                        $canDelete = $viewerCanCommanage;
+                        $isEditing = $editingCommentId === (int) $comment->id;
+                    @endphp
+                    <li data-test-id="comment-row"
+                        data-comment-id="{{ $comment->id }}"
+                        data-user-id="{{ (int) $comment->user }}"
+                        @class([
+                            'rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900',
+                            'ring-1 ring-amber-400/40' => $isOwnComment,
+                        ])>
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100" data-test-id="comment-author">
+                                @if ($commentUsername === null)
+                                    <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
+                                @else
+                                    {{ $commentUsername }}
+                                @endif
+                            </p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400" data-test-id="comment-added">
+                                {{ $addedTs !== null ? date('Y-m-d H:i', $addedTs) : '—' }}
+                            </p>
+                        </div>
+                        @if ($isEditing)
+                            <div class="mt-2" data-test-id="comment-edit-form" data-comment-id="{{ $comment->id }}">
+                                <textarea
+                                    wire:model="editingBody"
+                                    rows="3"
+                                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                                    data-test-id="comment-edit-body"></textarea>
+                                @error('editingBody')
+                                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400" data-test-id="comment-edit-error">{{ $message }}</p>
+                                @enderror
+                                <div class="mt-2 flex flex-wrap items-center gap-2">
+                                    <x-ui.button
+                                        wire:click="updateComment({{ (int) $comment->id }})"
+                                        variant="primary"
+                                        size="sm"
+                                        data-test-id="comment-edit-save">
+                                        Save
+                                    </x-ui.button>
+                                    <x-ui.button
+                                        wire:click="cancelEditComment"
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        data-test-id="comment-edit-cancel">
+                                        Cancel
+                                    </x-ui.button>
+                                </div>
+                            </div>
+                        @else
+                            <div class="mt-2 break-words text-sm text-zinc-800 dark:text-zinc-100" data-test-id="comment-body">
+                                {!! \App\Support\BbcodeRenderer::toHtml((string) $comment->text) !!}
+                            </div>
+                            @if ($editedTs !== null)
+                                <p class="mt-2 text-xs italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-edited">
+                                    Edited {{ date('Y-m-d H:i', $editedTs) }}
+                                </p>
+                            @endif
+                            @if ($canEdit || $canDelete)
+                                <div class="mt-2 flex flex-wrap items-center gap-2" data-test-id="comment-actions">
+                                    @if ($canEdit)
+                                        <button
+                                            type="button"
+                                            wire:click="startEditComment({{ (int) $comment->id }})"
+                                            class="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
+                                            data-test-id="comment-edit-btn">
+                                            Edit
+                                        </button>
+                                    @endif
+                                    @if ($canDelete)
+                                        <button
+                                            type="button"
+                                            wire:click="deleteComment({{ (int) $comment->id }})"
+                                            wire:confirm="Delete this comment?"
+                                            class="text-xs font-medium text-rose-600 hover:underline dark:text-rose-400"
+                                            data-test-id="comment-delete-btn">
+                                            Delete
+                                        </button>
+                                    @endif
+                                </div>
+                            @endif
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        @if ($isAuthed)
+            <div class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-800" data-test-id="comment-reply">
+                @if (! $canPostComment)
+                    <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-reply-disabled">
+                        Your account is parked. Comments are disabled.
+                    </p>
+                @else
+                    <label for="new-comment-body" class="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                        Reply
+                    </label>
+                    <textarea
+                        id="new-comment-body"
+                        wire:model="newCommentBody"
+                        rows="3"
+                        placeholder="Write a comment…"
+                        class="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                        data-test-id="comment-reply-body"></textarea>
+                    @error('newCommentBody')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400" data-test-id="comment-reply-error">{{ $message }}</p>
+                    @enderror
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <x-ui.button
+                            wire:click="postComment"
+                            variant="primary"
+                            size="sm"
+                            data-test-id="comment-reply-submit">
+                            Post comment
+                        </x-ui.button>
+                        @if ($commentCooldownSeconds > 0)
+                            <span class="text-xs italic text-zinc-500 dark:text-zinc-400" data-test-id="comment-reply-cooldown">
+                                Wait {{ $commentCooldownSeconds }}s before posting again.
+                            </span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        @endif
+    </x-ui.card>
+
     <div class="flex flex-wrap items-center gap-2">
-        <x-ui.button href="/download.php?id={{ $torrent->id }}" variant="primary" data-test-id="download-btn">
-            Download .torrent
-        </x-ui.button>
         <x-ui.button href="/browse" variant="secondary">
             ← Back to browse
         </x-ui.button>

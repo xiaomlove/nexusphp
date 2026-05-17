@@ -215,6 +215,7 @@ Strangler flip applied at the head of `public/forums.php`:
 | `/forums.php?action=quotepost&postid=N` | `/forum/post/N?compose=quote` → `/forum/{forumid}/topic/{topicid}?quote=N#reply` | `TopicView` + inline `ReplyForm` (prefilled) |
 | `/forums.php?action=editpost&postid=N` | `/forum/post/N?compose=edit` → `/forum/{forumid}/topic/{topicid}?edit=N#post-N` | `TopicView` + inline `EditPostForm` (pre-opened) |
 | `/forums.php?action=viewunread` | `/forum/unread` (cursor `?beforepostid=N` preserved) | `ForumUnread` |
+| `/forums.php?action=search` | `/forum/search` (`?keywords=...` preserved) | `ForumSearch` |
 
 `viewtopic` is a two-hop redirect because `TopicView` needs both
 `forumid` and `topicid`, but the legacy URL only carries `topicid`.
@@ -238,14 +239,16 @@ Escape hatches that stay on legacy:
 - Admin actions (`movetopic`, `deletetopic`, `deletepost`,
   `setlocked`, `hltopic`, `setsticky`) — no Livewire equivalent yet,
   blocked on a Filament/Livewire admin moderation surface.
-- `?action=search` — no Livewire equivalent yet; candidate for a
-  dedicated `ForumSearch` Livewire component.
-- `?catchup=1` — the write-side companion to `viewunread`. It
-  clears the user's `readposts` rows and pins
-  `users.last_catchup` to the latest post id. The Livewire
-  `ForumUnread` component links to the legacy handler verbatim;
-  migrating the write action will follow once a dedicated
-  `forum.catchup` POST route exists.
+
+- `?catchup=1` — the legacy GET form of the catch-up action.
+  Modern callers use the Livewire `ForumUnread::catchUp()` method
+  (wired to the "Catch up" button on `/forum/unread`), which
+  performs the same three steps as the legacy handler (delete
+  `readposts` for the user, bump `users.last_catchup` to
+  `max(posts.id)`, forget the legacy
+  `user_<id>_last_read_post_list` cache key). The legacy GET stays
+  as an escape hatch for direct hits (e.g. the legacy forum index
+  footer link) until the legacy index is also retired.
 
 Contract is covered by `tests/e2e/behavior/forums-flip.spec.ts`.
 After every escape hatch has been retired the file goes to a single
