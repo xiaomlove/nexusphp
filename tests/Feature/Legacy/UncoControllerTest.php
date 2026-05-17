@@ -3,6 +3,7 @@
 namespace Tests\Feature\Legacy;
 
 use App\Models\User;
+use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
@@ -43,7 +44,7 @@ class UncoControllerTest extends FeatureTestCase
 
     public function test_below_moderator_is_forbidden(): void
     {
-        $user = $this->createTestUser(['class' => User::CLASS_USER]);
+        $user = $this->createConfirmedUser(['class' => User::CLASS_USER]);
         $this->actingAs($user, 'nexus-web');
 
         $this->get('/unco.php')->assertForbidden();
@@ -51,8 +52,9 @@ class UncoControllerTest extends FeatureTestCase
 
     public function test_no_pending_users_renders_nothing_found_notice(): void
     {
-        $mod = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $mod = $this->createConfirmedUser(['class' => User::CLASS_MODERATOR]);
         $this->actingAs($mod, 'nexus-web');
+        $this->purgePendingUsers();
 
         $response = $this->get('/unco.php');
 
@@ -65,8 +67,9 @@ class UncoControllerTest extends FeatureTestCase
 
     public function test_status_flag_with_no_pending_users_renders_updated_notice(): void
     {
-        $mod = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $mod = $this->createConfirmedUser(['class' => User::CLASS_MODERATOR]);
         $this->actingAs($mod, 'nexus-web');
+        $this->purgePendingUsers();
 
         $response = $this->get('/unco.php?status=1');
 
@@ -78,13 +81,13 @@ class UncoControllerTest extends FeatureTestCase
 
     public function test_pending_users_render_table_with_modtask_forms(): void
     {
-        $mod = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $mod = $this->createConfirmedUser(['class' => User::CLASS_MODERATOR]);
         $this->actingAs($mod, 'nexus-web');
+        $this->purgePendingUsers();
 
-        $pending = $this->createPendingUser(overrides: [
+        $pending = $this->createForcedPendingUser([
             'username' => 'pendinguser_'.bin2hex(random_bytes(3)),
             'email' => 'pending@example.test',
-            'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
 
         $response = $this->get('/unco.php');
@@ -103,12 +106,11 @@ class UncoControllerTest extends FeatureTestCase
 
     public function test_status_flag_with_pending_users_renders_banner_above_table(): void
     {
-        $mod = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $mod = $this->createConfirmedUser(['class' => User::CLASS_MODERATOR]);
         $this->actingAs($mod, 'nexus-web');
+        $this->purgePendingUsers();
 
-        $pending = $this->createPendingUser(overrides: [
-            'lang' => self::ENGLISH_LANGUAGE_ID,
-        ]);
+        $pending = $this->createForcedPendingUser();
 
         $response = $this->get('/unco.php?status=1');
 
@@ -120,10 +122,11 @@ class UncoControllerTest extends FeatureTestCase
 
     public function test_confirmed_users_are_filtered_out(): void
     {
-        $mod = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $mod = $this->createConfirmedUser(['class' => User::CLASS_MODERATOR]);
         $this->actingAs($mod, 'nexus-web');
+        $this->purgePendingUsers();
 
-        $confirmed = $this->createTestUser([
+        $confirmed = $this->createConfirmedUser([
             'username' => 'visible_confirmed_'.bin2hex(random_bytes(3)),
         ]);
 
@@ -131,19 +134,18 @@ class UncoControllerTest extends FeatureTestCase
 
         $response->assertOk();
         $body = (string) $response->getContent();
-        // No pending users → "Nothing Found" notice.
         $this->assertStringContainsString('Nothing Found', $body);
         $this->assertStringNotContainsString($confirmed->username, $body);
     }
 
     public function test_html_in_username_is_escaped(): void
     {
-        $mod = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $mod = $this->createConfirmedUser(['class' => User::CLASS_MODERATOR]);
         $this->actingAs($mod, 'nexus-web');
+        $this->purgePendingUsers();
 
-        $pending = $this->createPendingUser(overrides: [
+        $pending = $this->createForcedPendingUser([
             'username' => '<script>alert(1)</script>',
-            'lang' => self::ENGLISH_LANGUAGE_ID,
         ]);
 
         $response = $this->get('/unco.php');
@@ -151,20 +153,49 @@ class UncoControllerTest extends FeatureTestCase
         $body = (string) $response->getContent();
         $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $body);
-        // The userdetails link still points at the right id.
         $this->assertStringContainsString('userdetails.php?id='.$pending->id, $body);
     }
 
     /**
      * @param  array<string,mixed>  $overrides
      */
-    private function createTestUser(array $overrides = []): User
+    private function createConfirmedUser(array $overrides = []): User
     {
-        return $this->createLegacyUser(
+        $user = $this->createLegacyUser(
             overrides: array_merge(
                 ['lang' => self::ENGLISH_LANGUAGE_ID],
                 $overrides,
             ),
         );
+        NexusDB::table('users')
+            ->where('id', $user->id)
+            ->update(['status' => User::STATUS_CONFIRMED]);
+        $user->status = User::STATUS_CONFIRMED;
+
+        return $user;
+    }
+
+    /**
+     * @param  array<string,mixed>  $overrides
+     */
+    private function createForcedPendingUser(array $overrides = []): User
+    {
+        $user = $this->createPendingUser(overrides: array_merge(
+            ['lang' => self::ENGLISH_LANGUAGE_ID],
+            $overrides,
+        ));
+        NexusDB::table('users')
+            ->where('id', $user->id)
+            ->update(['status' => User::STATUS_PENDING]);
+        $user->status = User::STATUS_PENDING;
+
+        return $user;
+    }
+
+    private function purgePendingUsers(): void
+    {
+        NexusDB::table('users')
+            ->where('status', User::STATUS_PENDING)
+            ->delete();
     }
 }

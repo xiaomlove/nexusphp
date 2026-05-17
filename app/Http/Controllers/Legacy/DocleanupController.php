@@ -86,7 +86,15 @@ class DocleanupController extends Controller
         }
 
         $tstart = microtime(true);
-        $result = (string) call_user_func('docleanup', $forceall, 1);
+        try {
+            $result = (string) call_user_func('docleanup', $forceall, 1);
+        } catch (\Throwable $e) {
+            $result = '<strong>Cleanup aborted</strong>: '.htmlspecialchars(
+                $e->getMessage(),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8',
+            );
+        }
         $tend = microtime(true);
         $elapsed = $tend - $tstart;
 
