@@ -88,4 +88,32 @@ final class Strings
     {
         return '<span class="hidden-text">'.$text.'</span>';
     }
+
+    /**
+     * Case-insensitive substring highlight. Wraps each match of
+     * `$needle` inside `$haystack` with `$open` / `$close`, preserving
+     * the original case of each match (via `substr` after `stristr`).
+     * Empty needle returns `$haystack` unchanged. Pinned by the legacy
+     * `highlight()` contract; do not switch to `preg_replace` — `$needle`
+     * is user-supplied and may contain regex metacharacters.
+     */
+    public static function highlight(
+        string $needle,
+        string $haystack,
+        string $open = '<b><font class="striking">',
+        string $close = '</font></b>',
+    ): string {
+        $needleLength = strlen($needle);
+        if ($needleLength === 0) {
+            return $haystack;
+        }
+        $cursor = $haystack;
+        while (($cursor = stristr($cursor, $needle)) !== false) {
+            $match = substr($cursor, 0, $needleLength);
+            $cursor = substr($cursor, $needleLength);
+            $haystack = str_replace($match, $open.$match.$close, $haystack);
+        }
+
+        return $haystack;
+    }
 }

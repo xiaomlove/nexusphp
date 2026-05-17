@@ -101,36 +101,7 @@ function sqlerr($file = '', $line = '')
 
 function format_quotes($s)
 {
-	preg_match_all('/\\[quote.*?\\]/i', $s, $result, PREG_PATTERN_ORDER);
-	$openquotecount = count($openquote = $result[0]);
-	preg_match_all('/\\[\/quote\\]/i', $s, $result, PREG_PATTERN_ORDER);
-	$closequotecount = count($closequote = $result[0]);
-
-	if ($openquotecount != $closequotecount) return $s; // quote mismatch. Return raw string...
-
-	// Get position of opening quotes
-	$openval = array();
-	$pos = -1;
-
-	foreach($openquote as $val)
-	$openval[] = $pos = strpos($s,$val,$pos+1);
-
-	// Get position of closing quotes
-	$closeval = array();
-	$pos = -1;
-
-	foreach($closequote as $val)
-	$closeval[] = $pos = strpos($s,$val,$pos+1);
-
-
-	for ($i=0; $i < count($openval); $i++)
-	if ($openval[$i] > $closeval[$i]) return $s; // Cannot close before opening. Return raw string...
-
-    $textQuote = nexus_trans("label.text_quote");
-	$s = preg_replace("/\\[quote\\]/i","<fieldset><legend> ".$textQuote." </legend><br />",$s);
-	$s = preg_replace("/\\[quote=(.+?)\\]/i", "<fieldset><legend> ".$textQuote.": \\1 </legend><br />", $s);
-	$s = preg_replace("/\\[\\/quote\\]/i","</fieldset><br />",$s);
-	return $s;
+	return \App\Support\BBCode::quotes((string) $s, (string) nexus_trans('label.text_quote'));
 }
 
 function print_attachment($dlkey, $enableimage = true, $imageresizer = true)
@@ -437,16 +408,7 @@ function format_comment($text, $strip_html = true, $xssclean = false, $newtab = 
 
 function highlight($search,$subject,$hlstart='<b><font class="striking">',$hlend="</font></b>")
 {
-
-	$srchlen=strlen($search);    // lenght of searched string
-	if ($srchlen==0) return $subject;
-	$find = $subject;
-	while ($find = stristr($find,$search)) {    // find $search text in $subject -case insensitiv
-		$srchtxt = substr($find,0,$srchlen);    // get new search text
-		$find=substr($find,$srchlen);
-		$subject = str_replace($srchtxt,"$hlstart$srchtxt$hlend",$subject);    // highlight founded case insensitive search text
-	}
-	return $subject;
+	return \App\Support\Strings::highlight((string) $search, (string) $subject, (string) $hlstart, (string) $hlend);
 }
 
 
@@ -5620,28 +5582,11 @@ function attachmentUrl($location, $width = null, $height = null, $options = [])
 
 function strip_all_tags($text)
 {
-    //替换掉无参数标签
-    $bbTags = [
-        '[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[s]', '[/s]', '[pre]', '[/pre]', '[quote]', '[/quote]',
-        '[/color]', '[/font]', '[/size]', '[/url]', '[/youtube]', '[/spoiler]',
-    ];
-    $text = str_replace($bbTags, '', $text);
-    //替换掉有参数标签
-    $pattern = '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]|\[youtube.*\]|\[spoiler.*\]/isU';
-    $text = preg_replace($pattern, "", $text);
-    //去掉表情
     static $emoji = null;
     if (is_null($emoji)) {
         $emoji = nexus_config('emoji');
     }
-//    $text = preg_replace("/\[em([1-9][0-9]*)\]/isU", "", $text);
-    $text = preg_replace_callback("/\[em([1-9][0-9]*)\]/isU", function ($matches) use ($emoji) {
-        return $emoji[$matches[1]] ?? '';
-    }, $text);
-
-    $text = strip_tags($text);
-
-    return trim($text);
+    return \App\Support\BBCode::stripAll((string) $text, is_array($emoji) ? $emoji : []);
 }
 
 function format_description($description)
