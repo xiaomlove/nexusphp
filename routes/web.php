@@ -19,6 +19,7 @@ use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
+use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
@@ -508,6 +509,20 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/getattachment.php', GetAttachmentController::class)
         ->name('legacy.getattachment');
+
+    /*
+     * Phase 2 — replaces `public/downloadsubs.php` (deleted in the
+     * same PR). The subtitle-download endpoint linked from
+     * `public/details.php:274`, `public/subtitles.php:368`,
+     * `public/reports.php:145`, and `public/report.php:228`. The URL
+     * is unchanged so all existing hrefs keep working without
+     * template edits. Lives inside the `auth.nexus:nexus-web` group
+     * because the legacy script bailed for guests via
+     * `if (! $CURUSER)` — the new redirect to `login.php?returnto=...`
+     * is strictly more useful than the legacy redirect to `/`.
+     */
+    Route::get('/downloadsubs.php', DownloadSubsController::class)
+        ->name('legacy.downloadsubs');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
