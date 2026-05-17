@@ -308,7 +308,6 @@ class TorrentDetailTest extends FeatureTestCase
         TorrentTag::create([
             'torrent_id' => $torrentId,
             'tag_id' => $tagId,
-            'priority' => 1,
         ]);
 
         Livewire::actingAs($owner, 'nexus-web')
