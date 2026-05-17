@@ -3,6 +3,9 @@
     /** @var \App\Models\User|null $owner */
     /** @var \App\Models\TorrentOperationLog|null $banReason */
     /** @var array{0:string,1:string}|null $promotionBadge */
+    /** @var string|null $promotionSubtext */
+    /** @var string $tagsHtml */
+    /** @var array{isp:?string,up:?string,down:?string}|null $uploaderBandwidth */
     /** @var array<string,string> $taxonomy */
     /** @var \Illuminate\Support\Collection<int,\App\Models\File> $files */
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
@@ -75,7 +78,14 @@
             <x-ui.badge variant="neutral" size="sm">{{ $category->name }}</x-ui.badge>
         @endif
         @if ($promotionBadge)
-            <x-ui.badge :variant="$promotionBadge[1]" size="sm">{{ $promotionBadge[0] }}</x-ui.badge>
+            <span class="inline-flex items-baseline gap-1" data-test-id="promotion-badge">
+                <x-ui.badge :variant="$promotionBadge[1]" size="sm">{{ $promotionBadge[0] }}</x-ui.badge>
+                @if ($promotionSubtext)
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400" data-test-id="promotion-subtext">
+                        {{ $promotionSubtext }}
+                    </span>
+                @endif
+            </span>
         @endif
         @if ($hasHr)
             <x-ui.badge variant="warning" size="sm">H&amp;R</x-ui.badge>
@@ -229,6 +239,51 @@
             @endif
         </dl>
     </x-ui.card>
+
+    @if ($tagsHtml !== '')
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Tags
+            </h2>
+            <div class="flex flex-wrap gap-2" data-test-id="torrent-tags">
+                {!! $tagsHtml !!}
+            </div>
+        </x-ui.card>
+    @endif
+
+    @if ($uploaderBandwidth !== null)
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Uploader bandwidth
+            </h2>
+            <dl class="grid gap-4 sm:grid-cols-3" data-test-id="uploader-bandwidth">
+                @if ($uploaderBandwidth['isp'] !== null)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">ISP</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="uploader-isp">
+                            {{ $uploaderBandwidth['isp'] }}
+                        </dd>
+                    </div>
+                @endif
+                @if ($uploaderBandwidth['up'] !== null)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Upload</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="uploader-up">
+                            {{ $uploaderBandwidth['up'] }}
+                        </dd>
+                    </div>
+                @endif
+                @if ($uploaderBandwidth['down'] !== null)
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Download</dt>
+                        <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100" data-test-id="uploader-down">
+                            {{ $uploaderBandwidth['down'] }}
+                        </dd>
+                    </div>
+                @endif
+            </dl>
+        </x-ui.card>
+    @endif
 
     @if (! empty($taxonomy))
         <x-ui.card>
