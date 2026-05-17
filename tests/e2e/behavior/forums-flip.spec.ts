@@ -417,7 +417,7 @@ test.describe('@behavior Strangler Fig flip: /forums.php → /forum', () => {
         expect(response.status()).toBe(302);
         const location = response.headers()['location'] ?? '';
         expect(location).toContain('/forum/search?');
-        expect(location).toMatch(/keywords=hello[+%]20?world|keywords=hello%2Bworld/);
+        expect(location).toMatch(/keywords=hello(\+|%20|%2B)world/);
     });
 
     test('/forum/search renders the Livewire ForumSearch component', async ({
