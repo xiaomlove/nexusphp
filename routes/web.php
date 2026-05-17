@@ -41,6 +41,7 @@ use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
+use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffMessController;
@@ -545,6 +546,21 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::match(['get', 'post'], '/reset.php', ResetController::class)
         ->name('legacy.reset');
+
+    /*
+     * Phase 2 — replaces `public/self-enable.php` (deleted in this
+     * PR). User-facing "buy your way out of a ban with seedbonus"
+     * page. The URL is the redirect target of
+     * `include/functions.php:3169` (`nexus_redirect('self-enable.php')`
+     * fires from `loggedinorreturn()` whenever a logged-in user with
+     * `enabled != 'yes'` hits any other legacy page), so the route
+     * must be reachable to disabled users — the `auth.nexus` guard
+     * authenticates them but does not gate on `enabled`. Accepts
+     * both GET (form render) and POST (legacy `<form method=post>`
+     * confirmation submit); CSRF-exempt for the legacy form.
+     */
+    Route::match(['get', 'post'], '/self-enable.php', SelfEnableController::class)
+        ->name('legacy.selfenable');
 
     /*
      * Phase 3 — replaces `public/bonus-log.php` (deleted in this PR).
