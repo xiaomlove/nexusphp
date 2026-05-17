@@ -15,11 +15,26 @@ class FastDeleteControllerTest extends FeatureTestCase
 
     private const ENGLISH_LANGUAGE_ID = 6;
 
+    /** @var array<int,string> */
+    private array $createdTorrentFiles = [];
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $_SERVER['REQUEST_URI'] = '/fastdelete.php';
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->createdTorrentFiles as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+        $this->createdTorrentFiles = [];
+
+        parent::tearDown();
     }
 
     public function test_guest_request_redirects_to_login(): void
@@ -97,6 +112,7 @@ class FastDeleteControllerTest extends FeatureTestCase
 
         $owner = $this->createTestUser();
         $torrentId = $this->insertTorrent('ubuntu-iso', $owner->id);
+        $this->seedTorrentFile($torrentId);
 
         $this->get('/fastdelete.php?id='.$torrentId.'&sure=1')
             ->assertRedirect('/torrents.php');
@@ -124,6 +140,7 @@ class FastDeleteControllerTest extends FeatureTestCase
         $this->actingAs($admin, 'nexus-web');
 
         $torrentId = $this->insertTorrent('self-deleted-iso', $admin->id);
+        $this->seedTorrentFile($torrentId);
         $pmsBefore = (int) Message::query()->where('sender', 0)->count();
 
         $this->get('/fastdelete.php?id='.$torrentId.'&sure=1')
@@ -159,6 +176,18 @@ class FastDeleteControllerTest extends FeatureTestCase
             'anonymous' => 'no',
             'added' => Carbon::now()->toDateTimeString(),
         ]);
+    }
+
+    private function seedTorrentFile(int $torrentId): void
+    {
+        $dir = (string) get_setting('main.torrent_dir');
+        $base = is_dir($dir) ? $dir : ROOT_PATH.$dir;
+        if (! is_dir($base)) {
+            mkdir($base, 0o755, true);
+        }
+        $path = $base.'/'.$torrentId.'.torrent';
+        file_put_contents($path, 'dummy');
+        $this->createdTorrentFiles[] = $path;
     }
 
     /**
