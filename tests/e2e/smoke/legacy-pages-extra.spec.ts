@@ -21,9 +21,11 @@ import { smokeCheckPage } from '../helpers/smoke';
  *     legitimately lacks jQuery (a pre-existing template quirk unrelated
  *     to the PR #25/#28 refactor). Both are excluded from this smoke
  *     parameter list — the bookmark refactor (PR #25) is covered
- *     indirectly by `/torrents.php?bookmarks=1` which renders the user's
- *     bookmarks tab, and the invite refactor (PR #28) is covered by the
- *     existing PHPUnit Feature suite.
+ *     indirectly by `/torrents.php?legacy=1&inclbookmarked=1` which
+ *     renders the user's bookmarks tab on the legacy canary (the modern
+ *     `/browse?inclbookmarked=only` equivalent is covered separately by
+ *     the Livewire `TorrentBrowse` tests), and the invite refactor
+ *     (PR #28) is covered by the existing PHPUnit Feature suite.
  *   - `/report.php` and `/userhistory.php?id=1` render the standard
  *     error template when no `id`/`type` matches real data; the smoke
  *     check still exercises the bootstrap + DB-init paths that the
@@ -56,8 +58,14 @@ const PAGES: LegacyPageCase[] = [
         contains: /NexusPHP\s*::\s*Forums/i,
     },
     {
-        description: 'torrents.php?bookmarks=1 (PR #25 bookmark list view)',
-        url: '/torrents.php?bookmarks=1',
+        // /torrents.php?bookmarks=1 now 302→/browse?inclbookmarked=only
+        // (Strangler Fig flip). The legacy bookmark tab is reachable
+        // via the rollback canary URL — that's the surface this
+        // smoke covers (legacy bookmark filter param is
+        // ?inclbookmarked=1, not ?bookmarks=1, which was always just
+        // an escape-hatch flag).
+        description: 'torrents.php?legacy=1&inclbookmarked=1 (PR #25 bookmark list view; canary post-flip)',
+        url: '/torrents.php?legacy=1&inclbookmarked=1',
         contains: /NexusPHP\s*::\s*Torrents/i,
     },
     {
