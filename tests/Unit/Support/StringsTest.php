@@ -105,4 +105,65 @@ class StringsTest extends TestCase
             Strings::hidden('<b>raw</b>'),
         );
     }
+
+    // ---------- highlight ----------
+
+    public function test_highlight_wraps_single_match(): void
+    {
+        $this->assertSame(
+            'before <b><font class="striking">match</font></b> after',
+            Strings::highlight('match', 'before match after'),
+        );
+    }
+
+    public function test_highlight_is_case_insensitive_but_preserves_matched_case(): void
+    {
+        $this->assertSame(
+            'a <b><font class="striking">Foo</font></b> b <b><font class="striking">FOO</font></b> c',
+            Strings::highlight('foo', 'a Foo b FOO c'),
+        );
+    }
+
+    public function test_highlight_empty_needle_returns_subject_unchanged(): void
+    {
+        $this->assertSame('unchanged', Strings::highlight('', 'unchanged'));
+    }
+
+    public function test_highlight_no_match_returns_subject_unchanged(): void
+    {
+        $this->assertSame('nothing here', Strings::highlight('xyz', 'nothing here'));
+    }
+
+    public function test_highlight_respects_custom_wrappers(): void
+    {
+        $this->assertSame(
+            '<<HIT>>',
+            Strings::highlight('HIT', '<HIT>', '<', '>'),
+        );
+    }
+
+    public function test_highlight_double_wraps_repeated_matches_legacy_quirk(): void
+    {
+        // Legacy quirk: each `stristr` iteration runs `str_replace` on
+        // the current `$subject`, which already contains the wrapper
+        // from the previous iteration. Two matches → two passes → the
+        // first wrapper gets re-wrapped. A "safe" refactor would emit
+        // each match wrapped only once, but call sites have been
+        // rendering this nested HTML for years and we keep it.
+        $this->assertSame(
+            'a<b><font class="striking"><b><font class="striking">x</font></b></font></b>'
+                .'b<b><font class="striking"><b><font class="striking">x</font></b></font></b>c',
+            Strings::highlight('x', 'axbxc'),
+        );
+    }
+
+    public function test_highlight_does_not_treat_needle_as_regex(): void
+    {
+        // Legacy contract: needle is a literal substring. A regex
+        // metacharacter survives intact.
+        $this->assertSame(
+            'before <b><font class="striking">a.b</font></b> after',
+            Strings::highlight('a.b', 'before a.b after'),
+        );
+    }
 }

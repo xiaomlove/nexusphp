@@ -322,4 +322,129 @@ class BBCodeTest extends TestCase
         $html = BBCode::textAlign('x', 'right; color: red');
         $this->assertStringContainsString('style="text-align: right; color: red"', $html);
     }
+
+    // ---------- quotes ----------
+
+    public function test_quotes_rewrites_simple_quote_block(): void
+    {
+        $this->assertSame(
+            '<fieldset><legend> Quote </legend><br />hello</fieldset><br />',
+            BBCode::quotes('[quote]hello[/quote]', 'Quote'),
+        );
+    }
+
+    public function test_quotes_rewrites_quote_with_author(): void
+    {
+        $this->assertSame(
+            '<fieldset><legend> Quote: alice </legend><br />hi</fieldset><br />',
+            BBCode::quotes('[quote=alice]hi[/quote]', 'Quote'),
+        );
+    }
+
+    public function test_quotes_returns_input_verbatim_on_tag_count_mismatch(): void
+    {
+        // Pinned legacy contract: unbalanced [quote]/[/quote] means we
+        // hand back the raw input rather than emitting half-open HTML.
+        $this->assertSame('[quote]oops', BBCode::quotes('[quote]oops', 'Quote'));
+        $this->assertSame('oops[/quote]', BBCode::quotes('oops[/quote]', 'Quote'));
+    }
+
+    public function test_quotes_returns_input_verbatim_when_close_precedes_open(): void
+    {
+        // Even with matching counts, if any [/quote] sits before its
+        // paired [quote] by index, legacy bails out and returns raw
+        // input rather than emitting broken HTML.
+        $input = '[/quote]something[quote]other[/quote]';
+        $this->assertSame($input, BBCode::quotes($input, 'Quote'));
+    }
+
+    public function test_quotes_handles_nested_blocks_in_legacy_order(): void
+    {
+        // Pinned: as long as each opening tag's position is <= the
+        // matching closing tag's position by index, the rewrite fires.
+        $input = '[quote=a][quote=b]x[/quote][/quote]';
+        $output = BBCode::quotes($input, 'Quote');
+        $this->assertStringContainsString('<fieldset><legend> Quote: a </legend>', $output);
+        $this->assertStringContainsString('<fieldset><legend> Quote: b </legend>', $output);
+        $this->assertSame(
+            2,
+            substr_count($output, '</fieldset><br />'),
+        );
+    }
+
+    public function test_quotes_is_case_insensitive(): void
+    {
+        $this->assertStringContainsString(
+            '<fieldset><legend> Quote </legend>',
+            BBCode::quotes('[QUOTE]x[/QUOTE]', 'Quote'),
+        );
+    }
+
+    public function test_quotes_passes_through_text_with_no_quote_tags(): void
+    {
+        $this->assertSame('plain text', BBCode::quotes('plain text', 'Quote'));
+    }
+
+    // ---------- stripAll ----------
+
+    public function test_strip_all_removes_parameterless_bbcode_tags(): void
+    {
+        $this->assertSame(
+            'bold italic',
+            BBCode::stripAll('[b]bold[/b] [i]italic[/i]', []),
+        );
+    }
+
+    public function test_strip_all_removes_parametered_bbcode_tags_via_regex(): void
+    {
+        $this->assertSame(
+            'link colour size font',
+            BBCode::stripAll('[url=http://x]link[/url] [color=red]colour[/color] [size=12]size[/size] [font=arial]font[/font]', []),
+        );
+    }
+
+    public function test_strip_all_resolves_known_emoji_to_replacement(): void
+    {
+        $this->assertSame(
+            'hello :)',
+            BBCode::stripAll('hello [em1]', [1 => ':)']),
+        );
+    }
+
+    public function test_strip_all_drops_unknown_emoji(): void
+    {
+        $this->assertSame(
+            'hi',
+            BBCode::stripAll('hi[em42]', []),
+        );
+    }
+
+    public function test_strip_all_strips_remaining_html_tags(): void
+    {
+        $this->assertSame(
+            'bold',
+            BBCode::stripAll('<b>bold</b>', []),
+        );
+    }
+
+    public function test_strip_all_trims_surrounding_whitespace(): void
+    {
+        $this->assertSame(
+            'core',
+            BBCode::stripAll("\n\n  [b]core[/b]  \t", []),
+        );
+    }
+
+    public function test_strip_all_removes_youtube_and_spoiler_with_params(): void
+    {
+        $this->assertSame(
+            'video spoiler',
+            BBCode::stripAll('[youtube 100x100]video[/youtube] [spoiler=title]spoiler[/spoiler]', []),
+        );
+    }
+
+    public function test_strip_all_returns_empty_for_pure_bbcode_input(): void
+    {
+        $this->assertSame('', BBCode::stripAll('[b][/b]', []));
+    }
 }

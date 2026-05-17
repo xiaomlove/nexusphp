@@ -272,4 +272,78 @@ final class BBCode
     {
         return sprintf('<div style="text-align: %s">%s</div>', $align, $text);
     }
+
+    /**
+     * Rewrite `[quote]` / `[quote=author]` blocks as
+     * `<fieldset><legend>` HTML. Mismatched or out-of-order tag pairs
+     * cause the input to be returned verbatim (the legacy contract —
+     * unmatched bbcode is shown raw to the user).
+     *
+     * The `$quoteLabel` is the localized "Quote" string the legacy
+     * proxy resolves via `nexus_trans("label.text_quote")` and threads
+     * through to this helper.
+     */
+    public static function quotes(string $text, string $quoteLabel): string
+    {
+        preg_match_all('/\[quote.*?\]/i', $text, $result, PREG_PATTERN_ORDER);
+        $openTags = $result[0];
+        preg_match_all('/\[\/quote\]/i', $text, $result, PREG_PATTERN_ORDER);
+        $closeTags = $result[0];
+        if (count($openTags) !== count($closeTags)) {
+            return $text;
+        }
+
+        $openPositions = [];
+        $pos = -1;
+        foreach ($openTags as $needle) {
+            $openPositions[] = $pos = strpos($text, $needle, $pos + 1);
+        }
+        $closePositions = [];
+        $pos = -1;
+        foreach ($closeTags as $needle) {
+            $closePositions[] = $pos = strpos($text, $needle, $pos + 1);
+        }
+        for ($i = 0, $n = count($openPositions); $i < $n; $i++) {
+            if ($openPositions[$i] > $closePositions[$i]) {
+                return $text;
+            }
+        }
+
+        $text = preg_replace('/\[quote\]/i', '<fieldset><legend> '.$quoteLabel.' </legend><br />', $text);
+        $text = preg_replace('/\[quote=(.+?)\]/i', '<fieldset><legend> '.$quoteLabel.': \\1 </legend><br />', $text);
+        $text = preg_replace('/\[\/quote\]/i', '</fieldset><br />', $text);
+
+        return (string) $text;
+    }
+
+    /**
+     * Strip BBCode and `[emN]` smilies from `$text`. Parameter-less
+     * tags (`[b]`, `[/url]`, etc.) are removed by literal `str_replace`;
+     * parametered tags (`[url=…]`, `[color=…]`, `[youtube …]`, etc.) by
+     * regex. `[emN]` is resolved via `$emojiMap` (default empty string
+     * for unknown indices, mirroring the legacy `nexus_config('emoji')`
+     * lookup). Finally, `strip_tags()` strips any remaining HTML and
+     * the result is `trim()`'d.
+     */
+    public static function stripAll(string $text, array $emojiMap): string
+    {
+        $literalTags = [
+            '[*]', '[b]', '[/b]', '[i]', '[/i]', '[u]', '[/u]', '[s]', '[/s]',
+            '[pre]', '[/pre]', '[quote]', '[/quote]',
+            '[/color]', '[/font]', '[/size]', '[/url]', '[/youtube]', '[/spoiler]',
+        ];
+        $text = str_replace($literalTags, '', $text);
+        $text = (string) preg_replace(
+            '/\[url=.*\]|\[color=.*\]|\[font=.*\]|\[size=.*\]|\[youtube.*\]|\[spoiler.*\]/isU',
+            '',
+            $text,
+        );
+        $text = (string) preg_replace_callback(
+            '/\[em([1-9][0-9]*)\]/isU',
+            fn (array $matches): string => $emojiMap[$matches[1]] ?? '',
+            $text,
+        );
+
+        return trim(strip_tags($text));
+    }
 }
