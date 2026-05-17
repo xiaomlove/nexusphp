@@ -17,6 +17,7 @@ use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
+use App\Http\Controllers\Legacy\DocleanupController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
@@ -47,6 +48,7 @@ use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -523,6 +525,11 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/downloadsubs.php', DownloadSubsController::class)
         ->name('legacy.downloadsubs');
+
+    Route::get('/docleanup.php', DocleanupController::class)
+        ->name('legacy.docleanup');
+
+    Route::get('/unco.php', UncoController::class)->name('legacy.unco');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
