@@ -543,54 +543,32 @@ function is_valid_id($id)
 //-------- Begins a main frame
 function begin_main_frame($caption = "", $center = false, $width = 100)
 {
-	$tdextra = "";
-	if ($caption)
-	print("<h2>".$caption."</h2>");
-
-	if ($center)
-	$tdextra .= " align=\"center\"";
-
-	if (!str_ends_with($width, '%')) {
-        $width = CONTENT_WIDTH * $width / 100;
-    }
-
-	print("<table class=\"main\" width=\"".$width."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" .
-	"<tr><td class=\"embedded\" $tdextra>");
+	print(\App\Support\Frame::mainOpen((string) $caption, (bool) $center, $width, CONTENT_WIDTH));
 }
 
 function end_main_frame()
 {
-	print("</td></tr></table>\n");
+	print(\App\Support\Frame::CLOSE);
 }
 
 function begin_frame($caption = "", $center = false, $padding = 10, $width="100%", $caption_center="left")
 {
-	$tdextra = "";
-
-	if ($center)
-	$tdextra .= " align=\"center\"";
-
-	print(($caption ? "<h2 align=\"".$caption_center."\">".$caption."</h2>" : "") . "<table width=\"".$width."\" border=\"1\" cellspacing=\"0\" cellpadding=\"".$padding."\">" . "<tr><td class=\"text\" $tdextra>\n");
-
+	print(\App\Support\Frame::open((string) $caption, (bool) $center, (int) $padding, (string) $width, (string) $caption_center));
 }
 
 function end_frame()
 {
-	print("</td></tr></table>\n");
+	print(\App\Support\Frame::CLOSE);
 }
 
 function begin_table($fullwidth = false, $padding = 5)
 {
-	$width = "";
-
-	if ($fullwidth)
-	$width .= " width=50%";
-	print("<table class=\"main".$width."\" border=\"1\" cellspacing=\"0\" cellpadding=\"".$padding."\">");
+	print(\App\Support\Frame::tableOpen((bool) $fullwidth, (int) $padding));
 }
 
 function end_table()
 {
-	print("</table>\n");
+	print(\App\Support\Frame::TABLE_CLOSE);
 }
 
 //-------- Inserts a smilies frame
