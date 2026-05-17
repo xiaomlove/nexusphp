@@ -7,15 +7,15 @@ ob_start(); //Do not delete this line
  * Read-only GETs that carry only `?id=N` (or only `?id=N&hit=1`) are
  * 302-bounced to the new route; anything else (the canary `?legacy=1`
  * opt-out, the comments pagination `?cmtpage=N`, the auto-open
- * peer-list `?dllist=1`, the post-write "you just did X" banners
- * `?uploaded` / `?edited` / `?existed` with their optional `?returnto`
- * companion, and every non-GET request — i.e. the inline action POST
- * handlers like ?subtitleupload) falls through to the legacy code
- * below.
- *
- * The `?hit=1` view-counter side effect is now wired into
- * `App\Livewire\TorrentDetail::mount()`, so first-party "open from
- * listing" links flip cleanly to `/torrent/{id}?hit=1`.
+ * peer-list `?dllist=1`, and every non-GET request — i.e. the inline
+ * action POST handlers like ?subtitleupload) falls through to the
+ * legacy code below. The `?hit=1` view-counter side effect is wired
+ * into `App\Livewire\TorrentDetail::mount()`, so first-party "open
+ * from listing" links flip cleanly to `/torrent/{id}?hit=1`. The
+ * post-write "you just did X" banners (`?uploaded` / `?edited` /
+ * `?existed` with optional `?returnto`) flip onto TorrentDetail too,
+ * which renders the equivalent Modern UI banner from the same query
+ * params.
  *
  * Escape hatches:
  *
@@ -26,9 +26,6 @@ ob_start(); //Do not delete this line
  *   - `?dllist=1` — auto-open the legacy peer-list dialog. The Modern
  *     UI peers tab is built differently, so the auto-open hint stays on
  *     legacy until the dialog is retired.
- *   - `?uploaded` / `?edited` / `?existed` (+ `?returnto`) — post-write
- *     success banners shown after the legacy upload / edit flows.
- *     Modern UI has no equivalent banner yet; legacy keeps owning them.
  *   - non-GET requests — the inline action POSTs (subtitle upload etc.)
  *     are still served by this file.
  *
@@ -42,7 +39,6 @@ $detailsFlipId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $detailsFlipMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $detailsFlipEscapeHatches = [
     'legacy', 'cmtpage', 'dllist',
-    'uploaded', 'edited', 'existed', 'returnto',
 ];
 $detailsFlipHasEscapeHatch = false;
 foreach ($detailsFlipEscapeHatches as $detailsFlipKey) {
