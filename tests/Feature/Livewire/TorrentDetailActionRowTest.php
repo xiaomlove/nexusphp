@@ -11,30 +11,6 @@ use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
 
-/**
- * Pins the Phase 3 — Modern UI A3 contract for the action-row card
- * on `App\Livewire\TorrentDetail` (Download / Edit / Re-seed /
- * Report). The action row mirrors `public/details.php:253-295` and
- * is rendered above the existing bookmark + say-thanks card.
- *
- * Visibility rules being exercised here:
- *
- *   - Guests (no `actingAs`) get no action row at all — the Blade
- *     short-circuits when `count($actionRow) === 0`.
- *   - Authenticated viewers always see Download + Report (subject to
- *     the `downloadpos` enum); Edit shows for the owner and for
- *     staff with `torrentmanage`; Re-seed shows when `askreseed` is
- *     granted and `torrents.seeders = 0`.
- *   - The Download CTA stays visible for the uploader even when
- *     their `users.downloadpos` is set to `'no'` — that mirrors the
- *     legacy `$CURUSER["downloadpos"] = "yes"` auto-promotion in
- *     `public/details.php:204-205`.
- *
- * The targets the buttons link out to are still the legacy scripts
- * (`/download.php`, `/edit.php`, `/takereseed.php`, `/report.php`)
- * — Modern UI is the entry point, not the action handler. Those
- * pages get migrated in later A3.x waves.
- */
 class TorrentDetailActionRowTest extends FeatureTestCase
 {
     use CreatesLegacyTestUsers;
@@ -74,10 +50,9 @@ class TorrentDetailActionRowTest extends FeatureTestCase
         $viewer = $this->createUser(['class' => User::CLASS_USER]);
         $torrentId = $this->createTorrent($owner->id);
 
-        $component = Livewire::actingAs($viewer, 'nexus-web')
-            ->test(TorrentDetail::class, ['id' => $torrentId]);
-
-        $component->assertSeeHtml('data-test-id="torrent-action-row"')
+        Livewire::actingAs($viewer, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSeeHtml('data-test-id="torrent-action-row"')
             ->assertSeeHtml('data-test-id="download-btn"')
             ->assertSeeHtml('data-test-id="action-report"')
             ->assertDontSeeHtml('data-test-id="action-edit"')
@@ -95,32 +70,24 @@ class TorrentDetailActionRowTest extends FeatureTestCase
             ->test(TorrentDetail::class, ['id' => $torrentId])
             ->assertSeeHtml('data-test-id="action-edit"')
             ->assertSeeHtml('href="/edit.php?id='.$torrentId.'"')
-            ->assertSeeHtml('>'."\n                        ".'Edit'."\n                    ".'</a>');
+            ->assertSee('Edit')
+            ->assertDontSee('Edit / delete');
     }
 
     public function test_staff_with_torrentmanage_sees_edit_delete_label(): void
     {
-        // `torrentmanage` defaults to CLASS_MODERATOR (13) per
-        // `config/allconfig.php`. The viewer is NOT the owner — we
-        // want to prove the staff-side branch flips the label even
-        // for someone else's torrent.
         $owner = $this->createUser(['class' => User::CLASS_USER]);
         $staff = $this->createUser(['class' => User::CLASS_MODERATOR]);
         $torrentId = $this->createTorrent($owner->id);
 
-        $rendered = (string) Livewire::actingAs($staff, 'nexus-web')
+        Livewire::actingAs($staff, 'nexus-web')
             ->test(TorrentDetail::class, ['id' => $torrentId])
             ->assertSeeHtml('data-test-id="action-edit"')
-            ->html();
-
-        $this->assertStringContainsString('Edit / delete', $rendered);
+            ->assertSee('Edit / delete');
     }
 
     public function test_reseed_button_appears_only_when_seeders_are_zero(): void
     {
-        // `askreseed` defaults to CLASS_POWER_USER (2). The viewer
-        // has the permission; the torrent currently has 0 seeders
-        // (the default in `createTorrent`).
         $owner = $this->createUser();
         $viewer = $this->createUser(['class' => User::CLASS_POWER_USER]);
         $torrentId = $this->createTorrent($owner->id);
@@ -145,8 +112,6 @@ class TorrentDetailActionRowTest extends FeatureTestCase
     public function test_reseed_button_is_hidden_when_viewer_lacks_askreseed(): void
     {
         $owner = $this->createUser();
-        // `CLASS_PEASANT` (0) is strictly below the `askreseed`
-        // threshold (2).
         $viewer = $this->createUser(['class' => User::CLASS_PEASANT]);
         $torrentId = $this->createTorrent($owner->id, ['seeders' => 0]);
 
@@ -167,16 +132,11 @@ class TorrentDetailActionRowTest extends FeatureTestCase
         Livewire::actingAs($viewer, 'nexus-web')
             ->test(TorrentDetail::class, ['id' => $torrentId])
             ->assertDontSeeHtml('data-test-id="download-btn"')
-            // The other authenticated actions still render — only the
-            // Download CTA is gated by `downloadpos`.
             ->assertSeeHtml('data-test-id="action-report"');
     }
 
     public function test_owner_with_downloadpos_no_still_sees_download_button(): void
     {
-        // Mirrors `public/details.php:204-205` where the legacy code
-        // unconditionally promotes `CURUSER["downloadpos"] = "yes"`
-        // when the viewer owns the torrent.
         $owner = $this->createUser([
             'class' => User::CLASS_USER,
             'downloadpos' => 'no',

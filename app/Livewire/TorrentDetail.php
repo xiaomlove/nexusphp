@@ -159,46 +159,11 @@ class TorrentDetail extends Component
     }
 
     /**
-     * Build the per-viewer action-row entries shown above the bookmark
-     * / say-thanks card. Each item is a typed shape the Blade view can
-     * iterate without re-checking permissions.
-     *
-     * Visibility mirrors `public/details.php:253-295`:
-     *
-     *   - Download — `download.php?id={id}`. Hidden for guests; owners
-     *     always see the button (legacy auto-promotes
-     *     `CURUSER["downloadpos"] = "yes"` for the uploader); other
-     *     viewers must have `users.downloadpos != "no"`. The endpoint
-     *     itself is still the legacy script — Phase 4 reworks the
-     *     `.torrent`-file emission path.
-     *   - Edit — `edit.php?id={id}`. Visible for the owner and for any
-     *     staff with the `torrentmanage` permission. Label widens to
-     *     "Edit / delete" for staff.
-     *   - Re-seed — `takereseed.php?reseedid={id}`. Visible to viewers
-     *     with the `askreseed` permission, but only when
-     *     `torrents.seeders = 0` (no point re-seeding a live torrent).
-     *   - Report — `report.php?torrent={id}`. Always shown to
-     *     authenticated viewers (the legacy filter chain can suppress
-     *     it via `apply_filter('torrent_detail_actions', ...)` — the
-     *     plugin hook is Phase 5 surface; we keep the visible button
-     *     in Modern UI and revisit when the filter system is migrated).
-     *
-     * Out of scope for this PR (still surfaced through the
-     * `?legacy=1` escape hatch on `public/details.php`):
-     *
-     *   - The "approval" action — opens a Layer.js iframe popup on
-     *     `/web/torrent-approval-page`. The Modern UI does not have a
-     *     Livewire-modal equivalent yet, so the staff approval flow
-     *     stays on legacy.
-     *   - The "claim" block — separate block below the action row, has
-     *     its own AJAX `addClaim` handler. Will move with the upload /
-     *     claim wave.
-     *   - The `?returnto` carry-over to `edit.php` — only useful when
-     *     the user landed on the detail page from a context-sensitive
-     *     legacy entry point; Modern UI has no such carry-over yet.
-     *
-     * Guests get an empty list — the Blade short-circuits and skips
-     * the whole action-row block.
+     * Mirrors the visibility rules of `public/details.php:253-295`.
+     * Owner auto-promotion of `downloadpos` follows lines 204-205 of
+     * the same file. Approval (Layer.js iframe) and claim (separate
+     * AJAX block) are out of scope and stay on legacy behind
+     * `?legacy=1`.
      *
      * @return list<array{id:string,label:string,title:string,url:string,variant:string}>
      */
