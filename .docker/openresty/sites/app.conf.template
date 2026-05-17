@@ -217,6 +217,10 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    location = /userhistory.php {
+        try_files /nonexistent @nexus_app;
+    }
+
 
     location @nexus_app {
         rewrite ^ /nexus.php last;
