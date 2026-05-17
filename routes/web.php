@@ -10,6 +10,7 @@ use App\Http\Controllers\Legacy\AdRedirectController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
+use App\Http\Controllers\Legacy\BansController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ClearCacheController;
@@ -505,6 +506,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/ipcheck.php', IpCheckController::class)
         ->name('legacy.ipcheck');
+
+    Route::match(['get', 'post'], '/bans.php', BansController::class)
+        ->name('legacy.bans');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the

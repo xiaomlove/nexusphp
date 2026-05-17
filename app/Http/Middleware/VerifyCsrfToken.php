@@ -79,5 +79,6 @@ class VerifyCsrfToken extends Middleware
         // change.
         'testip.php',
         'reset.php',
+        'bans.php',
     ];
 }
