@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Models\Claim;
 use App\Models\Comment;
 use App\Models\CommentEdit;
 use App\Models\DownloadSpeed;
@@ -17,6 +18,7 @@ use App\Models\TorrentExtra;
 use App\Models\TorrentOperationLog;
 use App\Models\UploadSpeed;
 use App\Models\User;
+use App\Repositories\ClaimRepository;
 use App\Repositories\SearchRepository;
 use App\Repositories\TagRepository;
 use App\Support\BbcodeRenderer;
@@ -98,6 +100,8 @@ class TorrentDetail extends Component
 
     public string $editingBody = '';
 
+    public ?string $claimFlash = null;
+
     private const COMMENT_FLOOD_SECONDS = 10;
 
     public function mount(int $id): mixed
@@ -176,6 +180,7 @@ class TorrentDetail extends Component
             'thanksRecent' => $thanksList['recent'],
             'thanksTotal' => $thanksList['total'],
             'actionRow' => $this->actionRowItems($viewerId),
+            'claimBlock' => $this->claimBlock($viewerId),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
@@ -261,6 +266,71 @@ class TorrentDetail extends Component
         $value = $viewer?->getAttribute('downloadpos');
 
         return $value === 'no' ? 'no' : 'yes';
+    }
+
+    /**
+     * @return array{torrentId:int,hasClaimed:bool,claimCount:int,remainingSlots:int,maxPerTorrent:int,detailsUrl:string}|null
+     */
+    private function claimBlock(int $viewerId): ?array
+    {
+        if ($this->torrent === null || $viewerId <= 0) {
+            return null;
+        }
+
+        if (Setting::getByName('torrent.claim_enabled', 'no') != 'yes') {
+            return null;
+        }
+
+        $added = $this->torrent->added;
+        if (! $added instanceof Carbon) {
+            return null;
+        }
+
+        $ttlDays = (int) Setting::getByName('torrent.claim_torrent_ttl', Claim::TORRENT_TTL);
+        if ($added->copy()->addDays($ttlDays)->isAfter(Carbon::now())) {
+            return null;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+        $maxPerTorrent = (int) Setting::getByName('torrent.claim_torrent_user_counts_up_limit', Claim::USER_UP_LIMIT);
+        $claimCount = (int) Claim::query()->where('torrent_id', $torrentId)->count();
+        $hasClaimed = Claim::query()
+            ->where('torrent_id', $torrentId)
+            ->where('uid', $viewerId)
+            ->exists();
+
+        return [
+            'torrentId' => $torrentId,
+            'hasClaimed' => $hasClaimed,
+            'claimCount' => $claimCount,
+            'remainingSlots' => max(0, $maxPerTorrent - $claimCount),
+            'maxPerTorrent' => $maxPerTorrent,
+            'detailsUrl' => '/claim.php?torrent_id='.$torrentId,
+        ];
+    }
+
+    public function addClaim(): void
+    {
+        $this->claimFlash = null;
+
+        if ($this->torrent === null) {
+            return;
+        }
+
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if ($viewerId <= 0) {
+            return;
+        }
+
+        try {
+            app(ClaimRepository::class)->store($viewerId, (int) $this->torrent->id);
+        } catch (\Throwable $e) {
+            $this->addError('claim', $e->getMessage());
+
+            return;
+        }
+
+        $this->claimFlash = 'Claim recorded.';
     }
 
     /**
