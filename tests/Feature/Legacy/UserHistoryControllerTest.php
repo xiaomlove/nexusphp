@@ -62,6 +62,7 @@ class UserHistoryControllerTest extends FeatureTestCase
     {
         $viewer = $this->createUser();
         NexusDB::table('users')->where('id', $viewer->id)->update(['parked' => 'yes']);
+        $viewer->refresh();
         $this->actingAs($viewer, 'nexus-web');
 
         $this->get('/userhistory.php?action=viewposts&id='.$viewer->id)
