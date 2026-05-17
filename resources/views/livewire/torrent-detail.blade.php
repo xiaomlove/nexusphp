@@ -125,6 +125,63 @@
         </x-ui.card>
     @endif
 
+    @if ($isAuthed && $claimBlock !== null)
+        <x-ui.card>
+            <div class="flex flex-wrap items-center gap-3"
+                 data-test-id="claim-block"
+                 data-claim-count="{{ $claimBlock['claimCount'] }}"
+                 data-claim-remaining="{{ $claimBlock['remainingSlots'] }}"
+                 data-claim-state="{{ $claimBlock['hasClaimed'] ? 'claimed' : 'open' }}">
+                <h2 class="basis-full text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    Claim torrent
+                </h2>
+
+                @if ($claimBlock['hasClaimed'])
+                    <button type="button"
+                            data-test-id="claim-button"
+                            data-claim-state="claimed"
+                            disabled
+                            class="inline-flex items-center rounded border border-zinc-300 bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+                        Claimed
+                    </button>
+                @else
+                    <button type="button"
+                            wire:click="addClaim"
+                            wire:confirm="Are you sure to claim this torrent?"
+                            wire:loading.attr="disabled"
+                            data-test-id="claim-button"
+                            data-claim-state="open"
+                            class="inline-flex items-center rounded border border-primary-500 bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50 dark:border-primary-400 dark:bg-primary-950/40 dark:text-primary-200 dark:hover:bg-primary-950/70">
+                        Claim
+                    </button>
+                @endif
+
+                <span class="text-sm text-zinc-600 dark:text-zinc-300" data-test-id="claim-info">
+                    Already claimed by <b>{{ number_format($claimBlock['claimCount']) }}</b> users,
+                    <b>{{ number_format($claimBlock['remainingSlots']) }}</b> place left.
+                </span>
+
+                <a href="{{ $claimBlock['detailsUrl'] }}"
+                   class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-300"
+                   data-test-id="claim-detail-link">
+                    Claim detail
+                </a>
+
+                @error('claim')
+                    <p class="basis-full text-sm text-rose-600 dark:text-rose-300" data-test-id="claim-error">
+                        {{ $message }}
+                    </p>
+                @enderror
+
+                @if ($claimFlash !== null)
+                    <p class="basis-full text-sm text-emerald-600 dark:text-emerald-300" data-test-id="claim-flash">
+                        {{ $claimFlash }}
+                    </p>
+                @endif
+            </div>
+        </x-ui.card>
+    @endif
+
     @if ($isAuthed)
         <x-ui.card>
             <div class="flex flex-wrap items-center gap-3"
