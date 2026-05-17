@@ -277,7 +277,7 @@ class TorrentDetail extends Component
             return null;
         }
 
-        if (! Claim::getConfigIsEnabled()) {
+        if (Setting::getByName('torrent.claim_enabled', 'no') != 'yes') {
             return null;
         }
 
@@ -286,13 +286,13 @@ class TorrentDetail extends Component
             return null;
         }
 
-        $ttlDays = Claim::getConfigTorrentTTL();
+        $ttlDays = (int) Setting::getByName('torrent.claim_torrent_ttl', Claim::TORRENT_TTL);
         if ($added->copy()->addDays($ttlDays)->isAfter(Carbon::now())) {
             return null;
         }
 
         $torrentId = (int) $this->torrent->id;
-        $maxPerTorrent = Claim::getConfigUserUpLimit();
+        $maxPerTorrent = (int) Setting::getByName('torrent.claim_torrent_user_counts_up_limit', Claim::USER_UP_LIMIT);
         $claimCount = (int) Claim::query()->where('torrent_id', $torrentId)->count();
         $hasClaimed = Claim::query()
             ->where('torrent_id', $torrentId)

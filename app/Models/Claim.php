@@ -71,7 +71,7 @@ class Claim extends NexusModel
 
     public static function getConfigIsEnabled(): bool
     {
-        return Setting::get('torrent.claim_enabled', 'no') == 'yes';
+        return Setting::getByName('torrent.claim_enabled', 'no') == 'yes';
     }
 
     public static function getConfigTorrentTTL(): int
