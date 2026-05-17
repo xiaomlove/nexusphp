@@ -3404,11 +3404,7 @@ function langlist($type, $enabled = null) {
 }
 
 function linkcolor($num) {
-	if (!$num)
-	return "red";
-	//    if ($num == 1)
-	//        return "yellow";
-	return "green";
+	return \App\Support\Palette::seederLink($num);
 }
 
 function writecomment($userid, $comment, $oldModcomment = null) {
@@ -5023,50 +5019,7 @@ function torrent_selection($name,$selname,$listname,$selectedid = 0, $mode = 0)
 
 function get_hl_color($color=0)
 {
-	switch ($color){
-		case 0: return false;
-		case 1: return "Black";
-		case 2: return "Sienna";
-		case 3: return "DarkOliveGreen";
-		case 4: return "DarkGreen";
-		case 5: return "DarkSlateBlue";
-		case 6: return "Navy";
-		case 7: return "Indigo";
-		case 8: return "DarkSlateGray";
-		case 9: return "DarkRed";
-		case 10: return "DarkOrange";
-		case 11: return "Olive";
-		case 12: return "Green";
-		case 13: return "Teal";
-		case 14: return "Blue";
-		case 15: return "SlateGray";
-		case 16: return "DimGray";
-		case 17: return "Red";
-		case 18: return "SandyBrown";
-		case 19: return "YellowGreen";
-		case 20: return "SeaGreen";
-		case 21: return "MediumTurquoise";
-		case 22: return "RoyalBlue";
-		case 23: return "Purple";
-		case 24: return "Gray";
-		case 25: return "Magenta";
-		case 26: return "Orange";
-		case 27: return "Yellow";
-		case 28: return "Lime";
-		case 29: return "Cyan";
-		case 30: return "DeepSkyBlue";
-		case 31: return "DarkOrchid";
-		case 32: return "Silver";
-		case 33: return "Pink";
-		case 34: return "Wheat";
-		case 35: return "LemonChiffon";
-		case 36: return "PaleGreen";
-		case 37: return "PaleTurquoise";
-		case 38: return "LightBlue";
-		case 39: return "Plum";
-		case 40: return "White";
-		default: return false;
-	}
+	return \App\Support\Palette::forumHighlight((int) $color);
 }
 
 function get_forum_moderators($forumid, $plaintext = true)
