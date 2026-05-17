@@ -78,5 +78,6 @@ class VerifyCsrfToken extends Middleware
         // verbs keeps existing UI flows working without a template
         // change.
         'testip.php',
+        'reset.php',
     ];
 }

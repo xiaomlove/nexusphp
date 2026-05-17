@@ -200,6 +200,9 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    location = /reset.php {
+        try_files /nonexistent @nexus_app;
+    }
 
     # Phase 3 — legacy migration routes (full rewrites).
     location = /magic.php {
