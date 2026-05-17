@@ -4,23 +4,23 @@ ob_start(); //Do not delete this line
 /*
  * Strangler Fig flip (Phase 3.x) — the canonical torrent-detail URL is
  * now the Livewire `App\Livewire\TorrentDetail` at `/torrent/{id}`.
- * Read-only GETs that carry only `?id=N` are 302-bounced to the new
- * route; anything else (the canary `?legacy=1` opt-out, the legacy
- * view-counter `?hit=1`, the comments pagination `?cmtpage=N`, the
- * auto-open peer-list `?dllist=1`, the post-write "you just did X"
- * banners `?uploaded` / `?edited` / `?existed` with their optional
- * `?returnto` companion, and every non-GET request — i.e. the inline
- * action POST handlers like ?subtitleupload) falls through to the
- * legacy code below.
+ * Read-only GETs that carry only `?id=N` (or only `?id=N&hit=1`) are
+ * 302-bounced to the new route; anything else (the canary `?legacy=1`
+ * opt-out, the comments pagination `?cmtpage=N`, the auto-open
+ * peer-list `?dllist=1`, the post-write "you just did X" banners
+ * `?uploaded` / `?edited` / `?existed` with their optional `?returnto`
+ * companion, and every non-GET request — i.e. the inline action POST
+ * handlers like ?subtitleupload) falls through to the legacy code
+ * below.
+ *
+ * The `?hit=1` view-counter side effect is now wired into
+ * `App\Livewire\TorrentDetail::mount()`, so first-party "open from
+ * listing" links flip cleanly to `/torrent/{id}?hit=1`.
  *
  * Escape hatches:
  *
  *   - `?legacy=1` — explicit canary opt-out, the rollback flag
  *     documented in docs/legacy-strategy.md. Mirrors forums.php.
- *   - `?hit=1` — first-party "open from listing" link that increments
- *     the view counter on details.php (see public/index.php,
- *     userhistory.php, myhr.php). The view-counter side effect is not
- *     wired into TorrentDetail yet, so these stay on legacy.
  *   - `?cmtpage=N` — comments pagination. The comments listing has not
  *     been migrated to Livewire yet, so paged URLs must stay on legacy.
  *   - `?dllist=1` — auto-open the legacy peer-list dialog. The Modern
@@ -41,7 +41,7 @@ ob_start(); //Do not delete this line
 $detailsFlipId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $detailsFlipMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $detailsFlipEscapeHatches = [
-    'legacy', 'cmtpage', 'hit', 'dllist',
+    'legacy', 'cmtpage', 'dllist',
     'uploaded', 'edited', 'existed', 'returnto',
 ];
 $detailsFlipHasEscapeHatch = false;
