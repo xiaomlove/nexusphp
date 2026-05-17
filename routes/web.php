@@ -55,6 +55,7 @@ use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserBanLogController;
+use App\Http\Controllers\Legacy\UserHistoryController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\TokenController;
@@ -557,6 +558,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/bonus-log.php', BonusLogController::class)
         ->name('legacy.bonus-log');
+
+    Route::get('/userhistory.php', UserHistoryController::class)
+        ->name('legacy.userhistory');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
