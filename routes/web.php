@@ -26,6 +26,7 @@ use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
+use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
@@ -500,6 +501,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/testip.php', TestIpController::class)
         ->name('legacy.testip');
+
+    Route::get('/ipcheck.php', IpCheckController::class)
+        ->name('legacy.ipcheck');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
