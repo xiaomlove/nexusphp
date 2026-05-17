@@ -19,6 +19,7 @@ use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
+use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
@@ -508,6 +509,16 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/getattachment.php', GetAttachmentController::class)
         ->name('legacy.getattachment');
+
+    /*
+     * Phase 2 — replaces `public/fastdelete.php` (deleted in this PR).
+     * Two-step GET-delete: `?id=<n>` renders confirmation,
+     * `?id=<n>&sure=1` performs delete and 302s to `/torrents.php`.
+     * Entry point is the action link in `include/functions.php:3971`
+     * (`<a href="fastdelete.php?id=N">`); URL is preserved.
+     */
+    Route::get('/fastdelete.php', FastDeleteController::class)
+        ->name('legacy.fastdelete');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
