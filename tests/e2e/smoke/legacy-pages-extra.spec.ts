@@ -26,17 +26,17 @@ import { smokeCheckPage } from '../helpers/smoke';
  *     `/browse?inclbookmarked=only` equivalent is covered separately by
  *     the Livewire `TorrentBrowse` tests), and the invite refactor
  *     (PR #28) is covered by the existing PHPUnit Feature suite.
- *   - `/report.php` and `/userhistory.php?id=1` render the standard
- *     error template when no `id`/`type` matches real data; the smoke
- *     check still exercises the bootstrap + DB-init paths that the
- *     refactor wave touched.
- *   - `/polloverview.php` was migrated to the Laravel
- *     `PollOverviewController` (Phase 2). The legacy `stdfoot()`
+ *   - `/report.php` renders the standard error template when no
+ *     `id`/`type` matches real data; the smoke check still exercises
+ *     the bootstrap + DB-init paths that the refactor wave touched.
+ *   - `/polloverview.php` and `/userhistory.php` were both migrated
+ *     to Laravel controllers (`PollOverviewController` Phase 2,
+ *     `UserHistoryController` Phase 3). The legacy `stdfoot()`
  *     footer (and therefore the "Powered by NexusPHP" marker) is no
- *     longer rendered for that route; the smoke check now asserts
- *     the chrome-less envelope's `<title>Polls Overview</title>`
- *     marker instead. Same trade-off the `DonorlistController` /
- *     `UserBanLogController` migrations made.
+ *     longer rendered for those routes; the smoke check now asserts
+ *     the chrome-less envelope's `<title>...</title>` marker instead.
+ *     Same trade-off the `DonorlistController` / `UserBanLogController`
+ *     migrations made.
  *   - `/polls.php` does not exist in this NexusPHP install (the codebase
  *     uses `/makepoll.php` + `/polloverview.php` instead), so it is not
  *     covered here.
@@ -164,9 +164,13 @@ const PAGES: LegacyPageCase[] = [
         contains: /NexusPHP\s*::\s*Upload/i,
     },
     {
-        description: 'userhistory.php?id=1 (history error path)',
-        url: '/userhistory.php?id=1',
-        contains: /History Error|Powered by NexusPHP/i,
+        // Phase 3 migration: UserHistoryController renders a chrome-less
+        // envelope (no legacy `stdfoot()`). e2eadmin is seeded with id=1
+        // by E2eUsersSeeder, so `?id=1&action=viewposts` exercises the
+        // own-posts happy path (zero posts → empty table rendered).
+        description: 'userhistory.php?id=1&action=viewposts (Phase 3 migration)',
+        url: '/userhistory.php?id=1&action=viewposts',
+        contains: /<title>Posts history/i,
     },
 ];
 

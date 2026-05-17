@@ -20,8 +20,10 @@ class UserHistoryService
             return null;
         }
 
+        $columns = array_values(array_unique(array_merge(User::$commonFields, ['parked'])));
+
         /** @var User|null $user */
-        $user = User::query()->where('id', $uid)->first(User::$commonFields);
+        $user = User::query()->where('id', $uid)->first($columns);
 
         return $user;
     }
