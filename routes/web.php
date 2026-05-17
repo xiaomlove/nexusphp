@@ -523,6 +523,11 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/fastdelete.php', FastDeleteController::class)
         ->name('legacy.fastdelete');
 
+    Route::get('/docleanup.php', DocleanupController::class)
+        ->name('legacy.docleanup');
+
+    Route::get('/unco.php', UncoController::class)->name('legacy.unco');
+
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
     Route::get('/forum/unread', ForumUnread::class)->name('forum.unread');
