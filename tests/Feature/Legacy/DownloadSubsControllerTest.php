@@ -3,7 +3,9 @@
 namespace Tests\Feature\Legacy;
 
 use App\Models\User;
+use Database\Seeders\TestingDataSeeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
@@ -41,6 +43,13 @@ class DownloadSubsControllerTest extends FeatureTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $defaultsLoaded = DB::table('settings')
+            ->where('name', 'main.defaultlang')
+            ->exists();
+        if (! $defaultsLoaded) {
+            (new TestingDataSeeder)->run();
+        }
 
         $_SERVER['REQUEST_URI'] = '/downloadsubs.php';
         $GLOBALS['SUBSPATH'] = self::SUBS_PATH;
