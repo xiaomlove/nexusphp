@@ -3,20 +3,32 @@
 namespace App\Livewire;
 
 use App\Models\Forum;
+use App\Models\Post;
 use App\Models\Topic;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
  * Modern Livewire view of "topics with unread posts" — replaces the
- * legacy `/forums.php?action=viewunread`. Read-only: lists at most
- * `$perPage` unread topics ordered by `lastpost DESC`, with a
- * `beforepostid` cursor to page backwards through older unread
- * topics. The legacy "Catch up" write action stays on legacy for now
- * (separate PR — it touches `readposts` + `users.last_catchup`).
+ * legacy `/forums.php?action=viewunread`. Lists at most `$perPage`
+ * unread topics ordered by `lastpost DESC`, with a `beforepostid`
+ * cursor to page backwards through older unread topics. Exposes a
+ * `catchUp()` Livewire action that clears the user's per-topic
+ * `readposts` rows and bumps `users.last_catchup` to the latest
+ * post id, replicating the legacy `?catchup=1` GET handler
+ * (`public/forums.php::catch_up()`).
+ *
+ * The shared cache key (`user_<id>_last_read_post_list`) is
+ * invalidated through the same Laravel cache store that the legacy
+ * `class_cache_redis` adapter delegates to (see
+ * `classes/class_cache_redis.php`), so a catch-up from either the
+ * modern or the legacy side stays consistent.
  *
  * Unread detection mirrors the legacy logic:
  *
@@ -115,7 +127,7 @@ class ForumUnread extends Component
 
         // Step 2 — index readposts.
         $topicIds = $candidates->pluck('id')->all();
-        $readPosts = \DB::connection($user->getConnectionName())
+        $readPosts = DB::connection($user->getConnectionName())
             ->table('readposts')
             ->where('userid', $userId)
             ->whereIn('topicid', $topicIds)
@@ -186,5 +198,37 @@ class ForumUnread extends Component
         $tail = $rows->last();
 
         return is_array($tail) ? (int) ($tail['lastpost'] ?? 0) : null;
+    }
+
+    /**
+     * Mirrors legacy `public/forums.php::catch_up()`. The cache key
+     * `user_<id>_last_read_post_list` is shared with the legacy
+     * `class_cache_redis` adapter, so dropping it here keeps legacy
+     * reads consistent.
+     */
+    public function catchUp(): void
+    {
+        $user = auth('nexus-web')->user();
+        if ($user === null) {
+            return;
+        }
+
+        $userId = (int) $user->id;
+        $connection = $user->getConnectionName();
+
+        DB::connection($connection)
+            ->table('readposts')
+            ->where('userid', $userId)
+            ->delete();
+
+        $lastPostId = (int) Post::query()->max('id');
+        if ($lastPostId > 0) {
+            User::query()->where('id', $userId)->update(['last_catchup' => $lastPostId]);
+        }
+
+        Cache::forget('user_'.$userId.'_last_read_post_list');
+
+        $this->beforePostId = 0;
+        unset($this->rows, $this->nextCursor);
     }
 }

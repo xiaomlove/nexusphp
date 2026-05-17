@@ -240,12 +240,15 @@ Escape hatches that stay on legacy:
   blocked on a Filament/Livewire admin moderation surface.
 - `?action=search` — no Livewire equivalent yet; candidate for a
   dedicated `ForumSearch` Livewire component.
-- `?catchup=1` — the write-side companion to `viewunread`. It
-  clears the user's `readposts` rows and pins
-  `users.last_catchup` to the latest post id. The Livewire
-  `ForumUnread` component links to the legacy handler verbatim;
-  migrating the write action will follow once a dedicated
-  `forum.catchup` POST route exists.
+- `?catchup=1` — the legacy GET form of the catch-up action.
+  Modern callers use the Livewire `ForumUnread::catchUp()` method
+  (wired to the "Catch up" button on `/forum/unread`), which
+  performs the same three steps as the legacy handler (delete
+  `readposts` for the user, bump `users.last_catchup` to
+  `max(posts.id)`, forget the legacy
+  `user_<id>_last_read_post_list` cache key). The legacy GET stays
+  as an escape hatch for direct hits (e.g. the legacy forum index
+  footer link) until the legacy index is also retired.
 
 Contract is covered by `tests/e2e/behavior/forums-flip.spec.ts`.
 After every escape hatch has been retired the file goes to a single

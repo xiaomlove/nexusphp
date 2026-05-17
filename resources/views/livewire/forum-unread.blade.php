@@ -12,7 +12,14 @@
             </svg>
             Forum index
         </x-ui.button>
-        <x-ui.button href="/forums.php?catchup=1" variant="secondary" size="sm" title="Mark every post as read (legacy)">
+        <x-ui.button
+            type="button"
+            wire:click="catchUp"
+            wire:confirm="Mark every forum post as read? This clears your per-topic read markers."
+            variant="secondary"
+            size="sm"
+            title="Mark every post as read"
+        >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
