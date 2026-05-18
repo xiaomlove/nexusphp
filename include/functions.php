@@ -4646,47 +4646,22 @@ function get_searchbox_value($mode = 1, $item = 'showsubcat'){
 }
 
 function get_ratio($userid, $html = true){
-    global $lang_functions;
+	global $lang_functions;
 	$row = get_user_row($userid);
-    if (empty($row)) {
-        return "---";
-    }
-	$uped = $row['uploaded'];
-	$downed = $row['downloaded'];
-	if ($html == true){
-		// Wrap the rendered value in a <span title="..."> so hovering the
-		// ratio anywhere (forum signature, userdetails, top-bar) reveals
-		// what the colour means and how it is calculated. Falls back to an
-		// English string when the (optional) lang key is absent.
-		$ratioTip = isset($lang_functions['tooltip_user_ratio'])
-			? $lang_functions['tooltip_user_ratio']
-			: 'Share ratio = uploaded / downloaded. Below 1.0 the value turns red — the lower the ratio, the deeper the colour. Build it back up by seeding.';
-		$ratioTipAttr = ' title="'.htmlspecialchars($ratioTip, ENT_QUOTES).'"';
-		if ($downed > 0)
-		{
-			$ratio = $uped / $downed;
-			$color = get_ratio_color($ratio);
-			$ratio = number_format($ratio, 3);
-
-			if ($color)
-				$ratio = "<font color=\"".$color."\">".$ratio."</font>";
-			$ratio = "<span class=\"ratio-tip\"".$ratioTipAttr.">".$ratio."</span>";
-		}
-		elseif ($uped > 0) {
-			$infinite = nexus_trans("label.infinite");
-			$ratio = "<span class=\"ratio-tip\"".$ratioTipAttr.">".$infinite."</span>";
-		}
-		else
-			$ratio = "---";
+	if (empty($row)) {
+		return "---";
 	}
-	else{
-		if ($downed > 0)
-		{
-			$ratio = $uped / $downed;
-		}
-		else $ratio = 1;
+	$uped = (float) $row['uploaded'];
+	$downed = (float) $row['downloaded'];
+	if ($html) {
+		return \App\Support\Ratio::userRatioHtml(
+			$uped,
+			$downed,
+			(string) ($lang_functions['tooltip_user_ratio'] ?? 'Share ratio = uploaded / downloaded. Below 1.0 the value turns red — the lower the ratio, the deeper the colour. Build it back up by seeding.'),
+			(string) nexus_trans("label.infinite"),
+		);
 	}
-	return $ratio;
+	return \App\Support\Ratio::userRatioNumeric($uped, $downed);
 }
 
 function add_s($num, $es = false)
