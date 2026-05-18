@@ -130,4 +130,43 @@ final class Time
         // it does NOT append a plural suffix even in long mode.
         return '&lt; 1'.($shortUnit ? (string) ($labels['min_short'] ?? '') : (string) ($labels['min'] ?? ''));
     }
+
+    public static function formatAbsoluteTime(string $time, bool $twoline): string
+    {
+        if ($twoline) {
+            return str_replace(' ', '<br />', $time);
+        }
+
+        return $time;
+    }
+
+    public static function formatElapsedTime(
+        string $elapsed,
+        string $time,
+        bool $withago,
+        bool $twoline,
+        bool $oneunit,
+        string $textSpace,
+        string $textAgo,
+    ): string {
+        $newtime = $elapsed.($withago ? $textAgo : '');
+
+        if ($twoline) {
+            $newtime = str_replace('&nbsp;', '<br />', $newtime);
+        } elseif ($oneunit) {
+            // Legacy quirk preserved: original used `if ($length = strpos(...))`
+            // which is falsy when the separator is at offset 0 OR absent.
+            // We reproduce that with a strict `> 0` check so both shapes
+            // (already-single-unit and no-&nbsp;-at-all) fall through to
+            // the verbatim value.
+            $length = strpos($newtime, '&nbsp;');
+            if ($length !== false && $length > 0) {
+                $newtime = substr($newtime, 0, $length);
+            }
+        } else {
+            $newtime = str_replace('&nbsp;', $textSpace, $newtime);
+        }
+
+        return '<span title="'.$time.'">'.$newtime.'</span>';
+    }
 }
