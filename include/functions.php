@@ -4778,12 +4778,13 @@ function user_can_upload($where = "torrents"){
 function torrent_selection($name,$selname,$listname,$selectedid = 0, $mode = 0)
 {
 	global $lang_functions;
-	$selection = "<b>".$name."</b>&nbsp;<select name=\"".$selname."\">\n<option value=\"0\">".$lang_functions['select_choose_one']."</option>\n";
-	$listarray = searchbox_item_list($listname, $mode);
-	foreach ($listarray as $row)
-		$selection .= "<option value=\"" . $row["id"] . "\"". ($row["id"]==$selectedid ? " selected=\"selected\"" : "").">" . htmlspecialchars($row["name"]) . "</option>\n";
-	$selection .= "</select>&nbsp;&nbsp;&nbsp;\n";
-	return $selection;
+	return \App\Support\Html::torrentSelect(
+		(string) $name,
+		(string) $selname,
+		(string) ($lang_functions['select_choose_one'] ?? ''),
+		(int) $selectedid,
+		searchbox_item_list((string) $listname, (int) $mode),
+	);
 }
 
 function get_hl_color($color=0)
@@ -4826,22 +4827,15 @@ function key_shortcut($page=1,$pages=1)
 function promotion_selection($selected = 0, $hide = 0)
 {
 	global $lang_functions;
-	$selection = "";
-	if ($hide != 1)
-		$selection .= "<option value=\"1\"".($selected == 1 ? " selected=\"selected\"" : "").">".$lang_functions['text_normal']."</option>";
-	if ($hide != 2)
-		$selection .= "<option value=\"2\"".($selected == 2 ? " selected=\"selected\"" : "").">".$lang_functions['text_free']."</option>";
-	if ($hide != 3)
-		$selection .= "<option value=\"3\"".($selected == 3 ? " selected=\"selected\"" : "").">".$lang_functions['text_two_times_up']."</option>";
-	if ($hide != 4)
-		$selection .= "<option value=\"4\"".($selected == 4 ? " selected=\"selected\"" : "").">".$lang_functions['text_free_two_times_up']."</option>";
-	if ($hide != 5)
-		$selection .= "<option value=\"5\"".($selected == 5 ? " selected=\"selected\"" : "").">".$lang_functions['text_half_down']."</option>";
-	if ($hide != 6)
-		$selection .= "<option value=\"6\"".($selected == 6 ? " selected=\"selected\"" : "").">".$lang_functions['text_half_down_two_up']."</option>";
-	if ($hide != 7)
-		$selection .= "<option value=\"7\"".($selected == 7 ? " selected=\"selected\"" : "").">".$lang_functions['text_thirty_percent_down']."</option>";
-	return $selection;
+	return \App\Support\Html::promotionSelectOptions((int) $selected, (int) $hide, [
+		'normal' => (string) ($lang_functions['text_normal'] ?? ''),
+		'free' => (string) ($lang_functions['text_free'] ?? ''),
+		'two_times_up' => (string) ($lang_functions['text_two_times_up'] ?? ''),
+		'free_two_times_up' => (string) ($lang_functions['text_free_two_times_up'] ?? ''),
+		'half_down' => (string) ($lang_functions['text_half_down'] ?? ''),
+		'half_down_two_up' => (string) ($lang_functions['text_half_down_two_up'] ?? ''),
+		'thirty_percent_down' => (string) ($lang_functions['text_thirty_percent_down'] ?? ''),
+	]);
 }
 
 function get_post_row($postid)
