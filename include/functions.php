@@ -61,15 +61,6 @@ function get_row_sum($table, $field, $suffix = "")
 	return $rows[0]['sum'] ?? 0;
 }
 
-function get_single_value($table, $field, $suffix = ""){
-	$rows = NexusDB::select("SELECT $field FROM $table $suffix LIMIT 1");
-	if (!empty($rows)) {
-		$values = array_values((array) $rows[0]);
-		return $values[0] ?? false;
-	}
-	return false;
-}
-
 function stdmsg($heading, $text, $htmlstrip = false)
 {
 	print(\App\Support\Frame::stdMessage((string) $heading, (string) $text, (bool) $htmlstrip));
@@ -675,11 +666,6 @@ function pushstack(thearray, newval) {
 	arraysize = stacksize(thearray);
 	thearray[arraysize] = newval;
 }
-function popstackd(thearray) {
-	arraysize = stacksize(thearray);
-	theval = thearray[arraysize - 1];
-	return theval;
-}
 function popstack(thearray) {
 	arraysize = stacksize(thearray);
 	theval = thearray[arraysize - 1];
@@ -703,10 +689,6 @@ function closeall() {
 	}
 	document.<?php echo $form?>.tagcount.value = "Close last, Open 0";
 	bbtags = new Array();
-	document.<?php echo $form?>.<?php echo $text?>.focus();
-}
-function add_code(NewCode) {
-	document.<?php echo $form?>.<?php echo $text?>.value += NewCode;
 	document.<?php echo $form?>.<?php echo $text?>.focus();
 }
 function alterfont(theval, thetag) {
@@ -746,15 +728,6 @@ function tag_image(PromptImageURL, PromptError) {
 
 function tag_extimage(content) {
 	doInsert(content, "", false);
-}
-
-function tag_email(PromptEmail, PromptError) {
-	var emailAddress = prompt(PromptEmail, "");
-	if (!emailAddress) {
-		alert(PromptError+PromptEmail);
-		return;
-	}
-	doInsert("[email]"+emailAddress+"[/email]", "", false);
 }
 
 function doInsert(ibTag, ibClsTag, isSingle)
@@ -1082,23 +1055,6 @@ function get_external_tr($imdb_url = "")
     return tr($lang_functions['row_imdb_url'], $y, 1);
 
 //	($showextinfo['imdb'] == 'yes' ? tr($lang_functions['row_imdb_url'],  "<input type=\"text\" style=\"width: 99%;\" name=\"url\" value=\"".($imdbNumber ? "https://www.imdb.com/title/tt".parse_imdb_id($imdb_url) : "")."\" /><br /><font class=\"medium\">".$lang_functions['text_imdb_url_note']."</font>", 1) : "");
-}
-
-function get_torrent_extinfo_identifier($torrentid)
-{
-	$torrentid = intval($torrentid ?? 0);
-
-	$result = array('imdb_id');
-	unset($result);
-
-	if($torrentid)
-	{
-		$url = NexusDB::table('torrents')->where('id', $torrentid)->value('url');
-		if ($url !== null) {
-			$result['imdb_id'] = parse_imdb_id($url);
-		}
-	}
-	return $result;
 }
 
 function parse_imdb_id($url)
@@ -1520,16 +1476,6 @@ function captcha_manager(): \App\Services\Captcha\CaptchaManager
     }
 
     return $manager;
-}
-
-function image_code () {
-    $driver = captcha_manager()->driver('image');
-
-    if (!method_exists($driver, 'issue')) {
-        throw new \RuntimeException('Image captcha driver is unavailable.');
-    }
-
-    return $driver->issue();
 }
 
 function check_code ($imagehash, $imagestring, $where = 'signup.php', $maxattemptlog = false, $head = true) {
@@ -2141,21 +2087,6 @@ function get_cat_folder($cat = 101)
         $catPath[$cat] = $path;
 	}
 	return $catPath[$cat] ?? '';
-}
-
-function get_style_highlight()
-{
-	global $CURUSER;
-	$hltr = null;
-	if ($CURUSER)
-	{
-		$hltr = \Nexus\Database\NexusDB::table('stylesheets')->where('id', (int) $CURUSER["stylesheet"])->value('hltr');
-	}
-	if (!$hltr)
-	{
-		$hltr = \Nexus\Database\NexusDB::table('stylesheets')->where('id', 5)->value('hltr');
-	}
-	return $hltr;
 }
 
 function stdhead($title = "", $msgalert = true, $script = "", $place = "")
@@ -3924,17 +3855,6 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 	return $username;
 }
 
-function get_percent_completed_image($p) {
-	$maxpx = "45"; // Maximum amount of pixels for the progress bar
-
-	if ($p == 0) $progress = "<img class=\"progbarrest\" src=\"pic/trans.gif\" style=\"width: " . ($maxpx) . "px;\" alt=\"\" />";
-	if ($p == 100) $progress = "<img class=\"progbargreen\" src=\"pic/trans.gif\" style=\"width: " . ($maxpx) . "px;\" alt=\"\" />";
-	if ($p >= 1 && $p <= 30) $progress = "<img class=\"progbarred\" src=\"pic/trans.gif\" style=\"width: " . ($p*($maxpx/100)) . "px;\" alt=\"\" /><img class=\"progbarrest\" src=\"pic/trans.gif\" style=\"width: " . ((100-$p)*($maxpx/100)) . "px;\" alt=\"\" />";
-	if ($p >= 31 && $p <= 65) $progress = "<img class=\"progbaryellow\" src=\"pic/trans.gif\" style=\"width: " . ($p*($maxpx/100)) . "px;\" alt=\"\" /><img class=\"progbarrest\" src=\"pic/trans.gif\" style=\"width: " . ((100-$p)*($maxpx/100)) . "px;\" alt=\"\" />";
-	if ($p >= 66 && $p <= 99) $progress = "<img class=\"progbargreen\" src=\"pic/trans.gif\" style=\"width: " . ($p*($maxpx/100)) . "px;\" alt=\"\" /><img class=\"progbarrest\" src=\"pic/trans.gif\" style=\"width: " . ((100-$p)*($maxpx/100)) . "px;\" alt=\"\" />";
-	return "<img class=\"bar_left\" src=\"pic/trans.gif\" alt=\"\" />" . $progress ."<img class=\"bar_right\" src=\"pic/trans.gif\" alt=\"\" />";
-}
-
 function get_ratio_img($ratio)
 {
     return \App\Support\Ratio::image($ratio);
@@ -5467,21 +5387,6 @@ function attachmentKey($url)
 
 }
 
-/**
- * 根据key返回链接
- *
- * @param $location
- * @param null $width
- * @param null $height
- * @param array $options
- * @return string
- */
-function attachmentUrl($location, $width = null, $height = null, $options = [])
-{
-    return sprintf('%s/attachments/%s', getSchemeAndHttpHost(), trim($location, '/'));
-}
-
-
 function strip_all_tags($text)
 {
     static $emoji = null;
@@ -5866,15 +5771,6 @@ function get_smile($num)
         }
     }
     return $all[$num] ?? null;
-}
-
-function get_filament_class_alias($class): string
-{
-    return Str::of($class)
-        ->replace(['/', '\\'], '.')
-        ->explode('.')
-        ->map([Str::class, 'kebab'])
-        ->implode('.');
 }
 
 /**
