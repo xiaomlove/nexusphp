@@ -539,6 +539,71 @@
         </x-ui.card>
     @endif
 
+    @if ($subtitlesBlock !== null)
+        <x-ui.card>
+            <div data-test-id="subtitles-block"
+                 data-subtitles-count="{{ count($subtitlesBlock['rows']) }}">
+                <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    Subtitles
+                </h2>
+                @if (empty($subtitlesBlock['rows']))
+                    <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="subtitles-empty">
+                        No subtitles yet.
+                    </p>
+                @else
+                    <ul class="space-y-2 text-sm" data-test-id="subtitles-list">
+                        @foreach ($subtitlesBlock['rows'] as $sub)
+                            <li class="flex flex-wrap items-center gap-2"
+                                data-test-id="subtitle-row"
+                                data-subtitle-id="{{ $sub['id'] }}">
+                                @if ($sub['language'] !== null && $sub['language']['flag'] !== '')
+                                    <img src="/pic/flag/{{ $sub['language']['flag'] }}"
+                                         alt="{{ $sub['language']['name'] }}"
+                                         title="{{ $sub['language']['name'] }}"
+                                         class="h-4 w-auto" />
+                                @endif
+                                <a href="{{ $sub['downloadUrl'] }}"
+                                   class="font-medium text-primary-600 hover:underline dark:text-primary-300"
+                                   data-test-id="subtitle-download-link">
+                                    {{ $sub['title'] }}
+                                </a>
+                                @if ($sub['canDelete'])
+                                    <a href="{{ $sub['deleteUrl'] }}"
+                                       class="text-xs text-rose-600 hover:underline dark:text-rose-300"
+                                       data-test-id="subtitle-delete-link">
+                                        [delete]
+                                    </a>
+                                @endif
+                                <span class="text-xs text-zinc-500 dark:text-zinc-400"
+                                      data-test-id="subtitle-uploader">
+                                    {{ $sub['anonymous'] ? 'anonymous' : 'by' }}
+                                    {{ $sub['uploader'] }}
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if ($subtitlesBlock['canUpload'])
+                    <form method="post"
+                          action="{{ $subtitlesBlock['uploadAction'] }}"
+                          class="mt-3"
+                          data-test-id="subtitles-upload-form">
+                        @csrf
+                        @foreach ($subtitlesBlock['uploadParams'] as $key => $value)
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}" />
+                        @endforeach
+                        <x-ui.button type="submit"
+                                     variant="secondary"
+                                     data-test-id="subtitles-upload-button">
+                            Upload subtitle
+                        </x-ui.button>
+                    </form>
+                @endif
+            </div>
+        </x-ui.card>
+    @endif
+
     <x-ui.card>
         <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             Files ({{ number_format($files->count()) }})
@@ -747,6 +812,80 @@
             </div>
         @endif
     </x-ui.card>
+
+    @if ($magicBlock !== null)
+        <x-ui.card>
+            <div data-test-id="magic-block"
+                 data-magic-unique-users="{{ $magicBlock['uniqueUsers'] }}"
+                 data-magic-total-value="{{ $magicBlock['totalValue'] }}"
+                 data-magic-has-given="{{ $magicBlock['hasGiven'] ? 'yes' : 'no' }}">
+                <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    Magic reward
+                </h2>
+
+                <div class="flex flex-wrap items-center gap-2" data-test-id="magic-actions">
+                    @if ($magicBlock['hasGiven'])
+                        <button type="button"
+                                disabled
+                                data-test-id="magic-given-button"
+                                class="inline-flex items-center rounded border border-zinc-300 bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+                            Already given +{{ $magicBlock['givenValue'] }}
+                        </button>
+                    @elseif ($magicBlock['insufficientBonus'])
+                        <button type="button"
+                                disabled
+                                data-test-id="magic-insufficient-button"
+                                class="inline-flex items-center rounded border border-zinc-300 bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+                            Not enough bonus
+                        </button>
+                    @elseif ($magicBlock['showButtons'])
+                        @foreach ($magicBlock['options'] as $value)
+                            <button type="button"
+                                    wire:click="addMagic({{ $value }})"
+                                    wire:loading.attr="disabled"
+                                    wire:confirm="Give +{{ $value }} bonus to this torrent's uploader?"
+                                    data-test-id="magic-option-button"
+                                    data-magic-value="{{ $value }}"
+                                    class="inline-flex items-center rounded border border-primary-500 bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50 dark:border-primary-400 dark:bg-primary-950/40 dark:text-primary-200 dark:hover:bg-primary-950/70">
+                                +{{ $value }}
+                            </button>
+                        @endforeach
+                    @endif
+                </div>
+
+                <p class="mt-3 text-sm text-zinc-600 dark:text-zinc-300" data-test-id="magic-summary">
+                    @if ($magicBlock['totalCount'] === 0)
+                        No magic given yet.
+                    @else
+                        <b>{{ number_format($magicBlock['uniqueUsers']) }}</b> users gave
+                        <b>{{ number_format($magicBlock['totalValue']) }}</b> bonus in total.
+                    @endif
+                </p>
+
+                @if (! empty($magicBlock['recent']))
+                    <p class="mt-2 break-all text-xs text-zinc-500 dark:text-zinc-400" data-test-id="magic-recent">
+                        Recent:
+                        <span data-test-id="magic-recent-names">{{ implode(', ', $magicBlock['recent']) }}</span>
+                        @if ($magicBlock['hasMore'])
+                            <span class="ml-1" data-test-id="magic-recent-more">…</span>
+                        @endif
+                    </p>
+                @endif
+
+                @error('magic')
+                    <p class="mt-2 text-sm text-rose-600 dark:text-rose-300" data-test-id="magic-error">
+                        {{ $message }}
+                    </p>
+                @enderror
+
+                @if ($magicFlash !== null)
+                    <p class="mt-2 text-sm text-emerald-600 dark:text-emerald-300" data-test-id="magic-flash">
+                        {{ $magicFlash }}
+                    </p>
+                @endif
+            </div>
+        </x-ui.card>
+    @endif
 
     <x-ui.card>
         <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400" data-test-id="comments-heading">

@@ -21,6 +21,7 @@ use App\Models\User;
 use App\Repositories\ClaimRepository;
 use App\Repositories\SearchRepository;
 use App\Repositories\TagRepository;
+use App\Services\BonusRewardService;
 use App\Support\BbcodeRenderer;
 use App\Support\Codec;
 use App\Support\Imdb;
@@ -107,6 +108,8 @@ class TorrentDetail extends Component
     public ?string $postWriteBanner = null;
 
     public ?string $returnto = null;
+
+    public ?string $magicFlash = null;
 
     private const COMMENT_FLOOD_SECONDS = 10;
 
@@ -208,6 +211,8 @@ class TorrentDetail extends Component
             'thanksTotal' => $thanksList['total'],
             'actionRow' => $this->actionRowItems($viewerId),
             'claimBlock' => $this->claimBlock($viewerId),
+            'subtitlesBlock' => $this->subtitlesBlock($viewerId),
+            'magicBlock' => $this->magicBlock($viewerId),
         ])->layout('layouts.livewire-app', [
             'title' => $this->torrent?->name ?? 'Torrent',
         ]);
@@ -362,6 +367,226 @@ class TorrentDetail extends Component
         }
 
         $this->claimFlash = 'Claim recorded.';
+    }
+
+    /**
+     * @return array{
+     *     rows: list<array{id:int,title:string,downloadUrl:string,uploader:string,uploaderId:int,language:?array{name:string,flag:string},anonymous:bool,canDelete:bool,deleteUrl:string}>,
+     *     canUpload: bool,
+     *     uploadAction: string,
+     *     uploadParams: array{torrent_name:string,detail_torrent_id:int,in_detail:string},
+     * }|null
+     */
+    private function subtitlesBlock(int $viewerId): ?array
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+        $rawRows = NexusDB::table('subs')
+            ->leftJoin('language', 'subs.lang_id', '=', 'language.id')
+            ->where('subs.torrent_id', $torrentId)
+            ->orderBy('subs.lang_id')
+            ->get([
+                'subs.id',
+                'subs.title',
+                'subs.uppedby',
+                'subs.anonymous',
+                'subs.torrent_id',
+                'language.flagpic',
+                'language.lang_name',
+            ])
+            ->all();
+
+        $canManage = $this->viewerCan('submanage', $viewerId);
+        $canDeleteOwn = $this->viewerCan('delownsub', $viewerId);
+        $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
+
+        $rows = [];
+        foreach ($rawRows as $row) {
+            $row = (array) $row;
+            $uppedBy = (int) $row['uppedby'];
+            $isAnonymous = ($row['anonymous'] ?? 'no') === 'yes';
+            $uploaderName = $this->lookupUsername($uppedBy);
+            $displayName = $isAnonymous && ! $canViewAnonymous && $uppedBy !== $viewerId
+                ? 'Anonymous'
+                : $uploaderName;
+            $canDelete = $canManage || ($canDeleteOwn && $uppedBy === $viewerId);
+
+            $flagPic = (string) ($row['flagpic'] ?? '');
+            $langName = (string) ($row['lang_name'] ?? '');
+
+            $rows[] = [
+                'id' => (int) $row['id'],
+                'title' => (string) $row['title'],
+                'downloadUrl' => sprintf(
+                    '/downloadsubs.php?torrentid=%d&subid=%d',
+                    (int) $row['torrent_id'],
+                    (int) $row['id'],
+                ),
+                'uploader' => $displayName,
+                'uploaderId' => $uppedBy,
+                'language' => $flagPic !== '' || $langName !== ''
+                    ? ['name' => $langName, 'flag' => $flagPic]
+                    : null,
+                'anonymous' => $isAnonymous,
+                'canDelete' => $canDelete,
+                'deleteUrl' => '/subtitles.php?delete='.(int) $row['id'],
+            ];
+        }
+
+        $isOwner = $viewerId > 0 && $viewerId === (int) $this->torrent->owner;
+        $canUpload = $viewerId > 0 && ($isOwner || $this->viewerCan('uploadsub', $viewerId));
+
+        return [
+            'rows' => $rows,
+            'canUpload' => $canUpload,
+            'uploadAction' => '/subtitles.php',
+            'uploadParams' => [
+                'torrent_name' => (string) $this->torrent->name,
+                'detail_torrent_id' => $torrentId,
+                'in_detail' => 'in_detail',
+            ],
+        ];
+    }
+
+    /**
+     * @return array{
+     *     options: list<int>,
+     *     hasGiven: bool,
+     *     givenValue: int,
+     *     uniqueUsers: int,
+     *     totalValue: int,
+     *     totalCount: int,
+     *     recent: list<string>,
+     *     hasMore: bool,
+     *     viewerBonus: int,
+     *     showButtons: bool,
+     *     insufficientBonus: bool,
+     * }|null
+     */
+    private function magicBlock(int $viewerId): ?array
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+        $isOwner = $viewerId > 0 && $viewerId === (int) $this->torrent->owner;
+
+        $rawOptions = Setting::getBonusRewardOptions();
+        $options = [];
+        foreach ($rawOptions as $v) {
+            $n = (int) $v;
+            if ($n > 0) {
+                $options[] = $n;
+            }
+        }
+        $options = array_values(array_unique($options));
+        sort($options);
+
+        $magicRows = NexusDB::table('magic')
+            ->where('torrentid', $torrentId)
+            ->orderByDesc('id')
+            ->get(['userid', 'value']);
+
+        $uniqueUsers = [];
+        $totalValue = 0;
+        $hasGiven = false;
+        $givenValue = 0;
+        $recentNames = [];
+        $recentLimit = 6;
+        foreach ($magicRows as $idx => $row) {
+            $uid = (int) $row->userid;
+            $value = (int) $row->value;
+            $uniqueUsers[$uid] = true;
+            $totalValue += $value;
+            if ($uid === $viewerId && $viewerId > 0) {
+                $hasGiven = true;
+                $givenValue = $value;
+            }
+            if ($idx < $recentLimit) {
+                $recentNames[] = $this->lookupUsername($uid);
+            }
+        }
+        $totalCount = count($magicRows);
+
+        $viewerBonus = 0;
+        if ($viewerId > 0) {
+            $user = User::query()->find($viewerId, ['seedbonus']);
+            $viewerBonus = (int) ($user?->seedbonus ?? 0);
+        }
+
+        $minOption = $options[0] ?? 0;
+        $showButtons = $viewerId > 0
+            && ! $isOwner
+            && ! $hasGiven
+            && $minOption > 0
+            && $viewerBonus >= $minOption;
+        $insufficientBonus = $viewerId > 0
+            && ! $isOwner
+            && ! $hasGiven
+            && $minOption > 0
+            && $viewerBonus < $minOption;
+
+        return [
+            'options' => $options,
+            'hasGiven' => $hasGiven,
+            'givenValue' => $givenValue,
+            'uniqueUsers' => count($uniqueUsers),
+            'totalValue' => $totalValue,
+            'totalCount' => $totalCount,
+            'recent' => $recentNames,
+            'hasMore' => $totalCount > count($recentNames),
+            'viewerBonus' => $viewerBonus,
+            'showButtons' => $showButtons,
+            'insufficientBonus' => $insufficientBonus,
+        ];
+    }
+
+    public function addMagic(int $value): void
+    {
+        $this->magicFlash = null;
+        $this->resetErrorBag('magic');
+
+        if ($this->torrent === null) {
+            return;
+        }
+
+        $viewerId = (int) (auth('nexus-web')->id() ?? 0);
+        if ($viewerId <= 0) {
+            return;
+        }
+
+        $user = User::query()->find($viewerId);
+        if ($user === null) {
+            return;
+        }
+
+        $outcome = app(BonusRewardService::class)->attempt(
+            rewarder: $user,
+            torrentId: (int) $this->torrent->id,
+            value: $value,
+        );
+
+        if (! $outcome->success) {
+            $this->addError('magic', $outcome->message);
+
+            return;
+        }
+
+        $this->magicFlash = sprintf('Magic given (+%d).', $value);
+    }
+
+    private function lookupUsername(int $userId): string
+    {
+        if ($userId <= 0) {
+            return '';
+        }
+        $user = User::query()->find($userId, ['username']);
+
+        return $user?->username !== null ? (string) $user->username : '';
     }
 
     /**
