@@ -14,6 +14,7 @@ use App\Http\Controllers\Legacy\BansController;
 use App\Http\Controllers\Legacy\BitBucketLogController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\CheaterboxController;
 use App\Http\Controllers\Legacy\CheckUserController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
@@ -41,10 +42,12 @@ use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
+use App\Http\Controllers\Legacy\PromotionLinkController;
 use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SelfEnableController;
+use App\Http\Controllers\Legacy\SendMessageController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffMessController;
@@ -632,6 +635,15 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/viewsnatches.php', ViewSnatchesController::class)
         ->name('legacy.viewsnatches');
+
+    Route::get('/sendmessage.php', SendMessageController::class)
+        ->name('legacy.sendmessage');
+
+    Route::match(['get', 'post'], '/cheaterbox.php', CheaterboxController::class)
+        ->name('legacy.cheaterbox');
+
+    Route::get('/promotionlink.php', PromotionLinkController::class)
+        ->name('legacy.promotionlink');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');

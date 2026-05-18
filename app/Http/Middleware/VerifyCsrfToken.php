@@ -88,5 +88,6 @@ class VerifyCsrfToken extends Middleware
         // disabled accounts must be able to submit without going
         // through a token-mint round trip first.
         'self-enable.php',
+        'cheaterbox.php',
     ];
 }
