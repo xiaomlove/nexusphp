@@ -72,15 +72,7 @@ function get_single_value($table, $field, $suffix = ""){
 
 function stdmsg($heading, $text, $htmlstrip = false)
 {
-	if ($htmlstrip) {
-		$heading = htmlspecialchars(trim($heading));
-		$text = htmlspecialchars(trim($text));
-	}
-	print("<table align=\"center\" class=\"main\" width=\"500\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td class=\"embedded\">\n");
-	if ($heading)
-	print("<h2>".$heading."</h2>\n");
-	print("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"10\"><tr><td class=\"text\">");
-	print($text . "</td></tr></table></td></tr></table>\n");
+	print(\App\Support\Frame::stdMessage((string) $heading, (string) $text, (bool) $htmlstrip));
 }
 
 function stderr($heading, $text, $htmlstrip = true, $head = true, $foot = true, $die = true)
@@ -93,9 +85,11 @@ function stderr($heading, $text, $htmlstrip = true, $head = true, $foot = true, 
 
 function sqlerr($file = '', $line = '')
 {
-	print("<table border=\"0\" bgcolor=\"blue\" align=\"left\" cellspacing=\"0\" cellpadding=\"10\" style=\"background: blue;\">" .
-	"<tr><td class=\"embedded\"><font color=\"white\"><h1>SQL Error</h1>\n" .
-	"<b>" . \Nexus\Database\NexusDB::getInstance()->error() . ($file != '' && $line != '' ? "<p>in $file, line $line</p>" : "") . "</b></font></td></tr></table>");
+	print(\App\Support\Frame::sqlError(
+		(string) \Nexus\Database\NexusDB::getInstance()->error(),
+		(string) $file,
+		(string) $line,
+	));
 	die;
 }
 
@@ -577,14 +571,11 @@ function end_table()
 function insert_smilies_frame()
 {
 	global $lang_functions;
-	begin_frame($lang_functions['text_smilies'], true);
-	begin_table(false, 5);
-	print("<tr><td class=\"colhead\">".$lang_functions['col_type_something']."</td><td class=\"colhead\">".$lang_functions['col_to_make_a']."</td></tr>\n");
-	for ($i=1; $i<192; $i++) {
-		print("<tr><td>[em$i]</td><td><img src=\"pic/smilies/".$i.".gif\" alt=\"[em$i]\" /></td></tr>\n");
-	}
-	end_table();
-	end_frame();
+	print(\App\Support\Smilies::framedTable(
+		(string) ($lang_functions['text_smilies'] ?? ''),
+		(string) ($lang_functions['col_type_something'] ?? ''),
+		(string) ($lang_functions['col_to_make_a'] ?? ''),
+	));
 }
 
 function get_ratio_color($ratio)
@@ -4161,16 +4152,10 @@ function quickreply($formname, $taname,$submit){
 }
 
 function smile_row($formname, $taname){
-	$quickSmilesNumbers = array(4, 5, 39, 25, 11, 8, 10, 15, 27, 57, 42, 122, 52, 28, 29, 30, 176);
-	$smilerow = "<div align=\"center\">";
-	foreach ($quickSmilesNumbers as $smilyNumber) {
-		$smilerow .= getSmileIt($formname, $taname, $smilyNumber);
-	}
-	$smilerow .= "</div>";
-	return $smilerow;
+	return \App\Support\Smilies::quickRow((string) $formname, (string) $taname);
 }
 function getSmileIt($formname, $taname, $smilyNumber) {
-	return "<a href=\"javascript: SmileIT('[em$smilyNumber]','".$formname."','".$taname."')\"  onmouseover=\"domTT_activate(this, event, 'content', '".htmlspecialchars("<table><tr><td><img src=\'pic/smilies/$smilyNumber.gif\' alt=\'\' /></td></tr></table>")."', 'trail', false, 'delay', 0,'lifetime',10000,'styleClass','smilies','maxWidth', 400);\"><img style=\"max-width: 25px;\" src=\"pic/smilies/$smilyNumber.gif\" alt=\"\" /></a>";
+	return \App\Support\Smilies::link((string) $formname, (string) $taname, (int) $smilyNumber);
 }
 
 function classlist($selectname,$maxclass, $selected, $minClass = 0, $includeNoClass = false, $disabled = false){

@@ -65,4 +65,38 @@ final class Frame
 
         return '<table class="main'.$widthFragment.'" border="1" cellspacing="0" cellpadding="'.$padding.'">';
     }
+
+    public static function stdMessage(string $heading, string $text, bool $htmlstrip): string
+    {
+        if ($htmlstrip) {
+            $heading = htmlspecialchars(trim($heading));
+            $text = htmlspecialchars(trim($text));
+        }
+
+        // Legacy quirk preserved: the original `if ($heading)` is a PHP
+        // bool check, so a literal `'0'` heading is treated as empty
+        // and the <h2> is suppressed. `(bool) (string)` matches that.
+        $headingHtml = (bool) $heading
+            ? '<h2>'.$heading."</h2>\n"
+            : '';
+
+        return '<table align="center" class="main" width="500" border="0" cellpadding="0" cellspacing="0"><tr><td class="embedded">'."\n"
+            .$headingHtml
+            .'<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">'
+            .$text."</td></tr></table></td></tr></table>\n";
+    }
+
+    public static function sqlError(string $error, string $file, string $line): string
+    {
+        // Legacy quirk preserved: original used `$file != '' && $line != ''`,
+        // a loose comparison that treats `'0'` and integer `0` as empty.
+        // The (bool) check on a string matches that — `(bool) '0'` is false.
+        $location = ((bool) $file && (bool) $line)
+            ? '<p>in '.$file.', line '.$line.'</p>'
+            : '';
+
+        return '<table border="0" bgcolor="blue" align="left" cellspacing="0" cellpadding="10" style="background: blue;">'
+            .'<tr><td class="embedded"><font color="white"><h1>SQL Error</h1>'."\n"
+            .'<b>'.$error.$location.'</b></font></td></tr></table>';
+    }
 }
