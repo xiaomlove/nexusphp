@@ -251,6 +251,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch #14 — legacy migration routes.
+    location = /sendmessage.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /cheaterbox.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /promotionlink.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
