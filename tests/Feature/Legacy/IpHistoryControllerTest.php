@@ -100,6 +100,7 @@ class IpHistoryControllerTest extends FeatureTestCase
         ]);
 
         $this->actingAs($staff, 'nexus-web');
+        $this->withoutExceptionHandling();
         $response = $this->get('/iphistory.php?id='.$target->id);
 
         $response->assertOk();
