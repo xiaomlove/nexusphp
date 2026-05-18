@@ -11,13 +11,13 @@ import { loginAs } from '../helpers/api-login';
  *
  *   - `?legacy=1` — explicit canary opt-out
  *   - `?cmtpage=N` — comments pagination (no Livewire equivalent yet)
- *   - `?dllist=1`  — auto-open legacy peer-list dialog
  *   - non-GET methods — inline action POSTs (?subtitleupload, …)
  *
- * `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) now
- * flip onto Modern UI as well — TorrentDetail renders the equivalent
- * banner inline. These tests verify the redirect contract and that the
- * legacy fall-through paths still return 2xx.
+ * `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) and
+ * `?dllist=1` now flip onto Modern UI as well — TorrentDetail renders
+ * the equivalent banner / peer list inline. These tests verify the
+ * redirect contract and that the legacy fall-through paths still
+ * return 2xx.
  */
 test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', () => {
     test('/details.php?id=1 → /torrent/1', async ({ context, page }) => {
@@ -92,16 +92,25 @@ test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', ()
         expect(response.status()).toBe(200);
     });
 
-    test('/details.php?id=1&dllist=1 stays on legacy (peer-list dialog hatch)', async ({
+    test('/details.php?id=1&dllist=1 → /torrent/1?dllist=1 (peer list rendered inline)', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
+        // The legacy `?dllist=1` flag auto-triggered the AJAX peer-list
+        // popup. The Modern UI renders the peer list server-side as
+        // part of the page, so the flag is a no-op there — we still
+        // flip the redirect so listings' `#seeders` / `#leechers`
+        // fragment links resolve against the new canonical URL.
         const response = await page.request.get('/details.php?id=1&dllist=1', {
             maxRedirects: 0,
         });
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toContain('/torrent/1?');
+        expect(location).toContain('dllist=1');
+        expect(location).not.toMatch(/[?&]id=/);
     });
 
     test('/details.php?id=1&uploaded=1 flips and Modern UI renders the banner', async ({

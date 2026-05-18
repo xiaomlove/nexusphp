@@ -4,18 +4,26 @@ ob_start(); //Do not delete this line
 /*
  * Strangler Fig flip (Phase 3.x) — the canonical torrent-detail URL is
  * now the Livewire `App\Livewire\TorrentDetail` at `/torrent/{id}`.
- * Read-only GETs that carry only `?id=N` (or only `?id=N&hit=1`) are
- * 302-bounced to the new route; anything else (the canary `?legacy=1`
- * opt-out, the comments pagination `?cmtpage=N`, the auto-open
- * peer-list `?dllist=1`, and every non-GET request — i.e. the inline
- * action POST handlers like ?subtitleupload) falls through to the
- * legacy code below. The `?hit=1` view-counter side effect is wired
- * into `App\Livewire\TorrentDetail::mount()`, so first-party "open
- * from listing" links flip cleanly to `/torrent/{id}?hit=1`. The
- * post-write "you just did X" banners (`?uploaded` / `?edited` /
- * `?existed` with optional `?returnto`) flip onto TorrentDetail too,
- * which renders the equivalent Modern UI banner from the same query
- * params.
+ * Read-only GETs that carry only `?id=N` (optionally with `?hit=1`,
+ * `?dllist=1`, the post-write `?uploaded` / `?edited` / `?existed`
+ * banners or their optional `?returnto` companion) are 302-bounced
+ * to the new route; anything else (the canary `?legacy=1` opt-out,
+ * the comments pagination `?cmtpage=N`, and every non-GET request —
+ * i.e. the inline action POST handlers like ?subtitleupload) falls
+ * through to the legacy code below.
+ *
+ * The `?hit=1` view-counter side effect is wired into
+ * `App\Livewire\TorrentDetail::mount()`, so first-party "open from
+ * listing" links flip cleanly to `/torrent/{id}?hit=1`. The legacy
+ * `?dllist=1` auto-open-peer-list hint is a no-op on the Modern UI
+ * (the peer list is rendered server-side as part of the page) so it
+ * is also no longer an escape hatch — the listings' `#seeders` /
+ * `#leechers` anchor fragments survive the redirect because the
+ * Blade view exposes matching `id="seeders"` / `id="leechers"`
+ * anchors on the peer sections. The post-write "you just did X"
+ * banners (`?uploaded` / `?edited` / `?existed` with optional
+ * `?returnto`) flip onto TorrentDetail too, which renders the
+ * equivalent Modern UI banner from the same query params.
  *
  * Escape hatches:
  *
@@ -23,9 +31,6 @@ ob_start(); //Do not delete this line
  *     documented in docs/legacy-strategy.md. Mirrors forums.php.
  *   - `?cmtpage=N` — comments pagination. The comments listing has not
  *     been migrated to Livewire yet, so paged URLs must stay on legacy.
- *   - `?dllist=1` — auto-open the legacy peer-list dialog. The Modern
- *     UI peers tab is built differently, so the auto-open hint stays on
- *     legacy until the dialog is retired.
  *   - non-GET requests — the inline action POSTs (subtitle upload etc.)
  *     are still served by this file.
  *
@@ -38,7 +43,7 @@ ob_start(); //Do not delete this line
 $detailsFlipId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $detailsFlipMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $detailsFlipEscapeHatches = [
-    'legacy', 'cmtpage', 'dllist',
+    'legacy', 'cmtpage',
 ];
 $detailsFlipHasEscapeHatch = false;
 foreach ($detailsFlipEscapeHatches as $detailsFlipKey) {

@@ -326,9 +326,6 @@ Escape hatches that stay on legacy:
   Livewire wires the comments tab on the modern page but does not
   yet own the canonical comments URL with pagination), so paged
   URLs must stay on legacy.
-- `?dllist=1` — auto-open the legacy peer-list dialog. The Modern
-  UI peers tab is built differently; the auto-open hint stays on
-  legacy until the legacy dialog is retired.
 - `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) —
   post-write success banners after the legacy upload / edit flows.
   Modern UI has no equivalent banner; legacy keeps owning them
@@ -344,6 +341,12 @@ Retired escape hatches (now flip cleanly):
   `public/myhr.php` and the legacy `details.php` "related torrents"
   block now flip to `/torrent/{id}?hit=1` and the Livewire component
   increments `torrents.views` directly.
+- `?dllist=1` — the legacy auto-open peer-list dialog hint is a
+  no-op on the Modern UI (the peer list is rendered server-side as
+  part of the page). Listing links carrying `#seeders` / `#leechers`
+  fragments still resolve correctly: the Blade view exposes matching
+  `id="seeders"` / `id="leechers"` anchors on the peer sections, so
+  the browser scroll-to-fragment behaviour survives the 302.
 
 Contract is covered by `tests/e2e/behavior/details-flip.spec.ts`.
 After every escape hatch has been retired the file is deleted in a
