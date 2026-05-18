@@ -23,11 +23,13 @@ use App\Repositories\SearchRepository;
 use App\Repositories\TagRepository;
 use App\Support\BbcodeRenderer;
 use App\Support\Codec;
+use App\Support\Imdb;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 use Nexus\Database\NexusDB;
+use Nexus\Field\Field;
 use Nexus\Torrent\BdInfoExtra;
 use Nexus\Torrent\TechnicalInformation;
 
@@ -195,6 +197,8 @@ class TorrentDetail extends Component
             'hotMeter' => $this->hotMeterRows(),
             'descriptionHtml' => $this->descriptionHtml($viewerId),
             'technicalInfoHtml' => $this->technicalInfoHtml(),
+            'customFieldsHtml' => $this->customFieldsHtml(),
+            'otherCopies' => $this->otherCopies(),
             'nfoBlock' => $this->nfoBlock($viewerId),
             'viewerId' => $viewerId,
             'isAuthed' => $viewerId > 0,
@@ -946,6 +950,58 @@ class TorrentDetail extends Component
             'up' => $up,
             'down' => $down,
         ];
+    }
+
+    private function customFieldsHtml(): string
+    {
+        if ($this->torrent === null) {
+            return '';
+        }
+
+        $searchBoxId = (int) ($this->torrent->basic_category?->mode ?? 0);
+        if ($searchBoxId === 0) {
+            return '';
+        }
+
+        $torrentId = (int) $this->torrent->id;
+
+        if (! isset($GLOBALS['Cache']) || $GLOBALS['Cache'] === null) {
+            $GLOBALS['Cache'] = new \class_cache_redis;
+        }
+
+        ob_start();
+        try {
+            $returned = (new Field)->renderOnTorrentDetailsPage($torrentId, $searchBoxId);
+        } finally {
+            $printed = (string) ob_get_clean();
+        }
+
+        return trim($printed.(string) $returned);
+    }
+
+    /**
+     * @return Collection<int,Torrent>
+     */
+    private function otherCopies(): Collection
+    {
+        if ($this->torrent === null) {
+            return new Collection;
+        }
+
+        $imdbId = Imdb::parseId((string) ($this->torrent->getRawOriginal('url') ?? ''));
+        if ($imdbId === null) {
+            return new Collection;
+        }
+
+        $torrentId = (int) $this->torrent->id;
+
+        return Torrent::query()
+            ->with('basic_category')
+            ->where('url', $imdbId)
+            ->where('id', '!=', $torrentId)
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
     }
 
     /**

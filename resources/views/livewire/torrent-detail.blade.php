@@ -19,6 +19,8 @@
     /** @var array<string,string> $hotMeter */
     /** @var string $descriptionHtml */
     /** @var string $technicalInfoHtml */
+    /** @var string $customFieldsHtml */
+    /** @var \Illuminate\Support\Collection<int,\App\Models\Torrent> $otherCopies */
     /** @var array{html:string,view:string}|null $nfoBlock */
     /** @var int $viewerId */
     /** @var bool $isAuthed */
@@ -453,6 +455,67 @@
             <div class="overflow-x-auto text-sm text-zinc-700 dark:text-zinc-200"
                  data-test-id="torrent-technical-info">
                 {!! $technicalInfoHtml !!}
+            </div>
+        </x-ui.card>
+    @endif
+
+    @if ($customFieldsHtml !== '')
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Custom fields
+            </h2>
+            <div class="overflow-x-auto text-sm text-zinc-700 dark:text-zinc-200"
+                 data-test-id="torrent-custom-fields">
+                <table class="min-w-full">
+                    <tbody>
+                        {!! $customFieldsHtml !!}
+                    </tbody>
+                </table>
+            </div>
+        </x-ui.card>
+    @endif
+
+    @if ($otherCopies->isNotEmpty())
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Other copies ({{ number_format($otherCopies->count()) }})
+            </h2>
+            <div class="overflow-x-auto" data-test-id="torrent-other-copies">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="text-xs uppercase text-zinc-500 dark:text-zinc-400">
+                        <tr>
+                            <th class="px-2 py-1 font-medium">Type</th>
+                            <th class="px-2 py-1 font-medium">Name</th>
+                            <th class="px-2 py-1 font-medium text-right">Size</th>
+                            <th class="px-2 py-1 font-medium">Added</th>
+                            <th class="px-2 py-1 font-medium text-right">S</th>
+                            <th class="px-2 py-1 font-medium text-right">L</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                        @foreach ($otherCopies as $copy)
+                            @php
+                                $copyCategory = $copy->basic_category;
+                                $copyAdded = $copy->added instanceof \Illuminate\Support\Carbon ? $copy->added->format('Y-m-d H:i') : (string) $copy->added;
+                            @endphp
+                            <tr class="text-zinc-700 dark:text-zinc-200">
+                                <td class="px-2 py-1 align-top">
+                                    @if ($copyCategory !== null)
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $copyCategory->name }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-2 py-1 align-top">
+                                    <a class="text-blue-600 hover:underline dark:text-blue-400"
+                                       href="/torrent/{{ (int) $copy->id }}">{{ $copy->name }}</a>
+                                </td>
+                                <td class="px-2 py-1 align-top text-right tabular-nums">{{ \App\Livewire\TorrentBrowse::formatBytes((int) $copy->size) }}</td>
+                                <td class="px-2 py-1 align-top text-xs text-zinc-500 dark:text-zinc-400">{{ $copyAdded }}</td>
+                                <td class="px-2 py-1 align-top text-right tabular-nums text-emerald-600 dark:text-emerald-400">{{ number_format((int) $copy->seeders) }}</td>
+                                <td class="px-2 py-1 align-top text-right tabular-nums text-rose-600 dark:text-rose-400">{{ number_format((int) $copy->leechers) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </x-ui.card>
     @endif

@@ -394,6 +394,109 @@ class TorrentDetailTest extends FeatureTestCase
             ->assertDontSee('data-test-id="promotion-subtext"', false);
     }
 
+    public function test_custom_fields_section_renders_for_single_row_field_with_value(): void
+    {
+        $searchBoxId = (int) NexusDB::table('searchbox')->insertGetId([
+            'name' => 'sb-'.bin2hex(random_bytes(2)),
+            'custom_fields_display_name' => '',
+            'custom_fields_display' => '',
+        ]);
+
+        $customFieldId = (int) NexusDB::table('torrents_custom_fields')->insertGetId([
+            'name' => 'resolution_'.bin2hex(random_bytes(2)),
+            'label' => 'Resolution',
+            'type' => 'text',
+            'required' => 0,
+            'is_single_row' => 1,
+            'priority' => 0,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        NexusDB::table('searchbox')->where('id', $searchBoxId)->update([
+            'custom_fields' => (string) $customFieldId,
+        ]);
+
+        $categoryId = (int) NexusDB::table('categories')->insertGetId([
+            'mode' => $searchBoxId,
+            'class_name' => 'c_test_cf',
+            'name' => 'TestCatCF-'.bin2hex(random_bytes(2)),
+            'image' => '',
+            'sort_index' => 0,
+            'icon_id' => 0,
+        ]);
+
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, ['category' => $categoryId]);
+
+        NexusDB::table('torrents_custom_field_values')->insert([
+            'torrent_id' => $torrentId,
+            'custom_field_id' => $customFieldId,
+            'custom_field_value' => '4K UHD',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="torrent-custom-fields"', false)
+            ->assertSee('Resolution')
+            ->assertSee('4K UHD');
+    }
+
+    public function test_custom_fields_section_is_absent_when_category_mode_is_zero(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-custom-fields"', false);
+    }
+
+    public function test_other_copies_section_renders_for_matching_imdb_url(): void
+    {
+        $owner = $this->createUser();
+        $imdbId = 1234567;
+
+        $primaryId = $this->createTorrent($owner->id, ['url' => $imdbId]);
+        $duplicateName = 'duplicate-copy-'.bin2hex(random_bytes(3));
+        $this->createTorrent($owner->id, [
+            'name' => $duplicateName,
+            'url' => $imdbId,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $primaryId])
+            ->assertSee('data-test-id="torrent-other-copies"', false)
+            ->assertSee($duplicateName);
+    }
+
+    public function test_other_copies_section_is_absent_when_url_is_null(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, ['url' => null]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-other-copies"', false);
+    }
+
+    public function test_other_copies_section_excludes_current_torrent(): void
+    {
+        $owner = $this->createUser();
+        $imdbId = 7654321;
+
+        $primaryId = $this->createTorrent($owner->id, [
+            'name' => 'primary-name-'.bin2hex(random_bytes(3)),
+            'url' => $imdbId,
+        ]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $primaryId])
+            ->assertDontSee('data-test-id="torrent-other-copies"', false);
+    }
+
     private function resetTagRepositoryCache(): void
     {
         $reflection = new ReflectionClass(TagRepository::class);
