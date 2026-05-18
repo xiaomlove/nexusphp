@@ -13,6 +13,7 @@ use App\Http\Controllers\Legacy\BannedEmailsController;
 use App\Http\Controllers\Legacy\BansController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\CheckUserController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
@@ -58,6 +59,7 @@ use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
+use App\Http\Controllers\Legacy\WarnedController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\TokenController;
@@ -547,6 +549,23 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.docleanup');
 
     Route::get('/unco.php', UncoController::class)->name('legacy.unco');
+
+    /*
+     * Phase 2 — replaces `public/warned.php` (deleted in this PR).
+     * Moderator+ listing of warned, enabled accounts; the embedded
+     * `<form action="nowarn.php">` posts to the already migrated
+     * `/nowarn.php` endpoint. GET-only.
+     */
+    Route::get('/warned.php', WarnedController::class)->name('legacy.warned');
+
+    /*
+     * Phase 2 — replaces `public/checkuser.php` (deleted in this PR).
+     * Detail view of a pending account; reachable by the inviter or
+     * any moderator+. The embedded `<form action="takeconfirm.php">`
+     * posts to the already migrated `/takeconfirm.php` endpoint.
+     */
+    Route::get('/checkuser.php', CheckUserController::class)
+        ->name('legacy.checkuser');
 
     Route::match(['get', 'post'], '/reset.php', ResetController::class)
         ->name('legacy.reset');

@@ -200,6 +200,18 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    location = /warned.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /bans.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /checkuser.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /reset.php {
         try_files /nonexistent @nexus_app;
     }
