@@ -1674,27 +1674,7 @@ function WriteConfig ($configname = NULL, $config = NULL) {
 }
 
 function getExportedValue($input,$t = null) {
-	switch (gettype($input)) {
-		case 'string':
-			return "'".str_replace(array("\\","'"),array("\\\\","\'"),$input)."'";
-		case 'array':
-			$output = "array(\r";
-			foreach ($input as $key => $value) {
-				$output .= $t."\t".getExportedValue($key,$t."\t").' => '.getExportedValue($value,$t."\t");
-				$output .= ",\n";
-			}
-			$output .= $t.')';
-			return $output;
-		case 'boolean':
-			return $input ? 'true' : 'false';
-		case 'NULL':
-			return 'NULL';
-		case 'integer':
-		case 'double':
-		case 'float':
-			return "'".(string)$input."'";
-	 }
-	 return 'NULL';
+    return \App\Support\Codec::phpExport($input, $t);
 }
 
 function dbconn($autoclean = false, $doLogin = true)

@@ -209,4 +209,63 @@ class CodecTest extends TestCase
         $latin1 = Codec::ibm437ToEntitiesLegacy($input, 'latin-1');
         $this->assertSame($plain, $latin1);
     }
+
+    // ---------- phpExport() ----------
+
+    public function test_php_export_quotes_strings_with_backslash_and_single_quote_escapes(): void
+    {
+        $this->assertSame("'foo'", Codec::phpExport('foo'));
+        $this->assertSame("''", Codec::phpExport(''));
+        $this->assertSame("'it\\'s'", Codec::phpExport("it's"));
+        $this->assertSame("'a\\\\b'", Codec::phpExport('a\\b'));
+    }
+
+    public function test_php_export_stringifies_numeric_types(): void
+    {
+        // Legacy quirk pinned: ints/floats/doubles are emitted as
+        // QUOTED strings (single-quoted). The receiving parser
+        // re-coerces back to numeric, but the source-literal form
+        // is strings.
+        $this->assertSame("'0'", Codec::phpExport(0));
+        $this->assertSame("'42'", Codec::phpExport(42));
+        $this->assertSame("'-5'", Codec::phpExport(-5));
+        $this->assertSame("'1.5'", Codec::phpExport(1.5));
+        $this->assertSame("'1.0E+20'", Codec::phpExport(1.0e20));
+    }
+
+    public function test_php_export_emits_boolean_and_null_literals(): void
+    {
+        // Lowercase `true` / `false` (PHP convention) but UPPERCASE
+        // `NULL` — that's the legacy contract.
+        $this->assertSame('true', Codec::phpExport(true));
+        $this->assertSame('false', Codec::phpExport(false));
+        $this->assertSame('NULL', Codec::phpExport(null));
+    }
+
+    public function test_php_export_emits_arrays_with_carriage_return_opener(): void
+    {
+        // Legacy quirk: arrays open with `array(\r` (carriage return,
+        // not `\n`!). Each entry is `<indent>\t<key> => <value>,\n`,
+        // closing paren sits at parent indent. Pinned bit-exact so the
+        // emitted `config/allconfig.php` survives round-trips through
+        // the legacy `require` loop.
+        $this->assertSame(
+            "array(\r\t'a' => '1',\n\t'b' => '2',\n)",
+            Codec::phpExport(['a' => 1, 'b' => 2]),
+        );
+    }
+
+    public function test_php_export_nests_arrays_with_growing_indent(): void
+    {
+        $input = ['outer' => ['inner' => 'v']];
+        $expected = "array(\r\t'outer' => array(\r\t\t'inner' => 'v',\n\t),\n)";
+        $this->assertSame($expected, Codec::phpExport($input));
+    }
+
+    public function test_php_export_falls_through_to_null_for_unknown_types(): void
+    {
+        // Objects, resources, etc. all fall through to the legacy
+        // `return 'NULL'` tail branch.
+        $this->assertSame('NULL', Codec::phpExport(new \stdClass));
+    }
 }

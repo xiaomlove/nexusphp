@@ -220,4 +220,59 @@ final class Codec
 
         return str_replace("\351", "\202", $s);
     }
+
+    /**
+     * Serialize a scalar / array value into a PHP source-code literal
+     * suitable for `eval`-style re-import. Mirrors the legacy
+     * `getExportedValue()` exactly — same idiosyncratic output format:
+     *
+     *   - strings are single-quoted with `\` and `'` escaped
+     *   - arrays open with `array(\r` (carriage return, not `\n`!),
+     *     each entry is `<indent>\t<key> => <value>,\n`, and the
+     *     closing paren sits at the parent's indent depth
+     *   - integers / floats / doubles all stringify as `'<value>'`
+     *     (the legacy quirk — numeric values are emitted as STRINGS,
+     *     not as bare PHP numeric literals)
+     *   - booleans → `true` / `false` (lowercase, unquoted)
+     *   - `null` → `NULL` (uppercase, unquoted)
+     *   - unknown types fall through to `NULL`
+     *
+     * `$indent` is the parent-row indent string; the helper recurses
+     * with `$indent . "\t"` to nest array bodies. Pass `null` (the
+     * default) for top-level calls — that matches the legacy default
+     * argument.
+     *
+     * Only call site today is the `WriteConfig()` helper that
+     * snapshots `config/allconfig.php` after admin edits. The output
+     * format must round-trip back through PHP's parser, so the quirks
+     * above are part of the contract — do not "modernise" them.
+     *
+     * @param  mixed  $value
+     */
+    public static function phpExport($value, ?string $indent = null): string
+    {
+        switch (gettype($value)) {
+            case 'string':
+                return "'".str_replace(['\\', "'"], ['\\\\', "\\'"], $value)."'";
+            case 'array':
+                $output = "array(\r";
+                foreach ($value as $key => $entry) {
+                    $output .= $indent."\t".self::phpExport($key, $indent."\t").' => '.self::phpExport($entry, $indent."\t");
+                    $output .= ",\n";
+                }
+                $output .= $indent.')';
+
+                return $output;
+            case 'boolean':
+                return $value ? 'true' : 'false';
+            case 'NULL':
+                return 'NULL';
+            case 'integer':
+            case 'double':
+            case 'float':
+                return "'".(string) $value."'";
+        }
+
+        return 'NULL';
+    }
 }
