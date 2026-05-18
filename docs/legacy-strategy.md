@@ -145,6 +145,14 @@ observability — without a single page rewrite.
   `get_value`, `delete_value`, `new_page` / `get_page` / `cache_page`,
   `add_row` / `next_row` / `break_loop`, `lock` / `unlock`, `getRedis`,
   metadata getters) is unchanged.
+- ✅ Phase 2 — `public/bitbucketlog.php` (54 LOC) →
+  `BitBucketLogController`. Administrator+ list-view page with an
+  optional `?delete=<id>` action that DELETEs the row and unlinks
+  the file. The page-level gate moves from the legacy
+  `stderr(... Access denied.)` HTTP-200 envelope to a real
+  `abort(403)`. (Originally a three-file batch with `bans.php` and
+  `warned.php`; those two landed independently in #245 and #257
+  while this PR was being written.)
 - ✅ `public/adredir.php` (40 LOC) → `AdRedirectController`. The
   rewrite also closes a long-standing open-redirect bug: the legacy
   script passed `?url=` straight to `header("Location: ...")` with

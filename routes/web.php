@@ -11,6 +11,7 @@ use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
 use App\Http\Controllers\Legacy\BansController;
+use App\Http\Controllers\Legacy\BitBucketLogController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\CheckUserController;
@@ -496,6 +497,16 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::post('/takeconfirm.php', TakeConfirmController::class)
         ->name('legacy.takeconfirm');
+
+    /*
+     * Phase 2 batch — replaces `public/bitbucketlog.php` (deleted in
+     * this PR). Administrator+ paginated list of uploaded BitBucket
+     * images with an inline `?delete=<id>` action. URL stays
+     * `/bitbucketlog.php` so the `SysoppanelTableSeeder.url='bitbucketlog.php'`
+     * menu entry keeps working without template changes.
+     */
+    Route::get('/bitbucketlog.php', BitBucketLogController::class)
+        ->name('legacy.bitbucketlog');
 
     /*
      * Phase 2 — replaces `public/polloverview.php` (deleted in this
