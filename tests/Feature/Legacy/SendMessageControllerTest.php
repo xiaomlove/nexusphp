@@ -174,6 +174,61 @@ class SendMessageControllerTest extends FeatureTestCase
         $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
     }
 
+    public function test_subject_with_html_is_escaped_as_html_entities(): void
+    {
+        $viewer = $this->createTestUser();
+        $sender = $this->createTestUser();
+        $this->actingAs($viewer, 'nexus-web');
+
+        $msgId = (int) NexusDB::table('messages')->insertGetId([
+            'sender' => (int) $sender->id,
+            'receiver' => (int) $viewer->id,
+            'subject' => '<script>alert(1)</script>',
+            'msg' => 'Body',
+            'added' => date('Y-m-d H:i:s'),
+            'unread' => 'yes',
+        ]);
+
+        $body = (string) $this->get('/sendmessage.php?receiver='.$sender->id.'&replyto='.$msgId)
+            ->getContent();
+        $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $body);
+    }
+
+    public function test_replyto_with_existing_re_subject_increments_to_re2(): void
+    {
+        $viewer = $this->createTestUser();
+        $sender = $this->createTestUser();
+        $this->actingAs($viewer, 'nexus-web');
+
+        $msgId = (int) NexusDB::table('messages')->insertGetId([
+            'sender' => (int) $sender->id,
+            'receiver' => (int) $viewer->id,
+            'subject' => 'Re: Topic',
+            'msg' => 'Body',
+            'added' => date('Y-m-d H:i:s'),
+            'unread' => 'yes',
+        ]);
+
+        $body = (string) $this->get('/sendmessage.php?receiver='.$sender->id.'&replyto='.$msgId)
+            ->getContent();
+        $this->assertStringContainsString('value="Re(2): Topic"', $body);
+    }
+
+    public function test_returnto_query_param_renders_hidden_field(): void
+    {
+        $viewer = $this->createTestUser();
+        $recipient = $this->createTestUser();
+        $this->actingAs($viewer, 'nexus-web');
+
+        $response = $this->get('/sendmessage.php?receiver='.$recipient->id.'&returnto=%2Fmessages.php');
+
+        $response->assertOk();
+        $this->assertStringContainsString(
+            'name="returnto" value="/messages.php"',
+            (string) $response->getContent(),
+        );
+    }
+
     /**
      * @param  array<string,mixed>  $overrides
      */
