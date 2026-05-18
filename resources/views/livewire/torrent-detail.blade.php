@@ -20,6 +20,7 @@
     /** @var string $descriptionHtml */
     /** @var string $technicalInfoHtml */
     /** @var string $customFieldsHtml */
+    /** @var array{imdbId:int,url:string,posterUrl:string|null,rating:string,title:string,year:string|null,country:list<string>,genres:list<string>,directors:list<string>,creators:list<string>,cast:list<string>,plot:string|null,runtime:string|null,language:string|null,tagline:string|null}|null $imdbHero */
     /** @var \Illuminate\Support\Collection<int,\App\Models\Torrent> $otherCopies */
     /** @var array{html:string,view:string}|null $nfoBlock */
     /** @var int $viewerId */
@@ -471,6 +472,77 @@
                         {!! $customFieldsHtml !!}
                     </tbody>
                 </table>
+            </div>
+        </x-ui.card>
+    @endif
+
+    @if ($imdbHero !== null)
+        <x-ui.card>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                IMDb
+            </h2>
+            <div class="flex flex-col gap-4 text-sm text-zinc-700 dark:text-zinc-200 sm:flex-row"
+                 data-test-id="torrent-imdb-hero">
+                @if ($imdbHero['posterUrl'] !== null)
+                    <div class="shrink-0">
+                        <img class="h-auto w-32 rounded border border-zinc-200 object-cover dark:border-zinc-700"
+                             src="{{ $imdbHero['posterUrl'] }}"
+                             alt="IMDb poster for {{ $imdbHero['title'] }}"
+                             loading="lazy" />
+                    </div>
+                @endif
+                <div class="flex flex-1 flex-col gap-2">
+                    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        <a class="text-base font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                           href="{{ $imdbHero['url'] }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           data-test-id="torrent-imdb-link">{{ $imdbHero['title'] !== '' ? $imdbHero['title'] : 'tt'.$imdbHero['imdbId'] }}</a>
+                        @if ($imdbHero['year'] !== null)
+                            <span class="text-xs text-zinc-500 dark:text-zinc-400">({{ $imdbHero['year'] }})</span>
+                        @endif
+                        <span class="ml-auto inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200"
+                              data-test-id="torrent-imdb-rating">
+                            <span aria-hidden="true">&#9733;</span>
+                            <span>{{ $imdbHero['rating'] }}{{ $imdbHero['rating'] !== 'N/A' ? '/10' : '' }}</span>
+                        </span>
+                    </div>
+                    @if ($imdbHero['tagline'] !== null)
+                        <p class="italic text-zinc-500 dark:text-zinc-400">{{ $imdbHero['tagline'] }}</p>
+                    @endif
+                    @if ($imdbHero['plot'] !== null)
+                        <p class="text-sm text-zinc-700 dark:text-zinc-200">{{ $imdbHero['plot'] }}</p>
+                    @endif
+                    <dl class="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-xs text-zinc-600 dark:text-zinc-300">
+                        @if ($imdbHero['genres'] !== [])
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Genres</dt>
+                            <dd>{{ implode(', ', $imdbHero['genres']) }}</dd>
+                        @endif
+                        @if ($imdbHero['country'] !== [])
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Country</dt>
+                            <dd>{{ implode(', ', $imdbHero['country']) }}</dd>
+                        @endif
+                        @if ($imdbHero['language'] !== null)
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Language</dt>
+                            <dd>{{ $imdbHero['language'] }}</dd>
+                        @endif
+                        @if ($imdbHero['runtime'] !== null)
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Runtime</dt>
+                            <dd>{{ $imdbHero['runtime'] }}</dd>
+                        @endif
+                        @if ($imdbHero['directors'] !== [])
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Director</dt>
+                            <dd>{{ implode(', ', $imdbHero['directors']) }}</dd>
+                        @elseif ($imdbHero['creators'] !== [])
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Creator</dt>
+                            <dd>{{ implode(', ', $imdbHero['creators']) }}</dd>
+                        @endif
+                        @if ($imdbHero['cast'] !== [])
+                            <dt class="font-semibold text-zinc-500 dark:text-zinc-400">Cast</dt>
+                            <dd>{{ implode(', ', $imdbHero['cast']) }}</dd>
+                        @endif
+                    </dl>
+                </div>
             </div>
         </x-ui.card>
     @endif
