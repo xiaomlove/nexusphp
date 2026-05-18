@@ -171,7 +171,6 @@ class ViewSnatchesControllerTest extends FeatureTestCase
             'name' => $name,
             'filename' => 'sample.torrent',
             'info_hash' => bin2hex(random_bytes(10)),
-            'descr' => '',
             'category' => 1,
             'visible' => 'yes',
             'added' => date('Y-m-d H:i:s'),
