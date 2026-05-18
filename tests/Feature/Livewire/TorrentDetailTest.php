@@ -9,6 +9,7 @@ use App\Models\TorrentTag;
 use App\Models\User;
 use App\Repositories\TagRepository;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Nexus\Database\NexusDB;
 use ReflectionClass;
@@ -495,6 +496,126 @@ class TorrentDetailTest extends FeatureTestCase
         Livewire::actingAs($owner, 'nexus-web')
             ->test(TorrentDetail::class, ['id' => $primaryId])
             ->assertDontSee('data-test-id="torrent-other-copies"', false);
+    }
+
+    public function test_imdb_hero_section_renders_for_cached_imdb_metadata(): void
+    {
+        $this->seedSetting('main.showimdbinfo', 'yes');
+
+        $owner = $this->createUser();
+        $imdbId = 9876543;
+        $torrentId = $this->createTorrent($owner->id, ['url' => $imdbId]);
+
+        Cache::put('imdb:hero:'.$imdbId, [
+            'title' => 'The Stranger Fig',
+            'year' => '1999',
+            'country' => ['United States'],
+            'genres' => ['Drama', 'Mystery'],
+            'directors' => ['Alice Auteur'],
+            'creators' => [],
+            'cast' => ['Bob Star', 'Carol Lead'],
+            'plot' => 'A devious mid-flight migration.',
+            'runtime' => '120 min',
+            'language' => 'English',
+            'tagline' => 'Strangle the legacy.',
+            'rating' => '8.4',
+            'posterUrl' => 'https://example.com/poster.jpg',
+        ], 3600);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('data-test-id="torrent-imdb-hero"', false)
+            ->assertSee('The Stranger Fig')
+            ->assertSee('8.4/10')
+            ->assertSee('https://www.imdb.com/title/tt'.$imdbId.'/', false)
+            ->assertSee('https://example.com/poster.jpg', false)
+            ->assertSee('Alice Auteur')
+            ->assertSee('A devious mid-flight migration.');
+    }
+
+    public function test_imdb_hero_section_is_absent_when_url_is_null(): void
+    {
+        $this->seedSetting('main.showimdbinfo', 'yes');
+
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id, ['url' => null]);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-imdb-hero"', false);
+    }
+
+    public function test_imdb_hero_section_is_absent_when_setting_disabled(): void
+    {
+        $this->seedSetting('main.showimdbinfo', 'no');
+
+        $owner = $this->createUser();
+        $imdbId = 1112223;
+        $torrentId = $this->createTorrent($owner->id, ['url' => $imdbId]);
+
+        Cache::put('imdb:hero:'.$imdbId, [
+            'title' => 'Hidden Title',
+            'year' => '2000',
+            'country' => [],
+            'genres' => [],
+            'directors' => [],
+            'creators' => [],
+            'cast' => [],
+            'plot' => null,
+            'runtime' => null,
+            'language' => null,
+            'tagline' => null,
+            'rating' => '7.0',
+            'posterUrl' => null,
+        ], 3600);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-imdb-hero"', false);
+    }
+
+    public function test_imdb_hero_section_is_absent_when_viewer_disabled_imdb(): void
+    {
+        $this->seedSetting('main.showimdbinfo', 'yes');
+
+        $owner = $this->createUser();
+        NexusDB::table('users')->where('id', $owner->id)->update(['showimdb' => 'no']);
+        $imdbId = 5556667;
+        $torrentId = $this->createTorrent($owner->id, ['url' => $imdbId]);
+
+        Cache::put('imdb:hero:'.$imdbId, [
+            'title' => 'Opt-Out Title',
+            'year' => '2010',
+            'country' => [],
+            'genres' => [],
+            'directors' => [],
+            'creators' => [],
+            'cast' => [],
+            'plot' => null,
+            'runtime' => null,
+            'language' => null,
+            'tagline' => null,
+            'rating' => '6.5',
+            'posterUrl' => null,
+        ], 3600);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertDontSee('data-test-id="torrent-imdb-hero"', false);
+    }
+
+    private function seedSetting(string $name, string $value): void
+    {
+        $now = Carbon::now()->toDateTimeString();
+        NexusDB::table('settings')->updateOrInsert(
+            ['name' => $name],
+            [
+                'value' => $value,
+                'autoload' => 'yes',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ],
+        );
     }
 
     private function resetTagRepositoryCache(): void

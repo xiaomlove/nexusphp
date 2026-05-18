@@ -28,6 +28,7 @@ use App\Support\Imdb;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Nexus\Database\NexusDB;
 use Nexus\Field\Field;
@@ -201,6 +202,7 @@ class TorrentDetail extends Component
             'descriptionHtml' => $this->descriptionHtml($viewerId),
             'technicalInfoHtml' => $this->technicalInfoHtml(),
             'customFieldsHtml' => $this->customFieldsHtml(),
+            'imdbHero' => $this->imdbHero($viewerId),
             'otherCopies' => $this->otherCopies(),
             'nfoBlock' => $this->nfoBlock($viewerId),
             'viewerId' => $viewerId,
@@ -1227,6 +1229,189 @@ class TorrentDetail extends Component
             ->orderByDesc('id')
             ->limit(50)
             ->get();
+    }
+
+    /**
+     * @return array{
+     *   imdbId:int,
+     *   url:string,
+     *   posterUrl:string|null,
+     *   rating:string,
+     *   title:string,
+     *   year:string|null,
+     *   country:list<string>,
+     *   genres:list<string>,
+     *   directors:list<string>,
+     *   creators:list<string>,
+     *   cast:list<string>,
+     *   plot:string|null,
+     *   runtime:string|null,
+     *   language:string|null,
+     *   tagline:string|null
+     * }|null
+     */
+    private function imdbHero(int $viewerId): ?array
+    {
+        if ($this->torrent === null) {
+            return null;
+        }
+        $enabled = (string) Setting::getByName('main.showimdbinfo', 'no');
+        if ($enabled !== 'yes') {
+            return null;
+        }
+        if ($viewerId > 0 && $this->viewerShowImdb($viewerId) === 'no') {
+            return null;
+        }
+
+        $imdbId = Imdb::parseId((string) ($this->torrent->getRawOriginal('url') ?? ''));
+        if ($imdbId === null) {
+            return null;
+        }
+
+        $hero = Cache::remember('imdb:hero:'.$imdbId, 3600, fn () => $this->buildImdbHeroData($imdbId));
+        if (! is_array($hero)) {
+            return null;
+        }
+
+        return [
+            'imdbId' => $imdbId,
+            'url' => Imdb::buildUrl($imdbId),
+            'posterUrl' => $hero['posterUrl'] ?? null,
+            'rating' => (string) ($hero['rating'] ?? 'N/A'),
+            'title' => (string) ($hero['title'] ?? ''),
+            'year' => $hero['year'] ?? null,
+            'country' => $hero['country'] ?? [],
+            'genres' => $hero['genres'] ?? [],
+            'directors' => $hero['directors'] ?? [],
+            'creators' => $hero['creators'] ?? [],
+            'cast' => $hero['cast'] ?? [],
+            'plot' => $hero['plot'] ?? null,
+            'runtime' => $hero['runtime'] ?? null,
+            'language' => $hero['language'] ?? null,
+            'tagline' => $hero['tagline'] ?? null,
+        ];
+    }
+
+    /**
+     * @return array{
+     *   posterUrl:string|null,
+     *   rating:string,
+     *   title:string,
+     *   year:string|null,
+     *   country:list<string>,
+     *   genres:list<string>,
+     *   directors:list<string>,
+     *   creators:list<string>,
+     *   cast:list<string>,
+     *   plot:string|null,
+     *   runtime:string|null,
+     *   language:string|null,
+     *   tagline:string|null
+     * }|null
+     */
+    private function buildImdbHeroData(int $imdbId): ?array
+    {
+        try {
+            $imdb = new \Nexus\Imdb\Imdb;
+            if ($imdb->getCacheStatus($imdbId) !== 1) {
+                return null;
+            }
+            $movie = $imdb->getMovie($imdbId);
+            $director = $movie->director();
+            $creator = is_array($director) && $director !== [] ? [] : ($movie->creator() ?: []);
+            $cast = $movie->cast();
+            $country = $movie->country();
+            $genres = $movie->genres();
+            $rating = $movie->rating();
+            $cover = $imdb->getMovieCover($imdbId);
+
+            return [
+                'title' => $this->stringOrEmpty($movie->title()),
+                'year' => $this->stringOrNullValue($movie->year()),
+                'country' => $this->stringListFromList($country),
+                'genres' => $this->stringListFromList($genres),
+                'directors' => $this->stringListFromMembers($director),
+                'creators' => $this->stringListFromMembers($creator),
+                'cast' => array_slice($this->stringListFromMembers($cast), 0, 10),
+                'plot' => $this->stringOrNullValue($movie->plotoutline()),
+                'runtime' => $this->stringOrNullValue($movie->runtime()),
+                'language' => $this->stringOrNullValue($movie->language()),
+                'tagline' => $this->stringOrNullValue($movie->tagline()),
+                'rating' => is_numeric($rating) ? (string) $rating : 'N/A',
+                'posterUrl' => $cover !== '' ? $cover : null,
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function stringOrEmpty(mixed $value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        return '';
+    }
+
+    private function stringOrNullValue(mixed $value): ?string
+    {
+        if (is_string($value)) {
+            return $value !== '' ? $value : null;
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function stringListFromList(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+        $out = [];
+        foreach ($value as $entry) {
+            if (is_string($entry) && $entry !== '') {
+                $out[] = $entry;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function stringListFromMembers(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+        $out = [];
+        foreach ($value as $entry) {
+            if (is_array($entry) && isset($entry['name']) && is_string($entry['name']) && $entry['name'] !== '') {
+                $out[] = $entry['name'];
+            }
+        }
+
+        return $out;
+    }
+
+    private function viewerShowImdb(int $viewerId): string
+    {
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('showimdb');
+
+        return $value === 'no' ? 'no' : 'yes';
     }
 
     /**
