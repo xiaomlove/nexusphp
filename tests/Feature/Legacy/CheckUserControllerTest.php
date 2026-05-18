@@ -203,9 +203,9 @@ class CheckUserControllerTest extends FeatureTestCase
     /**
      * @param  array<string,mixed>  $overrides
      * @param  array<string,mixed>  $extra  Columns not in the User
-     *                                       model's `$fillable` list
-     *                                       (e.g. `ip`, `gender`,
-     *                                       `enabled='no'`).
+     *                                      model's `$fillable` list
+     *                                      (e.g. `ip`, `gender`,
+     *                                      `enabled='no'`).
      */
     private function createForcedPendingUser(
         array $overrides = [],
