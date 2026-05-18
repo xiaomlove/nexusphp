@@ -110,9 +110,9 @@ class ViewSnatchesControllerTest extends FeatureTestCase
         $this->assertStringNotContainsString('203.0.113.10', $body);
     }
 
-    public function test_ip_column_shown_to_moderator(): void
+    public function test_ip_column_shown_to_staff_leader(): void
     {
-        $viewer = $this->createTestUser(['class' => User::CLASS_MODERATOR]);
+        $viewer = $this->createTestUser(['class' => User::CLASS_STAFF_LEADER]);
         $this->actingAs($viewer, 'nexus-web');
 
         $torrentId = $this->insertTorrent('IP Test 2');
