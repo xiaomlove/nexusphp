@@ -192,6 +192,17 @@ Route::get('/getextinfoajax.php', GetExtInfoAjaxController::class)->name('legacy
  */
 Route::get('/aboutnexus.php', AboutNexusController::class)->name('legacy.aboutnexus');
 
+/*
+ * Phase 3 — replaces `public/donate.php` (deleted in the same PR).
+ * The legacy script never gated on `loggedinorreturn()` and is linked
+ * from the top-level navbar (and footer in some templates), so the
+ * route stays outside the `auth.nexus` middleware. The URL stays
+ * `/donate.php` so the PayPal `return` URL written into the form, the
+ * navigation link, and any external bookmarks keep working without
+ * template changes.
+ */
+Route::get('/donate.php', DonateController::class)->name('legacy.donate');
+
 // Phase 2 batch #2 — public legacy routes (no auth).
 //
 // `/logout.php`: clearing the legacy auth cookie is a guest-safe op.

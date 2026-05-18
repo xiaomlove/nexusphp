@@ -238,6 +238,10 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    location = /donate.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /bonus-log.php {
         try_files /nonexistent @nexus_app;
     }
