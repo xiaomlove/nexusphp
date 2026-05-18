@@ -57,6 +57,7 @@ use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UncoController;
+use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
 use App\Http\Controllers\Legacy\WarnedController;
@@ -145,6 +146,18 @@ Route::get('/ok.php', OkController::class)->name('legacy.ok');
  * lives in `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/rules.php', RulesController::class)->name('legacy.rules');
+
+/*
+ * Phase 2 — replaces `public/useragreement.php` (deleted in the same
+ * PR). The legacy script never gated on `loggedinorreturn()` and is
+ * linked from `lang/<locale>/lang_faq.php`'s `text_welcome_content_two`
+ * welcome paragraph (visible to guests on the FAQ), so the route stays
+ * outside the `auth.nexus` middleware. The URL stays `/useragreement.php`
+ * so the FAQ link, the body's self-reference link, and any external
+ * bookmarks keep working without template changes. The matching nginx
+ * exact-location entry lives in `.docker/openresty/sites/app.conf.template`.
+ */
+Route::get('/useragreement.php', UserAgreementController::class)->name('legacy.useragreement');
 
 /*
  * Phase 2 batch #10 — replaces `public/getextinfoajax.php` (deleted
