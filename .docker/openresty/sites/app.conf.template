@@ -188,6 +188,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch — bitbucketlog.
+    location = /bitbucketlog.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /getattachment.php {
         try_files /nonexistent @nexus_app;
     }
