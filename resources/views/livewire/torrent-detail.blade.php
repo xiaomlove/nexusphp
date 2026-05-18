@@ -486,7 +486,7 @@
             'seeders' => ['label' => 'Seeders', 'rows' => $peerGroups['seeders'], 'empty' => 'No seeders.'],
             'leechers' => ['label' => 'Leechers', 'rows' => $peerGroups['leechers'], 'empty' => 'No leechers.'],
         ] as $key => $section)
-            <section class="mt-4 first:mt-0" data-test-id="peers-{{ $key }}">
+            <section id="{{ $key }}" class="mt-4 first:mt-0 scroll-mt-4" data-test-id="peers-{{ $key }}">
                 <h3 class="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
                     {{ $section['label'] }} ({{ number_format($section['rows']->count()) }})
                 </h3>

@@ -106,6 +106,17 @@ class TorrentDetailFilesAndPeersTest extends FeatureTestCase
             ->assertSee('Leechers (0)', false);
     }
 
+    public function test_peer_sections_expose_seeders_and_leechers_fragment_anchors(): void
+    {
+        $owner = $this->createUser();
+        $torrentId = $this->createTorrent($owner->id);
+
+        Livewire::actingAs($owner, 'nexus-web')
+            ->test(TorrentDetail::class, ['id' => $torrentId])
+            ->assertSee('id="seeders"', false)
+            ->assertSee('id="leechers"', false);
+    }
+
     public function test_peer_rows_split_between_seeders_and_leechers(): void
     {
         $owner = $this->createUser();
