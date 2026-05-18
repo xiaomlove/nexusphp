@@ -210,4 +210,38 @@ class StringsTest extends TestCase
         $this->assertSame('', Strings::normalizeSearchTerm('тест'));
         $this->assertSame('foo bar', Strings::normalizeSearchTerm('foo тест bar'));
     }
+
+    // ---------- userAgentClient() ----------
+
+    public function test_user_agent_client_returns_string_before_first_semicolon(): void
+    {
+        $this->assertSame(
+            'Transmission/3.00',
+            Strings::userAgentClient('Transmission/3.00; Mac OS X 14.0'),
+        );
+        $this->assertSame(
+            'qBittorrent/4.6.0',
+            Strings::userAgentClient('qBittorrent/4.6.0; Linux x86_64'),
+        );
+    }
+
+    public function test_user_agent_client_returns_full_string_when_no_semicolon(): void
+    {
+        $this->assertSame('Transmission/3.00', Strings::userAgentClient('Transmission/3.00'));
+        $this->assertSame('', Strings::userAgentClient(''));
+        $this->assertSame('Unknown', Strings::userAgentClient('Unknown'));
+    }
+
+    public function test_user_agent_client_stops_at_first_semicolon_only(): void
+    {
+        $this->assertSame(
+            'foo',
+            Strings::userAgentClient('foo; bar; baz'),
+        );
+    }
+
+    public function test_user_agent_client_returns_empty_when_string_starts_with_semicolon(): void
+    {
+        $this->assertSame('', Strings::userAgentClient(';tail'));
+    }
 }

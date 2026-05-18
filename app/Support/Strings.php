@@ -13,6 +13,7 @@ namespace App\Support;
  *   - `is_or_are()`    (pick `"is"` / `"are"` by count)
  *   - `random_str()`   (legacy "visually unambiguous" code generator)
  *   - `hide_text()`    (HTML span wrapper for spoiler-style hidden text)
+ *   - `get_agent()`    (truncate a BitTorrent client user-agent at `;`)
  *
  * all collapse into the static methods below. `add_s` and `is_or_are`
  * are different consumers of the same picker, so they share one
@@ -140,5 +141,29 @@ final class Strings
             [' ', '', '', ' '],
             $s,
         );
+    }
+
+    /**
+     * Return the BitTorrent client portion of a user-agent string —
+     * everything up to (but not including) the first `;`. If there
+     * is no semicolon, the whole string is returned.
+     *
+     * Legacy callers (`public/userdetails.php`, `public/viewpeerlist.php`,
+     * `public/getusertorrentlistajax.php`, `TorrentRepository`) use
+     * this to strip the operating-system tail from agent strings like
+     * `"Transmission/3.00; Mac OS X 14.0"`, leaving just `Transmission/3.00`
+     * for the peer-list display.
+     *
+     * Matches `get_agent($peer_id, $agent)` exactly. The legacy
+     * signature took an unused `$peer_id` argument; this method
+     * drops it because no behaviour ever depended on it.
+     */
+    public static function userAgentClient(string $agent): string
+    {
+        $semicolon = strpos($agent, ';');
+
+        return $semicolon === false
+            ? $agent
+            : substr($agent, 0, $semicolon);
     }
 }
