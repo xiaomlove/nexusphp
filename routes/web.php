@@ -61,6 +61,7 @@ use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
+use App\Http\Controllers\Legacy\ViewSnatchesController;
 use App\Http\Controllers\Legacy\WarnedController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
