@@ -132,4 +132,104 @@ final class FrameTest extends TestCase
     {
         $this->assertSame("</table>\n", Frame::TABLE_CLOSE);
     }
+
+    // ---------- stdMessage ----------
+
+    public function test_std_message_with_heading_emits_h2_and_text(): void
+    {
+        $expected = '<table align="center" class="main" width="500" border="0" cellpadding="0" cellspacing="0">'
+            ."<tr><td class=\"embedded\">\n"
+            ."<h2>Heading</h2>\n"
+            .'<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">'
+            ."Body</td></tr></table></td></tr></table>\n";
+        $this->assertSame($expected, Frame::stdMessage('Heading', 'Body', false));
+    }
+
+    public function test_std_message_empty_heading_omits_h2(): void
+    {
+        $expected = '<table align="center" class="main" width="500" border="0" cellpadding="0" cellspacing="0">'
+            ."<tr><td class=\"embedded\">\n"
+            .'<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">'
+            ."Body</td></tr></table></td></tr></table>\n";
+        $this->assertSame($expected, Frame::stdMessage('', 'Body', false));
+    }
+
+    public function test_std_message_zero_heading_is_treated_as_empty_legacy_quirk(): void
+    {
+        // Legacy quirk: original `if ($heading)` is a bool-check, so a
+        // literal `'0'` heading is treated as empty and the <h2> is
+        // suppressed. Preserved verbatim.
+        $expected = '<table align="center" class="main" width="500" border="0" cellpadding="0" cellspacing="0">'
+            ."<tr><td class=\"embedded\">\n"
+            .'<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">'
+            ."Body</td></tr></table></td></tr></table>\n";
+        $this->assertSame($expected, Frame::stdMessage('0', 'Body', false));
+    }
+
+    public function test_std_message_htmlstrip_trims_and_escapes_both_fields(): void
+    {
+        // Both heading and text trimmed + htmlspecialchars'd in lockstep.
+        $expected = '<table align="center" class="main" width="500" border="0" cellpadding="0" cellspacing="0">'
+            ."<tr><td class=\"embedded\">\n"
+            ."<h2>&lt;b&gt;Hi&lt;/b&gt;</h2>\n"
+            .'<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">'
+            ."Tom &amp; Jerry &quot;evil&quot;</td></tr></table></td></tr></table>\n";
+        $this->assertSame(
+            $expected,
+            Frame::stdMessage('  <b>Hi</b>  ', "\nTom & Jerry \"evil\"\t", true)
+        );
+    }
+
+    public function test_std_message_htmlstrip_off_does_not_escape(): void
+    {
+        $expected = '<table align="center" class="main" width="500" border="0" cellpadding="0" cellspacing="0">'
+            ."<tr><td class=\"embedded\">\n"
+            ."<h2><b>Hi</b></h2>\n"
+            .'<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">'
+            .'<p>raw</p></td></tr></table></td></tr></table>'."\n";
+        $this->assertSame(
+            $expected,
+            Frame::stdMessage('<b>Hi</b>', '<p>raw</p>', false)
+        );
+    }
+
+    // ---------- sqlError ----------
+
+    public function test_sql_error_with_file_and_line_emits_location(): void
+    {
+        $expected = '<table border="0" bgcolor="blue" align="left" cellspacing="0" cellpadding="10" style="background: blue;">'
+            ."<tr><td class=\"embedded\"><font color=\"white\"><h1>SQL Error</h1>\n"
+            .'<b>Boom!<p>in /tmp/x.php, line 42</p></b></font></td></tr></table>';
+        $this->assertSame($expected, Frame::sqlError('Boom!', '/tmp/x.php', '42'));
+    }
+
+    public function test_sql_error_without_file_omits_location(): void
+    {
+        $expected = '<table border="0" bgcolor="blue" align="left" cellspacing="0" cellpadding="10" style="background: blue;">'
+            ."<tr><td class=\"embedded\"><font color=\"white\"><h1>SQL Error</h1>\n"
+            .'<b>Boom!</b></font></td></tr></table>';
+        $this->assertSame($expected, Frame::sqlError('Boom!', '', ''));
+    }
+
+    public function test_sql_error_zero_file_treated_as_empty_legacy_quirk(): void
+    {
+        // Legacy quirk: `$file != ''` is a loose comparison so the
+        // string `'0'` collapses to empty. Bool-check after string
+        // cast reproduces that exactly.
+        $expected = '<table border="0" bgcolor="blue" align="left" cellspacing="0" cellpadding="10" style="background: blue;">'
+            ."<tr><td class=\"embedded\"><font color=\"white\"><h1>SQL Error</h1>\n"
+            .'<b>Boom!</b></font></td></tr></table>';
+        $this->assertSame($expected, Frame::sqlError('Boom!', '0', '42'));
+        $this->assertSame($expected, Frame::sqlError('Boom!', '/tmp/x.php', '0'));
+    }
+
+    public function test_sql_error_does_not_escape_the_error_message(): void
+    {
+        // The legacy proxy passes the raw SQL error through; downstream
+        // pages have been rendering HTML-bearing strings as-is for years.
+        $expected = '<table border="0" bgcolor="blue" align="left" cellspacing="0" cellpadding="10" style="background: blue;">'
+            ."<tr><td class=\"embedded\"><font color=\"white\"><h1>SQL Error</h1>\n"
+            .'<b>"<script>"</b></font></td></tr></table>';
+        $this->assertSame($expected, Frame::sqlError('"<script>"', '', ''));
+    }
 }
