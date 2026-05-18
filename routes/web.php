@@ -65,6 +65,7 @@ use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
+use App\Http\Controllers\Legacy\ViewNfoController;
 use App\Http\Controllers\Legacy\ViewSnatchesController;
 use App\Http\Controllers\Legacy\WarnedController;
 use App\Http\Controllers\OauthController;
@@ -549,6 +550,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/staffpanel.php', StaffPanelController::class)
         ->name('legacy.staffpanel');
+
+    Route::get('/viewnfo.php', ViewNfoController::class)
+        ->name('legacy.viewnfo');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
