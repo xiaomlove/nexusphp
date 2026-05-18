@@ -26,12 +26,22 @@ class ViewNfoControllerTest extends FeatureTestCase
 
     private function createTestUser(array $overrides = []): User
     {
-        return $this->createLegacyUser(
+        $parked = $overrides['parked'] ?? null;
+        unset($overrides['parked']);
+
+        $user = $this->createLegacyUser(
             overrides: array_merge(
                 ['lang' => self::ENGLISH_LANGUAGE_ID],
                 $overrides,
             ),
         );
+
+        if ($parked !== null) {
+            NexusDB::table('users')->where('id', $user->id)->update(['parked' => $parked]);
+            $user->refresh();
+        }
+
+        return $user;
     }
 
     private function setSetting(string $name, string $value): void
