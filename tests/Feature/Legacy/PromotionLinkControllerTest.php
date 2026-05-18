@@ -34,7 +34,7 @@ class PromotionLinkControllerTest extends FeatureTestCase
 
     public function test_guest_request_with_key_redirects_to_base_url(): void
     {
-        $owner = $this->createTestUser(['promotion_link' => 'abc123promo']);
+        $owner = $this->createTestUserWithPromoLink('abc123promo');
 
         $response = $this->get('/promotionlink.php?key=abc123promo');
 
@@ -44,7 +44,7 @@ class PromotionLinkControllerTest extends FeatureTestCase
 
     public function test_logged_in_without_key_renders_page(): void
     {
-        $viewer = $this->createTestUser(['promotion_link' => 'mypromokey']);
+        $viewer = $this->createTestUserWithPromoLink('mypromokey');
         $this->actingAs($viewer, 'nexus-web');
 
         $response = $this->get('/promotionlink.php');
@@ -57,7 +57,7 @@ class PromotionLinkControllerTest extends FeatureTestCase
 
     public function test_logged_in_without_existing_key_generates_one_and_redirects(): void
     {
-        $viewer = $this->createTestUser(['promotion_link' => '']);
+        $viewer = $this->createTestUser();
         $this->actingAs($viewer, 'nexus-web');
 
         $response = $this->get('/promotionlink.php');
@@ -70,7 +70,7 @@ class PromotionLinkControllerTest extends FeatureTestCase
 
     public function test_logged_in_with_updatekey_regenerates_key(): void
     {
-        $viewer = $this->createTestUser(['promotion_link' => 'oldkey1234567890']);
+        $viewer = $this->createTestUserWithPromoLink('oldkey1234567890');
         $this->actingAs($viewer, 'nexus-web');
 
         $response = $this->get('/promotionlink.php?updatekey=1');
@@ -97,5 +97,13 @@ class PromotionLinkControllerTest extends FeatureTestCase
             ['lang' => self::ENGLISH_LANGUAGE_ID],
             $overrides,
         ));
+    }
+
+    private function createTestUserWithPromoLink(string $key): User
+    {
+        $user = $this->createTestUser();
+        NexusDB::table('users')->where('id', $user->id)->update(['promotion_link' => $key]);
+
+        return $user->refresh();
     }
 }
