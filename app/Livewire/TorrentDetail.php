@@ -965,6 +965,10 @@ class TorrentDetail extends Component
 
         $torrentId = (int) $this->torrent->id;
 
+        if (! isset($GLOBALS['Cache']) || $GLOBALS['Cache'] === null) {
+            $GLOBALS['Cache'] = new \class_cache_redis;
+        }
+
         ob_start();
         try {
             $returned = (new Field)->renderOnTorrentDetailsPage($torrentId, $searchBoxId);
