@@ -578,7 +578,8 @@ class TorrentDetailTest extends FeatureTestCase
     {
         $this->seedSetting('main.showimdbinfo', 'yes');
 
-        $owner = $this->createUser(['showimdb' => 'no']);
+        $owner = $this->createUser();
+        NexusDB::table('users')->where('id', $owner->id)->update(['showimdb' => 'no']);
         $imdbId = 5556667;
         $torrentId = $this->createTorrent($owner->id, ['url' => $imdbId]);
 
