@@ -29,6 +29,7 @@ use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IpCheckController;
+use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
@@ -511,6 +512,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::match(['get', 'post'], '/bans.php', BansController::class)
         ->name('legacy.bans');
+
+    Route::get('/iphistory.php', IpHistoryController::class)
+        ->name('legacy.iphistory');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
