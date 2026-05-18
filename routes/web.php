@@ -48,6 +48,7 @@ use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffMessController;
+use App\Http\Controllers\Legacy\StaffPanelController;
 use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
@@ -542,6 +543,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/iphistory.php', IpHistoryController::class)
         ->name('legacy.iphistory');
+
+    Route::get('/staffpanel.php', StaffPanelController::class)
+        ->name('legacy.staffpanel');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
