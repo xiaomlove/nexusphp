@@ -153,6 +153,10 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    location = /useragreement.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     # Phase 2 batch #9 — legacy migration routes.
     location = /donorlist.php {
         try_files /nonexistent @nexus_app;
