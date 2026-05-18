@@ -4063,43 +4063,34 @@ function permissiondenied($allowMinimumClass = null){
 }
 
 function gettime($time, $withago = true, $twoline = false, $forceago = false, $oneunit = false, $isfuturetime = false){
-    if (empty($time)) {
-        return null;
-    }
+	if (empty($time)) {
+		return null;
+	}
 	if (!IN_NEXUS) {
-        try {
-            return \Carbon\Carbon::parse($time)->diffForHumans();
-        } catch (\Exception $e) {
-            do_log($e->getMessage() . $e->getTraceAsString(), 'error');
-            return $time;
-        }
-    }
-    global $lang_functions, $CURUSER;
+		try {
+			return \Carbon\Carbon::parse($time)->diffForHumans();
+		} catch (\Exception $e) {
+			do_log($e->getMessage() . $e->getTraceAsString(), 'error');
+			return $time;
+		}
+	}
+	global $lang_functions, $CURUSER;
 	if (isset($CURUSER) && $CURUSER['timetype'] != 'timealive' && !$forceago){
-		$newtime = $time;
-		if ($twoline){
-		$newtime = str_replace(" ", "<br />", $newtime);
-		}
+		return \App\Support\Time::formatAbsoluteTime((string) $time, (bool) $twoline);
 	}
-	else{
-		$timestamp = strtotime($time);
-		if ($isfuturetime && $timestamp < TIMENOW)
-			$newtime = false;
-		else
-		{
-			$newtime = get_elapsed_time($timestamp,$oneunit).($withago ? $lang_functions['text_ago'] : "");
-			if($twoline){
-				$newtime = str_replace("&nbsp;", "<br />", $newtime);
-			}
-			elseif($oneunit){
-				if ($length = strpos($newtime, "&nbsp;"))
-					$newtime = substr($newtime,0,$length);
-			}
-			else $newtime = str_replace("&nbsp;", $lang_functions['text_space'], $newtime);
-			$newtime = "<span title=\"".$time."\">".$newtime."</span>";
-		}
+	$timestamp = strtotime($time);
+	if ($isfuturetime && $timestamp < TIMENOW) {
+		return false;
 	}
-	return $newtime;
+	return \App\Support\Time::formatElapsedTime(
+		get_elapsed_time($timestamp, $oneunit),
+		(string) $time,
+		(bool) $withago,
+		(bool) $twoline,
+		(bool) $oneunit,
+		(string) ($lang_functions['text_space'] ?? ''),
+		(string) ($lang_functions['text_ago'] ?? ''),
+	);
 }
 
 function get_forum_pic_folder(){
