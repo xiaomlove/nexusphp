@@ -43,26 +43,22 @@ class IpHistoryController extends Controller
         $countrows = $distinctIps + 1;
 
         $order = (string) $request->query('order', '');
-        [$pagertop, $pagerbottom, $limit] = pager(
-            self::PER_PAGE,
-            $countrows,
-            'iphistory.php?id='.$userid.'&order='.urlencode($order).'&',
-        );
+        $page = max(0, (int) $request->query('page', 0));
+        $offset = $page * self::PER_PAGE;
 
         $rows = NexusDB::select(
             'SELECT u.id, u.ip AS ip, last_access AS access FROM users AS u WHERE u.id = '.$userid.' '
             .'UNION DISTINCT '
             .'SELECT u.id, iplog.ip AS ip, iplog.access AS access FROM users AS u '
             .'RIGHT JOIN iplog ON u.id = iplog.userid WHERE u.id = '.$userid.' '
-            .'ORDER BY access DESC '.$limit
+            .'ORDER BY access DESC LIMIT '.self::PER_PAGE.' OFFSET '.$offset
         );
 
-        $body = '<h1 align="center">Historical IP addresses used by '
-            .get_username($userid).'</h1>'."\n";
+        $pager = $this->renderPager($countrows, $page, $userid, $order);
 
-        if ($countrows > self::PER_PAGE) {
-            $body .= $pagertop;
-        }
+        $body = '<h1 align="center">Historical IP addresses used by '
+            .get_username($userid).'</h1>'."\n"
+            .$pager;
 
         $body .= '<table width="500" border="1" cellspacing="0" cellpadding="5" align="center">'."\n"
             .'<tr>'
@@ -91,9 +87,28 @@ class IpHistoryController extends Controller
                 .'</tr>'."\n";
         }
 
-        $body .= '</table>'."\n".$pagerbottom;
+        $body .= '</table>'."\n".$pager;
 
         return $this->render('IP History Log for '.$username, $body);
+    }
+
+    private function renderPager(int $count, int $page, int $userid, string $order): string
+    {
+        if ($count <= self::PER_PAGE) {
+            return '';
+        }
+        $totalPages = (int) ceil($count / self::PER_PAGE);
+        $baseUrl = 'iphistory.php?id='.$userid.'&amp;order='.urlencode($order);
+        $links = '';
+        if ($page > 0) {
+            $links .= '<a href="'.$baseUrl.'&amp;page='.($page - 1).'">&lt;&lt; Prev</a> ';
+        }
+        $links .= '<b>'.($page + 1).' / '.$totalPages.'</b>';
+        if ($page + 1 < $totalPages) {
+            $links .= ' <a href="'.$baseUrl.'&amp;page='.($page + 1).'">Next &gt;&gt;</a>';
+        }
+
+        return '<p align="center">'.$links.'</p>'."\n";
     }
 
     private function resolveHostname(string $ip): string
