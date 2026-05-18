@@ -10,6 +10,7 @@ use App\Http\Controllers\Legacy\AdRedirectController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
+use App\Http\Controllers\Legacy\BansController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\ClearCacheController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
+use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffMessController;
@@ -54,6 +56,7 @@ use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserBanLogController;
+use App\Http\Controllers\Legacy\UserHistoryController;
 use App\Http\Controllers\OauthController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\TokenController;
@@ -506,6 +509,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/ipcheck.php', IpCheckController::class)
         ->name('legacy.ipcheck');
 
+    Route::match(['get', 'post'], '/bans.php', BansController::class)
+        ->name('legacy.bans');
+
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
      * same PR). The attachment-download endpoint linked from
@@ -542,6 +548,21 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.reset');
 
     /*
+     * Phase 2 — replaces `public/self-enable.php` (deleted in this
+     * PR). User-facing "buy your way out of a ban with seedbonus"
+     * page. The URL is the redirect target of
+     * `include/functions.php:3169` (`nexus_redirect('self-enable.php')`
+     * fires from `loggedinorreturn()` whenever a logged-in user with
+     * `enabled != 'yes'` hits any other legacy page), so the route
+     * must be reachable to disabled users — the `auth.nexus` guard
+     * authenticates them but does not gate on `enabled`. Accepts
+     * both GET (form render) and POST (legacy `<form method=post>`
+     * confirmation submit); CSRF-exempt for the legacy form.
+     */
+    Route::match(['get', 'post'], '/self-enable.php', SelfEnableController::class)
+        ->name('legacy.selfenable');
+
+    /*
      * Phase 3 — replaces `public/bonus-log.php` (deleted in this PR).
      * Authed read-only listing of a user's bonus-log rows, paginated
      * via `?page=<n>` (50 rows per page) and filterable by
@@ -553,6 +574,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/bonus-log.php', BonusLogController::class)
         ->name('legacy.bonus-log');
+
+    Route::get('/userhistory.php', UserHistoryController::class)
+        ->name('legacy.userhistory');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');

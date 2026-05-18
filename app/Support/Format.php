@@ -97,6 +97,34 @@ final class Format
     }
 
     /**
+     * Inverse of the `size*()` helpers: convert an `($amount, $unit)`
+     * pair into a byte count. Mirrors the legacy `getsize_int()`
+     * exactly — including the float return type (`floor()` returns
+     * `float` in PHP, and existing call sites cast `(int) ...` at the
+     * boundary).
+     *
+     * `$unit` is a single uppercase letter (`B`, `K`, `M`, `G`, `T`,
+     * `P`). Unrecognised units fall through to `0.0` (legacy returned
+     * `null` from the same branch — `(int) null` is `0`, so the cast
+     * site in `take-increment-bulk.php` already collapses that).
+     */
+    public static function bytesFromUnit(int|float|string $amount, string $unit = 'G'): float
+    {
+        $amount = (float) $amount;
+        $multiplier = match ($unit) {
+            'B' => 1,
+            'K' => 1024,
+            'M' => 1048576,
+            'G' => 1073741824,
+            'T' => 1099511627776,
+            'P' => 1125899906842624,
+            default => 0,
+        };
+
+        return floor($amount * $multiplier);
+    }
+
+    /**
      * Format a duration (in seconds) as a "pretty" string:
      *
      *   - `< 60 s`          → `"m:ss"`        (still uses `m=0`)

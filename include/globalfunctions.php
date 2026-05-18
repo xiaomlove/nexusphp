@@ -126,18 +126,6 @@ function hash_pad($hash)
     return str_pad($hash, 20);
 }
 
-function hash_where($name, $hash)
-{
-    if (NexusDB::isMysql()) {
-        return "$name = ".sqlesc($hash);
-    } elseif (NexusDB::isPgsql()) {
-        return "$name = decode(bin2hex('$hash'), 'hex')";
-    } else {
-        throw new RuntimeException('Not supported database');
-    }
-
-}
-
 // no need any more...
 /*
 function strip_magic_quotes($arr)
@@ -878,17 +866,6 @@ function get_user_id()
     }
 
     return auth()->user()->id ?? 0;
-}
-
-function get_user_passkey()
-{
-    if (IN_NEXUS) {
-        global $CURUSER;
-
-        return $CURUSER['passkey'] ?? '';
-    }
-
-    return auth()->user()->passkey ?? '';
 }
 
 function get_pure_username()

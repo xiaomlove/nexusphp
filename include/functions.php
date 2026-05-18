@@ -543,54 +543,32 @@ function is_valid_id($id)
 //-------- Begins a main frame
 function begin_main_frame($caption = "", $center = false, $width = 100)
 {
-	$tdextra = "";
-	if ($caption)
-	print("<h2>".$caption."</h2>");
-
-	if ($center)
-	$tdextra .= " align=\"center\"";
-
-	if (!str_ends_with($width, '%')) {
-        $width = CONTENT_WIDTH * $width / 100;
-    }
-
-	print("<table class=\"main\" width=\"".$width."\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" .
-	"<tr><td class=\"embedded\" $tdextra>");
+	print(\App\Support\Frame::mainOpen((string) $caption, (bool) $center, $width, CONTENT_WIDTH));
 }
 
 function end_main_frame()
 {
-	print("</td></tr></table>\n");
+	print(\App\Support\Frame::CLOSE);
 }
 
 function begin_frame($caption = "", $center = false, $padding = 10, $width="100%", $caption_center="left")
 {
-	$tdextra = "";
-
-	if ($center)
-	$tdextra .= " align=\"center\"";
-
-	print(($caption ? "<h2 align=\"".$caption_center."\">".$caption."</h2>" : "") . "<table width=\"".$width."\" border=\"1\" cellspacing=\"0\" cellpadding=\"".$padding."\">" . "<tr><td class=\"text\" $tdextra>\n");
-
+	print(\App\Support\Frame::open((string) $caption, (bool) $center, (int) $padding, (string) $width, (string) $caption_center));
 }
 
 function end_frame()
 {
-	print("</td></tr></table>\n");
+	print(\App\Support\Frame::CLOSE);
 }
 
 function begin_table($fullwidth = false, $padding = 5)
 {
-	$width = "";
-
-	if ($fullwidth)
-	$width .= " width=50%";
-	print("<table class=\"main".$width."\" border=\"1\" cellspacing=\"0\" cellpadding=\"".$padding."\">");
+	print(\App\Support\Frame::tableOpen((bool) $fullwidth, (int) $padding));
 }
 
 function end_table()
 {
-	print("</table>\n");
+	print(\App\Support\Frame::TABLE_CLOSE);
 }
 
 //-------- Inserts a smilies frame
@@ -1898,18 +1876,7 @@ function unesc($x) {
 
 function getsize_int($amount, $unit = "G")
 {
-	if ($unit == "B")
-	return floor($amount);
-	elseif ($unit == "K")
-	return floor($amount * 1024);
-	elseif ($unit == "M")
-	return floor($amount * 1048576);
-	elseif ($unit == "G")
-	return floor($amount * 1073741824);
-	elseif($unit == "T")
-	return floor($amount * 1099511627776);
-	elseif($unit == "P")
-	return floor($amount * 1125899906842624);
+    return \App\Support\Format::bytesFromUnit($amount, (string) $unit);
 }
 
 function mksize_compact($bytes)
@@ -2000,7 +1967,7 @@ function twotd($x,$y,$nosec=0){
 }
 
 function validfilename($name) {
-	return preg_match('/^[^\0-\x1f:\\\\\/?*\xff#<>|]+$/si', $name);
+    return \App\Support\Validators::isUploadFilename((string) $name);
 }
 
 function validemail($email) {
@@ -3351,7 +3318,7 @@ function commenttable($rows, $type, $parent_id, $review = false)
 }
 
 function searchfield($s) {
-	return preg_replace(array('/[^a-z0-9]/si', '/^\s*/s', '/\s*$/s', '/\s+/s'), array(" ", "", "", " "), $s);
+    return \App\Support\Strings::normalizeSearchTerm((string) $s);
 }
 
 function genrelist($catmode = 1) {
@@ -3404,11 +3371,7 @@ function langlist($type, $enabled = null) {
 }
 
 function linkcolor($num) {
-	if (!$num)
-	return "red";
-	//    if ($num == 1)
-	//        return "yellow";
-	return "green";
+	return \App\Support\Palette::seederLink($num);
 }
 
 function writecomment($userid, $comment, $oldModcomment = null) {
@@ -5023,50 +4986,7 @@ function torrent_selection($name,$selname,$listname,$selectedid = 0, $mode = 0)
 
 function get_hl_color($color=0)
 {
-	switch ($color){
-		case 0: return false;
-		case 1: return "Black";
-		case 2: return "Sienna";
-		case 3: return "DarkOliveGreen";
-		case 4: return "DarkGreen";
-		case 5: return "DarkSlateBlue";
-		case 6: return "Navy";
-		case 7: return "Indigo";
-		case 8: return "DarkSlateGray";
-		case 9: return "DarkRed";
-		case 10: return "DarkOrange";
-		case 11: return "Olive";
-		case 12: return "Green";
-		case 13: return "Teal";
-		case 14: return "Blue";
-		case 15: return "SlateGray";
-		case 16: return "DimGray";
-		case 17: return "Red";
-		case 18: return "SandyBrown";
-		case 19: return "YellowGreen";
-		case 20: return "SeaGreen";
-		case 21: return "MediumTurquoise";
-		case 22: return "RoyalBlue";
-		case 23: return "Purple";
-		case 24: return "Gray";
-		case 25: return "Magenta";
-		case 26: return "Orange";
-		case 27: return "Yellow";
-		case 28: return "Lime";
-		case 29: return "Cyan";
-		case 30: return "DeepSkyBlue";
-		case 31: return "DarkOrchid";
-		case 32: return "Silver";
-		case 33: return "Pink";
-		case 34: return "Wheat";
-		case 35: return "LemonChiffon";
-		case 36: return "PaleGreen";
-		case 37: return "PaleTurquoise";
-		case 38: return "LightBlue";
-		case 39: return "Plum";
-		case 40: return "White";
-		default: return false;
-	}
+	return \App\Support\Palette::forumHighlight((int) $color);
 }
 
 function get_forum_moderators($forumid, $plaintext = true)
@@ -5099,10 +5019,7 @@ function get_forum_moderators($forumid, $plaintext = true)
 }
 function key_shortcut($page=1,$pages=1)
 {
-	$currentpage = "var currentpage=".$page.";";
-	$maxpage = "var maxpage=".$pages.";";
-	$key_shortcut_block = "\n<script type=\"text/javascript\">\n//<![CDATA[\n".$maxpage."\n".$currentpage."\n//]]>\n</script>\n";
-	return $key_shortcut_block;
+	return \App\Support\Html::keyShortcutScript((int) $page, (int) $pages);
 }
 function promotion_selection($selected = 0, $hide = 0)
 {
@@ -5755,14 +5672,9 @@ function get_share_ratio($uploaded, $downloaded)
 }
 
 function EchoRow($class = ''){
-    if(func_num_args() < 2) return '<tr></tr>';
     $args = func_get_args();
-    $cells = array_splice($args, 1);
-    $class = empty($class) ? '' : sprintf(' class="%s"', $class);
-    $s = '<tr>';
-    foreach($cells as $cell) $s .= sprintf('<td%s>%s</td>', $class, $cell);
-    $s .= "</tr>\n";
-    return $s;
+    $cells = array_map('strval', array_slice($args, 1));
+    return \App\Support\Html::tableRow((string) $class, ...$cells);
 }
 
 function list_require_search_box_id()

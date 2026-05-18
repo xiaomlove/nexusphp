@@ -79,5 +79,14 @@ class VerifyCsrfToken extends Middleware
         // change.
         'testip.php',
         'reset.php',
+        'bans.php',
+        // Phase 2 self-enable rewrite: `/self-enable.php` accepts POST
+        // without a CSRF token — the legacy `<form method="post">` in
+        // `public/self-enable.php` (deleted in this PR) had no `@csrf`
+        // field. The page is the redirect target of
+        // `include/functions.php:3169` for `enabled='no'` users, so
+        // disabled accounts must be able to submit without going
+        // through a token-mint round trip first.
+        'self-enable.php',
     ];
 }
