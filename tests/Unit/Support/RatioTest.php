@@ -99,4 +99,113 @@ class RatioTest extends TestCase
         $this->assertSame('<img src="pic/smilies/52.gif" alt="" />', Ratio::image(0));
         $this->assertSame('<img src="pic/smilies/52.gif" alt="" />', Ratio::image(0.24));
     }
+
+    // ---------- userRatioNumeric ----------
+
+    public function test_user_ratio_numeric_divides_when_downloaded_positive(): void
+    {
+        $this->assertSame(0.5, Ratio::userRatioNumeric(500, 1000));
+        $this->assertSame(2.5, Ratio::userRatioNumeric(2500, 1000));
+        $this->assertSame(1, Ratio::userRatioNumeric(100, 100));
+    }
+
+    public function test_user_ratio_numeric_returns_one_when_downloaded_is_zero(): void
+    {
+        // Legacy fallback for the non-HTML branch: when the user has
+        // never downloaded, treat ratio as 1 (not infinity, not 0).
+        // Used by call sites that do arithmetic on the result.
+        $this->assertSame(1, Ratio::userRatioNumeric(0, 0));
+        $this->assertSame(1, Ratio::userRatioNumeric(1024, 0));
+        $this->assertSame(1, Ratio::userRatioNumeric(1024 * 1024 * 1024, 0));
+    }
+
+    public function test_user_ratio_numeric_accepts_float_inputs(): void
+    {
+        $this->assertSame(0.5, Ratio::userRatioNumeric(1.5, 3.0));
+        $this->assertSame(1.0, Ratio::userRatioNumeric(3.5, 3.5));
+    }
+
+    // ---------- userRatioHtml ----------
+
+    public function test_user_ratio_html_returns_dash_when_both_zero(): void
+    {
+        // Legacy: no `<span>` wrap, just the literal three-dash sentinel.
+        $this->assertSame('---', Ratio::userRatioHtml(0, 0, 'tip', 'Infinity'));
+    }
+
+    public function test_user_ratio_html_returns_infinity_span_when_only_uploaded(): void
+    {
+        $this->assertSame(
+            '<span class="ratio-tip" title="tip">Infinity</span>',
+            Ratio::userRatioHtml(1024, 0, 'tip', 'Infinity'),
+        );
+    }
+
+    public function test_user_ratio_html_three_decimals_with_color_below_one(): void
+    {
+        // 500/1000 = 0.5 → color() falls into `< 0.6` bucket → #aa0000.
+        $result = Ratio::userRatioHtml(500, 1000, 'tip', 'Infinity');
+        $this->assertSame(
+            '<span class="ratio-tip" title="tip"><font color="#aa0000">0.500</font></span>',
+            $result,
+        );
+    }
+
+    public function test_user_ratio_html_three_decimals_no_color_when_healthy(): void
+    {
+        // 1500/1000 = 1.5 → color() returns '' → no <font> wrap, bare
+        // number inside the <span>. Pinned because the legacy branch
+        // explicitly skips the `<font>` element when color is empty.
+        $this->assertSame(
+            '<span class="ratio-tip" title="tip">1.500</span>',
+            Ratio::userRatioHtml(1500, 1000, 'tip', 'Infinity'),
+        );
+        // Exactly 1.0 falls into the healthy bucket too.
+        $this->assertSame(
+            '<span class="ratio-tip" title="tip">1.000</span>',
+            Ratio::userRatioHtml(1000, 1000, 'tip', 'Infinity'),
+        );
+    }
+
+    public function test_user_ratio_html_escapes_tooltip(): void
+    {
+        // Legacy `htmlspecialchars($tooltip, ENT_QUOTES)` — pinned so
+        // translated tooltips containing quotes/apostrophes don't
+        // break the `title="..."` attribute.
+        $result = Ratio::userRatioHtml(0, 0, "it's \"quoted\"", 'Inf');
+        $this->assertSame('---', $result);
+
+        $result = Ratio::userRatioHtml(1024, 0, "it's \"quoted\"", 'Inf');
+        $this->assertSame(
+            '<span class="ratio-tip" title="it&#039;s &quot;quoted&quot;">Inf</span>',
+            $result,
+        );
+    }
+
+    public function test_user_ratio_html_uses_provided_infinity_label(): void
+    {
+        // The proxy passes the i18n'd "label.infinite" string. Verify
+        // it ends up inside the span verbatim (no double-escape).
+        $result = Ratio::userRatioHtml(1, 0, 'tip', '无穷大');
+        $this->assertSame('<span class="ratio-tip" title="tip">无穷大</span>', $result);
+    }
+
+    public function test_user_ratio_html_three_decimals_use_number_format_rounding(): void
+    {
+        // 1/3 = 0.333... → number_format rounds to 0.333.
+        // 2/3 = 0.666... → number_format rounds half-to-even → 0.667.
+        // Pinned to document the difference vs `Ratio::share()` which
+        // uses floor-truncation. Color buckets: 0.333 falls into
+        // `< 0.4` (#cc0000), 0.667 falls into `< 0.7` (#990000).
+        $result = Ratio::userRatioHtml(1, 3, 'tip', 'Inf');
+        $this->assertSame(
+            '<span class="ratio-tip" title="tip"><font color="#cc0000">0.333</font></span>',
+            $result,
+        );
+        $result = Ratio::userRatioHtml(2, 3, 'tip', 'Inf');
+        $this->assertSame(
+            '<span class="ratio-tip" title="tip"><font color="#990000">0.667</font></span>',
+            $result,
+        );
+    }
 }

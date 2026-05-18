@@ -191,4 +191,63 @@ final class Ratio
 
         return '<img src="pic/smilies/'.$s.'.gif" alt="" />';
     }
+
+    /**
+     * Numeric `$uploaded / $downloaded` user-ratio, falling back to
+     * `1` when the user has never downloaded. Backs the non-HTML
+     * branch of legacy `get_ratio($userid, false)`. The DB lookup
+     * for `$row['uploaded']` / `$row['downloaded']` stays in the
+     * proxy because it goes through `get_user_row()`.
+     */
+    public static function userRatioNumeric(int|float $uploaded, int|float $downloaded): int|float
+    {
+        if ($downloaded > 0) {
+            return $uploaded / $downloaded;
+        }
+
+        return 1;
+    }
+
+    /**
+     * Tooltip-wrapped HTML fragment for the legacy `get_ratio($userid, true)`
+     * branch: three-decimal ratio coloured by {@see color()} and
+     * wrapped in `<span class="ratio-tip" title="...">`, with an
+     * "Infinity" variant for upload-only users and a literal `---`
+     * for users who have neither uploaded nor downloaded.
+     *
+     * Pinned legacy quirks:
+     *  - `number_format(ratio, 3)` truncates to three decimals (no
+     *    locale-aware separator) — pinned by tests.
+     *  - When `color()` returns the empty string (healthy ratio
+     *    ≥ 1.0) we skip the `<font color>` wrap entirely; the
+     *    `<span>` still surrounds the bare number.
+     *  - `htmlspecialchars($tooltip, ENT_QUOTES)` escapes the
+     *    tooltip body — call sites pass lang strings that may
+     *    contain quotes/apostrophes.
+     */
+    public static function userRatioHtml(
+        int|float $uploaded,
+        int|float $downloaded,
+        string $tooltip,
+        string $infinite,
+    ): string {
+        $tipAttr = ' title="'.htmlspecialchars($tooltip, ENT_QUOTES).'"';
+
+        if ($downloaded > 0) {
+            $ratio = $uploaded / $downloaded;
+            $color = self::color($ratio);
+            $formatted = number_format($ratio, 3);
+            if ($color !== '') {
+                $formatted = '<font color="'.$color.'">'.$formatted.'</font>';
+            }
+
+            return '<span class="ratio-tip"'.$tipAttr.'>'.$formatted.'</span>';
+        }
+
+        if ($uploaded > 0) {
+            return '<span class="ratio-tip"'.$tipAttr.'>'.$infinite.'</span>';
+        }
+
+        return '---';
+    }
 }
