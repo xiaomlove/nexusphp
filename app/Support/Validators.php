@@ -10,6 +10,7 @@ namespace App\Support;
  * The legacy procedural helpers
  *
  *   - `is_valid_id()`
+ *   - `is_valid_user_class()`
  *   - `validip_format()`
  *   - `validemail()`
  *   - `validusername()`
@@ -35,6 +36,21 @@ namespace App\Support;
 final class Validators
 {
     /**
+     * Lowest valid user-class value. Matches the legacy `UC_PEASANT`
+     * constant defined in `include/core.php`. Pinned here so this
+     * pure validator does not have to load the legacy bootstrap.
+     */
+    public const USER_CLASS_MIN = 0;
+
+    /**
+     * Highest valid user-class value. Matches the legacy
+     * `UC_STAFFLEADER` constant defined in `include/core.php`. If a
+     * new class tier is ever added to the legacy ladder, both this
+     * constant and `include/core.php` need to grow together.
+     */
+    public const USER_CLASS_MAX = 16;
+
+    /**
      * Validate that the input is a positive integer-like value
      * (`> 0` and equal to its own `floor()`). Accepts `mixed` because
      * legacy call sites pass `$_REQUEST` values, DB columns, and
@@ -43,6 +59,27 @@ final class Validators
     public static function isId(mixed $id): bool
     {
         return is_numeric($id) && ($id > 0) && (floor($id) == $id);
+    }
+
+    /**
+     * Validate that the input is a known user-class value — a numeric,
+     * integer-valued tier between `UC_PEASANT` (0) and
+     * `UC_STAFFLEADER` (16) inclusive.
+     *
+     * Accepts `mixed` for the same reason `isId()` does — legacy
+     * call sites pass `$_REQUEST` values and DB columns straight in.
+     * Returns `false` for non-numeric input, fractional input, and
+     * out-of-range integers. Matches the legacy
+     * `is_valid_user_class()` body exactly:
+     *   `is_numeric($class) && floor($class) == $class
+     *    && $class >= UC_PEASANT && $class <= UC_STAFFLEADER`.
+     */
+    public static function isUserClass(mixed $class): bool
+    {
+        return is_numeric($class)
+            && floor($class) == $class
+            && $class >= self::USER_CLASS_MIN
+            && $class <= self::USER_CLASS_MAX;
     }
 
     /**

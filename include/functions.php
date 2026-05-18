@@ -484,7 +484,7 @@ function get_user_class_name($class, $compact = false, $b_colored = false, $I18N
 
 function is_valid_user_class($class)
 {
-	return is_numeric($class) && floor($class) == $class && $class >= UC_PEASANT && $class <= UC_STAFFLEADER;
+    return \App\Support\Validators::isUserClass($class);
 }
 
 function int_check($value,$stdhead = false, $stdfood = true, $die = true, $log = true) {
@@ -1147,7 +1147,7 @@ function KPS($type = "+", $point = "1.0", $id = "") {
 
 function get_agent($peer_id, $agent)
 {
-	return substr($agent, 0, (strpos($agent, ";") == false ? strlen($agent) : strpos($agent, ";")));
+    return \App\Support\Strings::userAgentClient((string) $agent);
 }
 
 function EmailBanned($newEmail)
@@ -1613,24 +1613,7 @@ function get_ip_location($ip)
 
 function in_ip_range($long, $targetip, $ip_one, $ip_two=false)
 {
-	// if only one ip, check if is this ip
-	if($ip_two===false){
-		if(($long ? (long2ip($ip_one) == $targetip) : ( $ip_one == $targetip))){
-			$ip=true;
-		}
-		else{
-			$ip=false;
-		}
-	}
-	else{
-		if($long ? ($ip_one<=ip2long($targetip) && $ip_two>=ip2long($targetip)) : (ip2long($ip_one)<=ip2long($targetip) && ip2long($ip_two)>=ip2long($targetip))){
-			$ip=true;
-		}
-		else{
-			$ip=false;
-		}
-	}
-	return $ip;
+    return \App\Support\Network::ipInRange((bool) $long, (string) $targetip, $ip_one, $ip_two);
 }
 
 

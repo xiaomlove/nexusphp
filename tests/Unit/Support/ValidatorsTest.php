@@ -42,6 +42,47 @@ class ValidatorsTest extends TestCase
         $this->assertFalse(Validators::isId([]));
     }
 
+    // ---------- isUserClass() ----------
+
+    public function test_is_user_class_accepts_known_tiers(): void
+    {
+        $this->assertTrue(Validators::isUserClass(0));
+        $this->assertTrue(Validators::isUserClass(1));
+        $this->assertTrue(Validators::isUserClass(8));
+        $this->assertTrue(Validators::isUserClass(14));
+        $this->assertTrue(Validators::isUserClass(15));
+        $this->assertTrue(Validators::isUserClass(16));
+    }
+
+    public function test_is_user_class_accepts_numeric_strings(): void
+    {
+        $this->assertTrue(Validators::isUserClass('0'));
+        $this->assertTrue(Validators::isUserClass('1'));
+        $this->assertTrue(Validators::isUserClass('16'));
+    }
+
+    public function test_is_user_class_rejects_out_of_range(): void
+    {
+        $this->assertFalse(Validators::isUserClass(-1));
+        $this->assertFalse(Validators::isUserClass(17));
+        $this->assertFalse(Validators::isUserClass(99));
+    }
+
+    public function test_is_user_class_rejects_fractional_and_non_numeric(): void
+    {
+        $this->assertFalse(Validators::isUserClass(1.5));
+        $this->assertFalse(Validators::isUserClass('1.5'));
+        $this->assertFalse(Validators::isUserClass('abc'));
+        $this->assertFalse(Validators::isUserClass(''));
+        $this->assertFalse(Validators::isUserClass(null));
+    }
+
+    public function test_is_user_class_legacy_constants_match_core_php(): void
+    {
+        $this->assertSame(0, Validators::USER_CLASS_MIN);
+        $this->assertSame(16, Validators::USER_CLASS_MAX);
+    }
+
     // ---------- isIpv4Format() ----------
 
     public function test_is_ipv4_format_accepts_valid_addresses(): void
