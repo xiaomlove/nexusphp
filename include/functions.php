@@ -1067,59 +1067,6 @@ function build_imdb_url($imdb_id)
     return \App\Support\Imdb::buildUrl($imdb_id);
 }
 
-// it's a stub implemetation here, we need more acurate regression analysis to complete our algorithm
-function get_torrent_2_user_value($user_snatched_arr)
-{
-	// check if it's current user's torrent
-	$torrent_2_user_value = 1.0;
-
-	$torrent_row = NexusDB::table('torrents')->where('id', $user_snatched_arr['torrentid'])->first();
-	if ($torrent_row !== null)	// torrent still exists
-	{
-		$torrent_arr = (array) $torrent_row;
-		if($torrent_arr['owner'] == $user_snatched_arr['userid'])	// owner's torrent
-		{
-			$torrent_2_user_value *= 0.7;	// owner's torrent
-			$torrent_2_user_value += ($user_snatched_arr['uploaded'] / $torrent_arr['size'] ) -1 > 0 ? 0.2 - exp(-(($user_snatched_arr['uploaded'] / $torrent_arr['size'] ) -1)) : ($user_snatched_arr['uploaded'] / $torrent_arr['size'] ) -1;
-			$torrent_2_user_value += min(0.1 , ($user_snatched_arr['seedtime'] / 37*60*60 ) * 0.1);
-		}
-		else
-		{
-			if($user_snatched_arr['finished'] == 'yes')
-			{
-				$torrent_2_user_value *= 0.5;
-				$torrent_2_user_value += ($user_snatched_arr['uploaded'] / $torrent_arr['size'] ) -1 > 0 ? 0.4 - exp(-(($user_snatched_arr['uploaded'] / $torrent_arr['size'] ) -1)) : ($user_snatched_arr['uploaded'] / $torrent_arr['size'] ) -1;
-				$torrent_2_user_value += min(0.1, ($user_snatched_arr['seedtime'] / 22*60*60 ) * 0.1);
-			}
-			else
-			{
-				$torrent_2_user_value *= 0.2;
-				$torrent_2_user_value += min(0.05, ($user_snatched_arr['leechtime'] / 24*60*60 ) * 0.1);	// usually leechtime could not explain much
-			}
-		}
-	}
-	else	// torrent already deleted, half blind guess, be conservative
-	{
-
-		if($user_snatched_arr['finished'] == 'no' && $user_snatched_arr['uploaded'] > 0 && $user_snatched_arr['downloaded'] == 0)	// possibly owner
-		{
-			$torrent_2_user_value *= 0.55;	//conservative
-			$torrent_2_user_value += min(0.05, ($user_snatched_arr['leechtime'] / 31*60*60 ) * 0.1);
-			$torrent_2_user_value += min(0.1, ($user_snatched_arr['seedtime'] / 31*60*60 ) * 0.1);
-		}
-		else if($user_snatched_arr['downloaded'] > 0)	// possibly leecher
-		{
-			$torrent_2_user_value *= 0.38;	//conservative
-			$torrent_2_user_value *= min(0.22, 0.1 * $user_snatched_arr['uploaded'] / $user_snatched_arr['downloaded']);	// 0.3 for conservative
-			$torrent_2_user_value += min(0.05, ($user_snatched_arr['leechtime'] / 22*60*60 ) * 0.1);
-			$torrent_2_user_value += min(0.12, ($user_snatched_arr['seedtime'] / 22*60*60 ) * 0.1);
-		}
-		else
-			$torrent_2_user_value *= 0.0;
-	}
-	return $torrent_2_user_value;
-}
-
 function cur_user_check () {
 	global $lang_functions;
 	global $CURUSER;
@@ -5307,36 +5254,6 @@ function build_table(array $header, array $rows, array $options = [])
     return $table;
 }
 
-/**
- * 返回链接中附件的key
- *
- * @param $url
- * @return string
- */
-function attachmentKey($url)
-{
-    if (!filter_var($url, FILTER_VALIDATE_URL))
-    {
-        throw new \InvalidArgumentException("URL: '$url' invalid.");
-    }
-    $parsed = parse_url($url);
-    $driver = config('admin.upload.disk');
-    if ($driver == 'qiniu') {
-        return trim($parsed['path'], "/");
-    } elseif ($driver == 'cloudinary') {
-        $parts = explode('/', $parsed['path']);
-        $key = end($parts);
-        if (\Illuminate\Support\Str::contains($key,'.')) {
-            $key = strstr($key, '.', true);
-        }
-        return $key;
-
-    } else {
-        throw new \RuntimeException('不支持的云盘驱动');
-    }
-
-}
-
 function strip_all_tags($text)
 {
     static $emoji = null;
@@ -5487,23 +5404,6 @@ function get_image_from_description(array $descriptionArr, $first = false, $useD
         }
     }
     return $images;
-}
-
-function resize_image($url, $with = null, $height = null, $fit = "cover")
-{
-    $scheme = parse_url($url, PHP_URL_SCHEME);
-    if ($scheme === false) {
-        return $url;
-    }
-    $url = "$scheme://images.weserv.nl/?url=$url";
-    if ($with !== null) {
-        $url .= "&w=$with";
-    }
-    if ($height !== null) {
-        $url .= "&h=$height";
-    }
-    $url .= "&fit=$fit";
-    return $url;
 }
 
 function get_share_ratio($uploaded, $downloaded)
