@@ -57,8 +57,7 @@ function get_langfile_path($script_name ="", $target = false, $lang_folder = "")
 
 function get_row_sum($table, $field, $suffix = "")
 {
-	$rows = NexusDB::select("SELECT SUM($field) AS sum FROM $table $suffix");
-	return $rows[0]['sum'] ?? 0;
+    return \App\Support\Db::sumOf((string) $table, (string) $field, (string) $suffix);
 }
 
 function stdmsg($heading, $text, $htmlstrip = false)
