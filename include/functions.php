@@ -1771,46 +1771,23 @@ function mkglobal($vars) {
 }
 
 function tr($x,$y,$noesc=0,$relation='', $return = false) {
-	if ($noesc)
-	$a = $y;
-	else {
-		$a = htmlspecialchars($y);
-		$a = str_replace("\n", "<br />\n", $a);
-	}
-//	$result = ("<tr".( $relation ? " relation = \"$relation\"" : "")."><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">$x</td><td class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>\n");
-	$result = sprintf(
-	        '<tr%s><td class="rowhead nowrap" valign="top" align="right">%s</td><td class="rowfollow" valign="top" align="left">%s</td></tr>',
-            $relation ? sprintf(' relation="%s" class="%s"', $relation, $relation) : '',
-            $x, $a
-    );
-	if ($return) {
-	    return $result;
+    $result = \App\Support\Html::detailRow((string) $x, (string) $y, (bool) $noesc, (string) $relation);
+    if ($return) {
+        return $result;
     }
-	print $result;
+    print $result;
 }
 
 function tr_small($x,$y,$noesc=0,$relation='',$return = false) {
-	if ($noesc)
-	$a = $y;
-	else {
-		$a = htmlspecialchars($y);
-		//$a = str_replace("\n", "<br />\n", $a);
-	}
-	$result = "<tr".( $relation ? " relation = \"$relation\"" : "")."><td width=\"1%\" class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$x."</td><td width=\"99%\" class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>";
-	if ($return) {
-	    return $result;
+    $result = \App\Support\Html::detailRowSmall((string) $x, (string) $y, (bool) $noesc, (string) $relation);
+    if ($return) {
+        return $result;
     }
-	print($result);
+    print $result;
 }
 
 function twotd($x,$y,$nosec=0){
-	if ($nosec)
-	$a = $y;
-	else {
-		$a = htmlspecialchars($y);
-		$a = str_replace("\n", "<br />\n", $a);
-	}
-	print("<td class=\"rowhead\">".$x."</td><td class=\"rowfollow\">".$y."</td>");
+    print \App\Support\Html::twoCells((string) $x, (string) $y, (bool) $nosec);
 }
 
 function validfilename($name) {

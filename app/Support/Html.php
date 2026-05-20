@@ -115,4 +115,85 @@ final class Html
 
         return $html;
     }
+
+    /**
+     * Detail row: `<tr><td class="rowhead nowrap">…label…</td>
+     * <td class="rowfollow">…value…</td></tr>`. Backs the legacy
+     * `tr($label, $value, $noesc, $relation, $return)` helper used
+     * ~440× across legacy pages for property-list rendering
+     * (`settings.php`, `usercp.php`, `details.php`, …).
+     *
+     * Legacy quirks preserved bit-for-bit:
+     *  - `$label` is NEVER escaped — call sites pass pre-built HTML
+     *    such as `$lang_settings['col_x'].'<font color="red">*</font>'`.
+     *  - When `$rawValue` is false the value is `htmlspecialchars`-
+     *    escaped AND its `\n` characters are replaced with `<br />\n`.
+     *  - When `$relation` is non-empty the `<tr>` gets BOTH
+     *    `relation="X"` AND `class="X"` attributes (used by the
+     *    "toggle related rows" JS in `pic/main.js`).
+     *  - No trailing newline — sprintf-emitted markup matches legacy.
+     */
+    public static function detailRow(string $label, string $value, bool $rawValue = false, string $relation = ''): string
+    {
+        $cell = $rawValue
+            ? $value
+            : str_replace("\n", "<br />\n", htmlspecialchars($value));
+        $trAttr = $relation !== ''
+            ? sprintf(' relation="%s" class="%s"', $relation, $relation)
+            : '';
+
+        return sprintf(
+            '<tr%s><td class="rowhead nowrap" valign="top" align="right">%s</td><td class="rowfollow" valign="top" align="left">%s</td></tr>',
+            $trAttr,
+            $label,
+            $cell,
+        );
+    }
+
+    /**
+     * Small-form detail row: same shape as `detailRow()` but with
+     * `width="1%"` / `width="99%"` and NO `valign`/`nowrap`. Backs
+     * the legacy `tr_small($label, $value, $noesc, $relation, $return)`
+     * helper used by `usercp.php` and `userdetails.php`.
+     *
+     * Legacy quirks preserved bit-for-bit:
+     *  - `$label` is NEVER escaped.
+     *  - When `$rawValue` is false the value is only `htmlspecialchars`-
+     *    escaped — the `\n` → `<br />\n` substitution that `detailRow()`
+     *    does is intentionally absent here.
+     *  - When `$relation` is non-empty ONLY `relation="X"` is emitted
+     *    (no `class="X"` duplicate) — divergence from `detailRow()`
+     *    that mirrors the legacy source.
+     *  - The trailing space before `=` (`relation = "X"`) is preserved.
+     */
+    public static function detailRowSmall(string $label, string $value, bool $rawValue = false, string $relation = ''): string
+    {
+        $cell = $rawValue ? $value : htmlspecialchars($value);
+        $trAttr = $relation !== '' ? ' relation = "'.$relation.'"' : '';
+
+        return '<tr'.$trAttr.'><td width="1%" class="rowhead nowrap" valign="top" align="right">'.$label.'</td><td width="99%" class="rowfollow" valign="top" align="left">'.$cell.'</td></tr>';
+    }
+
+    /**
+     * Bare two-cell pair (no `<tr>` wrapper): `<td class="rowhead">…</td>`
+     * `<td class="rowfollow">…</td>`. Backs the legacy `twotd($x, $y, $nosec)`
+     * helper used by `public/index.php`.
+     *
+     * Legacy bug preserved bit-for-bit: the `$nosec` flag is honoured
+     * for the *computation* of the local `$a` variable but the
+     * `print` line then emits the raw `$y` regardless. Reproducing
+     * the bug here keeps the rendered output identical to the legacy
+     * implementation — fixing it would silently change the look of
+     * the home page chrome and belongs in a separate PR.
+     *
+     * @param  bool  $rawValue  Accepted for API parity with `tr()` /
+     *                          `tr_small()` and the legacy `$nosec`
+     *                          flag, but ignored (see bug note above).
+     */
+    public static function twoCells(string $label, string $value, bool $rawValue = false): string
+    {
+        unset($rawValue);
+
+        return '<td class="rowhead">'.$label.'</td><td class="rowfollow">'.$value.'</td>';
+    }
 }
