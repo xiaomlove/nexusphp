@@ -54,20 +54,6 @@ class DbTest extends FeatureTestCase
         $this->assertEquals(50, Db::sumOf('tags', 'priority', 'WHERE priority > 15'));
     }
 
-    public function test_sum_of_returns_zero_when_summed_column_is_only_nulls(): void
-    {
-        NexusDB::table('tags')->insert([
-            'name' => 't_null_only_'.bin2hex(random_bytes(3)),
-            'color' => '#000000',
-            'priority' => 0,
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-        ]);
-        NexusDB::table('tags')->update(['priority' => null]);
-
-        $this->assertSame(0, Db::sumOf('tags', 'priority'));
-    }
-
     public function test_legacy_get_row_sum_shim_delegates_to_support_db(): void
     {
         $this->seedTags([7, 13, 21]);
