@@ -264,6 +264,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 retriver rewrite — IMDb/PTGen "update external info" endpoint.
+    location = /retriver.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
