@@ -97,5 +97,13 @@ class VerifyCsrfToken extends Middleware
         // `/increment-bulk.php` is GET-only, so it doesn't need an
         // entry here.
         'take-increment-bulk.php',
+        // Phase 2 fields rewrite: `/fields.php` accepts POST without
+        // a CSRF token. The legacy `<form method=post action=fields.php?action=submit>`
+        // (rendered by `Nexus\Field\Field::buildFieldForm`) has no
+        // `@csrf` field and the `?action=submit` handler has been a
+        // dead-deprecation message since 1.10 — preserving the URL
+        // means existing rendered forms still produce the same 200
+        // response without 419'ing.
+        'fields.php',
     ];
 }
