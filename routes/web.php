@@ -27,6 +27,7 @@ use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FastDeleteController;
+use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
@@ -645,6 +646,26 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::match(['get', 'post'], '/cheaterbox.php', CheaterboxController::class)
         ->name('legacy.cheaterbox');
+
+    /*
+     * Phase 2 — replaces `public/fields.php` (deleted in this PR).
+     * Administrator+ admin tool for the `torrents_custom_fields`
+     * table (custom-field manager). GET-only on the read paths
+     * (`view` / `add` / `edit` / `del`); the legacy
+     * `?action=submit` POST handler had been deprecated since 1.10
+     * and just `exit()`d with a hard-coded "go to the management
+     * system" message — preserved verbatim by the controller, hence
+     * the `match(['get','post'])`. CSRF-exempt because the legacy
+     * `Field::buildFieldForm()` template (used by `add`/`edit`)
+     * still renders a `<form method=post action=fields.php?action=submit>`
+     * with no `@csrf` field. URL stays `/fields.php` so the
+     * `AdminpanelTableSeeder.url='fields.php'` menu entry, the
+     * `nexus/Install/Update.php::runExtraQueries()` `addMenu`
+     * block, and any admin bookmarks keep working without template
+     * changes.
+     */
+    Route::match(['get', 'post'], '/fields.php', FieldsController::class)
+        ->name('legacy.fields');
 
     Route::get('/promotionlink.php', PromotionLinkController::class)
         ->name('legacy.promotionlink');
