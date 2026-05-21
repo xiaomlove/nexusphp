@@ -39,6 +39,7 @@ use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
+use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
@@ -462,6 +463,23 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/mailtest.php', MailtestController::class)
         ->name('legacy.mailtest');
+
+    /*
+     * Phase 2 — replaces `public/massmail.php` (deleted in this PR).
+     * SYSOP+ "Mass E-mail Gateway" — sends one e-mail per user
+     * matching a `class <op> <threshold>` filter. Single endpoint
+     * (legacy form posts to itself); GET renders the form, POST
+     * validates input and dispatches the `App\Jobs\SendMassMail`
+     * queue job, then 302s to `/massmail.php?sent=1`. URL stays
+     * `/massmail.php` so the
+     * `SysoppanelTableSeeder.url='massmail.php'` menu entry, the
+     * legacy `<form action=massmail.php>` self-submit on the
+     * rendered form, and any admin bookmarks keep working without
+     * template changes. POST is CSRF-exempt — the legacy form has
+     * no `@csrf` field.
+     */
+    Route::match(['get', 'post'], '/massmail.php', MassmailController::class)
+        ->name('legacy.massmail');
 
     /*
      * Phase 2 batch #9 — replaces `public/adduser.php` (deleted in
