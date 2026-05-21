@@ -193,6 +193,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 bitbucket-upload rewrite — avatar upload (multipart POST).
+    location = /bitbucket-upload.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /getattachment.php {
         try_files /nonexistent @nexus_app;
     }

@@ -12,6 +12,7 @@ use App\Http\Controllers\Legacy\AllowedEmailsController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
 use App\Http\Controllers\Legacy\BansController;
 use App\Http\Controllers\Legacy\BitBucketLogController;
+use App\Http\Controllers\Legacy\BitBucketUploadController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\CheaterboxController;
@@ -513,6 +514,24 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/bitbucketlog.php', BitBucketLogController::class)
         ->name('legacy.bitbucketlog');
+
+    /*
+     * Phase 2 — replaces `public/bitbucket-upload.php` (deleted in
+     * this PR). User-facing avatar-upload tool. GET renders a
+     * `<form action="bitbucket-upload.php" enctype="multipart/form-data">`,
+     * POST validates + GD-resamples the image to fit `200×150`,
+     * writes the file under `public/<main.bitbucket>/`, INSERTs a
+     * `bitbucket` row, and updates `users.avatar`. The endpoint
+     * is gated on three conditions: authed, not parked, and
+     * `Setting::get('main.enablebitbucket') === 'yes'`. URL stays
+     * `/bitbucket-upload.php` so the FAQ link, the
+     * `lang/<locale>/lang_usercp.php text_bitbucket_note`
+     * paragraph rendered on `public/usercp.php:255`, and any user
+     * bookmarks keep working without template changes. POST is
+     * CSRF-exempt — the legacy form has no `@csrf` field.
+     */
+    Route::match(['get', 'post'], '/bitbucket-upload.php', BitBucketUploadController::class)
+        ->name('legacy.bitbucket-upload');
 
     /*
      * Phase 2 — replaces `public/polloverview.php` (deleted in this
