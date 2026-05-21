@@ -28,10 +28,12 @@ use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FastDeleteController;
+use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
+use App\Http\Controllers\Legacy\IncrementBulkController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\LogoutController;
@@ -45,6 +47,7 @@ use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
 use App\Http\Controllers\Legacy\ResetController;
+use App\Http\Controllers\Legacy\RetriverController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SelfEnableController;
@@ -57,6 +60,7 @@ use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
+use App\Http\Controllers\Legacy\TakeIncrementBulkController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
@@ -665,8 +669,64 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::match(['get', 'post'], '/cheaterbox.php', CheaterboxController::class)
         ->name('legacy.cheaterbox');
 
+    /*
+     * Phase 2 — replaces `public/fields.php` (deleted in this PR).
+     * Administrator+ admin tool for the `torrents_custom_fields`
+     * table (custom-field manager). GET-only on the read paths
+     * (`view` / `add` / `edit` / `del`); the legacy
+     * `?action=submit` POST handler had been deprecated since 1.10
+     * and just `exit()`d with a hard-coded "go to the management
+     * system" message — preserved verbatim by the controller, hence
+     * the `match(['get','post'])`. CSRF-exempt because the legacy
+     * `Field::buildFieldForm()` template (used by `add`/`edit`)
+     * still renders a `<form method=post action=fields.php?action=submit>`
+     * with no `@csrf` field. URL stays `/fields.php` so the
+     * `AdminpanelTableSeeder.url='fields.php'` menu entry, the
+     * `nexus/Install/Update.php::runExtraQueries()` `addMenu`
+     * block, and any admin bookmarks keep working without template
+     * changes.
+     */
+    Route::match(['get', 'post'], '/fields.php', FieldsController::class)
+        ->name('legacy.fields');
+
     Route::get('/promotionlink.php', PromotionLinkController::class)
         ->name('legacy.promotionlink');
+
+    /*
+     * Phase 2 — replaces `public/increment-bulk.php` and
+     * `public/take-increment-bulk.php` (both deleted in this PR).
+     * SYSOP+ "batch add bonus / attendance card / invites / uploaded
+     * / temporary invites" form (`/increment-bulk.php`) and its
+     * write-handler (`/take-increment-bulk.php`). The pair mirrors
+     * the `staffmess.php` / `takestaffmess.php` precedent: the
+     * form-render half is GET, the write-handler is POST and
+     * dispatches `App\Jobs\SendIncrementBulkBonus` so the inline
+     * `while (true) { LIMIT ?,2000 }` fan-out loop no longer blocks
+     * the browser. URLs stay unchanged so the
+     * `SysoppanelTableSeeder.url='increment-bulk.php'` menu entry,
+     * the `Update.php::runExtraQueries()` `addMenu` block, and any
+     * admin bookmarks keep working without template changes.
+     * `/take-increment-bulk.php` is CSRF-exempt (the legacy form
+     * has no `@csrf` field) — see
+     * `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::get('/increment-bulk.php', IncrementBulkController::class)
+        ->name('legacy.incrementbulk');
+    Route::post('/take-increment-bulk.php', TakeIncrementBulkController::class)
+        ->name('legacy.takeincrementbulk');
+     * Phase 2 — replaces `public/retriver.php` (deleted in this PR).
+     * Authed-only "refresh external info" endpoint linked from
+     * `public/details.php:449,473` (legacy IMDb cache refresh,
+     * `?siteid=1`) and `nexus/PTGen/PTGen.php:143` (PTGen ratings
+     * update, `?siteid=imdb|douban|bangumi`). GET-only — the
+     * callers are anchor links, not forms. URL stays `/retriver.php`
+     * (typo preserved — it's frozen into the public contract) so
+     * the rendered details/ptgen blocks keep working without a
+     * template change. Permission `updateextinfo` (default class
+     * 7 — Extreme User) is enforced inside the controller.
+     */
+    Route::get('/retriver.php', RetriverController::class)
+        ->name('legacy.retriver');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
