@@ -89,5 +89,13 @@ class VerifyCsrfToken extends Middleware
         // through a token-mint round trip first.
         'self-enable.php',
         'cheaterbox.php',
+        // Phase 2 fields rewrite: `/fields.php` accepts POST without
+        // a CSRF token. The legacy `<form method=post action=fields.php?action=submit>`
+        // (rendered by `Nexus\Field\Field::buildFieldForm`) has no
+        // `@csrf` field and the `?action=submit` handler has been a
+        // dead-deprecation message since 1.10 — preserving the URL
+        // means existing rendered forms still produce the same 200
+        // response without 419'ing.
+        'fields.php',
     ];
 }
