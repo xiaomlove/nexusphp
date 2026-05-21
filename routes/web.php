@@ -46,6 +46,7 @@ use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
 use App\Http\Controllers\Legacy\ResetController;
+use App\Http\Controllers\Legacy\RetriverController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SelfEnableController;
@@ -694,6 +695,19 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.incrementbulk');
     Route::post('/take-increment-bulk.php', TakeIncrementBulkController::class)
         ->name('legacy.takeincrementbulk');
+     * Phase 2 — replaces `public/retriver.php` (deleted in this PR).
+     * Authed-only "refresh external info" endpoint linked from
+     * `public/details.php:449,473` (legacy IMDb cache refresh,
+     * `?siteid=1`) and `nexus/PTGen/PTGen.php:143` (PTGen ratings
+     * update, `?siteid=imdb|douban|bangumi`). GET-only — the
+     * callers are anchor links, not forms. URL stays `/retriver.php`
+     * (typo preserved — it's frozen into the public contract) so
+     * the rendered details/ptgen blocks keep working without a
+     * template change. Permission `updateextinfo` (default class
+     * 7 — Extreme User) is enforced inside the controller.
+     */
+    Route::get('/retriver.php', RetriverController::class)
+        ->name('legacy.retriver');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
