@@ -71,6 +71,7 @@ use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
+use App\Http\Controllers\Legacy\ViewFileListController;
 use App\Http\Controllers\Legacy\ViewNfoController;
 use App\Http\Controllers\Legacy\ViewSnatchesController;
 use App\Http\Controllers\Legacy\WarnedController;
@@ -182,6 +183,22 @@ Route::get('/useragreement.php', UserAgreementController::class)->name('legacy.u
  * `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/getextinfoajax.php', GetExtInfoAjaxController::class)->name('legacy.getextinfoajax');
+
+/*
+ * Phase 2 — replaces `public/viewfilelist.php` (deleted in the same
+ * PR). XHR endpoint called from `public/js/common.js:22`
+ * (`viewfilelist(torrentid)`) — the response body is innerHTML-
+ * spliced into the toggle-able file-list block on `details.php`.
+ *
+ * Stays OUTSIDE `auth.nexus:nexus-web` for legacy parity: the
+ * legacy `if (isset($CURUSER))` gate becomes a `LegacyContext`
+ * check returning the empty-body envelope. Placing the route
+ * inside the auth group would redirect guests to `/login.php?...`,
+ * and `ajax.gets` would splice the login-page HTML into the
+ * details page (UX bug). The matching nginx exact-location entry
+ * lives in `.docker/openresty/sites/app.conf.template`.
+ */
+Route::get('/viewfilelist.php', ViewFileListController::class)->name('legacy.viewfilelist');
 
 /*
  * Phase 3 — replaces `public/aboutnexus.php` (deleted in the same PR).
