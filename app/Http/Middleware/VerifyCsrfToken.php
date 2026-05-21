@@ -89,6 +89,14 @@ class VerifyCsrfToken extends Middleware
         // through a token-mint round trip first.
         'self-enable.php',
         'cheaterbox.php',
+        // Phase 2 increment-bulk rewrite: `/take-increment-bulk.php`
+        // accepts POST without a CSRF token — the legacy
+        // `<form method=post action=take-increment-bulk.php>` in
+        // `public/increment-bulk.php` (deleted in this PR) had no
+        // `@csrf` field. The form-render endpoint
+        // `/increment-bulk.php` is GET-only, so it doesn't need an
+        // entry here.
+        'take-increment-bulk.php',
         // Phase 2 fields rewrite: `/fields.php` accepts POST without
         // a CSRF token. The legacy `<form method=post action=fields.php?action=submit>`
         // (rendered by `Nexus\Field\Field::buildFieldForm`) has no

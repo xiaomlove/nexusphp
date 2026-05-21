@@ -264,6 +264,13 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 increment-bulk rewrite — SYSOP+ batch bonus/invite/upload
+    # form + handler.
+    location = /increment-bulk.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /take-increment-bulk.php {
     # Phase 2 retriver rewrite — IMDb/PTGen "update external info" endpoint.
     location = /retriver.php {
     # Phase 2 fields rewrite — Administrator+ custom-field manager.
