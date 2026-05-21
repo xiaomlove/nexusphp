@@ -89,6 +89,14 @@ class VerifyCsrfToken extends Middleware
         // through a token-mint round trip first.
         'self-enable.php',
         'cheaterbox.php',
+        // Phase 2 bitbucket-upload rewrite: `/bitbucket-upload.php`
+        // accepts POST without a CSRF token — the legacy
+        // `<form method="post" action="bitbucket-upload.php"
+        // enctype="multipart/form-data">` had no `@csrf` field. The
+        // form is the only caller (it self-submits), and adding
+        // CSRF plumbing to legacy multipart forms is a separate
+        // larger change.
+        'bitbucket-upload.php',
         // Phase 2 increment-bulk rewrite: `/take-increment-bulk.php`
         // accepts POST without a CSRF token — the legacy
         // `<form method=post action=take-increment-bulk.php>` in
