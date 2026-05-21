@@ -31,6 +31,7 @@ use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
+use App\Http\Controllers\Legacy\IncrementBulkController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\LogoutController;
@@ -56,6 +57,7 @@ use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
+use App\Http\Controllers\Legacy\TakeIncrementBulkController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
@@ -648,6 +650,29 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/promotionlink.php', PromotionLinkController::class)
         ->name('legacy.promotionlink');
+
+    /*
+     * Phase 2 — replaces `public/increment-bulk.php` and
+     * `public/take-increment-bulk.php` (both deleted in this PR).
+     * SYSOP+ "batch add bonus / attendance card / invites / uploaded
+     * / temporary invites" form (`/increment-bulk.php`) and its
+     * write-handler (`/take-increment-bulk.php`). The pair mirrors
+     * the `staffmess.php` / `takestaffmess.php` precedent: the
+     * form-render half is GET, the write-handler is POST and
+     * dispatches `App\Jobs\SendIncrementBulkBonus` so the inline
+     * `while (true) { LIMIT ?,2000 }` fan-out loop no longer blocks
+     * the browser. URLs stay unchanged so the
+     * `SysoppanelTableSeeder.url='increment-bulk.php'` menu entry,
+     * the `Update.php::runExtraQueries()` `addMenu` block, and any
+     * admin bookmarks keep working without template changes.
+     * `/take-increment-bulk.php` is CSRF-exempt (the legacy form
+     * has no `@csrf` field) — see
+     * `App\Http\Middleware\VerifyCsrfToken`.
+     */
+    Route::get('/increment-bulk.php', IncrementBulkController::class)
+        ->name('legacy.incrementbulk');
+    Route::post('/take-increment-bulk.php', TakeIncrementBulkController::class)
+        ->name('legacy.takeincrementbulk');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
