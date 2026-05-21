@@ -264,6 +264,8 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 retriver rewrite — IMDb/PTGen "update external info" endpoint.
+    location = /retriver.php {
     # Phase 2 fields rewrite — Administrator+ custom-field manager.
     location = /fields.php {
         try_files /nonexistent @nexus_app;
