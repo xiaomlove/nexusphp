@@ -57,6 +57,11 @@ class VerifyCsrfToken extends Middleware
         // have no `@csrf` field). `/donorlist.php` is GET-only.
         'mailtest.php',
         'adduser.php',
+        // Phase 2 massmail rewrite: `/massmail.php` accepts POST
+        // without a CSRF token — the legacy
+        // `<form method=post action=massmail.php>` self-submit had
+        // no `@csrf` field. Fan-out runs in `App\Jobs\SendMassMail`.
+        'massmail.php',
         // Phase 3 magic.php rewrite: `/magic.php` accepts POST
         // without a CSRF token — the legacy XHR helper
         // `saveMagicValue` in `public/js/common.js` posts a bare

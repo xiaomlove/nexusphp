@@ -170,6 +170,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 massmail rewrite — SYSOP+ mass e-mail by class.
+    location = /massmail.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     # Phase 2 batch #10 — legacy migration routes.
     location = /getextinfoajax.php {
         try_files /nonexistent @nexus_app;
