@@ -458,6 +458,14 @@ class Update extends Install
             ],
         );
         $this->removeMenu(['news.php']);
+
+        /**
+         * @since next
+         * `public/mysql_stats.php` was removed in Phase 2 (this PR).
+         * The sysop-panel entry is dropped so existing installations
+         * stop showing a dead menu item. `removeMenu` is idempotent.
+         */
+        $this->removeMenu(['mysql_stats.php']);
     }
 
     public function runExtraMigrate()

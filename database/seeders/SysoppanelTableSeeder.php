@@ -30,12 +30,12 @@ class SysoppanelTableSeeder extends Seeder
                 'url' => 'forummanage.php',
                 'info' => 'Edit/Delete forum',
             ],
-            2 => [
-                'id' => 3,
-                'name' => 'MySQL Stats',
-                'url' => 'mysql_stats.php',
-                'info' => 'See MySql stats',
-            ],
+            //            2 => [
+            //                'id' => 3,
+            //                'name' => 'MySQL Stats',
+            //                'url' => 'mysql_stats.php',
+            //                'info' => 'See MySql stats',
+            //            ],
             3 => [
                 'id' => 4,
                 'name' => 'Mass mailer',

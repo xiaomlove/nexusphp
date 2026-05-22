@@ -45,6 +45,10 @@ use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\FriendsController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
+use App\Http\Controllers\Legacy\GetUserTorrentListAjaxController;
+use App\Http\Controllers\Legacy\MoforumsController;
+use App\Http\Controllers\Legacy\MysqlStatsController;
+use App\Http\Controllers\Legacy\StaffboxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IncrementBulkController;
 use App\Http\Controllers\Legacy\IpCheckController;
@@ -426,6 +430,46 @@ Route::get('/useragreement.php', UserAgreementController::class)->name('legacy.u
  * `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/getextinfoajax.php', GetExtInfoAjaxController::class)->name('legacy.getextinfoajax');
+
+/*
+ * Phase 2 batch — replaces `public/getusertorrentlistajax.php`
+ * (deleted in the same PR). AJAX fragment endpoint called by
+ * `public/js/common.js::getusertorrentlistajax()` to render the
+ * expandable torrent sub-tables on the user-details page.
+ * Returns a bare HTML fragment (no `<html>` wrapper).
+ * Stays OUTSIDE `auth.nexus:nexus-web` to avoid redirecting XHR
+ * callers to the login page and splicing HTML into the expand block.
+ * The controller itself returns 401 for unauthenticated requests.
+ */
+Route::get('/getusertorrentlistajax.php', GetUserTorrentListAjaxController::class)->name('legacy.getusertorrentlistajax');
+
+/*
+ * Phase 2 batch — replaces `public/moforums.php` (deleted in the
+ * same PR). Over-forum (category group) management page gated on
+ * the `forummanage` permission. Accepts GET (list + edit forms) and
+ * POST (add + update actions). POST is CSRF-exempt — see
+ * `App\Http\Middleware\VerifyCsrfToken::$except`.
+ */
+Route::match(['get', 'post'], '/moforums.php', MoforumsController::class)->name('legacy.moforums');
+
+/*
+ * Phase 2 batch — replaces `public/staffbox.php` (deleted in the
+ * same PR). Staff private-message inbox, accessible to users with the
+ * `staffmem` permission or matching custom tool permissions. Accepts
+ * both GET (inbox, viewpm, answermessage, delete, setanswered) and
+ * POST (takeanswer, takecontactanswered). POST is CSRF-exempt — see
+ * `App\Http\Middleware\VerifyCsrfToken::$except`.
+ */
+Route::match(['get', 'post'], '/staffbox.php', StaffboxController::class)->name('legacy.staffbox');
+
+/*
+ * Phase 2 batch — replaces `public/mysql_stats.php` (deleted in the
+ * same PR). Sysop-only MySQL server status page (class >= UC_SYSOP).
+ * The URL stays `/mysql_stats.php` so the existing
+ * `SysoppanelTableSeeder` menu entry keeps working without a data
+ * migration.
+ */
+Route::get('/mysql_stats.php', MysqlStatsController::class)->name('legacy.mysql_stats');
 
 /*
  * Phase 2 — replaces `public/viewfilelist.php` (deleted in the same

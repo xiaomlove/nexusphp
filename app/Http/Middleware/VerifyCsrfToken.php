@@ -170,5 +170,11 @@ class VerifyCsrfToken extends Middleware
         // had no `@csrf` field.
         'complains.php',
         'report.php',
+        // Phase 2 batch — `moforums.php` and `staffbox.php` accept POST
+        // without a CSRF token — the legacy `<form method="post"
+        // action="moforums.php">` and `<form method="post"
+        // action="?action=takeanswer">` forms had no `@csrf` field.
+        'moforums.php',
+        'staffbox.php',
     ];
 }
