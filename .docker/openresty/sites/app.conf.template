@@ -359,14 +359,16 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
-    # Phase 2 complains/report rewrite — universal report submission
-    # (`/report.php`) and disabled-account complaint tracker
-    # (`/complains.php`).
-    location = /complains.php {
+    # Phase 2 attachment/tags/torrentrss batch.
+    location = /attachment.php {
         try_files /nonexistent @nexus_app;
     }
 
-    location = /report.php {
+    location = /tags.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /torrentrss.php {
         try_files /nonexistent @nexus_app;
     }
 
