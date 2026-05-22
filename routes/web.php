@@ -23,6 +23,7 @@ use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
+use App\Http\Controllers\Legacy\DeleteTorrentController;
 use App\Http\Controllers\Legacy\DocleanupController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
@@ -40,7 +41,9 @@ use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MassmailController;
+use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
+use App\Http\Controllers\Legacy\MyhrController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
@@ -68,9 +71,11 @@ use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\UncoController;
+use App\Http\Controllers\Legacy\UploadersController;
 use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
+use App\Http\Controllers\Legacy\UsersListController;
 use App\Http\Controllers\Legacy\ViewFileListController;
 use App\Http\Controllers\Legacy\ViewNfoController;
 use App\Http\Controllers\Legacy\ViewSnatchesController;
@@ -609,6 +614,51 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/staffpanel.php', StaffPanelController::class)
         ->name('legacy.staffpanel');
 
+    /*
+     * Phase 2 — replaces `public/delete.php` (deleted in the same PR).
+     * POST-only torrent deletion endpoint. Permission-gated on
+     * `torrent-delete`; validates ownership or `torrentmanage`.
+     * Deletes from ES, calls `deletetorrent()`, deducts karma,
+     * sends PM to owner. CSRF-exempt — the legacy form in
+     * `details.php` has no `@csrf` field.
+     */
+    Route::post('/delete.php', DeleteTorrentController::class)
+        ->name('legacy.delete');
+
+    /*
+     * Phase 2 — replaces `public/medal.php` (deleted in the same PR).
+     * Authed medal shop. Paginated (20/page) listing of purchasable
+     * medals with buy/gift AJAX buttons (POST to `ajax.php`).
+     * Optional `?q=` name filter.
+     */
+    Route::get('/medal.php', MedalController::class)
+        ->name('legacy.medal');
+
+    /*
+     * Phase 2 — replaces `public/users.php` (deleted in the same PR).
+     * Permission-gated on `viewuserlist`. Paginated (50/page) user
+     * listing with search, class filter, country filter, A-Z index.
+     */
+    Route::get('/users.php', UsersListController::class)
+        ->name('legacy.users');
+
+    /*
+     * Phase 2 — replaces `public/myhr.php` (deleted in the same PR).
+     * Authed H&R listing. Defaults to current user; cross-user view
+     * requires `viewhistory` permission. Status filter, pagination
+     * (50/page), remove-HR AJAX button (POST to `ajax.php`).
+     */
+    Route::get('/myhr.php', MyhrController::class)
+        ->name('legacy.myhr');
+
+    /*
+     * Phase 2 — replaces `public/uploaders.php` (deleted in the same
+     * PR). Uploader+ (class >= 12) monthly activity stats. Year/month
+     * selector, sortable by username/size/count.
+     */
+    Route::get('/uploaders.php', UploadersController::class)
+        ->name('legacy.uploaders');
+
     Route::get('/viewnfo.php', ViewNfoController::class)
         ->name('legacy.viewnfo');
 
@@ -749,6 +799,8 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.incrementbulk');
     Route::post('/take-increment-bulk.php', TakeIncrementBulkController::class)
         ->name('legacy.takeincrementbulk');
+
+    /*
      * Phase 2 — replaces `public/retriver.php` (deleted in this PR).
      * Authed-only "refresh external info" endpoint linked from
      * `public/details.php:449,473` (legacy IMDb cache refresh,
