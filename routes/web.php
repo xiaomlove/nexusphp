@@ -212,6 +212,43 @@ Route::any('/faqactions.php', static fn () => redirect('/nexusphp/faqs', 302))
     ->name('legacy.faqactions');
 
 /*
+ * Phase 2 — strangles `public/catmanage.php` (deleted in the same
+ * PR, −885 LOC). The legacy script was an 11-tab admin hub for the
+ * `categories` / `sources` / `media` / `codecs` / `standards` /
+ * `processings` / `teams` / `audiocodecs` / `searchbox` / `caticon`
+ * / `secondicon` lookup tables; **all eleven targets already have
+ * Filament resources** under `app/Filament/Resources/Section/`
+ * (CategoryResource / SourceResource / MediaResource / CodecResource
+ * / StandardResource / ProcessingResource / TeamResource /
+ * AudioCodecResource / SectionResource / IconResource /
+ * SecondIconResource), grouped under the `"Section"` navigation
+ * group in the Filament admin panel. So no new code is needed here —
+ * just retire the legacy hub and 302 callers into the modern one.
+ *
+ * Landing target: `/nexusphp/categories` (the resource the legacy
+ * `?type=category` tab fed into, which is also the most frequently
+ * used row of the legacy admin). From there an admin can hop to any
+ * of the other ten resources via the `"Section"` navigation group.
+ *
+ * The `AdminpanelTableSeeder` row #8 (`url=catmanage.php`) is
+ * rewritten to `/nexusphp/categories` in the same PR, and
+ * `nexus/Install/Update.php::runExtraQueries()` already does
+ * `removeMenu(['catmanage.php'])` (idempotent, since `@since 1.8.0`)
+ * — so existing installs that haven't re-seeded keep landing on the
+ * redirect during the upgrade window.
+ *
+ * The `Route::any` shape (vs `Route::redirect`) is intentional: the
+ * legacy script accepted GET form-submits (e.g.
+ * `?action=add&type=category`, `?action=del&type=codec&id=N`,
+ * `?action=update`). Some of those URLs are still pasted into staff
+ * chats / screenshots / private docs from the pre-Filament era; we
+ * preserve every verb-and-querystring shape with a single redirect
+ * so none of them 404.
+ */
+Route::any('/catmanage.php', static fn () => redirect('/nexusphp/categories', 302))
+    ->name('legacy.catmanage');
+
+/*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
  * PR). The legacy script never gated on `loggedinorreturn()` and is
  * linked from `lang/<locale>/lang_faq.php`'s `text_welcome_content_two`

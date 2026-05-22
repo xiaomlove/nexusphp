@@ -289,6 +289,29 @@ class Update extends Install
         }
         $this->removeMenu(['catmanage.php']);
 
+        /**
+         * `public/catmanage.php` was a single-script admin hub for the
+         * `categories` / `sources` / `media` / `codecs` / `standards` /
+         * `processings` / `teams` / `audiocodecs` / `searchbox` /
+         * `caticon` / `secondicon` lookup tables. All eleven targets
+         * already have Filament 5 resources under
+         * `app/Filament/Resources/Section/`, so the migration is a
+         * pure delete + redirect (see `routes/web.php`). The legacy
+         * adminpanel row is removed by the `removeMenu` call above
+         * (idempotent since `@since 1.8.0`); this `addMenu` step
+         * inserts the new `/nexusphp/categories` row on existing
+         * installs that have already had their `catmanage.php` row
+         * removed but never re-seeded. `addMenu` is idempotent —
+         * the seeder writes the same row on a fresh install, and
+         * this is a no-op once it lands.
+         */
+        $this->addMenu(
+            'adminpanel',
+            [
+                ['name' => 'Category Manage', 'url' => '/nexusphp/categories', 'info' => 'Manage torrents categories at your site'],
+            ],
+        );
+
         if (! NexusDB::hasColumn('users', 'seed_points_updated_at')) {
             $this->runMigrate('database/migrations/2022_11_23_042152_add_seed_points_seed_times_update_time_to_users_table.php');
             foreach (User::$notificationOptions as $option) {
