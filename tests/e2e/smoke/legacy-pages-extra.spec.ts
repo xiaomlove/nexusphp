@@ -144,9 +144,14 @@ const PAGES: LegacyPageCase[] = [
         contains: /NexusPHP\s*::\s*Requests/i,
     },
     {
-        description: 'staff.php (staff list page)',
+        // Phase 2 migration: StaffController renders a chrome-less
+        // envelope (no legacy `stdfoot()`); marker updated from
+        // "NexusPHP :: Staff" to the controller's `<title>` so the
+        // smoke probe still asserts the new contract booted instead
+        // of returning a blank 200.
+        description: 'staff.php (staff list page; Phase 2 migration)',
         url: '/staff.php',
-        contains: /NexusPHP\s*::\s*Staff/i,
+        contains: /<title>Staff<\/title>/i,
     },
     {
         description: 'contactstaff.php (contact staff form)',

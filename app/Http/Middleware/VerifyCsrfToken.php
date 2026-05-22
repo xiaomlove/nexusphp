@@ -132,5 +132,15 @@ class VerifyCsrfToken extends Middleware
         // anti-spam measure for this endpoint; see
         // `AttendanceController::verifyCaptcha`.
         'attendance.php',
+        // Phase 2 batch (linksmanage/makepoll/reports/ipsearch/staff):
+        // `linksmanage.php` and `makepoll.php` accept POST without a
+        // CSRF token — the legacy forms in `public/linksmanage.php`
+        // (the `?action=apply`/`?action=newapply`/`?action=add`/
+        // `?action=editlink` forms) and `public/makepoll.php` (the
+        // self-submitting poll create/edit form) have no `@csrf`
+        // field. The other three pages in the batch are GET-only
+        // and don't need an entry here.
+        'linksmanage.php',
+        'makepoll.php',
     ];
 }

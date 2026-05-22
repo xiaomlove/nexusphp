@@ -299,6 +299,29 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch (this PR): five legacy pages migrated to Laravel
+    # controllers. Each entry routes the legacy URL through
+    # @nexus_app so the now-deleted public/*.php files don't 404.
+    location = /linksmanage.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /makepoll.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /reports.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /ipsearch.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /staff.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }

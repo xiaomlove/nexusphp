@@ -43,9 +43,12 @@ use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IncrementBulkController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
+use App\Http\Controllers\Legacy\IpSearchController;
+use App\Http\Controllers\Legacy\LinksManageController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
+use App\Http\Controllers\Legacy\MakePollController;
 use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
@@ -58,6 +61,7 @@ use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
+use App\Http\Controllers\Legacy\ReportsController;
 use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RetriverController;
 use App\Http\Controllers\Legacy\RulesController;
@@ -66,6 +70,7 @@ use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SendMessageController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
+use App\Http\Controllers\Legacy\StaffController;
 use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\StaffPanelController;
 use App\Http\Controllers\Legacy\StatsController;
@@ -285,6 +290,23 @@ Route::any('/catmanage.php', static fn () => redirect('/nexusphp/categories', 30
  */
 Route::any('/location.php', static fn () => redirect('/nexusphp/locations', 302))
     ->name('legacy.location');
+
+/*
+ * Phase 2 — replaces `public/mybar.php` (deleted in the same PR,
+ * −150 LOC). The "userbar" PNG generator embedded in user
+ * signatures across forums and the user-control-panel "userbar
+ * snippet" widget. Reachable as a guest because forum signatures
+ * get rendered in pages/RSS feeds that may be crawled without a
+ * session — every embedding `<img src=".../mybar.php?...">` tag
+ * stays a hot link without a login round-trip.
+ *
+ * URL preserved (`/mybar.php?userid=NNN.png&bgpic=N&...`) so the
+ * `PromotionLinkController` HTML output and any in-the-wild forum
+ * signatures keep working without a template change. The legacy
+ * regex requirement (`userid=NNN.png` literal in the request URI)
+ * is preserved bit-for-bit by the controller.
+ */
+Route::get('/mybar.php', MyBarController::class)->name('legacy.mybar');
 
 /*
  * Phase 2 — replaces `public/news.php` (deleted in the same PR,
@@ -1095,6 +1117,30 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/attendance.php', AttendanceController::class)
         ->name('legacy.attendance');
+
+    /*
+     * Phase 2 batch (this PR): replaces five public/*.php pages with
+     * Laravel controllers — linksmanage / makepoll / reports /
+     * ipsearch / staff. URLs preserved exactly so existing template
+     * / JS callers (`public/index.php` home-page footer, the
+     * already-migrated `TakeUpdateController` redirect target,
+     * `resources/views/legacy/formats.blade.php`, the modpanel
+     * navigation, the e2e smoke probe for makepoll.php) keep
+     * working without further changes. POST handlers for
+     * linksmanage and makepoll are CSRF-exempt — the legacy forms
+     * have no `@csrf` field. See
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/linksmanage.php', LinksManageController::class)
+        ->name('legacy.linksmanage');
+    Route::match(['get', 'post'], '/makepoll.php', MakePollController::class)
+        ->name('legacy.makepoll');
+    Route::get('/reports.php', ReportsController::class)
+        ->name('legacy.reports');
+    Route::get('/ipsearch.php', IpSearchController::class)
+        ->name('legacy.ipsearch');
+    Route::get('/staff.php', StaffController::class)
+        ->name('legacy.staff');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
