@@ -81,7 +81,7 @@ class SysoppanelTableSeeder extends Seeder
             10 => [
                 'id' => 11,
                 'name' => 'Location',
-                'url' => 'location.php',
+                'url' => '/nexusphp/locations',
                 'info' => 'Manage location and location speed',
             ],
             11 => [

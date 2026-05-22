@@ -1,12 +1,23 @@
-<?php
-require "../include/bittorrent.php";
-dbconn();
-loggedinorreturn();
-stdhead("Downloaded Files");
-?>
-<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+{{--
+    Verbatim copy of the static HTML body the legacy
+    `public/formats.php` (deleted in the same PR) used to render
+    between `stdhead("Downloaded Files")` and the trailing PHP
+    closing tag. It is a hand-written user-facing guide with no
+    dynamic content — no DB queries, no language-file lookups,
+    no permission-dependent branching — so we keep it as a Blade
+    template that the migrated `FormatsController` includes inside
+    a chrome-less HTML envelope.
+
+    Phase 5 will retranslate this content through the regular
+    `lang_formats.php` mechanism (or replace it with a Markdown
+    file under `_doc/`); at that point this view will be replaced
+    or refactored. Until then the contract is "render exactly
+    what the legacy script rendered, minus the legacy chrome".
+--}}
+<table class="main" width="737" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
 <h2>A Handy Guide to Using the Files You've Downloaded</h2>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
 Hey guys, here's some info about common files that you can download from the internet,
 and a little bit about using these files for their intended purposes. If you're stuck
@@ -16,9 +27,10 @@ get the show on the road!<br />
 </td></tr></table>
 </td></tr></table>
 <br />
-<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+<table class="main" width="737" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
 <h2>Compression Files</h2>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
 <b>.rar .zip .ace .r01 .001</b><br />
 <br />
@@ -27,13 +39,13 @@ This is just a way of making the files more compact and easier to download.<br /
 <br />
 To open any of those archives listed above you can use <a href="http://www.rarsoft.com/download.htm">WinRAR</a> (Make sure you have the latest version) or <a href="http://www.powerarchiver.com/download/">PowerArchiver</a>.<br />
 <br />
-If those progams aren't working for you and you have a .zip file you can try 
+If those progams aren't working for you and you have a .zip file you can try
 <a href="http://www.winzip.com/download.htm">WinZip</a> (Trial version).<br />
 <br />
 If the two first mentioned programs aren't working for you and you have a .ace or .001
 file you can try <a href="http://www.winace.com/">Winace</a> (Trial version).<br />
 <br />
-<br /> 
+<br />
 <b>.cbr .cbz</b><br />
 <br />
 These are usually comic books in an archive format. a .cbr file is actually the same
@@ -45,9 +57,10 @@ CDisplay</a>.<br />
 </td></tr></table>
 </td></tr></table>
 <br />
-<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+<table class="main" width="737" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
 <h2>Multimedia Files</h2>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
 <b>.avi .mpg. .mpeg .divx .xvid .wmv</b><br />
 <br />
@@ -55,17 +68,15 @@ These files are usually movies or TVshows, or a host of other types of media. Th
 be viewed using various media players, but I suggest using
 <a href="http://www.inmatrix.com/files/zoomplayer_download.shtml">Zoomplayer</a>,
 <a href="http://www.bsplayer.org/">BSPlayer</a>, <a href="http://www.videolan.org/vlc/">VLC media player</a>
- or <a href="http://www.microsoft.com/windows/
-windowsmedia/default.aspx">Windows Media Player</a>. Also, you'll need to make sure you have
+ or <a href="http://www.microsoft.com/windows/windowsmedia/default.aspx">Windows Media Player</a>. Also, you'll need to make sure you have
 the right codecs to play each individual file. Codecs are a tricky business sometimes so to help
-you out with your file and what exact codecs it needs try using <a href="http://www.headbands.com/
-gspot/download.html">GSpot</a>. It tells you what codecs you need. Then just look on the net to find
+you out with your file and what exact codecs it needs try using <a href="http://www.headbands.com/gspot/download.html">GSpot</a>. It tells you what codecs you need. Then just look on the net to find
 them, below are some common codecs and their download links for quick reference:<br />
 <br />
-<a href="http://sourceforge.net/project/showfiles.php?group_id=53761&release_id=95213">ffdshow</a> (Recommended! (plays many formats: XviD, DivX, 3ivX, mpeg-4))<br />
+<a href="http://sourceforge.net/project/showfiles.php?group_id=53761&amp;release_id=95213">ffdshow</a> (Recommended! (plays many formats: XviD, DivX, 3ivX, mpeg-4))<br />
 <a href="http://nic.dnsalias.com/xvid.html">XviD codec</a><br />
 <a href="http://www.divx.com/divx/">DivX codec</a><br />
-<a href="http://sourceforge.net/project/showfiles.php?group_id=66022&release_id=178906">ac3filter</a> (for AC3 soundtracks, aka "5.1")<br />
+<a href="http://sourceforge.net/project/showfiles.php?group_id=66022&amp;release_id=178906">ac3filter</a> (for AC3 soundtracks, aka "5.1")<br />
 <a href="http://tobias.everwicked.com/oggds.htm">Ogg media codec</a> (for .OGM files)<br />
 <br />
 Can't find what you're looking for? Check out these sites...<br />
@@ -119,9 +130,10 @@ DirectShow Ogg filter</a> to play back OGM files. Any new version of
 </td></tr></table>
 </td></tr></table>
 <br />
-<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+<table class="main" width="737" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
 <h2>CD Image Files</h2>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
 <b>.bin and .cue</b><br />
 <br />
@@ -151,16 +163,16 @@ problematic .bin and .cue file to an .iso can help you burn it to a cd.<br />
 <br />
 <b>.ccd .img .sub</b><br />
 <br />
-All these files go together and are in the <a href="http://www.elby.ch/english/products/
-clone_cd/index.html"> CloneCD</a> format. CloneCD is like most other CD-Burning programs,
+All these files go together and are in the <a href="http://www.elby.ch/english/products/clone_cd/index.html">CloneCD</a> format. CloneCD is like most other CD-Burning programs,
 see the .bin and .cue section if you're having problems with these files.<br />
 <br />
 </td></tr></table>
 </td></tr></table>
 <br />
-<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+<table class="main" width="737" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
 <h2>Other Files</h2>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
 <b>.txt .doc</b><br />
 <br />
@@ -203,13 +215,12 @@ Open them with <a href="http://www.pbclements.co.uk/QuickPar/">QuickPar</a>.
 </td></tr></table>
 </td></tr></table>
 <br />
-<table class=main width=737 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table class="main" width="737" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
-If you have any suggestion/changes <a href=staff.php><b>PM</b></a> one of the Admins/SysOp!<br />
+If you have any suggestion/changes <a href="staff.php"><b>PM</b></a> one of the Admins/SysOp!<br />
 <br />
 This file was originally written by hussdiesel at filesoup, then edited by Rhomboid and re-edited by us.<br />
 </td></tr></table>
 </td></tr></table>
-<br />
-<?php

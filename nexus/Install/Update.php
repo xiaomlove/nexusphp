@@ -419,6 +419,24 @@ class Update extends Install
             ],
         );
         $this->removeMenu(['faqmanage.php', 'faqactions.php']);
+
+        /**
+         * `public/location.php` was removed in Phase 2 (replaced by
+         * the Filament resource at `/nexusphp/locations`). The legacy
+         * URL stays alive as a 302 redirect (`routes/web.php`), so
+         * the existing `SysoppanelTableSeeder.url='location.php'` row
+         * still navigates correctly. The `addMenu` writes the new
+         * URL on existing installs that have already had the legacy
+         * row removed; `removeMenu` drops the stale `location.php`
+         * row. Both helpers are idempotent.
+         */
+        $this->addMenu(
+            'sysoppanel',
+            [
+                ['name' => 'Location', 'url' => '/nexusphp/locations', 'info' => 'Manage location and location speed'],
+            ],
+        );
+        $this->removeMenu(['location.php']);
     }
 
     public function runExtraMigrate()
