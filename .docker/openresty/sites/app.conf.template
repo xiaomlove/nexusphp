@@ -299,7 +299,7 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
-    # Phase 2 batch (this PR): five legacy pages migrated to Laravel
+    # Phase 2 batch (PR #293): five legacy pages migrated to Laravel
     # controllers. Each entry routes the legacy URL through
     # @nexus_app so the now-deleted public/*.php files don't 404.
     location = /linksmanage.php {
@@ -319,6 +319,37 @@ server {
     }
 
     location = /staff.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    # Phase 2 batch B (this PR): six legacy pages migrated to Laravel
+    # controllers (the seventh, /cc98bar.php, uses a path-style URI
+    # `/cc98bar.php/.../id<userid>.png` which the catch-all
+    # `location /` already routes through nexus.php; only the exact-
+    # path entries need to be listed here). Each entry routes the
+    # legacy URL through @nexus_app so the now-deleted public/*.php
+    # files don't 404.
+    location = /task.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /downloadnotice.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /search.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takemessage.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /friends.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /download.php {
         try_files /nonexistent @nexus_app;
     }
 
