@@ -359,6 +359,17 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 complains/report rewrite — universal report submission
+    # (`/report.php`) and disabled-account complaint tracker
+    # (`/complains.php`).
+    location = /complains.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /report.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
