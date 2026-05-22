@@ -1,12 +1,20 @@
-<?php
-require "../include/bittorrent.php";
-dbconn();
-loggedinorreturn();
-stdhead("Video Formats");
-?>
-<table class=main width=940 border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>
+{{--
+    Verbatim copy of the static HTML body the legacy
+    `public/videoformats.php` (deleted in the same PR) used to
+    render between `stdhead("Video Formats")` and `stdfoot()`.
+    Hand-written user-facing glossary of video-rip release tags
+    (CAM / TS / TC / SCR / DVDRip / TVRip / WP / NUKED / DUPE / ...).
+
+    No dynamic content — same kind of static guide as
+    `formats.blade.php`. Phase 5 (or its successor) will move this
+    into translated `lang_videoformats.php` strings or a Markdown
+    file under `_doc/`. Until then we render the body verbatim
+    inside a chrome-less HTML envelope.
+--}}
+<table class="main" width="940" border="0" cellspacing="0" cellpadding="0">
+<tr><td class="embedded">
 <h2>Downloaded a movie and don't know what CAM/TS/TC/SCR means?</h2>
-<table width=100% border=1 cellspacing=0 cellpadding=10><tr><td class=text> 
+<table width="100%" border="1" cellspacing="0" cellpadding="10"><tr><td class="text">
 
 <b>CAM -</b><br />
 <br />
@@ -199,6 +207,3 @@ again without proper reason.<br />
 <br />
 </td></tr></table>
 </td></tr></table>
-<br />
-<?php
-stdfoot();

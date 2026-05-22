@@ -33,6 +33,7 @@ use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
+use App\Http\Controllers\Legacy\FormatsController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
@@ -82,6 +83,7 @@ use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
 use App\Http\Controllers\Legacy\UserHistoryController;
 use App\Http\Controllers\Legacy\UsersListController;
+use App\Http\Controllers\Legacy\VideoFormatsController;
 use App\Http\Controllers\Legacy\ViewFileListController;
 use App\Http\Controllers\Legacy\ViewNfoController;
 use App\Http\Controllers\Legacy\ViewSnatchesController;
@@ -247,6 +249,39 @@ Route::any('/faqactions.php', static fn () => redirect('/nexusphp/faqs', 302))
  */
 Route::any('/catmanage.php', static fn () => redirect('/nexusphp/categories', 302))
     ->name('legacy.catmanage');
+
+/*
+ * Phase 2 — strangles `public/location.php` (deleted in the same
+ * PR, −249 LOC). The legacy script was a SYSOP-only CRUD over the
+ * `locations` table with a quirky GET-with-querystring write
+ * protocol (`?delid=N&sure=yes` for delete, `?editid=N` for edit
+ * form, `?edited=1&...` for edit submit, `?add=true&...` for add
+ * submit, `?check_range=true&range_start_ip=...` for range query).
+ * Replaced with the standard Filament list / create / edit pages
+ * at `/nexusphp/locations` (`App\Filament\Resources\System\
+ * LocationResource`).
+ *
+ * `Route::any` (rather than `Route::redirect`) preserves every
+ * verb-and-querystring shape the legacy script accepted. SYSOP
+ * bookmarks pasted from the pre-Filament era — including the
+ * GET-form-submit URLs that contain a full `&start_ip=...&end_ip=`
+ * payload — all 302 to the new admin without 404'ing.
+ *
+ * `SysoppanelTableSeeder` row 10 (`url=location.php`) is rewritten
+ * to `/nexusphp/locations` in the same PR; existing installs reach
+ * the new admin through this redirect during the upgrade window
+ * until `nexus/Install/Update.php::runExtraQueries()` swaps the
+ * row for them.
+ *
+ * The route lives OUTSIDE `auth.nexus:nexus-web` because the
+ * Filament panel runs its own authentication via
+ * `App\Http\Middleware\Filament` — its redirect target is
+ * `/login.php` (same place legacy `loggedinorreturn()` bounced
+ * guests), so an unauthenticated request lands on the same login
+ * screen either way.
+ */
+Route::any('/location.php', static fn () => redirect('/nexusphp/locations', 302))
+    ->name('legacy.location');
 
 /*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
@@ -430,6 +465,35 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * `auth.nexus:nexus-web` guard as the rest of this group.
      */
     Route::get('/smilies.php', SmiliesController::class)->name('legacy.smilies');
+
+    /*
+     * Phase 2 — replaces `public/formats.php` (deleted in the same
+     * PR, −215 LOC). Static user-facing guide on common file
+     * extensions and the apps that open them — no DB queries, no
+     * per-locale lang lookups, no permission-dependent branching;
+     * just `loggedinorreturn()` + `stdhead()` + a wall of inline
+     * HTML. The migrated controller renders the body verbatim from
+     * `resources/views/legacy/formats.blade.php` inside a
+     * chrome-less envelope. Same shape as `MoreSmiliesController`
+     * / `RulesController`.
+     *
+     * URL stays `/formats.php` because nothing in the codebase
+     * references it (no menu seeder row, no legacy `<a href>` in
+     * `include/functions.php`); preserving it costs us one route
+     * and saves any external bookmark / SE result that points at
+     * the page.
+     */
+    Route::get('/formats.php', FormatsController::class)->name('legacy.formats');
+
+    /*
+     * Phase 2 — replaces `public/videoformats.php` (deleted in the
+     * same PR, −204 LOC). Same shape as `/formats.php`: static
+     * user-facing glossary of video-rip release tags (CAM / TS /
+     * TC / SCR / DVDRip / TVRip / WP / NUKED / DUPE / ...). The
+     * body has zero dynamic content and is rendered verbatim from
+     * `resources/views/legacy/videoformats.blade.php`.
+     */
+    Route::get('/videoformats.php', VideoFormatsController::class)->name('legacy.videoformats');
 
     /*
      * Phase 2 batch #4 — replaces `public/allagents.php` (deleted in
