@@ -118,10 +118,11 @@ class VerifyCsrfToken extends Middleware
         // means existing rendered forms still produce the same 200
         // response without 419'ing.
         'fields.php',
-        // Phase 2 delete.php rewrite: `/delete.php` accepts POST
-        // without a CSRF token — the legacy `<form method=post
-        // action=delete.php>` in `public/details.php` has no `@csrf`
-        // field.
-        'delete.php',
+        // Phase 2 modrules rewrite: `/modrules.php` accepts POST
+        // without a CSRF token — the legacy `<form method="post"
+        // action="modrules.php?act=addsect">` and
+        // `<form method="post" action="modrules.php?act=edited">`
+        // forms had no `@csrf` field.
+        'modrules.php',
     ];
 }

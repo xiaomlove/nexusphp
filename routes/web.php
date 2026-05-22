@@ -16,6 +16,7 @@ use App\Http\Controllers\Legacy\BitBucketUploadController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\CheaterboxController;
+use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
@@ -25,9 +26,11 @@ use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DeleteTorrentController;
 use App\Http\Controllers\Legacy\DocleanupController;
+use App\Http\Controllers\Legacy\DonateController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
+use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FreeleechController;
@@ -41,7 +44,7 @@ use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MassmailController;
-use App\Http\Controllers\Legacy\MedalController;
+use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\MyhrController;
 use App\Http\Controllers\Legacy\NoWarnController;
@@ -60,6 +63,7 @@ use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\StaffPanelController;
+use App\Http\Controllers\Legacy\StatsController;
 use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
@@ -70,6 +74,7 @@ use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Http\Controllers\Legacy\TorrentInfoController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UploadersController;
 use App\Http\Controllers\Legacy\UserAgreementController;
@@ -165,6 +170,17 @@ Route::get('/ok.php', OkController::class)->name('legacy.ok');
  * lives in `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/rules.php', RulesController::class)->name('legacy.rules');
+
+/*
+ * Phase 2 — replaces `public/faq.php` (deleted in the same PR).
+ * The legacy script had `loggedinorreturn()` commented out and was
+ * reachable as a guest, so the route stays outside the `auth.nexus`
+ * middleware. The URL stays `/faq.php` so existing navigation links
+ * in `include/functions.php:1897`, `AgentAllowRepository` error
+ * messages, and the cross-site `faq.php#idNN` anchors keep working
+ * without template changes.
+ */
+Route::get('/faq.php', FaqController::class)->name('legacy.faq');
 
 /*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
@@ -658,6 +674,53 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/uploaders.php', UploadersController::class)
         ->name('legacy.uploaders');
+     * Phase 2 — replaces `public/torrent_info.php` (deleted in the
+     * same PR). Authed endpoint gated on the `torrentstructure`
+     * permission (default class 8 = Insane User). Reads the .torrent
+     * file from disk, decodes the bencode, and renders an expandable
+     * HTML tree of the file structure. URL stays `/torrent_info.php`
+     * so the existing details-page link keeps working.
+     */
+    Route::get('/torrent_info.php', TorrentInfoController::class)
+        ->name('legacy.torrentinfo');
+
+    /*
+     * Phase 2 — replaces `public/donate.php` (deleted in the same
+     * PR). Authed donation page. Checks `main.donation` setting;
+     * renders PayPal/Alipay forms when configured, or a
+     * "not accepting donations" message. `?do=thanks` branch for
+     * the PayPal return URL. URL stays `/donate.php` so the PayPal
+     * `return` callback keeps working.
+     */
+    Route::get('/donate.php', DonateController::class)
+        ->name('legacy.donate');
+
+    /*
+     * Phase 2 — replaces `public/cheaters.php` (deleted in the same
+     * PR). Moderator+ cheat-analysis tool. Paginated (20/page, max
+     * 100) list of users ranked by `cheat` score with filters for
+     * class threshold (`?c=`) and ratio threshold (`?r=`). URL stays
+     * `/cheaters.php` so existing staff bookmarks keep working.
+     */
+    Route::get('/cheaters.php', CheatersController::class)
+        ->name('legacy.cheaters');
+     * Phase 2 — replaces `public/stats.php` (deleted in the same PR).
+     * Moderator+ uploader/category activity stats. The URL stays
+     * `/stats.php` so the `ModpanelTableSeeder.url='stats.php'` menu
+     * entry keeps working without template changes.
+     */
+    Route::get('/stats.php', StatsController::class)
+        ->name('legacy.stats');
+
+    /*
+     * Phase 2 — replaces `public/modrules.php` (deleted in the same
+     * PR). Administrator+ CRUD for the `rules` table. The URL stays
+     * `/modrules.php` so the `AdminpanelTableSeeder.url='modrules.php'`
+     * menu entry keeps working without template changes. POST is
+     * CSRF-exempt — the legacy forms have no `@csrf` field.
+     */
+    Route::match(['get', 'post'], '/modrules.php', ModrulesController::class)
+        ->name('legacy.modrules');
 
     Route::get('/viewnfo.php', ViewNfoController::class)
         ->name('legacy.viewnfo');
