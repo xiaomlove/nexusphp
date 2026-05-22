@@ -437,6 +437,27 @@ class Update extends Install
             ],
         );
         $this->removeMenu(['location.php']);
+
+        /**
+         * `public/news.php` was removed in Phase 2 (replaced by the
+         * Filament resource at `/nexusphp/news`). The legacy URL
+         * stays alive as a 302 redirect (`routes/web.php`), so any
+         * admin bookmark pointing at `news.php?action=edit&newsid=N`
+         * still navigates to the new admin instead of a 404. The
+         * `addMenu` step writes the new `/nexusphp/news` row on
+         * every upgrade so a fresh click lands on the canonical URL;
+         * `removeMenu` drops the legacy `news.php` row that
+         * historical installs may carry. Both helpers are
+         * idempotent — `addMenu` is a no-op once the new entry
+         * exists, and `removeMenu` deletes by URL match.
+         */
+        $this->addMenu(
+            'adminpanel',
+            [
+                ['name' => 'News Management', 'url' => '/nexusphp/news', 'info' => 'Add/Edit/Delete site news items'],
+            ],
+        );
+        $this->removeMenu(['news.php']);
     }
 
     public function runExtraMigrate()

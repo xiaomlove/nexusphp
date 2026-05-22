@@ -293,6 +293,12 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 news rewrite — Filament admin resource at
+    # /nexusphp/news; the legacy URL 302s through the Laravel app.
+    location = /news.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
