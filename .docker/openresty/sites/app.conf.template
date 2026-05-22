@@ -293,16 +293,9 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
-    # Phase 2 batch — claim + attendance + mybar (this PR).
-    location = /claim.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /attendance.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /mybar.php {
+    # Phase 2 news rewrite — Filament admin resource at
+    # /nexusphp/news; the legacy URL 302s through the Laravel app.
+    location = /news.php {
         try_files /nonexistent @nexus_app;
     }
 

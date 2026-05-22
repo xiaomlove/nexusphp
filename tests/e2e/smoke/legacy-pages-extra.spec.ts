@@ -69,11 +69,6 @@ const PAGES: LegacyPageCase[] = [
         contains: /NexusPHP\s*::\s*Torrents/i,
     },
     {
-        description: 'news.php (PR #26 news refactor)',
-        url: '/news.php',
-        contains: /NexusPHP\s*::\s*Site News/i,
-    },
-    {
         description: 'rules.php (PR #26 rules refactor)',
         url: '/rules.php',
         contains: /NexusPHP\s*::\s*Rules/i,

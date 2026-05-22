@@ -51,7 +51,7 @@ stdhead($lang_index['head_home']);
 begin_main_frame();
 
 // ------------- start: recent news ------------------//
-echo '<h2>'.$lang_index['text_recent_news'].(user_can('newsmanage') ? ' - <font class="small">[<a class="altlink" href="news.php"><b>'.$lang_index['text_news_page'].'</b></a>]</font>' : '').'</h2>';
+echo '<h2>'.$lang_index['text_recent_news'].(user_can('newsmanage') ? ' - <font class="small">[<a class="altlink" href="/nexusphp/news"><b>'.$lang_index['text_news_page'].'</b></a>]</font>' : '').'</h2>';
 
 $Cache->new_page('recent_news', 86400, true);
 if (! $Cache->get_page()) {
@@ -74,8 +74,8 @@ if (! $Cache->get_page()) {
             }
             $Cache->end_part();
             $Cache->add_part();
-            echo '  &nbsp; [<a class="faqlink" href="news.php?action=edit&amp;newsid='.$array['id'].'"><b>'.$lang_index['text_e'].'</b></a>]';
-            echo ' [<a class="faqlink" href="news.php?action=delete&amp;newsid='.$array['id'].'"><b>'.$lang_index['text_d'].'</b></a>]';
+            echo '  &nbsp; [<a class="faqlink" href="/nexusphp/news/'.$array['id'].'/edit"><b>'.$lang_index['text_e'].'</b></a>]';
+            echo ' [<a class="faqlink" href="/nexusphp/news/'.$array['id'].'/edit"><b>'.$lang_index['text_d'].'</b></a>]';
             $Cache->end_part();
             $Cache->end_row();
         }

@@ -287,21 +287,37 @@ Route::any('/location.php', static fn () => redirect('/nexusphp/locations', 302)
     ->name('legacy.location');
 
 /*
- * Phase 2 — replaces `public/mybar.php` (deleted in the same PR,
- * −150 LOC). The "userbar" PNG generator embedded in user
- * signatures across forums and the user-control-panel "userbar
- * snippet" widget. Reachable as a guest because forum signatures
- * get rendered in pages/RSS feeds that may be crawled without a
- * session — every embedding `<img src=".../mybar.php?...">` tag
- * stays a hot link without a login round-trip.
+ * Phase 2 — replaces `public/news.php` (deleted in the same PR,
+ * −139 LOC) with the Filament admin resource
+ * `App\Filament\Resources\News\NewsResource` at `/nexusphp/news`.
  *
- * URL preserved (`/mybar.php?userid=NNN.png&bgpic=N&...`) so the
- * `PromotionLinkController` HTML output and any in-the-wild forum
- * signatures keep working without a template change. The legacy
- * regex requirement (`userid=NNN.png` literal in the request URI)
- * is preserved bit-for-bit by the controller.
+ * The legacy URL `/news.php` 302s to the new admin so:
+ *   - The `[news page]` link rendered by `public/index.php` for
+ *     admins (line 54, gated on `user_can('newsmanage')`) keeps
+ *     working until the same PR rewrites it inline.
+ *   - Stale screenshots / staff-chat URLs / pre-Filament admin
+ *     bookmarks pointing at `news.php?action=edit&newsid=N` and
+ *     `news.php?action=delete&newsid=N&sure=1` land on the
+ *     Filament list instead of a 404 — the user re-issues the edit
+ *     or delete through the Filament UI.
+ *   - The `AdminpanelTableSeeder` row added in the same PR
+ *     (`url=/nexusphp/news`) is the canonical entry; existing
+ *     installs upgrade through `Update.php::runExtraQueries()`'s
+ *     idempotent `addMenu` step.
+ *
+ * `Route::any` (vs `Route::redirect`) preserves every verb the
+ * legacy script accepted — the `?action=edit` POST that the legacy
+ * compose form submitted now lands on the Filament list page; the
+ * admin then re-issues the edit through the new UI.
+ *
+ * The route lives OUTSIDE `auth.nexus:nexus-web` because Filament
+ * runs its own authentication via `App\Http\Middleware\Filament` —
+ * its redirect target is `/login.php` (same place legacy
+ * `loggedinorreturn()` bounced guests), so an unauthenticated
+ * request lands on the same login screen either way.
  */
-Route::get('/mybar.php', MyBarController::class)->name('legacy.mybar');
+Route::any('/news.php', static fn () => redirect('/nexusphp/news', 302))
+    ->name('legacy.news');
 
 /*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
