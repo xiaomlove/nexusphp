@@ -69,7 +69,7 @@ class AdminpanelTableSeeder extends Seeder
             8 => [
                 'id' => 11,
                 'name' => 'Category Manage',
-                'url' => 'catmanage.php',
+                'url' => '/nexusphp/categories',
                 'info' => 'Manage torrents categories at your site',
             ],
             9 => [
