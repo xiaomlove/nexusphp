@@ -71,7 +71,20 @@ collect_group() {
     TOTAL_LOC=$((TOTAL_LOC + loc))
 }
 
-collect_group 'public/*.php (top-level)' public/*.php
+# `public/nexus.php` is the Laravel front controller — the standard
+# `public/index.php` from a vanilla Laravel installation, renamed
+# because the `public/index.php` filename is reserved for the legacy
+# homepage. Every Laravel route is served through it via the nginx
+# rewrite `try_files $uri $uri/ /nexus.php?$query_string` in
+# `.docker/openresty/sites/app.conf.template`. It is NOT legacy code
+# (it is the modern entry point), so it is excluded from the
+# watermark. See `docs/legacy-strategy.md` § "Note on public/nexus.php".
+PUBLIC_LEGACY_FILES=()
+for f in public/*.php; do
+    [ "$(basename "$f")" = 'nexus.php' ] && continue
+    PUBLIC_LEGACY_FILES+=("$f")
+done
+collect_group 'public/*.php (top-level)' "${PUBLIC_LEGACY_FILES[@]}"
 collect_group 'include/**/*.php'         include/**/*.php
 collect_group 'classes/**/*.php'         classes/**/*.php
 
