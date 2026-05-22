@@ -29,6 +29,7 @@ use App\Http\Controllers\Legacy\DonateController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
+use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FreeleechController;
@@ -42,6 +43,7 @@ use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MassmailController;
+use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
@@ -59,6 +61,7 @@ use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\StaffPanelController;
+use App\Http\Controllers\Legacy\StatsController;
 use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
@@ -163,6 +166,17 @@ Route::get('/ok.php', OkController::class)->name('legacy.ok');
  * lives in `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/rules.php', RulesController::class)->name('legacy.rules');
+
+/*
+ * Phase 2 — replaces `public/faq.php` (deleted in the same PR).
+ * The legacy script had `loggedinorreturn()` commented out and was
+ * reachable as a guest, so the route stays outside the `auth.nexus`
+ * middleware. The URL stays `/faq.php` so existing navigation links
+ * in `include/functions.php:1897`, `AgentAllowRepository` error
+ * messages, and the cross-site `faq.php#idNN` anchors keep working
+ * without template changes.
+ */
+Route::get('/faq.php', FaqController::class)->name('legacy.faq');
 
 /*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
@@ -643,6 +657,23 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/cheaters.php', CheatersController::class)
         ->name('legacy.cheaters');
+     * Phase 2 — replaces `public/stats.php` (deleted in the same PR).
+     * Moderator+ uploader/category activity stats. The URL stays
+     * `/stats.php` so the `ModpanelTableSeeder.url='stats.php'` menu
+     * entry keeps working without template changes.
+     */
+    Route::get('/stats.php', StatsController::class)
+        ->name('legacy.stats');
+
+    /*
+     * Phase 2 — replaces `public/modrules.php` (deleted in the same
+     * PR). Administrator+ CRUD for the `rules` table. The URL stays
+     * `/modrules.php` so the `AdminpanelTableSeeder.url='modrules.php'`
+     * menu entry keeps working without template changes. POST is
+     * CSRF-exempt — the legacy forms have no `@csrf` field.
+     */
+    Route::match(['get', 'post'], '/modrules.php', ModrulesController::class)
+        ->name('legacy.modrules');
 
     Route::get('/viewnfo.php', ViewNfoController::class)
         ->name('legacy.viewnfo');
