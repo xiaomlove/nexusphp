@@ -102,9 +102,17 @@ class DeleteTorrentController extends Controller
             write_log("Torrent {$id} ({$torrent['name']}) was deleted by {$user->username} ({$reasonstr})", 'normal');
         }
 
-        // Remove karma
-        $uploadtorrentBonus = get_setting('bonus.per_uploaded_torrent') ?: 0;
-        KPS('-', $uploadtorrentBonus, $torrent['owner']);
+        // Remove karma. The bonus value is loaded by the legacy
+        // bootstrap as `$BONUS['uploadtorrent']` and lifted into the
+        // global `$uploadtorrent_bonus` (see `include/config.php:283`).
+        // Fastdelete's one-click sibling reads it the same way
+        // (`FastDeleteController:60`), and the legacy `delete.php`
+        // script used the bare `$uploadtorrent_bonus` global. The
+        // earlier `get_setting('bonus.per_uploaded_torrent')` form
+        // looked up a non-existent setting key and silently returned
+        // `null`, so deletes via the edit-page form deducted nothing.
+        $uploadtorrentBonus = $GLOBALS['uploadtorrent_bonus'] ?? 0;
+        KPS('-', $uploadtorrentBonus, (int) $torrent['owner']);
 
         // Send PM to torrent owner
         if ((int) $user->id !== (int) $torrent['owner'] && User::where('id', (int) $torrent['owner'])->exists()) {
