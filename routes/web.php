@@ -101,6 +101,7 @@ use App\Http\Controllers\Legacy\UsersListController;
 use App\Http\Controllers\Legacy\VideoFormatsController;
 use App\Http\Controllers\Legacy\ViewFileListController;
 use App\Http\Controllers\Legacy\ViewNfoController;
+use App\Http\Controllers\Legacy\ViewPeerListController;
 use App\Http\Controllers\Legacy\ViewSnatchesController;
 use App\Http\Controllers\Legacy\WarnedController;
 use App\Http\Controllers\OauthController;
@@ -436,6 +437,32 @@ Route::get('/getextinfoajax.php', GetExtInfoAjaxController::class)->name('legacy
  * lives in `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/viewfilelist.php', ViewFileListController::class)->name('legacy.viewfilelist');
+
+/*
+ * Phase 2 — replaces `public/viewpeerlist.php` (deleted in the same
+ * PR). XHR endpoint called from `public/js/common.js:44`
+ * (`viewpeerlist(torrentid)`) — the response body is innerHTML-
+ * spliced into the toggle-able peer-list block on `details.php`.
+ *
+ * Stays OUTSIDE `auth.nexus:nexus-web` for the same reason
+ * `/viewfilelist.php` does: the legacy `if (isset($CURUSER))` gate
+ * becomes a `LegacyContext` check returning the empty-body envelope.
+ * Placing the route inside the auth group would redirect guests to
+ * `/login.php?...`, and `ajax.gets` would splice the login-page HTML
+ * into the details page (UX bug).
+ *
+ * Side effects preserved from the legacy script:
+ *   - `apply_filter('torrent_seeder_leecher_list', [], $id)` plugin
+ *     hook — lets PT plugins override the peer source.
+ *   - Reconciliation of `torrents.seeders` / `torrents.leechers`
+ *     when the cached counts drift from the resolved peer list.
+ *   - `peers.is_seed_box` CASE WHEN update when
+ *     `seed_box.enabled` setting is `'yes'`.
+ *
+ * The matching nginx exact-location entry lives in
+ * `.docker/openresty/sites/app.conf.template`.
+ */
+Route::get('/viewpeerlist.php', ViewPeerListController::class)->name('legacy.viewpeerlist');
 
 /*
  * Phase 3 — replaces `public/aboutnexus.php` (deleted in the same PR).

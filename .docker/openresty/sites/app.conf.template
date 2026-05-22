@@ -185,6 +185,12 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 viewpeerlist rewrite — XHR endpoint for torrent peer list
+    # (seeders + leechers tables) called from public/js/common.js:44.
+    location = /viewpeerlist.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     # Phase 2 batch #11 — legacy migration routes.
     location = /user-ban-log.php {
         try_files /nonexistent @nexus_app;
