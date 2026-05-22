@@ -16,6 +16,7 @@ use App\Http\Controllers\Legacy\BitBucketUploadController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\CheaterboxController;
+use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DocleanupController;
+use App\Http\Controllers\Legacy\DonateController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
@@ -67,6 +69,7 @@ use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
+use App\Http\Controllers\Legacy\TorrentInfoController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
@@ -609,6 +612,38 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/staffpanel.php', StaffPanelController::class)
         ->name('legacy.staffpanel');
 
+    /*
+     * Phase 2 — replaces `public/torrent_info.php` (deleted in the
+     * same PR). Authed endpoint gated on the `torrentstructure`
+     * permission (default class 8 = Insane User). Reads the .torrent
+     * file from disk, decodes the bencode, and renders an expandable
+     * HTML tree of the file structure. URL stays `/torrent_info.php`
+     * so the existing details-page link keeps working.
+     */
+    Route::get('/torrent_info.php', TorrentInfoController::class)
+        ->name('legacy.torrentinfo');
+
+    /*
+     * Phase 2 — replaces `public/donate.php` (deleted in the same
+     * PR). Authed donation page. Checks `main.donation` setting;
+     * renders PayPal/Alipay forms when configured, or a
+     * "not accepting donations" message. `?do=thanks` branch for
+     * the PayPal return URL. URL stays `/donate.php` so the PayPal
+     * `return` callback keeps working.
+     */
+    Route::get('/donate.php', DonateController::class)
+        ->name('legacy.donate');
+
+    /*
+     * Phase 2 — replaces `public/cheaters.php` (deleted in the same
+     * PR). Moderator+ cheat-analysis tool. Paginated (20/page, max
+     * 100) list of users ranked by `cheat` score with filters for
+     * class threshold (`?c=`) and ratio threshold (`?r=`). URL stays
+     * `/cheaters.php` so existing staff bookmarks keep working.
+     */
+    Route::get('/cheaters.php', CheatersController::class)
+        ->name('legacy.cheaters');
+
     Route::get('/viewnfo.php', ViewNfoController::class)
         ->name('legacy.viewnfo');
 
@@ -749,6 +784,8 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.incrementbulk');
     Route::post('/take-increment-bulk.php', TakeIncrementBulkController::class)
         ->name('legacy.takeincrementbulk');
+
+    /*
      * Phase 2 — replaces `public/retriver.php` (deleted in this PR).
      * Authed-only "refresh external info" endpoint linked from
      * `public/details.php:449,473` (legacy IMDb cache refresh,
