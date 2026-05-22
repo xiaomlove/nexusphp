@@ -21,6 +21,29 @@ freeze:
 Total: **~175 files / ~45 000 LOC** of legacy. Roughly 2–3 person-years
 solo or 6–9 months for a team of 3, if disciplined.
 
+### Note on `public/nexus.php`
+
+`public/nexus.php` is the **Laravel front controller** — the standard
+`public/index.php` from a vanilla Laravel installation, renamed
+because the `public/index.php` filename is reserved for the legacy
+homepage. Every Laravel route is served through it via the nginx
+rewrite `try_files $uri $uri/ /nexus.php?$query_string` (and the
+`@nexus_app` named location used by the Phase 2 `try_files
+/nonexistent @nexus_app` rules) in
+`.docker/openresty/sites/app.conf.template`.
+
+It is **not legacy code** — it is the modern entry point — and is
+therefore excluded from the legacy LOC counter (`scripts/legacy-loc.sh`)
+even though its path matches the `public/*.php` glob. The
+`Legacy freeze` CI workflow still treats `public/*.php` as a frozen
+path so a malicious / accidental re-add of *any* top-level page is
+caught; the file is already on disk so the freeze guard never sees it
+as a new addition.
+
+When `public/index.php` (the legacy homepage, 862 LOC) is migrated to
+a Livewire `Home` component in Phase 3, `public/nexus.php` will be
+renamed back to `public/index.php` and the nginx rewrite removed.
+
 ## Bad news / good news
 
 **Bad.** Legacy is not just procedural PHP, it's a global-state
