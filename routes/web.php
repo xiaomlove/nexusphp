@@ -9,6 +9,7 @@ use App\Http\Controllers\Legacy\AddUserController;
 use App\Http\Controllers\Legacy\AdRedirectController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
+use App\Http\Controllers\Legacy\AttendanceController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
 use App\Http\Controllers\Legacy\BansController;
 use App\Http\Controllers\Legacy\BitBucketLogController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Legacy\BookmarkController;
 use App\Http\Controllers\Legacy\CheaterboxController;
 use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
+use App\Http\Controllers\Legacy\ClaimController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
@@ -48,6 +50,7 @@ use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
+use App\Http\Controllers\Legacy\MyBarController;
 use App\Http\Controllers\Legacy\MyhrController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
@@ -282,6 +285,23 @@ Route::any('/catmanage.php', static fn () => redirect('/nexusphp/categories', 30
  */
 Route::any('/location.php', static fn () => redirect('/nexusphp/locations', 302))
     ->name('legacy.location');
+
+/*
+ * Phase 2 — replaces `public/mybar.php` (deleted in the same PR,
+ * −150 LOC). The "userbar" PNG generator embedded in user
+ * signatures across forums and the user-control-panel "userbar
+ * snippet" widget. Reachable as a guest because forum signatures
+ * get rendered in pages/RSS feeds that may be crawled without a
+ * session — every embedding `<img src=".../mybar.php?...">` tag
+ * stays a hot link without a login round-trip.
+ *
+ * URL preserved (`/mybar.php?userid=NNN.png&bgpic=N&...`) so the
+ * `PromotionLinkController` HTML output and any in-the-wild forum
+ * signatures keep working without a template change. The legacy
+ * regex requirement (`userid=NNN.png` literal in the request URI)
+ * is preserved bit-for-bit by the controller.
+ */
+Route::get('/mybar.php', MyBarController::class)->name('legacy.mybar');
 
 /*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
@@ -1011,6 +1031,54 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/retriver.php', RetriverController::class)
         ->name('legacy.retriver');
+
+    /*
+     * Phase 2 — replaces `public/claim.php` (deleted in the same
+     * PR, −177 LOC). Authed read-only listing of `claims` rows
+     * filtered by `?torrent_id` (every user who claimed a given
+     * torrent) or `?uid` (every torrent a given user has claimed).
+     * GET-only (the legacy script had no POST branch). Settle/cancel
+     * action buttons appear only when the listing is scoped to the
+     * viewer's own user id (`?uid == $CURUSER['id']`); the buttons
+     * themselves keep posting to `ajax.php?action=settleClaim`,
+     * which is unchanged.
+     *
+     * URL stays `/claim.php` so:
+     *   - `include/functions.php:2265` (the user-header snippet),
+     *   - `app/Livewire/TorrentDetail.php:346` (the modern
+     *     torrent-detail "Claim details" link),
+     *   - `public/details.php:331` (the legacy details panel link),
+     *   - `public/userdetails.php:330` (the legacy user-profile
+     *     link),
+     *   - `tests/e2e/behavior/torrent-detail-claim.spec.ts` and
+     *     `tests/Feature/Livewire/TorrentDetailClaimTest.php`
+     *     (which both pin the URL contract)
+     * keep working without template/JS changes.
+     */
+    Route::get('/claim.php', ClaimController::class)
+        ->name('legacy.claim');
+
+    /*
+     * Phase 2 — replaces `public/attendance.php` (deleted in the
+     * same PR, −191 LOC). Authed daily check-in page with a
+     * FullCalendar success view + retroactive sign-in for the
+     * past `Attendance::MAX_RETROACTIVE_DAYS` days. GET renders
+     * the form (with optional image captcha) when the user has
+     * not yet attended today, or the success calendar otherwise;
+     * POST validates the captcha and performs the check-in. With
+     * captcha disabled a GET also performs the check-in silently
+     * (legacy parity).
+     *
+     * URL stays `/attendance.php` so the
+     * `include/functions.php:2253` `<a href="attendance.php">`
+     * link rendered in the user-header chrome on every legacy page
+     * keeps working without a template change. POST is CSRF-exempt
+     * (the legacy `<form method="post" action="attendance.php">`
+     * had no `@csrf` field) — see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/attendance.php', AttendanceController::class)
+        ->name('legacy.attendance');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');

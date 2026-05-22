@@ -124,5 +124,13 @@ class VerifyCsrfToken extends Middleware
         // `<form method="post" action="modrules.php?act=edited">`
         // forms had no `@csrf` field.
         'modrules.php',
+        // Phase 2 attendance rewrite: `/attendance.php` accepts POST
+        // without a CSRF token — the legacy
+        // `<form method="post" action="attendance.php">` in
+        // `public/attendance.php` (deleted in this PR) had no
+        // `@csrf` field. The optional inline image captcha is the
+        // anti-spam measure for this endpoint; see
+        // `AttendanceController::verifyCaptcha`.
+        'attendance.php',
     ];
 }

@@ -293,6 +293,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch — claim + attendance + mybar (this PR).
+    location = /claim.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /attendance.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /mybar.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
