@@ -78,6 +78,12 @@ class AdminpanelTableSeeder extends Seeder
                 'url' => 'fields.php',
                 'info' => 'Manage custom fields',
             ],
+            10 => [
+                'id' => 13,
+                'name' => 'News Management',
+                'url' => '/nexusphp/news',
+                'info' => 'Add/Edit/Delete site news items',
+            ],
         ]);
 
     }
