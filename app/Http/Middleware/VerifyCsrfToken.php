@@ -132,7 +132,7 @@ class VerifyCsrfToken extends Middleware
         // anti-spam measure for this endpoint; see
         // `AttendanceController::verifyCaptcha`.
         'attendance.php',
-        // Phase 2 batch (linksmanage/makepoll/reports/ipsearch/staff):
+        // Phase 2 batch (PR #293, linksmanage/makepoll/reports/ipsearch/staff):
         // `linksmanage.php` and `makepoll.php` accept POST without a
         // CSRF token — the legacy forms in `public/linksmanage.php`
         // (the `?action=apply`/`?action=newapply`/`?action=add`/
@@ -142,5 +142,16 @@ class VerifyCsrfToken extends Middleware
         // and don't need an entry here.
         'linksmanage.php',
         'makepoll.php',
+        // Phase 2 batch B (task/downloadnotice/search/cc98bar/
+        // takemessage/friends/download): two POST endpoints in the
+        // batch accept POST without a CSRF token — the legacy
+        // `<form method="post" action="downloadnotice.php">`
+        // self-submit in `public/downloadnotice.php` and the
+        // `<form action="takemessage.php">` rendered by
+        // `SendMessageController` and `public/messages.php` both
+        // omit the `@csrf` field. The other five endpoints in this
+        // batch are GET-only and don't need an entry here.
+        'downloadnotice.php',
+        'takemessage.php',
     ];
 }

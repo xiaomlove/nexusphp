@@ -16,6 +16,7 @@ use App\Http\Controllers\Legacy\BitBucketLogController;
 use App\Http\Controllers\Legacy\BitBucketUploadController;
 use App\Http\Controllers\Legacy\BonusLogController;
 use App\Http\Controllers\Legacy\BookmarkController;
+use App\Http\Controllers\Legacy\Cc98barController;
 use App\Http\Controllers\Legacy\CheaterboxController;
 use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
@@ -31,12 +32,15 @@ use App\Http\Controllers\Legacy\DocleanupController;
 use App\Http\Controllers\Legacy\DonateController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
+use App\Http\Controllers\Legacy\DownloadController;
+use App\Http\Controllers\Legacy\DownloadNoticeController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FormatsController;
 use App\Http\Controllers\Legacy\FreeleechController;
+use App\Http\Controllers\Legacy\FriendsController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
@@ -65,6 +69,7 @@ use App\Http\Controllers\Legacy\ReportsController;
 use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RetriverController;
 use App\Http\Controllers\Legacy\RulesController;
+use App\Http\Controllers\Legacy\SearchController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SendMessageController;
@@ -79,9 +84,11 @@ use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeIncrementBulkController;
+use App\Http\Controllers\Legacy\TakeMessageController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
+use App\Http\Controllers\Legacy\TaskController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\TorrentInfoController;
@@ -307,6 +314,56 @@ Route::any('/location.php', static fn () => redirect('/nexusphp/locations', 302)
  * is preserved bit-for-bit by the controller.
  */
 Route::get('/mybar.php', MyBarController::class)->name('legacy.mybar');
+
+/*
+ * Phase 2 batch B — replaces `public/cc98bar.php` (deleted in the
+ * same PR, −168 LOC). Variant of the userbar PNG generator that
+ * takes its parameters from a path-style URI rather than the query
+ * string. Forum signatures embed `<img src="/cc98bar.php/nn0nr255id42.png">`.
+ *
+ * The route lives OUTSIDE `auth.nexus:nexus-web` because forum
+ * signatures get rendered to guests / crawlers (RSS feeds, public
+ * forum pages). Same posture as `/mybar.php` above. Path-style
+ * URI captured by a wildcard `{path}` segment so Laravel routing
+ * matches the legacy regex shape `/cc98bar.php/.../id<userid>.png`.
+ *
+ * No nginx exact-location rule is needed: the catch-all
+ * `location ~ \.php$` rewrite only fires for URIs that end in
+ * `.php`, but the legacy URI ends in `.png` and the path component
+ * before the `.php` literal is `/cc98bar.php` itself — nginx
+ * already routes everything that hasn't matched a `try_files`
+ * to `/nexus.php?$query_string` via the catch-all `location /`,
+ * which is the path that hits our Laravel `Route::get(...)`.
+ */
+Route::get('/cc98bar.php/{path}', Cc98barController::class)
+    ->where('path', '.+')
+    ->name('legacy.cc98bar');
+
+/*
+ * Phase 2 batch B — replaces `public/download.php` (deleted in
+ * the same PR, −214 LOC). The torrent download endpoint — every
+ * `.torrent` file the site serves goes through here. Three auth
+ * modes:
+ *   - `?downhash=UID.HASH`  RSS / external client (no session),
+ *   - `?passkey=K&id=N`     external download manager (no session,
+ *                           requires `torrent.download_support_passkey='yes'`),
+ *   - `?id=N`               standard session auth, falls into a
+ *                           `LegacyContext::user()` check that
+ *                           mirrors `loggedinorreturn()`.
+ *
+ * The route lives OUTSIDE `auth.nexus:nexus-web` because the first
+ * two modes authenticate the viewer themselves, bypassing the
+ * session cookie. The standard `?id=` mode redirects to
+ * `/login.php?returnto=...` from the controller body when the
+ * viewer is not authed.
+ *
+ * URL preserved exactly so `app/Livewire/TorrentDetail.php`,
+ * `app/Repositories/TorrentRepository.php`, `app/Support/Http.php`,
+ * the FAQ seeder, the 19 `lang/<locale>/lang_index.php` rendered
+ * "download a fresh .torrent" links, and external bookmarks all
+ * keep working without template/JS changes.
+ */
+Route::get('/download.php', DownloadController::class)->name('legacy.download');
 
 /*
  * Phase 2 — replaces `public/news.php` (deleted in the same PR,
@@ -1119,7 +1176,7 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.attendance');
 
     /*
-     * Phase 2 batch (this PR): replaces five public/*.php pages with
+     * Phase 2 batch (PR #293): replaces five public/*.php pages with
      * Laravel controllers — linksmanage / makepoll / reports /
      * ipsearch / staff. URLs preserved exactly so existing template
      * / JS callers (`public/index.php` home-page footer, the
@@ -1141,6 +1198,31 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.ipsearch');
     Route::get('/staff.php', StaffController::class)
         ->name('legacy.staff');
+
+    /*
+     * Phase 2 batch B (this PR): replaces five public/*.php pages
+     * with Laravel controllers — task / downloadnotice / search /
+     * takemessage / friends. URLs preserved so existing template
+     * / JS callers (the search box in `include/functions.php:2270`,
+     * the user-header `task.php` link, the `DownloadController`
+     * interstitial redirect target, the `SendMessageController` /
+     * `messages.php` <form action="takemessage.php">, and the
+     * `userdetails.php` "add friend / block" links) keep working
+     * without further changes. POST endpoints for downloadnotice
+     * and takemessage are CSRF-exempt — the legacy forms have
+     * no `@csrf` field. See
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::get('/task.php', TaskController::class)
+        ->name('legacy.task');
+    Route::match(['get', 'post'], '/downloadnotice.php', DownloadNoticeController::class)
+        ->name('legacy.downloadnotice');
+    Route::get('/search.php', SearchController::class)
+        ->name('legacy.search');
+    Route::post('/takemessage.php', TakeMessageController::class)
+        ->name('legacy.takemessage');
+    Route::get('/friends.php', FriendsController::class)
+        ->name('legacy.friends');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
