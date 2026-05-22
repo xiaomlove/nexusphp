@@ -153,14 +153,22 @@ class VerifyCsrfToken extends Middleware
         // batch are GET-only and don't need an entry here.
         'downloadnotice.php',
         'takemessage.php',
-        // Phase 2 attachment/tags/torrentrss batch:
-        // /attachment.php is the iframe upload widget; the legacy
-        // multipart form had no @csrf field.
-        // /tags.php accepts POST ?test= to render a format_comment
-        // preview; legacy form had no @csrf field.
-        // /torrentrss.php is GET-only and passkey-authed, so it
-        // does not need an entry here.
-        'attachment.php',
-        'tags.php',
+        // Phase 2 complains/report rewrite: both legacy forms posted
+        // without a CSRF token.
+        //
+        // `/complains.php` accepts POST `action=new` (anonymous
+        // submission with image captcha — guests are intentionally
+        // allowed because the feature exists for users whose accounts
+        // have been disabled), `action=reply` (anyone), and
+        // `action=answered`/`unanswered` (staff-only, gated inside
+        // the controller). Adding CSRF plumbing to a guest-reachable
+        // form is a separate change.
+        //
+        // `/report.php` accepts the seven `take<type>` POST verbs
+        // (one per `reports.type` enum value); the legacy
+        // confirmation form rendered inside the `stderr()` envelope
+        // had no `@csrf` field.
+        'complains.php',
+        'report.php',
     ];
 }

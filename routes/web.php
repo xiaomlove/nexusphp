@@ -23,6 +23,7 @@ use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
 use App\Http\Controllers\Legacy\ClaimController;
 use App\Http\Controllers\Legacy\ClearCacheController;
+use App\Http\Controllers\Legacy\ComplainsController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
 use App\Http\Controllers\Legacy\ContactStaffController;
@@ -66,6 +67,7 @@ use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
+use App\Http\Controllers\Legacy\ReportController;
 use App\Http\Controllers\Legacy\ReportsController;
 use App\Http\Controllers\Legacy\ResetController;
 use App\Http\Controllers\Legacy\RetriverController;
@@ -468,21 +470,26 @@ Route::get('/viewfilelist.php', ViewFileListController::class)->name('legacy.vie
 Route::get('/viewpeerlist.php', ViewPeerListController::class)->name('legacy.viewpeerlist');
 
 /*
- * Phase 2 — replaces `public/torrentrss.php` (deleted in the
- * same PR, −305 LOC). Personal RSS feed of the latest torrents,
- * filtered by the standard browse facets. Auth is via the legacy
- * `?passkey=<32-hex>` URL token (RSS readers / torrent clients
- * don't carry the session cookie), so the route lives OUTSIDE
- * `auth.nexus:nexus-web`. The `?passkey=` URL is also reachable
- * by an authed user without the param — the controller falls
- * back to `$CURUSER['passkey']`, mirroring the legacy parity
- * `getrss.php` relies on for inline preview.
+ * Phase 2 — replaces `public/complains.php` (deleted in the same
+ * PR, −234 LOC). The "Complains" feature is a small ticket-tracker
+ * for users whose accounts have been DISABLED — they cannot log in,
+ * so the route deliberately lives OUTSIDE `auth.nexus:nexus-web`.
+ * Action / permission gating is handled inside the controller:
+ *   - GET ?action=compose (default) / view / POST ?action=new / reply
+ *     are reachable to guests and disabled-but-stale-session users.
+ *   - GET ?action=list, POST ?action=answered/unanswered are
+ *     staff-only (`user_can('staffmem')`); a logged-in non-staff
+ *     viewer hits a 403 page-level gate inside the controller.
  *
- * URL preserved exactly so RSS-reader subscriptions keep working
- * across the upgrade.
+ * URL stays `/complains.php` so the legacy login-page link
+ * (`public/login.php:111`) and the staff "open complaints" reminder
+ * (`include/functions.php:2481` `complains.php?action=list`) keep
+ * working without template changes. POST is CSRF-exempt — the
+ * legacy form has no `@csrf` field; see
+ * `App\Http\Middleware\VerifyCsrfToken::$except`.
  */
-Route::get('/torrentrss.php', TorrentRssController::class)
-    ->name('legacy.torrentrss');
+Route::match(['get', 'post'], '/complains.php', ComplainsController::class)
+    ->name('legacy.complains');
 
 /*
  * Phase 3 — replaces `public/aboutnexus.php` (deleted in the same PR).
@@ -1167,6 +1174,40 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/promotionlink.php', PromotionLinkController::class)
         ->name('legacy.promotionlink');
+
+    /*
+     * Phase 2 — replaces `public/report.php` (deleted in the same
+     * PR, −234 LOC). Universal "report this thing to staff"
+     * endpoint: GET renders a confirmation form for one of seven
+     * target types (user / torrent / forumpost / comment / offer /
+     * request / subtitle); POST inserts the row into `reports` and
+     * busts the staff-dashboard counter cache. Lives inside
+     * `auth.nexus:nexus-web` because the legacy script started with
+     * `loggedinorreturn();` — guests redirect to login. Parked
+     * users get a 403 inside the controller.
+     *
+     * URL stays `/report.php` so the modern UI report link
+     * (`app/Livewire/TorrentDetail.php:282`), every legacy
+     * "report this <thing>" deep link in
+     * `public/details.php:295` / `forums.php:1056` /
+     * `offers.php:221` / `subtitles.php:375` /
+     * `userdetails.php:382` / `viewrequests.php:137`, the
+     * `include/functions.php:3115` comment-report icon, and
+     * `tests/Feature/Livewire/TorrentDetailActionRowTest.php:61`
+     * (which pins the URL contract) keep working without template
+     * /JS changes.
+     *
+     * `/report.php` (this route) is the user-facing submission
+     * endpoint; the staff-facing `/reports.php` (with -s, plural)
+     * is a separate page handled by `ReportsController`. Do not
+     * confuse them.
+     *
+     * POST is CSRF-exempt — the legacy form rendered inside the
+     * `stderr()` confirmation envelope has no `@csrf` field; see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/report.php', ReportController::class)
+        ->name('legacy.report');
 
     /*
      * Phase 2 — replaces `public/increment-bulk.php` and
