@@ -44,6 +44,7 @@ use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MassmailController;
+use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\MyhrController;
@@ -181,6 +182,34 @@ Route::get('/rules.php', RulesController::class)->name('legacy.rules');
  * without template changes.
  */
 Route::get('/faq.php', FaqController::class)->name('legacy.faq');
+
+/*
+ * Phase 2 — replaces `public/faqmanage.php` and `public/faqactions.php`
+ * (both deleted in the same PR) with the Filament admin resource
+ * `App\Filament\Resources\Faq\FaqResource`, which lives at
+ * `/nexusphp/faqs`.
+ *
+ * The legacy URLs are preserved as 302 redirects so:
+ *   - The `AdminpanelTableSeeder` row #6 (`url=faqmanage.php`) keeps
+ *     working until a fresh `db:seed` lands on every install. The
+ *     row is also rewritten to `/nexusphp/faqs` directly in the same
+ *     seeder change, but existing installs hit the redirect.
+ *   - Any bookmark, in-page link, or screenshot pointing at
+ *     `faqactions.php?action=…` still lands on the new admin instead
+ *     of a 404 (the legacy action verbs no longer exist; the user
+ *     reaches the list page and re-issues the action through Filament).
+ *
+ * Both routes live OUTSIDE `auth.nexus:nexus-web` because the
+ * Filament panel runs its own authentication via the
+ * `App\Http\Middleware\Filament` middleware — its redirect target is
+ * `/login.php` (see `app/Http/Middleware/Filament.php`), which is
+ * exactly what the legacy `loggedinorreturn()` did, so an
+ * unauthenticated request lands on the same login screen either way.
+ */
+Route::redirect('/faqmanage.php', '/nexusphp/faqs', 302)
+    ->name('legacy.faqmanage');
+Route::any('/faqactions.php', static fn () => redirect('/nexusphp/faqs', 302))
+    ->name('legacy.faqactions');
 
 /*
  * Phase 2 — replaces `public/useragreement.php` (deleted in the same
@@ -674,6 +703,8 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/uploaders.php', UploadersController::class)
         ->name('legacy.uploaders');
+
+    /*
      * Phase 2 — replaces `public/torrent_info.php` (deleted in the
      * same PR). Authed endpoint gated on the `torrentstructure`
      * permission (default class 8 = Insane User). Reads the .torrent
@@ -704,6 +735,8 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/cheaters.php', CheatersController::class)
         ->name('legacy.cheaters');
+
+    /*
      * Phase 2 — replaces `public/stats.php` (deleted in the same PR).
      * Moderator+ uploader/category activity stats. The URL stays
      * `/stats.php` so the `ModpanelTableSeeder.url='stats.php'` menu

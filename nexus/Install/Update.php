@@ -376,6 +376,26 @@ class Update extends Install
          * is idempotent: safe to keep running on every update.
          */
         $this->removeMenu(['docleanup.php']);
+
+        /**
+         * `public/faqmanage.php` and `public/faqactions.php` were
+         * removed in Phase 2 (replaced by the Filament resource at
+         * `/nexusphp/faqs`). The legacy URLs are kept as 302 redirects
+         * to the new admin (`routes/web.php`), so an existing menu row
+         * pointing at `faqmanage.php` still navigates correctly. The
+         * `addMenu` step writes the new `/nexusphp/faqs` URL on every
+         * update so a freshly clicked link is the canonical one;
+         * `removeMenu` then drops the stale `faqmanage.php` row, and
+         * `addMenu` is a no-op once the new entry exists. Both helpers
+         * are idempotent.
+         */
+        $this->addMenu(
+            'adminpanel',
+            [
+                ['name' => 'FAQ Management', 'url' => '/nexusphp/faqs', 'info' => 'Edit/Add/Delete FAQ Page'],
+            ],
+        );
+        $this->removeMenu(['faqmanage.php', 'faqactions.php']);
     }
 
     public function runExtraMigrate()
