@@ -153,5 +153,14 @@ class VerifyCsrfToken extends Middleware
         // batch are GET-only and don't need an entry here.
         'downloadnotice.php',
         'takemessage.php',
+        // Phase 2 attachment/tags/torrentrss batch:
+        // /attachment.php is the iframe upload widget; the legacy
+        // multipart form had no @csrf field.
+        // /tags.php accepts POST ?test= to render a format_comment
+        // preview; legacy form had no @csrf field.
+        // /torrentrss.php is GET-only and passkey-authed, so it
+        // does not need an entry here.
+        'attachment.php',
+        'tags.php',
     ];
 }

@@ -359,6 +359,19 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 attachment/tags/torrentrss batch.
+    location = /attachment.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /tags.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /torrentrss.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }

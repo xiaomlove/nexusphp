@@ -9,6 +9,7 @@ use App\Http\Controllers\Legacy\AddUserController;
 use App\Http\Controllers\Legacy\AdRedirectController;
 use App\Http\Controllers\Legacy\AllAgentsController;
 use App\Http\Controllers\Legacy\AllowedEmailsController;
+use App\Http\Controllers\Legacy\AttachmentController;
 use App\Http\Controllers\Legacy\AttendanceController;
 use App\Http\Controllers\Legacy\BannedEmailsController;
 use App\Http\Controllers\Legacy\BansController;
@@ -80,6 +81,7 @@ use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\StaffPanelController;
 use App\Http\Controllers\Legacy\StatsController;
 use App\Http\Controllers\Legacy\SuggestController;
+use App\Http\Controllers\Legacy\TagsController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
@@ -92,6 +94,7 @@ use App\Http\Controllers\Legacy\TaskController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\TorrentInfoController;
+use App\Http\Controllers\Legacy\TorrentRssController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UploadersController;
 use App\Http\Controllers\Legacy\UserAgreementController;
@@ -463,6 +466,23 @@ Route::get('/viewfilelist.php', ViewFileListController::class)->name('legacy.vie
  * `.docker/openresty/sites/app.conf.template`.
  */
 Route::get('/viewpeerlist.php', ViewPeerListController::class)->name('legacy.viewpeerlist');
+
+/*
+ * Phase 2 — replaces `public/torrentrss.php` (deleted in the
+ * same PR, −305 LOC). Personal RSS feed of the latest torrents,
+ * filtered by the standard browse facets. Auth is via the legacy
+ * `?passkey=<32-hex>` URL token (RSS readers / torrent clients
+ * don't carry the session cookie), so the route lives OUTSIDE
+ * `auth.nexus:nexus-web`. The `?passkey=` URL is also reachable
+ * by an authed user without the param — the controller falls
+ * back to `$CURUSER['passkey']`, mirroring the legacy parity
+ * `getrss.php` relies on for inline preview.
+ *
+ * URL preserved exactly so RSS-reader subscriptions keep working
+ * across the upgrade.
+ */
+Route::get('/torrentrss.php', TorrentRssController::class)
+    ->name('legacy.torrentrss');
 
 /*
  * Phase 3 — replaces `public/aboutnexus.php` (deleted in the same PR).
@@ -1000,6 +1020,38 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
 
     Route::get('/viewnfo.php', ViewNfoController::class)
         ->name('legacy.viewnfo');
+
+    /*
+     * Phase 2 — replaces `public/tags.php` (deleted in the same
+     * PR, −303 LOC). The "BBCode tags reference" cheatsheet
+     * linked from the compose-helper footer
+     * (`include/functions.php:1026`) and from the BBCode-help
+     * link in `public/admanage.php:162`. The legacy file lacked
+     * `loggedinorreturn()` but unconditionally read
+     * `$CURUSER['username']` (used in the rendered "quote two"
+     * tag example), which would trip a notice for guests; we
+     * tighten the contract by routing through the
+     * `auth.nexus:nexus-web` group. POST `?test=` renders a
+     * `format_comment()` preview at the top of the page; this
+     * branch is CSRF-exempt — see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/tags.php', TagsController::class)
+        ->name('legacy.tags');
+
+    /*
+     * Phase 2 — replaces `public/attachment.php` (deleted in the
+     * same PR, −292 LOC). The "attach a file to a post" iframe
+     * widget. The compose helper opens this URL in an iframe;
+     * after a successful upload the iframe writes back to the
+     * parent window via `parent.tag_extimage('[attach]<dlkey>[/attach]')`
+     * (or `parent.<callback_func>(<dlkey>, <url>)` for
+     * custom-field preview helpers). Same posture as the
+     * already-migrated `BitBucketUploadController` — multipart
+     * POST with no `@csrf` field, so the route is CSRF-exempt.
+     */
+    Route::match(['get', 'post'], '/attachment.php', AttachmentController::class)
+        ->name('legacy.attachment');
 
     /*
      * Phase 2 — replaces `public/getattachment.php` (deleted in the
