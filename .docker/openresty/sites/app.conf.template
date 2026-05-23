@@ -372,6 +372,26 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 batch (this PR): four legacy pages migrated to Laravel
+    # controllers (moforums, staffbox, mysql_stats,
+    # getusertorrentlistajax). Each entry routes the now-deleted
+    # public/*.php URL through @nexus_app.
+    location = /moforums.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /staffbox.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /mysql_stats.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /getusertorrentlistajax.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
