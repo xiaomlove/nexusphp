@@ -37,6 +37,7 @@ use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadController;
 use App\Http\Controllers\Legacy\DownloadNoticeController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
+use App\Http\Controllers\Legacy\EditController;
 use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
@@ -93,17 +94,20 @@ use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TagsController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
+use App\Http\Controllers\Legacy\TakeEditController;
 use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeIncrementBulkController;
 use App\Http\Controllers\Legacy\TakeMessageController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
+use App\Http\Controllers\Legacy\TakeUploadController;
 use App\Http\Controllers\Legacy\TaskController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\TorrentInfoController;
 use App\Http\Controllers\Legacy\UncoController;
+use App\Http\Controllers\Legacy\UploadController;
 use App\Http\Controllers\Legacy\UploadersController;
 use App\Http\Controllers\Legacy\UserAgreementController;
 use App\Http\Controllers\Legacy\UserBanLogController;
@@ -1419,6 +1423,43 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.friends');
 
     /*
+     * Phase 2 (this PR): replaces `public/upload.php` (260 LOC),
+     * `public/takeupload.php` (490 LOC), `public/edit.php` (358 LOC),
+     * `public/takeedit.php` (311 LOC) — the torrent upload + edit
+     * lifecycle. All four legacy files deleted in the same PR.
+     *
+     * - `/upload.php`     GET  → UploadController     (form render)
+     * - `/takeupload.php` POST → TakeUploadController (write-handler)
+     * - `/edit.php`       GET  → EditController       (form render)
+     * - `/takeedit.php`   POST → TakeEditController   (write-handler)
+     *
+     * URLs preserved exactly so:
+     *   - `include/functions.php:1887` (the global "Upload" nav link),
+     *   - `include/functions.php:3639` (the staff-edit icon),
+     *   - the rendered forms' `<form action="takeupload.php">` /
+     *     `<form action="takeedit.php">`,
+     *   - the legacy `?uploaded=1` / `?edited=1` post-success
+     *     redirects from the migrated `details.php` chain
+     *   keep working without template / JS changes.
+     *
+     * `takeupload.php` and `takeedit.php` POSTs are CSRF-exempt — the
+     * legacy forms had no `@csrf` field; see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     *
+     * Bark/exit transformation: the legacy `bark($msg); exit;` helper
+     * threw the FPM worker out mid-request (skipping Laravel
+     * middleware). The migrated controllers raise an internal
+     * `BarkException` instead and convert it to the same
+     * `genbark()`-rendered error page captured into a `Response`.
+     */
+    Route::get('/upload.php', UploadController::class)
+        ->name('legacy.upload');
+    Route::post('/takeupload.php', TakeUploadController::class)
+        ->name('legacy.takeupload');
+    Route::get('/edit.php', EditController::class)
+        ->name('legacy.edit');
+    Route::post('/takeedit.php', TakeEditController::class)
+        ->name('legacy.takeedit');
      * Phase 2 (this PR): replaces `public/invite.php` (deleted in
      * the same PR, −346 LOC). Authed-only invite-system page.
      * GET-only — every POST happens on a separate URL:
