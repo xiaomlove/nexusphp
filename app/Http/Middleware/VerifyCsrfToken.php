@@ -92,6 +92,22 @@ class VerifyCsrfToken extends Middleware
         // re-implements the legacy `failedlogins()` IP-counter
         // side effect so brute-forcers still get rate-limited.
         'takelogin.php',
+        // Phase 2 (auth-flow batch part 2 of 3):
+        // `/takesignup.php` (POST), `/recover.php` (POST), and
+        // `/confirm_resend.php` (POST) accept POST without a
+        // CSRF token — the legacy `<form action="...">` markup
+        // had no `@csrf` field. Adding CSRF plumbing to signup /
+        // recover is a separate cross-cutting change (touches
+        // `render_password_hash_js` in `public/js/common.js`
+        // and the recovery-email template). The
+        // `RecoverController` and `ConfirmResendController`
+        // re-implement the legacy `failedlogins(_, true)`
+        // IP-counter side effect with `loginattempts.type =
+        // 'recover'` so brute-forcers still trip the same
+        // ban gate `TakeLoginController` enforces.
+        'takesignup.php',
+        'recover.php',
+        'confirm_resend.php',
         'takeconfirm.php',
         // Phase 2 (this PR): `/takeinvite.php` accepts POST without a
         // CSRF token — the legacy `<form action=takeinvite.php>` in
