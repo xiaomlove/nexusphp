@@ -50,6 +50,7 @@ use App\Http\Controllers\Legacy\GetRssController;
 use App\Http\Controllers\Legacy\GetUserTorrentListAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IncrementBulkController;
+use App\Http\Controllers\Legacy\InviteController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\IpSearchController;
@@ -1416,6 +1417,30 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.takemessage');
     Route::get('/friends.php', FriendsController::class)
         ->name('legacy.friends');
+
+    /*
+     * Phase 2 (this PR): replaces `public/invite.php` (deleted in
+     * the same PR, −346 LOC). Authed-only invite-system page.
+     * GET-only — every POST happens on a separate URL:
+     *   - `?type=new` form submits to `/takeinvite.php` (still legacy).
+     *   - The invitee-checkbox form submits to `/takeconfirm.php`
+     *     (already migrated → `TakeConfirmController`).
+     *
+     * Permission gate: `$CURUSER['id'] == $id || user_can('viewinvite')`
+     * — preserved verbatim by the controller.
+     *
+     * URL stays `/invite.php` so:
+     *   - `include/functions.php:2256` (the user-header invite link),
+     *   - `public/usercp.php:1083` (the user-control-panel row),
+     *   - `public/userdetails.php:134` (the user profile row),
+     *   - `public/takeinvite.php:142` (the post-send 302 to
+     *     `/invite.php?id=...&sent=1`),
+     *   - `app/Http/Controllers/Legacy/TakeConfirmController.php` (the
+     *     redirect-back-on-success path)
+     *   keep working without template / JS changes.
+     */
+    Route::get('/invite.php', InviteController::class)
+        ->name('legacy.invite');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
