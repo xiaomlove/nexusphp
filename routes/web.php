@@ -26,6 +26,7 @@ use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ComplainsController;
 use App\Http\Controllers\Legacy\ConfirmController;
 use App\Http\Controllers\Legacy\ConfirmEmailController;
+use App\Http\Controllers\Legacy\ConfirmResendController;
 use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
@@ -76,6 +77,7 @@ use App\Http\Controllers\Legacy\OpensearchController;
 use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
+use App\Http\Controllers\Legacy\RecoverController;
 use App\Http\Controllers\Legacy\ReportController;
 use App\Http\Controllers\Legacy\ReportsController;
 use App\Http\Controllers\Legacy\ResetController;
@@ -85,6 +87,7 @@ use App\Http\Controllers\Legacy\SearchController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SendMessageController;
+use App\Http\Controllers\Legacy\SignupController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
 use App\Http\Controllers\Legacy\StaffboxController;
@@ -103,6 +106,7 @@ use App\Http\Controllers\Legacy\TakeInviteController;
 use App\Http\Controllers\Legacy\TakeLoginController;
 use App\Http\Controllers\Legacy\TakeMessageController;
 use App\Http\Controllers\Legacy\TakeReseedController;
+use App\Http\Controllers\Legacy\TakeSignupController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
 use App\Http\Controllers\Legacy\TakeUploadController;
@@ -614,6 +618,48 @@ Route::get('/confirm.php', ConfirmController::class)->name('legacy.confirm');
  */
 Route::get('/login.php', LoginController::class)->name('legacy.login');
 Route::post('/takelogin.php', TakeLoginController::class)->name('legacy.takelogin');
+
+/*
+ * Phase 2 (auth-flow batch part 2 of 3): replaces
+ * `public/signup.php` (deleted in this PR, −139 LOC),
+ * `public/takesignup.php` (also deleted, −279 LOC),
+ * `public/recover.php` (also deleted, −168 LOC), and
+ * `public/confirm_resend.php` (also deleted, −137 LOC).
+ *
+ * All four routes live OUTSIDE `auth.nexus:nexus-web` because — by
+ * definition — these are pre-authentication flows. Already-logged-in
+ * callers are 302'd to `/index.php` from inside the controllers
+ * (`cur_user_check()` parity, same as the login pair in PR #304).
+ *
+ * URLs preserved exactly so:
+ *   - `<form action="takesignup.php">` rendered by `SignupController`
+ *     keeps posting to the right endpoint without template/JS changes;
+ *   - The legacy invitation email template's
+ *     `signup.php?type=invite&invitenumber=<hash>` URL (built by
+ *     `App\Http\Controllers\Legacy\TakeInviteController::renderInviteEmail`)
+ *     keeps resolving;
+ *   - The recovery emails sent in production — which embed the
+ *     `recover.php?id=...&secret=...` token URL — keep working;
+ *   - The `database/seeders/FaqTableSeeder` `<a href="recover.php">`
+ *     and `<a href="confirm_resend.php">` FAQ links keep resolving;
+ *   - The legacy `lang_login.p_resend_confirm` paragraph rendered
+ *     by `LoginController` keeps pointing at `/confirm_resend.php`.
+ *
+ * `/signup.php` is `Route::get` (form render only). The other three
+ * accept both GET and POST because the legacy script branched
+ * internally on `$_SERVER['REQUEST_METHOD']`.
+ *
+ * `/takesignup.php`, `/recover.php`, `/confirm_resend.php` are all
+ * CSRF-exempt — the legacy forms have no `@csrf` field, and the
+ * recovery emails reach `/recover.php?id=...&secret=...` via a
+ * one-shot signed token (the cache key `recover:<hash>` IS the
+ * authorisation), not a session cookie. See
+ * `App\Http\Middleware\VerifyCsrfToken::$except`.
+ */
+Route::get('/signup.php', SignupController::class)->name('legacy.signup');
+Route::post('/takesignup.php', TakeSignupController::class)->name('legacy.takesignup');
+Route::match(['get', 'post'], '/recover.php', RecoverController::class)->name('legacy.recover');
+Route::match(['get', 'post'], '/confirm_resend.php', ConfirmResendController::class)->name('legacy.confirmresend');
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
