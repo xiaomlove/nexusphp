@@ -1521,6 +1521,30 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/invite.php', InviteController::class)
         ->name('legacy.invite');
 
+    /*
+     * Phase 2 (this PR): replaces `public/takeinvite.php` (deleted in
+     * the same PR, −146 LOC). Follow-up to PR #301 (`InviteController`,
+     * which migrated the read-only `/invite.php` form-render).
+     *
+     * POST-only "send invitation" write-handler. Receives a
+     * `<form action="/takeinvite.php?id=...">` POST submitted from the
+     * `?type=new` form rendered by `InviteController::renderNewForm()`.
+     *
+     * Auth posture: inside `auth.nexus:nexus-web` (legacy
+     * `loggedinorreturn()`); parked users → 403 inside the
+     * controller. CSRF-exempt — see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     *
+     * URL stays `/takeinvite.php` so the form action in
+     * `InviteController::renderNewForm()` (line ~239) keeps posting
+     * to the same endpoint without template changes. The legacy
+     * 302 target — `/invite.php?id=<id>&sent=1` — is preserved
+     * verbatim so `InviteController` can detect the post-send
+     * banner state via `?sent=1`.
+     */
+    Route::post('/takeinvite.php', TakeInviteController::class)
+        ->name('legacy.takeinvite');
+
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
     Route::get('/forum/unread', ForumUnread::class)->name('forum.unread');

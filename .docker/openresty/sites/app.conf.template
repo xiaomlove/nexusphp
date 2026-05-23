@@ -371,6 +371,12 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 (this PR): /takeinvite.php — POST-only invite-send
+    # write-handler, follow-up to PR #301 (/invite.php).
+    location = /takeinvite.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /download.php {
         try_files /nonexistent @nexus_app;
     }
