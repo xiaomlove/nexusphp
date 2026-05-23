@@ -214,5 +214,18 @@ class VerifyCsrfToken extends Middleware
         // a CSRF token — neither legacy form had a `@csrf` field.
         'forummanage.php',
         'getrss.php',
+        // Phase 2.5 (this PR — batch B of the `public/ajax.php`
+        // cleanup): the four new `/medal/*` endpoints replace the
+        // medal sub-API previously dispatched through
+        // `public/ajax.php?action=...`. The three first-party JS
+        // callers — the "Buy medal" / "Gift medal" buttons emitted
+        // inline by `MedalController.php` and the "Save chosen
+        // medals" form in `public/userdetails.php` — post bare
+        // `application/x-www-form-urlencoded` bodies with no
+        // `_token`. Bolting CSRF onto those legacy inline scripts
+        // is a separate, larger change tracked in the Phase 1
+        // sweep. See `routes/web.php` (the `Route::prefix('medal')`
+        // block) and `App\Http\Controllers\Legacy\MedalAjaxController`.
+        'medal/*',
     ];
 }
