@@ -36,8 +36,9 @@ use Nexus\Database\NexusDB;
  *   - `include/functions.php:2256` (the user-header invite link),
  *   - `public/usercp.php:1083` (the user-control-panel row),
  *   - `public/userdetails.php:134` (the user profile row),
- *   - `public/takeinvite.php:142` (the post-send 302 to
- *     `/invite.php?id=...&sent=1`),
+ *   - `app/Http/Controllers/Legacy/TakeInviteController.php` (the
+ *     post-send 302 to `/invite.php?id=...&sent=1`; was
+ *     `public/takeinvite.php:142` pre-Phase-2),
  *   - `app/Http/Controllers/Legacy/TakeConfirmController.php` (3
  *     redirects + the embedded "go back" link)
  *   keep working without template / JS changes.
