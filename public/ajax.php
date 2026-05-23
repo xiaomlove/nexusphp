@@ -95,23 +95,6 @@ class AjaxInterface{
         return $rep->approval($CURUSER['id'], $params);
     }
 
-    public static function addSeedBoxRecord($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\SeedBoxRepository();
-        $params['uid'] = $CURUSER['id'];
-        $params['type'] = \App\Models\SeedBoxRecord::TYPE_USER;
-        $params['status'] = \App\Models\SeedBoxRecord::STATUS_UNAUDITED;
-        return $rep->store($params);
-    }
-
-    public static function removeSeedBoxRecord($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\SeedBoxRepository();
-        return $rep->delete($params['id'], $CURUSER['id']);
-    }
-
     public static function removeHitAndRun($params)
     {
         global $CURUSER;

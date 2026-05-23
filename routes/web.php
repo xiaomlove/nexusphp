@@ -87,6 +87,7 @@ use App\Http\Controllers\Legacy\RetriverController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
+use App\Http\Controllers\Legacy\SeedBoxAjaxController;
 use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SendMessageController;
 use App\Http\Controllers\Legacy\SignupController;
@@ -1221,6 +1222,53 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
             ->name('medal.gift');
         Route::post('/save-user', [MedalAjaxController::class, 'saveUserMedal'])
             ->name('medal.save-user');
+    });
+
+    /*
+     * Phase 2.5 (this PR — batch D of the `public/ajax.php` cleanup):
+     * replaces 4 of the remaining actions exposed by the legacy
+     * reflection-dispatcher in `public/ajax.php` — a mixed batch
+     * across two sub-APIs (seed-box + user-token).
+     *
+     * Action map (legacy → new endpoint, all authed):
+     *   - `addSeedBoxRecord`     → POST /seed-box/add
+     *   - `removeSeedBoxRecord`  → POST /seed-box/remove
+     *   - `addToken`             → POST /user/token/add
+     *   - `removeToken`          → POST /user/token/remove
+     *
+     * Wire-level contract is unchanged: same accepted POST keys
+     * (`params[*]`), same `{ret, msg, data}` JSON envelope at
+     * HTTP 200 (including on error). The two seed-box first-party
+     * JS callers — `public/usercp.php:1149` (the "Add seed-box
+     * record" modal) and `public/usercp.php:1161` (the per-row
+     * "Remove" button) — are flipped in the same PR.
+     *
+     * `addToken` / `removeToken` have no first-party JS caller in
+     * the tree; the modern flow goes through
+     * `App\Http\Controllers\TokenController` at
+     * `Route::post('web/token/add'|'web/token/del', ...)`. The
+     * two ajax.php actions are migrated for parity in case
+     * third-party integrations rely on the legacy URLs. The new
+     * URLs (`/user/token/add`, `/user/token/remove`) are
+     * deliberately distinct from `/web/token/*` so the two
+     * lifecycles stay independent.
+     *
+     * All four routes are CSRF-exempt — the inline-script callers
+     * post bare `application/x-www-form-urlencoded` bodies with no
+     * `_token`. See `App\Http\Middleware\VerifyCsrfToken::$except`
+     * (`'seed-box/*'`, `'user/token/*'`).
+     */
+    Route::prefix('seed-box')->group(function () {
+        Route::post('/add', [SeedBoxAjaxController::class, 'addSeedBoxRecord'])
+            ->name('seed-box.add');
+        Route::post('/remove', [SeedBoxAjaxController::class, 'removeSeedBoxRecord'])
+            ->name('seed-box.remove');
+    });
+    Route::prefix('user/token')->group(function () {
+        Route::post('/add', [SeedBoxAjaxController::class, 'addToken'])
+            ->name('user-token.add');
+        Route::post('/remove', [SeedBoxAjaxController::class, 'removeToken'])
+            ->name('user-token.remove');
     });
 
     /*

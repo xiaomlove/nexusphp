@@ -227,5 +227,20 @@ class VerifyCsrfToken extends Middleware
         // sweep. See `routes/web.php` (the `Route::prefix('medal')`
         // block) and `App\Http\Controllers\Legacy\MedalAjaxController`.
         'medal/*',
+        // Phase 2.5 (this PR — batch D of the `public/ajax.php`
+        // cleanup): the four new endpoints replace the seed-box +
+        // user-token sub-APIs previously dispatched through
+        // `public/ajax.php?action=...`. The two seed-box
+        // first-party JS callers (the inline scripts in
+        // `public/usercp.php:1149` and `public/usercp.php:1161`)
+        // post bare `application/x-www-form-urlencoded` bodies with
+        // no `_token`. Bolting CSRF onto those legacy inline
+        // scripts is a separate, larger change tracked in the
+        // Phase 1 sweep. See `routes/web.php` (the
+        // `Route::prefix('seed-box')` and
+        // `Route::prefix('user/token')` blocks) and
+        // `App\Http\Controllers\Legacy\SeedBoxAjaxController`.
+        'seed-box/*',
+        'user/token/*',
     ];
 }
