@@ -56,6 +56,7 @@ use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\IpSearchController;
 use App\Http\Controllers\Legacy\LinksManageController;
+use App\Http\Controllers\Legacy\LoginController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
@@ -97,6 +98,7 @@ use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeEditController;
 use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeIncrementBulkController;
+use App\Http\Controllers\Legacy\TakeLoginController;
 use App\Http\Controllers\Legacy\TakeMessageController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
@@ -576,6 +578,40 @@ Route::get('/confirmemail.php/{id}/{md5}/{email}', ConfirmEmailController::class
  * `/confirm.php?id=...&secret=...`.
  */
 Route::get('/confirm.php', ConfirmController::class)->name('legacy.confirm');
+
+/*
+ * Phase 2 (this PR — auth-flow batch part 1 of 3): replaces
+ * `public/login.php` (deleted in the same PR, −139 LOC) and
+ * `public/takelogin.php` (also deleted in the same PR, −120 LOC).
+ *
+ * Both routes live OUTSIDE `auth.nexus:nexus-web` because — by
+ * definition — the login flow is for users who do NOT yet have a
+ * session. Already-logged-in callers are 302'd to `/index.php`
+ * from inside the controller (`cur_user_check()` parity).
+ *
+ * URLs preserved exactly so:
+ *   - `<form action="takelogin.php">` rendered by `LoginController`
+ *     keeps posting to the right endpoint without template/JS
+ *     changes (the existing challenge-response JS in
+ *     `public/js/common.js` references the form by id);
+ *   - the legacy "401 → /login.php?returnto=..." redirect chain
+ *     emitted by `auth.nexus` middleware keeps working;
+ *   - external links / browser bookmarks / OAuth provider
+ *     callback `?returnto=` URLs all keep working;
+ *   - the existing E2E `auth` smoke spec keeps passing without
+ *     selector edits.
+ *
+ * `/takelogin.php` is CSRF-exempt — the legacy form has no `@csrf`
+ * field. Adding CSRF plumbing to login is a separate cross-cutting
+ * change because it touches the challenge-response JS, the OAuth
+ * callback flow, and the Passkey login form. See
+ * `App\Http\Middleware\VerifyCsrfToken::$except`.
+ *
+ * The matching nginx exact-location entries live in
+ * `.docker/openresty/sites/app.conf.template`.
+ */
+Route::get('/login.php', LoginController::class)->name('legacy.login');
+Route::post('/takelogin.php', TakeLoginController::class)->name('legacy.takelogin');
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
@@ -1460,7 +1496,9 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.edit');
     Route::post('/takeedit.php', TakeEditController::class)
         ->name('legacy.takeedit');
-     * Phase 2 (this PR): replaces `public/invite.php` (deleted in
+
+    /*
+     * Phase 2 (PR #301): replaces `public/invite.php` (deleted in
      * the same PR, −346 LOC). Authed-only invite-system page.
      * GET-only — every POST happens on a separate URL:
      *   - `?type=new` form submits to `/takeinvite.php` (still legacy).
