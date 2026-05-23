@@ -41,14 +41,13 @@ use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FormatsController;
+use App\Http\Controllers\Legacy\ForummanageController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\FriendsController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
+use App\Http\Controllers\Legacy\GetRssController;
 use App\Http\Controllers\Legacy\GetUserTorrentListAjaxController;
-use App\Http\Controllers\Legacy\MoforumsController;
-use App\Http\Controllers\Legacy\MysqlStatsController;
-use App\Http\Controllers\Legacy\StaffboxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IncrementBulkController;
 use App\Http\Controllers\Legacy\IpCheckController;
@@ -62,9 +61,11 @@ use App\Http\Controllers\Legacy\MakePollController;
 use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
+use App\Http\Controllers\Legacy\MoforumsController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\MyBarController;
 use App\Http\Controllers\Legacy\MyhrController;
+use App\Http\Controllers\Legacy\MysqlStatsController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
@@ -82,6 +83,7 @@ use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SendMessageController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
+use App\Http\Controllers\Legacy\StaffboxController;
 use App\Http\Controllers\Legacy\StaffController;
 use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\StaffPanelController;
@@ -100,7 +102,6 @@ use App\Http\Controllers\Legacy\TaskController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\TorrentInfoController;
-use App\Http\Controllers\Legacy\TorrentRssController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UploadersController;
 use App\Http\Controllers\Legacy\UserAgreementController;
@@ -1362,6 +1363,34 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.ipsearch');
     Route::get('/staff.php', StaffController::class)
         ->name('legacy.staff');
+
+    /*
+     * Phase 2 batch (this PR): replaces `public/forummanage.php`
+     * (deleted in the same PR). Forum (sub-forum) management page
+     * gated on the `forummanage` permission. Accepts GET (list /
+     * newforum / editforum / del) and POST (addforum / editforum).
+     * URL preserved so the `SysoppanelTableSeeder.url='forummanage.php'`
+     * menu entry, the `forums.php:1781` "Forum manager" link, and the
+     * `MoforumsController` "back to forum management" link keep
+     * working without template changes. POST is CSRF-exempt — see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/forummanage.php', ForummanageController::class)
+        ->name('legacy.forummanage');
+
+    /*
+     * Phase 2 batch (this PR): replaces `public/getrss.php` (deleted
+     * in the same PR). Authed-only RSS-feed builder page that lets
+     * users craft a personalised `torrentrss.php?…` URL. GET renders
+     * the form; POST assembles the query string and prints the
+     * resulting RSS link. URL preserved so the global header RSS icon
+     * link in `include/functions.php:2304` keeps working without a
+     * template change. POST is CSRF-exempt — the legacy form had no
+     * `@csrf` field. See
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/getrss.php', GetRssController::class)
+        ->name('legacy.getrss');
 
     /*
      * Phase 2 batch B (this PR): replaces five public/*.php pages

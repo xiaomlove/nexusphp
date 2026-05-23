@@ -176,5 +176,11 @@ class VerifyCsrfToken extends Middleware
         // action="?action=takeanswer">` forms had no `@csrf` field.
         'moforums.php',
         'staffbox.php',
+        // Phase 2 batch — `forummanage.php` (admin forum-manager
+        // form-submit, addforum/editforum verbs) and `getrss.php`
+        // (RSS-link builder form-submit) both accept POST without
+        // a CSRF token — neither legacy form had a `@csrf` field.
+        'forummanage.php',
+        'getrss.php',
     ];
 }
