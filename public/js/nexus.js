@@ -136,8 +136,16 @@ jQuery(document).ready(function () {
             params.torrent_id = torrentId
         }
         let modalConfig = {title: "Info", btn: ['OK', 'Cancel'], btnAlign: 'c'}
+        // Phase 2.5 (PR — batch C of the public/ajax.php cleanup):
+        // the legacy `?action=addClaim|removeClaim` reflection
+        // dispatcher in `public/ajax.php` was lifted out into a
+        // dedicated `ClaimAjaxController` with one route per verb.
+        // The wire-level contract (POST keys / `{ret, msg, data}`
+        // envelope) is unchanged; only the URL is picked from the
+        // action name now.
+        let claimUrl = action === 'removeClaim' ? '/claim/remove' : '/claim/add'
         layer.confirm(confirmText, modalConfig, function (confirmIndex) {
-            jQuery.post("ajax.php", {"action": action, params: params}, function (response) {
+            jQuery.post(claimUrl, {params: params}, function (response) {
                 console.log(response)
                 if (response.ret != 0) {
                     layer.alert(response.msg, modalConfig)

@@ -39,20 +39,6 @@ class AjaxInterface{
         }
     }
 
-    public static function addClaim($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\ClaimRepository();
-        return $rep->store($CURUSER['id'], $params['torrent_id']);
-    }
-
-    public static function removeClaim($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\ClaimRepository();
-        return $rep->delete($params['id'], $CURUSER['id']);
-    }
-
     public static function removeUserLeechWarn($params)
     {
         global $CURUSER;
@@ -102,20 +88,6 @@ class AjaxInterface{
         return $rep->delete($params['id'], $CURUSER['id']);
     }
 
-    public static function removeHitAndRun($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\BonusRepository();
-        return $rep->consumeToCancelHitAndRun($CURUSER['id'], $params['id']);
-    }
-
-    public static function consumeBenefit($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserRepository();
-        return $rep->consumeBenefit($CURUSER['id'], $params);
-    }
-
     public static function clearShoutBox($params)
     {
         global $CURUSER;
@@ -152,13 +124,6 @@ class AjaxInterface{
     //    dd($params, $data);
         $rep = new \App\Repositories\MedalRepository();
         return $rep->saveUserMedal($CURUSER['id'], $data);
-    }
-
-    public static function claimTask($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\ExamRepository();
-        return $rep->assignToUser($CURUSER['id'], $params['exam_id']);
     }
 
     public static function addToken($params)

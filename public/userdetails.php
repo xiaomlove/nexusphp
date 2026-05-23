@@ -283,7 +283,7 @@ jQuery('#{$triggerId}').on("click", function () {
         btnAlign: 'c',
         yes: function () {
             let params = jQuery('#layer-form-{$metaKey}').serialize()
-            jQuery.post('ajax.php', params + "&action=consumeBenefit", function (response) {
+            jQuery.post('/benefit/consume', params, function (response) {
                 console.log(response)
                 if (response.ret != 0) {
                     layer.alert(response.msg)

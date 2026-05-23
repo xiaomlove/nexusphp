@@ -21,6 +21,7 @@ use App\Http\Controllers\Legacy\Cc98barController;
 use App\Http\Controllers\Legacy\CheaterboxController;
 use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
+use App\Http\Controllers\Legacy\ClaimAjaxController;
 use App\Http\Controllers\Legacy\ClaimController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ComplainsController;
@@ -1109,6 +1110,53 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/medal.php', MedalController::class)
         ->name('legacy.medal');
+
+    /*
+     * Phase 2.5 (this PR — batch C of the `public/ajax.php` cleanup):
+     * replaces 5 of the remaining actions exposed by the legacy
+     * reflection-dispatcher in `public/ajax.php` — a mixed batch
+     * of user-side write actions across four sub-APIs.
+     *
+     * Action map (legacy → new endpoint, all authed):
+     *   - `addClaim`         → POST /claim/add
+     *   - `removeClaim`      → POST /claim/remove
+     *   - `removeHitAndRun`  → POST /hit-and-run/remove
+     *   - `claimTask`        → POST /exam/claim-task
+     *   - `consumeBenefit`   → POST /benefit/consume
+     *
+     * Wire-level contract is unchanged: same accepted POST keys
+     * (`params[*]`), same `{ret, msg, data}` JSON envelope at
+     * HTTP 200 (including on error). The four first-party JS
+     * callers — `public/details.php:315`, `MyhrController:133`,
+     * `TaskController:224`, `public/userdetails.php:286`, plus
+     * the shared `claimAction(...)` helper in
+     * `public/js/nexus.js:140` — are flipped in the same PR.
+     *
+     * All five routes are CSRF-exempt — the inline-script callers
+     * post bare `application/x-www-form-urlencoded` bodies with
+     * no `_token`. See `App\Http\Middleware\VerifyCsrfToken::$except`
+     * (`'claim/*'`, `'hit-and-run/*'`, `'exam/claim-task'`,
+     * `'benefit/consume'`).
+     *
+     * Naming: grouped in a single `ClaimAjaxController` because
+     * the four sub-APIs share the same JSON envelope contract and
+     * CSRF posture; splitting them into per-domain controllers
+     * would multiply boilerplate without improving clarity. URL
+     * prefixes stay per-domain so the routes themselves still
+     * read naturally.
+     */
+    Route::prefix('claim')->group(function () {
+        Route::post('/add', [ClaimAjaxController::class, 'addClaim'])
+            ->name('claim.add');
+        Route::post('/remove', [ClaimAjaxController::class, 'removeClaim'])
+            ->name('claim.remove');
+    });
+    Route::post('/hit-and-run/remove', [ClaimAjaxController::class, 'removeHitAndRun'])
+        ->name('hit-and-run.remove');
+    Route::post('/exam/claim-task', [ClaimAjaxController::class, 'claimTask'])
+        ->name('exam.claim-task');
+    Route::post('/benefit/consume', [ClaimAjaxController::class, 'consumeBenefit'])
+        ->name('benefit.consume');
 
     /*
      * Phase 2 — replaces `public/users.php` (deleted in the same PR).
