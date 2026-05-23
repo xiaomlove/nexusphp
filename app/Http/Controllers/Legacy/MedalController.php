@@ -144,6 +144,13 @@ class MedalController extends Controller
         $body .= $this->renderPager($total, $page, $totalPages, $qEsc);
 
         // JS for buy/gift
+        // Phase 2.5 (PR — batch B of the public/ajax.php cleanup):
+        // the two `jQuery.post('ajax.php', ...)` calls below were
+        // flipped to the new dedicated `/medal/buy` and `/medal/gift`
+        // endpoints. Wire-level contract is unchanged: same `params`
+        // shape (sent as `params[medal_id]` / `params[uid]` in the
+        // POST body), same `{ret, msg, data}` JSON envelope. See
+        // `App\Http\Controllers\Legacy\MedalAjaxController`.
         $confirmBuyMsg = nexus_trans('medal.confirm_to_buy');
         $confirmGiftMsg = nexus_trans('medal.confirm_to_gift');
         $body .= <<<JS
@@ -151,7 +158,7 @@ class MedalController extends Controller
 jQuery('.buy').on('click', function (e) {
     let medalId = jQuery(this).attr('data-id')
     layer.confirm("{$confirmBuyMsg}", function (index) {
-        jQuery.post('ajax.php', {action: "buyMedal", params: {medal_id: medalId}}, function(response) {
+        jQuery.post('/medal/buy', {params: {medal_id: medalId}}, function(response) {
             if (response.ret != 0) { layer.alert(response.msg); return; }
             window.location.reload()
         }, 'json')
@@ -162,7 +169,7 @@ jQuery('.gift').on('click', function (e) {
     let uid = jQuery(this).prev().val()
     if (!uid) { layer.alert('Require UID'); return; }
     layer.confirm("{$confirmGiftMsg}" + uid + " ?", function (index) {
-        jQuery.post('ajax.php', {action: "giftMedal", params: {medal_id: medalId, uid: uid}}, function(response) {
+        jQuery.post('/medal/gift', {params: {medal_id: medalId, uid: uid}}, function(response) {
             if (response.ret != 0) { layer.alert(response.msg); return; }
             window.location.reload()
         }, 'json')

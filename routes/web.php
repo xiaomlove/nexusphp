@@ -64,6 +64,7 @@ use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MakePollController;
 use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MaxLoginController;
+use App\Http\Controllers\Legacy\MedalAjaxController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoforumsController;
@@ -1171,6 +1172,56 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/medal.php', MedalController::class)
         ->name('legacy.medal');
+
+    /*
+     * Phase 2.5 (this PR — batch B of the `public/ajax.php` cleanup):
+     * replaces 4 of the remaining actions exposed by the legacy
+     * reflection-dispatcher in `public/ajax.php` — the medal
+     * sub-API.
+     *
+     * Action map (legacy → new endpoint):
+     *   - `toggleUserMedalStatus`  → POST /medal/toggle-status
+     *   - `buyMedal`               → POST /medal/buy
+     *   - `giftMedal`              → POST /medal/gift
+     *   - `saveUserMedal`          → POST /medal/save-user
+     *
+     * Wire-level contract is unchanged:
+     *   - Same accepted POST keys (`params[*]`, decoded by the
+     *     controller into the same positional arguments
+     *     `MedalRepository` / `BonusRepository` already expect).
+     *   - Same `{ret, msg, data}` JSON envelope at HTTP 200,
+     *     including on error — the three first-party JS call-sites
+     *     read `response.ret !== 0` and call `layer.alert
+     *     (response.msg)`.
+     *
+     * First-party JS callers, all flipped in the same PR:
+     *   - `app/Http/Controllers/Legacy/MedalController.php:154`
+     *     (the "Buy medal" button on `/medal.php`),
+     *   - `app/Http/Controllers/Legacy/MedalController.php:165`
+     *     (the "Gift medal" button on `/medal.php`),
+     *   - `public/userdetails.php:83` (the "Save chosen medals"
+     *     form on `/userdetails.php?id=<self>`).
+     *
+     * `toggleUserMedalStatus` has no first-party JS caller in the
+     * tree; it is migrated for parity in case third-party
+     * integrations rely on the legacy URL.
+     *
+     * All four routes are CSRF-exempt — `MedalController`'s inline
+     * `<script>` tags and `userdetails.php:83` post bare
+     * `application/x-www-form-urlencoded` bodies with no `_token`.
+     * See `App\Http\Middleware\VerifyCsrfToken::$except`
+     * (`'medal/*'`).
+     */
+    Route::prefix('medal')->group(function () {
+        Route::post('/toggle-status', [MedalAjaxController::class, 'toggleStatus'])
+            ->name('medal.toggle-status');
+        Route::post('/buy', [MedalAjaxController::class, 'buy'])
+            ->name('medal.buy');
+        Route::post('/gift', [MedalAjaxController::class, 'gift'])
+            ->name('medal.gift');
+        Route::post('/save-user', [MedalAjaxController::class, 'saveUserMedal'])
+            ->name('medal.save-user');
+    });
 
     /*
      * Phase 2 — replaces `public/users.php` (deleted in the same PR).

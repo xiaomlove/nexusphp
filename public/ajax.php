@@ -17,13 +17,17 @@ loggedinorreturn();
 
 class AjaxInterface{
 
-    public static function toggleUserMedalStatus($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\MedalRepository();
-        return $rep->toggleUserMedalStatus($params['id'], $CURUSER['id']);
-    }
-
+    // Phase 2.5 (this PR — batch B of the public/ajax.php cleanup):
+    // the four medal actions
+    // (`toggleUserMedalStatus`, `buyMedal`, `giftMedal`, `saveUserMedal`)
+    // were lifted out into dedicated Laravel routes — see
+    // `App\Http\Controllers\Legacy\MedalAjaxController` and the
+    // `Route::prefix('medal')` block in `routes/web.php`. The
+    // wire-level contract (POST keys / `{ret, msg, data}` envelope)
+    // is preserved verbatim so the inline `<script>` callers in
+    // `MedalController.php` and the "Save chosen medals" form in
+    // `public/userdetails.php` keep working after a single
+    // `jQuery.post(...)` URL flip in each.
 
     public static function attendanceRetroactive($params)
     {
@@ -128,36 +132,6 @@ class AjaxInterface{
         user_can('sbmanage', true);
         \Nexus\Database\NexusDB::table('shoutbox')->delete();
         return true;
-    }
-
-    public static function buyMedal($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\BonusRepository();
-        return $rep->consumeToBuyMedal($CURUSER['id'], $params['medal_id']);
-    }
-
-    public static function giftMedal($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\BonusRepository();
-        return $rep->consumeToGiftMedal($CURUSER['id'], $params['medal_id'], $params['uid']);
-    }
-
-    public static function saveUserMedal($params)
-    {
-        global $CURUSER;
-        $data = [];
-        foreach ($params as $param) {
-            $fieldAndId = explode('_', $param['name']);
-            $field = $fieldAndId[0];
-            $id = $fieldAndId[1];
-            $value = $param['value'];
-            $data[$id][$field] = $value;
-        }
-    //    dd($params, $data);
-        $rep = new \App\Repositories\MedalRepository();
-        return $rep->saveUserMedal($CURUSER['id'], $data);
     }
 
     public static function claimTask($params)
