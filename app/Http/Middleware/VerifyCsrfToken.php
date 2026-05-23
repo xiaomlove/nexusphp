@@ -81,6 +81,12 @@ class VerifyCsrfToken extends Middleware
         // no `@csrf` field). `/user-ban-log.php` and
         // `/takereseed.php` are GET-only.
         'takeconfirm.php',
+        // Phase 2 (this PR): `/takeinvite.php` accepts POST without a
+        // CSRF token — the legacy `<form action=takeinvite.php>` in
+        // `InviteController::renderNewForm()` has no `@csrf` field.
+        // The form-render endpoint `/invite.php` is GET-only, so it
+        // doesn't need an entry here.
+        'takeinvite.php',
         // Phase 2 testip rewrite: `/testip.php` accepts POST without
         // a CSRF token — the legacy `<form method=post action=testip.php>`
         // in `public/testip.php` (deleted in this PR) had no `@csrf`
