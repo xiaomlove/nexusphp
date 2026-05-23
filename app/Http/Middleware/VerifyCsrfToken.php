@@ -80,6 +80,18 @@ class VerifyCsrfToken extends Middleware
         // `public/invite.php:173` / `public/checkuser.php:59` has
         // no `@csrf` field). `/user-ban-log.php` and
         // `/takereseed.php` are GET-only.
+        // Phase 2 (this PR — auth-flow batch part 1 of 3):
+        // `/takelogin.php` accepts POST without a CSRF token —
+        // the legacy `<form action="takelogin.php">` has no
+        // `@csrf` field, and the existing challenge-response JS
+        // in `public/js/common.js` does not include a token.
+        // Adding CSRF plumbing to the login form is a separate,
+        // larger change (touches OAuth callback + Passkey login
+        // + the JS challenge-response wiring). The
+        // `App\Http\Controllers\Legacy\TakeLoginController`
+        // re-implements the legacy `failedlogins()` IP-counter
+        // side effect so brute-forcers still get rate-limited.
+        'takelogin.php',
         'takeconfirm.php',
         // Phase 2 (this PR): `/takeinvite.php` accepts POST without a
         // CSRF token — the legacy `<form action=takeinvite.php>` in

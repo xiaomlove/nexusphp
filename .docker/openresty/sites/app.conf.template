@@ -204,6 +204,17 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 auth-flow batch part 1 of 3 — login.php (GET form)
+    # and takelogin.php (POST handler) migrated to Laravel
+    # controllers.
+    location = /login.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takelogin.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     # Phase 2 batch — bitbucketlog.
     location = /bitbucketlog.php {
         try_files /nonexistent @nexus_app;
