@@ -42,13 +42,16 @@ use App\Http\Controllers\Legacy\FaqController;
 use App\Http\Controllers\Legacy\FastDeleteController;
 use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FormatsController;
+use App\Http\Controllers\Legacy\ForummanageController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\FriendsController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
+use App\Http\Controllers\Legacy\GetRssController;
 use App\Http\Controllers\Legacy\GetUserTorrentListAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IncrementBulkController;
+use App\Http\Controllers\Legacy\InviteController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\IpSearchController;
@@ -1367,6 +1370,34 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.staff');
 
     /*
+     * Phase 2 batch (this PR): replaces `public/forummanage.php`
+     * (deleted in the same PR). Forum (sub-forum) management page
+     * gated on the `forummanage` permission. Accepts GET (list /
+     * newforum / editforum / del) and POST (addforum / editforum).
+     * URL preserved so the `SysoppanelTableSeeder.url='forummanage.php'`
+     * menu entry, the `forums.php:1781` "Forum manager" link, and the
+     * `MoforumsController` "back to forum management" link keep
+     * working without template changes. POST is CSRF-exempt — see
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/forummanage.php', ForummanageController::class)
+        ->name('legacy.forummanage');
+
+    /*
+     * Phase 2 batch (this PR): replaces `public/getrss.php` (deleted
+     * in the same PR). Authed-only RSS-feed builder page that lets
+     * users craft a personalised `torrentrss.php?…` URL. GET renders
+     * the form; POST assembles the query string and prints the
+     * resulting RSS link. URL preserved so the global header RSS icon
+     * link in `include/functions.php:2304` keeps working without a
+     * template change. POST is CSRF-exempt — the legacy form had no
+     * `@csrf` field. See
+     * `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/getrss.php', GetRssController::class)
+        ->name('legacy.getrss');
+
+    /*
      * Phase 2 batch B (this PR): replaces five public/*.php pages
      * with Laravel controllers — task / downloadnotice / search /
      * takemessage / friends. URLs preserved so existing template
@@ -1429,6 +1460,28 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.edit');
     Route::post('/takeedit.php', TakeEditController::class)
         ->name('legacy.takeedit');
+     * Phase 2 (this PR): replaces `public/invite.php` (deleted in
+     * the same PR, −346 LOC). Authed-only invite-system page.
+     * GET-only — every POST happens on a separate URL:
+     *   - `?type=new` form submits to `/takeinvite.php` (still legacy).
+     *   - The invitee-checkbox form submits to `/takeconfirm.php`
+     *     (already migrated → `TakeConfirmController`).
+     *
+     * Permission gate: `$CURUSER['id'] == $id || user_can('viewinvite')`
+     * — preserved verbatim by the controller.
+     *
+     * URL stays `/invite.php` so:
+     *   - `include/functions.php:2256` (the user-header invite link),
+     *   - `public/usercp.php:1083` (the user-control-panel row),
+     *   - `public/userdetails.php:134` (the user profile row),
+     *   - `public/takeinvite.php:142` (the post-send 302 to
+     *     `/invite.php?id=...&sent=1`),
+     *   - `app/Http/Controllers/Legacy/TakeConfirmController.php` (the
+     *     redirect-back-on-success path)
+     *   keep working without template / JS changes.
+     */
+    Route::get('/invite.php', InviteController::class)
+        ->name('legacy.invite');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');

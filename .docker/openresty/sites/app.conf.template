@@ -355,6 +355,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 (this PR): /invite.php migrated to InviteController.
+    location = /invite.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /download.php {
         try_files /nonexistent @nexus_app;
     }
@@ -407,6 +412,14 @@ server {
     }
 
     location = /takeedit.php {
+    # Phase 2 batch (this PR): two legacy pages migrated to Laravel
+    # controllers (forummanage, getrss). Each entry routes the
+    # now-deleted public/*.php URL through @nexus_app.
+    location = /forummanage.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /getrss.php {
         try_files /nonexistent @nexus_app;
     }
 
