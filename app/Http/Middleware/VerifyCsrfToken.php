@@ -214,5 +214,15 @@ class VerifyCsrfToken extends Middleware
         // a CSRF token — neither legacy form had a `@csrf` field.
         'forummanage.php',
         'getrss.php',
+        // Phase 2.5 (this PR — batch A of the `public/ajax.php`
+        // cleanup): the six new `/passkey/*` endpoints replace the
+        // Passkey/WebAuthn sub-API previously dispatched through
+        // `public/ajax.php?action=...`. The legacy XHR helper in
+        // `public/js/passkey.js` posts a bare `URLSearchParams`
+        // body with no `_token`. Bolting CSRF onto that JS helper
+        // is a separate, larger change tracked in the Phase 1
+        // sweep. See `routes/web.php` (the `Route::prefix('passkey')`
+        // block) and `App\Http\Controllers\Legacy\PasskeyAjaxController`.
+        'passkey/*',
     ];
 }

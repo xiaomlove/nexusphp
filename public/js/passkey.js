@@ -1,5 +1,28 @@
 const Passkey = (() => {
-    const apiUrl = '/ajax.php';
+    /**
+     * Phase 2.5 (PR — batch A of the `public/ajax.php` cleanup):
+     * the six legacy `?action=…` calls under `/ajax.php` were
+     * lifted out into dedicated Laravel routes — see
+     * `App\Http\Controllers\Legacy\PasskeyAjaxController` and the
+     * `Route::prefix('passkey')` block in `routes/web.php`. The
+     * wire-level contract is unchanged: same accepted POST keys
+     * (`params[*]`), same `{ret, msg, data}` JSON envelope at
+     * HTTP 200, same error shape (`res.ret !== 0` → throw
+     * `Error(res.msg)`).
+     *
+     * The map below replaces the old single `apiUrl = '/ajax.php'`
+     * constant. Each fetch picks the URL by legacy action name and
+     * drops the `action` POST key the legacy reflection-dispatcher
+     * required — the URL now picks the action server-side.
+     */
+    const apiUrls = {
+        getPasskeyCreateArgs: '/passkey/create-args',
+        processPasskeyCreate: '/passkey/create',
+        deletePasskey:        '/passkey/delete',
+        getPasskeyList:       '/passkey/list',
+        getPasskeyGetArgs:    '/passkey/get-args',
+        processPasskeyGet:    '/passkey/get',
+    };
 
     const supported = () => {
         return window.PublicKeyCredential;
@@ -14,10 +37,10 @@ const Passkey = (() => {
     }
 
     const getArgs = async (type) => {
+        const action = type === 'create' ? 'getPasskeyCreateArgs' : 'getPasskeyGetArgs';
         const getArgsParams = new URLSearchParams();
-        getArgsParams.set('action', type === 'create' ? 'getPasskeyCreateArgs' : 'getPasskeyGetArgs');
 
-        const response = await fetch(apiUrl, {
+        const response = await fetch(apiUrls[action], {
             method: 'POST',
             body: getArgsParams,
         });
@@ -40,13 +63,12 @@ const Passkey = (() => {
         const cred = await navigator.credentials.create(args.options);
 
         const processCreateParams = new URLSearchParams();
-        processCreateParams.set('action', 'processPasskeyCreate');
         processCreateParams.set('params[challengeId]', args.challengeId);
         processCreateParams.set('params[transports]', cred.response.getTransports ? cred.response.getTransports() : null)
         processCreateParams.set('params[clientDataJSON]', cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null);
         processCreateParams.set('params[attestationObject]', cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null);
 
-        const response = await fetch(apiUrl, {
+        const response = await fetch(apiUrls.processPasskeyCreate, {
             method: 'POST',
             body: processCreateParams,
         });
@@ -77,7 +99,6 @@ const Passkey = (() => {
         if (conditional) showLoading();
 
         const processGetParams = new URLSearchParams();
-        processGetParams.set('action', 'processPasskeyGet');
         processGetParams.set('params[challengeId]', args.challengeId);
         processGetParams.set('params[id]', cred.rawId ? arrayBufferToBase64(cred.rawId) : null);
         processGetParams.set('params[clientDataJSON]', cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null);
@@ -85,7 +106,7 @@ const Passkey = (() => {
         processGetParams.set('params[signature]', cred.response.signature ? arrayBufferToBase64(cred.response.signature) : null);
         processGetParams.set('params[userHandle]', cred.response.userHandle ? arrayBufferToBase64(cred.response.userHandle) : null);
 
-        const response = await fetch(apiUrl, {
+        const response = await fetch(apiUrls.processPasskeyGet, {
             method: 'POST',
             body: processGetParams,
         });
@@ -97,10 +118,9 @@ const Passkey = (() => {
 
     const deleteRegistration = async (credentialId) => {
         const deleteParams = new URLSearchParams();
-        deleteParams.set('action', 'deletePasskey');
         deleteParams.set('params[credentialId]', credentialId);
 
-        const response = await fetch(apiUrl, {
+        const response = await fetch(apiUrls.deletePasskey, {
             method: 'POST',
             body: deleteParams,
         });
