@@ -92,6 +92,14 @@ class VerifyCsrfToken extends Middleware
         // re-implements the legacy `failedlogins()` IP-counter
         // side effect so brute-forcers still get rate-limited.
         'takelogin.php',
+        // Phase 2 (this PR — auth-flow batch part 3 of 3):
+        // `/maxlogin.php` accepts POST without a CSRF token —
+        // the legacy `<form action="maxlogin.php">` edit and
+        // search forms have no `@csrf` field. The endpoint sits
+        // behind `auth.nexus:nexus-web` and the controller
+        // gate-checks `User::CLASS_SYSOP` so unauthenticated /
+        // non-admin callers can't reach the write path.
+        'maxlogin.php',
         'takeconfirm.php',
         // Phase 2 (this PR): `/takeinvite.php` accepts POST without a
         // CSRF token — the legacy `<form action=takeinvite.php>` in
