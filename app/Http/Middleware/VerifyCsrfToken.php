@@ -62,6 +62,12 @@ class VerifyCsrfToken extends Middleware
         // `<form method=post action=massmail.php>` self-submit had
         // no `@csrf` field. Fan-out runs in `App\Jobs\SendMassMail`.
         'massmail.php',
+        // Phase 2 torrent lifecycle (this PR): takeupload.php and
+        // takeedit.php POSTs accept the legacy multipart upload/edit
+        // forms which had no `@csrf` field. The corresponding GET
+        // form renderers (upload.php / edit.php) are GET-only.
+        'takeupload.php',
+        'takeedit.php',
         // Phase 3 magic.php rewrite: `/magic.php` accepts POST
         // without a CSRF token — the legacy XHR helper
         // `saveMagicValue` in `public/js/common.js` posts a bare

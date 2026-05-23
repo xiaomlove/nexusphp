@@ -392,6 +392,24 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 torrent lifecycle (this PR): upload + takeupload + edit
+    # + takeedit migrated to Laravel controllers.
+    location = /upload.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takeupload.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /edit.php {
+        try_files /nonexistent @nexus_app;
+    }
+
+    location = /takeedit.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location @nexus_app {
         rewrite ^ /nexus.php last;
     }
