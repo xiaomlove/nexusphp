@@ -98,6 +98,7 @@ use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeEditController;
 use App\Http\Controllers\Legacy\TakeFlushController;
 use App\Http\Controllers\Legacy\TakeIncrementBulkController;
+use App\Http\Controllers\Legacy\TakeInviteController;
 use App\Http\Controllers\Legacy\TakeLoginController;
 use App\Http\Controllers\Legacy\TakeMessageController;
 use App\Http\Controllers\Legacy\TakeReseedController;
