@@ -75,6 +75,7 @@ use App\Http\Controllers\Legacy\MysqlStatsController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
+use App\Http\Controllers\Legacy\PasskeyAjaxController;
 use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
@@ -661,6 +662,67 @@ Route::get('/signup.php', SignupController::class)->name('legacy.signup');
 Route::post('/takesignup.php', TakeSignupController::class)->name('legacy.takesignup');
 Route::match(['get', 'post'], '/recover.php', RecoverController::class)->name('legacy.recover');
 Route::match(['get', 'post'], '/confirm_resend.php', ConfirmResendController::class)->name('legacy.confirmresend');
+
+/*
+ * Phase 2.5 (this PR — batch A of the `public/ajax.php` cleanup):
+ * replaces 6 of the 26 actions exposed by the legacy reflection-
+ * dispatcher in `public/ajax.php` — the Passkey/WebAuthn sub-API.
+ *
+ * Action map (legacy → new endpoint):
+ *   - `getPasskeyCreateArgs`  → POST /passkey/create-args  (authed)
+ *   - `processPasskeyCreate`  → POST /passkey/create       (authed)
+ *   - `deletePasskey`         → POST /passkey/delete       (authed)
+ *   - `getPasskeyList`        → POST /passkey/list         (authed)
+ *   - `getPasskeyGetArgs`     → POST /passkey/get-args     (login flow)
+ *   - `processPasskeyGet`     → POST /passkey/get          (login flow)
+ *
+ * Wire-level contract is unchanged:
+ *   - Same accepted POST keys (`params[*]`, decoded by the controller
+ *     into the same positional arguments `UserPasskeyRepository`
+ *     already expects).
+ *   - Same `{ret, msg, data}` JSON envelope at HTTP 200, including
+ *     on error — `public/js/passkey.js` reads `res.ret !== 0` and
+ *     throws `Error(res.msg)` from there.
+ *
+ * The two login-flow routes (`get-args`, `get`) sit OUTSIDE
+ * `auth.nexus:nexus-web` because — by definition — the user does not
+ * yet have a session when starting passkey-based login, and
+ * `processGet` is the call that mints it via `logincookie()`. This
+ * mirrors the explicit gate in the legacy dispatcher:
+ *   `if ($action != 'getPasskeyGetArgs' && $action != 'processPasskeyGet')
+ *        loggedinorreturn();`
+ *
+ * The four management routes are CSRF-exempt — `passkey.js` posts a
+ * bare `URLSearchParams` body with no `_token`. Adding CSRF plumbing
+ * to that JS helper is a separate, larger change. See
+ * `App\Http\Middleware\VerifyCsrfToken::$except` (`'passkey/*'`).
+ *
+ * Companion `passkey.js` patch flips its single `apiUrl` constant
+ * to a `legacy-action → endpoint` map and drops the `action` POST
+ * key — the controller no longer needs it because the URL itself
+ * picks the action.
+ */
+Route::prefix('passkey')->group(function () {
+    // Login flow — unauthenticated. `processGet` is the call that
+    // mints the auth cookie via `logincookie()`.
+    Route::post('/get-args', [PasskeyAjaxController::class, 'getGetArgs'])
+        ->name('passkey.get-args');
+    Route::post('/get', [PasskeyAjaxController::class, 'processGet'])
+        ->name('passkey.get');
+
+    // Authenticated passkey management. Mirrors the legacy
+    // `loggedinorreturn()` gate inside `public/ajax.php`.
+    Route::middleware('auth.nexus:nexus-web')->group(function () {
+        Route::post('/create-args', [PasskeyAjaxController::class, 'getCreateArgs'])
+            ->name('passkey.create-args');
+        Route::post('/create', [PasskeyAjaxController::class, 'processCreate'])
+            ->name('passkey.create');
+        Route::post('/delete', [PasskeyAjaxController::class, 'deletePasskey'])
+            ->name('passkey.delete');
+        Route::post('/list', [PasskeyAjaxController::class, 'getList'])
+            ->name('passkey.list');
+    });
+});
 
 Route::middleware(['auth.nexus:nexus-web'])->group(function () {
     Route::get('/browse', TorrentBrowse::class)->name('torrents.browse');
