@@ -355,6 +355,11 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
+    # Phase 2 (this PR): /invite.php migrated to InviteController.
+    location = /invite.php {
+        try_files /nonexistent @nexus_app;
+    }
+
     location = /download.php {
         try_files /nonexistent @nexus_app;
     }

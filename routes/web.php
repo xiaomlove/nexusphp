@@ -46,11 +46,9 @@ use App\Http\Controllers\Legacy\FriendsController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\GetUserTorrentListAjaxController;
-use App\Http\Controllers\Legacy\MoforumsController;
-use App\Http\Controllers\Legacy\MysqlStatsController;
-use App\Http\Controllers\Legacy\StaffboxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
 use App\Http\Controllers\Legacy\IncrementBulkController;
+use App\Http\Controllers\Legacy\InviteController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\IpSearchController;
@@ -62,9 +60,11 @@ use App\Http\Controllers\Legacy\MakePollController;
 use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
+use App\Http\Controllers\Legacy\MoforumsController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\MyBarController;
 use App\Http\Controllers\Legacy\MyhrController;
+use App\Http\Controllers\Legacy\MysqlStatsController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
 use App\Http\Controllers\Legacy\OpensearchController;
@@ -82,6 +82,7 @@ use App\Http\Controllers\Legacy\SelfEnableController;
 use App\Http\Controllers\Legacy\SendMessageController;
 use App\Http\Controllers\Legacy\SmiliesController;
 use App\Http\Controllers\Legacy\SpecialController;
+use App\Http\Controllers\Legacy\StaffboxController;
 use App\Http\Controllers\Legacy\StaffController;
 use App\Http\Controllers\Legacy\StaffMessController;
 use App\Http\Controllers\Legacy\StaffPanelController;
@@ -100,7 +101,6 @@ use App\Http\Controllers\Legacy\TaskController;
 use App\Http\Controllers\Legacy\TestIpController;
 use App\Http\Controllers\Legacy\ThanksController;
 use App\Http\Controllers\Legacy\TorrentInfoController;
-use App\Http\Controllers\Legacy\TorrentRssController;
 use App\Http\Controllers\Legacy\UncoController;
 use App\Http\Controllers\Legacy\UploadersController;
 use App\Http\Controllers\Legacy\UserAgreementController;
@@ -1387,6 +1387,30 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.takemessage');
     Route::get('/friends.php', FriendsController::class)
         ->name('legacy.friends');
+
+    /*
+     * Phase 2 (this PR): replaces `public/invite.php` (deleted in
+     * the same PR, −346 LOC). Authed-only invite-system page.
+     * GET-only — every POST happens on a separate URL:
+     *   - `?type=new` form submits to `/takeinvite.php` (still legacy).
+     *   - The invitee-checkbox form submits to `/takeconfirm.php`
+     *     (already migrated → `TakeConfirmController`).
+     *
+     * Permission gate: `$CURUSER['id'] == $id || user_can('viewinvite')`
+     * — preserved verbatim by the controller.
+     *
+     * URL stays `/invite.php` so:
+     *   - `include/functions.php:2256` (the user-header invite link),
+     *   - `public/usercp.php:1083` (the user-control-panel row),
+     *   - `public/userdetails.php:134` (the user profile row),
+     *   - `public/takeinvite.php:142` (the post-send 302 to
+     *     `/invite.php?id=...&sent=1`),
+     *   - `app/Http/Controllers/Legacy/TakeConfirmController.php` (the
+     *     redirect-back-on-success path)
+     *   keep working without template / JS changes.
+     */
+    Route::get('/invite.php', InviteController::class)
+        ->name('legacy.invite');
 
     Route::get('/torrents', TorrentBrowse::class)->name('torrents.browse.alias');
     Route::get('/forum', ForumIndex::class)->name('forum.index');
