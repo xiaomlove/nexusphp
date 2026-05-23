@@ -63,6 +63,7 @@ use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MakePollController;
 use App\Http\Controllers\Legacy\MassmailController;
+use App\Http\Controllers\Legacy\MaxLoginController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoforumsController;
@@ -868,6 +869,33 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::match(['get', 'post'], '/bannedemails.php', BannedEmailsController::class)
         ->name('legacy.bannedemails');
+
+    /*
+     * Phase 2 (auth-flow batch part 3 of 3): replaces
+     * `public/maxlogin.php` (deleted in this PR, −183 LOC).
+     *
+     * Sysop-only admin tool for the `loginattempts` table — the
+     * companion to the per-IP failed-logins ban gate enforced by
+     * `LoginController` / `TakeLoginController` (#304) and
+     * `RecoverController` / `ConfirmResendController` (#305).
+     * When an IP gets stuck on `banned='yes'`, this is the page a
+     * sysop visits to flip the row back, raise the `attempts`
+     * count, or delete the record outright.
+     *
+     * URL preserved exactly so the existing
+     * `viewunbaniprequest.php` cross-link (`<form
+     * action="maxlogin.php">` carrying a `returnto` field) keeps
+     * working without a template change. Same for any sysop
+     * bookmarks pointing at `?action=showlist`.
+     *
+     * Sits inside `auth.nexus:nexus-web` (legacy
+     * `loggedinorreturn()`); the `User::CLASS_SYSOP` gate is
+     * enforced inside the controller via `abort(403)`. POST verb
+     * is CSRF-exempt — the legacy edit form has no `@csrf` field;
+     * see `App\Http\Middleware\VerifyCsrfToken::$except`.
+     */
+    Route::match(['get', 'post'], '/maxlogin.php', MaxLoginController::class)
+        ->name('legacy.maxlogin');
 
     /*
      * Phase 2 batch #6 — replaces `public/allowedemails.php`
