@@ -106,7 +106,7 @@ final class Format
      * `$unit` is a single uppercase letter (`B`, `K`, `M`, `G`, `T`,
      * `P`). Unrecognised units fall through to `0.0` (legacy returned
      * `null` from the same branch — `(int) null` is `0`, so the cast
-     * site in `TakeIncrementBulkController` already collapses that).
+     * site in `take-increment-bulk.php` already collapses that).
      */
     public static function bytesFromUnit(int|float|string $amount, string $unit = 'G'): float
     {

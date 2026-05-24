@@ -170,24 +170,8 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
-    # Phase 2 massmail rewrite — SYSOP+ mass e-mail by class.
-    location = /massmail.php {
-        try_files /nonexistent @nexus_app;
-    }
-
     # Phase 2 batch #10 — legacy migration routes.
     location = /getextinfoajax.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 viewfilelist rewrite — XHR endpoint for torrent file list.
-    location = /viewfilelist.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 viewpeerlist rewrite — XHR endpoint for torrent peer list
-    # (seeders + leechers tables) called from public/js/common.js:44.
-    location = /viewpeerlist.php {
         try_files /nonexistent @nexus_app;
     }
 
@@ -204,24 +188,8 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
-    # Phase 2 auth-flow batch part 1 of 3 — login.php (GET form)
-    # and takelogin.php (POST handler) migrated to Laravel
-    # controllers.
-    location = /login.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /takelogin.php {
-        try_files /nonexistent @nexus_app;
-    }
-
     # Phase 2 batch — bitbucketlog.
     location = /bitbucketlog.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 bitbucket-upload rewrite — avatar upload (multipart POST).
-    location = /bitbucket-upload.php {
         try_files /nonexistent @nexus_app;
     }
 
@@ -270,10 +238,6 @@ server {
         try_files /nonexistent @nexus_app;
     }
 
-    location = /donate.php {
-        try_files /nonexistent @nexus_app;
-    }
-
     location = /bonus-log.php {
         try_files /nonexistent @nexus_app;
     }
@@ -297,150 +261,6 @@ server {
     }
 
     location = /promotionlink.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 increment-bulk rewrite — SYSOP+ batch bonus/invite/upload
-    # form + handler.
-    location = /increment-bulk.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /take-increment-bulk.php {
-    # Phase 2 retriver rewrite — IMDb/PTGen "update external info" endpoint.
-    location = /retriver.php {
-    # Phase 2 fields rewrite — Administrator+ custom-field manager.
-    location = /fields.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 news rewrite — Filament admin resource at
-    # /nexusphp/news; the legacy URL 302s through the Laravel app.
-    location = /news.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 batch (PR #293): five legacy pages migrated to Laravel
-    # controllers. Each entry routes the legacy URL through
-    # @nexus_app so the now-deleted public/*.php files don't 404.
-    location = /linksmanage.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /makepoll.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /reports.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /ipsearch.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /staff.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 batch B (this PR): six legacy pages migrated to Laravel
-    # controllers (the seventh, /cc98bar.php, uses a path-style URI
-    # `/cc98bar.php/.../id<userid>.png` which the catch-all
-    # `location /` already routes through nexus.php; only the exact-
-    # path entries need to be listed here). Each entry routes the
-    # legacy URL through @nexus_app so the now-deleted public/*.php
-    # files don't 404.
-    location = /task.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /downloadnotice.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /search.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /takemessage.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /friends.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 (this PR): /invite.php migrated to InviteController.
-    location = /invite.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 (this PR): /takeinvite.php — POST-only invite-send
-    # write-handler, follow-up to PR #301 (/invite.php).
-    location = /takeinvite.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /download.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 attachment/tags/torrentrss batch.
-    location = /attachment.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /tags.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /torrentrss.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 batch (this PR): four legacy pages migrated to Laravel
-    # controllers (moforums, staffbox, mysql_stats,
-    # getusertorrentlistajax). Each entry routes the now-deleted
-    # public/*.php URL through @nexus_app.
-    location = /moforums.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /staffbox.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /mysql_stats.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /getusertorrentlistajax.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    # Phase 2 torrent lifecycle (this PR): upload + takeupload + edit
-    # + takeedit migrated to Laravel controllers.
-    location = /upload.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /takeupload.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /edit.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /takeedit.php {
-    # Phase 2 batch (this PR): two legacy pages migrated to Laravel
-    # controllers (forummanage, getrss). Each entry routes the
-    # now-deleted public/*.php URL through @nexus_app.
-    location = /forummanage.php {
-        try_files /nonexistent @nexus_app;
-    }
-
-    location = /getrss.php {
         try_files /nonexistent @nexus_app;
     }
 

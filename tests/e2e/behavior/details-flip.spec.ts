@@ -3,14 +3,15 @@ import { loginAs } from '../helpers/api-login';
 
 /**
  * Strangler Fig flip (Phase 3.x) — `/details.php?id=N` now 302→
- * Livewire `/torrent/{id}` (App\Livewire\TorrentDetail) by default,
- * regardless of HTTP method. Only requests carrying an escape-hatch
- * param fall through to legacy.
+ * Livewire `/torrent/{id}` (App\Livewire\TorrentDetail) by default.
+ * Plain `?id=N` GETs flip; anything carrying an escape-hatch param or
+ * a non-GET method falls through to legacy.
  *
  * Escape hatches that stay on legacy:
  *
  *   - `?legacy=1` — explicit canary opt-out
  *   - `?cmtpage=N` — comments pagination (no Livewire equivalent yet)
+ *   - non-GET methods — inline action POSTs (?subtitleupload, …)
  *
  * `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) and
  * `?dllist=1` now flip onto Modern UI as well — TorrentDetail renders
@@ -174,18 +175,27 @@ test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', ()
         await expect(banner).toHaveAttribute('data-banner-type', 'existed');
     });
 
-    test('POST /details.php?id=1 also flips to /torrent/1', async ({
+    test('POST /details.php?id=1 stays on legacy (inline action POSTs)', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
+        // The flip block only fires on GET; POST submissions (e.g.
+        // ?subtitleupload) must fall through to the legacy handler.
+        // We don't post a body here — the legacy file rejects the
+        // empty submission with a 2xx user-visible error, which is
+        // sufficient to prove the flip block did not 302 it.
         const response = await page.request.post('/details.php?id=1', {
             maxRedirects: 0,
         });
-        expect(response.status()).toBe(302);
-        const location = response.headers()['location'] ?? '';
-        expect(location).toMatch(/\/torrent\/1$/);
+        expect(response.status()).toBeGreaterThanOrEqual(200);
+        expect(response.status()).toBeLessThan(400);
+        if (response.status() >= 300 && response.status() < 400) {
+            const location = response.headers()['location'] ?? '';
+            // A POST must never get the read-side flip to /torrent/{id}.
+            expect(location).not.toMatch(/^\/torrent\/\d+/);
+        }
     });
 
     test('/details.php without id stays on legacy (legacy "missing id" error)', async ({

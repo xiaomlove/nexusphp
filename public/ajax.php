@@ -5,44 +5,39 @@ dbconn();
 $action = $_POST['action'] ?? '';
 $params = $_POST['params'] ?? [];
 
-// Phase 2.5 (this PR — batch A of the public/ajax.php cleanup):
-// the six Passkey/WebAuthn actions that used to live below have
-// been lifted out into dedicated Laravel routes — see
-// `App\Http\Controllers\Legacy\PasskeyAjaxController` and the
-// `Route::prefix('passkey')` block in `routes/web.php`. With those
-// gone, every remaining action requires a logged-in user, so the
-// previous two-action carve-out (`getPasskeyGetArgs` /
-// `processPasskeyGet`) is no longer needed.
-loggedinorreturn();
+if ($action != 'getPasskeyGetArgs' && $action != 'processPasskeyGet') {
+    loggedinorreturn();
+}
 
 class AjaxInterface{
 
-    // Phase 2.5 (this PR — batch B of the public/ajax.php cleanup):
-    // the four medal actions
-    // (`toggleUserMedalStatus`, `buyMedal`, `giftMedal`, `saveUserMedal`)
-    // were lifted out into dedicated Laravel routes — see
-    // `App\Http\Controllers\Legacy\MedalAjaxController` and the
-    // `Route::prefix('medal')` block in `routes/web.php`. The
-    // wire-level contract (POST keys / `{ret, msg, data}` envelope)
-    // is preserved verbatim so the inline `<script>` callers in
-    // `MedalController.php` and the "Save chosen medals" form in
-    // `public/userdetails.php` keep working after a single
-    // `jQuery.post(...)` URL flip in each.
+    public static function toggleUserMedalStatus($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\MedalRepository();
+        return $rep->toggleUserMedalStatus($params['id'], $CURUSER['id']);
+    }
 
-    // Phase 2.5 (this PR — batch E of the public/ajax.php cleanup):
-    // the seven remaining mod/utility actions
-    // (`attendanceRetroactive`, `getPtGen`, `removeUserLeechWarn`,
-    // `getOffer`, `approvalModal`, `approval`, `clearShoutBox`)
-    // were lifted out into dedicated Laravel routes — see
-    // `App\Http\Controllers\Legacy\ModAjaxController` and
-    // `App\Http\Controllers\Legacy\MiscAjaxController`, plus the
-    // `Route::prefix('mod')` and `Route::prefix('misc')` blocks in
-    // `routes/web.php`. The wire-level contract (POST keys /
-    // `{ret, msg, data}` envelope) is preserved verbatim so the
-    // first-party JS callers (`public/userdetails.php`,
-    // `public/index.php`, `public/js/ptgen.js`,
-    // `AttendanceController.php`) keep working after a single
-    // `jQuery.post(...)` URL flip in each.
+
+    public static function attendanceRetroactive($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\AttendanceRepository();
+        return $rep->retroactive($CURUSER['id'], $params['date']);
+    }
+
+    public static function getPtGen($params)
+    {
+        $rep = new Nexus\PTGen\PTGen();
+        $result = $rep->generate($params['url']);
+        if ($rep->isRawPTGen($result)) {
+            return $result;
+        } elseif ($rep->isIyuu($result)) {
+            return $result['data'];
+        } else {
+            return '';
+        }
+    }
 
     public static function addClaim($params)
     {
@@ -90,7 +85,6 @@ class AjaxInterface{
         return $rep->approval($CURUSER['id'], $params);
     }
 
-    public static function removeHitAndRun($params)
     public static function addSeedBoxRecord($params)
     {
         global $CURUSER;
@@ -108,6 +102,20 @@ class AjaxInterface{
         return $rep->delete($params['id'], $CURUSER['id']);
     }
 
+    public static function removeHitAndRun($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\BonusRepository();
+        return $rep->consumeToCancelHitAndRun($CURUSER['id'], $params['id']);
+    }
+
+    public static function consumeBenefit($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserRepository();
+        return $rep->consumeBenefit($CURUSER['id'], $params);
+    }
+
     public static function clearShoutBox($params)
     {
         global $CURUSER;
@@ -123,7 +131,6 @@ class AjaxInterface{
         return $rep->consumeToBuyMedal($CURUSER['id'], $params['medal_id']);
     }
 
-    public static function claimTask($params)
     public static function giftMedal($params)
     {
         global $CURUSER;
@@ -145,6 +152,13 @@ class AjaxInterface{
     //    dd($params, $data);
         $rep = new \App\Repositories\MedalRepository();
         return $rep->saveUserMedal($CURUSER['id'], $data);
+    }
+
+    public static function claimTask($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\ExamRepository();
+        return $rep->assignToUser($CURUSER['id'], $params['exam_id']);
     }
 
     public static function addToken($params)
@@ -169,16 +183,47 @@ class AjaxInterface{
         return true;
     }
 
-    // Phase 2.5 (this PR — batch A of the public/ajax.php cleanup):
-    // the six Passkey/WebAuthn actions
-    // (`getPasskeyCreateArgs`, `processPasskeyCreate`, `deletePasskey`,
-    // `getPasskeyList`, `getPasskeyGetArgs`, `processPasskeyGet`)
-    // were lifted out into dedicated Laravel routes — see
-    // `App\Http\Controllers\Legacy\PasskeyAjaxController` and the
-    // `Route::prefix('passkey')` block in `routes/web.php`. The
-    // wire-level contract (POST keys / `{ret, msg, data}` envelope)
-    // is preserved verbatim so `public/js/passkey.js` keeps working
-    // after a single `apiUrl` map flip.
+    public static function getPasskeyCreateArgs($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserPasskeyRepository();
+        return $rep->getCreateArgs($CURUSER['id'], $CURUSER['username']);
+    }
+
+    public static function processPasskeyCreate($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserPasskeyRepository();
+        return $rep->processCreate($CURUSER['id'], $params['challengeId'], $params['clientDataJSON'], $params['attestationObject']);
+    }
+
+    public static function deletePasskey($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserPasskeyRepository();
+        return $rep->delete($CURUSER['id'], $params['credentialId']);
+    }
+
+    public static function getPasskeyList($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserPasskeyRepository();
+        return $rep->getList($CURUSER['id']);
+    }
+
+    public static function getPasskeyGetArgs($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserPasskeyRepository();
+        return $rep->getGetArgs();
+    }
+
+    public static function processPasskeyGet($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\UserPasskeyRepository();
+        return $rep->processGet($params['challengeId'], $params['id'], $params['clientDataJSON'], $params['authenticatorData'], $params['signature'], $params['userHandle']);
+    }
 }
 
 $class = 'AjaxInterface';

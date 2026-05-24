@@ -160,9 +160,8 @@ class FormatTest extends TestCase
     public function test_bytes_from_unit_defaults_to_gibibytes(): void
     {
         // The legacy default `$unit = "G"` is preserved so
-        // `TakeIncrementBulkController` (the migrated replacement
-        // for `public/take-increment-bulk.php`) continues to
-        // interpret bare numbers as gigabytes.
+        // `take-increment-bulk.php` continues to interpret bare
+        // numbers as gigabytes.
         $this->assertSame(1073741824.0, Format::bytesFromUnit(1));
         $this->assertSame(5.0 * 1073741824, Format::bytesFromUnit(5));
     }
@@ -177,9 +176,8 @@ class FormatTest extends TestCase
 
     public function test_bytes_from_unit_accepts_string_amount(): void
     {
-        // Legacy call sites (now `TakeIncrementBulkController`,
-        // formerly `public/take-increment-bulk.php`) pass a `$_POST`
-        // value, so a string `"5"` must coerce to 5.
+        // Legacy call sites in `public/take-increment-bulk.php` pass
+        // a `$_POST` value, so a string `"5"` must coerce to 5.
         $this->assertSame(5.0 * 1024, Format::bytesFromUnit('5', 'K'));
         $this->assertSame(0.0, Format::bytesFromUnit('', 'K'));
     }

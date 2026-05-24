@@ -289,29 +289,6 @@ class Update extends Install
         }
         $this->removeMenu(['catmanage.php']);
 
-        /**
-         * `public/catmanage.php` was a single-script admin hub for the
-         * `categories` / `sources` / `media` / `codecs` / `standards` /
-         * `processings` / `teams` / `audiocodecs` / `searchbox` /
-         * `caticon` / `secondicon` lookup tables. All eleven targets
-         * already have Filament 5 resources under
-         * `app/Filament/Resources/Section/`, so the migration is a
-         * pure delete + redirect (see `routes/web.php`). The legacy
-         * adminpanel row is removed by the `removeMenu` call above
-         * (idempotent since `@since 1.8.0`); this `addMenu` step
-         * inserts the new `/nexusphp/categories` row on existing
-         * installs that have already had their `catmanage.php` row
-         * removed but never re-seeded. `addMenu` is idempotent —
-         * the seeder writes the same row on a fresh install, and
-         * this is a no-op once it lands.
-         */
-        $this->addMenu(
-            'adminpanel',
-            [
-                ['name' => 'Category Manage', 'url' => '/nexusphp/categories', 'info' => 'Manage torrents categories at your site'],
-            ],
-        );
-
         if (! NexusDB::hasColumn('users', 'seed_points_updated_at')) {
             $this->runMigrate('database/migrations/2022_11_23_042152_add_seed_points_seed_times_update_time_to_users_table.php');
             foreach (User::$notificationOptions as $option) {
@@ -399,73 +376,6 @@ class Update extends Install
          * is idempotent: safe to keep running on every update.
          */
         $this->removeMenu(['docleanup.php']);
-
-        /**
-         * `public/faqmanage.php` and `public/faqactions.php` were
-         * removed in Phase 2 (replaced by the Filament resource at
-         * `/nexusphp/faqs`). The legacy URLs are kept as 302 redirects
-         * to the new admin (`routes/web.php`), so an existing menu row
-         * pointing at `faqmanage.php` still navigates correctly. The
-         * `addMenu` step writes the new `/nexusphp/faqs` URL on every
-         * update so a freshly clicked link is the canonical one;
-         * `removeMenu` then drops the stale `faqmanage.php` row, and
-         * `addMenu` is a no-op once the new entry exists. Both helpers
-         * are idempotent.
-         */
-        $this->addMenu(
-            'adminpanel',
-            [
-                ['name' => 'FAQ Management', 'url' => '/nexusphp/faqs', 'info' => 'Edit/Add/Delete FAQ Page'],
-            ],
-        );
-        $this->removeMenu(['faqmanage.php', 'faqactions.php']);
-
-        /**
-         * `public/location.php` was removed in Phase 2 (replaced by
-         * the Filament resource at `/nexusphp/locations`). The legacy
-         * URL stays alive as a 302 redirect (`routes/web.php`), so
-         * the existing `SysoppanelTableSeeder.url='location.php'` row
-         * still navigates correctly. The `addMenu` writes the new
-         * URL on existing installs that have already had the legacy
-         * row removed; `removeMenu` drops the stale `location.php`
-         * row. Both helpers are idempotent.
-         */
-        $this->addMenu(
-            'sysoppanel',
-            [
-                ['name' => 'Location', 'url' => '/nexusphp/locations', 'info' => 'Manage location and location speed'],
-            ],
-        );
-        $this->removeMenu(['location.php']);
-
-        /**
-         * `public/news.php` was removed in Phase 2 (replaced by the
-         * Filament resource at `/nexusphp/news`). The legacy URL
-         * stays alive as a 302 redirect (`routes/web.php`), so any
-         * admin bookmark pointing at `news.php?action=edit&newsid=N`
-         * still navigates to the new admin instead of a 404. The
-         * `addMenu` step writes the new `/nexusphp/news` row on
-         * every upgrade so a fresh click lands on the canonical URL;
-         * `removeMenu` drops the legacy `news.php` row that
-         * historical installs may carry. Both helpers are
-         * idempotent — `addMenu` is a no-op once the new entry
-         * exists, and `removeMenu` deletes by URL match.
-         */
-        $this->addMenu(
-            'adminpanel',
-            [
-                ['name' => 'News Management', 'url' => '/nexusphp/news', 'info' => 'Add/Edit/Delete site news items'],
-            ],
-        );
-        $this->removeMenu(['news.php']);
-
-        /**
-         * @since next
-         * `public/mysql_stats.php` was removed in Phase 2 (this PR).
-         * The sysop-panel entry is dropped so existing installations
-         * stop showing a dead menu item. `removeMenu` is idempotent.
-         */
-        $this->removeMenu(['mysql_stats.php']);
     }
 
     public function runExtraMigrate()

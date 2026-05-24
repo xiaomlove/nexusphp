@@ -4,10 +4,13 @@ ob_start(); //Do not delete this line
 /*
  * Strangler Fig flip (Phase 3.x) — the canonical torrent-detail URL is
  * now the Livewire `App\Livewire\TorrentDetail` at `/torrent/{id}`.
- * Any request that carries `?id=N` is 302-bounced to the new route
- * regardless of HTTP method; only the canary `?legacy=1` opt-out and
- * the comments pagination `?cmtpage=N` (no Livewire equivalent yet)
- * fall through to the legacy code below.
+ * Read-only GETs that carry only `?id=N` (optionally with `?hit=1`,
+ * `?dllist=1`, the post-write `?uploaded` / `?edited` / `?existed`
+ * banners or their optional `?returnto` companion) are 302-bounced
+ * to the new route; anything else (the canary `?legacy=1` opt-out,
+ * the comments pagination `?cmtpage=N`, and every non-GET request —
+ * i.e. the inline action POST handlers like ?subtitleupload) falls
+ * through to the legacy code below.
  *
  * The `?hit=1` view-counter side effect is wired into
  * `App\Livewire\TorrentDetail::mount()`, so first-party "open from
@@ -28,6 +31,8 @@ ob_start(); //Do not delete this line
  *     documented in docs/legacy-strategy.md. Mirrors forums.php.
  *   - `?cmtpage=N` — comments pagination. The comments listing has not
  *     been migrated to Livewire yet, so paged URLs must stay on legacy.
+ *   - non-GET requests — the inline action POSTs (subtitle upload etc.)
+ *     are still served by this file.
  *
  * The redirect runs BEFORE require'ing include/bittorrent.php so the
  * fast path never pays for legacy bootstrap / dbconn() / session load.
@@ -36,6 +41,7 @@ ob_start(); //Do not delete this line
  * of the file are deleted in a single follow-up `git rm` PR.
  */
 $detailsFlipId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$detailsFlipMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $detailsFlipEscapeHatches = [
     'legacy', 'cmtpage',
 ];
@@ -47,7 +53,12 @@ foreach ($detailsFlipEscapeHatches as $detailsFlipKey) {
     }
 }
 $detailsFlipLocation = null;
-if ($detailsFlipId > 0 && ! $detailsFlipHasEscapeHatch) {
+if ($detailsFlipMethod === 'GET' && $detailsFlipId > 0 && ! $detailsFlipHasEscapeHatch) {
+    // Drop the legacy `id=` key (consumed by the route path) and
+    // forward any remaining query params verbatim. TorrentDetail
+    // ignores unknown keys, so this is a safe no-op for canonical
+    // URLs and keeps bookmark-with-extra-params from losing data on
+    // the first hop.
     $detailsFlipParams = $_GET;
     unset($detailsFlipParams['id']);
     $detailsFlipQs = http_build_query($detailsFlipParams);
@@ -61,6 +72,7 @@ if ($detailsFlipLocation !== null) {
 }
 unset(
     $detailsFlipId,
+    $detailsFlipMethod,
     $detailsFlipEscapeHatches,
     $detailsFlipKey,
     $detailsFlipHasEscapeHatch,
@@ -300,12 +312,8 @@ jQuery('#add-claim').on('click', function () {
     if (!window.confirm('{$lang_details['claim_confirm']}')) {
         return
     }
-    // Phase 2.5 (PR — batch C of the public/ajax.php cleanup):
-    // flipped from `ajax.php?action=addClaim` to the dedicated
-    // `/claim/add` endpoint. Same `params` shape, same envelope.
-    // See `App\Http\Controllers\Legacy\ClaimAjaxController`.
-    let params = {params: {"torrent_id": jQuery(this).attr('data-torrent_id')}}
-    jQuery.post("/claim/add", params, function (response) {
+    let params = {action: "addClaim", params: {"torrent_id": jQuery(this).attr('data-torrent_id')}}
+    jQuery.post("ajax.php", params, function (response) {
         console.log(response)
         if (response.ret != 0) {
             alert(response.msg)

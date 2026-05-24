@@ -6,12 +6,13 @@ jQuery('.btn-get-pt-gen').on('click', function () {
         return
     }
     let params = {
+        action: 'getPtGen',
         params: {url: value}
     }
     jQuery('body').loading({
         stoppable: false
     });
-    jQuery.post('/misc/pt-gen', params, function (response) {
+    jQuery.post('ajax.php', params, function (response) {
         jQuery('body').loading('stop');
         if (response.ret != 0) {
             alert(response.msg)

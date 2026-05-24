@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 
 class AdminpanelTableSeeder extends Seeder
 {
+
     /**
      * Auto generated seed file
      *
@@ -14,77 +15,82 @@ class AdminpanelTableSeeder extends Seeder
     public function run()
     {
 
+
         \DB::table('adminpanel')->delete();
 
-        \DB::table('adminpanel')->insert([
-            0 => [
+        \DB::table('adminpanel')->insert(array (
+            0 =>
+            array (
                 'id' => 1,
                 'name' => 'Add user',
                 'url' => 'adduser.php',
                 'info' => 'Create new user account',
-            ],
-            1 => [
+            ),
+            1 =>
+            array (
                 'id' => 3,
                 'name' => 'Reset Users Password',
                 'url' => 'reset.php',
                 'info' => 'Rest lost Passwords',
-            ],
-            2 => [
+            ),
+            2 =>
+            array (
                 'id' => 4,
                 'name' => 'Mass PM',
                 'url' => 'staffmess.php',
                 'info' => 'Send PM to all users',
-            ],
-            3 => [
+            ),
+            3 =>
+            array (
                 'id' => 6,
                 'name' => 'Poll overview',
                 'url' => 'polloverview.php',
                 'info' => 'View poll votes',
-            ],
-            4 => [
+            ),
+            4 =>
+            array (
                 'id' => 7,
                 'name' => 'Warned users',
                 'url' => 'warned.php',
                 'info' => 'See all warned users on tracker',
-            ],
-            //            5 =>
-            //            array (
-            //                'id' => 8,
-            //                'name' => 'FreeLeech',
-            //                'url' => 'freeleech.php',
-            //                'info' => 'Set ALL Torrents At Special State.',
-            //            ),
-            6 => [
+            ),
+//            5 =>
+//            array (
+//                'id' => 8,
+//                'name' => 'FreeLeech',
+//                'url' => 'freeleech.php',
+//                'info' => 'Set ALL Torrents At Special State.',
+//            ),
+            6 =>
+            array (
                 'id' => 9,
                 'name' => 'FAQ Management',
-                'url' => '/nexusphp/faqs',
+                'url' => 'faqmanage.php',
                 'info' => 'Edit/Add/Delete FAQ Page',
-            ],
-            7 => [
+            ),
+            7 =>
+            array (
                 'id' => 10,
                 'name' => 'Rules Management',
                 'url' => 'modrules.php',
                 'info' => 'Edit/Add/Delete RULES Page',
-            ],
-            8 => [
+            ),
+            8 =>
+            array (
                 'id' => 11,
                 'name' => 'Category Manage',
-                'url' => '/nexusphp/categories',
+                'url' => 'catmanage.php',
                 'info' => 'Manage torrents categories at your site',
-            ],
-            9 => [
+            ),
+            9 =>
+            array (
                 'id' => 12,
                 'name' => 'Custom Field Manage',
                 'url' => 'fields.php',
                 'info' => 'Manage custom fields',
-            ],
-            10 => [
-                'id' => 13,
-                'name' => 'News Management',
-                'url' => '/nexusphp/news',
-                'info' => 'Add/Edit/Delete site news items',
-            ],
-        ]);
+            ),
+        ));
+
 
     }
 }

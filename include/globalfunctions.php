@@ -649,26 +649,19 @@ function fail(...$args)
 
 function last_query($all = false, $format = 'json')
 {
-    try {
+    static $connection;
+    if (is_null($connection)) {
         $connectionName = NexusDB::getConnectionName();
-        $connection = IN_NEXUS
-            ? Manager::connection($connectionName)
-            : DB::connection($connectionName);
-    } catch (Throwable $e) {
-        return $all === 'COUNT' ? 0 : ($all ? [] : '');
-    }
-    if ($all === 'COUNT') {
-        try {
-            return count($connection->getQueryLog());
-        } catch (Throwable $e) {
-            return 0;
+        if (IN_NEXUS) {
+            $connection = Manager::connection($connectionName);
+        } else {
+            $connection = DB::connection($connectionName);
         }
     }
-    try {
-        $queries = $connection->getRawQueryLog();
-    } catch (Throwable $e) {
-        $queries = [];
+    if ($all === 'COUNT') {
+        return count($connection->getQueryLog());
     }
+    $queries = $connection->getRawQueryLog();
     if ($all) {
         return $queries;
     }
@@ -844,6 +837,7 @@ function get_user_row($id)
 
         return apply_filter('user_row', $arr);
     });
+
 
     if (! $row) {
         return false;

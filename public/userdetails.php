@@ -80,7 +80,7 @@ jQuery('#save-user-medal-btn').on("click", function (e) {
     let form = jQuery(this).closest('form');
     let data = form.serializeArray();
     console.log(data)
-    jQuery.post('/medal/save-user', {params: data}, function (response) {
+    jQuery.post('ajax.php', {params: data, action: 'saveUserMedal'}, function (response) {
         console.log(response)
         if (response.ret != 0) {
             layer.alert(response.msg)
@@ -283,7 +283,7 @@ jQuery('#{$triggerId}').on("click", function () {
         btnAlign: 'c',
         yes: function () {
             let params = jQuery('#layer-form-{$metaKey}').serialize()
-            jQuery.post('/benefit/consume', params, function (response) {
+            jQuery.post('ajax.php', params + "&action=consumeBenefit", function (response) {
                 console.log(response)
                 if (response.ret != 0) {
                     layer.alert(response.msg)
@@ -514,8 +514,8 @@ jQuery('#remove-leech-warn').on('click', function () {
     if (!window.confirm('{$lang_userdetails['sure_to_remove_leech_warn']}')) {
         return
     }
-    let params = {params: {uid: jQuery(this).attr('data-uid')}}
-    jQuery.post('/mod/remove-leech-warn', params, function (response) {
+    let params = {action: 'removeUserLeechWarn', params: {uid: jQuery(this).attr('data-uid')}}
+    jQuery.post('ajax.php', params, function (response) {
         console.log(response)
         if (response.ret == 0) {
             location.reload()

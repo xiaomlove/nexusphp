@@ -30,12 +30,12 @@ class SysoppanelTableSeeder extends Seeder
                 'url' => 'forummanage.php',
                 'info' => 'Edit/Delete forum',
             ],
-            //            2 => [
-            //                'id' => 3,
-            //                'name' => 'MySQL Stats',
-            //                'url' => 'mysql_stats.php',
-            //                'info' => 'See MySql stats',
-            //            ],
+            2 => [
+                'id' => 3,
+                'name' => 'MySQL Stats',
+                'url' => 'mysql_stats.php',
+                'info' => 'See MySql stats',
+            ],
             3 => [
                 'id' => 4,
                 'name' => 'Mass mailer',
@@ -81,7 +81,7 @@ class SysoppanelTableSeeder extends Seeder
             10 => [
                 'id' => 11,
                 'name' => 'Location',
-                'url' => '/nexusphp/locations',
+                'url' => 'location.php',
                 'info' => 'Manage location and location speed',
             ],
             11 => [
