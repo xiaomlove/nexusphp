@@ -1903,10 +1903,11 @@ class TorrentDetail extends Component
                 $comment->setAttribute('display_avatar', '');
                 $comment->setAttribute('display_online', false);
             } else {
-                $comment->setAttribute('display_username', $comment->create_user?->username);
-                $avatar = trim((string) ($comment->create_user?->avatar ?? ''));
-                $comment->setAttribute('display_avatar', $avatar);
-                $lastAccess = $comment->create_user?->last_access;
+                $author = $comment->create_user;
+                $comment->setAttribute('display_username', $author?->username);
+                $rawAvatar = $author !== null ? trim((string) ($author->getRawOriginal('avatar') ?? '')) : '';
+                $comment->setAttribute('display_avatar', $rawAvatar !== '' ? (string) $author?->avatar : '');
+                $lastAccess = $author?->last_access;
                 $isOnline = $lastAccess instanceof Carbon && $lastAccess->greaterThan($onlineCutoff);
                 $comment->setAttribute('display_online', $isOnline);
             }

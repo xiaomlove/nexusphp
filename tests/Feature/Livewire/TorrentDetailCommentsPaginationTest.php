@@ -74,9 +74,9 @@ class TorrentDetailCommentsPaginationTest extends FeatureTestCase
         Livewire::actingAs($owner, 'nexus-web')
             ->withQueryParams(['cmtpage' => 1])
             ->test(TorrentDetail::class, ['id' => $torrentId])
-            ->assertSee('paged-cmt-1<')
-            ->assertSee('paged-cmt-10<')
-            ->assertDontSee('paged-cmt-11<')
+            ->assertSee('paged-cmt-1<', false)
+            ->assertSee('paged-cmt-10<', false)
+            ->assertDontSee('paged-cmt-11<', false)
             ->assertSeeHtml('data-test-id="comments-pager-current" data-page="1"');
     }
 
