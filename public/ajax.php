@@ -49,20 +49,6 @@ class AjaxInterface{
         }
     }
 
-    public static function addClaim($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\ClaimRepository();
-        return $rep->store($CURUSER['id'], $params['torrent_id']);
-    }
-
-    public static function removeClaim($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\ClaimRepository();
-        return $rep->delete($params['id'], $CURUSER['id']);
-    }
-
     public static function removeUserLeechWarn($params)
     {
         global $CURUSER;
@@ -96,17 +82,21 @@ class AjaxInterface{
     }
 
     public static function removeHitAndRun($params)
+    public static function addSeedBoxRecord($params)
     {
         global $CURUSER;
-        $rep = new \App\Repositories\BonusRepository();
-        return $rep->consumeToCancelHitAndRun($CURUSER['id'], $params['id']);
+        $rep = new \App\Repositories\SeedBoxRepository();
+        $params['uid'] = $CURUSER['id'];
+        $params['type'] = \App\Models\SeedBoxRecord::TYPE_USER;
+        $params['status'] = \App\Models\SeedBoxRecord::STATUS_UNAUDITED;
+        return $rep->store($params);
     }
 
-    public static function consumeBenefit($params)
+    public static function removeSeedBoxRecord($params)
     {
         global $CURUSER;
-        $rep = new \App\Repositories\UserRepository();
-        return $rep->consumeBenefit($CURUSER['id'], $params);
+        $rep = new \App\Repositories\SeedBoxRepository();
+        return $rep->delete($params['id'], $CURUSER['id']);
     }
 
     public static function clearShoutBox($params)
@@ -117,11 +107,34 @@ class AjaxInterface{
         return true;
     }
 
-    public static function claimTask($params)
+    public static function buyMedal($params)
     {
         global $CURUSER;
-        $rep = new \App\Repositories\ExamRepository();
-        return $rep->assignToUser($CURUSER['id'], $params['exam_id']);
+        $rep = new \App\Repositories\BonusRepository();
+        return $rep->consumeToBuyMedal($CURUSER['id'], $params['medal_id']);
+    }
+
+    public static function giftMedal($params)
+    {
+        global $CURUSER;
+        $rep = new \App\Repositories\BonusRepository();
+        return $rep->consumeToGiftMedal($CURUSER['id'], $params['medal_id'], $params['uid']);
+    }
+
+    public static function saveUserMedal($params)
+    {
+        global $CURUSER;
+        $data = [];
+        foreach ($params as $param) {
+            $fieldAndId = explode('_', $param['name']);
+            $field = $fieldAndId[0];
+            $id = $fieldAndId[1];
+            $value = $param['value'];
+            $data[$id][$field] = $value;
+        }
+    //    dd($params, $data);
+        $rep = new \App\Repositories\MedalRepository();
+        return $rep->saveUserMedal($CURUSER['id'], $data);
     }
 
     public static function addToken($params)
