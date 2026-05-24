@@ -227,5 +227,22 @@ class VerifyCsrfToken extends Middleware
         // sweep. See `routes/web.php` (the `Route::prefix('medal')`
         // block) and `App\Http\Controllers\Legacy\MedalAjaxController`.
         'medal/*',
+        // Phase 2.5 (this PR — batch E of the `public/ajax.php`
+        // cleanup): the five new `/mod/*` endpoints replace the
+        // mod/admin sub-API previously dispatched through
+        // `public/ajax.php?action=...`. The first-party JS callers —
+        // the "Remove leech warn" button in `public/userdetails.php`
+        // and the "Clear shout box" button in `public/index.php` —
+        // post bare `application/x-www-form-urlencoded` bodies with
+        // no `_token`. The remaining three (`getOffer`,
+        // `approvalModal`, `approval`) have no first-party callers
+        // via `ajax.php` but are migrated for parity.
+        'mod/*',
+        // Phase 2.5 (batch E cont'd): the two new `/misc/*`
+        // endpoints replace the utility sub-API (`getPtGen`,
+        // `attendanceRetroactive`). Callers are `public/js/ptgen.js`
+        // and `AttendanceController.php` inline JS — both post bare
+        // bodies with no `_token`.
+        'misc/*',
     ];
 }

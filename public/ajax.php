@@ -29,25 +29,20 @@ class AjaxInterface{
     // `public/userdetails.php` keep working after a single
     // `jQuery.post(...)` URL flip in each.
 
-    public static function attendanceRetroactive($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\AttendanceRepository();
-        return $rep->retroactive($CURUSER['id'], $params['date']);
-    }
-
-    public static function getPtGen($params)
-    {
-        $rep = new Nexus\PTGen\PTGen();
-        $result = $rep->generate($params['url']);
-        if ($rep->isRawPTGen($result)) {
-            return $result;
-        } elseif ($rep->isIyuu($result)) {
-            return $result['data'];
-        } else {
-            return '';
-        }
-    }
+    // Phase 2.5 (this PR — batch E of the public/ajax.php cleanup):
+    // the seven remaining mod/utility actions
+    // (`attendanceRetroactive`, `getPtGen`, `removeUserLeechWarn`,
+    // `getOffer`, `approvalModal`, `approval`, `clearShoutBox`)
+    // were lifted out into dedicated Laravel routes — see
+    // `App\Http\Controllers\Legacy\ModAjaxController` and
+    // `App\Http\Controllers\Legacy\MiscAjaxController`, plus the
+    // `Route::prefix('mod')` and `Route::prefix('misc')` blocks in
+    // `routes/web.php`. The wire-level contract (POST keys /
+    // `{ret, msg, data}` envelope) is preserved verbatim so the
+    // first-party JS callers (`public/userdetails.php`,
+    // `public/index.php`, `public/js/ptgen.js`,
+    // `AttendanceController.php`) keep working after a single
+    // `jQuery.post(...)` URL flip in each.
 
     public static function addClaim($params)
     {
@@ -61,38 +56,6 @@ class AjaxInterface{
         global $CURUSER;
         $rep = new \App\Repositories\ClaimRepository();
         return $rep->delete($params['id'], $CURUSER['id']);
-    }
-
-    public static function removeUserLeechWarn($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserRepository();
-        return $rep->removeLeechWarn($CURUSER['id'], $params['uid']);
-    }
-
-    public static function getOffer($params)
-    {
-        $offer = \App\Models\Offer::query()->findOrFail($params['id']);
-        return $offer->toArray();
-    }
-
-    public static function approvalModal($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\TorrentRepository();
-        return $rep->buildApprovalModal($CURUSER['id'], $params['torrent_id']);
-    }
-
-    public static function approval($params)
-    {
-        global $CURUSER;
-        foreach (['torrent_id', 'approval_status',] as $field) {
-            if (!isset($params[$field])) {
-                throw new \InvalidArgumentException("Require $field");
-            }
-        }
-        $rep = new \App\Repositories\TorrentRepository();
-        return $rep->approval($CURUSER['id'], $params);
     }
 
     public static function addSeedBoxRecord($params)
@@ -124,14 +87,6 @@ class AjaxInterface{
         global $CURUSER;
         $rep = new \App\Repositories\UserRepository();
         return $rep->consumeBenefit($CURUSER['id'], $params);
-    }
-
-    public static function clearShoutBox($params)
-    {
-        global $CURUSER;
-        user_can('sbmanage', true);
-        \Nexus\Database\NexusDB::table('shoutbox')->delete();
-        return true;
     }
 
     public static function claimTask($params)
