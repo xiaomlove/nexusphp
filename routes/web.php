@@ -23,6 +23,7 @@ use App\Http\Controllers\Legacy\ContactStaffController;
 use App\Http\Controllers\Legacy\DelAcctAdminController;
 use App\Http\Controllers\Legacy\DeleteDisabledController;
 use App\Http\Controllers\Legacy\DocleanupController;
+use App\Http\Controllers\Legacy\DonateController;
 use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
