@@ -46,14 +46,8 @@ class BitBucketUploadControllerTest extends FeatureTestCase
             mkdir($this->bucketPath, 0o755, true);
         }
 
-        Setting::query()->updateOrCreate(
-            ['name' => 'main', 'arg' => 'enablebitbucket'],
-            ['value' => 'yes', 'type' => 'string'],
-        );
-        Setting::query()->updateOrCreate(
-            ['name' => 'main', 'arg' => 'bitbucket'],
-            ['value' => $this->bucketDir, 'type' => 'string'],
-        );
+        Setting::set('main.enablebitbucket', 'yes');
+        Setting::set('main.bitbucket', $this->bucketDir);
     }
 
     protected function tearDown(): void
@@ -94,10 +88,7 @@ class BitBucketUploadControllerTest extends FeatureTestCase
 
     public function test_disabled_bitbucket_setting_is_forbidden(): void
     {
-        Setting::query()->updateOrCreate(
-            ['name' => 'main', 'arg' => 'enablebitbucket'],
-            ['value' => 'no', 'type' => 'string'],
-        );
+        Setting::set('main.enablebitbucket', 'no');
 
         $user = $this->createTestUser();
         $this->actingAs($user, 'nexus-web');
