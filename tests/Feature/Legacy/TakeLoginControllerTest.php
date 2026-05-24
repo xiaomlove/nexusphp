@@ -231,7 +231,7 @@ class TakeLoginControllerTest extends FeatureTestCase
      * requests. Pinned here so the failed-attempt counter tests
      * can target exactly the rows the controller will read.
      */
-    private function testIp(): string
+    private function test_ip(): string
     {
         return '127.0.0.1';
     }

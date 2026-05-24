@@ -6,6 +6,7 @@ use App\Jobs\SendMassMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\CreatesLegacyTestUsers;
+use Tests\Feature\Jobs\SendMassMailTest;
 use Tests\FeatureTestCase;
 
 /**
@@ -16,7 +17,7 @@ use Tests\FeatureTestCase;
  * Mirrors the `staffmess.php` precedent: every test
  * `Queue::fake()`s the dispatcher so the actual SMTP fan-out
  * never runs in controller tests; the job's own behaviour is
- * exercised in {@see \Tests\Feature\Jobs\SendMassMailTest}.
+ * exercised in {@see SendMassMailTest}.
  */
 class MassmailControllerTest extends FeatureTestCase
 {
