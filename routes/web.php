@@ -31,6 +31,7 @@ use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
 use App\Http\Controllers\Legacy\ImageCaptchaController;
+use App\Http\Controllers\Legacy\IncrementBulkController;
 use App\Http\Controllers\Legacy\IpCheckController;
 use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\LogoutController;
@@ -57,6 +58,7 @@ use App\Http\Controllers\Legacy\SuggestController;
 use App\Http\Controllers\Legacy\TakeConfirmController;
 use App\Http\Controllers\Legacy\TakeContactController;
 use App\Http\Controllers\Legacy\TakeFlushController;
+use App\Http\Controllers\Legacy\TakeIncrementBulkController;
 use App\Http\Controllers\Legacy\TakeReseedController;
 use App\Http\Controllers\Legacy\TakeStaffMessController;
 use App\Http\Controllers\Legacy\TakeUpdateController;
@@ -503,6 +505,26 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/retriver.php', RetriverController::class)
         ->name('legacy.retriver');
+
+    /*
+     * Phase 2 — replaces `public/increment-bulk.php` (deleted in this
+     * PR). Sysop-only form page for bulk-adding bonus / attendance
+     * card / invite / uploaded / temporary invite to users of selected
+     * classes. The form POSTs to `/take-increment-bulk.php`.
+     */
+    Route::get('/increment-bulk.php', IncrementBulkController::class)
+        ->name('legacy.incrementbulk');
+
+    /*
+     * Phase 2 — replaces `public/take-increment-bulk.php` (deleted in
+     * this PR). POST handler for the bulk-increment form. Loops
+     * through matching users in chunks, increments the selected
+     * column, dispatches `invite:tmp` for temporary invites, sends
+     * PMs, and redirects to `/increment-bulk.php?sent=1&type=<type>`.
+     * CSRF-exempt — the legacy form has no `@csrf` field.
+     */
+    Route::post('/take-increment-bulk.php', TakeIncrementBulkController::class)
+        ->name('legacy.takeincrementbulk');
 
     /*
      * Phase 2 batch #11 — replaces `public/takeconfirm.php` (deleted

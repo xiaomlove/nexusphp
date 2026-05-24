@@ -89,5 +89,10 @@ class VerifyCsrfToken extends Middleware
         // through a token-mint round trip first.
         'self-enable.php',
         'cheaterbox.php',
+        // Phase 2: `/take-increment-bulk.php` accepts POST without a
+        // CSRF token — the legacy `<form method=post>` in
+        // `public/increment-bulk.php` (deleted in this PR) had no
+        // `@csrf` field.
+        'take-increment-bulk.php',
     ];
 }
