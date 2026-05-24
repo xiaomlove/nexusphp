@@ -168,7 +168,7 @@ class TakeLoginControllerTest extends FeatureTestCase
         $user = $this->createTestUser();
 
         $beforeAttempts = (int) NexusDB::table('loginattempts')
-            ->where('ip', $this->testIp())
+            ->where('ip', $this->test_ip())
             ->sum('attempts');
 
         $response = $this->post('/takelogin.php', [
@@ -179,7 +179,7 @@ class TakeLoginControllerTest extends FeatureTestCase
         $response->assertOk();
 
         $afterAttempts = (int) NexusDB::table('loginattempts')
-            ->where('ip', $this->testIp())
+            ->where('ip', $this->test_ip())
             ->sum('attempts');
         $this->assertGreaterThan(
             $beforeAttempts,
@@ -198,7 +198,7 @@ class TakeLoginControllerTest extends FeatureTestCase
         $GLOBALS['maxloginattempts'] = $maxAttempts;
 
         try {
-            $ip = $this->testIp();
+            $ip = $this->test_ip();
             NexusDB::insert('loginattempts', [
                 'ip' => $ip,
                 'added' => date('Y-m-d H:i:s'),
@@ -226,11 +226,6 @@ class TakeLoginControllerTest extends FeatureTestCase
         ], $overrides));
     }
 
-    /**
-     * IP that the Laravel test runner reports for synthetic
-     * requests. Pinned here so the failed-attempt counter tests
-     * can target exactly the rows the controller will read.
-     */
     private function test_ip(): string
     {
         return '127.0.0.1';

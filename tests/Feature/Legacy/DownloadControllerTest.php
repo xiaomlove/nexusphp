@@ -64,12 +64,7 @@ class DownloadControllerTest extends FeatureTestCase
 
     public function test_invalid_passkey_returns_400(): void
     {
-        // Ensure passkey-mode is enabled — without it, the passkey
-        // branch is skipped and we fall into session-auth.
-        Setting::query()->updateOrCreate(
-            ['name' => 'torrent', 'arg' => 'download_support_passkey'],
-            ['value' => json_encode('yes')],
-        );
+        Setting::set('torrent.download_support_passkey', 'yes');
 
         $response = $this->get('/download.php?passkey=invalid_passkey_value&id=1');
         $response->assertStatus(400);
