@@ -130,7 +130,7 @@ class MyhrController extends Controller
 jQuery('#hr-table').on('click', '.remove-hr', function () {
     var id = jQuery(this).attr('data-id')
     layer.confirm('{$removeMsg}', function (index) {
-        jQuery.post('ajax.php', {"action": "removeHitAndRun", "params": {"id": id}}, function (response) {
+        jQuery.post('/hit-and-run/remove', {"params": {"id": id}}, function (response) {
             if (response.ret != 0) { layer.alert(response.msg); return; }
             window.location.reload()
         }, 'json')

@@ -214,13 +214,15 @@ class VerifyCsrfToken extends Middleware
         // a CSRF token — neither legacy form had a `@csrf` field.
         'forummanage.php',
         'getrss.php',
-        // Phase 2.5 (this PR — batch B of the `public/ajax.php`
-        // cleanup): the four new `/medal/*` endpoints replace the
-        // medal sub-API previously dispatched through
-        // `public/ajax.php?action=...`. The three first-party JS
-        // callers — the "Buy medal" / "Gift medal" buttons emitted
-        // inline by `MedalController.php` and the "Save chosen
-        // medals" form in `public/userdetails.php` — post bare
+        // Phase 2.5 (this PR — batch C of the `public/ajax.php`
+        // cleanup): the five new endpoints replace the claim /
+        // hit-and-run / exam-task / benefit sub-APIs previously
+        // dispatched through `public/ajax.php?action=...`. The
+        // four first-party JS callers — the inline scripts in
+        // `public/details.php:315`, `MyhrController:133`,
+        // `TaskController:224`, `public/userdetails.php:286`, and
+        // the shared `claimAction(...)` helper in
+        // `public/js/nexus.js:140` — post bare
         // `application/x-www-form-urlencoded` bodies with no
         // `_token`. Bolting CSRF onto those legacy inline scripts
         // is a separate, larger change tracked in the Phase 1
@@ -244,5 +246,20 @@ class VerifyCsrfToken extends Middleware
         // and `AttendanceController.php` inline JS — both post bare
         // bodies with no `_token`.
         'misc/*',
+        // Phase 2.5 (this PR — batch D of the `public/ajax.php`
+        // cleanup): the four new endpoints replace the seed-box +
+        // user-token sub-APIs previously dispatched through
+        // `public/ajax.php?action=...`. The two seed-box
+        // first-party JS callers (the inline scripts in
+        // `public/usercp.php:1149` and `public/usercp.php:1161`)
+        // post bare `application/x-www-form-urlencoded` bodies with
+        // no `_token`. Bolting CSRF onto those legacy inline
+        // scripts is a separate, larger change tracked in the
+        // Phase 1 sweep. See `routes/web.php` (the
+        // `Route::prefix('seed-box')` and
+        // `Route::prefix('user/token')` blocks) and
+        // `App\Http\Controllers\Legacy\SeedBoxAjaxController`.
+        'seed-box/*',
+        'user/token/*',
     ];
 }

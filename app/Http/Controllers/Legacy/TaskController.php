@@ -221,7 +221,7 @@ if (typeof jQuery !== 'undefined') {
     jQuery('.claim').on('click', function () {
         if (!window.confirm("{$confirmEsc}")) return;
         var id = jQuery(this).attr('data-id');
-        jQuery.post('ajax.php', {action: 'claimTask', params: {exam_id: id}}, function (response) {
+        jQuery.post('/exam/claim-task', {params: {exam_id: id}}, function (response) {
             if (response.ret != 0) { alert(response.msg); return; }
             window.location.reload();
         }, 'json');

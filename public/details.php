@@ -312,8 +312,12 @@ jQuery('#add-claim').on('click', function () {
     if (!window.confirm('{$lang_details['claim_confirm']}')) {
         return
     }
-    let params = {action: "addClaim", params: {"torrent_id": jQuery(this).attr('data-torrent_id')}}
-    jQuery.post("ajax.php", params, function (response) {
+    // Phase 2.5 (PR — batch C of the public/ajax.php cleanup):
+    // flipped from `ajax.php?action=addClaim` to the dedicated
+    // `/claim/add` endpoint. Same `params` shape, same envelope.
+    // See `App\Http\Controllers\Legacy\ClaimAjaxController`.
+    let params = {params: {"torrent_id": jQuery(this).attr('data-torrent_id')}}
+    jQuery.post("/claim/add", params, function (response) {
         console.log(response)
         if (response.ret != 0) {
             alert(response.msg)
