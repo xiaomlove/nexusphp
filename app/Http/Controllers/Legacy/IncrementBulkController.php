@@ -39,6 +39,18 @@ use Illuminate\Http\Response;
  */
 class IncrementBulkController extends Controller
 {
+    /**
+     * Hardcoded valid type map — used as fallback when the legacy
+     * langfile cannot be loaded. Mirrors `$lang_incrementbulk['types']`.
+     */
+    private const VALID_TYPES = [
+        'seedbonus' => 'bonus',
+        'attendance_card' => 'attendance card',
+        'invites' => 'invite',
+        'uploaded' => 'upload',
+        'tmp_invites' => 'temporary invite',
+    ];
+
     public function __construct(private readonly LegacyContext $context) {}
 
     public function __invoke(Request $request): Response
@@ -55,7 +67,7 @@ class IncrementBulkController extends Controller
         $this->ensureLanguageLoaded();
         $lang = $GLOBALS['lang_incrementbulk'] ?? [];
 
-        $validTypeMap = $lang['types'] ?? [];
+        $validTypeMap = $lang['types'] ?? self::VALID_TYPES;
         $labels = $lang['labels'] ?? [];
         $pageTitle = $lang['page_title'] ?? 'Batch add bonus/attendance card/invite/uploaded/temporary invite';
         $sentSuccess = $lang['sent_success'] ?? ' has been added and inform message has been sent';

@@ -50,6 +50,20 @@ class TakeIncrementBulkController extends Controller
     /** Chunk size for paging through users. */
     private const CHUNK_SIZE = 2000;
 
+    /**
+     * Hardcoded valid type map — used as fallback when the legacy
+     * langfile (`lang/<locale>/lang_increment-bulk.php`) cannot be
+     * loaded (e.g. in Feature tests where the locale bootstrap is
+     * absent). Mirrors `$lang_incrementbulk['types']`.
+     */
+    private const VALID_TYPES = [
+        'seedbonus' => 'bonus',
+        'attendance_card' => 'attendance card',
+        'invites' => 'invite',
+        'uploaded' => 'upload',
+        'tmp_invites' => 'temporary invite',
+    ];
+
     public function __construct(private readonly LegacyContext $context) {}
 
     public function __invoke(Request $request): RedirectResponse|Response
@@ -63,9 +77,11 @@ class TakeIncrementBulkController extends Controller
         }
 
         // Load the legacy language file to get the valid type map.
+        // Fallback to hardcoded types if the langfile can't be loaded
+        // (e.g. in tests where the legacy locale bootstrap is absent).
         $this->ensureLanguageLoaded();
         $lang = $GLOBALS['lang_incrementbulk'] ?? [];
-        $validTypeMap = $lang['types'] ?? [];
+        $validTypeMap = $lang['types'] ?? self::VALID_TYPES;
 
         $senderId = ($request->input('sender') === 'system') ? 0 : (int) $user->id;
         $dt = date('Y-m-d H:i:s');
