@@ -44,6 +44,7 @@ use App\Http\Controllers\Legacy\PollOverviewController;
 use App\Http\Controllers\Legacy\PreviewController;
 use App\Http\Controllers\Legacy\PromotionLinkController;
 use App\Http\Controllers\Legacy\ResetController;
+use App\Http\Controllers\Legacy\RetriverController;
 use App\Http\Controllers\Legacy\RulesController;
 use App\Http\Controllers\Legacy\SearchSuggestController;
 use App\Http\Controllers\Legacy\SelfEnableController;
@@ -491,6 +492,17 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/takereseed.php', TakeReseedController::class)
         ->name('legacy.takereseed');
+
+    /*
+     * Phase 2 — replaces `public/retriver.php` (deleted in this PR).
+     * AJAX/redirect endpoint that refreshes external metadata (IMDb /
+     * Douban / Bangumi) for a torrent. Called from `public/details.php`
+     * ("click here to retrieve/update" links next to IMDb blocks) and
+     * from the formatted PTGen output in `nexus/PTGen/PTGen.php`.
+     * Permission-gated by `updateextinfo` (default: Extreme User).
+     */
+    Route::get('/retriver.php', RetriverController::class)
+        ->name('legacy.retriver');
 
     /*
      * Phase 2 batch #11 — replaces `public/takeconfirm.php` (deleted
