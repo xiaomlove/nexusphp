@@ -5,19 +5,29 @@ dbconn();
 $action = $_POST['action'] ?? '';
 $params = $_POST['params'] ?? [];
 
-if ($action != 'getPasskeyGetArgs' && $action != 'processPasskeyGet') {
-    loggedinorreturn();
-}
+// Phase 2.5 (this PR — batch A of the public/ajax.php cleanup):
+// the six Passkey/WebAuthn actions that used to live below have
+// been lifted out into dedicated Laravel routes — see
+// `App\Http\Controllers\Legacy\PasskeyAjaxController` and the
+// `Route::prefix('passkey')` block in `routes/web.php`. With those
+// gone, every remaining action requires a logged-in user, so the
+// previous two-action carve-out (`getPasskeyGetArgs` /
+// `processPasskeyGet`) is no longer needed.
+loggedinorreturn();
 
 class AjaxInterface{
 
-    public static function toggleUserMedalStatus($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\MedalRepository();
-        return $rep->toggleUserMedalStatus($params['id'], $CURUSER['id']);
-    }
-
+    // Phase 2.5 (this PR — batch B of the public/ajax.php cleanup):
+    // the four medal actions
+    // (`toggleUserMedalStatus`, `buyMedal`, `giftMedal`, `saveUserMedal`)
+    // were lifted out into dedicated Laravel routes — see
+    // `App\Http\Controllers\Legacy\MedalAjaxController` and the
+    // `Route::prefix('medal')` block in `routes/web.php`. The
+    // wire-level contract (POST keys / `{ret, msg, data}` envelope)
+    // is preserved verbatim so the inline `<script>` callers in
+    // `MedalController.php` and the "Save chosen medals" form in
+    // `public/userdetails.php` keep working after a single
+    // `jQuery.post(...)` URL flip in each.
 
     public static function attendanceRetroactive($params)
     {
@@ -148,47 +158,16 @@ class AjaxInterface{
         return true;
     }
 
-    public static function getPasskeyCreateArgs($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserPasskeyRepository();
-        return $rep->getCreateArgs($CURUSER['id'], $CURUSER['username']);
-    }
-
-    public static function processPasskeyCreate($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserPasskeyRepository();
-        return $rep->processCreate($CURUSER['id'], $params['challengeId'], $params['clientDataJSON'], $params['attestationObject']);
-    }
-
-    public static function deletePasskey($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserPasskeyRepository();
-        return $rep->delete($CURUSER['id'], $params['credentialId']);
-    }
-
-    public static function getPasskeyList($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserPasskeyRepository();
-        return $rep->getList($CURUSER['id']);
-    }
-
-    public static function getPasskeyGetArgs($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserPasskeyRepository();
-        return $rep->getGetArgs();
-    }
-
-    public static function processPasskeyGet($params)
-    {
-        global $CURUSER;
-        $rep = new \App\Repositories\UserPasskeyRepository();
-        return $rep->processGet($params['challengeId'], $params['id'], $params['clientDataJSON'], $params['authenticatorData'], $params['signature'], $params['userHandle']);
-    }
+    // Phase 2.5 (this PR — batch A of the public/ajax.php cleanup):
+    // the six Passkey/WebAuthn actions
+    // (`getPasskeyCreateArgs`, `processPasskeyCreate`, `deletePasskey`,
+    // `getPasskeyList`, `getPasskeyGetArgs`, `processPasskeyGet`)
+    // were lifted out into dedicated Laravel routes — see
+    // `App\Http\Controllers\Legacy\PasskeyAjaxController` and the
+    // `Route::prefix('passkey')` block in `routes/web.php`. The
+    // wire-level contract (POST keys / `{ret, msg, data}` envelope)
+    // is preserved verbatim so `public/js/passkey.js` keeps working
+    // after a single `apiUrl` map flip.
 }
 
 $class = 'AjaxInterface';

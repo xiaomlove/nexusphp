@@ -80,7 +80,7 @@ jQuery('#save-user-medal-btn').on("click", function (e) {
     let form = jQuery(this).closest('form');
     let data = form.serializeArray();
     console.log(data)
-    jQuery.post('ajax.php', {params: data, action: 'saveUserMedal'}, function (response) {
+    jQuery.post('/medal/save-user', {params: data}, function (response) {
         console.log(response)
         if (response.ret != 0) {
             layer.alert(response.msg)
