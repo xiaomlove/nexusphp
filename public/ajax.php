@@ -81,6 +81,7 @@ class AjaxInterface{
         return $rep->approval($CURUSER['id'], $params);
     }
 
+    public static function removeHitAndRun($params)
     public static function addSeedBoxRecord($params)
     {
         global $CURUSER;

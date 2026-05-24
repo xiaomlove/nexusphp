@@ -1146,7 +1146,7 @@ jQuery('#add-seed-box-btn').on('click', function () {
         yes: function () {
             let params = jQuery('#seed-box-form').serialize()
             jQuery('body').loading({stoppable: false});
-            jQuery.post('ajax.php', params + "&action=addSeedBoxRecord", function (response) {
+            jQuery.post('/seed-box/add', params, function (response) {
                 jQuery('body').loading('stop');
                 if (response.ret != 0) {
                     layer.alert(response.msg)
@@ -1158,10 +1158,10 @@ jQuery('#add-seed-box-btn').on('click', function () {
     })
 });
 jQuery('#seed-box-table').on('click', '.remove-seed-box-btn', function () {
-    let params = {action: "removeSeedBoxRecord", params: {id: jQuery(this).attr("data-id")}}
+    let params = {params: {id: jQuery(this).attr("data-id")}}
     layer.confirm("{$lang_functions['std_confirm_remove']}", window.nexusLayerOptions.confirm, function (index) {
         jQuery('body').loading({stoppable: false});
-        jQuery.post('ajax.php', params, function (response) {
+        jQuery.post('/seed-box/remove', params, function (response) {
             jQuery('body').loading('stop');
             if (response.ret != 0) {
                 layer.alert(response.msg, window.nexusLayerOptions.alert)
