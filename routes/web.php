@@ -27,6 +27,7 @@ use App\Http\Controllers\Legacy\DonatedController;
 use App\Http\Controllers\Legacy\DonorlistController;
 use App\Http\Controllers\Legacy\DownloadSubsController;
 use App\Http\Controllers\Legacy\FastDeleteController;
+use App\Http\Controllers\Legacy\FieldsController;
 use App\Http\Controllers\Legacy\FreeleechController;
 use App\Http\Controllers\Legacy\GetAttachmentController;
 use App\Http\Controllers\Legacy\GetExtInfoAjaxController;
@@ -517,6 +518,16 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      */
     Route::get('/retriver.php', RetriverController::class)
         ->name('legacy.retriver');
+
+    /*
+     * Phase 2 — replaces `public/fields.php` (deleted in this PR).
+     * Administrator+ custom-field manager. Preserves the legacy
+     * `?action=view|add|edit|del|submit` switch verbatim — the
+     * `submit` action returns 410 Gone (modern path is Filament's
+     * `TorrentCustomFieldForm`).
+     */
+    Route::get('/fields.php', FieldsController::class)
+        ->name('legacy.fields');
 
     /*
      * Phase 2 — replaces `public/increment-bulk.php` (deleted in this
