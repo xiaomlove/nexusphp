@@ -89,5 +89,9 @@ class VerifyCsrfToken extends Middleware
         // through a token-mint round trip first.
         'self-enable.php',
         'cheaterbox.php',
+        // Phase 2: `/massmail.php` accepts POST without a CSRF token —
+        // the legacy `<form method=post action=massmail.php>` had no
+        // `@csrf` field.
+        'massmail.php',
     ];
 }
