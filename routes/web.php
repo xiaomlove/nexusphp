@@ -65,7 +65,6 @@ use App\Http\Controllers\Legacy\MailtestController;
 use App\Http\Controllers\Legacy\MakePollController;
 use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MaxLoginController;
-use App\Http\Controllers\Legacy\MedalAjaxController;
 use App\Http\Controllers\Legacy\MedalController;
 use App\Http\Controllers\Legacy\MiscAjaxController;
 use App\Http\Controllers\Legacy\ModAjaxController;

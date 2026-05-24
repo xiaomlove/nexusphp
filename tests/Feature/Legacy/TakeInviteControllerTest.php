@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Legacy;
 
+use App\Http\Controllers\Legacy\InviteController;
 use App\Models\Invite;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Testing\TestResponse;
 use Nexus\Database\NexusDB;
 use Tests\Concerns\CreatesLegacyTestUsers;
 use Tests\FeatureTestCase;
@@ -14,7 +16,7 @@ use Tests\FeatureTestCase;
  * Pins down the `/takeinvite.php` POST contract introduced by the
  * Phase 2 migration of `public/takeinvite.php`. The endpoint is the
  * write-handler of the `?type=new` form rendered by
- * {@see \App\Http\Controllers\Legacy\InviteController::renderNewForm()}.
+ * {@see InviteController::renderNewForm()}.
  *
  * Test posture
  * ------------
@@ -365,7 +367,7 @@ class TakeInviteControllerTest extends FeatureTestCase
      * `stdfoot()` chrome is bootstrapped or the controller's
      * chrome-less fallback rendered instead.
      */
-    private function assertBarkContains(\Illuminate\Testing\TestResponse $response, string $needle): void
+    private function assertBarkContains(TestResponse $response, string $needle): void
     {
         $body = (string) $response->getContent();
         $this->assertStringContainsString(
@@ -380,7 +382,7 @@ class TakeInviteControllerTest extends FeatureTestCase
         );
     }
 
-    private function assertBarkResponse(\Illuminate\Testing\TestResponse $response): void
+    private function assertBarkResponse(TestResponse $response): void
     {
         $body = (string) $response->getContent();
         $this->assertStringContainsString(

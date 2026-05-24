@@ -54,7 +54,7 @@ class Claim extends NexusModel
         }
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uid');
     }

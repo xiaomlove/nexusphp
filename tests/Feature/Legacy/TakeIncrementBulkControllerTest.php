@@ -170,7 +170,7 @@ class TakeIncrementBulkControllerTest extends FeatureTestCase
                 && $job->subject === 'Bonus drop'
                 && $job->msg === 'Hello seeders, here is some bonus.'
                 && in_array(
-                    "class IN (".User::CLASS_USER.", ".User::CLASS_POWER_USER.")",
+                    'class IN ('.User::CLASS_USER.', '.User::CLASS_POWER_USER.')',
                     $job->conditions,
                     true,
                 );

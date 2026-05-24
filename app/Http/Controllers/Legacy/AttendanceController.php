@@ -219,7 +219,7 @@ HTML;
             require $path;
         }
 
-        return is_array($lang_attendance ?? null) ? $lang_attendance : [];
+        return is_array($lang_attendance) ? $lang_attendance : [];
     }
 
     /**
