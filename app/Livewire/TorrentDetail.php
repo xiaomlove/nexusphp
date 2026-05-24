@@ -29,6 +29,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Nexus\Database\NexusDB;
 use Nexus\Field\Field;
@@ -112,9 +113,16 @@ class TorrentDetail extends Component
 
     public ?string $magicFlash = null;
 
+    #[Url(as: 'cmtpage', except: 0)]
+    public int $cmtpage = 0;
+
     private const COMMENT_FLOOD_SECONDS = 10;
 
     private const POST_WRITE_BANNERS = ['uploaded', 'edited', 'existed'];
+
+    private const COMMENTS_PER_PAGE = 10;
+
+    private const ONLINE_WINDOW_SECONDS = 900;
 
     public function mount(int $id): mixed
     {
@@ -194,7 +202,7 @@ class TorrentDetail extends Component
             'files' => $this->loadFiles(),
             'peerGroups' => $this->loadPeerGroups($viewerId),
             'snatches' => $this->loadSnatches($viewerId),
-            'comments' => $this->loadComments($viewerId),
+            'commentsBlock' => $this->commentsBlock($viewerId),
             'canPostComment' => $this->canPostComment($viewerId),
             'commentCooldownSeconds' => $this->commentCooldownSeconds($viewerId),
             'viewerCanCommanage' => $this->viewerCan('commanage', $viewerId),
@@ -1810,24 +1818,77 @@ class TorrentDetail extends Component
     }
 
     /**
-     * @return Collection<int,Comment>
+     * @return array{
+     *     showListing: bool,
+     *     rows: Collection<int,Comment>,
+     *     totalCount: int,
+     *     totalPages: int,
+     *     currentPage: int,
+     *     perPage: int,
+     *     showAvatars: bool,
+     *     onlineThreshold: string,
+     * }
      */
-    private function loadComments(int $viewerId): Collection
+    private function commentsBlock(int $viewerId): array
     {
+        $showAvatars = $this->viewerAvatars($viewerId) === 'yes';
+        $onlineCutoff = Carbon::now()->subSeconds(self::ONLINE_WINDOW_SECONDS);
+        $onlineThreshold = $onlineCutoff->toDateTimeString();
+
+        $empty = [
+            'showListing' => false,
+            'rows' => new Collection,
+            'totalCount' => 0,
+            'totalPages' => 0,
+            'currentPage' => 1,
+            'perPage' => self::COMMENTS_PER_PAGE,
+            'showAvatars' => $showAvatars,
+            'onlineThreshold' => $onlineThreshold,
+        ];
+
         if ($this->torrent === null) {
-            return new Collection;
+            return $empty;
         }
+
+        if ($viewerId > 0 && $this->viewerShowComment($viewerId) === 'no') {
+            return $empty;
+        }
+
+        $totalCount = (int) Comment::query()
+            ->where('torrent', $this->torrent->id)
+            ->count();
+
+        if ($totalCount === 0) {
+            return [
+                'showListing' => true,
+                'rows' => new Collection,
+                'totalCount' => 0,
+                'totalPages' => 0,
+                'currentPage' => 1,
+                'perPage' => self::COMMENTS_PER_PAGE,
+                'showAvatars' => $showAvatars,
+                'onlineThreshold' => $onlineThreshold,
+            ];
+        }
+
+        $perPage = self::COMMENTS_PER_PAGE;
+        $totalPages = (int) ceil($totalCount / $perPage);
+        $requestedPage = $this->cmtpage > 0 ? $this->cmtpage : $totalPages;
+        $currentPage = max(1, min($totalPages, $requestedPage));
+        $offset = ($currentPage - 1) * $perPage;
 
         /** @var Collection<int,Comment> $rows */
         $rows = Comment::query()
-            ->with(['create_user:id,username,privacy'])
+            ->with(['create_user:id,username,privacy,avatar,last_access'])
             ->where('torrent', $this->torrent->id)
             ->orderBy('id')
+            ->offset($offset)
+            ->limit($perPage)
             ->get();
 
         $canViewAnonymous = $this->viewerCan('viewanonymous', $viewerId);
 
-        $rows->each(function (Comment $comment) use ($canViewAnonymous, $viewerId): void {
+        $rows->each(function (Comment $comment) use ($canViewAnonymous, $viewerId, $onlineCutoff): void {
             $authorId = (int) $comment->user;
             $isOwnRow = $viewerId !== 0 && $viewerId === $authorId;
             $isStrongPrivacy = $comment->create_user?->privacy === 'strong';
@@ -1839,11 +1900,54 @@ class TorrentDetail extends Component
 
             if ($shouldHide) {
                 $comment->setAttribute('display_username', null);
+                $comment->setAttribute('display_avatar', '');
+                $comment->setAttribute('display_online', false);
             } else {
-                $comment->setAttribute('display_username', $comment->create_user?->username);
+                $author = $comment->create_user;
+                $comment->setAttribute('display_username', $author?->username);
+                $rawAvatar = $author !== null ? trim((string) ($author->getRawOriginal('avatar') ?? '')) : '';
+                $comment->setAttribute('display_avatar', $rawAvatar !== '' ? (string) $author?->avatar : '');
+                $lastAccess = $author?->last_access;
+                $isOnline = $lastAccess instanceof Carbon && $lastAccess->greaterThan($onlineCutoff);
+                $comment->setAttribute('display_online', $isOnline);
             }
         });
 
-        return $rows;
+        return [
+            'showListing' => true,
+            'rows' => $rows,
+            'totalCount' => $totalCount,
+            'totalPages' => $totalPages,
+            'currentPage' => $currentPage,
+            'perPage' => $perPage,
+            'showAvatars' => $showAvatars,
+            'onlineThreshold' => $onlineThreshold,
+        ];
+    }
+
+    private function viewerShowComment(int $viewerId): string
+    {
+        if ($viewerId <= 0) {
+            return 'yes';
+        }
+
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('showcomment');
+
+        return $value === 'no' ? 'no' : 'yes';
+    }
+
+    private function viewerAvatars(int $viewerId): string
+    {
+        if ($viewerId <= 0) {
+            return 'no';
+        }
+
+        /** @var User|null $viewer */
+        $viewer = User::query()->find($viewerId);
+        $value = $viewer?->getAttribute('avatars');
+
+        return $value === 'yes' ? 'yes' : 'no';
     }
 }

@@ -5,12 +5,12 @@ ob_start(); //Do not delete this line
  * Strangler Fig flip (Phase 3.x) — the canonical torrent-detail URL is
  * now the Livewire `App\Livewire\TorrentDetail` at `/torrent/{id}`.
  * Read-only GETs that carry only `?id=N` (optionally with `?hit=1`,
- * `?dllist=1`, the post-write `?uploaded` / `?edited` / `?existed`
- * banners or their optional `?returnto` companion) are 302-bounced
- * to the new route; anything else (the canary `?legacy=1` opt-out,
- * the comments pagination `?cmtpage=N`, and every non-GET request —
- * i.e. the inline action POST handlers like ?subtitleupload) falls
- * through to the legacy code below.
+ * `?dllist=1`, `?cmtpage=N`, the post-write `?uploaded` / `?edited` /
+ * `?existed` banners or their optional `?returnto` companion) are
+ * 302-bounced to the new route; anything else (the canary `?legacy=1`
+ * opt-out and every non-GET request — i.e. the inline action POST
+ * handlers like ?subtitleupload) falls through to the legacy code
+ * below.
  *
  * The `?hit=1` view-counter side effect is wired into
  * `App\Livewire\TorrentDetail::mount()`, so first-party "open from
@@ -29,8 +29,6 @@ ob_start(); //Do not delete this line
  *
  *   - `?legacy=1` — explicit canary opt-out, the rollback flag
  *     documented in docs/legacy-strategy.md. Mirrors forums.php.
- *   - `?cmtpage=N` — comments pagination. The comments listing has not
- *     been migrated to Livewire yet, so paged URLs must stay on legacy.
  *   - non-GET requests — the inline action POSTs (subtitle upload etc.)
  *     are still served by this file.
  *
@@ -43,7 +41,7 @@ ob_start(); //Do not delete this line
 $detailsFlipId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $detailsFlipMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $detailsFlipEscapeHatches = [
-    'legacy', 'cmtpage',
+    'legacy',
 ];
 $detailsFlipHasEscapeHatch = false;
 foreach ($detailsFlipEscapeHatches as $detailsFlipKey) {

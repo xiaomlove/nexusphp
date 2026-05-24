@@ -10,14 +10,13 @@ import { loginAs } from '../helpers/api-login';
  * Escape hatches that stay on legacy:
  *
  *   - `?legacy=1` — explicit canary opt-out
- *   - `?cmtpage=N` — comments pagination (no Livewire equivalent yet)
  *   - non-GET methods — inline action POSTs (?subtitleupload, …)
  *
- * `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`) and
- * `?dllist=1` now flip onto Modern UI as well — TorrentDetail renders
- * the equivalent banner / peer list inline. These tests verify the
- * redirect contract and that the legacy fall-through paths still
- * return 2xx.
+ * `?uploaded` / `?edited` / `?existed` (+ optional `?returnto`),
+ * `?dllist=1`, and `?cmtpage=N` now flip onto Modern UI as well —
+ * TorrentDetail renders the equivalent banner / peer list / paginated
+ * comments inline. These tests verify the redirect contract and that
+ * the legacy fall-through paths still return 2xx.
  */
 test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', () => {
     test('/details.php?id=1 → /torrent/1', async ({ context, page }) => {
@@ -78,18 +77,20 @@ test.describe('@behavior Strangler Fig flip: /details.php → /torrent/{id}', ()
         expect(location).not.toMatch(/[?&]id=/);
     });
 
-    test('/details.php?id=1&cmtpage=2 stays on legacy (comments pagination)', async ({
+    test('/details.php?id=1&cmtpage=2 → /torrent/1?cmtpage=2 (paginated comments)', async ({
         context,
         page,
     }) => {
         await loginAs(context, 'admin');
 
-        // Comments pagination has no Livewire equivalent yet, so
-        // ?cmtpage=N must fall through to the legacy page.
         const response = await page.request.get('/details.php?id=1&cmtpage=2', {
             maxRedirects: 0,
         });
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(302);
+        const location = response.headers()['location'] ?? '';
+        expect(location).toContain('/torrent/1?');
+        expect(location).toContain('cmtpage=2');
+        expect(location).not.toMatch(/[?&]id=/);
     });
 
     test('/details.php?id=1&dllist=1 → /torrent/1?dllist=1 (peer list rendered inline)', async ({
