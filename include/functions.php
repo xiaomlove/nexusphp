@@ -1770,47 +1770,27 @@ function mkglobal($vars) {
 	return 1;
 }
 
-function tr($x,$y,$noesc=0,$relation='', $return = false) {
-	if ($noesc)
-	$a = $y;
-	else {
-		$a = htmlspecialchars($y);
-		$a = str_replace("\n", "<br />\n", $a);
-	}
-//	$result = ("<tr".( $relation ? " relation = \"$relation\"" : "")."><td class=\"rowhead nowrap\" valign=\"top\" align=\"right\">$x</td><td class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>\n");
-	$result = sprintf(
-	        '<tr%s><td class="rowhead nowrap" valign="top" align="right">%s</td><td class="rowfollow" valign="top" align="left">%s</td></tr>',
-            $relation ? sprintf(' relation="%s" class="%s"', $relation, $relation) : '',
-            $x, $a
-    );
-	if ($return) {
-	    return $result;
+function tr($x, $y, $noesc = 0, $relation = '', $return = false)
+{
+    $result = \App\Support\Html::settingsRow((string) $x, (string) $y, ! $noesc, (string) $relation);
+    if ($return) {
+        return $result;
     }
-	print $result;
+    print $result;
 }
 
-function tr_small($x,$y,$noesc=0,$relation='',$return = false) {
-	if ($noesc)
-	$a = $y;
-	else {
-		$a = htmlspecialchars($y);
-		//$a = str_replace("\n", "<br />\n", $a);
-	}
-	$result = "<tr".( $relation ? " relation = \"$relation\"" : "")."><td width=\"1%\" class=\"rowhead nowrap\" valign=\"top\" align=\"right\">".$x."</td><td width=\"99%\" class=\"rowfollow\" valign=\"top\" align=\"left\">".$a."</td></tr>";
-	if ($return) {
-	    return $result;
+function tr_small($x, $y, $noesc = 0, $relation = '', $return = false)
+{
+    $result = \App\Support\Html::settingsRowSmall((string) $x, (string) $y, ! $noesc, (string) $relation);
+    if ($return) {
+        return $result;
     }
-	print($result);
+    print $result;
 }
 
-function twotd($x,$y,$nosec=0){
-	if ($nosec)
-	$a = $y;
-	else {
-		$a = htmlspecialchars($y);
-		$a = str_replace("\n", "<br />\n", $a);
-	}
-	print("<td class=\"rowhead\">".$x."</td><td class=\"rowfollow\">".$y."</td>");
+function twotd($x, $y, $nosec = 0)
+{
+    print \App\Support\Html::settingsCells((string) $x, (string) $y);
 }
 
 function validfilename($name) {

@@ -269,4 +269,158 @@ final class HtmlTest extends TestCase
         $result = Html::torrentSelect('N', 'n', 'c', 0, $items);
         $this->assertStringContainsString('<option value="0" selected="selected">orphan</option>', $result);
     }
+
+    // ---------- settingsRow ----------
+
+    public function test_settings_row_default_escapes_and_replaces_newlines(): void
+    {
+        // Legacy `tr()` default branch: htmlspecialchars + `\n` → `<br />\n`.
+        $this->assertSame(
+            '<tr><td class="rowhead nowrap" valign="top" align="right">Label</td>'
+            .'<td class="rowfollow" valign="top" align="left">a &amp; b<br />'."\n".'c</td></tr>',
+            Html::settingsRow('Label', "a & b\nc"),
+        );
+    }
+
+    public function test_settings_row_with_escape_disabled_emits_value_verbatim(): void
+    {
+        // Legacy `tr(..., $noesc=1)`: caller already produced HTML
+        // (radio buttons, `<input>` markup). Pass-through with no
+        // escape and no `<br />` substitution.
+        $this->assertSame(
+            '<tr><td class="rowhead nowrap" valign="top" align="right">L</td>'
+            .'<td class="rowfollow" valign="top" align="left"><input name="x" value="y"/></td></tr>',
+            Html::settingsRow('L', '<input name="x" value="y"/>', escape: false),
+        );
+    }
+
+    public function test_settings_row_head_is_never_escaped(): void
+    {
+        // Legacy quirk: `$x` is interpolated raw. Call sites pass
+        // lang strings that may contain a literal `<font color>` or
+        // `&nbsp;` — those must reach the browser unescaped.
+        $this->assertSame(
+            '<tr><td class="rowhead nowrap" valign="top" align="right">Name<font color="red">*</font></td>'
+            .'<td class="rowfollow" valign="top" align="left">value</td></tr>',
+            Html::settingsRow('Name<font color="red">*</font>', 'value', escape: false),
+        );
+    }
+
+    public function test_settings_row_relation_emits_double_attribute(): void
+    {
+        // Legacy quirk: a non-empty `$relation` emits BOTH
+        // `relation="X"` AND `class="X"` on the `<tr>`. The dual
+        // attribute drives row-show/hide JS in `settings.php`.
+        $this->assertSame(
+            '<tr relation="mode_1" class="mode_1"><td class="rowhead nowrap" valign="top" align="right">L</td>'
+            .'<td class="rowfollow" valign="top" align="left">v</td></tr>',
+            Html::settingsRow('L', 'v', relation: 'mode_1'),
+        );
+    }
+
+    public function test_settings_row_empty_relation_omits_attribute(): void
+    {
+        $this->assertStringStartsWith('<tr><td', Html::settingsRow('L', 'v', relation: ''));
+    }
+
+    public function test_settings_row_has_no_trailing_newline(): void
+    {
+        // Legacy `tr()` produces no trailing newline — call sites
+        // concatenate rows directly (`$html .= tr(...)`).
+        $row = Html::settingsRow('L', 'v');
+        $this->assertStringEndsWith('</tr>', $row);
+        $this->assertStringNotContainsString("</tr>\n", $row);
+    }
+
+    public function test_settings_row_newline_replacement_only_applies_when_escaping(): void
+    {
+        // Pair test: with $escape=false the `\n` must survive verbatim
+        // (the caller is shipping pre-built HTML and presumably means
+        // those newlines). With $escape=true newlines become `<br />\n`.
+        $withEscape = Html::settingsRow('L', "a\nb", escape: true);
+        $this->assertStringContainsString('<br />'."\n".'b', $withEscape);
+
+        $noEscape = Html::settingsRow('L', "a\nb", escape: false);
+        $this->assertStringContainsString("a\nb", $noEscape);
+        $this->assertStringNotContainsString('<br />', $noEscape);
+    }
+
+    // ---------- settingsRowSmall ----------
+
+    public function test_settings_row_small_default_escapes_but_does_not_replace_newlines(): void
+    {
+        // Legacy `tr_small()` quirk: the `\n` → `<br />\n` substitution
+        // is commented out in the source. Preserved — `usercp.php`
+        // call sites pass pre-built `<select>` blocks where embedded
+        // newlines are syntactic, not line breaks.
+        $this->assertSame(
+            '<tr><td width="1%" class="rowhead nowrap" valign="top" align="right">L</td>'
+            .'<td width="99%" class="rowfollow" valign="top" align="left">a &amp; b'."\n".'c</td></tr>',
+            Html::settingsRowSmall('L', "a & b\nc"),
+        );
+    }
+
+    public function test_settings_row_small_carries_width_attributes(): void
+    {
+        $row = Html::settingsRowSmall('L', 'v');
+        $this->assertStringContainsString('width="1%"', $row);
+        $this->assertStringContainsString('width="99%"', $row);
+    }
+
+    public function test_settings_row_small_relation_uses_single_attribute_with_spaces(): void
+    {
+        // Legacy quirk: `tr_small()` writes ` relation = "X"` (with
+        // spaces around `=`), and does NOT emit the dual `class="X"`
+        // attribute that {@see settingsRow()} does. Both shapes are
+        // preserved bit-for-bit.
+        $row = Html::settingsRowSmall('L', 'v', relation: 'mode_1');
+        $this->assertStringContainsString('<tr relation = "mode_1">', $row);
+        $this->assertStringNotContainsString('class="mode_1"', $row);
+    }
+
+    public function test_settings_row_small_with_escape_disabled_passes_through(): void
+    {
+        $row = Html::settingsRowSmall('L', '<select><option>x</option></select>', escape: false);
+        $this->assertStringContainsString('<select><option>x</option></select>', $row);
+    }
+
+    public function test_settings_row_small_has_no_trailing_newline(): void
+    {
+        $row = Html::settingsRowSmall('L', 'v');
+        $this->assertStringEndsWith('</tr>', $row);
+    }
+
+    // ---------- settingsCells ----------
+
+    public function test_settings_cells_emits_two_bare_tds(): void
+    {
+        $this->assertSame(
+            '<td class="rowhead">Label</td><td class="rowfollow">value</td>',
+            Html::settingsCells('Label', 'value'),
+        );
+    }
+
+    public function test_settings_cells_does_not_wrap_in_tr(): void
+    {
+        // Legacy `twotd()` is the inner half of an open `<tr>` row
+        // built elsewhere (e.g. `public/index.php` stats panel).
+        $cells = Html::settingsCells('L', 'v');
+        $this->assertStringStartsWith('<td class="rowhead">', $cells);
+        $this->assertStringNotContainsString('<tr', $cells);
+        $this->assertStringNotContainsString('</tr>', $cells);
+    }
+
+    public function test_settings_cells_does_not_escape_either_argument_legacy_quirk(): void
+    {
+        // Legacy quirk preserved: the original `twotd($x, $y, $nosec)`
+        // computed `htmlspecialchars($y)` into a local `$a` when
+        // `$nosec` was falsy, then printed `$y` (unescaped) anyway —
+        // the escape result was dead code. Pin that: `$follow` is
+        // always emitted verbatim, no matter what the legacy caller
+        // passed for `$nosec`.
+        $this->assertSame(
+            '<td class="rowhead"><b>L</b></td><td class="rowfollow">a & b</td>',
+            Html::settingsCells('<b>L</b>', 'a & b'),
+        );
+    }
 }
