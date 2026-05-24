@@ -21,6 +21,7 @@ use App\Http\Controllers\Legacy\Cc98barController;
 use App\Http\Controllers\Legacy\CheaterboxController;
 use App\Http\Controllers\Legacy\CheatersController;
 use App\Http\Controllers\Legacy\CheckUserController;
+use App\Http\Controllers\Legacy\ClaimAjaxController;
 use App\Http\Controllers\Legacy\ClaimController;
 use App\Http\Controllers\Legacy\ClearCacheController;
 use App\Http\Controllers\Legacy\ComplainsController;
@@ -1174,54 +1175,51 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
         ->name('legacy.medal');
 
     /*
-     * Phase 2.5 (this PR — batch B of the `public/ajax.php` cleanup):
-     * replaces 4 of the remaining actions exposed by the legacy
-     * reflection-dispatcher in `public/ajax.php` — the medal
-     * sub-API.
+     * Phase 2.5 (this PR — batch C of the `public/ajax.php` cleanup):
+     * replaces 5 of the remaining actions exposed by the legacy
+     * reflection-dispatcher in `public/ajax.php` — a mixed batch
+     * of user-side write actions across four sub-APIs.
      *
-     * Action map (legacy → new endpoint):
-     *   - `toggleUserMedalStatus`  → POST /medal/toggle-status
-     *   - `buyMedal`               → POST /medal/buy
-     *   - `giftMedal`              → POST /medal/gift
-     *   - `saveUserMedal`          → POST /medal/save-user
+     * Action map (legacy → new endpoint, all authed):
+     *   - `addClaim`         → POST /claim/add
+     *   - `removeClaim`      → POST /claim/remove
+     *   - `removeHitAndRun`  → POST /hit-and-run/remove
+     *   - `claimTask`        → POST /exam/claim-task
+     *   - `consumeBenefit`   → POST /benefit/consume
      *
-     * Wire-level contract is unchanged:
-     *   - Same accepted POST keys (`params[*]`, decoded by the
-     *     controller into the same positional arguments
-     *     `MedalRepository` / `BonusRepository` already expect).
-     *   - Same `{ret, msg, data}` JSON envelope at HTTP 200,
-     *     including on error — the three first-party JS call-sites
-     *     read `response.ret !== 0` and call `layer.alert
-     *     (response.msg)`.
+     * Wire-level contract is unchanged: same accepted POST keys
+     * (`params[*]`), same `{ret, msg, data}` JSON envelope at
+     * HTTP 200 (including on error). The four first-party JS
+     * callers — `public/details.php:315`, `MyhrController:133`,
+     * `TaskController:224`, `public/userdetails.php:286`, plus
+     * the shared `claimAction(...)` helper in
+     * `public/js/nexus.js:140` — are flipped in the same PR.
      *
-     * First-party JS callers, all flipped in the same PR:
-     *   - `app/Http/Controllers/Legacy/MedalController.php:154`
-     *     (the "Buy medal" button on `/medal.php`),
-     *   - `app/Http/Controllers/Legacy/MedalController.php:165`
-     *     (the "Gift medal" button on `/medal.php`),
-     *   - `public/userdetails.php:83` (the "Save chosen medals"
-     *     form on `/userdetails.php?id=<self>`).
+     * All five routes are CSRF-exempt — the inline-script callers
+     * post bare `application/x-www-form-urlencoded` bodies with
+     * no `_token`. See `App\Http\Middleware\VerifyCsrfToken::$except`
+     * (`'claim/*'`, `'hit-and-run/*'`, `'exam/claim-task'`,
+     * `'benefit/consume'`).
      *
-     * `toggleUserMedalStatus` has no first-party JS caller in the
-     * tree; it is migrated for parity in case third-party
-     * integrations rely on the legacy URL.
-     *
-     * All four routes are CSRF-exempt — `MedalController`'s inline
-     * `<script>` tags and `userdetails.php:83` post bare
-     * `application/x-www-form-urlencoded` bodies with no `_token`.
-     * See `App\Http\Middleware\VerifyCsrfToken::$except`
-     * (`'medal/*'`).
+     * Naming: grouped in a single `ClaimAjaxController` because
+     * the four sub-APIs share the same JSON envelope contract and
+     * CSRF posture; splitting them into per-domain controllers
+     * would multiply boilerplate without improving clarity. URL
+     * prefixes stay per-domain so the routes themselves still
+     * read naturally.
      */
-    Route::prefix('medal')->group(function () {
-        Route::post('/toggle-status', [MedalAjaxController::class, 'toggleStatus'])
-            ->name('medal.toggle-status');
-        Route::post('/buy', [MedalAjaxController::class, 'buy'])
-            ->name('medal.buy');
-        Route::post('/gift', [MedalAjaxController::class, 'gift'])
-            ->name('medal.gift');
-        Route::post('/save-user', [MedalAjaxController::class, 'saveUserMedal'])
-            ->name('medal.save-user');
+    Route::prefix('claim')->group(function () {
+        Route::post('/add', [ClaimAjaxController::class, 'addClaim'])
+            ->name('claim.add');
+        Route::post('/remove', [ClaimAjaxController::class, 'removeClaim'])
+            ->name('claim.remove');
     });
+    Route::post('/hit-and-run/remove', [ClaimAjaxController::class, 'removeHitAndRun'])
+        ->name('hit-and-run.remove');
+    Route::post('/exam/claim-task', [ClaimAjaxController::class, 'claimTask'])
+        ->name('exam.claim-task');
+    Route::post('/benefit/consume', [ClaimAjaxController::class, 'consumeBenefit'])
+        ->name('benefit.consume');
 
     /*
      * Phase 2 — replaces `public/users.php` (deleted in the same PR).
