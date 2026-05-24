@@ -514,8 +514,8 @@ jQuery('#remove-leech-warn').on('click', function () {
     if (!window.confirm('{$lang_userdetails['sure_to_remove_leech_warn']}')) {
         return
     }
-    let params = {action: 'removeUserLeechWarn', params: {uid: jQuery(this).attr('data-uid')}}
-    jQuery.post('ajax.php', params, function (response) {
+    let params = {params: {uid: jQuery(this).attr('data-uid')}}
+    jQuery.post('/mod/remove-leech-warn', params, function (response) {
         console.log(response)
         if (response.ret == 0) {
             location.reload()

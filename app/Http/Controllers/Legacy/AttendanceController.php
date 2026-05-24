@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Repositories\AttendanceRepository;
 use App\Services\Captcha\Exceptions\CaptchaValidationException;
 use Carbon\Carbon;
-use Carbon\CarbonInterval;
 use Carbon\CarbonPeriod;
 use DateInterval;
 use DatePeriod;
@@ -348,7 +347,7 @@ HTML;
             ."});\n"
             ."function retroactive(dateStr) {\n"
             ."  if (!window.confirm(confirmText + dateStr + ' ?')) return;\n"
-            ."  jQuery.post('/ajax.php', {params: {date: dateStr}, action: 'attendanceRetroactive'}, function (response) {\n"
+            ."  jQuery.post('/misc/attendance-retroactive', {params: {date: dateStr}}, function (response) {\n"
             ."    if (response.ret != 0) { alert(response.msg); } else { location.reload(); }\n"
             ."  }, 'json');\n"
             ."}\n"

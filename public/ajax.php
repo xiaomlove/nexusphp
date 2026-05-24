@@ -29,24 +29,33 @@ class AjaxInterface{
     // `public/userdetails.php` keep working after a single
     // `jQuery.post(...)` URL flip in each.
 
-    public static function attendanceRetroactive($params)
+    // Phase 2.5 (this PR — batch E of the public/ajax.php cleanup):
+    // the seven remaining mod/utility actions
+    // (`attendanceRetroactive`, `getPtGen`, `removeUserLeechWarn`,
+    // `getOffer`, `approvalModal`, `approval`, `clearShoutBox`)
+    // were lifted out into dedicated Laravel routes — see
+    // `App\Http\Controllers\Legacy\ModAjaxController` and
+    // `App\Http\Controllers\Legacy\MiscAjaxController`, plus the
+    // `Route::prefix('mod')` and `Route::prefix('misc')` blocks in
+    // `routes/web.php`. The wire-level contract (POST keys /
+    // `{ret, msg, data}` envelope) is preserved verbatim so the
+    // first-party JS callers (`public/userdetails.php`,
+    // `public/index.php`, `public/js/ptgen.js`,
+    // `AttendanceController.php`) keep working after a single
+    // `jQuery.post(...)` URL flip in each.
+
+    public static function addClaim($params)
     {
         global $CURUSER;
-        $rep = new \App\Repositories\AttendanceRepository();
-        return $rep->retroactive($CURUSER['id'], $params['date']);
+        $rep = new \App\Repositories\ClaimRepository();
+        return $rep->store($CURUSER['id'], $params['torrent_id']);
     }
 
-    public static function getPtGen($params)
+    public static function removeClaim($params)
     {
-        $rep = new Nexus\PTGen\PTGen();
-        $result = $rep->generate($params['url']);
-        if ($rep->isRawPTGen($result)) {
-            return $result;
-        } elseif ($rep->isIyuu($result)) {
-            return $result['data'];
-        } else {
-            return '';
-        }
+        global $CURUSER;
+        $rep = new \App\Repositories\ClaimRepository();
+        return $rep->delete($params['id'], $CURUSER['id']);
     }
 
     public static function removeUserLeechWarn($params)
@@ -114,6 +123,7 @@ class AjaxInterface{
         return $rep->consumeToBuyMedal($CURUSER['id'], $params['medal_id']);
     }
 
+    public static function claimTask($params)
     public static function giftMedal($params)
     {
         global $CURUSER;

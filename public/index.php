@@ -160,7 +160,7 @@ if ($showshoutbox_main == 'yes') {
                 $clearShoutBoxJs = <<<JS
 jQuery('#clear-shout-box').on("click", function () {
     layer.confirm("{$lang_index['sure_to_clear_shout_box']}", {title: "Info", btn: ['Yes', "Cancel"], btnAlign: 'c'}, function (layerIndex) {
-        jQuery.post("ajax.php", {"action": "clearShoutBox"}, function (response) {
+        jQuery.post("/mod/clear-shoutbox", {}, function (response) {
             layer.close(layerIndex)
             if (response.ret != 0) {
                 layer.alert(response.msg, {title: "Info", btn: ['OK', 'Cancel'], btnAlign: 'c'})

@@ -67,6 +67,8 @@ use App\Http\Controllers\Legacy\MassmailController;
 use App\Http\Controllers\Legacy\MaxLoginController;
 use App\Http\Controllers\Legacy\MedalAjaxController;
 use App\Http\Controllers\Legacy\MedalController;
+use App\Http\Controllers\Legacy\MiscAjaxController;
+use App\Http\Controllers\Legacy\ModAjaxController;
 use App\Http\Controllers\Legacy\ModrulesController;
 use App\Http\Controllers\Legacy\MoforumsController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
@@ -1267,6 +1269,65 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
             ->name('user-token.add');
         Route::post('/remove', [SeedBoxAjaxController::class, 'removeToken'])
             ->name('user-token.remove');
+    });
+
+    /*
+     * Phase 2.5 (this PR — batch E of the `public/ajax.php` cleanup):
+     * replaces the last 7 actions exposed by the legacy reflection-
+     * dispatcher in `public/ajax.php` — the mod/admin sub-API and
+     * the user-facing utility actions.
+     *
+     * Action map (legacy → new endpoint):
+     *   - `removeUserLeechWarn`    → POST /mod/remove-leech-warn
+     *   - `getOffer`              → POST /mod/get-offer
+     *   - `approvalModal`         → POST /mod/approval-modal
+     *   - `approval`             → POST /mod/approval
+     *   - `clearShoutBox`         → POST /mod/clear-shoutbox
+     *   - `getPtGen`             → POST /misc/pt-gen
+     *   - `attendanceRetroactive` → POST /misc/attendance-retroactive
+     *
+     * Wire-level contract is unchanged:
+     *   - Same accepted POST keys (`params[*]`, decoded by the
+     *     controller into the same positional arguments the
+     *     repositories already expect).
+     *   - Same `{ret, msg, data}` JSON envelope at HTTP 200,
+     *     including on error.
+     *
+     * First-party JS callers flipped in this PR:
+     *   - `public/userdetails.php` (removeUserLeechWarn button)
+     *   - `public/index.php` (clearShoutBox button)
+     *   - `public/js/ptgen.js` (getPtGen button)
+     *   - `app/Http/Controllers/Legacy/AttendanceController.php`
+     *     (attendanceRetroactive day-click handler)
+     *
+     * `getOffer`, `approvalModal`, and `approval` have no first-
+     * party JS callers via `ajax.php` — the modern UI uses
+     * `/web/torrent-approval-page` and `/web/torrent-approval`.
+     * They are migrated for parity.
+     *
+     * All seven routes are CSRF-exempt — the inline-script callers
+     * post bare `application/x-www-form-urlencoded` bodies with no
+     * `_token`. See `App\Http\Middleware\VerifyCsrfToken::$except`
+     * (`'mod/*'`, `'misc/*'`).
+     */
+    Route::prefix('mod')->group(function () {
+        Route::post('/remove-leech-warn', [ModAjaxController::class, 'removeLeechWarn'])
+            ->name('mod.remove-leech-warn');
+        Route::post('/get-offer', [ModAjaxController::class, 'getOffer'])
+            ->name('mod.get-offer');
+        Route::post('/approval-modal', [ModAjaxController::class, 'approvalModal'])
+            ->name('mod.approval-modal');
+        Route::post('/approval', [ModAjaxController::class, 'approval'])
+            ->name('mod.approval');
+        Route::post('/clear-shoutbox', [ModAjaxController::class, 'clearShoutBox'])
+            ->name('mod.clear-shoutbox');
+    });
+
+    Route::prefix('misc')->group(function () {
+        Route::post('/pt-gen', [MiscAjaxController::class, 'getPtGen'])
+            ->name('misc.pt-gen');
+        Route::post('/attendance-retroactive', [MiscAjaxController::class, 'attendanceRetroactive'])
+            ->name('misc.attendance-retroactive');
     });
 
     /*
