@@ -12,7 +12,7 @@
     /** @var \Illuminate\Support\Collection<int,\App\Models\File> $files */
     /** @var array{seeders:\Illuminate\Support\Collection<int,\App\Models\Peer>,leechers:\Illuminate\Support\Collection<int,\App\Models\Peer>} $peerGroups */
     /** @var \Illuminate\Support\Collection<int,\App\Models\Snatch> $snatches */
-    /** @var \Illuminate\Support\Collection<int,\App\Models\Comment> $comments */
+    /** @var array{showListing:bool,rows:\Illuminate\Support\Collection<int,\App\Models\Comment>,totalCount:int,totalPages:int,currentPage:int,perPage:int,showAvatars:bool,onlineThreshold:string} $commentsBlock */
     /** @var bool $canPostComment */
     /** @var int $commentCooldownSeconds */
     /** @var bool $viewerCanCommanage */
@@ -960,18 +960,41 @@
     @endif
 
     <x-ui.card>
-        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400" data-test-id="comments-heading">
-            Comments ({{ number_format($comments->count()) }})
+        <h2 id="startcomments" class="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400" data-test-id="comments-heading">
+            Comments ({{ number_format($commentsBlock['totalCount']) }})
         </h2>
-        @if ($comments->isEmpty())
+        @if (! $commentsBlock['showListing'])
+            <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="comments-listing-hidden">
+                Comments hidden by your preferences.
+            </p>
+        @elseif ($commentsBlock['totalCount'] === 0)
             <p class="text-sm italic text-zinc-500 dark:text-zinc-400" data-test-id="comments-empty">
                 No comments yet.
             </p>
         @else
+            @if ($commentsBlock['totalPages'] > 1)
+                <nav class="mb-3 flex flex-wrap items-center gap-2 text-xs" data-test-id="comments-pager-top">
+                    @for ($i = 1; $i <= $commentsBlock['totalPages']; $i++)
+                        @if ($i === $commentsBlock['currentPage'])
+                            <span class="rounded bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100"
+                                  data-test-id="comments-pager-current"
+                                  data-page="{{ $i }}">{{ $i }}</span>
+                        @else
+                            <button type="button"
+                                    wire:click="$set('cmtpage', {{ $i }})"
+                                    class="rounded px-2 py-0.5 text-primary-600 hover:underline dark:text-primary-400"
+                                    data-test-id="comments-pager-link"
+                                    data-page="{{ $i }}">{{ $i }}</button>
+                        @endif
+                    @endfor
+                </nav>
+            @endif
             <ul class="space-y-4" data-test-id="comments-list">
-                @foreach ($comments as $comment)
+                @foreach ($commentsBlock['rows'] as $comment)
                     @php
                         $commentUsername = $comment->getAttribute('display_username');
+                        $commentAvatar = $comment->getAttribute('display_avatar');
+                        $commentOnline = (bool) $comment->getAttribute('display_online');
                         $isOwnComment = $viewerId !== 0 && (int) $comment->user === $viewerId;
                         $addedTs = $comment->added ? $comment->added->timestamp : null;
                         $editedTs = $comment->editdate ? $comment->editdate->timestamp : null;
@@ -989,13 +1012,34 @@
                             'ring-1 ring-amber-400/40' => $isOwnComment,
                         ])>
                         <div class="flex flex-wrap items-baseline justify-between gap-2">
-                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100" data-test-id="comment-author">
-                                @if ($commentUsername === null)
-                                    <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
-                                @else
-                                    {{ $commentUsername }}
+                            <div class="flex items-center gap-2">
+                                @if ($commentsBlock['showAvatars'])
+                                    <img
+                                        src="{{ $commentAvatar !== null ? $commentAvatar : '/pic/default_avatar.png' }}"
+                                        alt=""
+                                        loading="lazy"
+                                        decoding="async"
+                                        class="h-8 w-8 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
+                                        data-test-id="comment-avatar"
+                                        data-fallback="{{ $commentAvatar === null ? '1' : '0' }}" />
                                 @endif
-                            </p>
+                                <span aria-hidden="true"
+                                      @class([
+                                          'inline-block h-2 w-2 rounded-full',
+                                          'bg-emerald-500' => $commentOnline,
+                                          'bg-zinc-400' => ! $commentOnline,
+                                      ])
+                                      data-test-id="comment-online"
+                                      data-online="{{ $commentOnline ? '1' : '0' }}"
+                                      title="{{ $commentOnline ? 'Online' : 'Offline' }}"></span>
+                                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100" data-test-id="comment-author">
+                                    @if ($commentUsername === null)
+                                        <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
+                                    @else
+                                        {{ $commentUsername }}
+                                    @endif
+                                </p>
+                            </div>
                             <p class="text-xs text-zinc-500 dark:text-zinc-400" data-test-id="comment-added">
                                 {{ $addedTs !== null ? date('Y-m-d H:i', $addedTs) : '—' }}
                             </p>
@@ -1064,6 +1108,21 @@
                     </li>
                 @endforeach
             </ul>
+            @if ($commentsBlock['totalPages'] > 1)
+                <nav class="mt-3 flex flex-wrap items-center gap-2 text-xs" data-test-id="comments-pager-bottom">
+                    @for ($i = 1; $i <= $commentsBlock['totalPages']; $i++)
+                        @if ($i === $commentsBlock['currentPage'])
+                            <span class="rounded bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100"
+                                  data-page="{{ $i }}">{{ $i }}</span>
+                        @else
+                            <button type="button"
+                                    wire:click="$set('cmtpage', {{ $i }})"
+                                    class="rounded px-2 py-0.5 text-primary-600 hover:underline dark:text-primary-400"
+                                    data-page="{{ $i }}">{{ $i }}</button>
+                        @endif
+                    @endfor
+                </nav>
+            @endif
         @endif
 
         @if ($isAuthed)
