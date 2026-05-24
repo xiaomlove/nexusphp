@@ -37,6 +37,7 @@ use App\Http\Controllers\Legacy\IpHistoryController;
 use App\Http\Controllers\Legacy\LogoutController;
 use App\Http\Controllers\Legacy\MagicController;
 use App\Http\Controllers\Legacy\MailtestController;
+use App\Http\Controllers\Legacy\MassMailController;
 use App\Http\Controllers\Legacy\MoreSmiliesController;
 use App\Http\Controllers\Legacy\NoWarnController;
 use App\Http\Controllers\Legacy\OkController;
@@ -284,6 +285,17 @@ Route::middleware(['auth.nexus:nexus-web'])->group(function () {
      * classes).
      */
     Route::get('/staffmess.php', StaffMessController::class)->name('legacy.staffmess');
+
+    /*
+     * Phase 2 — replaces `public/massmail.php` (deleted in this PR).
+     * Sysop-only mass email tool. GET renders the form (class filter
+     * + subject + body), POST sends emails to all matching users via
+     * the legacy `sent_mail()` helper. URL stays `/massmail.php` so
+     * the `SysoppanelTableSeeder.url='massmail.php'` menu entry keeps
+     * working. CSRF-exempt — the legacy form has no `@csrf` field.
+     */
+    Route::match(['get', 'post'], '/massmail.php', MassMailController::class)
+        ->name('legacy.massmail');
 
     /*
      * Phase 2 batch — replaces `public/takestaffmess.php` (deleted in
