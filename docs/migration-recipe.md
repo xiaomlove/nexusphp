@@ -449,21 +449,33 @@ Phase 5 should fix `getHttpStatusCode` — until then, the
 
 ### Pitfall 6 — `last_query()` and `quote() on null`
 
-**Symptom:** `Call to a member function quote() on null` in
-`Nexus\Database\NexusDB::last_query()`, raised from inside your
+**Symptom (historical):** `Call to a member function quote() on null` in
+`include/globalfunctions.php:last_query()`, raised from inside your
 404/500 response. The actual failure was something else entirely.
 
-**Cause:** When *any* exception bubbles up un-handled, Laravel
-calls `App\Exceptions\Handler::report()`, which calls
-`last_query()` for context. `last_query()` reaches into the active
-DB connection's grammar to quote the bound parameters, and the
-grammar is sometimes null in the test environment for the legacy
-connection.
+**Cause:** Before the guard was added, `last_query()` cached its
+`$connection` in a function-level `static`. The first call across the
+whole PHPUnit process locked that static to the *current* test's
+Laravel `DB::connection()` instance — which is destroyed and rebuilt
+between tests. Every subsequent test that called `Handler` with
+logged queries hit `quote() on null` when `Grammar` tried to
+`escape()` the stale bindings (Laravel 12 `Grammar::escape()` →
+`Connection::getReadPdo()->quote(...)`).
 
-**Fix:** Don't try to fix `last_query()` — fix whatever exception
-is actually being thrown. The `quote() on null` is a *symptom*,
-not the cause. Walk up the stack to find the original throw site.
-In Phase 2.2 the original was Pitfall 1 (`Carbon::setLocale(null)`).
+**Current state:** `last_query()` now re-resolves the connection per
+call and guards `getQueryLog()` / `getRawQueryLog()` with try/catch
+returning empty fallback (commit `feature-last-query-guard`). This
+means the `quote() on null` no longer masks the original exception
+— `App\Exceptions\Handler::prepareJsonResponse()` now serialises the
+real `$msg` / `class_basename($e)` into the JSON envelope and the
+test sees the actual failure.
+
+**Debugging guidance:** Even with the guard, if `'queries'` is empty
+in a debug JSON response, walk up the stack to the original throw
+site. The empty `queries` field is *not* the cause — it's a graceful
+degradation of debug context when the test environment's connection
+state can't expose a query log. Look at `$msg`, `data`, and (when
+`config('app.debug')` is true) the `'trace'` key.
 
 ### Schema reminder
 
