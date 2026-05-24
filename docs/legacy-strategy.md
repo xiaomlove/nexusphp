@@ -167,6 +167,14 @@ observability — without a single page rewrite.
   Production ads keep working without any data migration — the
   redirect target is the same URL the legacy script would have
   redirected to.
+- ✅ Phase 2 — `public/fields.php` (55 LOC) → `FieldsController`.
+  Administrator+ custom-field manager. Preserves the legacy
+  `?action=view|add|edit|del|submit` switch. `?action=submit` returns
+  **410 Gone** with the original deprecation copy — the modern admin
+  path goes through Filament's `TorrentCustomFieldForm`. Loads
+  `$lang_fields` / `$lang_catmanage` / `$lang_functions` before
+  invoking `Nexus\Field\Field::*` so the HTML output stays
+  byte-identical to the legacy page.
 
 Phase 1 infrastructure is complete; future work belongs to Phase 2
 (per-file `public/*.php` migrations) and beyond.
