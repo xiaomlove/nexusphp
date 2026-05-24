@@ -976,15 +976,9 @@
                 <nav class="mb-3 flex flex-wrap items-center gap-2 text-xs" data-test-id="comments-pager-top">
                     @for ($i = 1; $i <= $commentsBlock['totalPages']; $i++)
                         @if ($i === $commentsBlock['currentPage'])
-                            <span class="rounded bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100"
-                                  data-test-id="comments-pager-current"
-                                  data-page="{{ $i }}">{{ $i }}</span>
+                            <span data-test-id="comments-pager-current" data-page="{{ $i }}" class="rounded bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">{{ $i }}</span>
                         @else
-                            <button type="button"
-                                    wire:click="$set('cmtpage', {{ $i }})"
-                                    class="rounded px-2 py-0.5 text-primary-600 hover:underline dark:text-primary-400"
-                                    data-test-id="comments-pager-link"
-                                    data-page="{{ $i }}">{{ $i }}</button>
+                            <button type="button" data-test-id="comments-pager-link" data-page="{{ $i }}" wire:click="$set('cmtpage', {{ $i }})" class="rounded px-2 py-0.5 text-primary-600 hover:underline dark:text-primary-400">{{ $i }}</button>
                         @endif
                     @endfor
                 </nav>
@@ -1014,24 +1008,10 @@
                         <div class="flex flex-wrap items-baseline justify-between gap-2">
                             <div class="flex items-center gap-2">
                                 @if ($commentsBlock['showAvatars'])
-                                    <img
-                                        src="{{ $commentAvatar !== null ? $commentAvatar : '/pic/default_avatar.png' }}"
-                                        alt=""
-                                        loading="lazy"
-                                        decoding="async"
-                                        class="h-8 w-8 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
-                                        data-test-id="comment-avatar"
-                                        data-fallback="{{ $commentAvatar === null ? '1' : '0' }}" />
+                                    @php $hasAvatar = is_string($commentAvatar) && $commentAvatar !== ''; @endphp
+                                    <img data-test-id="comment-avatar" data-fallback="{{ $hasAvatar ? '0' : '1' }}" src="{{ $hasAvatar ? $commentAvatar : '/pic/default_avatar.png' }}" alt="" loading="lazy" decoding="async" class="h-8 w-8 rounded-full border border-zinc-200 object-cover dark:border-zinc-700" />
                                 @endif
-                                <span aria-hidden="true"
-                                      @class([
-                                          'inline-block h-2 w-2 rounded-full',
-                                          'bg-emerald-500' => $commentOnline,
-                                          'bg-zinc-400' => ! $commentOnline,
-                                      ])
-                                      data-test-id="comment-online"
-                                      data-online="{{ $commentOnline ? '1' : '0' }}"
-                                      title="{{ $commentOnline ? 'Online' : 'Offline' }}"></span>
+                                <span data-test-id="comment-online" data-online="{{ $commentOnline ? '1' : '0' }}" aria-hidden="true" @class([ 'inline-block h-2 w-2 rounded-full', 'bg-emerald-500' => $commentOnline, 'bg-zinc-400' => ! $commentOnline ]) title="{{ $commentOnline ? 'Online' : 'Offline' }}"></span>
                                 <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100" data-test-id="comment-author">
                                     @if ($commentUsername === null)
                                         <span class="italic text-zinc-500 dark:text-zinc-400">Anonymous</span>
@@ -1112,13 +1092,9 @@
                 <nav class="mt-3 flex flex-wrap items-center gap-2 text-xs" data-test-id="comments-pager-bottom">
                     @for ($i = 1; $i <= $commentsBlock['totalPages']; $i++)
                         @if ($i === $commentsBlock['currentPage'])
-                            <span class="rounded bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100"
-                                  data-page="{{ $i }}">{{ $i }}</span>
+                            <span data-page="{{ $i }}" class="rounded bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">{{ $i }}</span>
                         @else
-                            <button type="button"
-                                    wire:click="$set('cmtpage', {{ $i }})"
-                                    class="rounded px-2 py-0.5 text-primary-600 hover:underline dark:text-primary-400"
-                                    data-page="{{ $i }}">{{ $i }}</button>
+                            <button type="button" data-page="{{ $i }}" wire:click="$set('cmtpage', {{ $i }})" class="rounded px-2 py-0.5 text-primary-600 hover:underline dark:text-primary-400">{{ $i }}</button>
                         @endif
                     @endfor
                 </nav>
