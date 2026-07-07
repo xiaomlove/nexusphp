@@ -173,6 +173,12 @@ function nexus_dd($vars)
  */
 function do_log($log, $level = 'info', $echo = false)
 {
+    // announce-v2 only logs warnings and failures. Opening, appending and
+    // closing a shared file for every successful tracker request is a major
+    // source of lock contention and also risks logging tracker credentials.
+    if (defined('IN_ANNOUNCE_V2') && IN_ANNOUNCE_V2 && in_array($level, ['debug', 'info', 'notice'], true)) {
+        return;
+    }
     static $env, $setLogLevel;
     if (is_null($setLogLevel)) {
         $setLogLevel = nexus_env('LOG_LEVEL', 'debug');
@@ -211,6 +217,9 @@ function do_log($log, $level = 'info', $echo = false)
         } catch (\Throwable $exception) {
             $passkey = "!IN_NEXUS:" . $exception->getMessage();
         }
+    }
+    if (defined('IN_ANNOUNCE_V2') && IN_ANNOUNCE_V2) {
+        $passkey = '[REDACTED]';
     }
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
     $content = sprintf(
@@ -1149,6 +1158,7 @@ function clear_user_cache($uid, $passkey = '')
     \Nexus\Database\NexusDB::cache_del("direct_permissions:$uid");
     if ($passkey) {
         \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_content');//announce.php
+        \Nexus\Database\NexusDB::cache_del('announce_v2:user:' . $passkey);
         \Nexus\Database\NexusDB::cache_del('user_passkey_'.$passkey.'_rss');//torrentrss.php
     }
     $userInfo = \App\Models\User::query()->find($uid, \App\Models\User::$commonFields);
@@ -1250,6 +1260,7 @@ function clear_torrent_cache($infoHash)
     do_log("clear_torrent_cache");
     \Nexus\Database\NexusDB::cache_del('torrent_hash_'.$infoHash.'_content');
     \Nexus\Database\NexusDB::cache_del("torrent_not_exists:$infoHash");
+    \Nexus\Database\NexusDB::cache_del('announce_v2:torrent:' . sha1($infoHash));
 }
 
 function user_can($permission, $fail = false, $uid = 0): bool
