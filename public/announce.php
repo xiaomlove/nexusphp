@@ -175,10 +175,12 @@ elseif ($az['showclienterror'] == 'yes'){
 $tsField = \Nexus\Database\NexusDB::unixTimestampField('added');
 $infoHashField = \Nexus\Database\NexusDB::binaryField('info_hash');
 $infoHashFieldBindValue = \Nexus\Database\NexusDB::binaryFieldBindValue($info_hash);
-$checkTorrentSql = "SELECT torrents.id, size, owner, sp_state, seeders, leechers, times_completed, $tsField AS ts, added, banned, hr, approval_status, price, categories.mode FROM torrents left join categories on torrents.category = categories.id WHERE $infoHashField limit 1";
+$infoHashV2Field = \Nexus\Database\NexusDB::binaryField('info_hash_v2');
+$infoHashV2FieldBindValue = \Nexus\Database\NexusDB::binaryFieldBindValue($info_hash);
+$checkTorrentSql = "SELECT torrents.id, size, owner, sp_state, seeders, leechers, times_completed, $tsField AS ts, added, banned, hr, approval_status, price, categories.mode FROM torrents left join categories on torrents.category = categories.id WHERE $infoHashField OR $infoHashV2Field limit 1";
 if (!$torrent = $Cache->get_value('torrent_hash_'.$info_hash.'_content')){
     $res = mysql_prepare($checkTorrentSql);
-    $res->execute(['info_hash' => $infoHashFieldBindValue]);
+    $res->execute(['info_hash' => $infoHashFieldBindValue, 'info_hash_v2' => $infoHashV2FieldBindValue]);
 	$torrent = mysql_fetch_array($res);
     $Cache->cache_value('torrent_hash_'.$info_hash.'_content', $torrent, 350);
 }

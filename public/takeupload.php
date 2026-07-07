@@ -108,9 +108,23 @@ if ($maxPrice > 0 && isset($_POST['price']) && $_POST['price'] > $maxPrice && $p
     bark('price too much');
 }
 
+$allowed_formats = get_setting("torrent.allowed_torrent_formats", ['v1', 'hybrid']);
 try {
     $dict = TorrentFile::load($tmpname);
-    $dict = $dict->unhybridizedTo();
+    $protocol = $dict->getProtocol();
+    if (!in_array($protocol, $allowed_formats)) {
+        if ($protocol == TorrentFile::PROTOCOL_HYBRID) {
+            if ($allowed_formats == ['v1']) {
+                $dict = $dict->unhybridizedTo('v1');
+            } else if ($allowed_formats == ['v2']) {
+                $dict = $dict->unhybridizedTo('v2');
+            } else {
+                bark("Hybrid Torrent files are not supported.");
+            }
+        } else {
+            bark("Torrent files created with Bittorrent Protocol $protocol are not supported.");
+        }
+    }
     $dict->parse();
 } catch (ParseException $e) {
     bark($e->getMessage());
@@ -129,7 +143,7 @@ $dict->cleanRootFields()
 
 $filelist = $dict->getFileList();
 $dname = $dict->getName();
-$type = $dict->getFileMode();
+$type = $dict->getFileMode() ?? TorrentFile::FILEMODE_MULTI;
 $totallen = $dict->getSize();
 $pieces = $dict->getInfoField('pieces');
 $piecesCount = strlen($pieces) / 20;
@@ -139,7 +153,8 @@ if ($piecesCount > $maxPieceCount && $idealPiecesCount < $maxPieceCount) {
     bark('Too many pieces');
 }
 $infohash = $dict->getInfoHashV1ForAnnounce();
-$exists = \App\Models\Torrent::query()->whereInfoHash($infohash)->first(['id']);
+$infohashv2 = $dict->getInfoHashV2ForAnnounce();
+$exists = \App\Models\Torrent::query()->whereInfoHash($infohash)->whereInfoHash($infohashv2)->first(['id']);
 if ($exists) {
 //    bark($lang_takeupload['std_torrent_existed']);
     nexus_redirect(sprintf("details.php?id=%d&existed=1", $exists['id']));
@@ -281,8 +296,10 @@ $descriptionArr = format_description($descr);
 $cover = get_image_from_description($descriptionArr, true, false);
 if (\Nexus\Database\NexusDB::isPgsql()) {
     $infoHashInsert = \Nexus\Database\NexusDB::raw("decode('" . bin2hex($infohash) . "', 'hex')");
+    $infoHashV2Insert = \Nexus\Database\NexusDB::raw("decode('" . bin2hex($infohashv2) . "', 'hex')");
 } elseif (\Nexus\Database\NexusDB::isMysql()) {
     $infoHashInsert = $infohash;
+    $infoHashV2Insert = $infohashv2;
 } else {
     throw new \RuntimeException("Not supported database");
 }
@@ -313,6 +330,7 @@ $insert = [
     'last_action' => $dateTimeStringNow,
 //    'nfo' => $nfo,
     'info_hash' => $infoHashInsert,
+    'info_hash_v2' => $infoHashV2Insert,
 //    'pt_gen' => $_POST['pt_gen'] ?? '',
 //    'technical_info' => $_POST['technical_info'] ?? '',
     'cover' => $cover,
@@ -385,6 +403,7 @@ if ($saveResult === false) {
 //remove announce info_hash not exists cache
 //@see announce.php
 \Nexus\Database\NexusDB::cache_del("torrent_not_exists:$infohash");
+\Nexus\Database\NexusDB::cache_del("torrent_not_exists:$infohashv2");
 
 /**
  * add custom fields

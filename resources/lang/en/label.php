@@ -191,6 +191,13 @@ return [
             'user_token_allowed' => 'Permission available to user token',
             'user_token_allowed_help' => 'User token has no right to invoke without permission from this tabular list',
         ],
+        'torrent' => [
+            'tab_header' => 'Torrent',
+            'allowed_torrent_formats' => 'Allowed Torrent Formats',
+            'v1' => 'V1',
+            'v2' => 'V2',
+            'hybrid' => 'Hybrid',
+        ],
     ],
     'user' => [
         'label' => 'User',

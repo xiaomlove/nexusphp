@@ -205,6 +205,12 @@ class EditSetting extends Page implements HasForms
             ->columns(2)
         ;
 
+        $id = "torrent";
+        $tabs[] = Tab::make(__("label.setting.$id.tab_header"))
+            ->id($id)
+            ->schema($this->getTabTorrentSchema($id))
+            ->columns(2);
+
         $tabs[] = Tab::make(__('label.setting.system.tab_header'))
             ->id('system')
             ->schema([
@@ -562,6 +568,24 @@ class EditSetting extends Page implements HasForms
             ->helperText(__("label.setting.{$name}_help"))
             ->columns(2)
         ;
+
+
+        return $schema;
+    }
+
+    private function getTabTorrentSchema($id): array
+    {
+        $schema = [];
+
+        $schema[] = Select::make("$id.allowed_torrent_formats")
+            ->multiple()
+            ->options([
+                'v1' => __("label.setting.{$id}.v1"),
+                'v2' => __("label.setting.{$id}.v2"),
+                'hybrid' => __("label.setting.{$id}.hybrid"),
+            ])
+            ->label(__("label.setting.$id.allowed_torrent_formats"))
+            ->helperText(__("label.setting.{$id}.allowed_torrent_formats_help"));
 
 
         return $schema;
