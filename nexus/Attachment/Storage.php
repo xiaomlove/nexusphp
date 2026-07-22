@@ -2,6 +2,7 @@
 namespace Nexus\Attachment;
 
 use Nexus\Attachment\Drivers\Chevereto;
+use Nexus\Attachment\Drivers\CloudflareImgBed;
 use Nexus\Attachment\Drivers\Local;
 use Nexus\Attachment\Drivers\Lsky;
 
@@ -12,6 +13,7 @@ abstract class Storage {
     const DRIVER_LOCAL = 'local';
     const DRIVER_CHEVERETO = 'chevereto';
     const DRIVER_LSKY = 'lsky';
+    const DRIVER_CLOUDFLARE_IMGBED = 'cloudflare_imgbed';
 
     /**
      * upload to remote and return full url
@@ -70,6 +72,8 @@ abstract class Storage {
             $result = new Chevereto();
         } else if ($driver == self::DRIVER_LSKY) {
             $result = new Lsky();
+        } else if ($driver == self::DRIVER_CLOUDFLARE_IMGBED) {
+            $result = new CloudflareImgBed();
         } else if ($driver == self::DRIVER_LOCAL) {
             $result = new Local();
         }
