@@ -501,7 +501,12 @@ class EditSetting extends Page implements HasForms
         $schema = [];
         $name = "$id.driver";
         $schema[] = Radio::make($name)
-            ->options(['local' => 'local', 'chevereto' => 'chevereto', 'lsky' => 'lsky'])
+            ->options([
+                'local' => 'local',
+                'chevereto' => 'chevereto',
+                'lsky' => 'lsky',
+                'cloudflare_imgbed' => 'CloudFlare ImgBed',
+            ])
             ->inline(true)
             ->label(__("label.setting.$name"))
             ->helperText(__("label.setting.{$name}_help"))
@@ -519,6 +524,8 @@ class EditSetting extends Page implements HasForms
         $field = "upload_token";
         $driverSchemas[] = TextInput::make("$driverId.$field")
             ->label(__("label.setting.$id.$field"))
+            ->password()
+            ->revealable()
         ;
         $field = "base_url";
         $driverSchemas[] = TextInput::make("$driverId.$field")
@@ -539,12 +546,61 @@ class EditSetting extends Page implements HasForms
         $field = "upload_token";
         $driverSchemas[] = TextInput::make("$driverId.$field")
             ->label(__("label.setting.$id.$field"))
+            ->password()
+            ->revealable()
         ;
         $field = "base_url";
         $driverSchemas[] = TextInput::make("$driverId.$field")
             ->label(__("label.setting.$id.$field"))
         ;
         $driverSection = Section::make($driverName)->schema($driverSchemas);
+        $schema[] = $driverSection;
+
+        //CloudFlare ImgBed
+        $driverName = "cloudflare_imgbed";
+        $driverId = sprintf("%s_%s", $id, $driverName);
+        $driverSchemas = [];
+        $field = "upload_api_endpoint";
+        $driverSchemas[] = TextInput::make("$driverId.$field")
+            ->label(__("label.setting.$id.$field"))
+            ->helperText(__("label.setting.$id.cloudflare_imgbed_endpoint_help"))
+        ;
+        $field = "upload_token";
+        $driverSchemas[] = TextInput::make("$driverId.$field")
+            ->label(__("label.setting.$id.$field"))
+            ->helperText(__("label.setting.$id.cloudflare_imgbed_token_help"))
+            ->password()
+            ->revealable()
+        ;
+        $field = "base_url";
+        $driverSchemas[] = TextInput::make("$driverId.$field")
+            ->label(__("label.setting.$id.$field"))
+            ->helperText(__("label.setting.$id.cloudflare_imgbed_base_url_help"))
+        ;
+        $field = "upload_channel";
+        $driverSchemas[] = Select::make("$driverId.$field")
+            ->options([
+                'telegram' => 'Telegram',
+                'cfr2' => 'Cloudflare R2',
+                's3' => 'S3',
+                'discord' => 'Discord',
+                'huggingface' => 'Hugging Face',
+                'webdav' => 'WebDAV',
+            ])
+            ->placeholder(__("label.setting.$id.upload_channel_default"))
+            ->label(__("label.setting.$id.$field"))
+        ;
+        $field = "channel_name";
+        $driverSchemas[] = TextInput::make("$driverId.$field")
+            ->label(__("label.setting.$id.$field"))
+            ->helperText(__("label.setting.$id.channel_name_help"))
+        ;
+        $field = "upload_folder";
+        $driverSchemas[] = TextInput::make("$driverId.$field")
+            ->label(__("label.setting.$id.$field"))
+            ->helperText(__("label.setting.$id.upload_folder_help"))
+        ;
+        $driverSection = Section::make('CloudFlare ImgBed')->schema($driverSchemas);
         $schema[] = $driverSection;
 
 
