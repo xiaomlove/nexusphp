@@ -4,7 +4,7 @@ $passkey = $_GET['passkey'] ?? $CURUSER['passkey'] ?? '';
 if (!$passkey) {
     die("require passkey");
 }
-$exactParams = ['inclbookmarked', 'paid', 'rows', 'icat', 'ismalldescr', 'isize', 'iuplder', 'search', 'search_mode', 'sticky', 'linktype'];
+$exactParams = ['inclbookmarked', 'incldesc', 'paid', 'rows', 'icat', 'ismalldescr', 'isize', 'iuplder', 'search', 'search_mode', 'sticky', 'linktype'];
 $prefixedParams = ['cat', 'sou', 'med', 'cod', 'sta', 'pro', 'tea', 'aud'];
 foreach ($_GET as $key => $value) {
     if (in_array($key, $exactParams, true)) {
@@ -184,16 +184,22 @@ if ($where) {
     }
 }
 $sort = "id desc";
-$fieldStr = "torrents.id, torrents.category, torrents.name, torrents.small_descr, torrent_extras.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name";
+$includeDescription = intval($_GET['incldesc'] ?? 0) === 1;
+$fieldStr = "torrents.id, torrents.category, torrents.name, torrents.small_descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name";
+$torrentExtrasJoin = '';
+if ($includeDescription) {
+    $fieldStr .= ", torrent_extras.descr";
+    $torrentExtrasJoin = " left join torrent_extras on torrent_extras.torrent_id = torrents.id";
+}
 if (!$noNormalResults) {
-    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id left join torrent_extras on torrent_extras.torrent_id = torrents.id $normalWhere ORDER BY $sort LIMIT $limit";
+    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id$torrentExtrasJoin $normalWhere ORDER BY $sort LIMIT $limit";
     $normalRows = \Nexus\Database\NexusDB::remember(sprintf("nexus_rss:normal:%s", md5($query)), 300, function () use ($query) {
         return \Nexus\Database\NexusDB::select($query);
     });
 }
 if (!empty($prependIdArr)) {
     $prependIdStr = implode(',', $prependIdArr);
-    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id left join torrent_extras on torrent_extras.torrent_id = torrents.id where torrents.id in ($prependIdStr) and $where ORDER BY field(torrents.id, $prependIdStr)";
+    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id$torrentExtrasJoin where torrents.id in ($prependIdStr) and $where ORDER BY field(torrents.id, $prependIdStr)";
     $prependRows = \Nexus\Database\NexusDB::remember(sprintf("nexus_rss:prepend:%s", md5($query)), 300, function () use ($query) {
         return \Nexus\Database\NexusDB::select($query);
     });
@@ -246,14 +252,16 @@ $xml .= '<channel>
 //');
 foreach ($list as $row)
 {
-    $ownerInfo = get_user_row($row['owner']);
 	$title = "";
 	if ($row['anonymous'] == 'yes') {
         $author = 'anonymous';
-    } elseif (!empty($ownerInfo)) {
-        $author = $ownerInfo['username'];
     } else {
-        $author = nexus_trans("nexus.user_not_exists");
+        $ownerInfo = get_user_row($row['owner']);
+        if (!empty($ownerInfo)) {
+            $author = $ownerInfo['username'];
+        } else {
+            $author = nexus_trans("nexus.user_not_exists");
+        }
     }
 	$itemurl = $url."/details.php?id=".$row['id'];
 	if ($dllink)
@@ -264,12 +272,14 @@ foreach ($list as $row)
 	if (!empty($_GET['ismalldescr']) && !empty($row['small_descr'])) $title .= "[".$row['small_descr']."]";
 	if (!empty($_GET['isize'])) $title .= "[".mksize($row['size'])."]";
 	if (!empty($_GET['iuplder'])) $title .= "[".$author."]";
-	$content = format_comment($row['descr'], true, false, false, false);
 	$xml .= '<item>
 			<title><![CDATA['.$title.']]></title>
 			<link>'.$itemurl.'</link>
-			<description><![CDATA['.$content.']]></description>
 ';
+	if ($includeDescription) {
+		$content = format_comment($row['descr'], true, false, false, false);
+		$xml .= "\t\t\t<description><![CDATA[".$content."]]></description>\n";
+	}
 //print('			<dc:creator>'.$author.'</dc:creator>');
 $xml .= '<author>'.$author.'@'.$_SERVER['HTTP_HOST'].' ('.$author.')</author>';
 $xml .= '<category domain="'.$url.'/torrents.php?cat='.$row['category'].'">'.$row['category_name'].'</category>

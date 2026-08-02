@@ -146,6 +146,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	{
 		$query[] = "iuplder=1";
 	}
+	$incldesc = intval($_POST['incldesc'] ?? 0);
+	if ($incldesc === 1)
+	{
+		$query[] = "incldesc=1";
+	}
 	$searchstr = mysql_real_escape_string(trim($_POST["search"] ?? ''));
 //	if (empty($searchstr))
 //		unset($searchstr);
@@ -326,6 +331,13 @@ if (get_setting('main.spsct') == 'yes') {
 </td>
 <td class="rowfollow" align="left">
 <input type="radio" name="inclbookmarked" id="inclbookmarked0" value="0" checked="checked" /><label for="inclbookmarked0"><?php echo $lang_getrss['text_all']?></label>&nbsp;<input type="radio" name="inclbookmarked" id="inclbookmarked1" value="1" /><label for="inclbookmarked1"><?php echo $lang_getrss['text_only_bookmarked']?></label><div><?php echo $lang_getrss['text_show_bookmarked_note']?></div>
+</td>
+</tr>
+<tr>
+<td class="rowhead"><?php echo $lang_getrss['row_show_description']?>
+</td>
+<td class="rowfollow" align="left">
+<input type="radio" name="incldesc" id="incldesc1" value="1" /><label for="incldesc1"><?php echo $lang_getrss['text_yes']?></label>&nbsp;<input type="radio" name="incldesc" id="incldesc0" value="0" checked="checked" /><label for="incldesc0"><?php echo $lang_getrss['text_no']?></label>
 </td>
 </tr>
     <tr>
