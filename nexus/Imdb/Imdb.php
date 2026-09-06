@@ -18,6 +18,8 @@ class Imdb
 
     private $ptGen;
 
+    private TitleCache $titleCache;
+
     public function __construct()
     {
         $config = new Config();
@@ -27,13 +29,23 @@ class Imdb
         $this->checkDir($cacheDir, 'imdb_cache_dir');
         $this->checkDir($photoDir, 'imdb_photo_dir');
 
-        $config->cachedir = $cacheDir;
-        $config->photodir = $photoDir;
-        $config->photoroot = $photoRoot;
-        $config->language = get_setting('main.imdb_language', 'en-US');
-        $config->cache_expire = 0;
-        $config->force_agent = 'Googlebot/2.1 (+http://www.google.com/bot.html)';
+        $language = get_setting('main.imdb_language', 'en-US');
+        $config->cacheDir = $cacheDir;
+        $config->cacheUse = true;
+        $config->cacheStore = true;
+        $config->cacheExpire = 0;
+        // photoLocalurl() uses photoroot as filesystem path and photodir as URL.
+        $config->photoroot = $photoDir;
+        $config->photodir = $photoRoot;
+        $config->language = $language;
+        if ($language && $language !== 'en-US') {
+            $config->useLocalization = true;
+            $parts = explode('-', $language);
+            $config->country = $parts[1] ?? $config->country;
+        }
         $this->config = $config;
+        $this->titleCache = new TitleCache($config);
+        $this->titleCache->setReadOnly(true);
     }
 
     public static function listSupportLanguages(): array
@@ -85,7 +97,7 @@ class Imdb
      * @param int $id
      * @return int state (0-not complete, 1-cache complete)
      */
-    public function getCacheStatus(int $id)
+    public function getCacheStatus(int $id, bool $queueIfMissing = true)
     {
         $id = parse_imdb_id($id);
         $log = "id: $id";
@@ -93,11 +105,17 @@ class Imdb
         if (!file_exists($cacheFile)) {
             $log .= ", file: $cacheFile not exits";
             do_log($log);
+            if ($queueIfMissing) {
+                $this->queueFetchIfMissing($id);
+            }
             return 0;
         }
         if (!fopen($cacheFile, 'r')) {
             $log .= ", file: $cacheFile can not open";
             do_log($log);
+            if ($queueIfMissing) {
+                $this->queueFetchIfMissing($id);
+            }
             return 0;
         }
         return 1;
@@ -108,12 +126,24 @@ class Imdb
         $mainCacheFile =  $this->getCacheFilePath($id);
         if (!is_file($mainCacheFile)) {
             do_log("mainCacheFile: $mainCacheFile not exists, return");
-            return true;
         }
-        foreach (glob("$mainCacheFile*") as $file) {
+        foreach (glob("$mainCacheFile*") ?: [] as $file) {
             if (file_exists($file)) {
                 do_log("unlink: $file");
                 unlink($file);
+            }
+        }
+        $paddedId = str_pad((string)parse_imdb_id($id), 7, '0', STR_PAD_LEFT);
+        foreach ([
+            $this->config->cacheDir . 'gql.*tt' . $paddedId . '*',
+            $this->config->photoroot . 'tt' . $paddedId . '*.jpg',
+            rtrim($this->config->cacheDir, '/') . '/tt' . $paddedId . '.json',
+        ] as $pattern) {
+            foreach (glob($pattern) ?: [] as $file) {
+                if (file_exists($file)) {
+                    do_log("unlink: $file");
+                    unlink($file);
+                }
             }
         }
         return true;
@@ -122,7 +152,7 @@ class Imdb
     public function getMovie($id)
     {
         if (!isset($this->movies[$id])) {
-            $this->movies[$id] = new Title($id, $this->config);
+            $this->movies[$id] = new Movie(new Title((string)$id, $this->config, null, $this->titleCache));
         }
         return $this->movies[$id];
     }
@@ -130,7 +160,7 @@ class Imdb
     private function getCacheFilePath($id, $suffix = '')
     {
         $id = parse_imdb_id($id);
-        $result = sprintf('%stitle.tt%s', $this->config->cachedir, $id);
+        $result = sprintf('%stitle.tt%s', $this->config->cacheDir, $id);
         if ($suffix) {
             $result .= ".$suffix";
         }
@@ -140,13 +170,32 @@ class Imdb
     public function updateCache($id)
     {
         $id = parse_imdb_id($id);
-        $movie = $this->getMovie($id);
-        //because getPage() is protected, so...
-        $movie->title();
-        $movie->photo_localurl();
-        $movie->releaseInfo();
-        return true;
-
+        $this->titleCache->setReadOnly(false);
+        try {
+            $movie = $this->getMovie($id);
+            $movie->title();
+            $movie->photo_localurl();
+            $movie->releaseInfo();
+            $movie->rating();
+            $movie->photo(false);
+            $movie->country();
+            $movie->director();
+            $movie->creator();
+            $movie->writing();
+            $movie->producer();
+            $movie->cast();
+            $movie->plotoutline();
+            $movie->composer();
+            $movie->genres();
+            $movie->alsoknow();
+            $movie->runtime();
+            $movie->language();
+            $movie->tagline();
+            touch($this->getCacheFilePath($id));
+            return true;
+        } finally {
+            $this->titleCache->setReadOnly(true);
+        }
     }
 
     public function renderDetailsPageDescription($torrentId, $imdbId)
@@ -179,7 +228,14 @@ class Imdb
 			$temp .= $ak["title"].($ak["country"] != "" ? " (".$ak["country"].")" : "") . ($ak["comment"] != "" ? " (" . $ak["comment"] . ")" : "") . ", ";
         }
         $autodata .= rtrim(trim($temp), ",");
-        $runtimes = str_replace(" min",$lang_details['text_mins'], $movie->runtime() ?? '');
+        $runtime = $movie->runtime();
+        if ($runtime === null || $runtime === '') {
+            $runtimes = '';
+        } elseif (is_numeric($runtime)) {
+            $runtimes = $runtime . $lang_details['text_mins'];
+        } else {
+            $runtimes = str_replace(" min", $lang_details['text_mins'], (string)$runtime);
+        }
         $autodata .= "<br />\n<strong><font color=\"DarkRed\">".$lang_details['text_year']."</font></strong>" . "".$movie->year ()."<br />\n";
         $autodata .= "<strong><font color=\"DarkRed\">".$lang_details['text_runtime']."</font></strong>".$runtimes."<br />\n";
         $autodata .= "<strong><font color=\"DarkRed\">".$lang_details['text_votes']."</font></strong>" . "".$movie->votes ()."<br />\n";
@@ -329,5 +385,25 @@ class Imdb
     public static function getMovieCoverCacheKey($imdbId): string
     {
         return "imdb:cover:$imdbId";
+    }
+
+    public static function getFetchQueueLockKey($imdbId): string
+    {
+        return 'imdb:fetch_queue:' . parse_imdb_id($imdbId);
+    }
+
+    public function queueFetchIfMissing($imdbId): void
+    {
+        $imdbId = parse_imdb_id($imdbId);
+        if (!$imdbId) {
+            return;
+        }
+        $lockKey = self::getFetchQueueLockKey($imdbId);
+        if (NexusDB::cache_get($lockKey)) {
+            return;
+        }
+        NexusDB::cache_put($lockKey, 1, 600);
+        \App\Jobs\FetchImdbCacheJob::dispatch(null, (string) $imdbId);
+        do_log("FetchImdbCacheJob dispatched for missing cache, imdb: $imdbId");
     }
 }

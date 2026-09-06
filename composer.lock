@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b47efd58770c5bf618a2e898044ad08",
+    "content-hash": "3cbcef61b6a982e49f215fc8e3568c3d",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1191,6 +1191,51 @@
                 }
             ],
             "time": "2025-10-31T18:51:33+00:00"
+        },
+        {
+            "name": "duck7000/imdb-graphql-php",
+            "version": "V3.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/duck7000/imdbGraphQLPHP.git",
+                "reference": "128ceb67b08c2fb7608003dfa0a662454674aff9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/duck7000/imdbGraphQLPHP/zipball/128ceb67b08c2fb7608003dfa0a662454674aff9",
+                "reference": "128ceb67b08c2fb7608003dfa0a662454674aff9",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=8.0",
+                "psr/log": "^3.0",
+                "psr/simple-cache": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Imdb\\": "src/Imdb"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Library for retrieving film and tv information from IMDb through GraphQL",
+            "homepage": "https://github.com/duck7000/imdbGraphQLPHP",
+            "keywords": [
+                "graphql",
+                "imdb",
+                "movie",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/duck7000/imdbGraphQLPHP/issues",
+                "source": "https://github.com/duck7000/imdbGraphQLPHP/tree/V3.2.0"
+            },
+            "time": "2026-08-14T18:43:44+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -2722,54 +2767,6 @@
                 }
             ],
             "time": "2025-08-22T14:27:06+00:00"
-        },
-        {
-            "name": "imdbphp/imdbphp",
-            "version": "v8.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tboothman/imdbphp.git",
-                "reference": "ec21f17959c32c401635834499f93a60fdb3124a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tboothman/imdbphp/zipball/ec21f17959c32c401635834499f93a60fdb3124a",
-                "reference": "ec21f17959c32c401635834499f93a60fdb3124a",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-dom": "*",
-                "ext-json": "*",
-                "ext-libxml": "*",
-                "ext-simplexml": "*",
-                "php": ">=5.6",
-                "psr/log": "^1.0 || ^2.0",
-                "psr/simple-cache": "^1.0"
-            },
-            "require-dev": {
-                "cache/array-adapter": "^1.2",
-                "mockery/mockery": "^1.6",
-                "php-cs-fixer/shim": "^3.9",
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^9.6"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Imdb\\": "src/Imdb"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-2.0-or-later"
-            ],
-            "description": "Library for retrieving film and tv information from IMDb",
-            "support": {
-                "issues": "https://github.com/tboothman/imdbphp/issues",
-                "source": "https://github.com/tboothman/imdbphp/tree/v8.3.1"
-            },
-            "time": "2025-12-22T10:34:50+00:00"
         },
         {
             "name": "irazasyed/telegram-bot-sdk",
@@ -6713,16 +6710,16 @@
         },
         {
             "name": "psr/log",
-            "version": "2.0.0",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "ef29f6d262798707a9edd554e2b82517ef3a9376"
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/ef29f6d262798707a9edd554e2b82517ef3a9376",
-                "reference": "ef29f6d262798707a9edd554e2b82517ef3a9376",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
                 "shasum": ""
             },
             "require": {
@@ -6731,7 +6728,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.0.x-dev"
+                    "dev-master": "3.x-dev"
                 }
             },
             "autoload": {
@@ -6757,9 +6754,9 @@
                 "psr-3"
             ],
             "support": {
-                "source": "https://github.com/php-fig/log/tree/2.0.0"
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
-            "time": "2021-07-14T16:41:46+00:00"
+            "time": "2024-09-11T13:17:53+00:00"
         },
         {
             "name": "psr/simple-cache",
@@ -14028,8 +14025,9 @@
         "ext-sqlite3": "*",
         "ext-xml": "*",
         "ext-zend-opcache": "*",
-        "ext-zip": "*"
+        "ext-zip": "*",
+        "ext-pdo": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
