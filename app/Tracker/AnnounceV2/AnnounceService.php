@@ -49,17 +49,21 @@ final class AnnounceService
             $request->ipv6 === '' ? '' : bin2hex(inet_pton($request->ipv6)),
             $request->port,
         ]);
+        [$uploadedHi, $uploadedLo] = UInt64::split($request->uploaded);
+        [$downloadedHi, $downloadedLo] = UInt64::split($request->downloaded);
 
         $arguments = [
             $keyspace['member'], time(), self::SESSION_TTL, $request->event,
-            $request->uploaded, $request->downloaded, $request->left, $peerData,
+            $uploadedHi, $uploadedLo, $request->uploaded,
+            $downloadedHi, $downloadedLo, $request->downloaded,
+            $request->left, $request->isSeeder() ? '1' : '0', $peerData,
             $torrent['id'], $user['id'], bin2hex($request->peerId), $request->ip,
             $request->port, $request->agent, $request->numwant, self::CLEANUP_LIMIT,
             self::MIN_STATE_UPDATE_INTERVAL, $torrent['seeders'], $torrent['leechers'],
             $torrent['times_completed'], $upMultiplier, $downMultiplier, $creditCap,
         ];
 
-        $result = $this->redis->eval(LuaScripts::announce(), [...$keys, ...$arguments], count($keys));
+        $result = LuaScripts::evalAnnounce($this->redis, $keys, $arguments);
         if (!is_array($result) || count($result) < 5) {
             throw new AnnounceFailure('Tracker state unavailable', 60);
         }

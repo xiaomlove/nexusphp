@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Tracker\AnnounceV2\Keyspace;
 use App\Tracker\AnnounceV2\LuaScripts;
+use App\Tracker\AnnounceV2\UInt64;
 use PHPUnit\Framework\TestCase;
 
 class AnnounceV2LuaTest extends TestCase
@@ -29,7 +30,7 @@ class AnnounceV2LuaTest extends TestCase
         self::assertSame(['0', '0', '1', '9'], array_map('strval', array_slice($first, 0, 4)));
 
         $completed = $this->announce(1031, 'completed', '18446744073709551615', '20', '0');
-        self::assertSame('615', $this->streamField($completed[4], 'uploaded_delta'));
+        self::assertSame('615', $this->streamDelta($completed[4], 'uploaded'));
         self::assertSame('1', (string) $completed[1]);
         self::assertSame('0', (string) $completed[2]);
         self::assertSame('10', (string) $completed[3]);
@@ -57,11 +58,11 @@ class AnnounceV2LuaTest extends TestCase
     {
         $this->announce(1000, 'started', '1000', '500', '100');
         $reset = $this->announce(1031, '', '10', '5', '100');
-        self::assertSame('0', $this->streamField($reset[4], 'uploaded_delta'));
+        self::assertSame('0', $this->streamDelta($reset[4], 'uploaded'));
 
         $next = $this->announce(1062, '', '1010', '510', '100');
-        self::assertSame('10', $this->streamField($next[4], 'uploaded_delta'));
-        self::assertSame('10', $this->streamField($next[4], 'downloaded_delta'));
+        self::assertSame('10', $this->streamDelta($next[4], 'uploaded'));
+        self::assertSame('10', $this->streamDelta($next[4], 'downloaded'));
     }
 
     private function announce(int $now, string $event, string $uploaded, string $downloaded, string $left): array
@@ -69,17 +70,30 @@ class AnnounceV2LuaTest extends TestCase
         $keys = array_map(fn(string $name) => $this->keyspace[$name], [
             'session', 'data', 'active', 'seeders', 'leechers', 'meta', 'stream',
         ]);
+        [$uploadedHi, $uploadedLo] = UInt64::split($uploaded);
+        [$downloadedHi, $downloadedLo] = UInt64::split($downloaded);
         $args = [
-            $this->keyspace['member'], $now, 2700, $event, $uploaded, $downloaded, $left,
+            $this->keyspace['member'], $now, 2700, $event,
+            $uploadedHi, $uploadedLo, $uploaded,
+            $downloadedHi, $downloadedLo, $downloaded,
+            $left, $left === '0' ? '1' : '0',
             'cb00710a,,51413', 7, 11, str_repeat('70', 20), '203.0.113.10', 51413,
             'qBittorrent/5.0.0', 0, 128, 30, 0, 0, 9, '1', '1', '0',
         ];
-        return $this->redis->eval(LuaScripts::announce(), [...$keys, ...$args], count($keys));
+        return LuaScripts::evalAnnounce($this->redis, $keys, $args);
     }
 
     private function streamField(string $id, string $field): string
     {
         $entry = $this->redis->xRange($this->keyspace['stream'], $id, $id);
         return (string) $entry[$id][$field];
+    }
+
+    private function streamDelta(string $id, string $field): string
+    {
+        return UInt64::join(
+            $this->streamField($id, $field . '_delta_hi'),
+            $this->streamField($id, $field . '_delta_lo')
+        );
     }
 }

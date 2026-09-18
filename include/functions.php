@@ -1739,6 +1739,8 @@ function registration_check($type = "invitesystem", $maxuserscheck = true, $ipch
 		}
 	}
 
+//    stderr($lang_functions['std_sorry'], $lang_functions['std_account_limit_reached'], 0, true);
+
 	if ($maxuserscheck) {
 		$res = sql_query("SELECT COUNT(*) FROM users") or sqlerr(__FILE__, __LINE__);
 		$arr = mysql_fetch_row($res);

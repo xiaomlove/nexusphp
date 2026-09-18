@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Tracker\AnnounceV2\AnnounceService;
 use App\Tracker\AnnounceV2\Keyspace;
+use App\Tracker\AnnounceV2\UInt64;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
@@ -50,13 +51,19 @@ class AnnounceV2Warmup extends Command
                     $keys = Keyspace::keys((int) $peer->torrent, (int) $peer->userid, $peerId);
                     $timestamp = max(1, strtotime((string) $peer->last_action));
                     $seeder = $peer->seeder === 'yes';
+                    [$uploadedHi, $uploadedLo] = UInt64::split((string) $peer->uploaded);
+                    [$downloadedHi, $downloadedLo] = UInt64::split((string) $peer->downloaded);
                     $peerData = implode(',', [
                         $this->packedHex((string) $peer->ipv4, FILTER_FLAG_IPV4),
                         $this->packedHex((string) $peer->ipv6, FILTER_FLAG_IPV6),
                         (int) $peer->port,
                     ]);
                     $pipe->hMSet($keys['session'], [
+                        'up_hi' => $uploadedHi,
+                        'up_lo' => $uploadedLo,
                         'uploaded' => (string) $peer->uploaded,
+                        'down_hi' => $downloadedHi,
+                        'down_lo' => $downloadedLo,
                         'downloaded' => (string) $peer->downloaded,
                         'left' => (string) $peer->to_go,
                         'seeder' => $seeder ? '1' : '0',
@@ -85,4 +92,3 @@ class AnnounceV2Warmup extends Command
         return bin2hex(inet_pton($ip));
     }
 }
-

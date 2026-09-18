@@ -115,7 +115,7 @@ final class AccountingConsumer
                 $pair = $torrentId . ':' . $uid;
                 $peerKey = $pair . ':' . $event['peer_hex'];
 
-                $rawUpload = (string) $event['uploaded_delta'];
+                $rawUpload = $this->delta($event, 'uploaded');
                 $cap = (string) ($event['credit_cap'] ?? '0');
                 if (bccomp($cap, '0', 0) === 1) {
                     $remaining = bcsub($cap, $rawUploadedByPair[$pair] ?? '0', 0);
@@ -128,7 +128,8 @@ final class AccountingConsumer
                     $rawEligibleForCredit = $rawUpload;
                 }
                 $creditedUp = $this->multiply($rawEligibleForCredit, (string) $event['up_multiplier']);
-                $creditedDown = $this->multiply((string) $event['downloaded_delta'], (string) $event['down_multiplier']);
+                $downloadedDelta = $this->delta($event, 'downloaded');
+                $creditedDown = $this->multiply($downloadedDelta, (string) $event['down_multiplier']);
                 $users[$uid]['uploaded'] = $this->add($users[$uid]['uploaded'] ?? '0', $creditedUp);
                 $users[$uid]['downloaded'] = $this->add($users[$uid]['downloaded'] ?? '0', $creditedDown);
                 $users[$uid]['last_announce_at'] = (int) $event['at'];
@@ -147,8 +148,8 @@ final class AccountingConsumer
                     'at' => (int) $event['at'],
                     'completed' => false,
                 ];
-                $snatch['uploaded'] = $this->add($snatch['uploaded'], (string) $event['uploaded_delta']);
-                $snatch['downloaded'] = $this->add($snatch['downloaded'], (string) $event['downloaded_delta']);
+                $snatch['uploaded'] = $this->add($snatch['uploaded'], $rawUpload);
+                $snatch['downloaded'] = $this->add($snatch['downloaded'], $downloadedDelta);
                 $timeField = $event['duration_was_seeder'] === '1' ? 'seedtime' : 'leechtime';
                 $snatch[$timeField] += (int) $event['duration'];
                 $snatch['to_go'] = (string) $event['left'];
@@ -295,6 +296,19 @@ final class AccountingConsumer
     private function multiply(string $counter, string $multiplier): string
     {
         return bcadd(bcmul($counter, $multiplier, 6), '0', 0);
+    }
+
+    private function delta(array $event, string $name): string
+    {
+        $legacy = $name . '_delta';
+        if (isset($event[$legacy])) {
+            return (string) $event[$legacy];
+        }
+
+        return UInt64::join(
+            (string) ($event[$name . '_delta_hi'] ?? '0'),
+            (string) ($event[$name . '_delta_lo'] ?? '0')
+        );
     }
 
     private function add(string $a, string $b): string
