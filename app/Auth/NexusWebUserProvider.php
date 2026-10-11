@@ -77,9 +77,11 @@ class NexusWebUserProvider implements UserProvider
      */
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
-        list($tokenJson, $signature) = explode('.', base64_decode($credentials["c_secure_pass"]));
-        $expectedSignature = hash_hmac('sha256', $tokenJson, $user->auth_key);
-        return  hash_equals($expectedSignature, $signature);
+        $result = get_user_id_and_signature_from_cookie($credentials);
+        if ($result === null || (string) $result['user_id'] !== (string) $user->getAuthIdentifier()) {
+            return false;
+        }
+        return validate_cookie_signature($result['token_json'], $result['signature'], $user->auth_key);
     }
 
     public function rehashPasswordIfRequired(Authenticatable $user, #[\SensitiveParameter] array $credentials, bool $force = false)

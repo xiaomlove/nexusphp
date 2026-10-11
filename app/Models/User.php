@@ -27,6 +27,15 @@ class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasFactory, Notifiable, HasApiTokens, NexusActivityLogTrait;
 
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (!is_string($user->auth_key) || trim($user->auth_key) === '') {
+                $user->auth_key = bin2hex(random_bytes(32));
+            }
+        });
+    }
+
     public $timestamps = false;
 
     protected $perPage = 50;
