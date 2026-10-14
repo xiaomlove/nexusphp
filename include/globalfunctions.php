@@ -1500,7 +1500,7 @@ function get_challenge_key(string $challenge): string {
 }
 
 function get_user_from_cookie(array $cookie, $isArray = true): array|\App\Models\User|null {
-    $log = "cookie: " . json_encode($cookie);
+    $log = "Cookie authentication";
     $result = get_user_id_and_signature_from_cookie($cookie);
     if (empty($result)) {
         return null;
@@ -1527,27 +1527,34 @@ function get_user_from_cookie(array $cookie, $isArray = true): array|\App\Models
         $row->checkIsNormal();
         $authKey = $row->auth_key;
     }
-    $expectedSignature = hash_hmac('sha256', $tokenJson, $authKey);
-    if (!hash_equals($expectedSignature, $signature)) {
-        do_log("$log, !hash_equals, expectedSignature: $expectedSignature, actualSignature: $signature");
+    if (!validate_cookie_signature($tokenJson, $signature, $authKey)) {
+        do_log("Cookie authentication failed for uid = $id");
         return null;
     }
     return $row;
 }
 
+function validate_cookie_signature(string $tokenJson, string $signature, mixed $authKey): bool
+{
+    // Never authenticate with a missing or predictable empty signing key.
+    if (!is_string($authKey) || trim($authKey) === '') {
+        return false;
+    }
+    return hash_equals(hash_hmac('sha256', $tokenJson, $authKey), $signature);
+}
+
 function get_user_id_and_signature_from_cookie(array $cookie): array|null
 {
-    $log = "cookie: " . json_encode($cookie);
-    if (empty($cookie["c_secure_pass"])) {
+    $log = "Cookie authentication";
+    if (!is_string($cookie["c_secure_pass"] ?? null) || $cookie["c_secure_pass"] === "") {
         do_log("$log, param not enough");
         return null;
     }
-    $base64Decoded = base64_decode($cookie["c_secure_pass"]);
+    $base64Decoded = base64_decode($cookie["c_secure_pass"], true);
     if (empty($base64Decoded)) {
         do_log("$log, invalid c_secure_pass");
         return null;
     }
-    $log .= ", base64 decoded: " . $base64Decoded;
     $tokenJsonAndSignature = explode(".", $base64Decoded);
     if (count($tokenJsonAndSignature) != 2) {
         do_log("$log, invalid c_secure_pass base64_decoded");
@@ -1555,16 +1562,16 @@ function get_user_id_and_signature_from_cookie(array $cookie): array|null
     }
     $tokenJson = $tokenJsonAndSignature[0];
     $signature = $tokenJsonAndSignature[1];
-    if (empty($tokenJson) || empty($signature)) {
+    if (empty($tokenJson) || !preg_match('/\A[0-9a-f]{64}\z/', $signature)) {
         do_log("$log, no tokenJson or signature");
         return null;
     }
     $tokenData = json_decode($tokenJson, true);
-    if (!isset($tokenData['user_id'])) {
+    if (!is_array($tokenData) || !(is_int($tokenData['user_id'] ?? null) || (is_string($tokenData['user_id'] ?? null) && ctype_digit($tokenData['user_id']))) || $tokenData['user_id'] <= 0) {
         do_log("$log, no user_id");
         return null;
     }
-    if (!isset($tokenData['expires']) || $tokenData['expires'] < time()) {
+    if (!is_int($tokenData['expires'] ?? null) || $tokenData['expires'] <= time()) {
         do_log("$log, signature expired");
         return null;
     }
