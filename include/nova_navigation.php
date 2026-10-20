@@ -35,6 +35,15 @@ function nova_navigation_can_view(?string $permission): bool
     if ($permission === '') {
         return true;
     }
+    if (str_starts_with($permission, 'setting:')) {
+        [$key, $expected] = array_pad(explode('=', substr($permission, 8), 2), 2, null);
+        $key = trim((string)$key);
+        if ($key === '') {
+            return false;
+        }
+        $actual = (string)get_setting($key, $expected === null ? 'yes' : $expected);
+        return $expected === null ? $actual === 'yes' : $actual === trim($expected);
+    }
     if (ctype_digit($permission)) {
         return get_user_class() >= (int)$permission;
     }
@@ -113,6 +122,14 @@ function nova_navigation_render(): string
     if (function_exists("nova_permission_can_manage") && nova_permission_can_manage()) {
         $roots[] = array("id" => -99, "name" => "管理插件", "url" => "nova-plugin-manager.php", "new_tab" => 0);
     }
+
+    // Nothing configured (or nothing visible for this user): let the caller fall
+    // back to its own menu instead of printing an empty nav bar.
+    $visibleRoots = array_values(array_filter($roots, static fn (array $root) => nova_navigation_can_view($root['permission'] ?? null)));
+    if (!$visibleRoots) {
+        return '';
+    }
+
     $html = '<style>
       #nav{overflow:visible!important}
       #nav .nova-navigation.menu{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;box-sizing:border-box!important;width:100%!important;min-height:64px!important;margin:0!important;padding:10px 14px!important;overflow:visible!important;list-style:none!important;background:linear-gradient(100deg,#0c2d39 0%,#10504f 56%,#137f72 100%)!important;border:1px solid rgba(126,205,194,.34)!important;border-radius:8px!important;box-shadow:0 5px 16px rgba(19,62,67,.16)!important;white-space:nowrap!important}
@@ -130,10 +147,7 @@ function nova_navigation_render(): string
       @media(max-width:1200px){#nav .nova-navigation.menu{justify-content:flex-start!important;overflow-x:auto!important;overflow-y:visible!important}#nav .nova-navigation>li>a{padding:0 8px!important;font-size:14px!important}}
     @media(max-width:768px){#nav_block,#nav{position:relative!important;z-index:10030!important;overflow:visible!important}#nav_block table,#nav_block td,td.navigation{overflow:visible!important}#nav .nova-navigation li.touch-open>.sub-menu{display:block!important}#nav_block,#nav,#nav .nova-navigation.menu{box-sizing:border-box!important;width:100%!important;max-width:100vw!important;min-width:0!important}#nav{overflow:visible!important}#nav .nova-navigation.menu{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;overflow:visible!important;white-space:normal!important;gap:2px!important;padding:6px 4px!important}#nav .nova-navigation>li{flex:0 0 auto!important}#nav .nova-navigation>li>a{height:36px!important;margin:0!important;padding:0 7px!important;font-size:13px!important;line-height:1.1!important}#nav .nova-navigation>li>a:after{left:7px!important;right:7px!important;bottom:1px!important}#nav .nova-navigation .sub-menu{position:absolute!important;z-index:10020!important;max-width:calc(100vw - 16px)!important;white-space:normal!important}#nav .nova-navigation .sub-menu a{min-height:34px!important;padding:7px 10px!important;font-size:13px!important}}</style><ul id="mainmenu" class="menu nova-navigation">';
 
-    foreach ($roots as $root) {
-        if (!nova_navigation_can_view(($root['permission'] ?? null))) {
-            continue;
-        }
+    foreach ($visibleRoots as $root) {
         $visibleChildren = array_values(array_filter($children[(int)$root['id']] ?? [], static fn (array $child) => nova_navigation_can_view(($child['permission'] ?? null))));
         if ((int)$root['id'] === 1581 && nova_navigation_is_admin()) {
             $visibleChildren[] = [
