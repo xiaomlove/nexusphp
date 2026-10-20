@@ -6,11 +6,123 @@ use App\Models\RequireSeedTorrent;
 use App\Models\Setting;
 use App\Models\Torrent;
 use App\Models\UserRequireSeedTorrent;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Nexus\Database\NexusDB;
 
 class RequireSeedTorrentRepository extends BaseRepository
 {
+    public const ENTRY_SEEDERS_MAX = 1;
+    public const EXIT_SEEDERS_MIN = 8;
+    public const MINIMUM_AGE_DAYS = 3;
+
+    public function syncSeedGuard(): array
+    {
+        return DB::transaction(function () {
+            $officialTagId = (int)Setting::get('bonus.official_tag');
+            if ($officialTagId <= 0) {
+                throw new \RuntimeException('Official torrent tag is not configured.');
+            }
+
+            $removed = 0;
+            $toRemove = RequireSeedTorrent::query()
+                ->leftJoin('torrents', 'torrents.id', '=', 'require_seed_torrents.torrent_id')
+                ->where(function ($query) {
+                    $query->whereNull('torrents.id')
+                        ->orWhere('torrents.seeders', '>=', self::EXIT_SEEDERS_MIN);
+                })
+                ->get([
+                    'require_seed_torrents.*',
+                    'torrents.id as existing_torrent_id',
+                ]);
+
+            foreach ($toRemove as $record) {
+                if ($record->existing_torrent_id) {
+                    $spState = (int)$record->original_sp_state;
+                    $timeType = (int)$record->original_promotion_time_type;
+                    $promotionUntil = $record->original_promotion_until;
+                    if (
+                        $timeType === Torrent::PROMOTION_TIME_TYPE_DEADLINE
+                        && $promotionUntil
+                        && Carbon::parse($promotionUntil)->isPast()
+                    ) {
+                        $spState = Torrent::PROMOTION_NORMAL;
+                        $timeType = Torrent::PROMOTION_TIME_TYPE_GLOBAL;
+                        $promotionUntil = null;
+                    }
+                    Torrent::query()->whereKey($record->torrent_id)->update([
+                        'sp_state' => $spState,
+                        'promotion_time_type' => $timeType,
+                        'promotion_until' => $promotionUntil,
+                    ]);
+                }
+                $record->delete();
+                UserRequireSeedTorrent::query()->where('torrent_id', $record->torrent_id)->delete();
+                $removed++;
+            }
+
+            $added = 0;
+            Torrent::query()
+                ->where('banned', 'no')
+                ->where('visible', 'yes')
+                ->where('added', '<=', now()->subDays(self::MINIMUM_AGE_DAYS))
+                ->where('seeders', '<=', self::ENTRY_SEEDERS_MAX)
+                ->whereHas('torrent_tags', function ($query) use ($officialTagId) {
+                    $query->where('tag_id', $officialTagId);
+                })
+                ->whereNotIn('id', RequireSeedTorrent::query()->select('torrent_id'))
+                ->select(['id', 'sp_state', 'promotion_time_type', 'promotion_until'])
+                ->chunkById(500, function ($torrents) use (&$added) {
+                    $now = now()->toDateTimeString();
+                    $records = [];
+                    $torrentIds = [];
+                    foreach ($torrents as $torrent) {
+                        $torrentIds[] = $torrent->id;
+                        $records[] = [
+                            'torrent_id' => $torrent->id,
+                            'original_sp_state' => $torrent->sp_state,
+                            'original_promotion_time_type' => $torrent->promotion_time_type,
+                            'original_promotion_until' => $torrent->promotion_until,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
+                    }
+                    RequireSeedTorrent::query()->insert($records);
+                    Torrent::query()->whereIn('id', $torrentIds)->update([
+                        'sp_state' => Torrent::PROMOTION_FREE_TWO_TIMES_UP,
+                        'promotion_time_type' => Torrent::PROMOTION_TIME_TYPE_PERMANENT,
+                        'promotion_until' => null,
+                    ]);
+                    $added += count($records);
+                });
+
+            $activeIds = RequireSeedTorrent::query()->pluck('torrent_id');
+            if ($activeIds->isNotEmpty()) {
+                Torrent::query()->whereIn('id', $activeIds)->update([
+                    'sp_state' => Torrent::PROMOTION_FREE_TWO_TIMES_UP,
+                    'promotion_time_type' => Torrent::PROMOTION_TIME_TYPE_PERMANENT,
+                    'promotion_until' => null,
+                ]);
+            }
+
+            $redis = NexusDB::redis();
+            $redis->del(self::getTorrentCacheKey());
+            $now = now()->toDateTimeString();
+            foreach ($activeIds as $torrentId) {
+                $redis->hSet(self::getTorrentCacheKey(), $torrentId, $now);
+            }
+
+            $result = [
+                'added' => $added,
+                'removed' => $removed,
+                'active' => $activeIds->count(),
+            ];
+            do_log('[SEED_GUARD_SYNC] ' . json_encode($result));
+            return $result;
+        });
+    }
+
     public function autoAddToListCronjob(): void
     {
         $logPrefix = "[RequireSeedTorrentRepository.autoAddToListCronjob]";

@@ -74,7 +74,7 @@ class CalculateUserSeedBonus implements ShouldQueue
         do_log("$logPrefix, job start ...");
 
         $haremAdditionFactor = Setting::get('bonus.harem_addition');
-        $officialAdditionFactor = Setting::get('bonus.official_addition');
+        $baseAdditionFactor = floatval(Setting::get('bonus.base_factor') ?: 1);
         $donortimes_bonus = Setting::get('bonus.donortimes');
         $autoclean_interval_one = Setting::get('main.autoclean_interval_one');
 
@@ -107,9 +107,12 @@ class CalculateUserSeedBonus implements ShouldQueue
             $isDonor = is_donor($userInfo);
             $seedBonusResult = calculate_seed_bonus($uid);
             $bonusLog = "[CLEANUP_CLI_CALCULATE_SEED_BONUS_HANDLE_USER], user: $uid, seedBonusResult: " . nexus_json_encode($seedBonusResult);
-            $all_bonus = $basicBonus = $seedBonusResult['seed_bonus'];
+            $baseBonus = $seedBonusResult['seed_bonus'] * $baseAdditionFactor;
+            $classAdditionFactor = get_seed_bonus_class_addition_factor($userInfo['class']);
+            $classAddition = $baseBonus * $classAdditionFactor;
+            $all_bonus = $basicBonus = $baseBonus + $classAddition;
             $oldValue = $userInfo['seedbonus'];
-            $bonusLog .= ", all_bonus: $all_bonus";
+            $bonusLog .= ", baseFactor: $baseAdditionFactor, classAdditionFactor: $classAdditionFactor, classAddition: $classAddition, all_bonus: $all_bonus";
             $this->appendBonusLogInsert($bonusLogInsert, $uid, BonusLogs::BUSINESS_TYPE_SEEDING_BASIC, $oldValue, $basicBonus);
             $oldValue += $basicBonus;
             /**
@@ -122,16 +125,16 @@ class CalculateUserSeedBonus implements ShouldQueue
 //                continue;
 //            }
             if ($isDonor && $donortimes_bonus != 0) {
-                $donorAddition = $basicBonus * $donortimes_bonus;
+                $donorAddition = $baseBonus * $donortimes_bonus;
                 $all_bonus += $donorAddition;
                 $bonusLog .= ", isDonor, donortimes_bonus: $donortimes_bonus, all_bonus: $all_bonus";
                 $this->appendBonusLogInsert($bonusLogInsert, $uid, BonusLogs::BUSINESS_TYPE_SEEDING_DONOR_ADDITION, $oldValue, $donorAddition);
                 $oldValue += $donorAddition;
             }
-            if ($officialAdditionFactor > 0) {
-                $officialAddition = $seedBonusResult['official_bonus'] * $officialAdditionFactor;
+            if (($seedBonusResult['official_mteam_percent'] ?? 0) > 0) {
+                $officialAddition = $seedBonusResult['official_bonus'] * $baseAdditionFactor;
                 $all_bonus += $officialAddition;
-                $bonusLog .= ", officialAdditionFactor: $officialAdditionFactor, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
+                $bonusLog .= ", officialFormula: mteam, officialPercent: {$seedBonusResult['official_mteam_percent']}, official_bonus: {$seedBonusResult['official_bonus']}, officialAddition: $officialAddition, all_bonus: $all_bonus";
                 $this->appendBonusLogInsert($bonusLogInsert, $uid, BonusLogs::BUSINESS_TYPE_SEEDING_OFFICIAL_ADDITION, $oldValue, $officialAddition);
                 $oldValue += $officialAddition;
             }
@@ -144,9 +147,10 @@ class CalculateUserSeedBonus implements ShouldQueue
                 $oldValue += $haremAddition;
             }
             if ($seedBonusResult['medal_additional_factor'] > 0) {
-                $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'];
+                $medalCoefficient = $seedBonusResult['medal_addition_coefficient'] ?? 1;
+                $medalAddition = $seedBonusResult['medal_bonus'] * $seedBonusResult['medal_additional_factor'] * $medalCoefficient;
                 $all_bonus += $medalAddition;
-                $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
+                $bonusLog .= ", medalAdditionFactor: {$seedBonusResult['medal_additional_factor']}, medalCoefficient: $medalCoefficient, medalBonus: {$seedBonusResult['medal_bonus']}, medalAddition: $medalAddition, all_bonus: $all_bonus";
                 $this->appendBonusLogInsert($bonusLogInsert, $uid, BonusLogs::BUSINESS_TYPE_SEEDING_MEDAL_ADDITION, $oldValue, $medalAddition);
                 $oldValue += $medalAddition;
             }
