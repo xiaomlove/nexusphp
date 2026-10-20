@@ -3575,6 +3575,12 @@ foreach ($_GET as $get_name => $get_value) {
 	$get_name = mysql_real_escape_string(strip_tags(str_replace(array("\"","'"),array("",""),$get_name)));
 	$get_value = mysql_real_escape_string(strip_tags(str_replace(array("\"","'"),array("",""),$get_value)));
 
+	// Do not carry empty search filters into navigation/sort links.
+	if ($get_value === "") {
+		continue;
+	}
+
+
 	if ($get_name != "sort" && $get_name != "type") {
 		if ($count_get > 0) {
 			$oldlink .= "&amp;" . $get_name . "=" . $get_value;
@@ -3592,7 +3598,7 @@ $sort = $_GET['sort'] ?? '';
 $link = array();
 for ($i=1; $i<=9; $i++){
 	if ($sort == $i)
-		$link[$i] = ($_GET['type'] == "desc" ? "asc" : "desc");
+		$link[$i] = (($_GET['type'] ?? 'desc') == "desc" ? "asc" : "desc");
 	else $link[$i] = ($i == 1 ? "asc" : "desc");
 }
 ?>
@@ -3613,7 +3619,8 @@ if ($CURUSER['showcomnum'] != 'no') { ?>
 <td class="colhead"><a href="?<?php echo $oldlink?>sort=7&amp;type=<?php echo $link[7]?>"><img class="seeders" src="pic/trans.gif" alt="seeders" title="<?php echo $lang_functions['title_number_of_seeders'] ?>" /></a></td>
 <td class="colhead"><a href="?<?php echo $oldlink?>sort=8&amp;type=<?php echo $link[8]?>"><img class="leechers" src="pic/trans.gif" alt="leechers" title="<?php echo $lang_functions['title_number_of_leechers'] ?>" /></a></td>
 <td class="colhead"><a href="?<?php echo $oldlink?>sort=6&amp;type=<?php echo $link[6]?>"><img class="snatched" src="pic/trans.gif" alt="snatched" title="<?php echo $lang_functions['title_number_of_snatched']?>" /></a></td>
-<td class="colhead"><a href="?<?php echo $oldlink?>sort=9&amp;type=<?php echo $link[9]?>"><?php echo $lang_functions['col_uploader']?></a></td>
+<td class="colhead codex-uploader-head"><a href="?<?php echo $oldlink?>sort=9&amp;type=<?php echo $link[9]?>"><?php echo $lang_functions['col_uploader']?></a></td>
+<td class="colhead codex-torrent-user-actions-head"></td>
 <?php
 if (user_can('torrentmanage')) { ?>
 	<td class="colhead"><?php echo $lang_functions['col_action'] ?></td>
@@ -3633,11 +3640,67 @@ $lastcom_tooltip = [];
 $torrent_tooltip = [];
 foreach ($rows as $row)
 {
+
 	$id = $row["id"];
 	$sphighlight = get_torrent_bg_color($row['sp_state'], $row['pos_state'], $row);
-	print("<tr" . $sphighlight . ">\n");
+    $codexTorrentStatus = $torrentSeedingLeechingStatus[$id] ?? null;
+    $codexProgressClass = 'codex-torrent-progress-none';
+    $codexProgressInlineStyle = '';
+    $codexPosRowClass = 'codex-pos-' . preg_replace('/[^a-z0-9_-]/i', '', (string)$row['pos_state']);
+    if ($codexTorrentStatus) {
+        $codexProgressPercentForRow = max(0, min(100, (float)$codexTorrentStatus['progress'] * 100));
+        if ($codexProgressPercentForRow >= 100) {
+            $codexProgressClass = 'codex-torrent-progress-full';
+            $codexProgressSoft = 'rgba(16, 185, 129, .18)';
+        } elseif ($codexProgressPercentForRow >= 66) {
+            $codexProgressClass = 'codex-torrent-progress-high';
+            $codexProgressSoft = 'rgba(34, 211, 238, .16)';
+        } elseif ($codexProgressPercentForRow >= 31) {
+            $codexProgressClass = 'codex-torrent-progress-mid';
+            $codexProgressSoft = 'rgba(96, 165, 250, .16)';
+        } else {
+            $codexProgressClass = 'codex-torrent-progress-low';
+            $codexProgressSoft = 'rgba(251, 146, 60, .16)';
+        }
+        $codexProgressInlineStyle = sprintf('--codex-progress-pct: %.1f%%; --codex-progress-soft: %s;', $codexProgressPercentForRow, $codexProgressSoft);
+    }
+    $codexRowAttr = (string)$sphighlight;
+    if (strpos($codexRowAttr, " class='") !== false) {
+        $codexRowAttr = str_replace(" class='", " class='codex-torrent-row " . $codexProgressClass . " " . $codexPosRowClass . " ", $codexRowAttr);
+    } elseif (strpos($codexRowAttr, ' class="') !== false) {
+        $codexRowAttr = str_replace(' class="', ' class="codex-torrent-row ' . $codexProgressClass . ' ' . $codexPosRowClass . ' ', $codexRowAttr);
+    } else {
+        $codexRowAttr = ' class="codex-torrent-row ' . $codexProgressClass . ' ' . $codexPosRowClass . '"' . $codexRowAttr;
+    }
+    if ($codexProgressInlineStyle !== '') {
+        if (strpos($codexRowAttr, " style='") !== false) {
+            $codexRowAttr = str_replace(" style='", " style='" . $codexProgressInlineStyle . ' ', $codexRowAttr);
+        } elseif (strpos($codexRowAttr, ' style="') !== false) {
+            $codexRowAttr = str_replace(' style="', ' style="' . $codexProgressInlineStyle . ' ', $codexRowAttr);
+        } else {
+            $codexRowAttr .= ' style="' . $codexProgressInlineStyle . '"';
+        }
+    }
+    $codexStickyCorner = '';
+    if ($CURUSER['appendsticky'] == 'yes') {
+        $codexPosStates = \App\Models\Torrent::listPosStates();
+        $codexPosState = $codexPosStates[$row['pos_state']] ?? null;
+        if ($codexPosState && !empty($codexPosState['symbol'])) {
+            $codexPosStateClass = preg_replace('/[^a-z0-9_-]/i', '', (string)$row['pos_state']);
+            $codexPosStateText = htmlspecialchars($codexPosState['text'], ENT_QUOTES);
+            $codexStickyCorner = sprintf(
+                '<span class="torrent-sticky-corner torrent-sticky-corner-%s" title="%s" aria-label="%s"><i aria-hidden="true">N</i><b>置顶</b></span>',
+                $codexPosStateClass,
+                $codexPosStateText,
+                $codexPosStateText
+            );
+        }
+    }
+	print("<tr" . $codexRowAttr . ">
+");
 
-	print("<td class=\"rowfollow nowrap\" valign=\"middle\" style='padding: 0px'>");
+	print("<td class=\"rowfollow nowrap codex-category-cell\" valign=\"middle\" style='padding: 0px'>");
+    print($codexStickyCorner);
 	if (isset($row["category"])) {
 		print(return_category_image($row["category"], "?"));
 		if ($has_secondicon){
@@ -3700,11 +3763,18 @@ foreach ($rows as $row)
 
 	if($count_dispname > $max_length_of_torrent_name)
 		$dispname=mb_substr($dispname, 0, $max_length_of_torrent_name-2,"UTF-8") . "..";
-	if ($CURUSER['appendsticky'] == 'yes') {
-        $posStates = \App\Models\Torrent::listPosStates();
-        $stickyicon = str_repeat("<img class=\"sticky\" src=\"pic/trans.gif\" alt=\"Sticky\" title=\"".$posStates[$row['pos_state']]['text']."\" />&nbsp;", $posStates[$row['pos_state']]['icon_counts'] ?? 0);
-    } else {
-        $stickyicon = "";
+	$stickyicon = '';
+    if ($CURUSER['appendsticky'] == 'yes' && !empty($codexPosState['icon_counts'])) {
+        $stickyArrowImages = str_repeat(
+            '<img class="sticky" src="pic/trans.gif" alt="" aria-hidden="true" />',
+            (int)$codexPosState['icon_counts']
+        );
+        $stickyicon = sprintf(
+            '<span class="torrent-sticky-title-arrows" title="%s" aria-label="%s">%s</span>',
+            $codexPosStateText,
+            $codexPosStateText,
+            $stickyArrowImages
+        );
     }
 	$stickyicon = apply_filter('sticky_icon', $stickyicon, $row);
     $sp_torrent = get_torrent_promotion_append($row['sp_state'],"",true,$row["added"], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
@@ -3749,6 +3819,19 @@ foreach ($rows as $row)
     }
     $paidIcon = $torrentRep->getPaidIcon($row);
 	$titleSuffix = $banned_torrent.$paidIcon.$picked_torrent.$sp_torrent.$sp_torrent_sub. $hrImg . $seedBoxIcon . $approvalStatusIcon;
+	if (!empty($row['nova_sticky_active'])) {
+	    $novaStickyReward = number_format((float)($row['nova_sticky_reward'] ?? 0), 2);
+	    $novaStickyTitle = sprintf(
+	        '付费助推中，竞价 %s 魔力，奖励池 %s 魔力',
+	        number_format((float)($row['nova_sticky_bid'] ?? 0), 2),
+	        $novaStickyReward
+	    );
+	    $titleSuffix .= sprintf(
+	        ' <span class="nova-sticky-list-badge" title="%s" style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;height:22px;padding:0 7px 0 3px;border:1px solid rgba(234,88,12,.34);border-radius:6px;background:linear-gradient(90deg,#fff7ed,#ffedd5);color:#9a3412;font-size:11px;font-weight:800;line-height:1;vertical-align:middle;box-shadow:0 2px 7px rgba(234,88,12,.13)"><span aria-hidden="true" style="display:inline-grid;place-items:center;width:16px;height:16px;border-radius:4px;background:#f97316;color:#fff;font-size:10px;font-weight:900">N</span><span>助推</span><span style="padding-left:4px;border-left:1px solid rgba(234,88,12,.25);color:#c2410c;white-space:nowrap">奖 %s</span></span>',
+	        htmlspecialchars($novaStickyTitle, ENT_QUOTES),
+	        $novaStickyReward
+	    );
+	}
 	$titleSuffix = apply_filter('torrent_title_suffix', $titleSuffix, $row);
 	print($titleSuffix);
     /**
@@ -3776,8 +3859,20 @@ foreach ($rows as $row)
 	    print($tags ? "<br />$tags" : "");
     }
 	//progress bar
-	if (isset($torrentSeedingLeechingStatus[$row['id']])) {
-	    echo $torrent->renderProgressBar($torrentSeedingLeechingStatus[$row['id']]['active_status'], $torrentSeedingLeechingStatus[$row['id']]['progress']);
+	if ($codexTorrentStatus) {
+        $codexProgressPercent = max(0, min(100, round((float)$codexTorrentStatus['progress'] * 100, 1)));
+        $codexProgressLabel = rtrim(rtrim(number_format($codexProgressPercent, 1, '.', ''), '0'), '.');
+        $codexProgressActive = preg_replace('/[^a-z0-9_-]/i', '', (string)$codexTorrentStatus['active_status']);
+        $codexProgressBarClass = str_replace('codex-torrent-', 'codex-download-', $codexProgressClass);
+        $codexProgressTitle = htmlspecialchars($codexProgressActive . ' ' . $codexProgressLabel . '%');
+        printf(
+            '<div class="codex-download-progress %s codex-download-progress-%s" title="%s"><span class="codex-download-progress-fill" style="width:%s%%"></span><em>%s%%</em></div>',
+            htmlspecialchars($codexProgressBarClass),
+            htmlspecialchars($codexProgressActive),
+            $codexProgressTitle,
+            $codexProgressLabel,
+            $codexProgressLabel
+        );
     }
 	print("</td>");
 
@@ -3785,14 +3880,13 @@ foreach ($rows as $row)
         echo $torrent->renderTorrentsPageAverageRating($row, $ptGenInfo[$row['id']] ?? []);
     }
 		$act = "";
-		if ($CURUSER["dlicon"] != 'no' && $CURUSER["downloadpos"] != "no")
-		$act .= "<a href=\"download.php?id=".$id."\"><img class=\"download\" src=\"pic/trans.gif\" style='padding-bottom: 2px;' alt=\"download\" title=\"".$lang_functions['title_download_torrent']."\" /></a>" ;
-		if ($CURUSER["bmicon"] == 'yes'){
+		if ($CURUSER["bmicon"] == 'yes') {
 			$bookmark = " href=\"javascript: bookmark(".$id.",".$counter.");\"";
-			$act .= ($act ? "<br />" : "")."<a id=\"bookmark".$counter."\" ".$bookmark." >".get_torrent_bookmark_state($CURUSER['id'], $id)."</a>";
+			$act .= "<a id=\"bookmark".$counter."\" class=\"codex-torrent-action-link\" ".$bookmark." >".get_torrent_bookmark_state($CURUSER['id'], $id)."</a>";
 		}
-
-	print("<td width=\"20\" class=\"embedded\" style=\"text-align: right;padding-right: 5px\" valign=\"middle\">".$act."</td>\n");
+		if ($CURUSER["dlicon"] != 'no' && $CURUSER["downloadpos"] != "no") {
+			$act .= "<a class=\"codex-torrent-action-link\" href=\"download.php?id=".$id."\"><img class=\"download\" src=\"pic/trans.gif\" alt=\"download\" title=\"".$lang_functions['title_download_torrent']."\" /></a>";
+		}
 
 	print("</tr></table></td>");
 	if ($wait)
@@ -3879,16 +3973,18 @@ foreach ($rows as $row)
 		    $row["anonymous"] == "yes"
             && (user_can('viewanonymous') || (isset($row['owner']) && $row['owner'] == $CURUSER['id']))
         ) {
-			print("<td class=\"rowfollow\" align=\"center\"><i>".$lang_functions['text_anonymous']."</i><br />".(isset($row["owner"]) ? "(" . get_username($row["owner"]) .")" : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
+			print("<td class=\"rowfollow nowrap codex-uploader-cell\" align=\"center\"><i>".$lang_functions['text_anonymous']."</i><br />".(isset($row["owner"]) ? "(" . get_username($row["owner"], false, true, true, false, false, false, "", false, false) .")" : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
 		}
 		elseif ($row["anonymous"] == "yes")
 		{
-			print("<td class=\"rowfollow\"><i>".$lang_functions['text_anonymous']."</i></td>\n");
+			print("<td class=\"rowfollow nowrap codex-uploader-cell\"><i>".$lang_functions['text_anonymous']."</i></td>\n");
 		}
 		else
 		{
-			print("<td class=\"rowfollow\">" . (isset($row["owner"]) ? get_username($row["owner"]) : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
+			print("<td class=\"rowfollow nowrap codex-uploader-cell\">" . (isset($row["owner"]) ? get_username($row["owner"], false, true, true, false, false, false, "", false, false) : "<i>".$lang_functions['text_orphaned']."</i>") . "</td>\n");
 		}
+
+    print("<td class=\"rowfollow nowrap codex-torrent-user-actions\" align=\"center\"><span class=\"codex-torrent-user-actions-inner\">".$act."</span></td>\n");
 
 	if (user_can('torrentmanage'))
 	{
@@ -3911,7 +4007,7 @@ create_tooltip_container($lastcom_tooltip, 400);
 create_tooltip_container($torrent_tooltip, 500);
 }
 
-function get_username($id, $big = false, $link = true, $bold = true, $target = false, $bracket = false, $withtitle = false, $link_ext = "", $underline = false)
+function get_username($id, $big = false, $link = true, $bold = true, $target = false, $bracket = false, $withtitle = false, $link_ext = "", $underline = false, $showMedals = true)
 {
 	static $usernameArray = array();
 	$id = (int)$id;
@@ -3974,11 +4070,13 @@ function get_username($id, $big = false, $link = true, $bold = true, $target = f
 
         //medal
         $medalHtml = '';
-		foreach ($arr['wearing_medals'] ?? [] as $medal) {
-            $medalHtml .= sprintf(
-                '<img src="%s" title="%s" class="%s preview" style="max-height: %s;max-width: %s;margin-left: %s"/>',
-                $medal['image_large'], $medal['name'], $medalClass, $medalSize, $medalSize, $marginLeft
-            );
+		if ($showMedals) {
+			foreach ($arr['wearing_medals'] ?? [] as $medal) {
+                $medalHtml .= sprintf(
+                    '<img src="%s" title="%s" class="%s preview" style="max-height: %s;max-width: %s;margin-left: %s"/>',
+                    $medal['image_large'], $medal['name'], $medalClass, $medalSize, $medalSize, $marginLeft
+                );
+            }
         }
 
 		$href = getSchemeAndHttpHost() . "/userdetails.php?id=$id";
