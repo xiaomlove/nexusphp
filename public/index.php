@@ -36,8 +36,570 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 stdhead($lang_index['head_home']);
 begin_main_frame();
 
+// ------------- start: Codex home poster wall ------------------//
+$codexOfficialTagId = 3;
+$codexPosterRows = array();
+$codexPosterLimit = 50;
+if (!empty($CURUSER['torrentsperpage'])) {
+    $codexPosterLimit = (int)$CURUSER['torrentsperpage'];
+} elseif (!empty($torrentsperpage_main)) {
+    $codexPosterLimit = (int)$torrentsperpage_main;
+}
+$codexPosterLimit = max(12, min(80, $codexPosterLimit));
+$codexPosterNormalizeTitle = static function ($name) {
+    $name = trim((string)$name);
+    $normalized = preg_replace('/(?:[ ._-]*S\d{1,2}(?:E\d{1,4}(?:[-_]?E?\d{1,4})?)?\b|[ ._-]*第\s*\d{1,4}(?:[-~至]\d{1,4})?\s*集)/iu', '', $name);
+    $normalized = preg_replace('/[ ._-]+$/u', '', (string)$normalized);
+    return trim((string)$normalized);
+};
+$codexPosterSql = "SELECT t.id, t.name, t.small_descr, t.cover, t.seeders
+    FROM torrents AS t
+    INNER JOIN (
+        SELECT MAX(t2.id) AS id
+        FROM torrents AS t2
+        INNER JOIN torrent_tags AS tt2 ON t2.id = tt2.torrent_id
+        WHERE t2.visible = 'yes'
+          AND t2.banned = 'no'
+          AND t2.cover <> ''
+          AND tt2.tag_id = " . sqlesc($codexOfficialTagId) . "
+        GROUP BY t2.cover
+        ORDER BY MAX(t2.added) DESC
+        LIMIT " . (int)$codexPosterLimit . "
+    ) AS picked ON t.id = picked.id
+    ORDER BY t.added DESC";
+$codexCacheFile=sys_get_temp_dir()."/nexus_codex_poster.cache";
+$codexPosterRows=array();
+if(is_file($codexCacheFile) && time()-filemtime($codexCacheFile)<300) $codexPosterRows=@unserialize(file_get_contents($codexCacheFile));
+if(!is_array($codexPosterRows)||!$codexPosterRows){$codexPosterRows=array();$codexPosterResult=sql_query($codexPosterSql) or sqlerr(__FILE__,__LINE__);while($codexPosterRow=mysql_fetch_assoc($codexPosterResult))$codexPosterRows[]=$codexPosterRow;@file_put_contents($codexCacheFile,serialize($codexPosterRows),LOCK_EX);}
+$codexSeenCovers=array();
+$codexSeenPosterGroups=array();
+foreach($codexPosterRows as $codexPosterRow){
+    $codexCoverKey = trim($codexPosterRow['cover']);
+    if ($codexCoverKey == '' || isset($codexSeenCovers[$codexCoverKey])) continue;
+    $codexSeenCovers[$codexCoverKey] = true;
+    $codexOriginalTitle = trim((string)$codexPosterRow['name']);
+    $codexGroupTitle = $codexPosterNormalizeTitle($codexOriginalTitle);
+    $codexIsEpisode = $codexGroupTitle !== $codexOriginalTitle;
+    $codexGroupKey = strtolower($codexIsEpisode ? 'tv:' . $codexGroupTitle : 'title:' . $codexOriginalTitle);
+    if (isset($codexSeenPosterGroups[$codexGroupKey])) continue;
+    $codexSeenPosterGroups[$codexGroupKey] = true;
+    $codexPosterRow['poster_group_title'] = $codexIsEpisode ? $codexGroupTitle : $codexOriginalTitle;
+    $codexPosterRow['poster_group_is_episode'] = $codexIsEpisode;
+    $codexPosterRows[] = $codexPosterRow;
+}
+if (count($codexPosterRows) > 0) {
+    $codexHeroRows = array_slice($codexPosterRows, 0, min(8, count($codexPosterRows)));
+    $codexStripRows = $codexPosterRows;
+    ?>
+    <style type="text/css">
+        .nova-poster-wall {
+            width: 1455px;
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto 18px auto;
+            color: #fff;
+            font-family: "Inter", "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+        }
+        .nova-poster-hero {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1164 / 650;
+            min-height: 0;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #0d1720;
+            box-shadow: 0 16px 42px rgba(15, 35, 45, .20);
+            isolation: isolate;
+        }
+        .nova-poster-slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            padding: 44px 98px 119px 98px;
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.012);
+            transition: opacity .28s ease, transform .45s ease;
+            pointer-events: none;
+        }
+        .nova-poster-slide.is-active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        .nova-poster-bg {
+            display: none !important;
+        }
+        .nova-poster-slide::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background:
+                radial-gradient(circle at 72% 36%, rgba(255,255,255,.10), transparent 24%),
+                linear-gradient(90deg, rgba(5, 10, 18, .90) 0%, rgba(5, 10, 18, .64) 45%, rgba(5, 10, 18, .30) 100%);
+        }
+        .nova-poster-copy {
+            position: relative;
+            z-index: 3;
+            width: 50%;
+            max-width: 813px;
+            min-width: 469px;
+            text-shadow: 0 3px 16px rgba(0,0,0,.58);
+        }
+        .nova-poster-frame {
+            display: none !important;
+        }
+        .nova-poster-frame img {
+            display: none !important;
+        }
+        .nova-poster-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px;
+            margin-bottom: 13px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.16);
+            border: 1px solid rgba(255,255,255,.18);
+            backdrop-filter: blur(10px);
+            font-size: 16px;
+            letter-spacing: .06em;
+        }
+        .nova-poster-title {
+            margin: 0 0 12px 0 !important;
+            padding: 0 !important;
+            color: #fff !important;
+            font-size: 29px !important;
+            line-height: 1.30 !important;
+            font-weight: 850 !important;
+            background: transparent !important;
+            border: 0 !important;
+            word-break: break-word;
+        }
+        .nova-poster-title::after { display: none !important; }
+        .nova-poster-desc {
+            max-width: 538px;
+            margin: 0 0 19px 0;
+            color: rgba(255,255,255,.86);
+            font-size: 16px;
+            line-height: 1.58;
+            max-height: 90px;
+            overflow: hidden;
+            word-break: break-word;
+        }
+        .nova-poster-more {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 169px;
+            height: 56px;
+            padding: 0 29px;
+            border-radius: 16px;
+            background: rgba(255,255,255,.20);
+            border: 1px solid rgba(255,255,255,.24);
+            color: #fff !important;
+            font-size: 20px;
+            font-weight: 800;
+            text-decoration: none !important;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 22px rgba(0,0,0,.18);
+        }
+        .nova-poster-more:hover {
+            background: rgba(255,255,255,.30);
+            color: #fff !important;
+            transform: translateY(-1px);
+        }
+        .nova-poster-arrow {
+            position: absolute;
+            top: 50%;
+            z-index: 8;
+            width: 50px;
+            height: 90px;
+            margin-top: -45px;
+            border: 0;
+            border-radius: 14px;
+            background: rgba(0,0,0,.50) !important;
+            color: #fff !important;
+            font-size: 0 !important;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        .nova-poster-arrow::before {
+            display: block;
+            font-size: 48px;
+            font-weight: 900;
+            line-height: 90px;
+        }
+        .nova-poster-prev::before { content: "\2039"; }
+        .nova-poster-next::before { content: "\203A"; }
+        .nova-poster-arrow:hover { background: rgba(0,0,0,.68) !important; transform: none !important; }
+        .nova-poster-prev { left: 16px; }
+        .nova-poster-next { right: 16px; }
+        .nova-poster-thumbs {
+            position: absolute;
+            z-index: 7;
+            right: 29px;
+            bottom: 23px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            max-width: calc(100% - 394px);
+        }
+        .nova-poster-thumb {
+            width: 70px;
+            padding: 0;
+            border: 0;
+            background: transparent !important;
+            color: rgba(255,255,255,.82) !important;
+            box-shadow: none !important;
+            cursor: pointer;
+            transform: none !important;
+        }
+        .nova-poster-thumb img {
+            width: 70px;
+            height: 104px;
+            object-fit: cover;
+            border-radius: 9px;
+            box-shadow: 0 10px 20px rgba(0,0,0,.30);
+            opacity: .76;
+            transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease;
+        }
+        .nova-poster-thumb span {
+            display: block;
+            margin-top: 4px;
+            font-size: 13px;
+            line-height: 1.16;
+            height: 34px;
+            overflow: hidden;
+            text-shadow: 0 2px 8px rgba(0,0,0,.65);
+            word-break: break-word;
+        }
+        .nova-poster-thumb.is-active img,
+        .nova-poster-thumb:hover img {
+            opacity: 1;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 26px rgba(0,0,0,.38), 0 0 0 2px rgba(255,255,255,.72);
+        }
+        .nova-poster-strip-wrap {
+            position: relative;
+            margin-top: 19px;
+        }
+        .nova-poster-strip-viewport {
+            overflow: hidden;
+            padding: 0 56px 13px 56px;
+        }
+        .nova-poster-strip {
+            display: flex;
+            gap: 16px;
+            transition: none;
+            will-change: transform;
+        }
+        .nova-poster-strip.is-marquee-paused {
+            transition: transform .18s ease;
+        }
+        .nova-poster-card {
+            flex: 0 0 148px;
+            color: #102a35 !important;
+            text-decoration: none !important;
+        }
+        .nova-poster-card .nova-poster-card-img {
+            width: 148px;
+            aspect-ratio: 9 / 16;
+            border-radius: 12px;
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-color: #0d1720;
+            box-shadow: 0 10px 22px rgba(15, 35, 45, .16);
+            transition: transform .18s ease, box-shadow .18s ease;
+            overflow: hidden;
+        }
+        .nova-poster-card:hover .nova-poster-card-img {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(15, 35, 45, .22);
+        }
+        .nova-poster-card span {
+            display: block;
+            margin-top: 8px;
+            color: #17313a;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.22;
+            min-height: 38px;
+            max-height: 75px;
+            overflow: hidden;
+            text-align: center;
+            word-break: break-word;
+        }
+        .nova-poster-strip-btn {
+            position: absolute;
+            top: 81px;
+            z-index: 3;
+            width: 44px;
+            height: 75px;
+            border: 0;
+            border-radius: 13px;
+            background: rgba(15, 35, 45, .72) !important;
+            color: #fff !important;
+            box-shadow: none !important;
+            cursor: pointer;
+            font-size: 0 !important;
+            padding: 0 !important;
+            transform: none !important;
+        }
+        .nova-poster-strip-btn::before {
+            display: block;
+            font-size: 38px;
+            font-weight: 900;
+            line-height: 75px;
+        }
+        .nova-poster-strip-prev { left: 0; }
+        .nova-poster-strip-next { right: 0; }
+        .nova-poster-strip-prev::before { content: "\2039"; }
+        .nova-poster-strip-next::before { content: "\203A"; }
+        .nova-poster-strip-btn:disabled {
+            opacity: .28;
+            cursor: default;
+        }
+        @media (max-width: 900px) {
+            .nova-poster-wall { width: 100%; max-width: 100%; }
+            .nova-poster-slide { padding: 24px 42px 90px 42px; }
+            .nova-poster-copy { width: auto; min-width: 0; max-width: 62%; }
+            .nova-poster-frame { display: none !important; }
+            .nova-poster-title { font-size: 15px !important; }
+            .nova-poster-desc { font-size: 11px; max-height: 46px; }
+            .nova-poster-more { min-width: 92px; height: 32px; font-size: 12px; }
+            .nova-poster-arrow { width: 28px; height: 50px; margin-top: -25px; border-radius: 12px; }
+            .nova-poster-arrow::before { font-size: 25px; line-height: 50px; }
+            .nova-poster-prev { left: 7px; }
+            .nova-poster-next { right: 7px; }
+            .nova-poster-thumbs { left: 40px; right: 40px; bottom: 12px; max-width: none; overflow: hidden; gap: 7px; }
+            .nova-poster-thumb { width: 40px; }
+            .nova-poster-thumb img { width: 40px; height: 58px; border-radius: 8px; }
+            .nova-poster-thumb span { display: none; }
+            .nova-poster-strip-viewport { padding: 0 30px 8px 30px; }
+            .nova-poster-card { flex-basis: 78px; }
+            .nova-poster-card .nova-poster-card-img { width: 78px; aspect-ratio: 9 / 16; }
+            .nova-poster-card span { font-size: 10px; }
+            .nova-poster-strip-btn { top: 40px; width: 24px; height: 42px; }
+            .nova-poster-strip-btn::before { font-size: 21px; line-height: 42px; }
+        }
+    </style>
+    <div class="nova-poster-wall" id="novaPosterWall">
+        <div class="nova-poster-hero">
+            <?php foreach ($codexHeroRows as $codexIndex => $codexPoster) {
+                $codexCover = htmlspecialchars($codexPoster['cover'], ENT_QUOTES);
+                $codexTitleRaw = (string)($codexPoster['poster_group_title'] ?? $codexPoster['name']);
+                $codexTitle = htmlspecialchars($codexTitleRaw, ENT_QUOTES);
+                $codexDescRaw = trim($codexPoster['small_descr']) != '' ? trim($codexPoster['small_descr']) : $codexPoster['name'];
+                $codexDesc = htmlspecialchars($codexDescRaw, ENT_QUOTES);
+                $codexPosterHref = !empty($codexPoster['poster_group_is_episode'])
+                    ? 'torrents.php?search=' . rawurlencode($codexTitleRaw) . '&amp;search_area=0&amp;search_mode=0&amp;notnewword=1'
+                    : 'details.php?id=' . (int)$codexPoster['id'] . '&amp;hit=1';
+                $codexActive = $codexIndex == 0 ? ' is-active' : '';
+            ?>
+                <div class="nova-poster-slide<?php echo $codexActive ?>" data-nova-slide="<?php echo $codexIndex ?>" style="background-image: url('<?php echo $codexCover ?>');">
+                    <div class="nova-poster-bg" style="background-image: url('<?php echo $codexCover ?>');"></div>
+                    <div class="nova-poster-copy">
+                        <div class="nova-poster-eyebrow">&#x5B98;&#x79CD; &#8594; POSTER WALL</div>
+                        <h2 class="nova-poster-title"><?php echo $codexTitle ?></h2>
+                        <p class="nova-poster-desc"><?php echo $codexDesc ?></p>
+                        <a class="nova-poster-more" href="<?php echo $codexPosterHref ?>"><?php echo !empty($codexPoster['poster_group_is_episode']) ? '&#x67E5;&#x770B;&#x5168;&#x90E8;&#x96C6;&#x6570;' : '&#x67E5;&#x770B;&#x8BE6;&#x60C5;' ?></a>
+                    </div>
+                    <a class="nova-poster-frame" href="<?php echo $codexPosterHref ?>">
+                        <img src="<?php echo $codexCover ?>" alt="<?php echo $codexTitle ?>" loading="lazy" />
+                    </a>
+                </div>
+            <?php } ?>
+            <button type="button" class="nova-poster-arrow nova-poster-prev" aria-label="Previous">&#8249;</button>
+            <button type="button" class="nova-poster-arrow nova-poster-next" aria-label="Next">&#8250;</button>
+            <div class="nova-poster-thumbs">
+                <?php foreach ($codexHeroRows as $codexIndex => $codexPoster) {
+                    $codexCover = htmlspecialchars($codexPoster['cover'], ENT_QUOTES);
+                    $codexTitle = htmlspecialchars($codexPoster['name'], ENT_QUOTES);
+                    $codexActive = $codexIndex == 0 ? ' is-active' : '';
+                ?>
+                    <button type="button" class="nova-poster-thumb<?php echo $codexActive ?>" data-nova-go="<?php echo $codexIndex ?>">
+                        <img src="<?php echo $codexCover ?>" alt="<?php echo $codexTitle ?>" loading="lazy" />
+                    </button>
+                <?php } ?>
+            </div>
+        </div>
+        <div class="nova-poster-strip-wrap">
+            <button type="button" class="nova-poster-strip-btn nova-poster-strip-prev" aria-label="Previous page">&#8249;</button>
+            <div class="nova-poster-strip-viewport">
+                <div class="nova-poster-strip">
+                    <?php foreach ($codexStripRows as $codexPoster) {
+                        $codexCover = htmlspecialchars($codexPoster['cover'], ENT_QUOTES);
+                        $codexTitleRaw = (string)($codexPoster['poster_group_title'] ?? $codexPoster['name']);
+                        $codexTitle = htmlspecialchars($codexTitleRaw, ENT_QUOTES);
+                        $codexPosterHref = !empty($codexPoster['poster_group_is_episode'])
+                            ? 'torrents.php?search=' . rawurlencode($codexTitleRaw) . '&amp;search_area=0&amp;search_mode=0&amp;notnewword=1'
+                            : 'details.php?id=' . (int)$codexPoster['id'] . '&amp;hit=1';
+                    ?>
+                        <a class="nova-poster-card" href="<?php echo $codexPosterHref ?>" title="<?php echo $codexTitle ?>">
+                            <div class="nova-poster-card-img" style="background-image: url('<?php echo $codexCover ?>');"></div>
+                        </a>
+                    <?php } ?>
+                </div>
+            </div>
+            <button type="button" class="nova-poster-strip-btn nova-poster-strip-next" aria-label="Next page">&#8250;</button>
+        </div>
+    </div>
+    <script type="text/javascript">
+    (function () {
+        var root = document.getElementById('novaPosterWall');
+        if (!root) return;
+        var slides = root.querySelectorAll('.nova-poster-slide');
+        var thumbs = root.querySelectorAll('.nova-poster-thumb');
+        var current = 0;
+        var heroTimer = null;
+        var heroDelay = 5000;
+        function show(index) {
+            if (!slides.length) return;
+            current = (index + slides.length) % slides.length;
+            for (var i = 0; i < slides.length; i++) {
+                slides[i].className = slides[i].className.replace(/\s?is-active/g, '') + (i === current ? ' is-active' : '');
+                if (thumbs[i]) thumbs[i].className = thumbs[i].className.replace(/\s?is-active/g, '') + (i === current ? ' is-active' : '');
+            }
+        }
+        function stopHeroAuto() {
+            if (heroTimer) {
+                window.clearInterval(heroTimer);
+                heroTimer = null;
+            }
+        }
+        function startHeroAuto() {
+            stopHeroAuto();
+            if (slides.length > 1) {
+                heroTimer = window.setInterval(function () { show(current + 1); }, heroDelay);
+            }
+        }
+        function manualShow(index) {
+            show(index);
+            startHeroAuto();
+        }
+        var prev = root.querySelector('.nova-poster-prev');
+        var next = root.querySelector('.nova-poster-next');
+        if (prev) prev.onclick = function () { manualShow(current - 1); };
+        if (next) next.onclick = function () { manualShow(current + 1); };
+        for (var t = 0; t < thumbs.length; t++) {
+            thumbs[t].onclick = function () { manualShow(parseInt(this.getAttribute('data-nova-go'), 10) || 0); };
+        }
+        var hero = root.querySelector('.nova-poster-hero');
+        if (hero) {
+            hero.onmouseenter = stopHeroAuto;
+            hero.onmouseleave = startHeroAuto;
+        }
+        startHeroAuto();
+
+        var strip = root.querySelector('.nova-poster-strip');
+        var cards = root.querySelectorAll('.nova-poster-card');
+        var stripPrev = root.querySelector('.nova-poster-strip-prev');
+        var stripNext = root.querySelector('.nova-poster-strip-next');
+        var marqueeX = 0;
+        var marqueeSpeed = 0.44;
+        var marqueePaused = false;
+        var marqueeFrame = null;
+        function getStripGap() {
+            if (!strip) return 0;
+            var style = window.getComputedStyle(strip);
+            return parseFloat(style.columnGap || style.gap || 0) || 0;
+        }
+        function cardStep() {
+            if (!cards.length) return 0;
+            return cards[0].offsetWidth + getStripGap();
+        }
+        function normalizeMarquee() {
+            var step = cardStep();
+            if (!step) return;
+            while (marqueeX <= -step) {
+                marqueeX += step;
+                strip.appendChild(strip.children[0]);
+                cards = strip.querySelectorAll('.nova-poster-card');
+            }
+            while (marqueeX > 0) {
+                marqueeX -= step;
+                strip.insertBefore(strip.children[strip.children.length - 1], strip.children[0]);
+                cards = strip.querySelectorAll('.nova-poster-card');
+            }
+        }
+        function renderMarquee() {
+            if (!strip || !cards.length) return;
+            normalizeMarquee();
+            strip.style.transform = 'translateX(' + marqueeX + 'px)';
+        }
+        function tickMarquee() {
+            if (!marqueePaused && strip && cards.length > 1) {
+                marqueeX -= marqueeSpeed;
+                renderMarquee();
+            }
+            marqueeFrame = window.requestAnimationFrame(tickMarquee);
+        }
+        function nudgeMarquee(direction) {
+            var step = cardStep();
+            if (!step) return;
+            marqueePaused = true;
+            if (strip) strip.className += strip.className.indexOf('is-marquee-paused') === -1 ? ' is-marquee-paused' : '';
+            marqueeX += direction * step;
+            renderMarquee();
+            window.setTimeout(function () {
+                marqueePaused = false;
+                if (strip) strip.className = strip.className.replace(/\s?is-marquee-paused/g, '');
+            }, 900);
+        }
+        if (stripPrev) stripPrev.onclick = function () { nudgeMarquee(1); };
+        if (stripNext) stripNext.onclick = function () { nudgeMarquee(-1); };
+        var stripViewport = root.querySelector('.nova-poster-strip-viewport');
+        if (stripViewport) {
+            stripViewport.onmouseenter = function () { marqueePaused = true; };
+            stripViewport.onmouseleave = function () { marqueePaused = false; };
+        }
+        window.addEventListener('resize', renderMarquee);
+        renderMarquee();
+        tickMarquee();
+    })();
+    </script>
+    <?php
+}
+// ------------- end: Codex home poster wall ------------------//
+
+?>
+<div class="nova-home-modules" style="width:1455px;max-width:100%;margin:0 auto;box-sizing:border-box;">
+<?php
+
 // ------------- start: recent news ------------------//
-print("<h2>".$lang_index['text_recent_news'].(user_can('newsmanage') ? " - <font class=\"small\">[<a class=\"altlink\" href=\"news.php\"><b>".$lang_index['text_news_page']."</b></a>]</font>" : "")."</h2>");
+$homeNewsResult = sql_query("SELECT * FROM news ORDER BY added DESC LIMIT ".(int)$maxnewsnum_main) or sqlerr(__FILE__, __LINE__);
+$homeNews = [];
+while ($homeNewsRow = mysql_fetch_assoc($homeNewsResult)) $homeNews[] = $homeNewsRow;
+$homeAttendance = (new \App\Repositories\AttendanceRepository())->getAttendance($CURUSER['id']);
+$homeMonthStart = new DateTimeImmutable(date('Y-m-01'));
+$homeMonth = $homeMonthStart->format('Y-m');
+$homeMonthDays = (int)$homeMonthStart->format('t');
+$homeLogs = [];
+if ($homeAttendance) foreach ($homeAttendance->logs()->where('date', '>=', $homeMonth.'-01')->where('date', '<=', $homeMonth.'-'.$homeMonthDays)->get() as $homeLog) $homeLogs[$homeLog->date] = $homeLog;
+echo '<section class="nova-home-community"><div class="nova-home-news nova-home-panel"><div class="nova-home-panel-head"><h2>📣 社区新鲜事</h2>'.(user_can('newsmanage') ? '<a href="news.php">发布</a>' : '').'</div>';
+if ($homeNews) {
+    $homeFeatured = $homeNews[0];
+    echo '<div class="nova-home-feature" data-news-index="0" role="button" tabindex="0"><div class="nova-home-feature-icon">✦</div><div class="nova-home-feature-copy"><strong>'.htmlspecialchars($homeFeatured['title']).'</strong><p>'.htmlspecialchars(trim(preg_replace('/\s+/u', ' ', strip_tags(format_comment($homeFeatured['body'], 0))))).'</p><button type="button" class="nova-home-news-toggle">查看公告</button></div></div><div class="nova-home-news-list">';
+    foreach ($homeNews as $homeNewsIndex => $homeNewsItem) echo '<div class="nova-home-news-row" data-news-index="'.(int)$homeNewsIndex.'" role="button" tabindex="0"><span>公告</span><strong>'.htmlspecialchars($homeNewsItem['title']).'</strong><time>'.date('m-d', strtotime($homeNewsItem['added'])).'</time></div>';
+    echo '<div class="nova-home-news-details">';
+    foreach ($homeNews as $homeNewsItem) echo '<div class="nova-home-news-body">'.format_comment($homeNewsItem['body'], 0).'</div>';
+    echo '</div></div><div class="nova-news-modal" hidden><div class="nova-news-modal-backdrop"></div><div class="nova-news-modal-card" role="dialog" aria-modal="true" aria-labelledby="nova-news-modal-title"><button type="button" class="nova-news-modal-close" aria-label="关闭">×</button><h3 id="nova-news-modal-title"></h3><time></time><div class="nova-news-modal-content"></div></div></div><script>(function(){var rows=document.querySelectorAll(".nova-home-news-list .nova-home-news-row"),featured=document.querySelector(".nova-home-feature"),bodies=document.querySelectorAll(".nova-home-news-details .nova-home-news-body"),modal=document.querySelector(".nova-news-modal"),title=modal.querySelector("h3"),date=modal.querySelector("time"),content=modal.querySelector(".nova-news-modal-content");function open(i){var row=rows[i],body=bodies[i];if(!body)return;title.textContent=row.querySelector("strong")?row.querySelector("strong").textContent:"公告详情";date.textContent=row.querySelector("time")?row.querySelector("time").textContent:"";content.innerHTML=body.innerHTML;modal.hidden=false;document.body.classList.add("nova-news-modal-open");}function close(){modal.hidden=true;document.body.classList.remove("nova-news-modal-open");}function bind(el){if(!el)return;el.addEventListener("click",function(e){if(e.target.closest("a,button")&& !e.target.closest(".nova-home-news-toggle"))return;e.preventDefault();open(Number(el.getAttribute("data-news-index")||0));});el.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();open(Number(el.getAttribute("data-news-index")||0));}});}rows.forEach(bind);bind(featured);var toggle=featured&&featured.querySelector(".nova-home-news-toggle");if(toggle)toggle.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();open(0);});modal.querySelector(".nova-news-modal-close").addEventListener("click",close);modal.querySelector(".nova-news-modal-backdrop").addEventListener("click",close);document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!modal.hidden)close();});})();</script>';
+} else echo '<div class="nova-home-empty">暂无消息</div>';
+echo '</div><div class="nova-home-attendance nova-home-panel"><div class="nova-home-panel-head"><h2>📅 签到魔力</h2><a href="attendance.php">'.($homeAttendance && date('Y-m-d') === $homeAttendance->added->format('Y-m-d') ? '今日已签到' : '去签到').'</a></div><div class="nova-home-attendance-summary"><strong>'.date('Y年m月').'</strong><span>连续签到 <b>'.(int)($homeAttendance->days ?? 0).' 天</b></span><em>'.count($homeLogs).'<small>累计签到</small></em></div><div class="nova-home-week">一　二　三　四　五　六　日</div><div class="nova-home-calendar">';
+$homeOffset = (int)$homeMonthStart->format('N') - 1;
+for ($i = 0; $i < $homeOffset; $i++) echo '<span class="is-muted"></span>';
+for ($day = 1; $day <= $homeMonthDays; $day++) { $dateKey = $homeMonth.'-'.str_pad((string)$day, 2, '0', STR_PAD_LEFT); $log = $homeLogs[$dateKey] ?? null; $class = $log ? 'is-done' : ($dateKey === date('Y-m-d') ? 'is-today' : ''); echo '<a class="'.$class.'" href="attendance.php"><b>'.$day.'</b><small>'.($log ? '+'.$log->points : ($dateKey === date('Y-m-d') ? '今天' : '未签到')).'</small></a>'; }
+echo '</div><div class="nova-home-attendance-legend"><span><i class="done"></i>已签到</span><span><i class="today"></i>今天</span><span><i class="empty"></i>未签到</span></div></div></section>';
+/* Legacy cached news renderer intentionally replaced by the visual home module above. */
+/*
 
 $Cache->new_page('recent_news', 86400, true);
 if (!$Cache->get_page()){
@@ -83,12 +645,16 @@ while($Cache->next_row()){
 	echo $Cache->next_part();
 }
 echo $Cache->next_row();
+*/
 // ------------- end: recent news ------------------//
 // ------------- start: hot and classic movies ------------------//
 //displayHotAndClassic();
 // ------------- end: hot and classic movies ------------------//
 // ------------- start: funbox ------------------//
+$novaFunChatOpen = ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes")) || $showshoutbox_main == "yes";
+if ($novaFunChatOpen) print('<div class="nova-fun-chat-columns">');
 if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes")){
+	print('<section class="nova-fun-chat-panel nova-fun-panel">');
 	// Get the newest fun stuff
 	if (!$row = $Cache->get_value('current_fun_content')){
 		$result = sql_query("SELECT fun.*, IF(ADDTIME(added, '1 0:0:0') < NOW(),true,false) AS neednew FROM fun WHERE status != 'banned' AND status != 'dull' ORDER BY added DESC LIMIT 1") or sqlerr(__FILE__,__LINE__);
@@ -131,11 +697,13 @@ if ($showfunbox_main == "yes" && (!isset($CURUSER) || $CURUSER['showfb'] == "yes
 		print("<span id=\"funvote\"><b>".$funvote."</b>".$lang_index['text_out_of'].$totalvote.$lang_index['text_people_found_it'].($funvoted ? "" : "<font class=\"striking\">".$lang_index['text_your_opinion']."</font>&nbsp;&nbsp;<input type=\"button\" class='btn' name='fun' id='fun' ".$funonclick." value=\"".$lang_index['submit_fun']."\" />&nbsp;<input type=\"button\" class='btn' name='dull' id='dull' ".$dullonclick." value=\"".$lang_index['submit_dull']."\" />")."</span><span id=\"voteaccept\" style=\"display: none;\">".$lang_index['text_vote_accepted']."</span>");
 	}
 	print("</td></tr></table>");
+	print('</section>');
 	}
 }
 // ------------- end: funbox ------------------//
 // ------------- start: shoutbox ------------------//
 if ($showshoutbox_main == "yes") {
+    print('<section class="nova-fun-chat-panel nova-chat-panel">');
 ?>
     <h2>
         <?php echo $lang_index['text_shoutbox'] ?> - <font class="small"><?php echo $lang_index['text_auto_refresh_after']?></font>
@@ -171,14 +739,17 @@ JS;
 		print("<input type='submit' class='btn' name='toguest' value=\"".$lang_index['sumbit_to_guest']."\" />");
 	print("<input type='reset' class='btn' value=\"".$lang_index['submit_clear']."\" /> <input type='hidden' name='sent' value='yes' /><input type='hidden' name='type' value='shoutbox' />");
 	print('</div>');
-    print(smile_row("shbox","shbox_text"));
+	print(smile_row("shbox","shbox_text"));
 	print("</form></td></tr></table>");
+	print('</section>');
 }
 // ------------- end: shoutbox ------------------//
-
-$extraModules = [];
-$extraModules = apply_filter('nexus_home_module', $extraModules);
-print implode('', $extraModules);
+if ($novaFunChatOpen) print('</div>');
+print('<div class="nova-draw-torrents-columns">');
+print('<section class="nova-draw-torrents-panel nova-draw-panel">');
+require_once dirname(__FILE__) . '/../include/nova_lucky_draw.php';
+echo nova_draw_home_widget();
+print('</section>');
 
 // ------------- start: latest forum posts ------------------//
 
@@ -202,7 +773,8 @@ if ($showlastxforumposts_main == "yes" && $CURUSER)
 // ------------- start: latest torrents ------------------//
 
 if ($showlastxtorrents_main == "yes") {
-		$result = sql_query("SELECT id,name,small_descr,leechers,seeders FROM torrents where visible='yes' ORDER BY id DESC LIMIT 5") or sqlerr(__FILE__, __LINE__);
+		print('<section class="nova-draw-torrents-panel nova-latest-torrents-panel">');
+		$result = sql_query("SELECT DISTINCT torrents.id,torrents.name,torrents.small_descr,torrents.leechers,torrents.seeders FROM torrents INNER JOIN torrent_tags ON torrents.id = torrent_tags.torrent_id WHERE torrents.visible='yes' AND torrents.banned='no' AND torrent_tags.tag_id = 3 ORDER BY torrents.id DESC LIMIT 5") or sqlerr(__FILE__, __LINE__);
 		if(mysql_num_rows($result) != 0 )
 		{
 			print ("<h2>".$lang_index['text_last_five_torrent']."</h2>");
@@ -214,8 +786,14 @@ if ($showlastxtorrents_main == "yes") {
 			}
 			print ("</table>");
 		}
+		print('</section>');
 }
 // ------------- end: latest torrents ------------------//
+print('</div>');
+
+$extraModules = [];
+$extraModules = apply_filter('nexus_home_module', $extraModules);
+print implode('', $extraModules);
 
 // ------------- start: top uploader ------------------//
 
@@ -601,7 +1179,7 @@ if ($showstats_main == "yes")
 // ------------- end: stats ------------------//
 // ------------- start: tracker load ------------------//
 if ($showtrackerload == "yes") {
-	$uptimeresult=exec('uptime');
+	$uptimeresult = function_exists('exec') ? exec('uptime') : '';
 	if ($uptimeresult){
 ?>
 <h2><?php echo $lang_index['text_tracker_load'] ?></h2>
@@ -654,10 +1232,13 @@ if ($showtrackerload == "yes") {
 ?>
 <table width="100%" class="main" border="0" cellspacing="0" cellpadding="0"><tr><td class="embedded">
 <div align="center"><br /><font class="medium"><?php echo $lang_index['text_browser_note'] ?></font></div>
-<div align="center"><a href="<?php echo NEXUSPHPURL?>" title="<?php echo PROJECTNAME?>" target="_blank"><img src="pic/nexus.png" alt="<?php echo PROJECTNAME?>" /></a></div>
+<div class="nova-home-footer-logo"><a href="index.php" title="<?php echo htmlspecialchars(\App\Models\Setting::getSiteName()) ?>"><img src="pic/logo-novahd.svg" alt="<?php echo htmlspecialchars(\App\Models\Setting::getSiteName()) ?>" /></a></div>
 </td></tr></table>
 <?php
 // ------------- end: browser, client and code note ------------------//
+?>
+</div>
+<?php
 if ($CURUSER)
 	$USERUPDATESET[] = "last_home = ".sqlesc(date("Y-m-d H:i:s"));
 $Cache->delete_value('user_'.$CURUSER["id"].'_unread_news_count');
