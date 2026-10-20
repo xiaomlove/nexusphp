@@ -51,13 +51,15 @@
         "laravel/tinker": "^2.5",
         "lbuchs/webauthn": "^2.2",
         "league/flysystem-sftp-v3": "^3.0",
+        "madrays/nexusphp-bank-system": "dev-main",
         "meilisearch/meilisearch-php": "^1.0",
         "orangehill/iseed": "^3.0",
         "phpgangsta/googleauthenticator": "dev-master",
         "rhilip/bencode": "^2.5.0",
         "rlanvin/php-ip": "^3.0",
         "spatie/laravel-activitylog": "^4.10",
-        "stichoza/google-translate-php": "^5.2"
+        "stichoza/google-translate-php": "^5.2",
+        "xiaomlove/nexusphp-tracker-helper": "3.0.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -104,6 +106,28 @@
             "php-http/discovery": true
         },
         "process-timeout": 900
+    },
+    "repositories": {
+        "tracker-helper": {
+            "type": "path",
+            "url": "./packages/nexusphp-tracker-helper",
+            "options": {
+                "symlink": false,
+                "versions": {
+                    "xiaomlove/nexusphp-tracker-helper": "3.0.0"
+                }
+            }
+        },
+        "bank-system": {
+            "type": "path",
+            "url": "./packages/nexusphp-bank-system",
+            "options": {
+                "symlink": false,
+                "versions": {
+                    "madrays/nexusphp-bank-system": "dev-main"
+                }
+            }
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true

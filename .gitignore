@@ -55,3 +55,4 @@ bitbucket
 *.orig
 *.rej
 /public/logs
+/packages/*/logs/

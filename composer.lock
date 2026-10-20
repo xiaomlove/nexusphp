@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b47efd58770c5bf618a2e898044ad08",
+    "content-hash": "f6a0a9b04e1d9716a4ce17b1b25d82b1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4725,6 +4725,47 @@
                 }
             ],
             "time": "2026-01-27T02:21:37+00:00"
+        },
+        {
+            "name": "madrays/nexusphp-bank-system",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "./packages/nexusphp-bank-system",
+                "reference": "946750a50a1fcfc6687ecd4e7c459033ac47ec2a"
+            },
+            "require": {
+                "filament/filament": "~5.0",
+                "illuminate/support": "^12.0",
+                "php": ">=8.2 <8.6"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NexusPlugin\\BankSystem\\BankSystemServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NexusPlugin\\BankSystem\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-2.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "madrays",
+                    "email": "madrays@example.com"
+                }
+            ],
+            "description": "NexusPHP银行系统插件 - Bank System Plugin for NexusPHP",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
         },
         {
             "name": "masterminds/html5",
@@ -10854,6 +10895,47 @@
                 }
             ],
             "time": "2024-11-21T01:49:47+00:00"
+        },
+        {
+            "name": "xiaomlove/nexusphp-tracker-helper",
+            "version": "3.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./packages/nexusphp-tracker-helper",
+                "reference": "5b53d29c924e5eeedf5959f4cf2a270b7ac64626"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NexusPlugin\\Tracker\\TrackerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NexusPlugin\\Tracker\\": "src"
+                }
+            },
+            "scripts": {
+                "post-package-install": [
+                    "@php artisan plugin install xiaomlove/nexusphp-tracker-helper"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "xiaomlove",
+                    "email": "1939737565@qq.com"
+                }
+            ],
+            "description": "NexusPHP tracker build with go helper",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
         }
     ],
     "packages-dev": [
@@ -14008,6 +14090,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "cybercog/laravel-clickhouse": 20,
+        "madrays/nexusphp-bank-system": 20,
         "phpgangsta/googleauthenticator": 20
     },
     "prefer-stable": true,
