@@ -6112,42 +6112,679 @@ function msgalert($url, $text, $bgcolor = "red")
     print("</td></tr></table><br />");
 }
 
-function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false): string
+/**
+ * 构建勋章图像展示HTML
+ *
+ * @param \Illuminate\Support\Collection $medals 勋章集合
+ * @param int $maxHeight 最大高度
+ * @param bool $withActions 是否包含操作选项
+ * @param int $perPage 每页显示数量
+ * @return string HTML代码
+ */
+function build_medal_image(\Illuminate\Support\Collection $medals, $maxHeight = 200, $withActions = false, $perPage = 15): string
 {
+    // 获取当前页码
+    $currentPage = isset($_GET['medal_page']) ? max(1, intval($_GET['medal_page'])) : 1;
+
+    // 分页处理
+    $totalMedals = $medals->count();
+    $totalPages = ceil($totalMedals / $perPage);
+    $offset = ($currentPage - 1) * $perPage;
+
+    // 获取当前页的勋章
+    $pagedMedals = $medals->slice($offset, $perPage);
+
+    // 计算每行宽度百分比 - 一行显示5个
+    $percentage = 100 / 5;
+
     $medalImages = [];
-    $wrapBefore = '<form><div style="display: flex;flex-wrap: wrap;justify-content: center;margin-top: 10px;">';
+    $wrapBefore = '<form id="medal-form" class="nova-medal-form"><div class="nova-medal-wall" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 10px; padding: 0 10px;">';
     $wrapAfter = '</div></form>';
-    foreach ($medals as $medal) {
-        $html = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><div><img src="%s" title="%s" class="preview" style="max-height: %spx;max-width: %spx"/></div>', $medal->image_large, $medal->name, $maxHeight, $maxHeight);
+
+    foreach ($pagedMedals as $medal) {
+        // 使用与勋章页面一致的主色调系统
+        $primaryColor = '#ff9718';
+        $lightPrimary = '#ff9718';
+        $darkPrimary = '#ff9718';
+        
+        // 调整色调计算
+        $hueOffset = ($medal->id * 15) % 30;
+        $gradient = "linear-gradient(135deg, hsl(192, " . (70 - $hueOffset) . "%, 90%), hsl(192, " . (80 - $hueOffset) . "%, 95%))";
+
+        $html = sprintf(
+            '<div class="medal-card" style="flex-basis: calc(%s%% - 20px); max-width: calc(%s%% - 20px); display: flex; flex-direction: column; justify-content: space-between; background: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.4s ease; border: none;">
+                <div style="text-align: center;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto 15px; border-radius: 50%%; overflow: hidden; border: 4px solid %s; position: relative;">
+                        <img src="%s" title="%s" class="preview" style="width: 100%%; height: 100%%; object-fit: cover; max-height: %spx; max-width: %spx; cursor: pointer;" />
+                    </div>
+                    <div style="margin-top: 8px; font-weight: 600; color: %s; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">%s</div>
+                </div>',
+            $percentage,
+            $percentage,
+            $lightPrimary,
+            $medal->image_large,
+            $medal->name,
+            $maxHeight,
+            $maxHeight,
+            $darkPrimary,
+            htmlspecialchars($medal->name)
+        );
+
         if ($withActions) {
+            $html .= '<div style="margin-top: 12px; text-align: left; font-size: 13px; background: #f9fcfe; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #f0f0f0;">';
+            $html .= '<table style="width: 100%; border-collapse: collapse;">';
+
             $html .= sprintf(
-                '<div style="display: flex;flex-direction: column;align-items:flex-start"><span>%s: %s</span><span>%s: %s</span><span>%s: %s</span><label>%s: <input type="number" name="priority_%s" value="%s" style="width: 50px" placeholder="%s"></label>',
+                '<tr><td style="padding: 3px; font-weight: 500; width: 40%%; color: %s;">%s:</td><td style="padding: 3px; color: #666; font-size: 12px;">%s</td></tr>',
+                $darkPrimary,
                 nexus_trans('label.expire_at'),
-                $medal->pivot->expire_at ? format_datetime($medal->pivot->expire_at) : nexus_trans('label.permanent'),
+                $medal->pivot->expire_at ? format_datetime($medal->pivot->expire_at) : nexus_trans('label.permanent')
+            );
+
+            $html .= sprintf(
+                '<tr><td style="padding: 3px; font-weight: 500; color: %s;">%s:</td><td style="padding: 3px; color: #666; font-size: 12px;">%s</td></tr>',
+                $darkPrimary,
                 nexus_trans('medal.fields.bonus_addition_factor'),
-                $medal->bonus_addition_factor ?? 0,
-                nexus_trans('medal.bonus_addition_expire_at'),
-                $medal->pivot->bonus_addition_expire_at ? format_datetime($medal->pivot->bonus_addition_expire_at) : nexus_trans('label.permanent'),
+                number_format((float) ($medal->bonus_addition_factor ?? 0) * 100, 0) . '%'
+            );
+
+            $html .= sprintf(
+                '<tr><td style="padding: 3px; font-weight: 500; color: %s;">%s:</td><td style="padding: 3px; color: #666;"><input type="number" name="priority_%s" value="%s" style="width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; text-align: center; outline: none;" placeholder="%s" class="medal-priority-input" data-medal-id="%s"></td></tr>',
+                $darkPrimary,
                 nexus_trans('label.priority'),
                 $medal->pivot->id,
                 $medal->pivot->priority ?? 0,
-                nexus_trans('label.priority_help')
+                nexus_trans('label.priority_help'),
+                $medal->pivot->id
             );
+
             $checked = '';
             if ($medal->pivot->status == \App\Models\UserMedal::STATUS_WEARING) {
                 $checked = ' checked';
             }
-            $html .= sprintf('<label>%s<input type="checkbox" name="status_%s" value="1"%s></label>', nexus_trans('medal.action_wearing'), $medal->pivot->id, $checked);
+
+            $html .= sprintf(
+                '<tr><td colspan="2" style="padding: 6px 3px 3px 3px;">
+                    <label class="medal-wearing-checkbox">
+                        <input type="checkbox" name="status_%s" value="1"%s class="medal-status-checkbox" data-medal-id="%s" />
+                        <span class="checkmark"></span>
+                        %s
+                    </label>
+                </td></tr>',
+                $medal->pivot->id,
+                $checked,
+                $medal->pivot->id,
+                nexus_trans('medal.action_wearing')
+            );
+
+            $html .= '</table>';
             $html .= '</div>';
         }
+
         $html .= '</div>';
         $medalImages[] = $html;
     }
-    if ($withActions) {
-        $medalImages[] = sprintf('<div style="display: flex;flex-direction: column;justify-content: space-between;margin-right: 10px"><div></div><div><input type="button" id="save-user-medal-btn" value="%s"/></div></div>', nexus_trans('label.save'));
+
+    // 保存按钮样式
+    $saveButtonHtml = '';
+    if ($withActions && $totalMedals > 0) {
+        $saveButtonHtml = sprintf(
+            '<div style="flex-basis: 100%%; display: flex; justify-content: center; margin-top: 20px;">
+                <input type="button" id="save-user-medal-btn" value="%s" style="padding: 10px 20px; background: %s; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.3s ease;"/>
+            </div>',
+            nexus_trans('label.save'),
+            $primaryColor
+        );
     }
-    return $wrapBefore . implode('', $medalImages) . $wrapAfter;
+
+    // 调整CSS样式，保持简洁以确保显示
+    $hoverStyle = '
+        <style>
+            .medal-card {
+                flex-basis: calc(20% - 20px);
+                max-width: calc(20% - 20px);
+                min-width: 140px;
+                min-height: 280px;
+                box-sizing: border-box;
+            }
+
+            .medal-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 8px 20px rgba(67, 155, 175, 0.15);
+            }
+
+            /* 响应式调整 */
+            @media (max-width: 1199px) {
+                .medal-card {
+                    flex-basis: calc(25% - 20px);
+                    max-width: calc(25% - 20px);
+                }
+            }
+
+            @media (max-width: 991px) {
+                .medal-card {
+                    flex-basis: calc(33.333% - 20px);
+                    max-width: calc(33.333% - 20px);
+                }
+            }
+
+            @media (max-width: 767px) {
+                .medal-card {
+                    flex-basis: calc(50% - 20px);
+                    max-width: calc(50% - 20px);
+                }
+            }
+
+            @media (max-width: 479px) {
+                .medal-card {
+                    flex-basis: 100%;
+                    max-width: 100%;
+                }
+            }
+
+            /* 分页样式 */
+            .medal-pagination {
+                display: flex;
+                justify-content: center;
+                margin: 30px 0;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .medal-pagination a, .medal-pagination span {
+                padding: 8px 14px;
+                border: 1px solid #ff9718;
+                border-radius: 6px;
+                color: #ff9718;
+                background: #fff;
+                transition: all 0.3s ease;
+                text-decoration: none;
+            }
+
+            .medal-pagination a:hover {
+                background: #c1e5eb;
+            }
+
+            .medal-pagination .current {
+                background: #ff9718;
+                color: white;
+                border-color: #ff9718;
+            }
+
+            /* 复选框样式 */
+            .medal-wearing-checkbox {
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: normal;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            .medal-wearing-checkbox input {
+                position: absolute;
+                opacity: 0;
+                cursor: pointer;
+                height: 0;
+                width: 0;
+            }
+
+            .checkmark {
+                height: 18px;
+                width: 18px;
+                background-color: #eee;
+                border-radius: 4px;
+                margin-right: 6px;
+                border: 1px solid #ccc;
+                position: relative;
+            }
+
+            .medal-wearing-checkbox input:checked ~ .checkmark {
+                background-color: #ff9718;
+                border-color: #ff9718;
+            }
+
+            .checkmark:after {
+                content: "";
+                position: absolute;
+                left: 6px;
+                top: 2px;
+                width: 4px;
+                height: 8px;
+                border: solid white;
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg);
+            }
+        
+
+              /* Codex Medal Wall Beautify 2026-08-15 */
+              .nova-medal-form { width: 100%; }
+
+              .nova-medal-wall {
+                  gap: 24px !important;
+                  align-items: stretch !important;
+                  padding: 18px 10px 8px !important;
+              }
+
+              .nova-medal-wall .medal-card {
+                  position: relative !important;
+                  flex-basis: calc(20% - 24px) !important;
+                  max-width: calc(20% - 24px) !important;
+                  min-width: 230px !important;
+                  min-height: 342px !important;
+                  padding: 22px 18px 18px !important;
+                  border-radius: 22px !important;
+                  background: radial-gradient(circle at 50% 12%, rgba(16,185,129,.12), transparent 34%), linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,252,253,.96)) !important;
+                  border: 1px solid rgba(210, 227, 234, .72) !important;
+                  box-shadow: 0 18px 40px rgba(15,35,45,.08), inset 0 1px 0 rgba(255,255,255,.92) !important;
+                  overflow: hidden !important;
+              }
+
+              .nova-medal-wall .medal-card::before {
+                  content: "";
+                  position: absolute;
+                  inset: 0 0 auto 0;
+                  height: 5px;
+                  background: linear-gradient(90deg, #0f766e, #10b981, #2563eb);
+                  opacity: .86;
+              }
+
+              .nova-medal-wall .medal-card::after {
+                  content: "";
+                  position: absolute;
+                  width: 140px;
+                  height: 140px;
+                  right: -58px;
+                  top: -58px;
+                  border-radius: 999px;
+                  background: radial-gradient(circle, rgba(16,185,129,.18), transparent 68%);
+                  pointer-events: none;
+              }
+
+              .nova-medal-wall .medal-card:hover {
+                  transform: translateY(-7px) !important;
+                  box-shadow: 0 24px 54px rgba(15,35,45,.14), inset 0 1px 0 rgba(255,255,255,.95) !important;
+                  border-color: rgba(16,185,129,.34) !important;
+              }
+
+              .nova-medal-wall .medal-card > div:first-child > div:first-child {
+                  width: 112px !important;
+                  height: 112px !important;
+                  margin-bottom: 17px !important;
+                  border: 5px solid #ff9718 !important;
+                  box-shadow: 0 12px 26px rgba(255,151,24,.20), 0 0 0 8px rgba(255,151,24,.10), 0 0 0 14px rgba(16,185,129,.06) !important;
+                  background: #fff !important;
+              }
+
+              .nova-medal-wall .medal-card img.preview {
+                  width: 100% !important;
+                  height: 100% !important;
+                  max-width: none !important;
+                  max-height: none !important;
+                  object-fit: cover !important;
+                  transition: transform .22s ease, filter .22s ease !important;
+              }
+
+              .nova-medal-wall .medal-card:hover img.preview {
+                  transform: scale(1.05) !important;
+                  filter: saturate(1.12) contrast(1.04) !important;
+              }
+
+              .nova-medal-wall .medal-card > div:first-child > div:nth-child(2) {
+                  color: #f97316 !important;
+                  font-size: 17px !important;
+                  font-weight: 900 !important;
+                  letter-spacing: .02em !important;
+                  text-shadow: 0 1px 0 rgba(255,255,255,.75) !important;
+              }
+
+              .nova-medal-wall .medal-card > div:nth-child(2) {
+                  margin-top: 16px !important;
+                  padding: 14px !important;
+                  border-radius: 16px !important;
+                  background: rgba(248, 251, 252, .92) !important;
+                  border: 1px solid rgba(210, 227, 234, .78) !important;
+                  box-shadow: inset 0 1px 0 rgba(255,255,255,.9) !important;
+              }
+
+              .nova-medal-wall .medal-card table,
+              .nova-medal-wall .medal-card table tr,
+              .nova-medal-wall .medal-card table td {
+                  background: transparent !important;
+                  border: 0 !important;
+              }
+
+              .nova-medal-wall .medal-card table td:first-child {
+                  color: #0f766e !important;
+                  font-weight: 850 !important;
+                  white-space: nowrap !important;
+              }
+
+              .nova-medal-wall .medal-card table td:last-child {
+                  color: #223944 !important;
+                  font-weight: 650 !important;
+              }
+
+              .nova-medal-wall .medal-priority-input {
+                  width: 64px !important;
+                  height: 36px !important;
+                  padding: 0 8px !important;
+                  border: 1px solid #cddce3 !important;
+                  border-radius: 10px !important;
+                  color: #102a35 !important;
+                  background: #fff !important;
+                  font-weight: 800 !important;
+                  box-shadow: inset 0 1px 1px rgba(15,35,45,.04) !important;
+              }
+
+              .nova-medal-wall .medal-priority-input:focus {
+                  border-color: rgba(16,185,129,.78) !important;
+                  box-shadow: 0 0 0 3px rgba(16,185,129,.14) !important;
+              }
+
+              .nova-medal-wall .medal-wearing-checkbox {
+                  display: inline-flex !important;
+                  align-items: center !important;
+                  gap: 8px !important;
+                  margin-top: 3px !important;
+                  padding: 6px 11px !important;
+                  border-radius: 999px !important;
+                  color: #102a35 !important;
+                  background: #ffffff !important;
+                  border: 1px solid rgba(210,227,234,.86) !important;
+                  font-size: 13px !important;
+                  font-weight: 800 !important;
+              }
+
+              .nova-medal-wall .checkmark {
+                  width: 20px !important;
+                  height: 20px !important;
+                  margin-right: 0 !important;
+                  border-radius: 7px !important;
+                  border: 1px solid #cbd5e1 !important;
+                  background: #eef2f7 !important;
+                  box-shadow: inset 0 1px 1px rgba(15,35,45,.05) !important;
+              }
+
+              .nova-medal-wall .medal-wearing-checkbox input:checked ~ .checkmark {
+                  background: linear-gradient(135deg, #ff9718, #f97316) !important;
+                  border-color: #ff9718 !important;
+                  box-shadow: 0 7px 16px rgba(249,115,22,.24) !important;
+              }
+
+              .nova-medal-wall .checkmark:after {
+                  left: 7px !important;
+                  top: 3px !important;
+                  width: 4px !important;
+                  height: 9px !important;
+                  border-width: 0 2px 2px 0 !important;
+              }
+
+              #save-user-medal-btn {
+                  min-width: 150px !important;
+                  height: 44px !important;
+                  padding: 0 26px !important;
+                  border-radius: 999px !important;
+                  background: linear-gradient(135deg, #102a35, #0f766e 56%, #10b981) !important;
+                  color: #fff !important;
+                  font-weight: 900 !important;
+                  letter-spacing: .08em !important;
+                  box-shadow: 0 14px 30px rgba(15,118,110,.24) !important;
+              }
+
+              #save-user-medal-btn:hover {
+                  transform: translateY(-1px) !important;
+                  box-shadow: 0 18px 36px rgba(15,118,110,.30) !important;
+              }
+
+              .medal-pagination a,
+              .medal-pagination span {
+                  min-width: 34px !important;
+                  height: 34px !important;
+                  padding: 0 12px !important;
+                  display: inline-flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  border-radius: 999px !important;
+                  border-color: rgba(15,118,110,.22) !important;
+                  color: #0f766e !important;
+                  background: rgba(255,255,255,.86) !important;
+                  box-shadow: 0 8px 18px rgba(15,35,45,.07) !important;
+              }
+
+              .medal-pagination a:hover,
+              .medal-pagination .current {
+                  color: #fff !important;
+                  background: linear-gradient(135deg, #0f766e, #10b981) !important;
+                  border-color: transparent !important;
+              }
+
+              @media (max-width: 1399px) {
+                  .nova-medal-wall .medal-card {
+                      flex-basis: calc(25% - 24px) !important;
+                      max-width: calc(25% - 24px) !important;
+                  }
+              }
+
+              @media (max-width: 1080px) {
+                  .nova-medal-wall .medal-card {
+                      flex-basis: calc(33.333% - 24px) !important;
+                      max-width: calc(33.333% - 24px) !important;
+                  }
+              }
+
+              @media (max-width: 760px) {
+                  .nova-medal-wall .medal-card {
+                      flex-basis: calc(50% - 18px) !important;
+                      max-width: calc(50% - 18px) !important;
+                      min-width: 0 !important;
+                  }
+              }
+
+              @media (max-width: 520px) {
+                  .nova-medal-wall .medal-card {
+                      flex-basis: 100% !important;
+                      max-width: 100% !important;
+                  }
+              }
+              /* End Codex Medal Wall Beautify */
+</style>
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 从localStorage获取保存的状态
+            function getSavedMedalStates() {
+                try {
+                    const states = localStorage.getItem("medalStates");
+                    return states ? JSON.parse(states) : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            // 保存状态到localStorage
+            function saveMedalStates(states) {
+                try {
+                    localStorage.setItem("medalStates", JSON.stringify(states));
+                } catch (e) {
+                    console.error("Failed to save medal states", e);
+                }
+            }
+
+            // 初始化勋章状态
+            function initMedalStates() {
+                const states = getSavedMedalStates();
+                const priorityInputs = document.querySelectorAll(".medal-priority-input");
+                const statusCheckboxes = document.querySelectorAll(".medal-status-checkbox");
+
+                priorityInputs.forEach(input => {
+                    const medalId = input.getAttribute("data-medal-id");
+                    if (states[medalId] && states[medalId].priority !== undefined) {
+                        input.value = states[medalId].priority;
+                    }
+                });
+
+                statusCheckboxes.forEach(checkbox => {
+                    const medalId = checkbox.getAttribute("data-medal-id");
+                    if (states[medalId] !== undefined && states[medalId].status !== undefined) {
+                        checkbox.checked = states[medalId].status;
+                    }
+                });
+            }
+
+            // 监听优先级变化
+            document.querySelectorAll(".medal-priority-input").forEach(input => {
+                input.addEventListener("change", function() {
+                    const medalId = this.getAttribute("data-medal-id");
+                    const states = getSavedMedalStates();
+                    if (!states[medalId]) states[medalId] = {};
+                    states[medalId].priority = this.value;
+                    saveMedalStates(states);
+                });
+            });
+
+            // 监听佩戴状态变化
+            document.querySelectorAll(".medal-status-checkbox").forEach(checkbox => {
+                checkbox.addEventListener("change", function() {
+                    const medalId = this.getAttribute("data-medal-id");
+                    const states = getSavedMedalStates();
+                    if (!states[medalId]) states[medalId] = {};
+                    states[medalId].status = this.checked;
+                    saveMedalStates(states);
+                });
+            });
+
+            // 初始化状态
+            initMedalStates();
+
+            // 保存按钮点击事件
+            const saveButton = document.getElementById("save-user-medal-btn");
+            if (saveButton) {
+                saveButton.addEventListener("click", function(e) {
+                    const states = getSavedMedalStates();
+                    const formData = [];
+
+                    for (const medalId in states) {
+                        if (states[medalId].priority !== undefined) {
+                            formData.push({
+                                name: "priority_" + medalId,
+                                value: states[medalId].priority
+                            });
+                        }
+
+                        if (states[medalId].status) {
+                            formData.push({
+                                name: "status_" + medalId,
+                                value: "1"
+                            });
+                        }
+                    }
+
+                    jQuery.post("ajax.php", {
+                        params: formData,
+                        action: "saveUserMedal"
+                    }, function(response) {
+                        if (response.ret != 0) {
+                            layer.alert(response.msg);
+                        } else {
+                            layer.msg("保存成功", {icon: 1}, function() {
+                                window.location.reload();
+                            });
+                        }
+                    }, "json");
+                });
+            }
+
+            // 分页链接点击事件
+            const paginationLinks = document.querySelectorAll(".medal-pagination a");
+            paginationLinks.forEach(link => {
+                link.addEventListener("click", function() {
+                    const states = getSavedMedalStates();
+                    saveMedalStates(states);
+                });
+            });
+        });
+        </script>';
+
+    // 生成分页HTML
+    $paginationHtml = '';
+    if ($totalPages > 1) {
+        $paginationHtml = '<div class="medal-pagination">';
+
+        // 获取当前URL并移除已有的medal_page参数
+        $currentUrl = $_SERVER['REQUEST_URI'];
+        $urlParts = parse_url($currentUrl);
+        $queryParams = [];
+        if (isset($urlParts['query'])) {
+            parse_str($urlParts['query'], $queryParams);
+        }
+        unset($queryParams['medal_page']);
+        $baseUrl = $urlParts['path'] . ($queryParams ? '?' . http_build_query($queryParams) : '');
+        if (strpos($baseUrl, '?') === false) {
+            $baseUrl .= '?';
+        } else {
+            $baseUrl .= '&';
+        }
+
+        // 上一页
+        if ($currentPage > 1) {
+            $paginationHtml .= '<a href="' . $baseUrl . 'medal_page=' . ($currentPage - 1) . '">&laquo;</a>';
+        } else {
+            $paginationHtml .= '<span class="disabled">&laquo;</span>';
+        }
+
+        // 页码处理
+        if ($currentPage == 1) {
+            $paginationHtml .= '<span class="current">1</span>';
+        } else {
+            $paginationHtml .= '<a href="' . $baseUrl . 'medal_page=1">1</a>';
+        }
+
+        $start = max(2, $currentPage - 2);
+        $end = min($totalPages - 1, $currentPage + 2);
+
+        if ($start > 2) {
+            $paginationHtml .= '<span>…</span>';
+        }
+
+        for ($i = $start; $i <= $end; $i++) {
+            if ($i == $currentPage) {
+                $paginationHtml .= '<span class="current">' . $i . '</span>';
+            } else {
+                $paginationHtml .= '<a href="' . $baseUrl . 'medal_page=' . $i . '">' . $i . '</a>';
+            }
+        }
+
+        if ($end < $totalPages - 1) {
+            $paginationHtml .= '<span>…</span>';
+        }
+
+        if ($totalPages > 1) {
+            if ($currentPage == $totalPages) {
+                $paginationHtml .= '<span class="current">' . $totalPages . '</span>';
+            } else {
+                $paginationHtml .= '<a href="' . $baseUrl . 'medal_page=' . $totalPages . '">' . $totalPages . '</a>';
+            }
+        }
+
+        // 下一页
+        if ($currentPage < $totalPages) {
+            $paginationHtml .= '<a href="' . $baseUrl . 'medal_page=' . ($currentPage + 1) . '">&raquo;</a>';
+        } else {
+            $paginationHtml .= '<span class="disabled">&raquo;</span>';
+        }
+
+        $paginationHtml .= '</div>';
+    }
+
+    // 不显示统计标题
+    $statsHtml = '';
+
+    return $hoverStyle . $statsHtml . $wrapBefore . implode('', $medalImages) . $saveButtonHtml . $wrapAfter . $paginationHtml;
 }
+
 
 function insert_torrent_tags($torrentId, $tagIdArr, $sync = false)
 {
