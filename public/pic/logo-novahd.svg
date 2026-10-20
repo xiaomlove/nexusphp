@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="128" viewBox="0 0 520 128" role="img" aria-labelledby="title desc">
+  <title id="title">NovaHD</title>
+  <desc id="desc">NovaHD private media archive</desc>
+  <defs>
+    <linearGradient id="nova-shield" x1="16" y1="10" x2="112" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123744"/>
+      <stop offset="0.58" stop-color="#0b5960"/>
+      <stop offset="1" stop-color="#08766d"/>
+    </linearGradient>
+    <linearGradient id="nova-ring" x1="26" y1="23" x2="105" y2="107" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8cf4e4" stop-opacity="0.82"/>
+      <stop offset="1" stop-color="#18b99b" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="nova-orange" x1="36" y1="37" x2="94" y2="91" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffbf3f"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="nova-hd" x1="376" y1="34" x2="496" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#18c98e"/>
+      <stop offset="1" stop-color="#078174"/>
+    </linearGradient>
+    <filter id="nova-shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#0f3440" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#nova-shadow)">
+    <path d="M64 5 105 20 123 61 106 105 64 122 21 106 5 62 22 19Z" fill="url(#nova-shield)"/>
+    <path d="M64 12 100 25 115 62 100 99 64 113 28 100 13 62 28 25Z" fill="none" stroke="url(#nova-ring)" stroke-width="2.5"/>
+    <path d="M34 91V35h15l33 32V35h16v56H83L50 58v33Z" fill="url(#nova-orange)"/>
+    <circle cx="109" cy="53" r="3" fill="#ff9d2e"/>
+  </g>
+
+  <g font-family="Segoe UI, Microsoft YaHei, Arial, sans-serif" letter-spacing="0">
+    <text x="148" y="80" fill="#123744" font-size="60" font-weight="800">Nova</text>
+    <text x="361" y="80" fill="url(#nova-hd)" font-size="60" font-weight="900">HD</text>
+    <rect x="151" y="91" width="274" height="4" rx="2" fill="#17b89c"/>
+    <rect x="429" y="91" width="48" height="4" rx="2" fill="#f97316"/>
+    <text x="151" y="113" fill="#496a73" font-size="13" font-weight="700">PRIVATE MEDIA ARCHIVE</text>
+    <circle cx="465" cy="108" r="3" fill="#ff9d2e"/>
+    <circle cx="477" cy="108" r="3" fill="#16b997"/>
+    <circle cx="489" cy="108" r="3" fill="#123744"/>
+  </g>
+</svg>

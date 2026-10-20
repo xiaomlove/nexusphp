@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="96" viewBox="0 0 340 96" role="img" aria-labelledby="title desc">
+  <title id="title">NovaHD</title>
+  <desc id="desc">NovaHD private media archive logo</desc>
+  <defs>
+    <linearGradient id="shield" x1="10" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123845"/>
+      <stop offset="1" stop-color="#0B6F69"/>
+    </linearGradient>
+    <linearGradient id="nova" x1="24" y1="26" x2="76" y2="72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB52E"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+    <linearGradient id="hd" x1="291" y1="26" x2="386" y2="68" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10B981"/>
+      <stop offset="1" stop-color="#087F73"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(4 4)">
+    <path d="M44 1 79 14 90 45 75 76 44 88 13 76 0 45 11 14Z" fill="url(#shield)"/>
+    <path d="M44 7 74 18 83 45 70 70 44 80 18 70 7 45 17 19Z" fill="none" stroke="#8CF4E4" stroke-opacity=".42" stroke-width="2"/>
+    <path d="M21 66V25h12l27 25V25h13v41H61L34 41v25Z" fill="url(#nova)"/>
+    <path d="M17 73h24" stroke="#5EEAD4" stroke-width="4" stroke-linecap="square"/>
+    <path d="M73 17h10M78 24h9M81 31h8" stroke="#B9FFF2" stroke-width="2" stroke-linecap="square"/>
+  </g>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="112" y="59" fill="#123845" font-size="46" font-weight="800">Nova</text>
+    <text x="240" y="59" fill="url(#hd)" font-size="46" font-weight="900">HD</text>
+    <rect x="113" y="69" width="190" height="3" fill="#19B89B"/>
+    <rect x="303" y="69" width="26" height="3" fill="#FF6B4A"/>
+    <text x="113" y="86" fill="#45636D" font-size="11" font-weight="700">PRIVATE MEDIA ARCHIVE</text>
+  </g>
+</svg>
