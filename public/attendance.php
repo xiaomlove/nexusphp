@@ -79,7 +79,19 @@ if ($hasAttendedToday) {
     $cdays = $attendance->days;
     $points = $attendance->points;
 
+    $retroactiveLimit = \App\Models\Attendance::MAX_RETROACTIVE_PER_MONTH;
+    // startOfMonth() leaves us on day 1, so addMonth() cannot overflow.
+    $monthStart = $today->clone()->startOfMonth();
+    $monthEnd = $monthStart->copy()->addMonth();
+    $monthlyRetroactiveUsed = $attendance->logs()
+        ->where('is_retroactive', 1)
+        ->where('created_at', '>=', $monthStart)
+        ->where('created_at', '<', $monthEnd)
+        ->count();
+    $monthlyRetroactiveLeft = max(0, $retroactiveLimit - $monthlyRetroactiveUsed);
+
     $headerLeft = sprintf($lang_attendance['attend_info'] . $lang_attendance['retroactive_description'], $count, $cdays, $points, $CURUSER['attendance_card']);
+    $headerLeft .= sprintf(' 本月最多补签 %d 次，已使用 <b>%d</b> 次，剩余 <b>%d</b> 次。', $retroactiveLimit, $monthlyRetroactiveUsed, $monthlyRetroactiveLeft);
     $headerRight = nexus_trans('attendance.ranking', ['ranking' => $myRanking, 'counts' => $todayCounts]);
 
     begin_frame($lang_attendance['success']);
@@ -166,6 +178,8 @@ EOP;
         printf('<li>'.$lang_attendance['continuous'].'</li>', $day, $value);
     }
     echo '</ol></li>';
+    echo '<li>连续签到奖励逐日累加；中途断签且未使用补签卡时，连续天数从第 1 天重新计算。</li>';
+    echo '<li>补签成功后会补齐对应日期并重新计算连续签到天数；每个自然月最多使用 ' . $retroactiveLimit . ' 张补签卡。</li>';
     echo '</ul>';
 } else {
     $buttonLabel = $lang_attendance['attend_button'] ?? 'Check in';

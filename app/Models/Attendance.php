@@ -22,6 +22,7 @@ class Attendance extends NexusModel
     ];
 
     const MAX_RETROACTIVE_DAYS = 30;
+    const MAX_RETROACTIVE_PER_MONTH = 3;
 
 
     public function logs(): \Illuminate\Database\Eloquent\Relations\HasMany

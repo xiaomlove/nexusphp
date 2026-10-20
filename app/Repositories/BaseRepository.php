@@ -31,7 +31,7 @@ class BaseRepository
         return $perPage;
     }
 
-    protected function handleAnonymous($username, $user, User $authenticator, Torrent $torrent = null)
+    protected function handleAnonymous($username, $user, User $authenticator, ?Torrent $torrent = null)
     {
         if (!$user) {
             return "";

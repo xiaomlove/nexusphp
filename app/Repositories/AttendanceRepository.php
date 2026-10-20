@@ -296,6 +296,23 @@ class AttendanceRepository extends BaseRepository
             throw new \LogicException(nexus_trans('attendance.target_date_can_no_be_retroactive', ['date' => $date->format('Y-m-d')]));
         }
         return NexusDB::transaction(function () use ($user, $attendance, $date) {
+            $user = User::query()->where('id', $user->id)->lockForUpdate()->firstOrFail();
+            // startOfMonth() leaves us on day 1, so addMonth() cannot overflow
+            // into the month after next (the "31st + 1 month" class of bug).
+            $monthStart = Carbon::now()->startOfMonth();
+            $monthEnd = $monthStart->copy()->addMonth();
+            $monthlyRetroactiveCount = AttendanceLog::query()
+                ->where('uid', $user->id)
+                ->where('is_retroactive', 1)
+                ->where('created_at', '>=', $monthStart)
+                ->where('created_at', '<', $monthEnd)
+                ->count();
+            if ($monthlyRetroactiveCount >= Attendance::MAX_RETROACTIVE_PER_MONTH) {
+                throw new \RuntimeException(sprintf(
+                    '每个自然月最多使用 %d 张补签卡，本月次数已用完。',
+                    Attendance::MAX_RETROACTIVE_PER_MONTH
+                ));
+            }
             if (AttendanceLog::query()->where('uid', $user->id)->where('date', $date->format('Y-m-d'))->exists()) {
                 throw new \RuntimeException(nexus_trans('attendance.already_attendance'));
             }

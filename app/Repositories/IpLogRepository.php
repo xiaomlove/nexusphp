@@ -20,8 +20,11 @@ class IpLogRepository extends BaseRepository
         }
         $redis = NexusDB::redis();
         if (is_null($uri)) {
-            $parsed_uri = parse_url($_SERVER['REQUEST_URI']);
-            $uri = $parsed_uri['path'];
+            $request_uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+            $query_position = strpos($request_uri, '?');
+            $uri = $query_position === false ? $request_uri : substr($request_uri, 0, $query_position);
+            $uri = $uri !== '' ? $uri : '/';
+            $uri = substr(str_replace('|', '%7C', $uri), 0, 255);
         }
         if (is_null($ipArr)) {
             $ipArr = [getip()];
