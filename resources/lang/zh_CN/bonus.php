@@ -21,9 +21,11 @@ return [
     ],
     'reward_types' => [
         'basic' => '基本奖励',
+        'seeding_fixed' => '做种奖励(%s/%s)',
         'harem_addition' => '后宫加成',
         'official_addition' => '官种加成',
         'medal_addition' => '勋章加成',
+        'donor_addition' => '捐赠加成',
     ],
     'not_enough' => '魔力不足! 需要 :require_bonus，你当前仅有：:now_bonus',
     'msg_someone_loves_you' => "收到礼物",

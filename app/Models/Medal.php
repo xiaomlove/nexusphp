@@ -20,7 +20,7 @@ class Medal extends NexusModel
 
     protected $fillable = [
         'name', 'description', 'image_large', 'image_small', 'price', 'duration', 'get_type',
-        'display_on_medal_page', 'sale_begin_time', 'sale_end_time', 'inventory', 'bonus_addition_factor',
+        'display_on_medal_page', 'sale_begin_time', 'sale_end_time', 'inventory', 'medal_type', 'bonus_addition_factor',
         'gift_fee_factor', 'priority', 'bonus_addition_duration'
     ];
 
@@ -29,7 +29,19 @@ class Medal extends NexusModel
     protected $casts = [
         'sale_begin_time' => 'datetime',
         'sale_end_time' => 'datetime',
+        'bonus_addition_factor' => 'float',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $medal) {
+            $medal->medal_type = $medal->medal_type ?: '通用';
+            $factor = round((float) $medal->bonus_addition_factor, 2);
+            $medal->bonus_addition_factor = in_array($factor, [0.01, 0.02, 0.03, 0.04, 0.05], true)
+                ? $factor
+                : 0.01;
+        });
+    }
 
     public static function listGetTypes($onlyKeyValues = false): array
     {

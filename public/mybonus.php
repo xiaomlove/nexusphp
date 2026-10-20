@@ -5,6 +5,14 @@ require_once(get_langfile_path());
 //require(get_langfile_path("",true));
 loggedinorreturn();
 parked();
+require_once dirname(__DIR__) . '/include/magic_pool.php';
+
+$magicPoolConfig = magic_pool_config();
+magic_pool_ensure_tables();
+magic_pool_check_status($magicPoolConfig);
+if (($_GET['action'] ?? '') === 'magic_pool_donate' && isset($_POST['submit'])) {
+	magic_pool_handle_donation($magicPoolConfig);
+}
 
 function bonusarray($option = 0){
 	global $onegbupload_bonus,$fivegbupload_bonus,$tengbupload_bonus,$oneinvite_bonus,$customtitle_bonus,$vipstatus_bonus, $basictax_bonus, $taxpercentage_bonus, $bonusnoadpoint_advertisement, $bonusnoadtime_advertisement;
@@ -343,6 +351,8 @@ if (isset($do)) {
 
 	$bonus = number_format($CURUSER['seedbonus'], 1);
 if (!$action) {
+	print('<div class="nova-mybonus-page">');
+	magic_pool_render($CURUSER, $magicPoolConfig, $_GET['pool_page'] ?? 1);
 	print("<table align=\"center\" width=\"97%\" border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n");
 	print("<tr><td class=\"colhead\" colspan=\"4\" align=\"center\"><font class=\"big\">".$SITENAME.$lang_mybonus['text_karma_system']."</font></td></tr>\n");
 	if ($msg)
@@ -478,64 +488,74 @@ for ($i=0; $i < count($allBonus); $i++)
 print("</table><br />");
 ?>
 
-<table width="97%" cellpadding="3">
+<table width="97%" cellpadding="3" class="codex-bonus-page">
 <tr><td class="colhead" align="center"><font class="big"><?php echo $lang_mybonus['text_what_is_karma'] ?></font></td></tr>
 <tr><td class="text" align="left">
 <?php
-print("<h1>".$lang_mybonus['text_get_by_seeding']."</h1>");
-print("<ul>");
-if ($perseeding_bonus > 0)
-	print("<li>".$perseeding_bonus.$lang_mybonus['text_point'].add_s($perseeding_bonus).$lang_mybonus['text_for_seeding_torrent'].$maxseeding_bonus.$lang_mybonus['text_torrent'].add_s($maxseeding_bonus).")</li>");
-print("<li>".$lang_mybonus['text_bonus_formula_one'].$tzero_bonus.$lang_mybonus['text_bonus_formula_two'].$nzero_bonus.$lang_mybonus['text_bonus_formula_wi'].get_setting('bonus.zero_bonus_factor').$lang_mybonus['text_bonus_formula_three'].$bzero_bonus.$lang_mybonus['text_bonus_formula_four'].$l_bonus.$lang_mybonus['text_bonus_formula_five']."</li>");
-$minSize = get_setting('bonus.min_size');
-if ($minSize > 0) {
-    print("<li>".sprintf($lang_mybonus['text_bonus_mini_size'], mksize($minSize))."</li>");
-}
-if ($donortimes_bonus)
-	print("<li>".$lang_mybonus['text_donors_always_get'].$donortimes_bonus.$lang_mybonus['text_times_of_bonus']."</li>");
-
-print("</ul>");
-
 $seedBonusResult = calculate_seed_bonus($CURUSER['id']);
 $A = $seedBonusResult['A'];
 
-$bonusTableResult = build_bonus_table($CURUSER, $seedBonusResult, ['table_style' => 'width: 50%']);
+$bonusTableResult = build_bonus_table($CURUSER, $seedBonusResult, ['table_class' => 'codex-bonus-breakdown', 'table_style' => 'width: 100%']);
+$totalHourlyBonus = $bonusTableResult['total_bonus'] ?? $seedBonusResult['seed_bonus'];
+$formulaBaseBonus = $bonusTableResult['formula_base_bonus'] ?? $seedBonusResult['seed_bonus'];
+$seedingFixedBonus = $bonusTableResult['seeding_fixed_bonus'] ?? 0;
+$seedingFixedCount = $bonusTableResult['seeding_fixed_count'] ?? ($seedBonusResult['count'] ?? 0);
+$seedingFixedMax = $bonusTableResult['seeding_fixed_max'] ?? $maxseeding_bonus;
+$baseFactor = $bonusTableResult['base_factor'] ?? 1;
+$classAdditionFactor = $bonusTableResult['class_addition_factor'] ?? 0;
+$classAdditionBonus = $bonusTableResult['class_addition_bonus'] ?? 0;
+$className = get_user_class_name($CURUSER['class'], false, false, true);
+$pendingSeedCount = $seedBonusResult['pending_torrent_peer_count'] ?? 0;
+$minimumSeedHours = intval(($seedBonusResult['minimum_seed_time_seconds'] ?? 86400) / 3600);
+$officialMteamPercent = $bonusTableResult['official_mteam_percent'] ?? 0;
+$officialAdditionBonus = $bonusTableResult['official_addition_bonus'] ?? 0;
+$officialCount = $seedBonusResult['official_torrent_peer_count'] ?? 0;
+$maxHourlyBonus = $bzero_bonus + ($perseeding_bonus * $maxseeding_bonus);
+$percent = $maxHourlyBonus > 0 ? min(100, max(0, $seedBonusResult['seed_bonus'] * 100 / $maxHourlyBonus)) : 0;
+$minSize = get_setting('bonus.min_size');
+$minSizeText = $minSize > 0 ? sprintf($lang_mybonus['text_bonus_mini_size'], mksize($minSize)) : "当前不限制种子体积。";
 
-$percent = $seedBonusResult['seed_bonus'] * 100 / ($bzero_bonus + $perseeding_bonus * $maxseeding_bonus);
-print("<div align=\"center\">".$lang_mybonus['text_you_are_currently_getting'].round($seedBonusResult['seed_bonus'],3).$lang_mybonus['text_point'].add_s($seedBonusResult['seed_bonus']).$lang_mybonus['text_per_hour']." (A = ".round($A,1).")</div><table align=\"center\" border=\"0\" width=\"400\"><tr><td class=\"loadbarbg\" style='border: none; padding: 0px;'>");
+print('<div class="codex-bonus-wrap">');
+print('<section class="codex-bonus-hero">');
+print('<div><span class="codex-bonus-eyebrow">KARMA BONUS</span><h1>魔力获取方式</h1><p>做种越稳定、资源越稀缺、官种贡献越多，每小时获得的魔力就越高。</p></div>');
+print('<div class="codex-bonus-total"><span>当前每小时预计</span><strong>'.number_format($totalHourlyBonus, 3).'</strong><em>魔力值 / 小时</em></div>');
+print('</section>');
 
-if ($percent <= 30) $loadpic = "loadbarred";
-elseif ($percent <= 60) $loadpic = "loadbaryellow";
-else $loadpic = "loadbargreen";
-$width = $percent * 4;
-print("<img class=\"".$loadpic."\" src=\"pic/trans.gif\" style=\"width: ".$width."px;\" alt=\"".$percent."%\" /></td></tr></table>");
+print('<div class="codex-bonus-meter"><span style="width: '.number_format($percent, 2, '.', '').'%"></span><em>'.number_format($percent, 1).'%</em></div>');
 
+print('<div class="codex-bonus-cards has-three">');
+print('<article class="codex-bonus-card"><div class="codex-bonus-icon"> seed </div><h2>做种奖励</h2><p>基础做种魔力按当前有效做种立即计算；单个种子累计有效做种满 <b>'.$minimumSeedHours.' 小时</b>后，才计入固定做种加成。每个合格做种每小时固定获得 <b>'.number_format($perseeding_bonus, 3).'</b> 魔力，最多计入 <b>'.$maxseeding_bonus.'</b> 个。</p><dl><div><dt>当前计入</dt><dd>'.$seedingFixedCount.'/'.$seedingFixedMax.' 个</dd></div><div><dt>未满'.$minimumSeedHours.'小时</dt><dd>'.$pendingSeedCount.' 个</dd></div><div><dt>固定收益</dt><dd>'.number_format($seedingFixedBonus * $baseFactor, 3).' / 小时</dd></div></dl></article>');
+print('<article class="codex-bonus-card codex-bonus-card-official"><div class="codex-bonus-icon"> official </div><h2>官种奖励</h2><p>按 M-Team 官种公式计算：P = √Σ[(时间因子 × 冷门因子 × 体积<sup>3/2</sup>)]，最终按 P% 追加到基础做种魔力。</p><dl><dt>当前官种</dt><dd>'.$officialCount.' 个</dd><dt>P 值</dt><dd>'.number_format($officialMteamPercent, 3).'%</dd><dt>额外收益</dt><dd>'.number_format($officialAdditionBonus, 3).' / 小时</dd></dl></article>');
+print('<article class="codex-bonus-card codex-bonus-card-class"><div class="codex-bonus-icon"> level </div><h2>等级奖励</h2><p>等级越高，基础做种魔力加成越高。当前等级为 <b>'.$className.'</b>，本等级额外加成为 <b>'.number_format($classAdditionFactor * 100, 0).'%</b>。</p><dl><div><dt>等级加成</dt><dd>+'.number_format($classAdditionFactor * 100, 0).'%</dd></div><div><dt>额外收益</dt><dd>'.number_format($classAdditionBonus, 3).' / 小时</dd></div></dl></article>');
+print('</div>');
+
+print('<section class="codex-bonus-levels"><div><span class="codex-bonus-eyebrow">LEVEL ADDITION</span><h2>等级加成规则</h2></div><div class="codex-bonus-level-grid">');
+for ($classLevel = 0; $classLevel <= 16; $classLevel++) {
+    $levelFactor = get_seed_bonus_class_addition_factor($classLevel);
+    print('<span'.($classLevel == $CURUSER['class'] ? ' class="is-current"' : '').'><b>'.get_user_class_name($classLevel, false, false, true).'</b><em>+'.number_format($levelFactor * 100, 0).'%</em></span>');
+}
+print('</div></section>');
+
+print('<div class="codex-bonus-formula"><h2>'.$lang_mybonus['text_get_by_seeding'].'</h2>');
+print('<div class="codex-bonus-formula-box">'.$lang_mybonus['text_bonus_formula_one'].$tzero_bonus.$lang_mybonus['text_bonus_formula_two'].$nzero_bonus.$lang_mybonus['text_bonus_formula_wi'].get_setting('bonus.zero_bonus_factor').$lang_mybonus['text_bonus_formula_three'].$bzero_bonus.$lang_mybonus['text_bonus_formula_four'].$l_bonus.$lang_mybonus['text_bonus_formula_five'].'</div>');
+print('<ul class="codex-bonus-notes">');
+print('<li>'.$minSizeText.'</li>');
+print('<li>基础做种魔力按当前有效做种立即计算；固定做种、官种、等级、勋章和捐赠等附加奖励，仅计入单个种子累计有效做种达到 '.$minimumSeedHours.' 小时后的部分。</li>');
+print('<li>等级加成：普通用户按等级为 0% 至 8%，VIP 为 20%，管理类等级为 10%；加成基数为基础做种魔力。</li>');
+if ($donortimes_bonus) {
+    print('<li>'.$lang_mybonus['text_donors_always_get'].$donortimes_bonus.$lang_mybonus['text_times_of_bonus'].'</li>');
+}
 if ($bonusTableResult['has_medal_addition']) {
-    print("<h1>".$lang_mybonus['text_get_by_medal']."</h1>");
-    print("<ul>");
-    print("<li>".sprintf($lang_mybonus['medal_additional_desc'], $CURUSER['id'])."</li>");
-    print("<li>".$lang_mybonus['medal_additional_factor'].$bonusTableResult['medal_addition_factor']."</li>");
-    print("</ul>");
+    print('<li>'.sprintf($lang_mybonus['medal_additional_desc'], $CURUSER['id']).'。每枚勋章魔力加成为 1%，当前勋章总加成为 '.number_format(($bonusTableResult['medal_addition_factor'] ?? 0) * 100, 2).'%，全局系数为 '.number_format($bonusTableResult['medal_addition_coefficient'] ?? 1, 3).'；勋章收益 = 基础魔力 × 勋章总加成 × 系数。</li>');
 }
-if ($bonusTableResult['has_official_addition']) {
-    print("<h1>".$lang_mybonus['text_get_by_seeding_official']."</h1>");
-    print("<ul>");
-    print("<li>".$lang_mybonus['official_calculate_method']."</li>");
-    print("<li>".$lang_mybonus['official_tag_bonus_additional_factor'].$bonusTableResult['official_addition_factor']."</li>");
-    print("</ul>");
-}
-
 if ($bonusTableResult['has_harem_addition']) {
-    print("<h1>".$lang_mybonus['text_get_by_harem']."</h1>");
-    print("<ul>");
-    print("<li>".sprintf($lang_mybonus['harem_additional_desc'], $CURUSER['id'])."</li>");
-    print("<li>".$lang_mybonus['harem_additional_factor'].$bonusTableResult['harem_addition_factor']."</li>");
-    print("<li>".$lang_mybonus['harem_additional_note']."</li>");
-    print("</ul>");
+    print('<li>'.sprintf($lang_mybonus['harem_additional_desc'], $CURUSER['id']).'，'.$lang_mybonus['harem_additional_factor'].$bonusTableResult['harem_addition_factor'].'。'.$lang_mybonus['harem_additional_note'].'</li>');
 }
+print('</ul></div>');
 
-print("<h1>".$lang_mybonus['text_bonus_summary']."</h1>");
-print '<div style="display: flex;justify-content: center;margin-top: 20px;">'.$bonusTableResult['table'].'</div>';
+print('<h1 class="codex-bonus-section-title">'.$lang_mybonus['text_bonus_summary'].'</h1>');
+print '<div class="codex-bonus-table-wrap">'.$bonusTableResult['table'].'</div>';
+print('</div>');
 
 print("<h1>".$lang_mybonus['text_other_things_get_bonus']."</h1>");
 print("<ul>");
@@ -545,6 +565,9 @@ if ($uploadsubtitle_bonus > 0)
 	print("<li>".$lang_mybonus['text_upload_subtitle'].$uploadsubtitle_bonus.$lang_mybonus['text_point'].add_s($uploadsubtitle_bonus)."</li>");
 if ($starttopic_bonus > 0)
 	print("<li>".$lang_mybonus['text_start_topic'].$starttopic_bonus.$lang_mybonus['text_point'].add_s($starttopic_bonus)."</li>");
+print('<li>每日签到：基础奖励 5 魔力，连续签到每日递增 2 魔力，常规签到奖励最高 100 魔力。</li>');
+print('<li>连续签到第 10、20、30 天分别额外奖励 100、250、500 魔力；签到奖励已按原规则减半。</li>');
+print('<li>签到中断且未使用补签卡时，连续签到从第 1 天重新累计；补签后重新计算连续天数，每个自然月最多使用 3 张补签卡。</li>');
 if ($makepost_bonus > 0)
 	print("<li>".$lang_mybonus['text_make_post'].$makepost_bonus.$lang_mybonus['text_point'].add_s($makepost_bonus)."</li>");
 if ($addcomment_bonus > 0)
@@ -572,6 +595,7 @@ print($lang_mybonus['text_howto_get_karma_five'].$uploadtorrent_bonus.$lang_mybo
 ?>
 </td></tr></table>
 <?php
+	print('</div>');
 }
 
 // Bonus exchange

@@ -170,7 +170,7 @@ $lang_mybonus = array
     'text_rainbow_id_already_valid_forever' => '已永久拥有彩虹 ID',
     'text_get_by_medal' => '勋章加成每小时将额外得到如下的魔力值',
     'medal_additional_desc' => '勋章奖励计算公式同上，不考虑低保',
-    'medal_additional_factor' => '最终奖励为计算所得勋章奖励乘以勋章加成系数，当前勋章加成系数为: ',
+    'medal_additional_factor' => '勋章收益 = 基础魔力 × 勋章总加成 × 系数。当前系数为: ',
     'text_bonus_mini_size' => '种子体积要求至少为 %s，小于此体积的种子不参与魔力计算',
 );
 
