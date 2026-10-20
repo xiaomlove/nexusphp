@@ -5635,7 +5635,81 @@ function canDoLogin()
 
 function displayHotAndClassic()
 {
-    global $showextinfo, $showmovies, $Cache, $lang_functions, $browsecatmode, $specialcatmode;
+    global $showextinfo, $showmovies, $Cache, $lang_functions, $browsecatmode, $specialcatmode, $CURUSER;
+
+    $normalizeHotSeriesTitle = static function ($name) {
+        $name = trim((string)$name);
+        $normalized = preg_replace('/(?:[ ._-]*S\d{1,2}(?:E\d{1,4}(?:[-_]?E?\d{1,4})?)?\b|[ ._-]*第\s*\d{1,4}(?:[-~至]\d{1,4})?\s*集)/iu', '', $name);
+        return trim((string)preg_replace('/[ ._-]+$/u', '', (string)$normalized));
+    };
+
+    // 输出滚动动画CSS（只输出一次）
+    static $css_printed = false;
+    if (!$css_printed) {
+        ?>
+        <style>
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .hot-classic-container .scroll-wrapper {
+            display: inline-block;
+            animation: scroll-left 120s linear infinite;
+            white-space: nowrap;
+        }
+        
+        /* 鼠标悬停暂停滚动 */
+        .hot-classic-container:hover .scroll-wrapper {
+            animation-play-state: paused;
+        }
+        
+        /* 确保海报项正确排列 */
+        .hot-classic-container .poster-item {
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: top;
+        }
+        
+        .hot-classic-container .poster-item img {
+            display: block;
+            transition: transform 0.3s;
+            width: 120px;
+            height: 170px;
+            object-fit: cover;
+        }
+        
+        /* 鼠标悬停海报放大效果 */
+        .hot-classic-container .poster-item:hover img {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        /* 容器样式 */
+        .hot-classic-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        /* 内部表格样式 */
+        .hot-classic-container table {
+            width: 100% !important;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        
+        .hot-classic-container td {
+            padding: 15px !important;
+            overflow: hidden;
+        }
+        </style>
+        <?php
+        $css_printed = true;
+    }
 
     if ($showmovies['hot'] == "yes" || $showmovies['classic'] == "yes")
     {
@@ -5644,62 +5718,103 @@ function displayHotAndClassic()
         } else {
             $mode = $browsecatmode;
         }
-        $imdb = new \Nexus\Imdb\Imdb();
         $type = array('hot', 'classic');
+        
         foreach($type as $type_each)
         {
             if($showmovies[$type_each] == 'yes' && (!isset($CURUSER) || $CURUSER['show' . $type_each] == 'yes'))
             {
-                $Cache->new_page("{$type_each}_{$mode}_resources", 900, true);
+                // v2: the poster wall is deduplicated per current cache window.
+                // No permanent cover blacklist is kept, so a cover can return
+                // after it has naturally left the hot-resource result set.
+                $Cache->new_page("{$type_each}_{$mode}_resources_v3", 900, true);
                 if (!$Cache->get_page())
                 {
                     $Cache->add_whole_row();
 
-                    $res = sql_query("SELECT torrents.sp_state, torrents.url, torrents.id, torrents.name, torrents.small_descr, torrents.cover FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE categories.mode = $mode AND picktype = " . sqlesc($type_each) . " AND seeders > 0 AND (url != '' OR cover != '') ORDER BY id DESC LIMIT 30") or sqlerr(__FILE__, __LINE__);
+                    // Read a larger candidate window so duplicate covers do not
+                    // reduce the final wall to only a few posters.
+                    $res = sql_query("SELECT torrents.sp_state, torrents.url, torrents.id, torrents.name, torrents.small_descr, torrents.cover FROM torrents LEFT JOIN categories ON torrents.category = categories.id WHERE categories.mode = $mode AND picktype = " . sqlesc($type_each) . " AND seeders > 0 AND (url != '' OR cover != '') ORDER BY id DESC LIMIT 180") or sqlerr(__FILE__, __LINE__);
+                    
                     if (mysql_num_rows($res) > 0)
                     {
                         $movies_list = "";
                         $count = 0;
                         $allImdb = array();
-                        $width = 101;
-                        $height = 140;
+                        $seenHotPosters = array();
+                        $seenHotGroups = array();
+                        $width = 120;  // 稍微增加宽度
+                        $height = 170; // 稍微增加高度
+                        
                         while($array = mysql_fetch_array($res))
                         {
                             $pro_torrent = get_torrent_promotion_append($array['sp_state'],'word', false, '', 0, '', $array['__ignore_global_sp_state'] ?? false);
                             $photo_url = '';
-                            if ($imdb_id = parse_imdb_id($array["url"])) {
-                                if (array_search($imdb_id, $allImdb) !== false) { //a torrent with the same IMDb url already exists
-                                    continue;
-                                }
-                                $allImdb[]=$imdb_id;
-                                try {
-                                    $photo_url = $imdb->getMovie($imdb_id)->photo(true);
-                                    if (empty($photo_url)) {
-                                        do_log("torrent: {$array['id']}, url: {$array['url']}, imdb_id: $imdb_id can not get photo", 'error');
-                                    }
-                                } catch (\Exception $exception) {
-                                    do_log($exception->getMessage() . "\n[stacktrace]\n" . $exception->getTraceAsString(), 'error');
-                                }
-                            }
-                            if (empty($photo_url) && !empty($array['cover'])) {
+                            
+                            // The list page must not block on external IMDb requests.
+                            // Covers are already stored with the torrent; remote metadata
+                            // remains available on the details page.
+                            if (!empty($array['cover'])) {
                                 $photo_url = $array['cover'];
                             }
                             if (empty($photo_url)) {
                                 continue;
                             }
 
-                            $thumbnail = "<img width=\"{$width}\" height=\"{$height}\" src=\"".$photo_url."\" border=\"0\" alt=\"poster\" />";
+                            // A TV series can have many episode torrents with
+                            // the same poster. Only show that poster once in
+                            // this current hot-wall snapshot.
+                            // Ignore query strings/fragments so alternate CDN
+                            // URLs for the same image still share one key.
+                            $posterKey = strtolower(trim((string)preg_replace('/[?#].*$/', '', (string)$photo_url)));
+                            $seriesTitle = $normalizeHotSeriesTitle($array['name']);
+                            $isEpisode = $seriesTitle !== trim((string)$array['name']);
+                            $groupKey = $isEpisode
+                                ? 'tv:' . strtolower($seriesTitle)
+                                : 'poster:' . $posterKey;
+                            if (($posterKey !== '' && isset($seenHotPosters[$posterKey])) || isset($seenHotGroups[$groupKey])) {
+                                continue;
+                            }
+                            if ($posterKey !== '') {
+                                $seenHotPosters[$posterKey] = true;
+                            }
+                            $seenHotGroups[$groupKey] = true;
 
-                            $thumbnail = "<a style=\"margin-right: 2px\" href=\"details.php?id=" . $array['id'] . "&amp;hit=1\" onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class=\'big\'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class=\'medium\'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">" . $thumbnail . "</a>";
+                            // 构建海报HTML
+                            $thumbnail = "<img class=\"hot-classic-poster\" 
+                                              style=\"width: {$width}px; height: {$height}px; object-fit: cover; border: none;\" 
+                                              src=\"{$photo_url}\" 
+                                              alt=\"poster\" />";
+
+                            $thumbnail = "<div class=\"poster-item\">
+                                            <a href=\"details.php?id={$array['id']}&amp;hit=1\" 
+                                               onmouseover=\"domTT_activate(this, event, 'content', '" . htmlspecialchars("<font class='big'><b>" . (addslashes($array['name'] . $pro_torrent)) . "</b></font><br /><font class='medium'>".(addslashes($array['small_descr'])) ."</font>"). "', 'trail', true, 'delay', 0,'lifetime',5000,'styleClass','niceTitle','maxWidth', 600);\">
+                                                {$thumbnail}
+                                            </a>
+                                          </div>";
                             $movies_list .= $thumbnail;
                             $count++;
-                            if ($count >= 10)
+                            if ($count >= 50)  // 修改：增加到50张图片
                                 break;
                         }
+                        
+                        // 输出HTML结构
                         ?>
                         <h2><?php echo $lang_functions['text_' . $type_each] ?></h2>
-                        <table width="100%" border="1" cellspacing="0" cellpadding="5"><tr><td class="text nowrap" align="center">
-                                    <?php echo $movies_list ?></td></tr></table>
+                        <div class="hot-classic-container">
+                            <table width="100%" border="1" cellspacing="0" cellpadding="5">
+                                <tr>
+                                    <td class="text" align="center">
+                                        <div class="scroll-wrapper">
+                                            <?php 
+                                            // 重复3次确保无缝循环
+                                            echo $movies_list . $movies_list . $movies_list; 
+                                            ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
                         <?php
                     }
                     $Cache->end_whole_row();
@@ -5709,7 +5824,6 @@ function displayHotAndClassic()
             }
         }
     }
-
 }
 
 function build_table(array $header, array $rows, array $options = [])
@@ -6086,7 +6200,7 @@ function get_ip_location_from_geoip($ip): bool|array
     if ($locationInfo === false) {
         return false;
     }
-    $name = sprintf('%s[v%s]', $locationInfo['city'] ? ($locationInfo['city'] . "·" . $locationInfo['country']) : $locationInfo['country'], $locationInfo['version']);
+    $name = sprintf('%s[v%s]', ($locationInfo['city'] ?? '') ? (($locationInfo['city'] ?? '') . "·" . ($locationInfo['country'] ?? '')) : ($locationInfo['country'] ?? ''), ($locationInfo['version'] ?? ''));
     return [
         'name' => $name,
         'location_main' => '',
@@ -6094,10 +6208,10 @@ function get_ip_location_from_geoip($ip): bool|array
         'flagpic' => '',
         'start_ip' => $ip,
         'end_ip' => $ip,
-        'ip_version' => $locationInfo['version'],
-        'country_en' => $locationInfo['country_en'],
-        'city_en' => $locationInfo['city_en'],
-        'continent_en' => $locationInfo['continent_en'],
+        'ip_version' => ($locationInfo['version'] ?? ''),
+        'country_en' => ($locationInfo['country_en'] ?? ''),
+        'city_en' => ($locationInfo['city_en'] ?? ''),
+        'continent_en' => ($locationInfo['continent_en'] ?? ''),
     ];
 }
 
@@ -6842,6 +6956,25 @@ function get_filament_class_alias($class): string
 }
 
 /**
+ * Return the seeding bonus addition for a user class.
+ * Standard classes gain 0%-8%, VIP gains 20%, and staff classes gain 10%.
+ */
+function get_seed_bonus_class_addition_factor($class): float
+{
+    $class = intval($class);
+    if ($class === 10) {
+        return 0.20;
+    }
+    if ($class >= 11) {
+        return 0.10;
+    }
+    if ($class >= 0 && $class <= 9) {
+        return min($class, 8) / 100;
+    }
+    return 0.0;
+}
+
+/**
  * Calculate user seed bonus per hour
  *
  * @param $uid
@@ -6860,6 +6993,8 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $bzero_bonus = $settingBonus['bzero'];
     $l_bonus = $settingBonus['l'];
     $minSize = $settingBonus['min_size'] ?? 0;
+    $baseBonusFactor = floatval($settingBonus['base_factor'] ?? 1);
+    $medalAdditionCoefficient = floatval($settingBonus['medal_addition'] ?? 1);
 
     $sqrtof2 = sqrt(2);
     $logofpointone = log(0.1);
@@ -6871,17 +7006,18 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $nowStr = date('Y-m-d H:i:s');
     $sectoweek = 7*24*60*60;
 
-    $A = $official_a = $size = $official_size = 0;
-    $count = $torrent_peer_count = $official_torrent_peer_count = 0;
+    $A = $eligibleA = $official_a = $official_mteam_sum = $size = $official_size = $eligibleSize = 0;
+    $count = $torrent_peer_count = $official_torrent_peer_count = $pending_torrent_peer_count = 0;
+    $minimum_seed_time_seconds = 24 * 60 * 60;
     $logPrefix = "[CALCULATE_SEED_BONUS], uid: $uid, torrentIdArr: " . json_encode($torrentIdArr);
     if ($torrentIdArr !== null) {
         if (empty($torrentIdArr)) {
             $torrentIdArr = [-1];
         }
         $idStr = implode(',', \Illuminate\Support\Arr::wrap($torrentIdArr));
-        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID, '' as last_action, '' as ip from torrents  WHERE id in ($idStr) and size >= $minSize";
+        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, 'NO_PEER_ID' as peerID, '' as last_action, '' as ip, {$minimum_seed_time_seconds} as accumulated_seedtime from torrents WHERE id in ($idStr) and size >= $minSize";
     } else {
-        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID, peers.last_action, peers.ip from torrents LEFT JOIN peers ON peers.torrent = torrents.id WHERE peers.userid = $uid AND peers.seeder ='yes' and torrents.size > $minSize group by peers.torrent, peers.peer_id";
+        $sql = "select torrents.id, torrents.added, torrents.size, torrents.seeders, peers.id as peerID, peers.last_action, peers.ip, coalesce(snatched.seedtime, 0) as accumulated_seedtime from torrents LEFT JOIN peers ON peers.torrent = torrents.id LEFT JOIN snatched ON snatched.torrentid = torrents.id AND snatched.userid = peers.userid WHERE peers.userid = $uid AND peers.seeder = 'yes' and torrents.size > $minSize group by peers.torrent, peers.peer_id";
     }
     $tagGrouped = [];
     $torrentResult = \Nexus\Database\NexusDB::select($sql);
@@ -6896,13 +7032,20 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     $officialAdditionalFactor = \App\Models\Setting::get('bonus.official_addition');
     $zeroBonusTag = \App\Models\Setting::get('bonus.zero_bonus_tag');
     $zeroBonusFactor = \App\Models\Setting::get('bonus.zero_bonus_factor');
-    $userMedalResult = \Nexus\Database\NexusDB::select("select round(sum(bonus_addition_factor), 5) as factor from medals where id in (select medal_id from user_medals where uid = $uid and (expire_at is null or expire_at > '$nowStr') and (bonus_addition_expire_at is null or bonus_addition_expire_at > '$nowStr'))");
-    $medalAdditionalFactor = floatval($userMedalResult[0]['factor'] ?? 0);
+    // A medal series contributes once per type. This keeps a user's multiple medals
+    // from the same series from multiplying the same series bonus.
+    $userMedalResult = \Nexus\Database\NexusDB::select("select round(coalesce(sum(type_factor), 0), 5) as factor from (select medal_type, max(bonus_addition_factor) as type_factor from medals where id in (select medal_id from user_medals where uid = $uid and (expire_at is null or expire_at > '$nowStr') and (bonus_addition_expire_at is null or bonus_addition_expire_at > '$nowStr')) group by medal_type) as medal_types");
+    $medalRawAdditionalFactor = floatval($userMedalResult[0]['factor'] ?? 0);
+    $medalAdditionalFactor = $medalRawAdditionalFactor > 0 ? $medalRawAdditionalFactor : 0;
     do_log("$logPrefix, sql: $sql, count: " . count($torrentResult) . ", officialTag: $officialTag, officialAdditionalFactor: $officialAdditionalFactor, zeroBonusTag: $zeroBonusTag, zeroBonusFactor: $zeroBonusFactor, medalAdditionalFactor: $medalAdditionalFactor");
     $last_action = "";
     $ip_arr = [];
     foreach ($torrentResult as $torrent)
     {
+        $isEligibleForAddition = $torrentIdArr !== null || intval($torrent['accumulated_seedtime']) >= $minimum_seed_time_seconds;
+        if (!$isEligibleForAddition) {
+            $pending_torrent_peer_count++;
+        }
         if ($torrent['last_action'] > $last_action) {
             $last_action = $torrent['last_action'];
         }
@@ -6917,11 +7060,16 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
         }
         $temp = (1 - exp($valueone * $weeks_alive)) * $gb_size * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1)));
         $A += $temp;
-        $count++;
         $torrent_peer_count++;
+        if ($isEligibleForAddition) {
+            $eligibleA += $temp;
+            $eligibleSize = bcadd($eligibleSize, $torrent['size']);
+            $count++;
+        }
         $officialAIncrease = 0;
-        if ($officialTag && isset($tagGrouped[$torrent['id']][$officialTag])) {
+        if ($isEligibleForAddition && $officialTag && isset($tagGrouped[$torrent['id']][$officialTag])) {
             $officialAIncrease = $temp;
+            $official_mteam_sum += (1 - exp($valueone * $weeks_alive)) * (1 + $sqrtof2 * exp($valuethree * ($torrent['seeders'] - 1))) * pow($gb_size_raw, 1.5);
             $official_torrent_peer_count++;
             $official_size = bcadd($official_size, $torrent['size']);
         }
@@ -6933,17 +7081,25 @@ function calculate_seed_bonus($uid, $torrentIdArr = null): array
     }
     if ($count > $maxseeding_bonus)
         $count = $maxseeding_bonus;
-    $seed_bonus = $seed_points = $valuetwo * atan($A / $l_bonus) + ($perseeding_bonus * $count);
-    //Official addition don't think about the minimum value
-    $official_bonus =  $valuetwo * atan($official_a / $l_bonus);
-    $medal_bonus = $valuetwo * atan($A / $l_bonus);
+    $formula_bonus = $valuetwo * atan($A / $l_bonus);
+    $eligible_formula_bonus = $valuetwo * atan($eligibleA / $l_bonus);
+    $seed_bonus = $seed_points = $formula_bonus + ($perseeding_bonus * $count);
+    $official_mteam_percent = sqrt($official_mteam_sum);
+    $official_bonus = $eligible_formula_bonus * ($official_mteam_percent / 100);
+    $medal_bonus = $eligible_formula_bonus;
     $result = compact(
-        'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'size', 'last_action',
+        'seed_points','seed_bonus', 'A', 'count', 'torrent_peer_count', 'pending_torrent_peer_count',
+        'minimum_seed_time_seconds', 'size', 'eligibleA', 'eligibleSize', 'eligible_formula_bonus', 'last_action',
         'official_bonus', 'official_a', 'official_torrent_peer_count', 'official_size', 'medal_bonus',
+        'formula_bonus', 'official_mteam_sum', 'official_mteam_percent'
     );
     $result['donor_times'] = $donortimes_bonus;
-    $result['official_additional_factor'] = $officialAdditionalFactor;
+    $result['base_factor'] = $baseBonusFactor;
+    $result['official_additional_factor'] = $official_mteam_percent / 100;
+    $result['official_formula'] = 'mteam';
     $result['medal_additional_factor'] = $medalAdditionalFactor;
+    $result['medal_raw_additional_factor'] = $medalRawAdditionalFactor;
+    $result['medal_addition_coefficient'] = $medalAdditionCoefficient;
     $result['ip_arr'] = array_keys($ip_arr);
     do_log("$logPrefix, result: " . json_encode($result));
     return $result;
@@ -6977,7 +7133,8 @@ function calculate_harem_addition($uid)
 
 function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPrefix, $taxonomyHrefPrefix, $taxonomyNameLength, $checkedValues = '', array $options = [])
 {
-    parse_str($checkedValues, $checkedValuesArr);
+	$checkedValues = (string) ($checkedValues ?? '');
+	parse_str($checkedValues, $checkedValuesArr);
     $searchBox = \App\Models\SearchBox::query()->with(['categories', 'categories.icon'])->findOrFail($mode);
     $lang = get_langfolder_cookie();
     $withTaxonomies = [];
@@ -7008,6 +7165,12 @@ function build_search_box_category_table($mode, $checkboxValue, $categoryHrefPre
     $html .= sprintf('<tr><td class="embedded" align="left">%s</td></tr>', nexus_trans('label.search_box.category'));
     /** @var \Illuminate\DataBase\Eloquent\Collection $categoryCollection */
     $categoryCollection = $searchBox->categories()->with('icon')->orderBy('sort_index', 'desc')->get();
+    $excludedCategoryIds = array_map('intval', $options['exclude_category_ids'] ?? []);
+    if ($excludedCategoryIds) {
+        $categoryCollection = $categoryCollection
+            ->reject(static fn ($category) => in_array((int)$category->id, $excludedCategoryIds, true))
+            ->values();
+    }
     if (!empty($options['select_unselect'])) {
         $categoryCollection->push(new \App\Models\Category(['mode' => -1]));
     }
@@ -7161,37 +7324,55 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         $bonusResult = calculate_seed_bonus($user['id']);
     }
     $officialTag = get_setting('bonus.official_tag');
-    $officialAdditionalFactor = get_setting('bonus.official_addition', 0);
     $haremFactor = get_setting('bonus.harem_addition');
     $haremAddition = calculate_harem_addition($user['id']);
     $isDonor = is_donor($user);
     $donortimes_bonus = get_setting('bonus.donortimes');
-    $baseBonusFactor = 1;
-    if ($isDonor && $donortimes_bonus != 0) {
-        $baseBonusFactor = $donortimes_bonus;
-    }
+    $baseBonusFactor = floatval(get_setting('bonus.base_factor', 1));
+    $perseedingBonus = get_setting('bonus.perseeding', 0);
+    $maxseedingBonus = get_setting('bonus.maxseeding', 0);
+    $seedingCount = $bonusResult['count'] ?? 0;
+    $seedingFixedBonus = $perseedingBonus * $seedingCount;
+    $formulaBaseBonus = max($bonusResult['seed_bonus'] - $seedingFixedBonus, 0);
     $baseBonus = $bonusResult['seed_bonus'] * $baseBonusFactor;
+    $eligibleFormulaBonus = max($bonusResult['eligible_formula_bonus'] ?? $formulaBaseBonus, 0);
+    $eligibleBaseBonus = ($eligibleFormulaBonus + $seedingFixedBonus) * $baseBonusFactor;
     $totalBonus = $baseBonus;
+    $classAdditionFactor = get_seed_bonus_class_addition_factor($user['class'] ?? 0);
+    $classAddition = $eligibleBaseBonus * $classAdditionFactor;
 
-    $rowSpan = 1;
-    $hasHaremAddition = $hasOfficialAddition = $hasMedalAddition = false;
+    $hasSeedingFixedBonus = $perseedingBonus > 0;
+    $rowSpan = $hasSeedingFixedBonus ? 2 : 1;
+    $hasHaremAddition = $hasOfficialAddition = $hasMedalAddition = $hasDonorAddition = false;
+    $hasClassAddition = true;
+    $rowSpan++;
+    $totalBonus += $classAddition;
+    if ($isDonor && $donortimes_bonus != 0 && $seedingCount > 0) {
+        $rowSpan++;
+        $hasDonorAddition = true;
+        $totalBonus += $eligibleBaseBonus * $donortimes_bonus;
+    }
     if ($haremFactor > 0) {
         $rowSpan++;
         $hasHaremAddition = true;
         $totalBonus +=  $haremAddition * $haremFactor;
     }
-    if ($officialAdditionalFactor > 0 && $officialTag) {
+    if ($officialTag && ($bonusResult['official_torrent_peer_count'] ?? 0) > 0 && ($bonusResult['official_mteam_percent'] ?? 0) > 0) {
         $rowSpan++;
         $hasOfficialAddition = true;
-        $totalBonus += $bonusResult['official_bonus'] * $officialAdditionalFactor;
+        $totalBonus += $bonusResult['official_bonus'] * $baseBonusFactor;
     }
-    if ($bonusResult['medal_additional_factor'] > 0) {
+    if ($seedingCount > 0 && $bonusResult['medal_additional_factor'] > 0) {
         $rowSpan++;
         $hasMedalAddition = true;
-        $totalBonus += $bonusResult['medal_bonus'] * $bonusResult['medal_additional_factor'];
+        $totalBonus += $bonusResult['medal_bonus'] * $bonusResult['medal_additional_factor'] * ($bonusResult['medal_addition_coefficient'] ?? 1);
     }
 
-    $table = sprintf('<table cellpadding="5" style="%s">', $options['table_style'] ?? '');
+    $table = sprintf(
+        '<table cellpadding="5" class="%s" style="%s">',
+        $options['table_class'] ?? '',
+        $options['table_style'] ?? ''
+    );
     $table .= '<tr>';
     $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.reward_type'));
     $table .= sprintf('<td class="colhead">%s</td>', nexus_trans('bonus.table_thead.count'));
@@ -7209,12 +7390,37 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         $bonusResult['torrent_peer_count'],
         mksize($bonusResult['size']),
         number_format($bonusResult['A'], 3),
-        number_format($bonusResult['seed_bonus'],3),
+        number_format($formulaBaseBonus,3),
         $baseBonusFactor,
-        number_format($baseBonus,3),
+        number_format($formulaBaseBonus * $baseBonusFactor,3),
         $rowSpan,
         number_format($totalBonus, 3)
     );
+    if ($hasSeedingFixedBonus) {
+        $table .= sprintf(
+            '<tr><td>%s</td><td>%s/%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            sprintf(nexus_trans('bonus.reward_types.seeding_fixed'), $seedingCount, $maxseedingBonus),
+            $seedingCount,
+            $maxseedingBonus,
+            '--',
+            '--',
+            number_format($seedingFixedBonus, 3),
+            $baseBonusFactor,
+            number_format($seedingFixedBonus * $baseBonusFactor, 3)
+        );
+    }
+    if ($hasClassAddition) {
+        $table .= sprintf(
+            '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>+%s%%</td><td>%s</td></tr>',
+            '等级奖励加成',
+            get_user_class_name($user['class'], false, false, true),
+            '--',
+            '--',
+            number_format($eligibleBaseBonus, 3),
+            number_format($classAdditionFactor * 100, 0),
+            number_format($classAddition, 3)
+        );
+    }
     if ($hasMedalAddition) {
         $table .= sprintf(
             '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
@@ -7223,8 +7429,21 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
             mksize($bonusResult['size']),
             number_format($bonusResult['A'], 3),
             number_format($bonusResult['medal_bonus'], 3),
-            number_format($bonusResult['medal_additional_factor'], 3),
-            number_format($bonusResult['medal_bonus'] * $bonusResult['medal_additional_factor'], 3)
+            number_format($bonusResult['medal_addition_coefficient'] ?? 1, 3),
+            number_format($bonusResult['medal_bonus'] * $bonusResult['medal_additional_factor'] * ($bonusResult['medal_addition_coefficient'] ?? 1), 3)
+        );
+    }
+
+    if ($hasDonorAddition) {
+        $table .= sprintf(
+            '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            nexus_trans('bonus.reward_types.donor_addition'),
+            '--',
+            '--',
+            '--',
+            number_format($eligibleBaseBonus, 3),
+            number_format($donortimes_bonus, 3),
+            number_format($eligibleBaseBonus * $donortimes_bonus, 3)
         );
     }
 
@@ -7234,10 +7453,10 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
             nexus_trans('bonus.reward_types.official_addition'),
             $bonusResult['official_torrent_peer_count'],
             mksize($bonusResult['official_size']),
-            number_format($bonusResult['official_a'], 3),
+            'P='.number_format($bonusResult['official_mteam_percent'] ?? 0, 3).'%',
             number_format($bonusResult['official_bonus'], 3),
-            number_format($officialAdditionalFactor, 3),
-            number_format($bonusResult['official_bonus'] * $officialAdditionalFactor, 3)
+            number_format(($bonusResult['official_mteam_percent'] ?? 0) / 100, 5),
+            number_format($bonusResult['official_bonus'] * $baseBonusFactor, 3)
         );
     }
 
@@ -7261,9 +7480,25 @@ function build_bonus_table(array $user, array $bonusResult = [], array $options 
         'has_harem_addition' => $hasHaremAddition,
         'harem_addition_factor' => $haremFactor,
         'has_official_addition' => $hasOfficialAddition,
-        'official_addition_factor' => $officialAdditionalFactor,
+        'official_addition_factor' => ($bonusResult['official_mteam_percent'] ?? 0) / 100,
+        'official_mteam_percent' => $bonusResult['official_mteam_percent'] ?? 0,
+        'official_mteam_sum' => $bonusResult['official_mteam_sum'] ?? 0,
+        'official_addition_bonus' => ($bonusResult['official_bonus'] ?? 0) * $baseBonusFactor,
         'has_medal_addition' => $hasMedalAddition,
         'medal_addition_factor' => $bonusResult['medal_additional_factor'],
+        'medal_addition_coefficient' => $bonusResult['medal_addition_coefficient'] ?? 1,
+        'medal_addition_bonus' => ($bonusResult['medal_bonus'] ?? 0) * ($bonusResult['medal_additional_factor'] ?? 0) * ($bonusResult['medal_addition_coefficient'] ?? 1),
+        'base_factor' => $baseBonusFactor,
+        'has_donor_addition' => $hasDonorAddition,
+        'donor_addition_factor' => $donortimes_bonus,
+        'has_class_addition' => $hasClassAddition,
+        'class_addition_factor' => $classAdditionFactor,
+        'class_addition_bonus' => $classAddition,
+        'total_bonus' => $totalBonus,
+        'formula_base_bonus' => $formulaBaseBonus,
+        'seeding_fixed_bonus' => $seedingFixedBonus,
+        'seeding_fixed_count' => $seedingCount,
+        'seeding_fixed_max' => $maxseedingBonus,
     ];
 
 }
