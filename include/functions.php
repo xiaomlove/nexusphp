@@ -2627,6 +2627,7 @@ else
 <?php
 }
 ?>
+			<button type="button" class="nova-mobile-menu-toggle" aria-controls="mainmenu" aria-expanded="false"><span class="nova-mobile-menu-icon" aria-hidden="true"></span><span class="nova-mobile-menu-label">&#x83DC;&#x5355;</span></button>
 		</td>
 		<td class="clear nowrap" align="right" valign="middle">
 <?php if ($Advertisement->enable_ad()){
@@ -2635,7 +2636,7 @@ else
 			echo "<span>".$headerad[0]."</span>";
 		}
 }
-if ($enabledonation == 'yes'){?>
+if ($enabledonation == 'yes' && ((string)\App\Models\Setting::getByName('misc.donation_public_enabled', 'yes') === 'yes' || (isset($CURUSER) && get_user_class() >= UC_STAFFLEADER))){?>
 			<a href="donate.php"><img src="<?php echo get_forum_pic_folder()?>/donate.gif" alt="Make a donation" style="margin-left: 5px; margin-top: 50px;" /></a>
 <?php
 }
@@ -2643,6 +2644,79 @@ if ($enabledonation == 'yes'){?>
 		</td>
 	</tr>
 </table>
+
+<div class="nova-mobile-menu-backdrop" hidden></div>
+<script type="text/javascript">
+(function () {
+    function ready(fn) {
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+        else fn();
+    }
+    ready(function () {
+        var button = document.querySelector('.nova-mobile-menu-toggle');
+        var backdrop = document.querySelector('.nova-mobile-menu-backdrop');
+        var menu = document.getElementById('mainmenu');
+        if (!button || !backdrop || !menu) return;
+        // Keep the mobile drawer outside legacy tables so every page can open it.
+        if (window.innerWidth <= 700 && menu.parentNode !== document.body) {
+            document.body.appendChild(menu);
+            document.body.appendChild(backdrop);
+        }
+        function setOpen(open) {
+            document.body.classList.toggle('nova-mobile-menu-open', open);
+            button.setAttribute('aria-expanded', open ? 'true' : 'false');
+            backdrop.hidden = !open;
+        }
+        button.addEventListener('click', function () {
+            setOpen(!document.body.classList.contains('nova-mobile-menu-open'));
+        });
+        backdrop.addEventListener('click', function () { setOpen(false); });
+        menu.addEventListener('click', function (event) {
+            if (event.target.closest('a')) setOpen(false);
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') setOpen(false);
+        });
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 700) setOpen(false);
+        });
+
+        // WebViews may ignore user-scalable even when the viewport is correct.
+        // Provide a two-finger horizontal pinch fallback for the mobile site.
+        if (window.innerWidth <= 700 && !window.__novaPinchZoomBound) {
+            window.__novaPinchZoomBound = true;
+            var pinchStartDistance = 0;
+            var pinchStartScale = 1;
+            var pinchScale = 1;
+            function pinchDistance(a, b) {
+                var dx = a.clientX - b.clientX;
+                var dy = a.clientY - b.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            document.addEventListener('touchstart', function (event) {
+                if (event.touches.length === 2) {
+                    pinchStartDistance = pinchDistance(event.touches[0], event.touches[1]);
+                    pinchStartScale = pinchScale;
+                }
+            }, { passive: true });
+            document.addEventListener('touchmove', function (event) {
+                if (event.touches.length !== 2 || !pinchStartDistance) return;
+                var nextScale = pinchStartScale * pinchDistance(event.touches[0], event.touches[1]) / pinchStartDistance;
+                nextScale = Math.max(.8, Math.min(2.5, nextScale));
+                if (Math.abs(nextScale - pinchScale) < .01) return;
+                event.preventDefault();
+                pinchScale = nextScale;
+                document.body.style.transformOrigin = 'top left';
+                document.body.style.transform = 'scale(' + pinchScale + ')';
+                document.body.style.width = (100 / pinchScale) + '%';
+            }, { passive: false });
+            document.addEventListener('touchend', function (event) {
+                if (event.touches.length < 2) pinchStartDistance = 0;
+            }, { passive: true });
+        }
+    });
+})();
+</script>
 
 <table class="mainouter" width="<?php echo CONTENT_WIDTH ?>" cellspacing="0" cellpadding="5" align="center">
 	<tr><td id="nav_block" class="text" align="center">
@@ -2709,6 +2783,44 @@ else {
     $attendance = $attendanceRep->getAttendance($CURUSER['id'], date('Ymd'))
 ?>
 
+<div id="nova_userbar" class="nova-userbar">
+    <div class="nova-userbar-top">
+        <div class="nova-userbar-welcome">
+            <span class="nova-userbar-hello"><?php echo $lang_functions['text_welcome_back'] ?>, <?php echo get_username($CURUSER['id'])?></span>
+            <a class="nova-userbar-power" href="logout.php" title="<?php echo $lang_functions['text_logout'] ?>"><span class="nova-power-icon">&#x23FB;</span><span class="nova-power-text"><?php echo $lang_functions['text_logout'] ?></span></a>
+        </div>
+        <div class="nova-userbar-links">
+            <a href="usercp.php"><?php echo $lang_functions['text_user_cp'] ?></a>
+            <?php if (get_user_class() >= UC_MODERATOR) { ?><a href="staffpanel.php"><?php echo $lang_functions['text_staff_panel'] ?></a><?php } ?>
+            <?php if (get_user_class() >= UC_SYSOP) { ?><a href="settings.php"><?php echo $lang_functions['text_site_settings'] ?></a><?php } ?>
+            <a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>
+            <a href="mybonus.php"><?php echo $lang_functions['text_bonus'] ?>: <span data-nova-header-bonus><?php echo number_format($CURUSER['seedbonus'], 1)?></span></a>
+            <a href="activity-rewards.php">活动奖励</a>
+            <?php if($attendance){ ?><a href="attendance.php"><?php printf($lang_functions['text_attended'], $attendance->points, $CURUSER['attendance_card']); ?></a><?php }else{ ?><a href="attendance.php"><?php echo $lang_functions['text_attendance'] ?></a><?php } ?>
+            <a href="medal.php"><?php echo nexus_trans('medal.label')?></a>
+            <a href="task.php"><?php echo nexus_trans('exam.type_task')?></a>
+            <a href="invite.php?id=<?php echo $CURUSER['id']?>"><?php echo $lang_functions['text_invite'] ?> <?php echo sprintf('%s(%s)', $CURUSER['invites'], \App\Models\Invite::query()->where('inviter', $CURUSER['id'])->where('invitee', '')->where('expired_at', '>', now())->count())?></a>
+            <?php if(get_user_class() >= \App\Models\User::getAccessAdminClassMin()) { ?><a href="<?php echo nexus_env('FILAMENT_PATH', 'nexusphp')?>" target="_blank"><?php echo $lang_functions['text_management_system']?></a><?php } ?>
+        </div>
+    </div>
+    <div class="nova-userbar-stats">
+        <span><b><?php echo $lang_functions['text_ratio'] ?></b><?php echo $ratio?></span>
+        <span><b><?php echo $lang_functions['text_uploaded'] ?></b><?php echo mksize($CURUSER['uploaded'])?></span>
+        <span><b><?php echo $lang_functions['text_downloaded'] ?></b><?php echo mksize($CURUSER['downloaded'])?></span>
+        <span><b><?php echo $lang_functions['text_active_torrents'] ?></b><img class="arrowup" alt="Torrents seeding" title="<?php echo $lang_functions['title_torrents_seeding'] ?>" src="pic/trans.gif" /><?php echo $activeseed?> <img class="arrowdown" alt="Torrents leeching" title="<?php echo $lang_functions['title_torrents_leeching'] ?>" src="pic/trans.gif" /><?php echo $activeleech?></span>
+        <span><b><?php echo $lang_functions['text_connectable'] ?></b><?php echo $connectable?></span>
+        <span><b><?php echo $lang_functions['text_conn'] ?? 'Connections' ?></b><?php echo maxslots();?></span>
+        <?php if(\App\Models\HitAndRun::getIsEnabled()) { ?><span><b>H&amp;R</b><?php echo sprintf('<a href="myhr.php">%s</a>', (new \App\Repositories\HitAndRunRepository())->getStatusStats($CURUSER['id']))?></span><?php } ?>
+        <?php if(\App\Models\Claim::getConfigIsEnabled()) { ?><span><b><?php echo $lang_functions['menu_claim']?></b><?php echo sprintf('<a href="claim.php?uid=%s">%s</a>', $CURUSER['id'], (new \App\Repositories\ClaimRepository())->getStats($CURUSER['id']))?></span><?php } ?>
+        <div class="nova-userbar-icons">
+            <a href="messages.php"><?php echo $inboxpic ?></a><span><?php echo ($messages ? $messages." (".$unread.$lang_functions['text_message_new'].")" : "0")?></span>
+            <a href="messages.php?action=viewmailbox&amp;box=-1"><img class="sentbox" alt="sentbox" title="<?php echo $lang_functions['title_sentbox'] ?>" src="pic/trans.gif" /></a><span><?php echo ($outmessages ? $outmessages : "0")?></span>
+            <a href="friends.php"><img class="buddylist" alt="Buddylist" title="<?php echo $lang_functions['title_buddylist'] ?>" src="pic/trans.gif" /></a>
+            <a href="getrss.php"><img class="rss" alt="RSS" title="<?php echo $lang_functions['title_get_rss'] ?>" src="pic/trans.gif" /></a>
+        </div>
+    </div>
+</div>
+
 <table id="info_block" cellpadding="4" cellspacing="0" border="0" width="100%"><tr>
 	<td><table width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
 		<td class="bottom" align="left">
@@ -2719,7 +2831,7 @@ else {
                 <?php if (get_user_class() >= UC_MODERATOR) { ?> [<a href="staffpanel.php"><?php echo $lang_functions['text_staff_panel'] ?></a>] <?php }?>
                 <?php if (get_user_class() >= UC_SYSOP) { ?> [<a href="settings.php"><?php echo $lang_functions['text_site_settings'] ?></a>]<?php } ?>
                 [<a href="torrents.php?inclbookmarked=1&amp;allsec=1&amp;incldead=0"><?php echo $lang_functions['text_bookmarks'] ?></a>]
-                <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <?php echo number_format($CURUSER['seedbonus'], 1)?>
+                <font class = 'color_bonus'><?php echo $lang_functions['text_bonus'] ?></font>[<a href="mybonus.php"><?php echo $lang_functions['text_use'] ?></a>]: <span data-nova-header-bonus><?php echo number_format($CURUSER['seedbonus'], 1)?></span>
                 <?php if($attendance){ printf(' <a href="attendance.php" class="">'.$lang_functions['text_attended'].'</a>', $attendance->points, $CURUSER['attendance_card']); }else{ printf(' <a href="attendance.php" class="faqlink">%s</a>', $lang_functions['text_attendance']);}?>
                 <a href="medal.php">[<?php echo nexus_trans('medal.label')?>]</a>
                 <a href="task.php">[<?php echo nexus_trans('exam.type_task')?>]</a>
@@ -2799,6 +2911,43 @@ print '<br/>';
 
 <tr><td id="outer" align="center" class="outer" style="padding-top: 20px; padding-bottom: 20px">
 <?php
+	$novaSiteNotice = trim((string)get_setting('main.site_notice', ''));
+	if ($novaSiteNotice !== '') {
+		$novaEscapedNotice = htmlspecialchars($novaSiteNotice, ENT_QUOTES, 'UTF-8');
+		$novaEscapedNotice = preg_replace_callback(
+			'~https?://[^\s<>"，。；、]+~u',
+			static function ($matches) {
+				$novaUrl = htmlspecialchars_decode($matches[0], ENT_QUOTES);
+				if (!filter_var($novaUrl, FILTER_VALIDATE_URL)) {
+					return $matches[0];
+				}
+				return '<a class="nova-site-notice-link" href="'.$matches[0].'" target="_blank" rel="noopener noreferrer">'.$matches[0].'</a>';
+			},
+			$novaEscapedNotice
+		);
+		$novaSiteNoticeQqUrl = trim((string)get_setting('main.site_notice_qq_url', ''));
+		if (filter_var($novaSiteNoticeQqUrl, FILTER_VALIDATE_URL) && parse_url($novaSiteNoticeQqUrl, PHP_URL_SCHEME) === 'https') {
+			$novaSiteNoticeQqHref = htmlspecialchars($novaSiteNoticeQqUrl, ENT_QUOTES, 'UTF-8');
+			$novaEscapedNotice = preg_replace_callback(
+				'~((?:非官方|官方)?QQ群(?:号)?\s*[：:]\s*)(\d{5,12})~u',
+				static function ($matches) use ($novaSiteNoticeQqHref) {
+					return $matches[1].'<a class="nova-site-notice-link nova-site-notice-qq" href="'.$novaSiteNoticeQqHref.'" target="_blank" rel="noopener noreferrer">'.$matches[2].'</a>';
+				},
+				$novaEscapedNotice
+			);
+		}
+		$novaSiteNoticeHtml = nl2br($novaEscapedNotice);
+?>
+<div class="nova-site-notice" role="status" aria-label="站点公告">
+    <div class="nova-site-notice-viewport">
+        <div class="nova-site-notice-track">
+            <div class="nova-site-notice-text"><?php echo $novaSiteNoticeHtml ?></div>
+            <div class="nova-site-notice-text" aria-hidden="true"><?php echo $novaSiteNoticeHtml ?></div>
+        </div>
+    </div>
+</div>
+<?php
+	}
 	if ($Advertisement->enable_ad()){
 			$belownavad=$Advertisement->get_ad('belownav');
 			if ($belownavad)
@@ -3177,7 +3326,9 @@ function loggedinorreturn($mainpage = false) {
     $script = nexus()->getScript();
 	if (!$CURUSER) {
 	    if ($script == 'ajax') {
-	        exit(fail('Not login!', $_POST));
+	        header('Content-Type: application/json; charset=utf-8');
+	        echo nexus_json_encode(fail('Not login!', $_POST));
+	        exit;
         }
 		if ($mainpage) {
             nexus_redirect("login.php");
