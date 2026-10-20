@@ -7,5 +7,6 @@ require $rootpath . 'include/functions.php';
 require $rootpath . 'include/core.php';
 require $rootpath . 'classes/class_advertisement.php';
 require $rootpath . 'classes/class_attendance.php';
-
-
+require_once $rootpath . 'include/nova_permission.php';
+require_once $rootpath . 'include/nova_navigation.php';
+require_once $rootpath . 'include/nova_official_seed_activity.php';

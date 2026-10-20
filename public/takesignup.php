@@ -5,6 +5,9 @@ dbconn();
 cur_user_check ();
 //require_once(get_langfile_path("",true));
 require_once(get_langfile_path("", false, get_langfolder_cookie()));
+// The confirmation email uses invitation strings as well. Load them
+// explicitly; this was previously left undefined on PHP 8.4.
+require_once(get_langfile_path("takeinvite.php", false, get_langfolder_cookie()));
 
 $isPreRegisterEmailAndUsername = get_setting("system.is_invite_pre_email_and_username") == "yes";
 
