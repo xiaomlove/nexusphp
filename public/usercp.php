@@ -4,6 +4,8 @@ dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
 $userInfo = \App\Models\User::query()->findOrFail($CURUSER["id"]);
+$CURUSER['info'] = $CURUSER['info'] ?? '';
+$CURUSER['notifs'] = $CURUSER['notifs'] ?? '';
 $siteName = \App\Models\Setting::getSiteName();
 function bark($msg) {
 	stdhead();
@@ -184,7 +186,10 @@ if ($action){
 			$text = '';
 			while ($sor=mysql_fetch_array($ra))
 			{
-				$text.='<option value="'. get_protocol_prefix() . $BASEURL .'/bitbucket/'.$sor["name"].'">'.$sor["name"].'</option>';
+				$bitbucketUrl = str_starts_with($sor['name'], 'https://') || str_starts_with($sor['name'], 'http://')
+					? $sor['name']
+					: get_protocol_prefix() . $BASEURL . '/bitbucket/' . $sor['name'];
+				$text .= '<option value="'.htmlspecialchars($bitbucketUrl, ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars($sor['name']).'</option>';
 			}
 
 			usercpmenu ("personal");
@@ -594,12 +599,21 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs");
 			$categories .= "</table>";
 */
 
-            $categories = build_search_box_category_table($browsecatmode, 'yes','torrents.php?allsec=1', false, 3, $CURUSER['notifs'], ['section_name' => true]);
+            $categories = str_replace(
+                '<table>',
+                '<table class="nova-usercp-taxonomy-table">',
+                build_search_box_category_table($browsecatmode, 'yes','torrents.php?allsec=1', false, 3, $CURUSER['notifs'], ['section_name' => true])
+            );
             $delimiter = '<div style="height: 1px;background-color: #eee;margin: 10px 0"></div>';
             if (get_setting('main.spsct') == 'yes') {
-                $categories .= $delimiter . build_search_box_category_table($specialcatmode, 'yes','special.php?allsec=1', false, 3, $CURUSER['notifs'], ['section_name' => true]);
+                $categories .= $delimiter . str_replace(
+                    '<table>',
+                    '<table class="nova-usercp-taxonomy-table">',
+                    build_search_box_category_table($specialcatmode, 'yes','special.php?allsec=1', false, 3, $CURUSER['notifs'], ['section_name' => true])
+                );
             }
-            $categories .= $delimiter . "<table><caption><font class='big'>{$lang_usercp['text_additional_selection']}</font></caption><tr><td class=bottom><b>".$lang_usercp['text_show_dead_active']."</b><br /><select name=\"incldead\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[incldead=0]") !== false ? " selected" : "").">".$lang_usercp['select_including_dead']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[incldead=1]") !== false ||  strpos($CURUSER['notifs'], "incldead") == false ? " selected" : "").">".$lang_usercp['select_active']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[incldead=2]") !== false  ? " selected" : "").">".$lang_usercp['select_dead']."</option></select></td><td class=bottom align=left><b>".$lang_usercp['text_show_special_torrents']."</b><br /><select name=\"spstate\"><option value=\"0\" ".($special_state == 0 ? " selected" : "").">".$lang_usercp['select_all']."</option>".promotion_selection($special_state)."</select></td><td class=bottom><b>".$lang_usercp['text_show_bookmarked']."</b><br /><select name=\"inclbookmarked\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=0]") !== false ? " selected" : "").">".$lang_usercp['select_all']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=1]") !== false ? " selected" : "")." >".$lang_usercp['select_bookmarked']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=2]") !== false ? " selected" : "").">".$lang_usercp['select_bookmarked_exclude']."</option></select></td></tr></table>";
+            $categories .= $delimiter . "<table class='nova-usercp-additional-table'><caption><font class='big'>{$lang_usercp['text_additional_selection']}</font></caption><tr><td class=bottom><b>".$lang_usercp['text_show_dead_active']."</b><br /><select name=\"incldead\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[incldead=0]") !== false ? " selected" : "").">".$lang_usercp['select_including_dead']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[incldead=1]") !== false ||  strpos($CURUSER['notifs'], "incldead") == false ? " selected" : "").">".$lang_usercp['select_active']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[incldead=2]") !== false  ? " selected" : "").">".$lang_usercp['select_dead']."</option></select></td><td class=bottom align=left><b>".$lang_usercp['text_show_special_torrents']."</b><br /><select name=\"spstate\"><option value=\"0\" ".($special_state == 0 ? " selected" : "").">".$lang_usercp['select_all']."</option>".promotion_selection($special_state)."</select></td><td class=bottom><b>".$lang_usercp['text_show_bookmarked']."</b><br /><select name=\"inclbookmarked\"><option value=\"0\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=0]") !== false ? " selected" : "").">".$lang_usercp['select_all']."</option><option value=\"1\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=1]") !== false ? " selected" : "")." >".$lang_usercp['select_bookmarked']."</option><option value=\"2\" ".(strpos($CURUSER['notifs'], "[inclbookmarked=2]") !== false ? " selected" : "").">".$lang_usercp['select_bookmarked_exclude']."</option></select></td></tr></table>";
+            $categories = '<div class="nova-usercp-category-settings">' . $categories . '</div>';
             tr_small($lang_usercp['row_browse_default_categories'], $categories,1);
 			$ss_r = sql_query("SELECT * FROM stylesheets") or die;
 			$ss_sa = array();

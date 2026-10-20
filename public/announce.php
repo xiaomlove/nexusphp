@@ -29,7 +29,7 @@ $torrentNotExistsKey = "torrent_not_exists";
 $passkeyInvalidKey = "passkey_invalid";
 $isReAnnounce = false;
 $reAnnounceInterval = 5;
-$frequencyInterval = 30;
+$frequencyInterval = 60;
 $isStoppedOrCompleted = !empty($GLOBALS['event']) && in_array($GLOBALS['event'], array('completed', 'stopped'));
 $userAuthenticateKey = "";
 if (!empty($_GET['passkey'])) {

@@ -14,7 +14,7 @@ $userRep = new \App\Repositories\UserRepository();
 function inviteMenu ($selected = "invitee") {
     global $lang_invite, $id, $CURUSER, $invitesystem, $userRep;
     begin_main_frame("", false, "100%");
-    print ("<div id=\"invitenav\" style='position: relative'><ul id=\"invitemenu\" class=\"menu\">");
+    print ("<div id=\"invitenav\" class=\"nova-invite-nav\"><ul id=\"invitemenu\" class=\"menu\">");
     print ("<li" . ($selected == "invitee" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=invitee\">".$lang_invite['text_invite_status']."</a></li>");
     print ("<li" . ($selected == "sent" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=sent\">".$lang_invite['text_sent_invites_status']."</a></li>");
     print ("<li" . ($selected == "tmp" ? " class=selected" : "") . "><a href=\"?id=".$id."&menu=tmp\">".$lang_invite['text_tmp_status']."</a></li>");
@@ -25,10 +25,14 @@ function inviteMenu ($selected = "invitee") {
         $sendBtnText = $exception->getMessage();
         $disabled = ' disabled';
     }
+    print ("</ul>");
+    $inviteAction = '';
     if ($CURUSER['id'] == $id) {
-        print ("</ul><form style='position: absolute;top:0;right:0' method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".$disabled." value='".$sendBtnText."'></form></div>");
+        $inviteAction = "<form class=\"nova-invite-action\" method=post action=invite.php?id=".htmlspecialchars($id)."&type=new><input type=submit ".$disabled." value='".$sendBtnText."'></form>";
     }
+    print ("</div>");
     end_main_frame();
+    return $inviteAction;
 }
 
 $res = sql_query("SELECT * FROM users WHERE id = ".mysql_real_escape_string($id)) or sqlerr();
@@ -37,9 +41,10 @@ if (!$user) {
     stderr($lang_invite['std_sorry'], 'Invalid id');
 }
 stdhead($lang_invite['head_invites']);
+print("<div class=\"nova-invite-page\">");
 print("<table width=100% class=main border=0 cellspacing=0 cellpadding=0><tr><td class=embedded>");
 
-print("<h1 align=center><a href=\"invite.php?id=".$id."\">".$user['username'].$lang_invite['text_invite_system']."</a></h1>");
+print("<h1 class=\"nova-invite-title\" align=center><a href=\"invite.php?id=".$id."\">".$user['username'].$lang_invite['text_invite_system']."</a></h1>");
 	$sent = htmlspecialchars($_GET['sent'] ?? '');
 	if ($sent == 1){
 		$msg = $lang_invite['text_invite_code_sent'];
@@ -98,7 +103,7 @@ if ($type == 'new'){
 	"</form></table></td></tr></table>");
 
 } else {
-    inviteMenu($menuSelected);
+    $inviteAction = inviteMenu($menuSelected);
     if ($menuSelected == 'invitee') {
         $whereStr = "u.invited_by = " . sqlesc($id);
         if (!empty($_GET['status'])) {
@@ -128,7 +133,7 @@ if ($type == 'new'){
         $resetText = nexus_trans('label.reset');
         $submitText = nexus_trans('label.submit');
         $filterForm = <<<FORM
-<div>
+<div class="nova-invite-filter">
     <form id="filterForm" action="{$_SERVER['REQUEST_URI']}" method="get">
         <input type="hidden" name="menu" value="{$menuSelected}" />
         <input type="hidden" name="id" value="{$id}" />
@@ -147,6 +152,7 @@ if ($type == 'new'){
         <input type="submit" value="{$submitText}">
         <input type="button" id="reset" value="{$resetText}">
     </form>
+    {$inviteAction}
 </div>
 FORM;
         $resetJs = <<<JS
@@ -156,7 +162,7 @@ jQuery("#reset").on('click', function () {
 })
 JS;
         \Nexus\Nexus::js($resetJs, 'footer', false);
-        print($filterForm."<table border=1 width=100% cellspacing=0 cellpadding=5>".
+        print($filterForm."<div class=\"nova-invite-table-wrap\"><table class=\"nova-invite-records\" border=1 width=100% cellspacing=0 cellpadding=5>".
             "<form method=post action=takeconfirm.php?id=".htmlspecialchars($id).">");
 
         if(!$number){
@@ -251,7 +257,7 @@ JS;
             }
             print("</form>");
         }
-        print("</table>");
+        print("</table></div>");
         print("</td></tr></table>" . ($pagertop ?? ''));
     } elseif (in_array($menuSelected, ['sent', 'tmp'])) {
         $whereStr = "inviter = " . sqlesc($id);
@@ -263,7 +269,7 @@ JS;
         $rul = sql_query("SELECT COUNT(*) FROM invites WHERE $whereStr");
         $arre = mysql_fetch_row($rul);
         $number1 = $arre[0];
-        print("<table border=1 width=100% cellspacing=0 cellpadding=5>");
+        print("<div class=\"nova-invite-table-wrap\"><table class=\"nova-invite-records nova-invite-codes\" border=1 width=100% cellspacing=0 cellpadding=5>");
 
         if(!$number1){
             print("<tr align=center><td colspan=6>".$lang_functions['text_none']."</tr>");
@@ -311,11 +317,12 @@ JS;
                 print($tr);
             }
         }
-        print("</table>");
+        print("</table></div>");
         print("</td></tr></table>$pagertop");
     }
 
 }
+print("</div>");
 stdfoot();
 die;
 ?>

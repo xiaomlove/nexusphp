@@ -94,6 +94,10 @@ JS;
     \Nexus\Nexus::js($warnMedalJs, 'footer', false);
 }
 
+if ((int)$userInfo->id === (int)$CURUSER['id'] && function_exists('nova_official_seed_render_personal_panel')) {
+    echo nova_official_seed_render_personal_panel((int)$CURUSER['id']);
+}
+
 if (!$enabled)
 print("<p><b>".$lang_userdetails['text_account_disabled_note']."</b></p>");
 elseif ($CURUSER["id"] <> $user["id"])

@@ -42,7 +42,7 @@ if ($action == 'savesettings_main')	// save main
 		'smalldescription','altname','extforum','extforumurl','defaultlang','defstylesheet', 'donation','spsct','browsecat','specialcat','waitsystem',
 		'maxdlsystem','bitbucket','torrentnameprefix', 'showforumstats','verification','invite_count','invite_timeout', 'seeding_leeching_time_calc_start',
 		'startsubid', 'logo', 'showlastxforumposts', 'enable_technical_info', 'site_language_enabled', 'show_top_uploader', 'imdb_language', 'offer_skip_approved_count',
-        'upload_deny_approval_deny_count', 'enable_global_search', 'tmp_invite_count', 'complain_enabled'
+		'upload_deny_approval_deny_count', 'enable_global_search', 'tmp_invite_count', 'complain_enabled', 'site_notice', 'site_notice_qq_url'
 	);
 	GetVar($validConfig);
 	$MAIN = [];
@@ -927,6 +927,10 @@ JS;
 	tr($lang_settings['row_site_email'],"<input type='text' style=\"width: 200px\" name=SITEEMAIL value='".($MAIN["SITEEMAIL"] ? $MAIN["SITEEMAIL"] : "noreply@".$sh)."'> ".$lang_settings['text_site_email_note'], 1);
 	tr($lang_settings['row_report_email'],"<input type='text' style=\"width: 200px\" name=reportemail value='".($MAIN["reportemail"] ? $MAIN["reportemail"] : "report@".$sh)."'> ".$lang_settings['text_report_email_note'], 1);
 	tr($lang_settings['row_site_slogan'],"<input type='text' style=\"width: 300px\" name=SLOGAN value='".($MAIN["SLOGAN"] ? $MAIN["SLOGAN"]: "")."'> ".$lang_settings['text_site_slogan_note'], 1);
+	$siteNotice = htmlspecialchars($MAIN['site_notice'] ?? '', ENT_QUOTES, 'UTF-8');
+	tr('顶部展示框内容', "<textarea name='site_notice' rows='5' maxlength='1000' style=\"width: min(760px, 95%); box-sizing: border-box;\">".$siteNotice."</textarea><br />仅系统管理员可以修改；支持换行，留空后前台将隐藏展示框。", 1);
+	$siteNoticeQqUrl = htmlspecialchars($MAIN['site_notice_qq_url'] ?? '', ENT_QUOTES, 'UTF-8');
+	tr('展示框 QQ群跳转链接', "<input type='url' name='site_notice_qq_url' style=\"width: min(760px, 95%); box-sizing: border-box;\" value='".$siteNoticeQqUrl."' /><br />用于公告中“QQ群：群号”的点击跳转，留空则群号显示为普通文字。", 1);
 	tr($lang_settings['row_icp_license'],"<input type='text' style=\"width: 300px\" name=icplicense value='".($MAIN["icplicense"] ? $MAIN["icplicense"]: "")."'> ".$lang_settings['text_icp_license_note'], 1);
 	tr($lang_settings['row_torrent_directory'], "<input type='text' style=\"width: 100px\" name=torrent_dir value='".($MAIN["torrent_dir"] ? $MAIN["torrent_dir"] : "torrents")."'> ".$lang_settings['text_torrent_directory'], 1);
 	tr($lang_settings['row_bitbucket_directory'],"<input type='text' style=\"width: 100px\" name=bitbucket value='".($MAIN["bitbucket"] ? $MAIN["bitbucket"] : "bitbucket")."'> ".$lang_settings['text_bitbucket_directory_note'], 1);
