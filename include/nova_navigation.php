@@ -54,21 +54,33 @@ function nova_navigation_can_view(?string $permission): bool
     }
 }
 
-function nova_navigation_current_url_matches(string $url): bool
+/**
+ * Match one navigation URL against the current request.
+ *
+ * Returns null when the URL does not describe the current page, otherwise:
+ *   matched     - how many identifying query params actually matched
+ *   specificity - how many identifying query params the target URL carries
+ *
+ * The score is needed because links are subset based: 体育 is
+ * `torrents.php?cat407=1&team15=1` and 官种 is `torrents.php?team15=1`, so on a
+ * sports listing both of them "match" and the old boolean check highlighted the
+ * two top level items at once.
+ */
+function nova_navigation_url_match(string $url): ?array
 {
     if ($url === '' || $url === '#') {
-        return false;
+        return null;
     }
     $decodedUrl = html_entity_decode($url);
     $path = parse_url($decodedUrl, PHP_URL_PATH) ?: '';
     $current = basename((string)($_SERVER['SCRIPT_NAME'] ?? ''));
     if ($current === '' || basename($path) !== $current) {
-        return false;
+        return null;
     }
 
     $queryString = (string)(parse_url($decodedUrl, PHP_URL_QUERY) ?? '');
     if ($queryString === '') {
-        return true;
+        return ['matched' => 0, 'specificity' => 0];
     }
     parse_str($queryString, $targetQuery);
     $currentQuery = $_GET;
@@ -81,15 +93,54 @@ function nova_navigation_current_url_matches(string $url): bool
     if (!$identifiers) {
         $identifiers = array_filter($targetQuery, static fn ($value) => (string)$value !== '');
     }
+    $matched = 0;
     foreach ($identifiers as $key => $value) {
         if ($key === 'cat' && (string)$value === '411' && !isset($currentQuery['cat']) && (string)($currentQuery['cat411'] ?? '') === '1') {
+            $matched++;
             continue;
         }
         if (!array_key_exists($key, $currentQuery) || (string)$currentQuery[$key] !== (string)$value) {
-            return false;
+            return null;
+        }
+        $matched++;
+    }
+    return ['matched' => $matched, 'specificity' => count($identifiers)];
+}
+
+function nova_navigation_current_url_matches(string $url): bool
+{
+    return nova_navigation_url_match($url) !== null;
+}
+
+/**
+ * Pick the single navigation entry that should be highlighted: the most
+ * specific match wins (more matched params first, then more params in the
+ * target URL), and on a draw a sub menu item beats a top level one.
+ *
+ * @param array<int, array<string, mixed>> $rows visible rows (roots + children)
+ */
+function nova_navigation_pick_selected(array $rows): ?int
+{
+    $bestId = null;
+    $bestRank = null;
+    foreach ($rows as $row) {
+        $match = nova_navigation_url_match((string)($row['url'] ?? ''));
+        if ($match === null) {
+            continue;
+        }
+        $rank = [
+            $match['matched'],
+            $match['specificity'],
+            (int)($row['parent_id'] ?? 0) > 0 ? 1 : 0,
+            -(int)($row['sort_order'] ?? 0),
+            -(int)($row['id'] ?? 0),
+        ];
+        if ($bestRank === null || $rank > $bestRank) {
+            $bestRank = $rank;
+            $bestId = (int)($row['id'] ?? 0);
         }
     }
-    return true;
+    return $bestId;
 }
 
 function nova_navigation_label(string $label): string
@@ -147,6 +198,8 @@ function nova_navigation_render(): string
       @media(max-width:1200px){#nav .nova-navigation.menu{justify-content:flex-start!important;overflow-x:auto!important;overflow-y:visible!important}#nav .nova-navigation>li>a{padding:0 8px!important;font-size:14px!important}}
     @media(max-width:768px){#nav_block,#nav{position:relative!important;z-index:10030!important;overflow:visible!important}#nav_block table,#nav_block td,td.navigation{overflow:visible!important}#nav .nova-navigation li.touch-open>.sub-menu{display:block!important}#nav_block,#nav,#nav .nova-navigation.menu{box-sizing:border-box!important;width:100%!important;max-width:100vw!important;min-width:0!important}#nav{overflow:visible!important}#nav .nova-navigation.menu{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;overflow:visible!important;white-space:normal!important;gap:2px!important;padding:6px 4px!important}#nav .nova-navigation>li{flex:0 0 auto!important}#nav .nova-navigation>li>a{height:36px!important;margin:0!important;padding:0 7px!important;font-size:13px!important;line-height:1.1!important}#nav .nova-navigation>li>a:after{left:7px!important;right:7px!important;bottom:1px!important}#nav .nova-navigation .sub-menu{position:absolute!important;z-index:10020!important;max-width:calc(100vw - 16px)!important;white-space:normal!important}#nav .nova-navigation .sub-menu a{min-height:34px!important;padding:7px 10px!important;font-size:13px!important}}</style><ul id="mainmenu" class="menu nova-navigation">';
 
+    $visibleRows = $visibleRoots;
+    $visibleChildrenMap = [];
     foreach ($visibleRoots as $root) {
         $visibleChildren = array_values(array_filter($children[(int)$root['id']] ?? [], static fn (array $child) => nova_navigation_can_view(($child['permission'] ?? null))));
         if ((int)$root['id'] === 1581 && nova_navigation_is_admin()) {
@@ -155,16 +208,31 @@ function nova_navigation_render(): string
                 'new_tab' => 0, 'permission' => null,
             ];
         }
-        $selected = nova_navigation_current_url_matches((string)$root['url']);
+        $visibleChildrenMap[(int)$root['id']] = $visibleChildren;
         foreach ($visibleChildren as $child) {
-            $selected = $selected || nova_navigation_current_url_matches((string)$child['url']);
+            $visibleRows[] = $child;
         }
+    }
+    // Only one entry may be highlighted, otherwise overlapping filter links
+    // (体育: cat407+team15, 官种: team15) light up together.
+    $selectedId = nova_navigation_pick_selected($visibleRows);
+
+    foreach ($visibleRoots as $root) {
+        $visibleChildren = $visibleChildrenMap[(int)$root['id']] ?? [];
+        $childSelected = false;
+        foreach ($visibleChildren as $child) {
+            if ($selectedId !== null && (int)$child['id'] === $selectedId) {
+                $childSelected = true;
+                break;
+            }
+        }
+        $selected = $childSelected || ($selectedId !== null && (int)$root['id'] === $selectedId);
         $class = $visibleChildren ? ' class="has-children' . ($selected ? ' active' : '') . '"' : '';
         $html .= '<li' . $class . '>' . nova_navigation_link($root, $selected);
         if ($visibleChildren) {
             $html .= '<ul class="sub-menu">';
             foreach ($visibleChildren as $child) {
-                $html .= '<li>' . nova_navigation_link($child, nova_navigation_current_url_matches((string)$child['url'])) . '</li>';
+                $html .= '<li>' . nova_navigation_link($child, $selectedId !== null && (int)$child['id'] === $selectedId) . '</li>';
             }
             $html .= '</ul>';
         }
