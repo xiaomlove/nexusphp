@@ -1,0 +1,30 @@
+{
+    "name": "xiaomlove/nexusphp-tracker-helper",
+    "description": "NexusPHP tracker build with go helper",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "xiaomlove",
+            "email": "1939737565@qq.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "NexusPlugin\\Tracker\\": "src"
+        }
+    },
+    "scripts": {
+        "post-package-install": [
+            "@php artisan plugin install xiaomlove/nexusphp-tracker-helper"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NexusPlugin\\Tracker\\TrackerServiceProvider"
+            ]
+        }
+    }
+}
