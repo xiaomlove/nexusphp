@@ -1,9 +1,14 @@
 <?php
 ob_start(); //Do not delete this line
 require_once("../include/bittorrent.php");
+require_once("../include/torrent_review_assistant.php");
+require_once("../include/iyuu_torrent_match.php");
+require_once("../include/nova_sticky_promotion.php");
 dbconn();
 require_once(get_langfile_path());
 loggedinorreturn();
+echo "<script>document.addEventListener(DOMContentLoaded,function(){document.querySelectorAll(details.nova-detail-fold).forEach(function(e){e.remove();});});</script>";
+echo "<style>details.nova-detail-fold{display:none!important}</style>";
 $id = intval($_GET["id"] ?? 0);
 $customField = new \Nexus\Field\Field();
 int_check($id, true);
@@ -29,6 +34,7 @@ $row = mysql_fetch_array($res);
 if (user_can('torrentmanage') || $CURUSER["id"] == $row["owner"])
 $owned = 1;
 else $owned = 0;
+
 $settingMain = get_setting('main');
 if (!$row) {
     stderr($lang_details['std_error'], $lang_details['std_no_torrent_id']);
@@ -50,11 +56,10 @@ if (!$row) {
         $torrentUpdate[] = 'views = views + 1';
 	}
 
-    $imdb_id = parse_imdb_id($row["url"]);
-    if ($imdb_id && $showextinfo['imdb'] == 'yes') {
-        $imdb = new \Nexus\Imdb\Imdb();
-        $movie = $imdb->getMovie($imdb_id);
-    }
+    // The detail page intentionally uses only the published description for
+    // the top media banner. Avoid IMDb parsing, cache reads and network work.
+    $imdb_id = 0;
+    $movie = null;
 
 	if (!isset($_GET["cmtpage"])) {
 		stdhead($lang_details['head_details_for_torrent']. "\"" . $row["name"] . "\"");
@@ -74,14 +79,257 @@ if (!$row) {
             if (isset($_GET["returnto"]))
                 print("<p><b>".$lang_details['text_go_back'] . "<a href=\"".htmlspecialchars($_GET["returnto"])."\">" . $lang_details['text_whence_you_came']."</a></b></p>");
         }
+
+        // Build the top banner from Douban/TMDB metadata, then fall back to
+        // the structured PT-Gen text stored in the published description.
+        try {
+            $heroTitle = $heroCover = $heroYear = $heroRuntime = $heroRating = $heroPlot = $heroLanguage = '';
+            $heroGenres = $heroCountry = $heroCast = $heroDirector = [];
+            $heroRaw = html_entity_decode((string) ($row['descr'] ?? ''), ENT_QUOTES, 'UTF-8');
+            $heroText = preg_replace('/<br\s*\/?\s*>/i', "\n", $heroRaw);
+            $heroText = html_entity_decode(strip_tags((string) $heroText), ENT_QUOTES, 'UTF-8');
+            $heroMatch = static function ($pattern, $text) {
+                return preg_match($pattern, $text, $matches) ? trim(strip_tags($matches[1])) : '';
+            };
+
+            // Read only links already published with the torrent. Requests are
+            // short and cached so a blocked metadata provider cannot slow down
+            // the detail page or make the page depend on IMDb.
+            $heroMetadata = ['douban' => [], 'tmdb' => [], 'imdb' => []];
+            $heroUrls = trim($heroRaw . "\n" . (string)($row['url'] ?? ''));
+            if (preg_match('/^\d{6,9}$/', trim((string)($row['url'] ?? '')), $imdbNumber)) $heroUrls .= "\nhttps://www.imdb.com/title/tt" . $imdbNumber[0] . "/";
+            $heroExtractMeta = static function ($url, $source) {
+                $result = [];
+                $cacheDir = __DIR__ . '/../runtime/cache/nova_movie_meta';
+                if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+                $cacheFile = $cacheDir . '/' . sha1($source . '|' . $url) . '.json';
+                $html = '';
+                if (is_file($cacheFile) && (time() - @filemtime($cacheFile)) < 86400) {
+                    $html = (string) @file_get_contents($cacheFile);
+                } elseif (function_exists('curl_init')) {
+                    $ch = curl_init($url);
+                    curl_setopt_array($ch, [
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_FOLLOWLOCATION => true,
+                        CURLOPT_CONNECTTIMEOUT => 1,
+                        CURLOPT_TIMEOUT => 3,
+                        CURLOPT_PROXY => 'http://127.0.0.1:18080',
+                        CURLOPT_ENCODING => '',
+                        CURLOPT_USERAGENT => 'Mozilla/5.0 NovaHD metadata reader',
+                        CURLOPT_HTTPHEADER => ['Accept-Language: zh-CN,zh;q=0.8,en;q=0.5'],
+                    ]);
+                    $html = (string) curl_exec($ch);
+                    curl_close($ch);
+                    if ($html !== '' && strlen($html) < 2000000) @file_put_contents($cacheFile, $html, LOCK_EX);
+                }
+                if ($html === '') return $result;
+                $readMeta = static function ($name) use ($html) {
+                    $quoted = preg_quote($name, '/');
+                    if (preg_match('/<meta[^>]+(?:property|name)=["\']'.$quoted.'["\'][^>]+content=["\']([^"\']*)/i', $html, $m)) return trim(html_entity_decode($m[1], ENT_QUOTES, 'UTF-8'));
+                    if (preg_match('/<meta[^>]+content=["\']([^"\']*)["\'][^>]+(?:property|name)=["\']'.$quoted.'["\']/i', $html, $m)) return trim(html_entity_decode($m[1], ENT_QUOTES, 'UTF-8'));
+                    return '';
+                };
+                $json = null;
+                if (preg_match_all('/<script[^>]+type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/is', $html, $blocks)) {
+                    foreach ($blocks[1] as $block) {
+                        $decoded = json_decode(html_entity_decode(trim($block), ENT_QUOTES, 'UTF-8'), true);
+                        if (is_array($decoded) && (isset($decoded['name']) || isset($decoded['@graph']))) {
+                            $json = $decoded;
+                            if (isset($decoded['@graph']) && is_array($decoded['@graph'])) foreach ($decoded['@graph'] as $node) if (is_array($node) && isset($node['name'])) { $json = $node; break; }
+                            break;
+                        }
+                    }
+                }
+                $result['title'] = trim((string)($json['name'] ?? $readMeta('og:title')));
+                $result['cover'] = trim((string)($json['image'] ?? $readMeta('og:image')));
+                if (is_array($result['cover'])) $result['cover'] = (string)($result['cover']['url'] ?? reset($result['cover']));
+                $result['plot'] = trim(strip_tags((string)($json['description'] ?? $readMeta('og:description'))));
+                $result['year'] = trim((string)($json['datePublished'] ?? ''));
+                if (preg_match('/\b(19|20)\d{2}\b/', $result['year'] . ' ' . $result['title'], $m)) $result['year'] = $m[0]; else $result['year'] = '';
+                $genres = $json['genre'] ?? [];
+                $result['genres'] = is_array($genres) ? $genres : ($genres !== '' ? [$genres] : []);
+                $result['rating'] = trim((string)($json['aggregateRating']['ratingValue'] ?? ''));
+                if ($result['rating'] === '' && $source === 'tmdb' && preg_match('/class=["\']user_score_chart["\'][^>]*data-percent=["\'](\d{1,3})["\']/i', $html, $score)) $result['rating'] = number_format(((int)$score[1]) / 10, 1);
+                $result['country'] = [];
+                foreach ((array)($json['countryOfOrigin'] ?? []) as $country) $result['country'][] = is_array($country) ? (string)($country['name'] ?? '') : (string)$country;
+                foreach (['国家/地区','制片国家/地区'] as $key) { $value = $readMeta($key); if ($value !== '') $result['country'][] = $value; }
+                $readPeople = static function ($people) {
+                    if (!$people) return [];
+                    if (is_array($people) && array_key_exists('name', $people)) $people = [$people];
+                    if (!is_array($people)) $people = [$people];
+                    $result = [];
+                    foreach ($people as $person) {
+                        $name = is_array($person) ? ($person['name'] ?? '') : $person;
+                        if ($name !== '') $result[] = ['name' => trim((string) $name)];
+                    }
+                    return $result;
+                };
+                $result['cast'] = $readPeople($json['actor'] ?? []);
+                $result['director'] = $readPeople($json['director'] ?? []);
+                if ($source === 'tmdb' && preg_match_all('/<li[^>]+class=["\'][^"\']*card[^"\']*["\'][^>]*>(.*?)<\/li>/is', $html, $cards)) {
+                    foreach (array_slice($cards[1], 0, 12) as $card) {
+                        $name = preg_match('/<p[^>]*>\s*<a[^>]*>(.*?)<\/a>/is', $card, $cm) ? trim(strip_tags($cm[1])) : '';
+                        $photo = preg_match('/<img[^>]+src=["\']([^"\']+)/i', $card, $pm) ? trim(html_entity_decode($pm[1], ENT_QUOTES, 'UTF-8')) : '';
+                        if ($name !== '') $result['cast'][] = ['name' => html_entity_decode($name, ENT_QUOTES, 'UTF-8'), 'photo' => $photo];
+                    }
+                }
+                $result['source'] = $source;
+                return $result;
+            };
+            if (preg_match('/https?:\/\/(?:www\.)?douban\.com\/(?:subject|movie)\/\d+[^\s\]"<>]*/i', $heroUrls, $m)) $heroMetadata['douban'] = $heroExtractMeta($m[0], 'douban');
+            if (preg_match('/https?:\/\/(?:www\.)?themoviedb\.org\/(?:movie|tv)\/\d+[^\s\]"<>]*/i', $heroUrls, $m)) $heroMetadata['tmdb'] = $heroExtractMeta($m[0], 'tmdb');
+            if (preg_match('/https?:\/\/(?:www\.)?imdb\.com\/title\/tt\d+[^\s\]"<>]*/i', $heroUrls, $m)) $heroMetadata['imdb'] = $heroExtractMeta($m[0], 'imdb');
+            if (!$heroMetadata['tmdb'] && preg_match('/(?:tt)?(\d{6,9})/', trim((string)($row['url'] ?? '')), $imdbLookup)) {
+                $findCh = curl_init('https://www.themoviedb.org/find/tt' . $imdbLookup[1] . '?external_source=imdb_id');
+                curl_setopt_array($findCh, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_CONNECTTIMEOUT => 1, CURLOPT_TIMEOUT => 4, CURLOPT_PROXY => 'http://127.0.0.1:18080', CURLOPT_USERAGENT => 'Mozilla/5.0 NovaHD metadata reader']);
+                $findHtml = (string) curl_exec($findCh);
+                curl_close($findCh);
+                if (preg_match('/href=["\'](\/(?:movie|tv)\/\d+[^"\']*)/i', $findHtml, $tmdbPath)) $heroMetadata['tmdb'] = $heroExtractMeta('https://www.themoviedb.org' . $tmdbPath[1], 'tmdb');
+            }
+            $heroSources = array_values(array_filter($heroMetadata, static function ($item) { return !empty($item['title']) || !empty($item['cover']) || !empty($item['plot']); }));
+            if ($heroSources) {
+                $primary = $heroMetadata['douban'] ?: ($heroMetadata['tmdb'] ?: ($heroMetadata['imdb'] ?: $heroSources[0]));
+                $secondary = $heroMetadata['douban'] ? ($heroMetadata['tmdb'] ?: $heroMetadata['imdb']) : ($heroMetadata['tmdb'] ? $heroMetadata['imdb'] : []);
+                $sameYear = !$primary['year'] || !$secondary['year'] || $primary['year'] === $secondary['year'];
+                $heroTitle = $sameYear ? ($primary['title'] ?: ($secondary['title'] ?? '')) : '';
+                $heroCover = $primary['cover'] ?: ($secondary['cover'] ?? '');
+                $heroYear = $primary['year'] ?: ($secondary['year'] ?? '');
+                $heroPlot = $primary['plot'] ?: ($secondary['plot'] ?? '');
+                $heroGenres = $primary['genres'] ?: ($secondary['genres'] ?? []);
+                $heroCountry = $primary['country'] ?: ($secondary['country'] ?? []);
+                $heroRating = $primary['rating'] ?: ($secondary['rating'] ?? '');
+                $heroCast = $primary['cast'] ?: ($secondary['cast'] ?? []);
+                $heroDirector = $primary['director'] ?: ($secondary['director'] ?? []);
+            }
+            if ($heroCover === '') $heroCover = $heroMatch('/\[img\](https?:\/\/[^\[]+)\[\/img\]/i', $heroRaw);
+            if ($heroTitle === '') $heroTitle = $heroMatch('/(?:◎\s*)?(?:译|片)\s*名\s*[:：]?\s*([^\r\n]+)/u', $heroText);
+            if ($heroYear === '') $heroYear = $heroMatch('/(?:◎\s*)?年\s*代\s*[:：]?\s*([^\r\n]+)/u', $heroText);
+            if ($heroRuntime === '') $heroRuntime = $heroMatch('/(?:◎\s*)?片\s*长\s*[:：]?\s*([^\r\n]+)/u', $heroText);
+            if (!$heroCountry) {
+                $value = $heroMatch('/(?:◎\s*)?产\s*地\s*[:：]?\s*([^\r\n]+)/u', $heroText);
+                if ($value !== '') $heroCountry = [$value];
+            }
+            if ($heroLanguage === '') $heroLanguage = $heroMatch('/(?:◎\s*)?语\s*言\s*[:：]?\s*([^\r\n]+)/u', $heroText);
+            if (!$heroGenres) {
+                $value = $heroMatch('/(?:◎\s*)?类\s*别\s*[:：]?\s*([^\r\n]+)/u', $heroText);
+                if ($value !== '') $heroGenres = [$value];
+            }
+            if ($heroRating === '') $heroRating = $heroMatch('/(?:◎\s*)?(?:豆瓣|IMDb)评分\s*[:：]?\s*([^\r\n]+)/ui', $heroText);
+            if ($heroPlot === '') $heroPlot = $heroMatch('/(?:◎\s*)?(?:剧\s*情\s*)?简\s*介\s*[:：]?\s*([\s\S]*?)(?=\s*(?:◎\s*)?(?:片\s*长|导\s*演|主\s*演|类\s*别|演员|技术参数)|\[img\]|$)/u', $heroText);
+            if ($heroPlot !== '') {
+                $heroPlot = preg_replace('/(?:豆瓣|IMDb)\s*链接\s*[:：]?\s*\[url[^\]]*\].*?\[\/url\]\s*/isu', '', $heroPlot);
+                $heroPlot = preg_replace('/\[url[^\]]*\].*?\[\/url\]/isu', '', $heroPlot);
+                $heroPlot = preg_replace('/https?:\/\/[^\s\]]+/iu', '', $heroPlot);
+                $heroPlot = trim(preg_replace('/[ \t\r\n]+/u', ' ', $heroPlot));
+            }
+            // The upload form stores short metadata such as "演员：..." in
+            // small_descr; use it as the primary source for the hero cast.
+            $heroSubtitle = html_entity_decode(strip_tags((string) ($row['small_descr'] ?? '')), ENT_QUOTES, 'UTF-8');
+            $subtitleCast = $heroMatch('/(?:领\s*衔\s*)?(?:主\s*演|演\s*员|主要\s*演\s*员)\s*[:：]\s*([^\r\n|｜]+)/u', $heroSubtitle);
+            if ($subtitleCast !== '') foreach (preg_split('/[、，,\/＆&;；]+/u', $subtitleCast) as $castName) {
+                $castName = trim(strip_tags($castName));
+                if (preg_match('/标签|链接|说明|技术参数|百度|豆瓣|IMDb/iu', $castName)) continue;
+                if ($castName !== '' && mb_strlen($castName, 'UTF-8') > 1 && !in_array($castName, array_column($heroCast, 'name'), true)) $heroCast[] = ['name' => $castName];
+            }
+            $castText = $heroMatch('/(?:◎\s*)?(?:领\s*衔\s*)?(?:主\s*演|演\s*员|主要\s*演\s*员)\s*[:：]?\s*([\s\S]*?)(?=\s*(?:◎\s*)?(?:简\s*介|导\s*演|类\s*别|片\s*长|演员|技术参数|标\s*签|标\s*签说明|百度|豆瓣|IMDb)|\[img\]|$)/u', $heroText);
+            if ($castText !== '') foreach (preg_split('/[、，,\/＆&;；\r\n]+/u', $castText) as $castName) {
+                $castName = trim(strip_tags($castName));
+                if (preg_match('/标\s*签|百度|豆瓣|IMDb|链接|说明|技术参数/iu', $castName)) continue;
+                if ($castName !== '' && mb_strlen($castName, 'UTF-8') > 1 && !in_array($castName, array_column($heroCast, 'name'), true)) $heroCast[] = ['name' => $castName];
+            }
+            if (!$heroCast && preg_match('/(?:\)|）)\s*([^\-—\r\n]+?)\s*[\-—]\s*[^\-—\r\n]+$/u', (string) ($row['name'] ?? ''), $nameCast)) {
+                foreach (preg_split('/[、&＆\/，,;；]+/u', trim($nameCast[1])) as $castName) {
+                    $castName = trim(preg_replace('/等+$/u', '', $castName));
+                    if ($castName !== '' && mb_strlen($castName, 'UTF-8') > 1) $heroCast[] = ['name' => $castName];
+                }
+            }
+            $directorText = $heroMatch('/(?:◎\s*)?导\s*演\s*[:：]?\s*([\s\S]*?)(?=\s*(?:◎\s*)?(?:简\s*介|主\s*演|类\s*别|片\s*长|演员|技术参数)|\[img\]|$)/u', $heroText);
+            if ($directorText !== '') foreach (preg_split('/[,，\/\r\n]+/u', $directorText) as $directorName) {
+                $directorName = trim(strip_tags($directorName));
+                if ($directorName !== '' && mb_strlen($directorName, 'UTF-8') > 1 && !in_array($directorName, array_column($heroDirector, 'name'), true)) $heroDirector[] = ['name' => $directorName];
+            }
+            if ($heroTitle === '') $heroTitle = trim((string) $row['name']);
+
+            $heroEsc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+            $heroMeta = [];
+            if ($heroRuntime !== '') $heroMeta[] = '<span class="nova-movie-hero-chip"><b>◷</b> '.$heroEsc($heroRuntime).'</span>';
+            if ($heroCountry) $heroMeta[] = '<span class="nova-movie-hero-chip"><b>▣</b> '. $heroEsc(implode(', ', array_unique($heroCountry))).'</span>';
+            if ($heroLanguage !== '') $heroMeta[] = '<span class="nova-movie-hero-chip"><b>◉</b> '.$heroEsc($heroLanguage).'</span>';
+            if ($heroGenres) $heroMeta[] = '<span class="nova-movie-hero-chip"><b>◈</b> '.$heroEsc(implode(', ', array_unique($heroGenres))).'</span>';
+            if ($heroDirector) {
+                $directorNames = [];
+                foreach (array_slice($heroDirector, 0, 5) as $director) if (!empty($director['name'])) $directorNames[] = $director['name'];
+                if ($directorNames) $heroMeta[] = '<span class="nova-movie-hero-chip"><b>导</b> 导演：'.$heroEsc(implode('、', array_unique($directorNames))).'</span>';
+            }
+            // Merge bilingual/short-name duplicates and keep the record that has a real photo.
+            $heroDisplayCast = [];
+            foreach ($heroCast as $cast) {
+                $castName = trim((string) ($cast['name'] ?? ''));
+                if ($castName === '' || preg_match('/标\s*签|链\s*接|说\s*明|技术\s*参数|百度|豆瓣|IMDb/iu', $castName)) continue;
+                $displayName = $castName;
+                if (preg_match('/[\x{3400}-\x{9fff}·]{2,}/u', $castName, $castChinese)) $displayName = $castChinese[0];
+                $castKey = mb_strtolower((string) preg_replace('/[^\p{L}\p{N}]+/u', '', $displayName), 'UTF-8');
+                if ($castKey === '') continue;
+                $matchedKey = null;
+                foreach ($heroDisplayCast as $existingKey => $existingCast) {
+                    if ($existingKey === $castKey || (mb_strlen($castKey, 'UTF-8') >= 2 && (mb_strpos($existingKey, $castKey) !== false || mb_strpos($castKey, $existingKey) !== false))) {
+                        $matchedKey = $existingKey;
+                        break;
+                    }
+                }
+                $normalizedCast = ['name' => $displayName, 'photo' => trim((string) ($cast['photo'] ?? ''))];
+                if ($matchedKey === null) {
+                    $heroDisplayCast[$castKey] = $normalizedCast;
+                } elseif ($heroDisplayCast[$matchedKey]['photo'] === '' && $normalizedCast['photo'] !== '') {
+                    $heroDisplayCast[$matchedKey] = $normalizedCast;
+                }
+            }
+            $heroCastHtml = '';
+            foreach (array_slice(array_values($heroDisplayCast), 0, 12) as $cast) {
+                if (!empty($cast['name'])) {
+                    $photo = !empty($cast['photo'])
+                        ? '<img src="'.$heroEsc($cast['photo']).'" alt="">'
+                        : '<img class="nova-movie-hero-avatar-placeholder" src="pic/default_avatar.png" alt="">';
+                    $heroCastHtml .= '<span class="nova-movie-hero-cast"><span class="nova-movie-hero-avatar">'.$photo.'</span><em title="'.$heroEsc($cast['name']).'">'.$heroEsc($cast['name']).'</em></span>';
+                }
+            }
+            $heroStyle = $heroCover !== '' ? ' style="--nova-movie-hero-cover: url(\''.$heroEsc($heroCover).'\')"' : '';
+            echo '<section class="nova-movie-hero"'.$heroStyle.'>';
+            if ($heroCover !== '') echo '<img class="nova-movie-hero-poster" src="'.$heroEsc($heroCover).'" alt="'.$heroEsc($heroTitle).'">';
+            echo '<div class="nova-movie-hero-body"><div class="nova-movie-hero-heading"><div class="nova-movie-hero-title">'.$heroEsc($heroTitle).($heroYear !== '' ? ' <small>'.$heroEsc($heroYear).'</small>' : '').'</div>'.($heroRating !== '' ? '<div class="nova-movie-hero-rating">★ '.$heroEsc($heroRating).'</div>' : '').'</div>';
+            if ($heroMeta) echo '<div class="nova-movie-hero-meta">'.implode('', $heroMeta).'</div>';
+            if ($heroPlot !== '') echo '<div class="nova-movie-hero-plot">'.$heroEsc($heroPlot).'</div>';
+            if ($heroCastHtml !== '') echo '<div class="nova-movie-hero-cast-list">'.$heroCastHtml.'</div>';
+            echo '</div>';
+            echo '</section>';
+        } catch (Throwable $heroException) {
+            do_log('Movie hero render failed: '.$heroException->getMessage(), 'warning');
+        }
         $banned_torrent = ($row["banned"] == 'yes' ? " <b>(<font class=\"striking\">".$lang_functions['text_banned']."</font>)</b>" : "");
 		$sp_torrent = get_torrent_promotion_append($row['sp_state'],'word', false, '', 0, '', $row['__ignore_global_sp_state'] ?? false);
 		$sp_torrent_sub = get_torrent_promotion_append_sub($row['sp_state'],"",true,$row['added'], $row['promotion_time_type'], $row['promotion_until'], $row['__ignore_global_sp_state'] ?? false);
         $hrImg = get_hr_img($row, $row['search_box_id']);
         $approvalStatusIcon = $torrentRep->renderApprovalStatus($row["approval_status"]);
         $paidIcon = $torrentRep->getPaidIcon($row, 20);
-		$s=htmlspecialchars($row["name"]).$banned_torrent.$paidIcon.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg . $approvalStatusIcon;
+		$activityName = htmlspecialchars($row["name"]);
+        if (function_exists('nova_official_seed_is_active') && nova_official_seed_is_active((int)$row['id'])) {
+            $activityName = '<span style="color:#df2638;-webkit-text-fill-color:#df2638">' . $activityName . '</span>';
+        }
+		$s=$activityName.$banned_torrent.$paidIcon.($sp_torrent ? "&nbsp;&nbsp;&nbsp;".$sp_torrent : "").($sp_torrent_sub) . $hrImg . $approvalStatusIcon;
 		print("<h1 align=\"center\" id=\"top\">".$s."</h1>\n");
+		if (function_exists('nova_official_seed_render_details_notice')) {
+            echo nova_official_seed_render_details_notice((int)$row['id']);
+        }
+        echo '<details class="nova-detail-fold nova-detail-fold-standalone"><summary><span><b>审种助手</b><small>查看审种状态与审核信息</small></span><i>点击展开 / 收起</i></summary><div class="nova-detail-fold-body">';
+        nova_render_torrent_review_assistant($row);
+        echo '</div></details>';
+
+        echo '<details class="nova-detail-fold nova-detail-fold-standalone"><summary><span><b>资源助推</b><small>查看助推活动与奖励信息</small></span><i>点击展开 / 收起</i></summary><div class="nova-detail-fold-body"><table class="nova-detail-fold-inner"><tbody>';
+        nova_sticky_render_detail($row, $CURUSER);
+        echo '</tbody></table></div></details>';
+        echo '<details class="nova-detail-fold nova-detail-fold-standalone"><summary><span><b>角色与权限</b><small>查看当前角色和扩展权限</small></span><i>点击展开 / 收起</i></summary><div class="nova-detail-fold-body"><table class="nova-detail-fold-inner"><tbody>';
+        nova_permission_render_detail($row, $CURUSER);
+        echo '</tbody></table></div></details>';
 
         //Banned reason
         if ($row['approval_status'] == \App\Models\Torrent::APPROVAL_STATUS_DENY) {
@@ -112,10 +360,10 @@ if (!$row) {
 			if (!user_can('viewanonymous') && $row['owner'] != $CURUSER['id'])
 			$uprow = "<i>".$lang_details['text_anonymous']."</i>";
 			else
-			$uprow = "<i>".$lang_details['text_anonymous']."</i> (" . get_username($row['owner'], false, true, true, false, false, true) . ")";
+			$uprow = "<i>".$lang_details['text_anonymous']."</i> (" . get_username($row['owner'], false, true, true, false, false, true, "", false, false) . ")";
 		}
 		else {
-			$uprow = (isset($row['owner']) ? get_username($row['owner'], false, true, true, false, false, true) : "<i>".$lang_details['text_unknown']."</i>");
+			$uprow = (isset($row['owner']) ? get_username($row['owner'], false, true, true, false, false, true, "", false, false) : "<i>".$lang_details['text_unknown']."</i>");
 		}
 		if ($CURUSER["id"] == $row["owner"])
 			$CURUSER["downloadpos"] = "yes";
@@ -166,6 +414,7 @@ if (!$row) {
             $taxonomyRendered .= sprintf('&nbsp;&nbsp;&nbsp;<b>%s: </b>%s', $item['label'], $item['value']);
         }
         tr($lang_details['row_basic_info'], $size_info.$type_info.$taxonomyRendered, 1);
+		nova_render_iyuu_torrent_match($row);
 		$actions = [];
         if ($CURUSER["downloadpos"] != "no") {
             $hasBuy = \App\Models\TorrentBuyLog::query()->where('uid', $CURUSER['id'])->where('torrent_id', $id)->exists();
@@ -295,7 +544,7 @@ JS;
 		print("<td class=\"embedded\"><form method=\"get\" action=\"https://assrt.net/sub/\" target=\"_blank\"><input type=\"text\" name=\"searchword\" id=\"keyword\" style=\"width: 250px\" value=\"".$moviename."\" /><input type=\"submit\" value=\"".$lang_details['submit_search_at_shooter']."\" /></form></td><td class=\"embedded\"><form method=\"get\" action=\"https://www.opensubtitles.org/en/search2/\" target=\"_blank\"><input type=\"hidden\" id=\"moviename\" name=\"MovieName\" /><input type=\"hidden\" name=\"action\" value=\"search\" /><input type=\"hidden\" name=\"SubLanguageID\" value=\"all\" /><input onclick=\"document.getElementById('moviename').value=document.getElementById('keyword').value;\" type=\"submit\" value=\"".$lang_details['submit_search_at_opensubtitles']."\" /></form></td>\n");
 		print("</tr></table>");
 		print("</td></tr>\n");
-		// ---------------- end subtitle block -------------------//
+        // ---------------- end subtitle block -------------------//
 
         //hook before desc
         do_action('torrent_detail_before_desc', $row['id'], $CURUSER['id']);
@@ -307,20 +556,20 @@ JS;
 
         //technical info
         if ($settingMain['enable_technical_info'] == 'yes') {
-            $technicalData = nexus_escape($row['technical_info'] ?? '');
-
+            $technicalData = $row['technical_info'] ?? '';
+            
             // 判断是否为BDINFO格式
             $isBdInfo = false;
             if (!empty($technicalData)) {
                 $firstLine = strtok($technicalData, "\n");
-                if (strpos($firstLine, 'DISC INFO') !== false
+                if (strpos($firstLine, 'DISC INFO') !== false 
 				|| strpos($firstLine, 'Disc Title') !== false
 				|| strpos($firstLine, 'Disc Label') !== false
 				) {
                     $isBdInfo = true;
                 }
             }
-
+            
             if ($isBdInfo) {
                 // 使用BdInfoExtra处理BDINFO格式
                 $technicalInfo = new \Nexus\Torrent\BdInfoExtra($technicalData);
@@ -328,7 +577,7 @@ JS;
                 // 使用TechnicalInformation处理MediaInfo格式
                 $technicalInfo = new \Nexus\Torrent\TechnicalInformation($technicalData);
             }
-
+            
             $technicalInfoResult = $technicalInfo->renderOnDetailsPage();
             if (!empty($technicalInfoResult)) {
                 tr($lang_functions['text_technical_info'], $technicalInfoResult, 1);
@@ -337,7 +586,80 @@ JS;
 
 		if ($CURUSER['showdescription'] != 'no' && !empty($row["descr"])){
             $torrentdetailad=$Advertisement->get_ad('torrentdetail');
-            $desc = format_comment($row['descr']);
+            $rawDesc = (string) $row['descr'];
+            $desc = format_comment($rawDesc);
+            if (preg_match('/[◎◦○●]\s*片\s*名/u', $rawDesc) && preg_match('/[◎◦○●]\s*简\s*介/u', $rawDesc)) {
+                $profileLines = preg_split('/\r\n|\r|\n/', preg_replace('/<br\s*\/?\s*>/i', "\n", html_entity_decode($rawDesc, ENT_QUOTES, 'UTF-8')));
+                $profileMeta = [];
+                $profileCast = [];
+                $profilePrelude = [];
+                $profileSections = [];
+                $profileSection = '';
+                $profilePattern = '/^\s*[@＠◎◦○●]?\s*(译\s*名|片\s*名|年\s*代|产\s*地|类\s*别|语\s*言|上映\s*日期|IMDb\s*链接|IMDb\s*评分|豆瓣\s*评分|豆瓣\s*链接|TMDB\s*评分|TMDB\s*链接|季\s*数|集\s*数|片\s*长|导\s*演|编\s*剧|主\s*演|简\s*介|获奖\s*情况|标\s*签|标\s*签说明)\s*(.*)$/ui';
+                foreach ($profileLines as $profileLine) {
+                    if (preg_match('/^\s*[@＠]?\s*标\s*签(?:说明)?\b/iu', $profileLine)) {
+                        $profileSection = '__ignore__';
+                        continue;
+                    }
+                    if (preg_match($profilePattern, $profileLine, $profileMatch)) {
+                        $profileLabel = preg_replace('/\s+/u', '', trim($profileMatch[1]));
+                        $profileValue = trim($profileMatch[2], " \t　:：");
+                        if ($profileLabel === '标签' || $profileLabel === '标签说明') {
+                            $profileSection = '__ignore__';
+                        } elseif ($profileLabel === '简介' || $profileLabel === '获奖情况') {
+                            $profileSection = $profileLabel;
+                            if (!isset($profileSections[$profileSection])) $profileSections[$profileSection] = [];
+                            if ($profileValue !== '') $profileSections[$profileSection][] = $profileValue;
+                        } elseif ($profileLabel === '主演') {
+                            $profileSection = '主演';
+                            if ($profileValue !== '') $profileCast[] = $profileValue;
+                        } else {
+                            $profileSection = '';
+                            $profileMeta[] = [$profileLabel, $profileValue];
+                        }
+                        continue;
+                    }
+                    $profileValue = trim($profileLine, " \t　");
+                    if ($profileValue === '') {
+                        if (isset($profileSections[$profileSection]) && $profileSections[$profileSection]) $profileSections[$profileSection][] = '';
+                        continue;
+                    }
+                    if ($profileSection === '__ignore__') {
+                        continue;
+                    } elseif ($profileSection === '主演') {
+                        $profileCast[] = $profileValue;
+                    } elseif ($profileSection !== '' && isset($profileSections[$profileSection])) {
+                        $profileSections[$profileSection][] = $profileValue;
+                    } else {
+                        $profilePrelude[] = $profileLine;
+                    }
+                }
+                $profileHtml = '<div class="nova-resource-profile">';
+                if ($profilePrelude) $profileHtml .= '<div class="nova-resource-profile-media">'.format_comment(implode("\n", $profilePrelude)).'</div>';
+                if ($profileMeta) {
+                    $profileHtml .= '<div class="nova-resource-profile-meta">';
+                    foreach ($profileMeta as $profileItem) {
+                        $profileMetaClass = 'nova-resource-profile-meta-row';
+                        if (in_array($profileItem[0], ['TMDB评分', '豆瓣评分', 'IMDb评分'], true)) $profileMetaClass .= ' is-rating';
+                        if (in_array($profileItem[0], ['TMDB链接', '豆瓣链接', 'IMDb链接'], true)) $profileMetaClass .= ' is-link';
+                        if (in_array($profileItem[0], ['季数', '集数'], true)) $profileMetaClass .= ' is-count';
+                        $profileHtml .= '<div class="'.$profileMetaClass.'"><b>'.htmlspecialchars($profileItem[0], ENT_QUOTES, 'UTF-8').'</b><span>'.format_comment($profileItem[1]).'</span></div>';
+                    }
+                    $profileHtml .= '</div>';
+                }
+                if ($profileCast) {
+                    $profileHtml .= '<section class="nova-resource-profile-section"><h3>主演</h3><div class="nova-resource-profile-cast">';
+                    foreach (array_unique($profileCast) as $profileActor) $profileHtml .= '<span>'.htmlspecialchars($profileActor, ENT_QUOTES, 'UTF-8').'</span>';
+                    $profileHtml .= '</div></section>';
+                }
+                foreach (['简介', '获奖情况'] as $profileSectionName) {
+                    if (empty($profileSections[$profileSectionName])) continue;
+                    $profileSectionText = trim(implode("\n", $profileSections[$profileSectionName]));
+                    if ($profileSectionText === '') continue;
+                    $profileHtml .= '<section class="nova-resource-profile-section nova-resource-profile-'.($profileSectionName === '简介' ? 'plot' : 'awards').'"><h3>'.htmlspecialchars($profileSectionName, ENT_QUOTES, 'UTF-8').'</h3><div>'.format_comment($profileSectionText).'</div></section>';
+                }
+                $desc = $profileHtml.'</div>';
+            }
             $desc = apply_filter('torrent_detail_description', $desc, $row['id'], $CURUSER['id']);
             tr("<a href=\"javascript: klappe_news('descr')\"><span class=\"nowrap\"><img class=\"minus\" src=\"pic/trans.gif\" alt=\"Show/Hide\" id=\"picdescr\" title=\"".($lang_details['title_show_or_hide'] ?? '')."\" /> ".$lang_details['row_description']."</span></a>", "<div id='kdescr'>".($Advertisement->enable_ad() && $torrentdetailad ? "<div align=\"left\" style=\"margin-bottom: 10px\" id=\"\">".$torrentdetailad[0]."</div>" : "").$desc."</div>", 1);
 		}

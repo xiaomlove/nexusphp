@@ -5,10 +5,40 @@ require_once(get_langfile_path('torrents.php'));
 require_once(get_langfile_path('special.php'));
 loggedinorreturn();
 parked();
+$codexSeedGuardSection = defined('CODEX_SEED_GUARD_SECTION') && CODEX_SEED_GUARD_SECTION;
+$novaOfficialMagicRewardSection = $codexSeedGuardSection && (($_GET['activity'] ?? '') === 'magic');
+$novaOfficialUploadRewardSection = defined('NOVA_OFFICIAL_UPLOAD_REWARD_SECTION') && NOVA_OFFICIAL_UPLOAD_REWARD_SECTION;
+$novaComprehensiveView = !$codexSeedGuardSection && !$novaOfficialUploadRewardSection
+    && nexus()->getScript() === 'torrents'
+    && ($_GET['view'] ?? '') === 'general';
+
+// Canonicalize old search URLs by removing empty filter parameters.
+$codexCleanQuery = [];
+foreach ($_GET as $codexKey => $codexValue) {
+    if (is_array($codexValue)) {
+        $codexValue = array_filter($codexValue, static fn($value) => $value !== '');
+        if (!$codexValue) {
+            continue;
+        }
+    } elseif ($codexValue === '') {
+        continue;
+    }
+    $codexCleanQuery[$codexKey] = $codexValue;
+}
+if (count($codexCleanQuery) !== count($_GET)) {
+    $codexPath = strtok($_SERVER['REQUEST_URI'], '?');
+    $codexQuery = http_build_query($codexCleanQuery, '', '&', PHP_QUERY_RFC3986);
+    header('Location: ' . $codexPath . ($codexQuery !== '' ? '?' . $codexQuery : ''), true, 302);
+    exit;
+}
 
 //check searchbox
 switch (nexus()->getScript()) {
     case 'torrents':
+        $sectiontype = $browsecatmode;
+        break;
+    case 'seedguard':
+    case 'official-seed-torrents':
         $sectiontype = $browsecatmode;
         break;
     case 'special':
@@ -44,6 +74,12 @@ $catsperrow = get_searchbox_value($sectiontype, 'catsperrow'); //show how many c
 $catpadding = get_searchbox_value($sectiontype, 'catpadding'); //padding space between categories in pixel
 
 $cats = genrelist($sectiontype);
+if ($novaComprehensiveView) {
+    $cats = array_values(array_filter(
+        $cats,
+        static fn ($category) => (int)$category['id'] !== 411
+    ));
+}
 if ($showsubcat){
 	if ($showsource) $sources = searchbox_item_list("sources", $sectiontype);
 	if ($showmedium) $media = searchbox_item_list("media", $sectiontype);
@@ -60,12 +96,27 @@ if (empty($searchstr)) {
     unset($searchstr);
 }
 
+// Description searches for external IDs are common and otherwise force a full
+// scan of torrent_extras.descr. Keep the legacy LIKE search for normal text,
+// but use the FULLTEXT index for stable IMDb/TMDB identifiers.
+$descriptionFullTextSearch = null;
+if (!empty($searchstr) && (int)($_GET['search_area'] ?? 0) === 1) {
+    if (preg_match('/\btt[0-9]{5,}\b/i', $searchstr, $matches)) {
+        $descriptionFullTextSearch = strtolower($matches[0]);
+    } elseif (preg_match('/\btmdb(?:id)?[^0-9]{0,3}([0-9]{3,})\b/i', $searchstr, $matches)) {
+        // TMDB descriptions commonly store the ID as the numeric path part
+        // of a URL, so search for the numeric token itself.
+        $descriptionFullTextSearch = $matches[1];
+    }
+}
+
 $meilisearchEnabled = get_setting('meilisearch.enabled') == 'yes';
-$shouldUseMeili = $meilisearchEnabled && !empty($searchstr);
+$shouldUseMeili = $meilisearchEnabled && !empty($searchstr) && !$codexSeedGuardSection && !$novaOfficialUploadRewardSection;
 do_log("[SHOULD_USE_MEILI]: $shouldUseMeili");
 // sorting by MarkoStamcar
 $column = '';
 $ascdesc = '';
+$novaStickyOrder = "nova_sticky_active DESC, nova_sticky_bid DESC, ";
 if (isset($_GET['sort']) && $_GET['sort'] && isset($_GET['type']) && $_GET['type']) {
 
 	switch($_GET['sort']) {
@@ -89,25 +140,31 @@ if (isset($_GET['sort']) && $_GET['sort'] && isset($_GET['type']) && $_GET['type
 
 	if($column == "owner")
 	{
-		$orderby = "ORDER BY pos_state DESC, torrents.anonymous, users.username " . $ascdesc;
+		$orderby = "ORDER BY {$novaStickyOrder}pos_state DESC, torrents.anonymous, users.username " . $ascdesc;
 	}
 	else
 	{
-		$orderby = "ORDER BY pos_state DESC, torrents." . $column . " " . $ascdesc;
+		$orderby = "ORDER BY {$novaStickyOrder}pos_state DESC, torrents." . $column . " " . $ascdesc;
 	}
 
 	$pagerlink = "sort=" . intval($_GET['sort']) . "&type=" . $linkascdesc . "&";
 
 } else {
 
-	$orderby = "ORDER BY pos_state DESC, torrents.id DESC";
+	$orderby = "ORDER BY {$novaStickyOrder}pos_state DESC, torrents.id DESC";
 	$pagerlink = "";
 
 }
 
 $allCategoryId = \App\Models\SearchBox::listCategoryId($sectiontype);
-$addparam = "";
-$wherea = array();
+if ($novaComprehensiveView) {
+    $allCategoryId = array_values(array_filter(
+        $allCategoryId,
+        static fn ($categoryId) => (int)$categoryId !== 411
+    ));
+}
+$addparam = $novaComprehensiveView ? "view=general&" : "";
+$wherea = $novaComprehensiveView ? ["torrents.category <> 411"] : array();
 $wherecatina = array();
 $wheresourceina = array();
 $wheremediumina = array();
@@ -117,6 +174,11 @@ $whereprocessingina = array();
 $whereteamina = array();
 $whereaudiocodecina = array();
 $whereothera = [];
+if ($codexSeedGuardSection) {
+    $wherea[] = nova_official_seed_reward_condition($novaOfficialMagicRewardSection ? 'magic' : 'all');
+} elseif ($novaOfficialUploadRewardSection) {
+    $wherea[] = nova_official_seed_reward_condition('upload');
+}
 //----------------- start whether show torrents from all sections---------------------//
 if ($_GET)
 	$allsec = intval($_GET["allsec"] ?? 0);
@@ -773,10 +835,15 @@ if (isset($searchstr))
 		}
 		case 1	:	// torrent description
 		{
-			foreach ($like_expression_array as &$like_expression_array_element)
-//			$like_expression_array_element = "torrents.descr". $like_expression_array_element;
-			$like_expression_array_element = "torrent_extras.descr". $like_expression_array_element;
-			$wherea[] =  implode($ANDOR,  $like_expression_array);
+			if ($descriptionFullTextSearch !== null) {
+				$fullTextToken = mysql_real_escape_string($descriptionFullTextSearch);
+				$wherea[] = "MATCH(torrent_extras.descr) AGAINST ('+{$fullTextToken}*' IN BOOLEAN MODE)";
+			} else {
+				foreach ($like_expression_array as &$like_expression_array_element)
+				//			$like_expression_array_element = "torrents.descr". $like_expression_array_element;
+				$like_expression_array_element = "torrent_extras.descr". $like_expression_array_element;
+				$wherea[] =  implode($ANDOR,  $like_expression_array);
+			}
 			break;
 		}
 		/*case 2	:	// torrent small description
@@ -1001,11 +1068,84 @@ if ($count)
 
 	list($pagertop, $pagerbottom, $limit, $offset, $size, $page) = pager($torrentsperpage, $count, "?" . $addparam);
 	$fieldsStr = implode(', ', \App\Models\Torrent::getFieldsForList(true));
+    // The default torrent list used to sort the full result set after joining
+    // the tiny sticky-promotion table. Keep the existing query for searches,
+    // custom sorts, and joins, but fetch only the current page IDs here.
+    $useStickyFastPath = $column === '' && $tagFilter === '' && $torrentExtraFilter === ''
+        && $search_area === 0 && !isset($searchstr) && !$shouldUseMeili;
+    if ($useStickyFastPath) {
+        $pageOffset = max(0, (int)$offset);
+        $pageSize = max(1, (int)$size);
+        $stickyCountSql = "SELECT COUNT(*) FROM torrents
+            INNER JOIN nova_sticky_promotions nova_sticky ON nova_sticky.torrent_id = torrents.id
+                AND nova_sticky.status = 'active' AND nova_sticky.ends_at > NOW()
+            $where";
+        $stickyCountResult = sql_query($stickyCountSql);
+        $stickyCountRow = mysql_fetch_array($stickyCountResult);
+        $stickyCount = (int)($stickyCountRow[0] ?? 0);
+        $stickyBranch = '';
+        $normalBranch = '';
+        if ($pageOffset < $stickyCount) {
+            $stickyLimit = min($pageSize, $stickyCount - $pageOffset);
+            $stickyBranch = "(SELECT torrents.id, 1 AS sticky_active,
+                    COALESCE(nova_sticky.bid_bonus, 0) AS sticky_bid, torrents.pos_state
+                FROM torrents
+                INNER JOIN nova_sticky_promotions nova_sticky ON nova_sticky.torrent_id = torrents.id
+                    AND nova_sticky.status = 'active' AND nova_sticky.ends_at > NOW()
+                $where
+                ORDER BY nova_sticky.bid_bonus DESC, torrents.pos_state DESC, torrents.id DESC
+                LIMIT {$pageOffset}, {$stickyLimit})";
+            $normalLimit = $pageSize - $stickyLimit;
+            if ($normalLimit > 0) {
+                $normalWhere = $where ? $where . " AND nova_sticky.id IS NULL" : "WHERE nova_sticky.id IS NULL";
+                $normalBranch = "(SELECT torrents.id, 0 AS sticky_active,
+                        0 AS sticky_bid, torrents.pos_state
+                    FROM torrents
+                    LEFT JOIN nova_sticky_promotions nova_sticky ON nova_sticky.torrent_id = torrents.id
+                        AND nova_sticky.status = 'active' AND nova_sticky.ends_at > NOW()
+                    $normalWhere
+                    ORDER BY torrents.pos_state DESC, torrents.id DESC
+                    LIMIT {$normalLimit})";
+            }
+        } else {
+            $normalOffset = $pageOffset - $stickyCount;
+            $normalWhere = $where ? $where . " AND nova_sticky.id IS NULL" : "WHERE nova_sticky.id IS NULL";
+            $normalBranch = "(SELECT torrents.id, 0 AS sticky_active,
+                    0 AS sticky_bid, torrents.pos_state
+                FROM torrents
+                LEFT JOIN nova_sticky_promotions nova_sticky ON nova_sticky.torrent_id = torrents.id
+                    AND nova_sticky.status = 'active' AND nova_sticky.ends_at > NOW()
+                $normalWhere
+                ORDER BY torrents.pos_state DESC, torrents.id DESC
+                LIMIT {$normalOffset}, {$pageSize})";
+        }
+        $rankedBranches = implode(' UNION ALL ', array_filter([$stickyBranch, $normalBranch]));
+        $query = "SELECT $fieldsStr, $sectiontype as search_box_id,
+                ranked.sticky_active AS nova_sticky_active,
+                ranked.sticky_bid AS nova_sticky_bid,
+                nova_sticky.reward_pool AS nova_sticky_reward,
+                nova_sticky.ends_at AS nova_sticky_ends_at
+            FROM torrents
+            INNER JOIN ($rankedBranches) ranked ON ranked.id = torrents.id
+            LEFT JOIN nova_sticky_promotions nova_sticky ON nova_sticky.torrent_id = torrents.id
+                AND nova_sticky.status = 'active' AND nova_sticky.ends_at > NOW()
+            ORDER BY ranked.sticky_active DESC, ranked.sticky_bid DESC,
+                ranked.pos_state DESC, ranked.id DESC";
+    } else {
 //    if ($allsec == 1 || $enablespecial != 'yes') {
 //        $query = "SELECT $fieldsStr FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." $tagFilter $where $orderby $limit";
 //    } else {
 //        $query = "SELECT $fieldsStr, categories.mode as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")." LEFT JOIN categories ON torrents.category=categories.id $tagFilter $where $orderby $limit";
-        $query = "SELECT $fieldsStr, $sectiontype as search_box_id FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")."$tagFilter $torrentExtraFilter $where $orderby $limit";
+        $query = "SELECT $fieldsStr, $sectiontype as search_box_id,
+            IF(nova_sticky.id IS NULL, 0, 1) AS nova_sticky_active,
+            COALESCE(nova_sticky.bid_bonus, 0) AS nova_sticky_bid,
+            COALESCE(nova_sticky.reward_pool, 0) AS nova_sticky_reward,
+            nova_sticky.ends_at AS nova_sticky_ends_at
+            FROM torrents ".($search_area == 3 || $column == "owner" ? "LEFT JOIN users ON torrents.owner = users.id " : "")."
+            LEFT JOIN nova_sticky_promotions nova_sticky ON nova_sticky.torrent_id = torrents.id
+                AND nova_sticky.status = 'active' AND nova_sticky.ends_at > NOW()
+            $tagFilter $torrentExtraFilter $where $orderby $limit";
+    }
 //    }
 
     if (!$shouldUseMeili) {
@@ -1017,18 +1157,40 @@ if ($count)
     unset($res);
 }
 
-if (isset($searchstr))
+if ($novaOfficialMagicRewardSection)
+	stdhead('官种魔力活动');
+elseif ($codexSeedGuardSection)
+	stdhead('保种区');
+elseif ($novaOfficialUploadRewardSection)
+	stdhead('官种上传量活动');
+elseif (isset($searchstr))
 	stdhead($lang_torrents['head_search_results_for'].$searchstr_ori);
 elseif ($sectiontype == $browsecatmode)
 	stdhead($lang_torrents['head_torrents']);
 else stdhead($lang_torrents['head_special']);
 print("<table width=\"97%\" class=\"main\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"embedded\">");
 
+if ($codexSeedGuardSection || $novaOfficialUploadRewardSection) {
+    print(nova_official_seed_render_download_tools_style());
+    print('<div class="nova-reward-toolbox">');
+    if (!$novaOfficialUploadRewardSection && !$novaOfficialMagicRewardSection) {
+        print(nova_official_seed_render_download_tools('magic', $CURUSER));
+        print(nova_official_seed_render_download_tools('upload', $CURUSER));
+    } else {
+        print(nova_official_seed_render_download_tools($novaOfficialUploadRewardSection ? 'upload' : 'magic', $CURUSER));
+    }
+    if ($novaOfficialUploadRewardSection) {
+        print('<a href="official-seed-activity.php" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border:1px solid rgba(8,145,178,.28);border-radius:6px;background:#ecfeff;color:#0e7490;font-weight:700;text-decoration:none">保种统计与设置</a>');
+    }
+    print('</div>');
+}
+
 displayHotAndClassic();
 $searchBoxRightTdStyle = 'padding: 1px;padding-left: 10px;white-space: nowrap';
 if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showing bookmarked torrents from all sections;
 ?>
 <form method="get" name="searchbox" action="?">
+	<?php if ($novaComprehensiveView) { ?><input type="hidden" name="view" value="general" /><?php } ?>
 	<table border="1" class="searchbox" cellspacing="0" cellpadding="5" width="100%">
 		<tbody>
 		<tr>
@@ -1076,7 +1238,22 @@ if ($allsec != 1 || $enablespecial != 'yes'){ //do not print searchbox if showin
 //					}
 //					?>
 <!--				</table>-->
-                <?php echo build_search_box_category_table($sectiontype, '1', '?', '?', 0, $_SERVER['QUERY_STRING'], ['select_unselect' => true, 'user_notifs' => $CURUSER['notifs']])?>
+                <?php
+                $novaCategoryHrefPrefix = $novaComprehensiveView ? '?view=general&amp;' : '?';
+                echo build_search_box_category_table(
+                    $sectiontype,
+                    '1',
+                    $novaCategoryHrefPrefix,
+                    $novaCategoryHrefPrefix,
+                    0,
+                    $_SERVER['QUERY_STRING'],
+                    [
+                        'select_unselect' => true,
+                        'user_notifs' => $CURUSER['notifs'],
+                        'exclude_category_ids' => $novaComprehensiveView ? [411] : [],
+                    ]
+                );
+                ?>
 			</td>
 
 			<td class="rowfollow" valign="middle">
@@ -1291,6 +1468,22 @@ if ($allTags->isNotEmpty()) {
 		</tbody>
 	</table>
 	</form>
+<script>
+(function () {
+    var form = document.forms.searchbox;
+    if (!form) return;
+    form.addEventListener('submit', function () {
+        Array.prototype.forEach.call(form.elements, function (field) {
+            if (!field.name) return;
+            if ((field.type === 'checkbox' || field.type === 'radio') && !field.checked) {
+                field.disabled = true;
+            } else if (field.value === '') {
+                field.disabled = true;
+            }
+        });
+    });
+})();
+</script>
 <?php
 }
 	if ($Advertisement->enable_ad()){
@@ -1318,6 +1511,18 @@ if ($count) {
         }
     }
     $rows = apply_filter('torrent_list', $rows, $page, $sectiontype, $_GET['search'] ?? '');
+	$showNovaBulkApproval = get_user_class() >= UC_ADMINISTRATOR
+		&& isset($approvalStatus)
+		&& (int)$approvalStatus === \App\Models\Torrent::APPROVAL_STATUS_NONE
+		&& \App\Models\Setting::get('torrent.review_assistant_enabled', 'yes') === 'yes';
+	if ($showNovaBulkApproval) {
+		$bulkToken = hash_hmac('sha256', 'nova-review-action|' . (int)$CURUSER['id'], (string)config('app.key'));
+		$bulkPayload = json_encode(['token' => $bulkToken], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+		echo '<link rel="stylesheet" href="styles/nova-torrent-review-assistant.css?v=2026081602">';
+		echo '<div class="nova-review-bulk" id="nova-review-bulk"><div><strong>待审核批量处理</strong><span>已选择 <b id="nova-review-bulk-count">0</b> 个</span></div><label><input type="checkbox" id="nova-review-bulk-all"> 全选当前页</label><button type="button" class="nova-review-btn is-pass" id="nova-review-bulk-submit" disabled>忽略错误批量同意</button></div>';
+		echo '<script>window.NovaTorrentReviewBulk=' . $bulkPayload . ';</script>';
+		\Nexus\Nexus::js('js/nova-torrent-review-bulk.js?v=2026081602', 'footer', true);
+	}
 	print($pagertop);
 	if ($sectiontype == $browsecatmode)
 		torrenttable($rows, "torrents", $sectiontype);

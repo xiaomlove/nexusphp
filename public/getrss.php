@@ -39,21 +39,31 @@ if ($showaudiocodec) $audiocodecs = searchbox_item_list("audiocodecs", $brsectio
 }
 stdhead($lang_getrss['head_rss_feeds']);
 $query = [];
-$allowed_showrows=array('10','50');
+$allowed_showrows=array('10','50','all');
+$posStateLabels = \App\Models\Torrent::listPosStates(true);
 $stickyTypes = [
-    0 => nexus_trans('torrent.pos_state_normal'),
-    1 => nexus_trans('torrent.pos_state_sticky'),
-    2 => nexus_trans('torrent.pos_state_r_sticky')
+    0 => $posStateLabels[\App\Models\Torrent::POS_STATE_STICKY_NONE],
+    1 => $posStateLabels[\App\Models\Torrent::POS_STATE_STICKY_FIRST],
+    2 => $posStateLabels[\App\Models\Torrent::POS_STATE_STICKY_SECOND],
+    3 => $posStateLabels[\App\Models\Torrent::POS_STATE_STICKY_THIRD],
 ];
 $query[] = "passkey=" . $CURUSER['passkey'];
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	$link = get_protocol_prefix(). $BASEURL ."/torrentrss.php";
-	if (isset($_POST['showrows']) && in_array($_POST['showrows'], $allowed_showrows, 1))
-		$query[] = "rows=".(int)$_POST['showrows'];
+	$activityReward = $_POST['activity_reward'] ?? '';
+	if (!in_array($activityReward, ['', 'magic', 'upload'], true)) {
+		$activityReward = '';
+	}
+	if (isset($_POST['showrows']) && in_array($_POST['showrows'], $allowed_showrows, 1)
+		&& ($_POST['showrows'] !== 'all' || $activityReward !== ''))
+		$query[] = 'rows=' . $_POST['showrows'];
 	else {
 		stdmsg($lang_getrss['std_error'],$lang_getrss['std_no_row']);
 		stdfoot();
 		die();
+	}
+	if ($activityReward !== '') {
+		$query[] = 'activity_reward=' . $activityReward;
 	}
 	foreach ($brcats as $cat)
 	{
@@ -193,6 +203,15 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 <h1 align="center"><?php echo $lang_getrss['text_rss_feeds']?></h1>
 <form method="post" action="getrss.php">
 <table cellspacing="1" cellpadding="5" width="97%">
+<tr>
+<td class="rowhead">活动奖励订阅</td>
+<td class="rowfollow" align="left">
+<label><input type="radio" name="activity_reward" value="" checked="checked" />普通 RSS</label>&nbsp;
+<label><input type="radio" name="activity_reward" value="magic" />官种魔力值奖励</label>&nbsp;
+<label><input type="radio" name="activity_reward" value="upload" />官种上传量奖励</label>
+<div style="margin-top:5px;color:#60767d">活动分类按当前保种与活动状态自动更新；选择活动订阅后可使用“全部活动资源”。</div>
+</td>
+</tr>
 <tr>
 <td class="rowhead"><?php echo $lang_getrss['row_categories_to_retrieve']?>
 </td>
@@ -361,7 +380,8 @@ if (get_setting('main.spsct') == 'yes') {
 <tr><td class="rowhead"><?php echo $lang_getrss['row_rows_per_page']?></td><td class="rowfollow" align="left"><select name="showrows">
 <?php
     foreach ($allowed_showrows as $showrow) {
-        echo sprintf('<option value="%s">%s</option>', $showrow, $showrow);
+        $showrowLabel = $showrow === 'all' ? '全部活动资源' : $showrow;
+        echo sprintf('<option value="%s">%s</option>', $showrow, $showrowLabel);
     }
 ?>
 </select></td></tr>

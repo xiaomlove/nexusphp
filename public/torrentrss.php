@@ -4,7 +4,7 @@ $passkey = $_GET['passkey'] ?? $CURUSER['passkey'] ?? '';
 if (!$passkey) {
     die("require passkey");
 }
-$exactParams = ['inclbookmarked', 'paid', 'rows', 'icat', 'ismalldescr', 'isize', 'iuplder', 'search', 'search_mode', 'sticky', 'linktype'];
+$exactParams = ['inclbookmarked', 'paid', 'rows', 'icat', 'ismalldescr', 'isize', 'iuplder', 'search', 'search_mode', 'sticky', 'linktype', 'activity_reward', 'startindex'];
 $prefixedParams = ['cat', 'sou', 'med', 'cod', 'sta', 'pro', 'tea', 'aud'];
 foreach ($_GET as $key => $value) {
     if (in_array($key, $exactParams, true)) {
@@ -27,6 +27,10 @@ function hex_esc($matches) {
 	return sprintf("%02x", ord($matches[0]));
 }
 $dllink = false;
+$activityReward = $_GET['activity_reward'] ?? '';
+if (!in_array($activityReward, ['', 'magic', 'upload'], true)) {
+    die('invalid activity reward type');
+}
 
 $where = "";
 if ($passkey){
@@ -89,12 +93,25 @@ if (isset($searchstr)){
 	$wherea[] = implode($ANDOR, $like_expression_array);
 	$where .= ($where ? " AND " : "") . implode(" AND ", $wherea);
 }
-$limit = "";
-$showrows = intval($_GET['rows'] ?? 0);
-if($showrows < 1 || $showrows > 50) {
-    $showrows = 50;
+$limit = '';
+$allActivityRows = $activityReward !== '' && ($_GET['rows'] ?? '') === 'all';
+if (!$allActivityRows) {
+    $startindex = min(100000, max(0, intval($_GET['startindex'] ?? 0)));
+    if ($startindex) {
+        $limit .= $startindex . ', ';
+    }
+    $showrows = intval($_GET['rows'] ?? 0);
+    if ($activityReward !== '') {
+        if ($showrows < 1 || $showrows > 5000) {
+            $showrows = 5000;
+        }
+    } elseif($showrows < 1 || $showrows > 50) {
+        $showrows = 50;
+    }
+    $limit .= $showrows;
+} else {
+    $startindex = 0;
 }
-$limit .= $showrows;
 
 //approval status
 $approvalStatusNoneVisible = get_setting('torrent.approval_status_none_visible');
@@ -110,6 +127,9 @@ if ($onlyBrowseSection) {
 }
 //visible
 $where .= ($where ? " AND " : "") . "torrents.visible = 'yes'";
+if ($activityReward !== '') {
+    $where .= ($where ? " AND " : "") . nova_official_seed_reward_condition($activityReward);
+}
 //check price
 if (isset($_GET['paid']) && in_array($_GET['paid'], ['0', '1', '2'], true)) {
     $paidFilter = $_GET['paid'];
@@ -148,12 +168,12 @@ get_where("processings", "processing", "pro");
 get_where("teams", "team", "tea");
 get_where("audiocodecs", "audiocodec", "aud");
 
-$hasStickyFirst = $hasStickySecond = $hasStickyNormal = $noNormalResults = false;
+$hasStickyFirst = $hasStickySecond = $hasStickyThird = $hasStickyNormal = $noNormalResults = false;
 $prependIdArr = $prependRows = $normalRows = [];
 $stickyWhere = $normalWhere = '';
 if (isset($_GET['sticky']) && $inclbookmarked == 0) {
     $stickyArr = explode(',', $_GET['sticky']);
-    //Only handle sticky first + second
+    //Handle all three sticky levels
     $posStates = [];
     if (in_array('0', $stickyArr, true)) {
         $hasStickyNormal = true;
@@ -166,6 +186,10 @@ if (isset($_GET['sticky']) && $inclbookmarked == 0) {
         $hasStickySecond = true;
         $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_SECOND;
     }
+    if (in_array('3', $stickyArr, true)) {
+        $hasStickyThird = true;
+        $posStates[] = \App\Models\Torrent::POS_STATE_STICKY_THIRD;
+    }
     if (!empty($posStates)) {
         $prependIdArr = \App\Models\Torrent::query()->whereIn('pos_state', $posStates)->pluck('id')->toArray();
     }
@@ -173,7 +197,7 @@ if (isset($_GET['sticky']) && $inclbookmarked == 0) {
 $prependIdArr = apply_filter("sticky_promotion_torrent_ids", $prependIdArr);
 if ($hasStickyNormal) {
     $stickyWhere = sprintf("torrents.pos_state = '%s'", \App\Models\Torrent::POS_STATE_STICKY_NONE);
-} elseif ($hasStickyFirst || $hasStickySecond) {
+} elseif ($hasStickyFirst || $hasStickySecond || $hasStickyThird) {
     $noNormalResults = true;
 }
 
@@ -186,12 +210,13 @@ if ($where) {
 $sort = "id desc";
 $fieldStr = "torrents.id, torrents.category, torrents.name, torrents.small_descr, torrent_extras.descr, torrents.info_hash, torrents.size, torrents.added, torrents.anonymous, torrents.owner, categories.name AS category_name";
 if (!$noNormalResults) {
-    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id left join torrent_extras on torrent_extras.torrent_id = torrents.id $normalWhere ORDER BY $sort LIMIT $limit";
+    $limitSql = $limit !== '' ? " LIMIT $limit" : '';
+    $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id left join torrent_extras on torrent_extras.torrent_id = torrents.id $normalWhere ORDER BY $sort$limitSql";
     $normalRows = \Nexus\Database\NexusDB::remember(sprintf("nexus_rss:normal:%s", md5($query)), 300, function () use ($query) {
         return \Nexus\Database\NexusDB::select($query);
     });
 }
-if (!empty($prependIdArr)) {
+if (!empty($prependIdArr) && $startindex === 0) {
     $prependIdStr = implode(',', $prependIdArr);
     $query = "SELECT $fieldStr FROM torrents LEFT JOIN categories ON torrents.category = categories.id left join torrent_extras on torrent_extras.torrent_id = torrents.id where torrents.id in ($prependIdStr) and $where ORDER BY field(torrents.id, $prependIdStr)";
     $prependRows = \Nexus\Database\NexusDB::remember(sprintf("nexus_rss:prepend:%s", md5($query)), 300, function () use ($query) {
@@ -220,10 +245,12 @@ $xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 /*print('
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">');*/
 $xml .= '<rss version="2.0">';
+$feedTitle = $activityReward === '' ? $SITENAME . ' Torrents' : $SITENAME . ' - ' . nova_official_seed_reward_label($activityReward);
+$feedDescription = $activityReward === '' ? 'Latest torrents from '.$SITENAME.' - '.htmlspecialchars($SLOGAN) : nova_official_seed_reward_label($activityReward) . '动态订阅，资源分类随当前活动状态自动更新';
 $xml .= '<channel>
-		<title>' . addslashes($SITENAME.' Torrents'). '</title>
+		<title>' . addslashes($feedTitle). '</title>
 		<link><![CDATA[' . $url . ']]></link>
-		<description><![CDATA[' . addslashes('Latest torrents from '.$SITENAME.' - '.htmlspecialchars($SLOGAN)) . ']]></description>
+		<description><![CDATA[' . addslashes($feedDescription) . ']]></description>
 		<language>zh-cn</language>
 		<copyright>'.$copyright.'</copyright>
 		<managingEditor>'.$SITEEMAIL.' ('.$SITENAME.' Admin)</managingEditor>
@@ -234,11 +261,11 @@ $xml .= '<channel>
 		<ttl>60</ttl>
 		<image>
 			<url><![CDATA[' . $url.'/pic/rss_logo.jpg'. ']]></url>
-			<title>' . addslashes($SITENAME.' Torrents') . '</title>
+			<title>' . addslashes($feedTitle) . '</title>
 			<link><![CDATA[' . $url . ']]></link>
 			<width>100</width>
 			<height>100</height>
-			<description>' . addslashes($SITENAME.' Torrents') . '</description>
+			<description>' . addslashes($feedTitle) . '</description>
 		</image>';
 /*print('
 		<atom:link href="'.$url.$_SERVER['REQUEST_URI'].'" rel="self" type="application/rss+xml" />');*/
@@ -264,7 +291,9 @@ foreach ($list as $row)
 	if (!empty($_GET['ismalldescr']) && !empty($row['small_descr'])) $title .= "[".$row['small_descr']."]";
 	if (!empty($_GET['isize'])) $title .= "[".mksize($row['size'])."]";
 	if (!empty($_GET['iuplder'])) $title .= "[".$author."]";
-	$content = format_comment($row['descr'], true, false, false, false);
+	$content = $activityReward === ''
+	    ? format_comment($row['descr'], true, false, false, false)
+	    : htmlspecialchars($row['small_descr'] ?: nova_official_seed_reward_label($activityReward));
 	$xml .= '<item>
 			<title><![CDATA['.$title.']]></title>
 			<link>'.$itemurl.'</link>
