@@ -1,0 +1,351 @@
+.nova-review-assistant {
+    width: 65%;
+    min-width: 920px;
+    margin: 12px auto 16px;
+    overflow: hidden;
+    border: 1px solid #cfe2e2;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .96);
+    color: #28464f;
+    box-shadow: 0 9px 24px rgba(28, 73, 81, .09);
+    box-sizing: border-box;
+}
+
+h1#top::after {
+    display: none !important;
+    content: none !important;
+}
+
+.nova-review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 68px;
+    padding: 13px 18px;
+    background: linear-gradient(112deg, #e9f8f4 0%, #edf7f8 60%, #fff3e5 100%);
+    box-sizing: border-box;
+}
+
+.nova-review-kicker {
+    display: block;
+    margin-bottom: 2px;
+    color: #0f8a79;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1.3;
+}
+
+.nova-review-header h2,
+.nova-review-list h3 {
+    margin: 0 !important;
+    letter-spacing: 0 !important;
+}
+
+.nova-review-header h2 {
+    color: #173d46 !important;
+    font-size: 19px !important;
+    line-height: 1.35 !important;
+}
+
+.nova-review-header h2::after,
+.nova-review-list h3::after {
+    display: none !important;
+    content: none !important;
+}
+
+.nova-review-header-actions,
+.nova-review-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nova-review-state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #dcf7ef;
+    color: #087665;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.nova-review-assistant.is-disabled .nova-review-state {
+    background: #eef2f3;
+    color: #6d8187;
+}
+
+.nova-review-body {
+    padding: 15px 18px 17px;
+}
+
+.nova-review-offline {
+    padding: 22px 18px;
+    color: #71868c;
+    text-align: center;
+}
+
+.nova-review-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(100px, .7fr)) minmax(150px, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.nova-review-summary > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 11px;
+    border-radius: 6px;
+    background: #f4f8f8;
+    box-sizing: border-box;
+}
+
+.nova-review-summary span {
+    color: #71858b;
+    font-size: 11px;
+}
+
+.nova-review-summary strong {
+    color: #204852;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+}
+
+.nova-review-summary > div:first-child strong {
+    color: #c43d37;
+}
+
+.nova-review-summary > div:nth-child(2) strong {
+    color: #b67813;
+}
+
+.nova-review-summary .nova-review-result strong {
+    font-size: 13px;
+}
+
+.nova-review-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.nova-review-list {
+    min-width: 0;
+    padding: 12px 13px;
+    border: 1px solid #e1ebec;
+    border-radius: 7px;
+    background: #fbfdfd;
+    box-sizing: border-box;
+}
+
+.nova-review-list.is-error {
+    border-color: #efd5d2;
+    background: #fffafa;
+}
+
+.nova-review-list.is-warning {
+    border-color: #efdfbf;
+    background: #fffdf8;
+}
+
+.nova-review-list h3 {
+    color: #355660 !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+.nova-review-list ul {
+    min-height: 24px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nova-review-list li {
+    position: relative;
+    margin: 5px 0;
+    padding-left: 14px;
+    color: #5f747b;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.nova-review-list li::before {
+    content: "";
+    position: absolute;
+    top: .62em;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #c5d1d4;
+}
+
+.nova-review-list.is-error li::before {
+    background: #dc5b51;
+}
+
+.nova-review-list.is-warning li::before {
+    background: #d99a29;
+}
+
+.nova-review-list li.is-clear {
+    color: #18806f;
+}
+
+.nova-review-list li.is-clear::before {
+    background: #18a88d;
+}
+
+.nova-review-actions {
+    justify-content: flex-end;
+    margin-top: 13px;
+}
+
+.nova-review-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 13px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    line-height: 36px !important;
+    cursor: pointer;
+    box-shadow: none !important;
+    box-sizing: border-box;
+}
+
+.nova-review-btn.is-primary {
+    background: #167f8a !important;
+}
+
+.nova-review-btn.is-pass {
+    background: #109477 !important;
+}
+
+.nova-review-btn.is-notify {
+    background: #c47a18 !important;
+}
+
+.nova-review-btn.is-secondary {
+    border: 1px solid #c8dcdc !important;
+    background: #fff !important;
+    color: #42636b !important;
+}
+
+.nova-review-btn:disabled {
+    border-color: transparent !important;
+    background: #aebbbf !important;
+    color: #fff !important;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1200px) {
+    .nova-review-assistant {
+        width: 92%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    .nova-review-assistant {
+        width: 97%;
+    }
+
+    .nova-review-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .nova-review-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .nova-review-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .nova-review-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .nova-review-btn {
+        width: 100%;
+    }
+}
+
+.nova-review-bulk {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    margin: 12px 0;
+    padding: 12px 14px;
+    border: 1px solid #cfe2e2;
+    border-radius: 8px;
+    background: linear-gradient(110deg, #edf9f5, #fff7eb);
+    box-shadow: 0 7px 18px rgba(28, 73, 81, .07);
+    box-sizing: border-box;
+}
+
+.nova-review-bulk > div strong,
+.nova-review-bulk > div span {
+    display: block;
+}
+
+.nova-review-bulk > div strong {
+    color: #1b4b53;
+    font-size: 13px;
+}
+
+.nova-review-bulk > div span,
+.nova-review-bulk > label {
+    color: #657e85;
+    font-size: 11px;
+}
+
+.nova-review-bulk > label,
+.nova-review-row-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.nova-review-row-pick {
+    float: left;
+    margin: 2px 8px 2px 0;
+    padding: 3px;
+    border: 1px solid #bfd9d6;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.nova-review-row-pick input {
+    margin: 0;
+}
+
+@media (max-width: 760px) {
+    .nova-review-bulk {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}

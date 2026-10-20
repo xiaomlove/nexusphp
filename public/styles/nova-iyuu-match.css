@@ -1,0 +1,82 @@
+.nova-iyuu-match {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    min-height: 30px;
+    color: #4d5562;
+}
+
+.nova-iyuu-match__list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+}
+
+.nova-iyuu-match__site {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #253247;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+    text-decoration: none;
+    transition: color 160ms ease;
+}
+
+.nova-iyuu-match__site:hover {
+    color: #f07b25;
+    text-decoration: none;
+}
+
+.nova-iyuu-match__icon-frame {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    max-width: 46px !important;
+    max-height: 46px !important;
+    flex: 0 0 46px;
+    overflow: hidden !important;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.nova-iyuu-match__icon {
+    display: block !important;
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    max-width: 46px !important;
+    max-height: 46px !important;
+    flex: 0 0 46px;
+    border-radius: 5px;
+    object-fit: contain !important;
+    object-position: center;
+}
+
+.nova-iyuu-match__updated {
+    color: #7b8491;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.nova-iyuu-match--error {
+    color: #a45b5b;
+}
+
+@media (max-width: 720px) {
+    .nova-iyuu-match__list {
+        gap: 7px 13px;
+    }
+
+    .nova-iyuu-match__site {
+        font-size: 13px;
+    }
+}
