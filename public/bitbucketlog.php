@@ -11,11 +11,11 @@ if (get_user_class() >= UC_MODERATOR)
 	 $delete = intval($_GET["delete"] ?? 0);
 	 if (is_valid_id($delete)) {
 		 $r = sql_query("SELECT name,owner FROM bitbucket WHERE id=".mysql_real_escape_string($delete)) or sqlerr(__FILE__, __LINE__);
-		 if (mysql_num_rows($r) == 1) {
-			 $a = mysql_fetch_assoc($r);
-			 if (get_user_class() >= UC_MODERATOR || $a["owner"] == $CURUSER["id"]) {
+			 if (mysql_num_rows($r) == 1) {
+				 $a = mysql_fetch_assoc($r);
+				 if (get_user_class() >= UC_MODERATOR || $a["owner"] == $CURUSER["id"]) {
 				 sql_query("DELETE FROM bitbucket WHERE id=".mysql_real_escape_string($delete)) or sqlerr(__FILE__, __LINE__);
-				 if (!unlink("$bucketpath/{$a['name']}"))
+				 if (!str_starts_with($a['name'], 'https://') && !str_starts_with($a['name'], 'http://') && !unlink("$bucketpath/{$a['name']}"))
 				 stderr("Warning", "Unable to unlink file: <b>{$a['name']}</b>. You should contact an administrator about this error.",false);
 				 				}			}		}	}
 				 				stdhead("BitBucket Log");
@@ -34,8 +34,11 @@ if (get_user_class() >= UC_MODERATOR)
 						 				$date = substr($arr['added'], 0, strpos($arr['added'], " "));
 						 				$time = substr($arr['added'], strpos($arr['added'], " ") + 1);
 						 				$name = $arr["name"];
-						 				list($width, $height, $type, $attr) = getimagesize("" . get_protocol_prefix() . "$BASEURL/$bitbucket/$name");
-						 				$url = str_replace(" ", "%20", htmlspecialchars("$bitbucket/$name"));
+						 				$rawUrl = str_starts_with($name, 'https://') || str_starts_with($name, 'http://') ? $name : get_protocol_prefix()."$BASEURL/$bitbucket/$name";
+						 				$imageSize = @getimagesize($rawUrl);
+						 				$width = $imageSize[0] ?? 0;
+						 				$height = $imageSize[1] ?? 0;
+						 				$url = str_replace(" ", "%20", htmlspecialchars($rawUrl, ENT_QUOTES, 'UTF-8'));
 						 				print("<tr>");
 						 				print("<td><center><a href=$url><img src=\"".$url."\" border=0 onLoad='SetSize(this, 400)'></a></center>");
 						 				print("Uploaded by:  " . get_username($arr['owner']). "<br />");
