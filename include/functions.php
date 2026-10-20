@@ -2429,6 +2429,8 @@ function get_css_uri($file = "")
 	else return $ss_uri.$file;
 }
 
+function static_asset_uri($path){ $cdn = rtrim((string) nexus_env("STATIC_ASSET_URL"), "/"); return $cdn !== "" ? $cdn . "/" . ltrim($path, "/") : ltrim($path, "/"); }
+
 function get_font_css_uri(){
 	global $CURUSER;
     $file = 'mediumfont.css';
@@ -2438,7 +2440,7 @@ function get_font_css_uri(){
         elseif ($CURUSER['fontsize'] == 'small')
             $file = 'smallfont.css';
     }
-	return "styles/".$file;
+	return static_asset_uri("styles/".$file);
 }
 
 function get_style_addicode()
@@ -2499,6 +2501,10 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 
 	$Advertisement = new ADVERTISEMENT($CURUSER['id'] ?? 0);
 	$cssupdatedate = $cssdate_tweak;
+	$codexThemeCss = dirname(__DIR__) . "/public/" . get_css_uri() . "theme.css";
+	if (is_file($codexThemeCss)) {
+		$cssupdatedate = date("YmdHis", filemtime($codexThemeCss));
+	}
 	// Variable for Start Time
 	$tstart = getmicrotime(); // Start time
 	//Insert old ip into iplog
@@ -2535,6 +2541,7 @@ function stdhead($title = "", $msgalert = true, $script = "", $place = "")
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover' />
 <?php
 if ($metakeywords_tweak){
 ?>
@@ -2557,11 +2564,11 @@ $cssupdatedate=($cssupdatedate ? "?".htmlspecialchars($cssupdatedate) : "");
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 <link rel="search" type="application/opensearchdescription+xml" title="<?php echo $SITENAME?> Torrents" href="opensearch.php" />
 <link rel="stylesheet" href="<?php echo get_font_css_uri().$cssupdatedate?>" type="text/css" />
-<link rel="stylesheet" href="styles/sprites.css<?php echo $cssupdatedate?>" type="text/css" />
+<link rel="stylesheet" href="<?php echo static_asset_uri("styles/sprites.css") . $cssupdatedate?>" type="text/css" />
 <link rel="stylesheet" href="<?php echo get_forum_pic_folder()."/forumsprites.css".$cssupdatedate?>" type="text/css" />
 <link rel="stylesheet" href="<?php echo $css_uri."theme.css".$cssupdatedate?>" type="text/css" />
 <link rel="stylesheet" href="<?php echo $css_uri."DomTT.css".$cssupdatedate?>" type="text/css" />
-<link rel="stylesheet" href="styles/nexus.css<?php echo $cssupdatedate?>" type="text/css" />
+<link rel="stylesheet" href="<?php echo static_asset_uri("styles/nexus.css") . $cssupdatedate?>" type="text/css" />
 <?php
 if ($CURUSER){
 //	$caticonrow = get_category_icon_row($CURUSER['caticon']);
@@ -2578,20 +2585,20 @@ if ($CURUSER){
 }
 ?>
 <link rel="alternate" type="application/rss+xml" title="Latest Torrents" href="torrentrss.php" />
-<script type="text/javascript" src="js/curtain_imageresizer.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="js/ajaxbasic.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="js/common.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="js/domLib.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="js/domTT.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="js/domTT_drag.js<?php echo $cssupdatedate?>"></script>
-<script type="text/javascript" src="js/fadomatic.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/curtain_imageresizer.js") . $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/ajaxbasic.js") . $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/common.js") . $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/domLib.js") . $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/domTT.js") . $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/domTT_drag.js") . $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/fadomatic.js") . $cssupdatedate?>"></script>
 <?php
 do_action('nexus_header');
 foreach (\Nexus\Nexus::getAppendHeaders() as $value) {
     print($value);
 }
 ?>
-<script type="text/javascript" src="js/jquery-1.12.4.min.js<?php echo $cssupdatedate?>"></script>
+<script type="text/javascript" src="<?php echo static_asset_uri("js/jquery-1.12.4.min.js") . $cssupdatedate?>"></script>
 <script type="text/javascript">
     jQuery.noConflict();
     window.nexusLayerOptions = {
