@@ -39,3 +39,19 @@ attachments
 bitbucket
 /public/attachments
 /public/bitbucket
+
+# --- local backup artifacts (cleanup 2026-10-20) ---
+*.bak
+*.bak.*
+*.bak-*
+*.bak_*
+*.before
+*.before-*
+*.before.*
+*.bad
+*-backup
+*-backup-*
+*.tmp.*
+*.orig
+*.rej
+/public/logs
