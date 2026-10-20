@@ -47,6 +47,13 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
+        // Personal access tokens issued by AuthenticateRepository::login().
+        // routes/api.php authenticates with "auth:sanctum", which failed with
+        // "Auth guard [sanctum] is not defined" while this guard was missing.
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => null,
+        ],
         'nexus' => [
             'driver' => 'nexus-cookie',
         ],
