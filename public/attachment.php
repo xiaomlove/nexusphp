@@ -19,6 +19,92 @@ $altsize = $_POST['altsize'] ?? '';
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" href="<?php echo get_font_css_uri()?>" type="text/css">
 <link rel="stylesheet" href="<?php echo $css_uri."theme.css"?>" type="text/css">
+<style>
+html,
+body.inframe {
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+
+body.inframe table {
+    width: 100% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-collapse: collapse !important;
+    background: transparent !important;
+}
+
+body.inframe td.attachment-controls {
+    height: 44px !important;
+    padding: 4px 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #233f48 !important;
+    font-size: 12px !important;
+    line-height: 36px !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+}
+
+body.inframe input[type="file"] {
+    width: 238px !important;
+    height: 36px !important;
+    margin: 0 6px 0 0 !important;
+    padding: 0 !important;
+    border: 1px solid #c9dcde !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    color: #36515a !important;
+    font-size: 12px !important;
+    line-height: 34px !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+}
+
+body.inframe input[type="file"]::file-selector-button {
+    height: 34px !important;
+    margin: 0 9px 0 0 !important;
+    padding: 0 14px !important;
+    border: 0 !important;
+    border-right: 1px solid #d4e3e5 !important;
+    border-radius: 5px 0 0 5px !important;
+    background: #eaf7f6 !important;
+    color: #17434c !important;
+    font-weight: 700 !important;
+    line-height: 34px !important;
+    text-align: center !important;
+    cursor: pointer;
+}
+
+body.inframe input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 4px 0 6px !important;
+    vertical-align: middle !important;
+}
+
+body.inframe input[type="submit"] {
+    min-width: 72px !important;
+    height: 36px !important;
+    margin: 0 8px !important;
+    padding: 0 16px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: #0f9f8d !important;
+    color: #fff !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    line-height: 36px !important;
+    text-align: center !important;
+    text-indent: 0 !important;
+    vertical-align: middle !important;
+    box-shadow: 0 4px 10px rgba(15, 159, 141, .18) !important;
+}
+</style>
 </head>
 <body class="inframe">
 <table width="100%">
@@ -262,7 +348,7 @@ if ($Attach->enable_attachment())
 	}
 	print("<form enctype=\"multipart/form-data\" name=\"attachment\" method=\"post\" action=\"attachment.php?callback_func=" . ($_REQUEST['callback_func'] ?? '') . "\">");
 	print("<tr>");
-	print("<td class=\"embedded\" colspan=\"2\" align=left>");
+	print("<td class=\"embedded attachment-controls\" colspan=\"2\" align=left>");
 	print("<input type=\"file\" name=\"file\"".($count_left ? "" : " disabled=\"disabled\"")." />&nbsp;");
 	print("<input type=\"checkbox\" name=\"altsize\" value=\"yes\"".($altsize == 'yes' ? " checked=\"checked\"" : "")." />".$lang_attachment['text_small_thumbnail']."&nbsp;");
 	print("<input type=\"submit\" name=\"submit\" value=\"".$lang_attachment['submit_upload']."\"".($count_left ? "" : " disabled=\"disabled\"")." /> ");
