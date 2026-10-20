@@ -47,6 +47,7 @@ class UserFactory extends Factory
             'username' => $username,
             'email' => $email,
             'secret' => mksecret(),
+            'auth_key' => bin2hex(random_bytes(32)),
             'editsecret' => "",
             'passhash' => $passhash,
             'stylesheet' => self::$defaultStyleSheet,
