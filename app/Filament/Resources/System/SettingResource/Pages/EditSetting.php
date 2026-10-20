@@ -192,6 +192,38 @@ class EditSetting extends Page implements HasForms
             ->schema($this->getTabImageHostingSchema($id))
             ->columns(2)
         ;
+
+        $tabs[] = Tab::make(__('label.setting.iyuu_match.tab_header'))
+            ->id('iyuu_match')
+            ->schema([
+                Radio::make('iyuu_match.enabled')
+                    ->options(self::$yesOrNo)
+                    ->inline(true)
+                    ->default('yes')
+                    ->label(__('label.setting.iyuu_match.enabled'))
+                    ->helperText(__('label.setting.iyuu_match.enabled_help')),
+                TextInput::make('iyuu_match.token')
+                    ->password()
+                    ->revealable()
+                    ->label(__('label.setting.iyuu_match.token'))
+                    ->helperText(__('label.setting.iyuu_match.token_help')),
+                TextInput::make('iyuu_match.cache_minutes')
+                    ->numeric()
+                    ->default(60)
+                    ->minValue(5)
+                    ->maxValue(1440)
+                    ->label(__('label.setting.iyuu_match.cache_minutes'))
+                    ->helperText(__('label.setting.iyuu_match.cache_minutes_help')),
+                TextInput::make('iyuu_match.timeout_seconds')
+                    ->numeric()
+                    ->default(5)
+                    ->minValue(2)
+                    ->maxValue(15)
+                    ->label(__('label.setting.iyuu_match.timeout_seconds'))
+                    ->helperText(__('label.setting.iyuu_match.timeout_seconds_help')),
+            ])
+            ->columns(2);
+
         $id = "permission";
         $tabs[] = Tab::make(__("label.setting.$id.tab_header"))
             ->id($id)

@@ -226,6 +226,17 @@ return [
             'base_url' => '图片 URL 前缀',
             'upload_token' => '上传令牌',
         ],
+        'iyuu_match' => [
+            'tab_header' => 'IYUU 其他站点',
+            'enabled' => '启用其他站点匹配',
+            'enabled_help' => '在种子详情页查询并展示收录同一资源的其他站点。',
+            'token' => 'IYUU Token',
+            'token_help' => '仅由服务器调用 IYUU 接口，不会发送到浏览器。',
+            'cache_minutes' => '匹配缓存时间（分钟）',
+            'cache_minutes_help' => '建议 60 分钟，减少接口请求并提升详情页速度。',
+            'timeout_seconds' => '接口超时（秒）',
+            'timeout_seconds_help' => '建议 5 秒，接口异常时不会长时间等待。',
+        ],
         'permission' => [
             'tab_header' => '权限',
             'user_token_allowed' => '用户 token 可用权限',

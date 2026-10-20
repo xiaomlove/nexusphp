@@ -186,6 +186,17 @@ return [
             'base_url' => 'Image URL prefix',
             'upload_token' => 'Upload token',
         ],
+        'iyuu_match' => [
+            'tab_header' => 'IYUU cross-site matches',
+            'enabled' => 'Enable cross-site matches',
+            'enabled_help' => 'Show other trackers carrying the same release on torrent detail pages.',
+            'token' => 'IYUU Token',
+            'token_help' => 'Used only by the server and never sent to the browser.',
+            'cache_minutes' => 'Match cache (minutes)',
+            'cache_minutes_help' => '60 minutes is recommended to reduce API calls.',
+            'timeout_seconds' => 'API timeout (seconds)',
+            'timeout_seconds_help' => '5 seconds is recommended so API failures do not delay the page.',
+        ],
         'permission' => [
             'tab_header' => 'Permission',
             'user_token_allowed' => 'Permission available to user token',
