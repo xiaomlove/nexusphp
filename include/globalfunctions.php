@@ -1,9 +1,5 @@
 <?php
 
-if (!function_exists('mysql_query')) {
-    require_once __DIR__ . '/../nexus/Database/helpers.php';
-}
-
 function get_global_sp_state()
 {
 	static $global_promotion_state;
