@@ -36,11 +36,11 @@ $searchBoxRep = new \App\Repositories\SearchBoxRepository();
 $tagRep = new \App\Repositories\TagRepository();
 stdhead($lang_upload['head_upload']);
 ?>
-	<form id="compose" enctype="multipart/form-data" action="takeupload.php" method="post" name="upload">
+	<form id="compose" class="nova-upload-page" enctype="multipart/form-data" action="takeupload.php" method="post" name="upload">
 			<?php
 			print("<p align=\"center\">".$lang_upload['text_red_star_required']."</p>");
 			?>
-			<table border="1" cellspacing="0" cellpadding="5" width="97%">
+			<table class="nova-upload-form-table" border="1" cellspacing="0" cellpadding="5" width="97%">
 				<tr>
 					<td class='colhead' colspan='2' align='center'>
 						<?php echo $lang_upload['text_tracker_url'] ?>: &nbsp;&nbsp;&nbsp;&nbsp;<b><?php echo  get_tracker_schema_and_host($CURUSER['tracker_url_id'], true)?></b>
@@ -83,7 +83,7 @@ stdhead($lang_upload['head_upload']);
                     tr(nexus_trans('label.torrent.price'), '<input type="number" min="0" name="price" placeholder="'.$pricePlaceholder.'" />&nbsp;&nbsp;' . nexus_trans('label.torrent.price_help', ['tax_factor' => (floatval(get_setting('torrent.tax_factor', 0)) * 100) . '%']), 1);
                 }
 
-				print("<tr><td class=\"rowhead\" style='padding: 3px' valign=\"top\">".$lang_upload['row_description']."<font color=\"red\">*</font></td><td class=\"rowfollow\">");
+				print("<tr class=\"nova-upload-description-row\"><td class=\"rowhead\" style='padding: 3px' valign=\"top\">".$lang_upload['row_description']."<font color=\"red\">*</font></td><td class=\"rowfollow\">");
 				textbbcode("upload","descr", "", false, 130, true);
 				print("</td></tr>\n");
 
@@ -235,7 +235,7 @@ JS;
 					tr($lang_upload['row_show_uploader'], "<input type=\"checkbox\" name=\"uplver\" value=\"yes\" />".$lang_upload['checkbox_hide_uploader_note'], 1);
 				}
 				?>
-				<tr><td class="toolbox" align="center" colspan="2"><b><?php echo $lang_upload['text_read_rules']?></b> <input id="qr" type="submit" class="btn" value="<?php echo $lang_upload['submit_upload']?>" /></td></tr>
+				<tr><td class="toolbox nova-upload-submit-row" align="center" colspan="2"><b><?php echo $lang_upload['text_read_rules']?></b> <input id="qr" type="submit" class="btn" value="<?php echo $lang_upload['submit_upload']?>" /></td></tr>
 		</table>
 	</form>
 <?php

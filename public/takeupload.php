@@ -4,6 +4,7 @@ use Rhilip\Bencode\ParseException;
 use Rhilip\Bencode\TorrentFile;
 
 require_once("../include/bittorrent.php");
+require_once("../include/nova_sticky_promotion.php");
 
 ini_set("upload_max_filesize",$max_torrent_size);
 dbconn();
@@ -396,6 +397,13 @@ if (!empty($_POST['custom_fields'][$catmod])) {
 $tagIdArr = array_filter($_POST['tags'][$catmod] ?? []);
 if (!empty($tagIdArr)) {
     insert_torrent_tags($id, $tagIdArr);
+}
+if (in_array((int)get_setting('bonus.official_tag'), array_map('intval', $tagIdArr), true)) {
+    try {
+        nova_sticky_start_system_official((int)$id, 3000.0, 48, 10);
+    } catch (Throwable $e) {
+        do_log('[NOVA_SYSTEM_OFFICIAL_STICKY] torrent ' . (int)$id . ': ' . $e->getMessage(), 'error');
+    }
 }
 
 @sql_query("DELETE FROM files WHERE torrent = $id");
