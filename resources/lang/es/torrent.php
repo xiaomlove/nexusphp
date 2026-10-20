@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normal',
     'pos_state_sticky' => 'Pegado primero',
     'pos_state_r_sticky' => 'Segundo adherido',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Lista de torrents',

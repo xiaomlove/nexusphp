@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normal',
     'pos_state_sticky' => 'Sticky first',
     'pos_state_r_sticky' => 'Sticky second',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Torrent list',

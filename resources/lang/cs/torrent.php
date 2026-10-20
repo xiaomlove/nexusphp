@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normální',
     'pos_state_sticky' => 'Nejprve označit',
     'pos_state_r_sticky' => 'Přilepit sekundu',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Seznam Torrentů',

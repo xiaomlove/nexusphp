@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normale',
     'pos_state_sticky' => 'Appiccicoso prima',
     'pos_state_r_sticky' => 'Adesivo secondo',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Lista torrent',

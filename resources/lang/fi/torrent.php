@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normaali',
     'pos_state_sticky' => 'Kiinni ensin',
     'pos_state_r_sticky' => 'Kiinnitä sekunti',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Torrent- lista',

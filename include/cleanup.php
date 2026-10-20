@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/nova_sticky_promotion.php';
 # IMPORTANT: Do not edit below unless you know what you are doing!
 
 use App\Enums\ModelEventEnum;
@@ -291,6 +292,15 @@ function docleanup($forceAll = 0, $printProgress = false) {
 	$nowStr = $carbonNow->toDateTimeString();
 	do_log("start docleanup(), forceAll: $forceAll, printProgress: $printProgress, now: $now, " . date('Y-m-d H:i:s', $now));
 
+    try {
+        $novaStickySettled = nova_sticky_settle_expired();
+        if ($novaStickySettled > 0) {
+            do_log("[NOVA_STICKY] settled campaigns: {$novaStickySettled}");
+        }
+    } catch (Throwable $e) {
+        do_log('[NOVA_STICKY] cleanup failed: ' . $e->getMessage(), 'error');
+    }
+
 //Priority Class 1: cleanup every 15 mins
 //2.update peer status
 	$deadtime = deadtime();
@@ -534,6 +544,7 @@ function docleanup($forceAll = 0, $printProgress = false) {
     $toBeExpirePosStates = [
         \App\Models\Torrent::POS_STATE_STICKY_FIRST,
         \App\Models\Torrent::POS_STATE_STICKY_SECOND,
+        \App\Models\Torrent::POS_STATE_STICKY_THIRD,
     ];
 	$update = [
 	    'pos_state' => \App\Models\Torrent::POS_STATE_STICKY_NONE,

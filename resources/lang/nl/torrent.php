@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'normaal',
     'pos_state_sticky' => 'Eerst plakken',
     'pos_state_r_sticky' => 'Sticky seconde',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Torrent lijst',

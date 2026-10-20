@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => '標準',
     'pos_state_sticky' => '最初に固定する',
     'pos_state_r_sticky' => 'スティッキー秒',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Torrent リスト',

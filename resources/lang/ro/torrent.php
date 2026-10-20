@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normală',
     'pos_state_sticky' => 'Fixat mai întâi',
     'pos_state_r_sticky' => 'Secunde lipicios',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Lista de torente',

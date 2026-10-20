@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Vanlig',
     'pos_state_sticky' => 'Klissete først',
     'pos_state_r_sticky' => 'Klissete sekund',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Liste over torrent',

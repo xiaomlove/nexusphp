@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Обычный',
     'pos_state_sticky' => 'Сперва прикреплено',
     'pos_state_r_sticky' => 'Липкие секунды',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Список торрентов',

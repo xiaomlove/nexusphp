@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normale',
     'pos_state_sticky' => 'Epinglé en premier',
     'pos_state_r_sticky' => 'Seconde épingle',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Liste des torrents',

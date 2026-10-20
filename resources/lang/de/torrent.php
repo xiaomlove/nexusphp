@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => 'Normal',
     'pos_state_sticky' => 'Angepinnt zuerst',
     'pos_state_r_sticky' => 'Sekunde angepinnt',
+    'pos_state_q_sticky' => 'Sticky third',
 
     'index' => [
         'page_title' => 'Torrent-Liste',

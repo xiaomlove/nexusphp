@@ -4,6 +4,7 @@ return [
     'pos_state_normal' => '普通',
     'pos_state_sticky' => '一級置頂',
     'pos_state_r_sticky' => '二級置頂',
+    'pos_state_q_sticky' => '三級置頂',
 
     'index' => [
         'page_title' => '種子列表',
